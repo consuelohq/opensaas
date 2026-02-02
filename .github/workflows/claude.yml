@@ -60,7 +60,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: "--max-turns 50 --model opus"
-          allowed_tools: "Bash(bash packages/twenty-utils/setup-dev-env.sh),Bash(npx nx *),Bash(npx jest *),Bash(yarn *)"
+          allowed_tools: "Edit,Write,Bash(bash packages/twenty-utils/setup-dev-env.sh),Bash(npx nx *),Bash(npx jest *),Bash(yarn *),Bash(git *),Bash(gh *),Bash(sed *),Bash(python3 *),WebFetch"
           settings: |
             {
               "env": {
@@ -123,7 +123,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.prompt }}
           claude_args: "--max-turns 50 --model opus"
-          allowed_tools: "Bash(bash packages/twenty-utils/setup-dev-env.sh),Bash(npx nx *),Bash(npx jest *),Bash(yarn *)"
+          allowed_tools: "Edit,Write,Bash(bash packages/twenty-utils/setup-dev-env.sh),Bash(npx nx *),Bash(npx jest *),Bash(yarn *),Bash(git *),Bash(gh *),Bash(sed *),Bash(python3 *),WebFetch"
           settings: |
             {
               "env": {
