@@ -156,8 +156,10 @@ export class FlatPageLayoutWidgetValidatorService {
       type: 'delete',
     });
 
-    const existingFlatPageLayoutWidget =
-      optimisticFlatPageLayoutWidgetMaps.byId[pageLayoutWidgetIdToDelete];
+    const existingFlatPageLayoutWidget = findFlatEntityByIdInFlatEntityMaps({
+      flatEntityId: pageLayoutWidgetIdToDelete,
+      flatEntityMaps: optimisticFlatPageLayoutWidgetMaps,
+    });
 
     if (!isDefined(existingFlatPageLayoutWidget)) {
       validationResult.errors.push({
@@ -195,9 +197,11 @@ export class FlatPageLayoutWidgetValidatorService {
       type: 'create',
     });
 
-    const existingFlatPageLayoutWidget =
-      optimisticFlatEntityMapsAndRelatedFlatEntityMaps.flatPageLayoutWidgetMaps
-        .byId[flatPageLayoutWidgetToValidate.id];
+    const existingFlatPageLayoutWidget = findFlatEntityByIdInFlatEntityMaps({
+      flatEntityId: flatPageLayoutWidgetToValidate.id,
+      flatEntityMaps:
+        optimisticFlatEntityMapsAndRelatedFlatEntityMaps.flatPageLayoutWidgetMaps,
+    });
 
     if (isDefined(existingFlatPageLayoutWidget)) {
       const flatPageLayoutWidgetId = flatPageLayoutWidgetToValidate.id;
