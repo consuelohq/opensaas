@@ -89,45 +89,45 @@ my-twenty-app/
   eslint.config.mjs
   tsconfig.json
   README.md
-  public/                           # Public assets folder (images, fonts, etc.)
+  public/                           # 公共资源文件夹（图像、字体等）
   src/
-  ├── application-config.ts           # Required - main application configuration
+  ├── application-config.ts           # 必需 - 主应用程序配置
   ├── roles/
-  │   └── default-role.ts               # Default role for logic functions
+  │   └── default-role.ts               # 用于逻辑函数的默认角色
   ├── logic-functions/
-  │   └── hello-world.ts                # Example logic function
+  │   └── hello-world.ts                # 示例逻辑函数
   └── front-components/
-      └── hello-world.tsx               # Example front component
+      └── hello-world.tsx               # 示例前端组件
 ```
 
 总体来说：
 
-* **package.json**: Declares the app name, version, engines (Node 24+, Yarn 4), and adds `twenty-sdk` plus scripts like `app:dev`, `app:generate`, `entity:add`, `function:logs`, `function:execute`, `app:uninstall`, and authentication commands that delegate to the local `twenty` CLI.
+* **package.json**：声明应用名称、版本、运行时（Node 24+、Yarn 4），并添加 `twenty-sdk`，以及诸如 `app:dev`、`app:generate`、`entity:add`、`function:logs`、`function:execute`、`app:uninstall` 等脚本和认证命令，它们都会委托给本地的 `twenty` CLI。
 * **.gitignore**：忽略常见产物，如 `node_modules`、`.yarn`、`generated/`（类型化客户端）、`dist/`、`build/`、覆盖率文件夹、日志文件以及 `.env*` 文件。
 * **yarn.lock**、**.yarnrc.yml**、**.yarn/**：锁定并配置项目使用的 Yarn 4 工具链。
 * **.nvmrc**：固定项目期望的 Node.js 版本。
 * **eslint.config.mjs** 和 **tsconfig.json**：为应用的 TypeScript 源码提供 Lint 与 TypeScript 配置。
 * **README.md**：应用根目录中的简短 README，包含基本说明。
 * **public/**: 一个用于存储公共资源（图像、字体、静态文件）的文件夹，这些资源将随你的应用程序一起提供。 放置在此处的文件会在同步期间上传，并可在运行时访问。
-* **src/**: The main place where you define your application-as-code
+* **src/**：你以代码形式定义应用的主要位置
 
-### Entity detection
+### 实体检测
 
-The SDK detects entities by parsing your TypeScript files for **`export default define<Entity>({...})`** calls. Each entity type has a corresponding helper function exported from `twenty-sdk`:
+该 SDK 通过在你的 TypeScript 文件中解析 **`export default define<Entity>({...})`** 调用来检测实体。 每种实体类型都有一个从 `twenty-sdk` 导出的对应辅助函数：
 
-| Helper function          | 实体类型                                  |
-| ------------------------ | ------------------------------------- |
-| `defineObject()`         | 自定义对象定义                               |
-| `defineLogicFunction()`  | Logic function definitions            |
-| `defineFrontComponent()` | 前端组件定义                                |
-| `defineRole()`           | 角色定义                                  |
-| `defineField()`          | Field extensions for existing objects |
+| 辅助函数                     | 实体类型      |
+| ------------------------ | --------- |
+| `defineObject()`         | 自定义对象定义   |
+| `defineLogicFunction()`  | 逻辑函数定义    |
+| `defineFrontComponent()` | 前端组件定义    |
+| `defineRole()`           | 角色定义      |
+| `defineField()`          | 现有对象的字段扩展 |
 
 <Note>
-  **File naming is flexible.** Entity detection is AST-based — the SDK scans your source files for the `export default define<Entity>({...})` pattern. You can organize your files and folders however you like. Grouping by entity type (e.g., `logic-functions/`, `roles/`) is just a convention for code organization, not a requirement.
+  **文件命名是灵活的。** 实体检测基于 AST — SDK 会扫描你的源文件以查找 `export default define<Entity>({...})` 模式。 你可以按照自己的喜好组织文件和文件夹。 按实体类型分组（例如 `logic-functions/`、`roles/`）只是代码组织的一种约定，并非必需。
 </Note>
 
-Example of a detected entity:
+已检测实体的示例：
 
 ```typescript
 // This file can be named anything and placed anywhere in src/
@@ -184,18 +184,18 @@ twenty-sdk 提供你在应用中使用的类型化构件和辅助函数。 以�
 
 ### 辅助函数
 
-The SDK provides helper functions for defining your app entities. As described in [Entity detection](#entity-detection), you must use `export default define<Entity>({...})` for your entities to be detected:
+该 SDK 提供辅助函数用于定义你的应用实体。 如 [实体检测](#entity-detection) 中所述，你必须使用 `export default define<Entity>({...})` 才能让你的实体被检测到：
 
-| 函数                       | 目的                                                     |
-| ------------------------ | ------------------------------------------------------ |
-| `defineApplication()`    | Configure application metadata (required, one per app) |
-| `defineObject()`         | 定义带字段的自定义对象                                            |
-| `defineLogicFunction()`  | 定义带处理程序的逻辑函数                                           |
-| `defineFrontComponent()` | Define front components for custom UI                  |
-| `defineRole()`           | 配置角色权限和对象访问                                            |
-| `defineField()`          | Extend existing objects with additional fields         |
+| 函数                       | 目的                 |
+| ------------------------ | ------------------ |
+| `defineApplication()`    | 配置应用元数据（必需，每个应用一个） |
+| `defineObject()`         | 定义带字段的自定义对象        |
+| `defineLogicFunction()`  | 定义带处理程序的逻辑函数       |
+| `defineFrontComponent()` | 为自定义 UI 定义前端组件     |
+| `defineRole()`           | 配置角色权限和对象访问        |
+| `defineField()`          | 为现有对象扩展额外字段        |
 
-These functions validate your configuration at build time and provide IDE autocompletion and type safety.
+这些函数会在构建时校验你的配置，并提供 IDE 自动补全和类型安全。
 
 ### 定义对象
 
@@ -318,11 +318,11 @@ export default defineApplication({
 
 * `universalIdentifier` 字段是你拥有的确定性 ID；生成一次并在多次同步中保持稳定。
 * `applicationVariables` 会变成函数可用的环境变量（例如，`DEFAULT_RECIPIENT_NAME` 可作为 `process.env.DEFAULT_RECIPIENT_NAME` 使用）。
-* `defaultRoleUniversalIdentifier` must match the role file (see below).
+* `defaultRoleUniversalIdentifier` 必须与角色文件一致（见下文）。
 
 #### 角色和权限
 
-应用可以定义角色，以封装对工作空间对象与操作的权限。 The field `defaultRoleUniversalIdentifier` in `application-config.ts` designates the default role used by your app's logic functions.
+应用可以定义角色，以封装对工作空间对象与操作的权限。 `application-config.ts` 中的 `defaultRoleUniversalIdentifier` 字段指定你的应用逻辑函数所使用的默认角色。
 
 * 作为 `TWENTY_API_KEY` 注入的运行时 API 密钥源自该默认函数角色。
 * 类型化客户端将受限于该角色授予的权限。
@@ -372,10 +372,10 @@ export default defineRole({
 });
 ```
 
-The `universalIdentifier` of this role is then referenced in `application-config.ts` as `defaultRoleUniversalIdentifier`. 换句话说：
+随后，该角色的 `universalIdentifier` 会在 `application-config.ts` 中被引用为 `defaultRoleUniversalIdentifier`。 换句话说：
 
 * **\*.role.ts** 定义默认函数角色可以执行的操作。
-* **application-config.ts** points to that role so your functions inherit its permissions.
+* **application-config.ts** 指向该角色，使你的函数继承其权限。
 
 备注:
 
@@ -386,7 +386,7 @@ The `universalIdentifier` of this role is then referenced in `application-config
 
 ### 逻辑函数的配置与入口点
 
-Each function file uses `defineLogicFunction()` to export a configuration with a handler and optional triggers.
+每个函数文件都使用 `defineLogicFunction()` 导出包含处理程序和可选触发器的配置。
 
 ```typescript
 // src/app/createPostCard.logic-function.ts
@@ -551,12 +551,12 @@ const handler = async (event: RoutePayload) => {
 
 你可以通过两种方式创建新函数：
 
-* **Scaffolded**: Run `yarn entity:add` and choose the option to add a new logic function. 这将生成一个包含处理程序和配置的入门文件。
-* **Manual**: Create a new `*.logic-function.ts` file and use `defineLogicFunction()`, following the same pattern.
+* **脚手架生成**：运行 `yarn entity:add` 并选择添加新逻辑函数的选项。 这将生成一个包含处理程序和配置的入门文件。
+* **手动**：创建一个新的 `*.logic-function.ts` 文件，并使用 `defineLogicFunction()`，遵循相同的模式。
 
-### Front components
+### 前端组件
 
-Front components let you build custom React components that render within Twenty's UI. Use `defineFrontComponent()` to define components with built-in validation:
+前端组件使你可以构建在 Twenty 的 UI 中渲染的自定义 React 组件。 使用 `defineFrontComponent()` 以内置校验定义组件：
 
 ```typescript
 // src/my-widget.front-component.tsx
@@ -581,15 +581,15 @@ export default defineFrontComponent({
 
 关键点：
 
-* Front components are React components that render in isolated contexts within Twenty.
+* 前端组件是在 Twenty 中的隔离上下文中渲染的 React 组件。
 * 使用 `*.front-component.tsx` 文件后缀以便自动检测。
-* The `component` field references your React component.
-* Components are built and synced automatically during `yarn app:dev`.
+* `component` 字段引用你的 React 组件。
+* 组件会在 `yarn app:dev` 期间自动构建并同步。
 
-You can create new front components in two ways:
+你可以通过两种方式创建新的前端组件：
 
-* **Scaffolded**: Run `yarn entity:add` and choose the option to add a new front component.
-* **Manual**: Create a new `*.front-component.tsx` file and use `defineFrontComponent()`.
+* **脚手架生成**：运行 `yarn entity:add` 并选择添加新前端组件的选项。
+* **手动**：创建一个新的 `*.front-component.tsx` 文件，并使用 `defineFrontComponent()`。
 
 ### 生成的类型化客户端
 
@@ -614,12 +614,12 @@ const { me } = await client.query({ me: { id: true, displayName: true } });
 备注:
 
 * 你无需向生成的客户端传递 URL 或 API 密钥。 它会在运行时从 process.env 读取 `TWENTY_API_URL` 和 `TWENTY_API_KEY`。
-* The API key's permissions are determined by the role referenced in your `application-config.ts` via `defaultRoleUniversalIdentifier`. 这是你的应用逻辑函数使用的默认角色。
-* 应用可以定义角色以遵循最小权限原则。 Grant only the permissions your functions need, then point `defaultRoleUniversalIdentifier` to that role's universal identifier.
+* API 密钥的权限由 `application-config.ts` 中通过 `defaultRoleUniversalIdentifier` 引用的角色决定。 这是你的应用逻辑函数使用的默认角色。
+* 应用可以定义角色以遵循最小权限原则。 仅授予函数所需的权限，然后将 `defaultRoleUniversalIdentifier` 指向该角色的通用标识符。
 
 ### Hello World 示例
 
-Explore a minimal, end-to-end example that demonstrates objects, logic functions, front components, and multiple triggers [here](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world):
+在[此处](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world)查看一个最小的端到端示例，展示对象、逻辑函数、前端组件和多种触发器：
 
 ## 手动设置（不使用脚手架）
 
