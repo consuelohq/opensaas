@@ -1,35 +1,40 @@
+import { useFieldListFieldMetadataItems } from '@/object-record/record-field-list/hooks/useFieldListFieldMetadataItems';
 import { useBasePageLayout } from '@/page-layout/hooks/useBasePageLayout';
-import { usePageLayoutWithRelationWidgets } from '@/page-layout/hooks/usePageLayoutWithRelationWidgets';
 import { pageLayoutCurrentLayoutsComponentState } from '@/page-layout/states/pageLayoutCurrentLayoutsComponentState';
 import { pageLayoutDraftComponentState } from '@/page-layout/states/pageLayoutDraftComponentState';
 import { pageLayoutIsInitializedComponentState } from '@/page-layout/states/pageLayoutIsInitializedComponentState';
 import { pageLayoutPersistedComponentState } from '@/page-layout/states/pageLayoutPersistedComponentState';
 import { type PageLayout } from '@/page-layout/types/PageLayout';
 import { convertPageLayoutToTabLayouts } from '@/page-layout/utils/convertPageLayoutToTabLayouts';
+import { injectRelationWidgetsIntoLayout } from '@/page-layout/utils/injectRelationWidgetsIntoLayout';
+import { useLayoutRenderingContext } from '@/ui/layout/contexts/LayoutRenderingContext';
 import { useRecoilComponentCallbackState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentCallbackState';
-import { useRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentState';
+import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { getSnapshotValue } from '@/ui/utilities/state/utils/getSnapshotValue';
 import { useEffect } from 'react';
 import { useRecoilCallback } from 'recoil';
 import { isDefined } from 'twenty-shared/utils';
+import { PageLayoutType } from '~/generated/graphql';
 import { isDeeplyEqual } from '~/utils/isDeeplyEqual';
 
-type PageLayoutInitializationQueryEffectProps = {
+type PageLayoutRelationWidgetsSyncEffectProps = {
   pageLayoutId: string;
-  onInitialized?: (pageLayout: PageLayout) => void;
 };
 
-export const PageLayoutInitializationQueryEffect = ({
+export const PageLayoutRelationWidgetsSyncEffect = ({
   pageLayoutId,
-  onInitialized,
-}: PageLayoutInitializationQueryEffectProps) => {
-  const [isInitialized, setIsInitialized] = useRecoilComponentState(
+}: PageLayoutRelationWidgetsSyncEffectProps) => {
+  const { targetRecordIdentifier, layoutType } = useLayoutRenderingContext();
+
+  const isInitialized = useRecoilComponentValue(
     pageLayoutIsInitializedComponentState,
   );
 
   const basePageLayout = useBasePageLayout(pageLayoutId);
 
-  const pageLayout = usePageLayoutWithRelationWidgets(basePageLayout);
+  const { boxedRelationFieldMetadataItems } = useFieldListFieldMetadataItems({
+    objectNameSingular: targetRecordIdentifier?.targetObjectNameSingular ?? '',
+  });
 
   const pageLayoutPersistedComponentCallbackState =
     useRecoilComponentCallbackState(pageLayoutPersistedComponentState);
@@ -41,7 +46,7 @@ export const PageLayoutInitializationQueryEffect = ({
   const pageLayoutCurrentLayoutsComponentCallbackState =
     useRecoilComponentCallbackState(pageLayoutCurrentLayoutsComponentState);
 
-  const initializePageLayout = useRecoilCallback(
+  const syncPageLayoutWithRelationWidgets = useRecoilCallback(
     ({ set, snapshot }) =>
       (layout: PageLayout) => {
         const currentPersisted = getSnapshotValue(
@@ -71,17 +76,31 @@ export const PageLayoutInitializationQueryEffect = ({
   );
 
   useEffect(() => {
-    if (!isInitialized && isDefined(pageLayout)) {
-      initializePageLayout(pageLayout);
-      onInitialized?.(pageLayout);
-      setIsInitialized(true);
+    if (!isInitialized) {
+      return;
     }
+
+    if (!isDefined(basePageLayout)) {
+      return;
+    }
+
+    const isRecordPage = layoutType === PageLayoutType.RECORD_PAGE;
+    if (!isRecordPage) {
+      return;
+    }
+
+    const layoutWithRelationWidgets = injectRelationWidgetsIntoLayout(
+      basePageLayout,
+      boxedRelationFieldMetadataItems,
+    );
+
+    syncPageLayoutWithRelationWidgets(layoutWithRelationWidgets);
   }, [
-    initializePageLayout,
+    basePageLayout,
+    boxedRelationFieldMetadataItems,
     isInitialized,
-    pageLayout,
-    onInitialized,
-    setIsInitialized,
+    layoutType,
+    syncPageLayoutWithRelationWidgets,
   ]);
 
   return null;
