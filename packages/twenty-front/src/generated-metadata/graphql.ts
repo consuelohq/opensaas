@@ -1606,6 +1606,7 @@ export type FieldRichTextConfiguration = {
 export type FieldsConfiguration = {
   __typename?: 'FieldsConfiguration';
   configurationType: WidgetConfigurationType;
+  viewId?: Maybe<Scalars['String']>;
 };
 
 export type File = {
@@ -4844,6 +4845,7 @@ export enum ViewSortDirection {
 
 export enum ViewType {
   CALENDAR = 'CALENDAR',
+  FIELDS_WIDGET = 'FIELDS_WIDGET',
   KANBAN = 'KANBAN',
   TABLE = 'TABLE'
 }
