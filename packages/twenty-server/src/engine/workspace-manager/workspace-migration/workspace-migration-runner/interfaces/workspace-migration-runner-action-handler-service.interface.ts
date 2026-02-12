@@ -6,7 +6,6 @@ import { QueryRunner } from 'typeorm';
 import { LoggerService } from 'src/engine/core-modules/logger/logger.service';
 import { ALL_METADATA_ENTITY_BY_METADATA_NAME } from 'src/engine/metadata-modules/flat-entity/constant/all-metadata-entity-by-metadata-name.constant';
 import { type AllFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/types/all-flat-entity-maps.type';
-import { AllFlatEntityTypesByMetadataName } from 'src/engine/metadata-modules/flat-entity/types/all-flat-entity-types-by-metadata-name';
 import { FlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/types/flat-entity-maps.type';
 import { MetadataFlatEntity } from 'src/engine/metadata-modules/flat-entity/types/metadata-flat-entity.type';
 import { MetadataRelatedFlatEntityMapsKeys } from 'src/engine/metadata-modules/flat-entity/types/metadata-related-flat-entity-maps-keys.type';
@@ -61,9 +60,15 @@ export abstract class BaseWorkspaceMigrationRunnerActionHandlerService<
   TActionType extends WorkspaceMigrationActionType,
   TMetadataName extends AllMetadataName,
   TUniversalAction extends // TODO create abstracted type utils
-    AllUniversalWorkspaceMigrationAction = AllFlatEntityTypesByMetadataName[TMetadataName]['universalActions'][TActionType],
+    AllUniversalWorkspaceMigrationAction = AllUniversalWorkspaceMigrationAction<
+    TActionType,
+    TMetadataName
+  >,
   TFlatAction extends
-    AllFlatWorkspaceMigrationAction = AllFlatEntityTypesByMetadataName[TMetadataName]['flatActions'][TActionType],
+    AllFlatWorkspaceMigrationAction = AllFlatWorkspaceMigrationAction<
+    TActionType,
+    TMetadataName
+  >,
 > {
   public actionType: TActionType;
   public metadataName: TMetadataName;
