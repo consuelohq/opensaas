@@ -1,6 +1,6 @@
 # Default image used by all components
 image:
-  repository: twentycrm/twenty
+  repository: consuelo/opensaas
   tag: ""  # defaults to Chart.yaml appVersion
   pullPolicy: IfNotPresent
 

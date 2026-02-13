@@ -88,7 +88,7 @@ export const SettingsAIMCP = () => {
       label: t`Core Schema`,
       value: 'core-schema',
       Icon: IconDatabase,
-      content: generateMcpContent('/mcp', 'twenty'),
+      content: generateMcpContent('/mcp', 'consuelo'),
     },
     {
       label: t`Metadata Schema`,

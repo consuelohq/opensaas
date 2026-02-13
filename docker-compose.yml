@@ -24,7 +24,7 @@ services:
       - opensaas
 
   twenty:
-    image: twentycrm/twenty:latest
+    image: consuelo/opensaas:latest
     container_name: opensaas-crm
     restart: unless-stopped
     depends_on:

@@ -28,7 +28,7 @@ export class ClickHouseService implements OnModuleInit, OnModuleDestroy {
           async_insert: 1,
           wait_for_async_insert: 1,
         },
-        application: 'twenty',
+        application: 'consuelo',
       });
     }
   }
@@ -87,7 +87,7 @@ export class ClickHouseService implements OnModuleInit, OnModuleDestroy {
         async_insert: 1,
         wait_for_async_insert: 1,
       },
-      application: 'twenty',
+      application: 'consuelo',
     });
 
     // Ping to check connection

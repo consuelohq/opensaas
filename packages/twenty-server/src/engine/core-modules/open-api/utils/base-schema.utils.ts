@@ -12,7 +12,7 @@ export const baseSchema = (
   return {
     openapi: '3.1.1',
     info: {
-      title: 'Twenty Api',
+      title: 'Consuelo Api',
       description: `Use this page to explore and call the **REST API**.
 
 ## Authentication
@@ -111,7 +111,7 @@ Metadata: ${serverUrl}/rest/open-api/metadata?token=${token ?? '<your_token>'}
 Quick prompt example (Cursor or any agent):
 
 \`\`\`text
-Here is an OpenAPI schema for the Twenty REST API:\n${serverUrl}/rest/open-api/core?token=${token ?? '<your_token>'}
+Here is an OpenAPI schema for the Consuelo REST API:\n${serverUrl}/rest/open-api/core?token=${token ?? '<your_token>'}
 
 Use it to list companies created after 2024-01-01, ordered by createdAt desc, and include only 20 results.
 \`\`\`
@@ -121,13 +121,13 @@ Notes:
 - Most editors can fetch and process the schema even if it's large.
 `,
       termsOfService:
-        'https://github.com/twentyhq/twenty?tab=coc-ov-file#readme',
+        'https://github.com/consuelohq/opensaas?tab=coc-ov-file#readme',
       contact: {
-        email: 'felix@twenty.com',
+        email: 'hello@consuelo.com',
       },
       license: {
         name: 'AGPL-3.0',
-        url: 'https://github.com/twentyhq/twenty?tab=License-1-ov-file#readme',
+        url: 'https://github.com/consuelohq/opensaas?tab=License-1-ov-file#readme',
       },
       version: API_Version,
     },
@@ -155,8 +155,8 @@ Notes:
       },
     ],
     externalDocs: {
-      description: 'Find out more about **Twenty**',
-      url: 'https://twenty.com',
+      description: 'Find out more about **Consuelo**',
+      url: 'https://consuelo.com',
     },
     paths: { [`/open-api/${schemaName}`]: computeOpenApiPath(serverUrl) },
   };

@@ -30,7 +30,7 @@ spec:
             claimName: twentycrm-docker-data-pvc
       containers:
         - name: twentycrm
-          image: twentycrm/twenty:latest
+          image: consuelo/opensaas:latest
           imagePullPolicy: Always
           env:
             - name: NODE_PORT
