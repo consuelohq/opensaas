@@ -37,53 +37,58 @@ export class LocalPresenceService {
   }
 
   async selectNumber(pool: NumberPool, customerNumber: string): Promise<NumberSelection | null> {
-    const customerAreaCode = extractAreaCode(customerNumber);
-    if (!customerAreaCode || !pool.numbers.length) {
-      return this.primaryFallback(pool, customerAreaCode);
-    }
-
-    // 1. exact area code match
-    const exact = pool.numbers.find((n) => n.areaCode === customerAreaCode && n.isActive);
-    if (exact) {
-      return {
-        phoneNumber: exact.phoneNumber,
-        areaCode: exact.areaCode,
-        localMatch: true,
-        proximityMatch: false,
-        isPrimary: exact.isPrimary,
-        customerAreaCode,
-      };
-    }
-
-    // 2. proximity match (if distance function provided)
-    if (this.distanceFn) {
-      let best: { number: PhoneNumber; distance: number } | null = null;
-
-      for (const num of pool.numbers) {
-        if (!num.isActive) continue;
-        const dist = await this.distanceFn(customerAreaCode, num.areaCode);
-        if (dist !== null && dist <= this.maxDistanceMiles) {
-          if (!best || dist < best.distance) {
-            best = { number: num, distance: dist };
-          }
-        }
+    try {
+      const customerAreaCode = extractAreaCode(customerNumber);
+      if (!customerAreaCode || !pool.numbers.length) {
+        return this.primaryFallback(pool, customerAreaCode);
       }
 
-      if (best) {
+      // 1. exact area code match
+      const exact = pool.numbers.find((n) => n.areaCode === customerAreaCode && n.isActive);
+      if (exact) {
         return {
-          phoneNumber: best.number.phoneNumber,
-          areaCode: best.number.areaCode,
-          localMatch: false,
-          proximityMatch: true,
-          distanceMiles: best.distance,
-          isPrimary: best.number.isPrimary,
+          phoneNumber: exact.phoneNumber,
+          areaCode: exact.areaCode,
+          localMatch: true,
+          proximityMatch: false,
+          isPrimary: exact.isPrimary,
           customerAreaCode,
         };
       }
-    }
 
-    // 3. primary fallback
-    return this.primaryFallback(pool, customerAreaCode);
+      // 2. proximity match (if distance function provided)
+      if (this.distanceFn) {
+        let best: { number: PhoneNumber; distance: number } | null = null;
+
+        for (const num of pool.numbers) {
+          if (!num.isActive) continue;
+          const dist = await this.distanceFn(customerAreaCode, num.areaCode);
+          if (dist !== null && dist <= this.maxDistanceMiles) {
+            if (!best || dist < best.distance) {
+              best = { number: num, distance: dist };
+            }
+          }
+        }
+
+        if (best) {
+          return {
+            phoneNumber: best.number.phoneNumber,
+            areaCode: best.number.areaCode,
+            localMatch: false,
+            proximityMatch: true,
+            distanceMiles: best.distance,
+            isPrimary: best.number.isPrimary,
+            customerAreaCode,
+          };
+        }
+      }
+
+      // 3. primary fallback
+      return this.primaryFallback(pool, customerAreaCode);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'unknown error';
+      throw new Error(`local presence selection failed: ${message}`);
+    }
   }
 
   private primaryFallback(pool: NumberPool, customerAreaCode: string | null): NumberSelection | null {

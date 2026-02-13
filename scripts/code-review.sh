@@ -14,7 +14,14 @@ FAIL=0
 WARNINGS=""
 
 # get changed .ts files vs main (only in packages/*/src, exclude deleted)
-CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || git diff --name-only --diff-filter=ACMR HEAD~1 -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+# exclude twenty-front and twenty-server (upstream twenty code) but keep our dialer module
+_ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || git diff --name-only --diff-filter=ACMR HEAD~1 -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+CHANGED_FILES=$(echo "$_ALL_CHANGED" | grep -v '^packages/twenty-front/' | grep -v '^packages/twenty-server/' || true)
+# re-add our dialer module inside twenty-front
+_DIALER_FILES=$(echo "$_ALL_CHANGED" | grep '^packages/twenty-front/src/modules/dialer/' || true)
+if [ -n "$_DIALER_FILES" ]; then
+  CHANGED_FILES=$(printf '%s\n%s' "$CHANGED_FILES" "$_DIALER_FILES" | grep -v '^$' | sort -u)
+fi
 
 if [ -z "$CHANGED_FILES" ]; then
   echo -e "${GREEN}no changed .ts files to review${NC}"

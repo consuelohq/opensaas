@@ -25,34 +25,44 @@ export class PlaybookService {
 
   /** Upload a document: extract text → chunk → embed → store */
   async upload(content: Buffer | string, ext: string, options: PlaybookUploadOptions): Promise<{ chunksIndexed: number }> {
-    let text: string;
-    if (typeof content === 'string') {
-      text = content;
-    } else if (this.readFileFn) {
-      text = await this.readFileFn(content, ext);
-    } else {
-      text = content.toString('utf-8');
+    try {
+      let text: string;
+      if (typeof content === 'string') {
+        text = content;
+      } else if (this.readFileFn) {
+        text = await this.readFileFn(content, ext);
+      } else {
+        text = content.toString('utf-8');
+      }
+
+      const chunks = chunkText(text, options.chunkSize);
+      const embeddings = await Promise.all(chunks.map((c) => this.embedFn(c)));
+      const ts = Date.now();
+      const ids = chunks.map((_, i) => `${options.collectionName}_chunk_${i}_${ts}`);
+      const metadata = chunks.map(() => {
+        const m: Record<string, string> = {};
+        if (options.userId) m.user_id = options.userId;
+        if (options.fileTag) m.file_tag = options.fileTag;
+        return m;
+      });
+
+      await this.vectorStore.add(chunks, embeddings, ids, metadata);
+      return { chunksIndexed: chunks.length };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'unknown error';
+      throw new Error(`playbook upload failed: ${message}`);
     }
-
-    const chunks = chunkText(text, options.chunkSize);
-    const embeddings = await Promise.all(chunks.map((c) => this.embedFn(c)));
-    const ts = Date.now();
-    const ids = chunks.map((_, i) => `${options.collectionName}_chunk_${i}_${ts}`);
-    const metadata = chunks.map(() => {
-      const m: Record<string, string> = {};
-      if (options.userId) m.user_id = options.userId;
-      if (options.fileTag) m.file_tag = options.fileTag;
-      return m;
-    });
-
-    await this.vectorStore.add(chunks, embeddings, ids, metadata);
-    return { chunksIndexed: chunks.length };
   }
 
   /** Retrieve relevant context chunks for a query */
   async retrieveContext(query: string, topK = 3, userId?: string): Promise<string[]> {
-    const embedding = await this.embedFn(query);
-    const where = userId ? { user_id: userId } : undefined;
-    return this.vectorStore.query(embedding, topK, where);
+    try {
+      const embedding = await this.embedFn(query);
+      const where = userId ? { user_id: userId } : undefined;
+      return this.vectorStore.query(embedding, topK, where);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'unknown error';
+      throw new Error(`playbook context retrieval failed: ${message}`);
+    }
   }
 }
