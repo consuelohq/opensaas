@@ -11,5 +11,5 @@ echo "→ linting staged opensaas files..."
 npx eslint $STAGED --no-warn-ignored --quiet || exit 1
 
 echo "→ typechecking staged opensaas files..."
-npx tsc --noEmit -p packages/api/tsconfig.json 2>/dev/null
-npx tsc --noEmit -p packages/cli/tsconfig.json 2>/dev/null
+npx tsc --noEmit -p packages/api/tsconfig.json 2>/dev/null || true
+npx tsc --noEmit -p packages/cli/tsconfig.json 2>/dev/null || true

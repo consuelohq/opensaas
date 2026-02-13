@@ -22939,6 +22939,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@twilio/voice-errors@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@twilio/voice-errors@npm:1.7.0"
+  checksum: 10c0/124fa6fa3b98ec95c18989d2091384245dbc0fb94899ac9bd2b738430c5af1645c566c71b436801722b2e2e4e021f3a54eb1a69eb47dd36cf0ff16baedd903f1
+  languageName: node
+  linkType: hard
+
+"@twilio/voice-sdk@npm:^2.12.1":
+  version: 2.18.0
+  resolution: "@twilio/voice-sdk@npm:2.18.0"
+  dependencies:
+    "@twilio/voice-errors": "npm:1.7.0"
+    "@types/events": "npm:^3.0.3"
+    events: "npm:3.3.0"
+    loglevel: "npm:1.9.2"
+    tslib: "npm:2.8.1"
+  checksum: 10c0/b9d7c0b575975a2413cd1a0afd3b8630b701ecf94d6da285fdb9fbe4df12ddd9ebf45b6f9a454a6ac5073930632da98a7e425814b61615531aa40d088d69e124
+  languageName: node
+  linkType: hard
+
 "@tybys/wasm-util@npm:^0.10.0":
   version: 0.10.0
   resolution: "@tybys/wasm-util@npm:0.10.0"
@@ -23454,6 +23474,13 @@ __metadata:
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
   checksum: 10c0/39d34d1afaa338ab9763f37ad6066e3f349444f9052b9676a7cc0252ef9485a41c6d81c9c4e0d26e9077993354edf25efc853f3224dd4b447175ef62bdcc86a5
+  languageName: node
+  linkType: hard
+
+"@types/events@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "@types/events@npm:3.0.3"
+  checksum: 10c0/3a56f8c51eb4ebc0d05dcadca0c6636c816acc10216ce36c976fad11e54a01f4bb979a07211355686015884753b37f17d74bfdc7aaf4ebb027c1e8a501c7b21d
   languageName: node
   linkType: hard
 
@@ -36501,7 +36528,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"events@npm:^3.0.0, events@npm:^3.2.0, events@npm:^3.3.0":
+"events@npm:3.3.0, events@npm:^3.0.0, events@npm:^3.2.0, events@npm:^3.3.0":
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: 10c0/d6b6f2adbccbcda74ddbab52ed07db727ef52e31a61ed26db9feb7dc62af7fc8e060defa65e5f8af9449b86b52cc1a1f6a79f2eafcf4e62add2b7a1fa4a432f6
@@ -44866,6 +44893,13 @@ __metadata:
     rfdc: "npm:^1.3.0"
     streamroller: "npm:^3.1.5"
   checksum: 10c0/05846e48f72d662800c8189bd178c42b4aa2f0c574cfc90a1942cf90b76f621c44019e26796c8fd88da1b6f0fe8272cba607cbaad6ae6ede50a7a096b58197ea
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:1.9.2":
+  version: 1.9.2
+  resolution: "loglevel@npm:1.9.2"
+  checksum: 10c0/1e317fa4648fe0b4a4cffef6de037340592cee8547b07d4ce97a487abe9153e704b98451100c799b032c72bb89c9366d71c9fb8192ada8703269263ae77acdc7
   languageName: node
   linkType: hard
 
@@ -58446,6 +58480,7 @@ __metadata:
     "@tiptap/extensions": "npm:3.4.2"
     "@tiptap/react": "npm:3.4.2"
     "@tiptap/suggestion": "npm:3.4.2"
+    "@twilio/voice-sdk": "npm:^2.12.1"
     "@types/apollo-upload-client": "npm:^17.0.2"
     "@types/file-saver": "npm:^2.0.7"
     "@types/js-cookie": "npm:^3.0.3"
