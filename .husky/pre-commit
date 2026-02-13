@@ -2,14 +2,28 @@
 # pre-commit: lint + typecheck staged opensaas .ts files
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^packages/(api|cli|dialer|coaching|contacts|analytics|sdk|metering|logger)/.*\.ts$' || true)
+STAGED_DIALER=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^packages/twenty-front/src/modules/dialer/.*\.ts$' || true)
 
-if [ -z "$STAGED" ]; then
+if [ -z "$STAGED" ] && [ -z "$STAGED_DIALER" ]; then
   exit 0
 fi
 
-echo "→ linting staged opensaas files..."
-npx eslint $STAGED --no-warn-ignored --quiet || exit 1
+if [ -n "$STAGED" ]; then
+  echo "→ linting staged opensaas files..."
+  npx eslint $STAGED --no-warn-ignored --quiet || exit 1
 
-echo "→ typechecking staged opensaas files..."
-npx tsc --noEmit -p packages/api/tsconfig.json 2>/dev/null || true
-npx tsc --noEmit -p packages/cli/tsconfig.json 2>/dev/null || true
+  echo "→ typechecking staged opensaas files..."
+  # pre-existing errors in api/cli — tracked in DEV-788
+  npx tsc --noEmit -p packages/api/tsconfig.json 2>/dev/null || true
+  npx tsc --noEmit -p packages/cli/tsconfig.json 2>/dev/null || true
+fi
+
+if [ -n "$STAGED_DIALER" ]; then
+  echo "→ typechecking dialer module..."
+  DIALER_ERRORS=$(npx tsc --noEmit -p packages/twenty-front/tsconfig.dialer.json 2>/dev/null | grep "modules/dialer/" || true)
+  if [ -n "$DIALER_ERRORS" ]; then
+    echo "$DIALER_ERRORS"
+    echo "❌ dialer typecheck failed"
+    exit 1
+  fi
+fi
