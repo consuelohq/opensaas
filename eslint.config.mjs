@@ -219,4 +219,30 @@ export default [
       'twenty/no-angle-bracket-placeholders': 'error',
     },
   },
+
+  // ── opensaas packages — stricter rules (DEV-710) ──────────────
+  {
+    files: [
+      'packages/api/**/*.ts',
+      'packages/cli/**/*.ts',
+      'packages/dialer/**/*.ts',
+      'packages/coaching/**/*.ts',
+      'packages/contacts/**/*.ts',
+      'packages/analytics/**/*.ts',
+      'packages/sdk/**/*.ts',
+      'packages/metering/**/*.ts',
+      'packages/logger/**/*.ts',
+    ],
+    rules: {
+      'no-console': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.property.name="query"] TemplateLiteral',
+          message: 'Use parameterized queries ($1, $2) — never template literals in .query()',
+        },
+      ],
+    },
+  },
 ];
