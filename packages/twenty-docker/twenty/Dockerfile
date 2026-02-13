@@ -70,8 +70,8 @@ COPY --chown=1000 --from=twenty-server-build /app/packages/twenty-server /app/pa
 COPY --chown=1000 --from=twenty-front-build /app/packages/twenty-front/build /app/packages/twenty-server/dist/front
 
 # Set metadata and labels
-LABEL org.opencontainers.image.source=https://github.com/twentyhq/twenty
-LABEL org.opencontainers.image.description="This image provides a consistent and reproducible environment for the backend and frontend, ensuring it deploys faster and runs the same way regardless of the deployment environment."
+LABEL org.opencontainers.image.source=https://github.com/consuelo/opensaas
+LABEL org.opencontainers.image.description="Consuelo — open-source sales infrastructure. CRM server and frontend in a single container."
 
 RUN mkdir -p /app/.local-storage /app/packages/twenty-server/.local-storage && \
     chown -R 1000:1000 /app
