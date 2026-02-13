@@ -195,7 +195,7 @@
     "yarn": ">=4.0.2"
   },
   "license": "AGPL-3.0",
-  "name": "twenty",
+  "name": "consuelo",
   "packageManager": "yarn@4.9.2",
   "resolutions": {
     "graphql": "16.8.1",
