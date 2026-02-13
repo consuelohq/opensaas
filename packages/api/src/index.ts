@@ -1,6 +1,10 @@
 // Middleware
 export { authMiddleware, rateLimitMiddleware, errorHandler } from './middleware/index.js';
 
+// Services
+export { StorageService } from './services/storage.js';
+export type { StorageConfig } from './services/storage.js';
+
 // Routes
 export {
   allRoutes,
@@ -8,6 +12,7 @@ export {
   callRoutes,
   coachingRoutes,
   contactRoutes,
+  fileRoutes,
   analyticsRoutes,
   webhookRoutes,
 } from './routes/index.js';

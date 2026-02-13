@@ -48,34 +48,49 @@ export class StorageService {
   }
 
   async getUploadUrl(key: string, contentType: string): Promise<string> {
-    const client = await this.getClient();
-    const { PutObjectCommand } = await import('@aws-sdk/client-s3');
-    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-    const command = new PutObjectCommand({
-      Bucket: this.config.bucket,
-      Key: key,
-      ContentType: contentType,
-    });
-    return getSignedUrl(client, command, { expiresIn: this.config.urlExpiry });
+    try {
+      const client = await this.getClient();
+      const { PutObjectCommand } = await import('@aws-sdk/client-s3');
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+      const command = new PutObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+        ContentType: contentType,
+      });
+      return getSignedUrl(client, command, { expiresIn: this.config.urlExpiry });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to generate upload URL';
+      throw new Error(message);
+    }
   }
 
   async getDownloadUrl(key: string): Promise<string> {
-    const client = await this.getClient();
-    const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-    const command = new GetObjectCommand({
-      Bucket: this.config.bucket,
-      Key: key,
-    });
-    return getSignedUrl(client, command, { expiresIn: this.config.urlExpiry });
+    try {
+      const client = await this.getClient();
+      const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+      const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+      const command = new GetObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      });
+      return getSignedUrl(client, command, { expiresIn: this.config.urlExpiry });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to generate download URL';
+      throw new Error(message);
+    }
   }
 
   async deleteObject(key: string): Promise<void> {
-    const client = await this.getClient();
-    const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
-    await client.send(new DeleteObjectCommand({
-      Bucket: this.config.bucket,
-      Key: key,
-    }));
+    try {
+      const client = await this.getClient();
+      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+      await client.send(new DeleteObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete object';
+      throw new Error(message);
+    }
   }
 }
