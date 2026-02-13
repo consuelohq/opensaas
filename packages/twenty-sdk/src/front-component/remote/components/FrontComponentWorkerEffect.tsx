@@ -7,7 +7,8 @@ import { createRemoteWorker } from '../worker/createRemoteWorker';
 
 type FrontComponentWorkerEffectProps = {
   componentUrl: string;
-  authToken: string;
+  applicationAccessToken?: string;
+  apiUrl?: string;
   frontComponentHostCommunicationApi: FrontComponentHostCommunicationApi;
   setReceiver: React.Dispatch<React.SetStateAction<RemoteReceiver | null>>;
   setThread: React.Dispatch<
@@ -21,7 +22,8 @@ type FrontComponentWorkerEffectProps = {
 
 export const FrontComponentWorkerEffect = ({
   componentUrl,
-  authToken,
+  applicationAccessToken,
+  apiUrl,
   frontComponentHostCommunicationApi,
   setReceiver,
   setThread,
@@ -58,7 +60,11 @@ export const FrontComponentWorkerEffect = ({
     setThread(thread);
 
     thread.imports
-      .render(newReceiver.connection, { componentUrl, authToken })
+      .render(newReceiver.connection, {
+        componentUrl,
+        applicationAccessToken,
+        apiUrl,
+      })
       .catch((error: Error) => {
         setError(error);
       });
@@ -69,7 +75,14 @@ export const FrontComponentWorkerEffect = ({
       setThread(null);
       worker.terminate();
     };
-  }, [componentUrl, authToken, setError, setReceiver, setThread]);
+  }, [
+    componentUrl,
+    applicationAccessToken,
+    apiUrl,
+    setError,
+    setReceiver,
+    setThread,
+  ]);
 
   return null;
 };
