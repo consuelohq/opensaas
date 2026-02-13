@@ -1,4 +1,4 @@
-# OpenSaaS API Dockerfile
+# opensaas API Dockerfile
 # Multi-stage build for optimized production image
 
 # Build stage
