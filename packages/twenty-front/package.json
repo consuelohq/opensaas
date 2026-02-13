@@ -70,6 +70,7 @@
     "@tiptap/extension-underline": "3.4.2",
     "@tiptap/extensions": "3.4.2",
     "@tiptap/react": "3.4.2",
+    "@twilio/voice-sdk": "^2.12.1",
     "@types/marked": "^6.0.0",
     "@xyflow/react": "^12.4.2",
     "ai": "5.0.52",
