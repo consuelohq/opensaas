@@ -33,7 +33,7 @@ services:
       retries: 10
 
   server:
-    image: ghcr.io/consuelo/opensaas:\${TAG:-latest}
+    image: ghcr.io/consuelohq/opensaas:\${TAG:-latest}
     volumes:
       - server-local-data:/app/packages/twenty-server/.local-storage
     ports:
@@ -61,7 +61,7 @@ services:
     restart: always
 
   worker:
-    image: ghcr.io/consuelo/opensaas:\${TAG:-latest}
+    image: ghcr.io/consuelohq/opensaas:\${TAG:-latest}
     volumes:
       - server-local-data:/app/packages/twenty-server/.local-storage
     command: ["yarn", "worker:prod"]
@@ -84,7 +84,7 @@ services:
     restart: always
 
   api:
-    image: ghcr.io/consuelo/opensaas-api:\${TAG:-latest}
+    image: ghcr.io/consuelohq/opensaas-api:\${TAG:-latest}
     restart: always
     depends_on:
       db:
