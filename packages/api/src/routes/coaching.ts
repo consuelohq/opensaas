@@ -51,7 +51,7 @@ export function coachingRoutes(): RouteDefinition[] {
         try {
           const result = await coach.analyzeCall(body.messages, {
             callSid: body.callSid,
-            userId: req.apiKeyContext?.userId,
+            userId: req.auth?.userId,
             phoneNumber: body.phoneNumber,
           });
           res.status(200).json(result);

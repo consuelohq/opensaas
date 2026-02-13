@@ -21,5 +21,11 @@
     "@consuelo/dialer": "^0.0.1",
     "@consuelo/logger": "*",
     "@sentry/node": "^10.38.0"
+  },
+  "peerDependencies": {
+    "jsonwebtoken": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.0"
   }
 }

@@ -23,7 +23,7 @@ export function contactRoutes(): RouteDefinition[] {
       method: 'GET',
       path: '/v1/contacts',
       handler: errorHandler(async (req, res) => {
-        const userId = req.apiKeyContext?.userId ?? '';
+        const userId = req.auth?.userId ?? '';
         const list = await contacts.list(userId);
         res.status(200).json({ contacts: list });
       }),
@@ -44,7 +44,7 @@ export function contactRoutes(): RouteDefinition[] {
           email: body.email,
           company: body.company,
           tags: body.tags,
-          userId: req.apiKeyContext?.userId,
+          userId: req.auth?.userId,
         });
         res.status(201).json({ contact });
       }),
@@ -59,7 +59,7 @@ export function contactRoutes(): RouteDefinition[] {
           return;
         }
         const query = String(q).trim();
-        const userId = req.apiKeyContext?.userId;
+        const userId = req.auth?.userId;
         const results = await contacts.search(query, userId);
         res.status(200).json({ contacts: results });
       }),
@@ -75,7 +75,7 @@ export function contactRoutes(): RouteDefinition[] {
         }
 
         const groqApiKey = process.env.GROQ_API_KEY ?? '';
-        const created = await contacts.importDocument(body.content, groqApiKey, req.apiKeyContext?.userId);
+        const created = await contacts.importDocument(body.content, groqApiKey, req.auth?.userId);
         res.status(200).json({ imported: created.length, contacts: created });
       }),
     },
