@@ -33,7 +33,7 @@ export function callRoutes(): RouteDefinition[] {
           const result = await dialer.dial({
             to: body.to,
             from: body.from ?? '',
-            userId: body.userId ?? req.apiKeyContext?.userId ?? '',
+            userId: body.userId ?? req.auth?.userId ?? '',
             statusCallbackUrl: body.statusCallbackUrl,
           });
 

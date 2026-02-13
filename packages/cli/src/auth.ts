@@ -13,7 +13,7 @@ export interface AuthResult {
   email: string;
 }
 
-/** Start local server, open browser to Clerk auth, wait for callback */
+/** Start local server, open browser to auth, wait for callback */
 export function authenticateHosted(): Promise<AuthResult> {
   return new Promise((resolve, reject) => {
     let timeout: ReturnType<typeof setTimeout>;

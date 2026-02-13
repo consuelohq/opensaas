@@ -1,22 +1,23 @@
 /** API configuration */
 export interface ApiConfig {
-  /** Function to validate an API key. Return user context or null. */
-  validateKey?: (key: string) => Promise<ApiKeyContext | null>;
   /** Rate limit: max requests per window */
   rateLimit?: { max: number; windowMs: number };
-}
-
-/** Context attached to an authenticated request */
-export interface ApiKeyContext {
-  userId: string;
-  orgId?: string;
-  mode: 'live' | 'test';
-  tier?: string;
 }
 
 /** Standard API error response */
 export interface ApiError {
   error: { code: string; message: string };
+}
+
+/**
+ * Context from a validated Twenty JWT access token.
+ * Populated by auth middleware on every authenticated request.
+ */
+export interface AuthContext {
+  userId: string;
+  workspaceId: string;
+  workspaceMemberId?: string;
+  userWorkspaceId: string;
 }
 
 /** Generic request abstraction */
@@ -28,7 +29,7 @@ export interface ApiRequest {
   query?: Record<string, string>;
   params?: Record<string, string>;
   /** Populated by auth middleware */
-  apiKeyContext?: ApiKeyContext;
+  auth?: AuthContext;
 }
 
 /** Generic response helpers */
