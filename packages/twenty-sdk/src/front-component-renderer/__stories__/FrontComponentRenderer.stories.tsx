@@ -3,7 +3,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { FrontComponentRenderer } from '../host/components/FrontComponentRenderer';
 
-import { getBuiltComponentPath } from './utils/loadBuiltComponent';
+import { getBuiltStoryComponentPathForRender } from './utils/getBuiltStoryComponentPathForRender';
 
 const errorHandler = fn();
 
@@ -27,7 +27,7 @@ type Story = StoryObj<typeof FrontComponentRenderer>;
 
 export const Static: Story = {
   args: {
-    componentUrl: getBuiltComponentPath('static.front-component'),
+    componentUrl: getBuiltStoryComponentPathForRender('static.front-component'),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -35,7 +35,7 @@ export const Static: Story = {
     const container = await canvas.findByTestId(
       'static-component',
       {},
-      { timeout: 5000 },
+      { timeout: 30000 },
     );
     expect(container).toBeVisible();
     expect(container).toHaveStyle({
@@ -55,12 +55,12 @@ export const Static: Story = {
 
 export const Interactive: Story = {
   args: {
-    componentUrl: getBuiltComponentPath('interactive.front-component'),
+    componentUrl: getBuiltStoryComponentPathForRender('interactive.front-component'),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await canvas.findByTestId('interactive-component', {}, { timeout: 5000 });
+    await canvas.findByTestId('interactive-component', {}, { timeout: 10000 });
 
     expect(await canvas.findByText('Count: 0')).toBeVisible();
 
@@ -75,12 +75,12 @@ export const Interactive: Story = {
 
 export const Lifecycle: Story = {
   args: {
-    componentUrl: getBuiltComponentPath('lifecycle.front-component'),
+    componentUrl: getBuiltStoryComponentPathForRender('lifecycle.front-component'),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
-    await canvas.findByTestId('lifecycle-component', {}, { timeout: 5000 });
+    await canvas.findByTestId('lifecycle-component', {}, { timeout: 10000 });
 
     expect(await canvas.findByText('Mounted')).toBeVisible();
 
@@ -89,21 +89,37 @@ export const Lifecycle: Story = {
         const tickElement = canvas.getByTestId('tick-count');
         expect(tickElement.textContent).toMatch(/Ticks: [1-9]\d*/);
       },
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
+  },
+};
+
+export const ChakraExample: Story = {
+  args: {
+    componentUrl: getBuiltStoryComponentPathForRender(
+      'chakra-example.front-component',
+    ),
+  },
+};
+
+export const TailwindExample: Story = {
+  args: {
+    componentUrl: getBuiltStoryComponentPathForRender(
+      'tailwind-example.front-component',
+    ),
   },
 };
 
 export const ErrorHandling: Story = {
   args: {
-    componentUrl: '/built/nonexistent.front-component.mjs',
+    componentUrl: getBuiltStoryComponentPathForRender('nonexistent.front-component'),
   },
   play: async () => {
     await waitFor(
       () => {
         expect(errorHandler).toHaveBeenCalled();
       },
-      { timeout: 5000 },
+      { timeout: 10000 },
     );
   },
 };

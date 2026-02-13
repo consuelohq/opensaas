@@ -3,7 +3,7 @@ import { RemoteReceiver } from '@remote-dom/core/receivers';
 import { useEffect, useRef } from 'react';
 import { type FrontComponentHostCommunicationApi } from '../../types/FrontComponentHostCommunicationApi';
 import { type WorkerExports } from '../../types/WorkerExports';
-import { createRemoteWorker } from '../worker/createRemoteWorker';
+import { createRemoteWorker } from '../worker/utils/createRemoteWorker';
 
 type FrontComponentWorkerEffectProps = {
   componentUrl: string;
@@ -41,7 +41,12 @@ export const FrontComponentWorkerEffect = ({
     const worker = createRemoteWorker();
 
     worker.onerror = (event: ErrorEvent) => {
-      setError(event.error);
+      const workerError =
+        event.error ??
+        new Error(event.message || 'Unknown worker error');
+
+      console.error('[FrontComponentRenderer] Worker error:', workerError);
+      setError(workerError);
     };
 
     // Expose host functions to the worker via stable refs to avoid recreating threads

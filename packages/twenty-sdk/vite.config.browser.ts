@@ -1,38 +1,38 @@
 import path from 'path';
+import { PackageJson } from 'type-fest';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import packageJson from './package.json';
-import { type PackageJson } from 'type-fest';
 
-const entries = [
-  'src/index.ts',
-  'src/cli/cli.ts',
-  'src/ui/index.ts',
-  'src/front-component/index.ts',
-];
+import packageJson from './package.json';
+
+
+const entries = ['src/ui/index.ts', 'src/front-component-renderer/index.ts'];
 
 const entryFileNames = (chunk: any, extension: 'cjs' | 'mjs') => {
   if (!chunk.isEntry) {
     throw new Error(
-      `Should never occurs, encountered a non entry chunk ${chunk.facadeModuleId}`,
+      `Should never occur, encountered a non-entry chunk ${chunk.facadeModuleId}`,
     );
   }
 
-  // Find which entry this chunk corresponds to
-  const entry = entries.find((e) => chunk.facadeModuleId?.endsWith(e));
-  if (!entry || entry === 'src/index.ts' || entry === 'src/cli/cli.ts') {
+  const entry = entries.find((entryPath) =>
+    chunk.facadeModuleId?.endsWith(entryPath),
+  );
+
+  if (!entry) {
     return `${chunk.name}.${extension}`;
   }
 
   // Remove 'src/' prefix and '/index.ts' suffix to get the module path
   const modulePath = entry.replace('src/', '').replace('/index.ts', '');
+
   return `${modulePath}/index.${extension}`;
 };
 
 export default defineConfig(() => {
   return {
     root: __dirname,
-    cacheDir: '../../node_modules/.vite/packages/twenty-sdk',
+    cacheDir: '../../node_modules/.vite/packages/twenty-sdk-browser',
     resolve: {
       alias: {
         '@/': path.resolve(__dirname, 'src') + '/',
@@ -61,11 +61,11 @@ export default defineConfig(() => {
       ],
     },
     build: {
+      emptyOutDir: false,
       outDir: 'dist',
       lib: { entry: entries, name: 'twenty-sdk' },
       rollupOptions: {
         onwarn: (warning, warn) => {
-          // Suppress "use client" directive warnings from framer-motion
           if (
             warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
             warning.message.includes('"use client"')
@@ -75,26 +75,6 @@ export default defineConfig(() => {
           warn(warning);
         },
         external: (id: string) => {
-          if (/^node:/.test(id)) {
-            return true;
-          }
-
-          const builtins = [
-            'path',
-            'fs',
-            'fs/promises',
-            'url',
-            'crypto',
-            'stream',
-            'util',
-            'os',
-            'module',
-          ];
-
-          if (builtins.includes(id)) {
-            return true;
-          }
-
           const deps = Object.entries(
             (packageJson as PackageJson).dependencies || {},
           ).filter(([_, version]) => !version?.startsWith('workspace:'));
@@ -119,16 +99,5 @@ export default defineConfig(() => {
       },
     },
     logLevel: 'warn',
-    optimizeDeps: {
-      include: [
-        '@remote-dom/core/polyfill',
-        '@remote-dom/react/polyfill',
-        '@remote-dom/core/elements',
-        '@remote-dom/react',
-        '@remote-dom/react/host',
-        'react-dom/client',
-        'react/jsx-runtime',
-      ],
-    },
   };
 });

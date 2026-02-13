@@ -1,9 +1,9 @@
-import { FrontComponentErrorEffect } from '@/front-component/remote/components/FrontComponentErrorEffect';
-import { FrontComponentHostCommunicationApiEffect } from '@/front-component/remote/components/FrontComponentHostCommunicationApiEffect';
-import { FrontComponentUpdateContextEffect } from '@/front-component/remote/components/FrontComponentUpdateContextEffect';
-import { type FrontComponentExecutionContext } from '@/front-component/types/FrontComponentExecutionContext';
-import { type FrontComponentHostCommunicationApi } from '@/front-component/types/FrontComponentHostCommunicationApi';
-import { type WorkerExports } from '@/front-component/types/WorkerExports';
+import { FrontComponentErrorEffect } from '@/front-component-renderer/remote/components/FrontComponentErrorEffect';
+import { FrontComponentHostCommunicationApiEffect } from '@/front-component-renderer/remote/components/FrontComponentHostCommunicationApiEffect';
+import { FrontComponentUpdateContextEffect } from '@/front-component-renderer/remote/components/FrontComponentUpdateContextEffect';
+import { type FrontComponentExecutionContext } from '@/front-component-renderer/types/FrontComponentExecutionContext';
+import { type FrontComponentHostCommunicationApi } from '@/front-component-renderer/types/FrontComponentHostCommunicationApi';
+import { type WorkerExports } from '@/front-component-renderer/types/WorkerExports';
 import { type ThreadWebWorker } from '@quilted/threads';
 import {
   type RemoteReceiver,
@@ -70,7 +70,26 @@ export const FrontComponentRenderer = ({
       {MemoizedFrontComponentWorkerEffect}
 
       {isDefined(error) && (
-        <FrontComponentErrorEffect error={error} onError={onError} />
+        <>
+          <FrontComponentErrorEffect error={error} onError={onError} />
+          <div
+            style={{
+              padding: '12px 16px',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '6px',
+              color: '#991b1b',
+              fontFamily: 'monospace',
+              fontSize: '13px',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              maxHeight: '200px',
+              overflow: 'auto',
+            }}
+          >
+            <strong>FrontComponent error:</strong> {error.message}
+          </div>
+        </>
       )}
 
       {isDefined(thread) && (
