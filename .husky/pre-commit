@@ -1,0 +1,15 @@
+#!/bin/sh
+# pre-commit: lint + typecheck staged opensaas .ts files
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^packages/(api|cli|dialer|coaching|contacts|analytics|sdk|metering|logger)/.*\.ts$' || true)
+
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+echo "→ linting staged opensaas files..."
+npx eslint $STAGED --no-warn-ignored --quiet || exit 1
+
+echo "→ typechecking staged opensaas files..."
+npx tsc --noEmit -p packages/api/tsconfig.json 2>/dev/null
+npx tsc --noEmit -p packages/cli/tsconfig.json 2>/dev/null

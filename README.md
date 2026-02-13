@@ -1,135 +1,128 @@
 <p align="center">
-  <a href="https://www.twenty.com">
-    <img src="./packages/twenty-website/public/images/core/logo.svg" width="100px" alt="Twenty logo" />
-  </a>
+  <img src="./packages/twenty-website/public/images/core/logo.svg" width="100px" alt="Consuelo" />
 </p>
 
-<h2 align="center" >The #1 Open-Source CRM </h2>
+<h2 align="center">Consuelo — Open-Source Sales Infrastructure</h2>
 
-<p align="center"><a href="https://twenty.com">🌐 Website</a> · <a href="https://docs.twenty.com">📚 Documentation</a> · <a href="https://github.com/orgs/twentyhq/projects/1"><img src="./packages/twenty-website/public/images/readme/planner-icon.svg" width="12" height="12"/> Roadmap </a> · <a href="https://discord.gg/cx5n4Jzs57"><img src="./packages/twenty-website/public/images/readme/discord-icon.svg" width="12" height="12"/> Discord</a> · <a href="https://www.figma.com/file/xt8O9mFeLl46C5InWwoMrN/Twenty"><img src="./packages/twenty-website/public/images/readme/figma-icon.png"  width="12" height="12"/>  Figma</a></p>
-<br />
+<p align="center">CRM + Dialer + AI Coaching — built on a <a href="https://github.com/twentyhq/twenty">Twenty</a> fork</p>
 
+---
 
-<p align="center">
-  <a href="https://www.twenty.com">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/github-cover-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/github-cover-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/github-cover-light.png" alt="Cover" />
-    </picture>
-  </a>
-</p>
+## What Is This?
 
-<br />
+Consuelo is an open-source sales platform. This repo is a fork of [Twenty CRM](https://twenty.com) with an embedded dialer sidebar, real-time AI coaching, and composable backend packages (`@consuelo/*`).
 
-# Installation
+**opensaas packages** (in `packages/`):
 
-See:
-🚀 [Self-hosting](https://docs.twenty.com/developers/self-hosting/docker-compose)
-🖥️ [Local Setup](https://docs.twenty.com/developers/local-setup)
+| Package | Description |
+|---------|-------------|
+| `api` | REST API layer — route definitions, auth middleware |
+| `cli` | `consuelo` CLI tool |
+| `dialer` | Twilio-based calling (local presence, parallel dialing) |
+| `coaching` | AI coaching via Groq/OpenAI (real-time + post-call) |
+| `contacts` | Contact management, CSV import, phone normalization |
+| `analytics` | Call analytics and metrics |
+| `sdk` | Unified SDK entry point |
+| `metering` | Usage tracking and rate limiting |
+| `logger` | Structured logging |
 
-# Does the world need another CRM?
+## Prerequisites
 
-We built Twenty for three reasons:
+- Node.js 24+ (`engines.node: ^24.5.0`)
+- Yarn 4+ (via corepack: `corepack enable`)
+- Docker + Docker Compose (for Postgres + Redis)
+- Git
 
-**CRMs are too expensive, and users are trapped.** Companies use locked-in customer data to hike prices. It shouldn't be that way.
+## Local Development
 
-**A fresh start is required to build a better experience.** We can learn from past mistakes and craft a cohesive experience inspired by new UX patterns from tools like Notion, Airtable or Linear.
+```bash
+# 1. clone and install
+git clone https://github.com/consuelohq/opensaas.git
+cd opensaas
+corepack enable
+yarn install
 
-**We believe in Open-source and community.** Hundreds of developers are already building Twenty together. Once we have plugin capabilities, a whole ecosystem will grow around it.
+# 2. copy env and fill in values
+cp .env.example .env
+# at minimum set: APP_SECRET, PG_DATABASE_* vars
 
-<br />
+# 3. start infrastructure (postgres + redis)
+docker compose up db redis -d
 
-# What You Can Do With Twenty
+# 4. start the CRM (frontend + backend + worker)
+yarn start
+# → frontend: http://localhost:3001 (Vite, HMR enabled)
+# → backend:  http://localhost:3000 (NestJS)
+```
 
-Please feel free to flag any specific needs you have by creating an issue.
+The `start` script runs Twenty's frontend and backend concurrently via nx. Vite handles frontend hot-reload (HMR). The NestJS backend uses `ts-node` with watch mode for auto-restart on changes.
 
-Below are a few features we have implemented to date:
+### Individual packages
 
-+ [Personalize layouts with filters, sort, group by, kanban and table views](#personalize-layouts-with-filters-sort-group-by-kanban-and-table-views)
-+ [Customize your objects and fields](#customize-your-objects-and-fields)
-+ [Create and manage permissions with custom roles](#create-and-manage-permissions-with-custom-roles)
-+ [Automate workflow with triggers and actions](#automate-workflow-with-triggers-and-actions)
-+ [Emails, calendar events, files, and more](#emails-calendar-events-files-and-more)
+```bash
+# run a specific twenty package
+npx nx start twenty-front
+npx nx start twenty-server
 
+# run the worker separately
+npx nx run twenty-server:worker
+```
 
-## Personalize layouts with filters, sort, group by, kanban and table views
+## Environment Variables
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/views-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/views-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/views-light.png" alt="Companies Kanban Views" />
-    </picture>
-</p>
+See [`.env.example`](.env.example) for the full list. Key variables:
 
-## Customize your objects and fields
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `APP_SECRET` | Yes | JWT signing key (see [AUTH.md](AUTH.md)) |
+| `PG_DATABASE_*` | Yes | Postgres connection |
+| `REDIS_URL` | Yes | Redis connection |
+| `AUTH_GOOGLE_CLIENT_ID` | No | Google OAuth |
+| `TWILIO_ACCOUNT_SID` | No | Twilio for dialer |
+| `GROQ_API_KEY` | No | AI coaching |
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/data-model-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/data-model-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/data-model-light.png" alt="Setting Custom Objects" />
-    </picture>
-</p>
+## Auth
 
-## Create and manage permissions with custom roles
+Single auth system — Twenty's built-in JWT auth. No Clerk, no separate provider. See [AUTH.md](AUTH.md) for the full documentation (token format, secret derivation, refresh flow, middleware).
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/permissions-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/permissions-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/permissions-light.png" alt="Permissions" />
-    </picture>
-</p>
+## Code Quality
 
-## Automate workflow with triggers and actions
+### ESLint
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/workflows-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/workflows-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/workflows-light.png" alt="Workflows" />
-    </picture>
-</p>
+Twenty's ESLint config applies globally. opensaas packages (`packages/api`, `packages/cli`, etc.) have stricter overrides:
 
-## Emails, calendar events, files, and more
+- `no-console: 'error'` — use structured logger
+- `@typescript-eslint/no-explicit-any: 'warn'`
+- SQL parameterization enforced (no template literals in `.query()`)
 
-<p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/plus-other-features-dark.png" />
-      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-website/public/images/readme/plus-other-features-light.png" />
-      <img src="./packages/twenty-website/public/images/readme/plus-other-features-light.png" alt="Other Features" />
-    </picture>
-</p>
+### TypeScript
 
-<br />
+All opensaas packages use `strict: true`. Twenty packages have their own strict settings.
 
-# Stack
-- [TypeScript](https://www.typescriptlang.org/)
-- [Nx](https://nx.dev/)
-- [NestJS](https://nestjs.com/), with [BullMQ](https://bullmq.io/), [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/)
-- [React](https://reactjs.org/), with [Recoil](https://recoiljs.org/), [Emotion](https://emotion.sh/) and [Lingui](https://lingui.dev/)
+### Git Hooks (Husky)
 
+- **pre-commit** — lints and typechecks staged opensaas `.ts` files
+- **pre-push** — runs `scripts/code-review.sh` (13 mandatory checks from [CODING-STANDARDS.md](CODING-STANDARDS.md))
 
+### Commit Format
 
-# Thanks
+```
+type(scope): description
+```
 
-<p align="center">
-  <a href="https://www.chromatic.com/"><img src="./packages/twenty-website/public/images/readme/chromatic.png" height="30" alt="Chromatic" /></a>
-  <a href="https://greptile.com"><img src="./packages/twenty-website/public/images/readme/greptile.png" height="30" alt="Greptile" /></a>
-  <a href="https://sentry.io/"><img src="./packages/twenty-website/public/images/readme/sentry.png" height="30" alt="Sentry" /></a>
-  <a href="https://crowdin.com/"><img src="./packages/twenty-website/public/images/readme/crowdin.png" height="30" alt="Crowdin" /></a>
-</p>
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
+Scopes: `cli`, `api`, `dialer`, `coaching`, `contacts`, `analytics`, `sdk`, `metering`, `logger`
 
-  Thanks to these amazing services that we use and recommend for UI testing (Chromatic), code review (Greptile), catching bugs (Sentry) and translating (Crowdin).
+Bot commits use: `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
 
+## Contributing
 
-# Join the Community
+1. Fork the repo
+2. Create a feature branch from `twenty-fork`
+3. Make your changes (follow [CODING-STANDARDS.md](CODING-STANDARDS.md))
+4. Push — pre-push hooks will run the 13 code review checks
+5. Open a PR
 
-- Star the repo
-- Subscribe to releases (watch -> custom -> releases)
-- Follow us on [Twitter](https://twitter.com/twentycrm) or [LinkedIn](https://www.linkedin.com/company/twenty/)
-- Join our [Discord](https://discord.gg/cx5n4Jzs57)
-- Improve translations on [Crowdin](https://twenty.crowdin.com/twenty)
-- [Contributions](https://github.com/twentyhq/twenty/contribute) are, of course, most welcome!
+## License
+
+Same as [Twenty](https://github.com/twentyhq/twenty) — AGPL-3.0.

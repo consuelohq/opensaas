@@ -164,6 +164,7 @@
     "eslint-plugin-unicorn": "^56.0.1",
     "eslint-plugin-unused-imports": "^3.0.0",
     "http-server": "^14.1.1",
+    "husky": "^9.1.7",
     "jest": "29.7.0",
     "jest-environment-jsdom": "30.0.0-beta.3",
     "jest-environment-node": "^29.4.1",
@@ -213,7 +214,8 @@
     "docs:generate": "tsx packages/twenty-docs/scripts/generate-docs-json.ts",
     "docs:generate-navigation-template": "tsx packages/twenty-docs/scripts/generate-navigation-template.ts",
     "docs:generate-paths": "tsx packages/twenty-docs/scripts/generate-documentation-paths.ts",
-    "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'"
+    "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",
+    "prepare": "husky"
   },
   "workspaces": {
     "packages": [
