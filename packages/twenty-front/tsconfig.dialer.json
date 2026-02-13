@@ -1,4 +1,8 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/modules/dialer/**/*.ts", "src/modules/dialer/**/*.tsx"]
+  "include": [
+    "src/modules/dialer/**/*.ts",
+    "src/modules/dialer/**/*.tsx",
+    "src/emotion.d.ts"
+  ]
 }
