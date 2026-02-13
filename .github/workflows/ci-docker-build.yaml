@@ -10,7 +10,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: consuelo/opensaas
+  IMAGE_NAME: consuelohq/opensaas
 
 jobs:
   build-and-push:
