@@ -1637,6 +1637,15 @@ export type FilesConfiguration = {
   configurationType: WidgetConfigurationType;
 };
 
+export type FilesFieldFile = {
+  __typename?: 'FilesFieldFile';
+  createdAt: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  path: Scalars['String'];
+  size: Scalars['Float'];
+  url: Scalars['String'];
+};
+
 export type FindAvailableSsoidpOutput = {
   __typename?: 'FindAvailableSSOIDPOutput';
   id: Scalars['UUID'];
@@ -2287,7 +2296,7 @@ export type Mutation = {
   uploadApplicationFile: File;
   /** @deprecated Use uploadFilesFieldFile instead */
   uploadFile: SignedFile;
-  uploadFilesFieldFile: File;
+  uploadFilesFieldFile: FilesFieldFile;
   uploadImage: SignedFile;
   uploadWorkspaceLogo: SignedFile;
   uploadWorkspaceMemberProfilePicture: SignedFile;
@@ -5688,7 +5697,7 @@ export type UploadFilesFieldFileMutationVariables = Exact<{
 }>;
 
 
-export type UploadFilesFieldFileMutation = { __typename?: 'Mutation', uploadFilesFieldFile: { __typename?: 'File', id: string, path: string, size: number, createdAt: string } };
+export type UploadFilesFieldFileMutation = { __typename?: 'Mutation', uploadFilesFieldFile: { __typename?: 'FilesFieldFile', id: string, path: string, size: number, createdAt: string, url: string } };
 
 export type LogicFunctionFieldsFragment = { __typename?: 'LogicFunction', id: string, name: string, description?: string | null, runtime: string, timeoutSeconds: number, sourceHandlerPath: string, handlerName: string, toolInputSchema?: any | null, isTool: boolean, applicationId?: string | null, createdAt: string, updatedAt: string };
 
@@ -10314,6 +10323,7 @@ export const UploadFilesFieldFileDocument = gql`
     path
     size
     createdAt
+    url
   }
 }
     `;
