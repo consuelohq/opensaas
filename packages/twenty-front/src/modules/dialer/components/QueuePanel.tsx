@@ -6,10 +6,12 @@ import {
   IconPhoneCall,
   IconSettings,
   IconUser,
+  IconX,
 } from '@tabler/icons-react';
 
 import { type CallQueue, type QueueSettings } from '@/dialer/types/queue';
 import { QueueControls } from '@/dialer/components/QueueControls';
+import { useAutoDialer } from '@/dialer/hooks/useAutoDialer';
 import {
   activeQueueState,
   currentQueueItemSelector,
@@ -269,6 +271,36 @@ const StyledNumberInput = styled.input`
   text-align: right;
 `;
 
+const StyledCountdown = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
+  background: ${({ theme }) => theme.background.secondary};
+  border-top: 1px solid ${({ theme }) => theme.border.color.light};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  color: ${({ theme }) => theme.font.color.secondary};
+`;
+
+const StyledCountdownNumber = styled.span`
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  color: ${({ theme }) => theme.font.color.primary};
+  min-width: 20px;
+  text-align: center;
+`;
+
+const StyledCancelButton = styled.button`
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  &:hover {
+    color: ${({ theme }) => theme.font.color.primary};
+  }
+`;
+
 // endregion
 
 // sub-components
@@ -382,6 +414,18 @@ const QueueSettingsModal = ({
               onChange={(e) => update('autoSkipVoicemail', e.target.checked)}
             />
           </StyledSettingRow>
+          {settings.autoSkipVoicemail && (
+            <StyledSettingRow>
+              Voicemail skip delay (ms)
+              <StyledNumberInput
+                type="number"
+                value={settings.voicemailSkipDelay}
+                onChange={(e) =>
+                  update('voicemailSkipDelay', Number(e.target.value))
+                }
+              />
+            </StyledSettingRow>
+          )}
           <StyledSettingRow>
             Parallel dialing
             <input
@@ -393,16 +437,28 @@ const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           {settings.parallelDialingEnabled && (
-            <StyledSettingRow>
-              Max parallel lines
-              <StyledNumberInput
-                type="number"
-                value={settings.parallelDialingMaxLines}
-                onChange={(e) =>
-                  update('parallelDialingMaxLines', Number(e.target.value))
-                }
-              />
-            </StyledSettingRow>
+            <>
+              <StyledSettingRow>
+                Max parallel lines
+                <StyledNumberInput
+                  type="number"
+                  value={settings.parallelDialingMaxLines}
+                  onChange={(e) =>
+                    update('parallelDialingMaxLines', Number(e.target.value))
+                  }
+                />
+              </StyledSettingRow>
+              <StyledSettingRow>
+                Cooldown between batches (ms)
+                <StyledNumberInput
+                  type="number"
+                  value={settings.parallelDialingCooldown}
+                  onChange={(e) =>
+                    update('parallelDialingCooldown', Number(e.target.value))
+                  }
+                />
+              </StyledSettingRow>
+            </>
           )}
         </StyledModalBody>
         <StyledModalActions>
@@ -424,6 +480,7 @@ export const QueuePanel = () => {
   const nextItem = useRecoilValue(nextQueueItemSelector);
   const progress = useRecoilValue(queueProgressSelector);
   const [showSettings, setShowSettings] = useState(false);
+  const { countdown, cancelAutoAdvance, isAutoAdvancing } = useAutoDialer();
 
   if (!queue) return null;
 
@@ -521,6 +578,16 @@ export const QueuePanel = () => {
           </>
         )}
       </StyledBody>
+
+      {/* auto-advance countdown */}
+      {isAutoAdvancing && (
+        <StyledCountdown>
+          Next call in <StyledCountdownNumber>{countdown}</StyledCountdownNumber>s
+          <StyledCancelButton onClick={cancelAutoAdvance} aria-label="Cancel auto-advance">
+            <IconX size={14} />
+          </StyledCancelButton>
+        </StyledCountdown>
+      )}
 
       {/* controls */}
       <QueueControls />
