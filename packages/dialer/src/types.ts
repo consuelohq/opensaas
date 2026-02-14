@@ -172,3 +172,69 @@ export interface TwimlParams {
   from: string;
   conferenceName?: string;
 }
+
+// --- Parallel dialing types ---
+
+/** Parallel dial group lifecycle */
+export type ParallelGroupStatus = 'dialing' | 'connected' | 'completed' | 'failed';
+
+/** AMD (answering machine detection) result */
+export type AmdResult = 'human' | 'machine' | 'unknown';
+
+/** Single call within a parallel group */
+export interface ParallelCall {
+  callSid: string;
+  customerNumber: string;
+  fromNumber: string;
+  position: number;
+  status: string;
+  amdResult?: AmdResult;
+  contactId?: string;
+}
+
+/** Full parallel dial group state (stored in redis) */
+export interface ParallelGroup {
+  groupId: string;
+  conferenceName: string;
+  status: ParallelGroupStatus;
+  winnerSid: string | null;
+  calls: ParallelCall[];
+  queueId: string;
+  userId: string;
+  createdAt: string;
+}
+
+/** Options for initiating a parallel dial batch */
+export interface ParallelDialOptions {
+  customerNumbers: string[];
+  queueId: string;
+  contactIds?: string[];
+  userId: string;
+  fromNumbers: string[];
+  statusCallbackUrl: string;
+  customerTwimlUrl: string;
+}
+
+/** Result of initiating a parallel dial batch */
+export interface ParallelDialResult {
+  groupId: string;
+  conferenceName: string;
+  calls: Array<{
+    callSid: string;
+    customerNumber: string;
+    fromNumber: string;
+    position: number;
+    status: 'dialing';
+  }>;
+}
+
+/** Storage interface for parallel dial state (redis in prod, in-memory for dev) */
+export interface ParallelStore {
+  setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void>;
+  getGroup(groupId: string): Promise<string | null>;
+  setCallMapping(callSid: string, groupId: string, ttlSeconds: number): Promise<void>;
+  getCallMapping(callSid: string): Promise<string | null>;
+  setWinnerIfAbsent(groupId: string, callSid: string, ttlSeconds: number): Promise<boolean>;
+  getWinner(groupId: string): Promise<string | null>;
+  deleteGroup(groupId: string): Promise<void>;
+}

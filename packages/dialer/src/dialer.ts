@@ -10,11 +10,13 @@ import type {
   TransferOptions,
   TransferResult,
   ConferenceParticipant,
+  ParallelStore,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
 import { LocalPresenceService, type NumberPool } from './services/local-presence.js';
 import type { CallerIdLockService } from './services/caller-id.js';
 import { ConferenceService } from './services/conference.js';
+import { ParallelDialerService, InMemoryParallelStore } from './services/parallel-dialer.js';
 
 /**
  * Main Dialer class — the public API for @consuelo/dialer.
@@ -34,14 +36,16 @@ export class Dialer {
   readonly provider: DialerProvider;
   readonly localPresence: LocalPresenceService;
   readonly conference: ConferenceService;
+  readonly parallel: ParallelDialerService;
   private callerIdLock?: CallerIdLockService;
   private config: DialerConfig;
 
-  constructor(config: DialerConfig = {}) {
+  constructor(config: DialerConfig = {}, parallelStore?: ParallelStore) {
     this.config = config;
     this.provider = new TwilioProvider(config.credentials);
     this.localPresence = new LocalPresenceService();
     this.conference = new ConferenceService(config.credentials);
+    this.parallel = new ParallelDialerService(config.credentials, parallelStore ?? new InMemoryParallelStore());
   }
 
   /** Attach a caller ID lock service (optional, for concurrent call protection) */
