@@ -5,6 +5,7 @@ import { captureError } from '../sentry.js';
 
 interface HistoryEntry {
   callSid: string;
+  contactId?: string;
   contactName?: string;
   to: string;
   from: string;
@@ -23,10 +24,13 @@ interface TranscriptSegment {
 
 interface HistoryDetail extends HistoryEntry {
   recordingUrl?: string;
+  transcriptUrl?: string;
   transcript?: TranscriptSegment[];
   notes?: string;
   tags?: string[];
   coachingScore?: number;
+  queueId?: string;
+  transferredTo?: string;
 }
 
 interface HistoryStats {
@@ -38,6 +42,7 @@ interface HistoryStats {
   avgDuration: number;
   connectRate: number;
   outcomes: { answered: number; noAnswer: number; busy: number; failed: number; voicemail: number };
+  byDay?: Array<{ date: string; calls: number; duration: number; connectRate: number }>;
 }
 
 const formatDuration = (seconds: number): string => {
@@ -54,6 +59,16 @@ const formatTimestamp = (seconds: number): string => {
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
 };
+
+const historyErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
+  const code = (data as { error?: { code?: string } })?.error?.code;
+  if (code === 'CALL_NOT_FOUND') return `call not found: ${ctx.callId ?? 'unknown'}`;
+  return null;
+};
+
+const validPeriods = new Set(['day', 'week', 'month']);
+
+const isValidDate = (value: string): boolean => !isNaN(Date.parse(value));
 
 export const registerHistory = (program: Command): void => {
   const history = program
@@ -87,6 +102,9 @@ const handle501 = (status: number): boolean => {
 
 const historyList = async (opts: { limit: string; from?: string; to?: string; outcome?: string }): Promise<void> => {
   try {
+    if (opts.from && !isValidDate(opts.from)) { error(`invalid date: ${opts.from}`); process.exit(1); }
+    if (opts.to && !isValidDate(opts.to)) { error(`invalid date: ${opts.to}`); process.exit(1); }
+
     const query: Record<string, string> = { limit: opts.limit };
     if (opts.from) query.from = opts.from;
     if (opts.to) query.to = opts.to;
@@ -122,7 +140,11 @@ const historyGet = async (callId: string): Promise<void> => {
   try {
     const res = await apiGet<{ call: HistoryDetail }>(`/v1/history/${callId}`);
     handle501(res.status);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = historyErrorMessage(res.data, { callId });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
@@ -136,8 +158,11 @@ const historyGet = async (callId: string): Promise<void> => {
     log(`started:    ${c.startedAt}`);
     log(`ended:      ${c.endedAt}`);
     if (c.recordingUrl) log(`recording:  ${c.recordingUrl}`);
+    if (c.transcriptUrl) log(`transcript: ${c.transcriptUrl}`);
     if (c.coachingScore !== undefined) log(`coaching:   ${c.coachingScore}/100`);
     if (c.notes) log(`notes:      ${c.notes}`);
+    if (c.queueId) log(`queue:      ${c.queueId}`);
+    if (c.transferredTo) log(`transferred: ${c.transferredTo}`);
 
     if (c.transcript?.length) {
       log('\ntranscript:');
@@ -154,6 +179,10 @@ const historyGet = async (callId: string): Promise<void> => {
 
 const historyStats = async (opts: { period: string; from?: string; to?: string }): Promise<void> => {
   try {
+    if (!validPeriods.has(opts.period)) { error(`invalid period: ${opts.period} — use day, week, or month`); process.exit(1); }
+    if (opts.from && !isValidDate(opts.from)) { error(`invalid date: ${opts.from}`); process.exit(1); }
+    if (opts.to && !isValidDate(opts.to)) { error(`invalid date: ${opts.to}`); process.exit(1); }
+
     const query: Record<string, string> = { period: opts.period };
     if (opts.from) query.from = opts.from;
     if (opts.to) query.to = opts.to;
