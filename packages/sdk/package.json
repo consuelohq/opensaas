@@ -12,10 +12,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@consuelo/dialer": "*",
-    "@consuelo/coaching": "*",
     "@consuelo/analytics": "*",
-    "@consuelo/contacts": "*"
+    "@consuelo/coaching": "*",
+    "@consuelo/contacts": "*",
+    "@consuelo/dialer": "*"
   },
   "license": "MIT",
   "publishConfig": {

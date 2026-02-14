@@ -233,7 +233,17 @@
       "packages/twenty-apps",
       "packages/twenty-cli",
       "packages/create-twenty-app",
-      "packages/twenty-eslint-rules"
+      "packages/twenty-eslint-rules",
+      "packages/analytics",
+      "packages/api",
+      "packages/cli",
+      "packages/coaching",
+      "packages/contacts",
+      "packages/dialer",
+      "packages/logger",
+      "packages/metering",
+      "packages/sdk",
+      "packages/workspace"
     ]
   },
   "prettier": {
