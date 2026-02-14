@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS knowledge_chunks (
 );
 
 -- ivfflat for approximate nearest neighbor on embeddings
+-- NOTE: ivfflat defaults to 100 lists, which is fine for <100k rows.
+-- creating on an empty table means empty lists — run REINDEX after initial
+-- data load, or consider switching to hnsw (no data-dependent build).
 CREATE INDEX idx_chunks_embedding ON knowledge_chunks USING ivfflat (embedding vector_cosine_ops);
 CREATE INDEX idx_chunks_collection ON knowledge_chunks(collection_id);
 CREATE INDEX idx_chunks_file ON knowledge_chunks(file_id);
