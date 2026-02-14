@@ -4,6 +4,7 @@ export interface TalkingPoints {
   product_or_option_name: string | null;
   details: string[];
   clarifying_questions: string[];
+  objection_responses: Array<{ objection: string; response: string }>;
 }
 
 export interface TranscriptEntry {

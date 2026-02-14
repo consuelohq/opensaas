@@ -11,6 +11,7 @@ import { PostCallSummary } from '@/dialer/components/PostCallSummary';
 import { QuickActions } from '@/dialer/components/QuickActions';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
 import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
+import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
@@ -70,6 +71,7 @@ export const DialerSidebar = () => {
   const { isLoading, talkingPoints } = useCoaching();
   const { transcript, isConnected } = useTranscript();
   const { analysis, isAnalyzing } = usePostCallAnalysis();
+  useResetCoachingState();
 
   return (
     <StyledSidebar isOpen={isOpen}>
