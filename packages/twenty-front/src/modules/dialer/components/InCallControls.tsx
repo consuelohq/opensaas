@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   IconCheck,
@@ -16,6 +16,7 @@ import {
 import { DialPad } from '@/dialer/components/DialPad';
 import { TransferModal } from '@/dialer/components/TransferModal';
 import { useCallTransfer } from '@/dialer/hooks/useCallTransfer';
+import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isMutedState } from '@/dialer/states/isMutedState';
@@ -173,33 +174,15 @@ export const InCallControls = () => {
     [initiateTransfer],
   );
 
-  // keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLInputElement) return;
-      if (event.target instanceof HTMLTextAreaElement) return;
-
-      switch (event.key.toLowerCase()) {
-        case 'm':
-          handleMuteToggle();
-          break;
-        case 'h':
-          handleHoldToggle();
-          break;
-        case 'escape':
-          if (isTransferOpen) {
-            setIsTransferOpen(false);
-          } else {
-            handleEndCall();
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleMuteToggle, handleHoldToggle, handleEndCall, isTransferOpen]);
+  // keyboard shortcuts via twenty's hotkey system
+  useDialerHotkeys({
+    onMuteToggle: handleMuteToggle,
+    onHoldToggle: handleHoldToggle,
+    onTransferToggle: handleTransferToggle,
+    onEndCall: isTransferOpen
+      ? () => setIsTransferOpen(false)
+      : handleEndCall,
+  });
 
   if (!VISIBLE_STATUSES.has(callState.status)) return null;
 
