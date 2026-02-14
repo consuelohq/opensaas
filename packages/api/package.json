@@ -25,9 +25,13 @@
   "peerDependencies": {
     "@aws-sdk/client-s3": ">=3.0.0",
     "@aws-sdk/s3-request-presigner": ">=3.0.0",
-    "jsonwebtoken": ">=9.0.0"
+    "jsonwebtoken": ">=9.0.0",
+    "openai": ">=4.0.0",
+    "pdf-parse": ">=1.1.1",
+    "pg": ">=8.0.0"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.0"
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/pg": "^8.0.0"
   }
 }

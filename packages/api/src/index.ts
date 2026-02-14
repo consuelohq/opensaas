@@ -4,6 +4,18 @@ export { authMiddleware, rateLimitMiddleware, errorHandler } from './middleware/
 // Services
 export { StorageService } from './services/storage.js';
 export type { StorageConfig } from './services/storage.js';
+export { KnowledgeService, KnowledgeError } from './services/knowledge.js';
+export type {
+  KnowledgeCollection,
+  KnowledgeChunk,
+  KnowledgeResult,
+  ChunkMetadata,
+  ChunkingStrategy,
+  DocumentChunk,
+  SearchOptions,
+  CollectionStats,
+  ExtractionResult,
+} from './services/knowledge.js';
 
 // Routes
 export {
@@ -13,6 +25,7 @@ export {
   coachingRoutes,
   contactRoutes,
   fileRoutes,
+  knowledgeRoutes,
   analyticsRoutes,
   webhookRoutes,
 } from './routes/index.js';
