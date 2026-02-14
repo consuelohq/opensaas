@@ -401,6 +401,12 @@ const SettingsRoleAddObjectLevel = lazy(() =>
   ),
 );
 
+const SettingsConsuelo = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsConsuelo').then((module) => ({
+    default: module.SettingsConsuelo,
+  })),
+);
+
 type SettingsRoutesProps = {
   isFunctionSettingsEnabled?: boolean;
   isAdminPageEnabled?: boolean;
@@ -635,6 +641,12 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         />
         <Route path={SettingsPath.EventLogs} element={<SettingsEventLogs />} />
       </Route>
+
+      <Route path={SettingsPath.Consuelo} element={<SettingsConsuelo />} />
+      <Route
+        path={SettingsPath.ConsuelloSection}
+        element={<SettingsConsuelo />}
+      />
 
       {isAdminPageEnabled && (
         <>
