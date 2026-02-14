@@ -144,6 +144,29 @@ const StyledQuestionItem = styled.li`
   line-height: 1.4;
 `;
 
+const StyledObjectionCard = styled.div`
+  padding: ${({ theme }) => theme.spacing(2)};
+  background: ${({ theme }) => theme.background.secondary};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  border: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const StyledObjectionLabel = styled.span`
+  font-size: 11px;
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  color: ${({ theme }) => theme.font.color.tertiary};
+  text-transform: uppercase;
+`;
+
+const StyledObjectionText = styled.span`
+  font-size: ${({ theme }) => theme.font.size.sm};
+  color: ${({ theme }) => theme.font.color.primary};
+  line-height: 1.4;
+`;
+
 const StyledEmpty = styled.div`
   display: flex;
   flex-direction: column;
@@ -211,6 +234,7 @@ export const CoachingPanel = ({
     }
   });
   const [questionsOpen, setQuestionsOpen] = useState(false);
+  const [objectionsOpen, setObjectionsOpen] = useState(false);
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => {
@@ -229,6 +253,10 @@ export const CoachingPanel = ({
     talkingPoints &&
     talkingPoints.clarifying_questions &&
     talkingPoints.clarifying_questions.length > 0;
+  const hasObjections =
+    talkingPoints &&
+    talkingPoints.objection_responses &&
+    talkingPoints.objection_responses.length > 0;
 
   const renderContent = () => {
     if (isLoading) {
@@ -281,6 +309,31 @@ export const CoachingPanel = ({
                 ))}
               </StyledQuestionList>
             )}
+          </div>
+        )}
+
+        {hasObjections && (
+          <div>
+            <StyledSectionToggle
+              onClick={() => setObjectionsOpen((prev) => !prev)}
+              aria-expanded={objectionsOpen}
+            >
+              {objectionsOpen ? (
+                <IconChevronUp size={14} />
+              ) : (
+                <IconChevronDown size={14} />
+              )}
+              Objection Handling ({talkingPoints.objection_responses.length})
+            </StyledSectionToggle>
+            {objectionsOpen &&
+              talkingPoints.objection_responses.map((item, i) => (
+                <StyledObjectionCard key={i}>
+                  <StyledObjectionLabel>Objection</StyledObjectionLabel>
+                  <StyledObjectionText>{item.objection}</StyledObjectionText>
+                  <StyledObjectionLabel>Response</StyledObjectionLabel>
+                  <StyledObjectionText>{item.response}</StyledObjectionText>
+                </StyledObjectionCard>
+              ))}
           </div>
         )}
       </>
