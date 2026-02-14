@@ -4,15 +4,12 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   IconList,
   IconPhoneCall,
-  IconPlayerPause,
-  IconPlayerPlay,
-  IconPlayerStop,
-  IconPlayerTrackNext,
   IconSettings,
   IconUser,
 } from '@tabler/icons-react';
 
 import { type CallQueue, type QueueSettings } from '@/dialer/types/queue';
+import { QueueControls } from '@/dialer/components/QueueControls';
 import {
   activeQueueState,
   currentQueueItemSelector,
@@ -144,35 +141,6 @@ const StyledAttemptBadge = styled.span`
   border-radius: 999px;
   background: ${({ theme }) => theme.background.tertiary};
   color: ${({ theme }) => theme.font.color.tertiary};
-`;
-
-const StyledControls = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-  border-top: 1px solid ${({ theme }) => theme.border.color.light};
-`;
-
-const StyledControlButton = styled.button<{ danger?: boolean }>`
-  all: unset;
-  box-sizing: border-box;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: ${({ theme }) => theme.spacing(2)};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  background: ${({ danger, theme }) =>
-    danger ? '#ef4444' : theme.background.tertiary};
-  color: ${({ danger, theme }) =>
-    danger ? '#fff' : theme.font.color.primary};
-  &:hover {
-    opacity: 0.85;
-  }
 `;
 
 const StyledParallelStatus = styled.div`
@@ -555,24 +523,7 @@ export const QueuePanel = () => {
       </StyledBody>
 
       {/* controls */}
-      <StyledControls>
-        <StyledControlButton>
-          <IconPlayerTrackNext size={14} />
-          Skip
-        </StyledControlButton>
-        <StyledControlButton>
-          {queue.status === 'paused' ? (
-            <IconPlayerPlay size={14} />
-          ) : (
-            <IconPlayerPause size={14} />
-          )}
-          {queue.status === 'paused' ? 'Resume' : 'Pause'}
-        </StyledControlButton>
-        <StyledControlButton danger>
-          <IconPlayerStop size={14} />
-          End
-        </StyledControlButton>
-      </StyledControls>
+      <QueueControls />
 
       {/* settings modal */}
       {showSettings && (
