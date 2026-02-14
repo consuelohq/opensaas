@@ -39,3 +39,8 @@ export const metricsLoadingState = createState<boolean>({
   key: 'dialerMetricsLoadingState',
   defaultValue: false,
 });
+
+export const activePlaybackIdState = createState<string | null>({
+  key: 'dialerActivePlaybackIdState',
+  defaultValue: null,
+});
