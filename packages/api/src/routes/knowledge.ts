@@ -5,11 +5,29 @@ import { KnowledgeService, KnowledgeError } from '../services/knowledge.js';
 import { StorageService } from '../services/storage.js';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
+import type { Pool } from 'pg';
+
+const SQL_GET_FILE =
+  'SELECT id, name, mime_type, storage_key FROM files WHERE id = $1 AND workspace_id = $2';
 
 /** /v1/knowledge + /v1/files/:id/index routes */
 export const knowledgeRoutes = (): RouteDefinition[] => {
   const knowledge = new KnowledgeService();
   const storage = new StorageService();
+  let pool: Pool | null = null;
+
+  const getPool = async (): Promise<Pool> => {
+    try {
+      if (!pool) {
+        const { default: pg } = await import('pg');
+        pool = new pg.Pool({ connectionString: process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL });
+      }
+      return pool;
+    } catch (err: unknown) {
+      pool = null;
+      throw err;
+    }
+  };
 
   return [
     // -- Collection CRUD (literal routes first) --------------------------------
@@ -160,25 +178,31 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        // fetch file record to get storage key + name + mime type
-        // TODO(DEV-799): fetch from S3 via StorageService and extract server-side
-        // for now, accept content + sourceName in the request body as a workaround
-        const bodyWithContent = body as typeof body & { content?: string; sourceName?: string };
-        if (!bodyWithContent?.content) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "content" — direct file fetch not yet implemented (DEV-744). Pass extracted text in request body.',
-            },
-          });
+        // fetch file record to get storage key + mime type
+        const db = await getPool();
+        const fileResult = await db.query(SQL_GET_FILE, [fileId, workspaceId]);
+        const file = fileResult.rows[0] as { id: string; name: string; mime_type: string; storage_key: string } | undefined;
+        if (!file) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'File not found' } });
           return;
         }
 
+        // allow content override in body (for testing), otherwise fetch from S3
+        const bodyExt = body as typeof body & { content?: string };
+        let content: string;
+        if (bodyExt?.content) {
+          content = bodyExt.content;
+        } else {
+          const buffer = await storage.getObject(file.storage_key);
+          const extraction = await knowledge.extractText(buffer, file.mime_type);
+          content = extraction.text;
+        }
+
         try {
-          const result = await knowledge.indexFile(fileId, body.collectionId, bodyWithContent.content, {
+          const result = await knowledge.indexFile(fileId, body.collectionId, content, {
             strategy: body.strategy,
             metadata: body.metadata,
-            sourceName: bodyWithContent.sourceName,
+            sourceName: file.name,
           });
           res.status(200).json({ indexed: true, chunkCount: result.chunkCount });
         } catch (err: unknown) {
