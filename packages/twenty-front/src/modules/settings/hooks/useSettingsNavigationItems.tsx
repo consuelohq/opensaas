@@ -27,6 +27,7 @@ import {
   IconLock,
   IconMail,
   IconMessage,
+  IconPhone,
   IconPlug,
   IconRocket,
   IconServer,
@@ -192,6 +193,17 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           Icon: IconKey,
           isAdvanced: true,
           isHidden: !permissionMap[PermissionFlagType.SECURITY],
+        },
+      ],
+    },
+    {
+      label: t`Consuelo`,
+      items: [
+        {
+          label: t`Consuelo`,
+          path: SettingsPath.Consuelo,
+          Icon: IconPhone,
+          matchSubPages: true,
         },
       ],
     },
