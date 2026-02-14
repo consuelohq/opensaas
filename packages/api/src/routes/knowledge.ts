@@ -161,7 +161,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         }
 
         // fetch file record to get storage key + name + mime type
-        // TODO(DEV-744): replace with DB lookup when files table is wired
+        // TODO(DEV-799): fetch from S3 via StorageService and extract server-side
         // for now, accept content + sourceName in the request body as a workaround
         const bodyWithContent = body as typeof body & { content?: string; sourceName?: string };
         if (!bodyWithContent?.content) {
