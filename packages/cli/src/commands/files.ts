@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import { basename } from 'node:path';
 import type { Command } from 'commander';
+import ora from 'ora';
 import { apiGet, apiPost, apiDelete, handleApiError } from '../api-client.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
@@ -34,6 +35,14 @@ const formatSize = (bytes: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const filesErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
+  const code = (data as { error?: { code?: string } })?.error?.code;
+  if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.id ?? 'unknown'}`;
+  if (code === 'FILE_TOO_LARGE') return 'file too large — max 50 MB';
+  if (code === 'UNSUPPORTED_TYPE') return `unsupported file type: ${ctx.ext ?? 'unknown'} — supported: pdf, csv, txt, doc, docx`;
+  return null;
 };
 
 export const registerFiles = (program: Command): void => {
@@ -94,7 +103,11 @@ const filesList = async (opts: { type?: string; limit: string }): Promise<void> 
 const filesGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ file: FileRecord }>(`/v1/files/${id}`);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = filesErrorMessage(res.data, { id });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
@@ -126,13 +139,19 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
     const contentType = inferMimeType(filename);
     const tags = opts.tags?.split(',').map((t: string) => t.trim());
 
-    log(`uploading ${filename} (${formatSize(stat.size)})...`);
+    const spinner = ora(`uploading ${filename} (${formatSize(stat.size)})...`).start();
 
     // step 1: get presigned upload URL
     const initRes = await apiPost<{ fileId: string; uploadUrl: string }>('/v1/files/upload', {
       filename, contentType, size: stat.size, tags,
     });
-    if (!initRes.ok) handleApiError(initRes.status, initRes.data);
+    if (!initRes.ok) {
+      spinner.fail('upload failed');
+      const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+      const msg = filesErrorMessage(initRes.data, { id: filename, ext });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(initRes.status, initRes.data);
+    }
 
     // step 2: PUT to S3
     const fileBuffer = fs.readFileSync(filePath);
@@ -142,6 +161,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       headers: { 'Content-Type': contentType },
     });
     if (!s3Res.ok) {
+      spinner.fail('upload failed');
       error('upload failed — try again');
       process.exit(1);
     }
@@ -149,9 +169,9 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
     // step 3: confirm
     await apiPost(`/v1/files/${initRes.data.fileId}/confirm`);
 
-    if (isJson()) { json({ fileId: initRes.data.fileId }); return; }
+    spinner.succeed(`uploaded ${filename} → ${initRes.data.fileId}`);
 
-    log(`uploaded ${filename} → ${initRes.data.fileId}`);
+    if (isJson()) { json({ fileId: initRes.data.fileId }); return; }
 
     // step 4: auto-index if collection specified
     if (opts.collection) {
@@ -173,7 +193,11 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
   try {
     // get download URL
     const res = await apiGet<{ downloadUrl: string }>(`/v1/files/${id}/download`);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = filesErrorMessage(res.data, { id });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     // fetch from S3
     const fileRes = await fetch(res.data.downloadUrl);
@@ -184,17 +208,20 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
     const buffer = Buffer.from(await fileRes.arrayBuffer());
 
     // determine output path
-    let outputPath = opts.output;
-    if (!outputPath) {
-      const metaRes = await apiGet<{ file: FileRecord }>(`/v1/files/${id}`);
-      outputPath = metaRes.ok ? metaRes.data.file.filename : id;
-    }
+    const metaRes = await apiGet<{ file: FileRecord }>(`/v1/files/${id}`);
+    const filename = metaRes.ok ? metaRes.data.file.filename : id;
+    const outputPath = opts.output ?? filename;
 
-    fs.writeFileSync(outputPath, buffer);
+    try {
+      fs.writeFileSync(outputPath, buffer);
+    } catch {
+      error(`could not write to ${outputPath} — check permissions`);
+      process.exit(1);
+    }
 
     if (isJson()) { json({ path: outputPath, size: buffer.length }); return; }
 
-    log(`downloaded → ${outputPath} (${formatSize(buffer.length)})`);
+    log(`downloaded ${filename} → ${outputPath} (${formatSize(buffer.length)})`);
   } catch (err: unknown) {
     captureError(err, { command: 'files download' });
     error(err instanceof Error ? err.message : 'download failed');
@@ -205,11 +232,15 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
 const filesDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/files/${id}`);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = filesErrorMessage(res.data, { id });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
-    log('file deleted');
+    log(`file deleted: ${id}`);
   } catch (err: unknown) {
     captureError(err, { command: 'files delete' });
     error(err instanceof Error ? err.message : 'failed to delete file');

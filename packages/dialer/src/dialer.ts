@@ -168,6 +168,11 @@ export class Dialer {
     return this.conference.holdParticipant(conferenceSid, callSid, hold);
   }
 
+  /** Mute or unmute a participant in a conference */
+  async muteParticipant(conferenceSid: string, callSid: string, muted: boolean): Promise<void> {
+    return this.conference.muteParticipant(conferenceSid, callSid, muted);
+  }
+
   /** List participants in a conference */
   async listParticipants(conferenceSid: string): Promise<ConferenceParticipant[]> {
     return this.conference.listParticipants(conferenceSid);
