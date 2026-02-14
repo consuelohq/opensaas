@@ -1,0 +1,38 @@
+[pr_reviewer]
+require_codebase_context = true
+
+[repo_context]
+snippets = ["""
+opensaas is an open-source sales infrastructure SDK. monorepo with @consuelo/* packages:
+- dialer (twilio, local presence, caller ID locking, parallel dialing)
+- coaching (AI via groq/openai, real-time + post-call, zod structured outputs)
+- analytics (call metrics, transcription processing)
+- contacts (contact management, CSV import, phone normalization, queue system)
+- api (framework-agnostic REST routes with auth + rate limiting)
+- cli (consuelo CLI tool)
+- sdk (unified entry point)
+- metering (usage tracking, billing)
+- workspace (org management)
+- logger (structured logging)
+
+also includes a twenty CRM fork (frontend) on the twenty-fork branch with an embedded dialer sidebar.
+
+tech: typescript strict, turbo, postgres, pgvector, redis, twilio, stripe, groq/openai, recoil (twenty frontend).
+
+mandatory coding standards (enforced by pre-push hooks):
+- no console.* — use structured logger (@consuelo/logger)
+- sentry tracking on all HTTP errors and caught exceptions
+- phone comparisons must use normalizePhone() from @consuelo/contacts
+- SQL queries must be parameterized ($1, $2) — no template literals in .query()
+- async/await must have try/catch within 30 lines
+- no explicit any without // HACK: comment
+- no hardcoded secrets
+- TODO/FIXME must reference a ticket (DEV-123)
+- no wildcard imports (except builtins and sentry)
+- literal routes before param routes in same prefix group
+- catch (err) must be typed as : unknown
+- peerDependencies must use lazy await import(), never top-level import
+- route handlers return real data or explicit 501 — no hardcoded fakes without // STUB:
+
+conventions: one PR per feature, commit format type(scope): description, shared service instances (not per-request).
+"""]
