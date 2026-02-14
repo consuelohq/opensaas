@@ -1,6 +1,7 @@
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallButton } from '@/dialer/components/CallButton';
 import { CallingModeToggle } from '@/dialer/components/CallingModeToggle';
+import { CoachingPanel } from '@/dialer/components/CoachingPanel';
 import { ContactHeader } from '@/dialer/components/ContactHeader';
 import { DialPad } from '@/dialer/components/DialPad';
 import { InCallControls } from '@/dialer/components/InCallControls';
@@ -76,6 +77,11 @@ export const DialerSidebar = () => {
         <CallButton />
         {isInCall && <InCallControls />}
         {isInCall && <QuickActions />}
+        <CoachingPanel
+          isLoading={false}
+          talkingPoints={null}
+          callStatus={callState.status}
+        />
       </StyledBody>
 
       <StyledFooter>
