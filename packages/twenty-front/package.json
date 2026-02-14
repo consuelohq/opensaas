@@ -29,6 +29,7 @@
     "workerDirectory": "public"
   },
   "dependencies": {
+    "@consuelo/contacts": "workspace:*",
     "@ai-sdk/react": "2.0.52",
     "@apollo/client": "^3.7.17",
     "@blocknote/mantine": "^0.31.1",

@@ -8,6 +8,16 @@ export interface DialerContact {
   phone: string;
   email: string | null;
   avatarUrl: string | null;
+  // phase 4 — contact integration fields (DEV-729)
+  twentyPersonId?: string;
+  phoneRaw?: string;
+  phoneStatus?: 'valid' | 'invalid' | 'unknown';
+  lastCalled?: string | null;
+  callCount?: number;
+  timezone?: string | null;
+  lastNote?: string | null;
+  tags?: string[];
+  dncStatus?: boolean;
 }
 
 /** Call lifecycle states */
