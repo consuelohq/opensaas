@@ -81,7 +81,7 @@ export const calculateOutcomeBreakdown = (
   return breakdown;
 };
 
-export const formatDuration = (seconds: number): string => {
+export const formatDurationHuman = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;

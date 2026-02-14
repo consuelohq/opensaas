@@ -6,7 +6,7 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { type CallStatus } from '@/dialer/types/dialer';
-import { formatDuration } from '@/dialer/utils/callDuration';
+import { formatDurationTimer } from '@/dialer/utils/callDuration';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
 
 const pulse = keyframes`
@@ -157,7 +157,7 @@ export const ContactHeader = () => {
         {config.label && (
           <StyledStatusLine>
             {config.label}
-            {showDuration && ` • ${formatDuration(callState.duration)}`}
+            {showDuration && ` • ${formatDurationTimer(callState.duration)}`}
           </StyledStatusLine>
         )}
       </StyledInfo>

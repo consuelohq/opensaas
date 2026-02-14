@@ -177,7 +177,7 @@ export const useParallelDialer = () => {
           credentials: 'include',
         });
       } catch {
-        // terminate request failed
+        // terminate best-effort — group expires server-side regardless
       }
     }
     setIsDialing(false);

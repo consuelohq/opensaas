@@ -17,7 +17,7 @@ import {
   type CallHistoryItem,
   type HistoryCallOutcome,
 } from '@/dialer/types/history';
-import { formatDuration } from '@/dialer/utils/callDuration';
+import { formatDurationTimer } from '@/dialer/utils/callDuration';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
 
 /* eslint-disable twenty/no-hardcoded-colors, lingui/no-unlocalized-strings */
@@ -403,7 +403,7 @@ export const CallHistoryList = () => {
                   <StyledCallMeta>
                     {formatTime(call.startTime)}
                     {call.duration !== null &&
-                      ` · ${formatDuration(call.duration)}`}
+                      ` · ${formatDurationTimer(call.duration)}`}
                     {call.contact?.name !== undefined &&
                       call.contact?.name !== null &&
                       ` · ${formatPhone(call.customerNumber)}`}
