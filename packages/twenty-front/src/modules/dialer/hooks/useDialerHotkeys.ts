@@ -5,6 +5,7 @@ import { useGlobalHotkeys } from '@/ui/utilities/hotkey/hooks/useGlobalHotkeys';
 // shortcuts only fire outside text inputs (useGlobalHotkeys default).
 
 type UseDialerHotkeysProps = {
+  onToggleSidebar?: () => void;
   onMuteToggle?: () => void;
   onHoldToggle?: () => void;
   onTransferToggle?: () => void;
@@ -12,11 +13,20 @@ type UseDialerHotkeysProps = {
 };
 
 export const useDialerHotkeys = ({
+  onToggleSidebar,
   onMuteToggle,
   onHoldToggle,
   onTransferToggle,
   onEndCall,
 }: UseDialerHotkeysProps) => {
+  useGlobalHotkeys({
+    keys: ['mod+d'],
+    callback: () => onToggleSidebar?.(),
+    containsModifier: true,
+    dependencies: [onToggleSidebar],
+    options: { enableOnFormTags: true, enableOnContentEditable: true },
+  });
+
   useGlobalHotkeys({
     keys: ['m'],
     callback: () => onMuteToggle?.(),

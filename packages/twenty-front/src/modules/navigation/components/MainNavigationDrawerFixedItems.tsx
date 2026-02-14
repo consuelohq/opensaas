@@ -1,5 +1,6 @@
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
 import { useOpenRecordsSearchPageInCommandMenu } from '@/command-menu/hooks/useOpenRecordsSearchPageInCommandMenu';
+import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
@@ -10,7 +11,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { IconSearch, IconSettings, IconSparkles } from 'twenty-ui/display';
+import { IconPhone, IconSearch, IconSettings, IconSparkles } from 'twenty-ui/display';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
@@ -34,6 +35,9 @@ export const MainNavigationDrawerFixedItems = () => {
   const { openRecordsSearchPage } = useOpenRecordsSearchPageInCommandMenu();
   const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
   const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
+  const [isDialerOpen, setIsDialerOpen] = useRecoilState(
+    dialerSidebarOpenState,
+  );
 
   return (
     !isMobile && (
@@ -54,6 +58,13 @@ export const MainNavigationDrawerFixedItems = () => {
             mouseUpNavigation={true}
           />
         )}
+        <NavigationDrawerItem
+          label={t`Dialer`}
+          Icon={IconPhone}
+          onClick={() => setIsDialerOpen(!isDialerOpen)}
+          active={isDialerOpen}
+          keyboard={['⌘', 'D']}
+        />
         <NavigationDrawerItem
           label={t`Settings`}
           to={getSettingsPath(SettingsPath.ProfilePage)}
