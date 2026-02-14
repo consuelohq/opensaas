@@ -92,6 +92,29 @@ export class ConferenceService {
     }
   }
 
+  /** Create an outbound call with a TwiML URL or inline TwiML */
+  async createCall(to: string, from: string, opts: {
+    url?: string;
+    twiml?: string;
+    statusCallback?: string;
+  }): Promise<{ callSid: string }> {
+    try {
+      const client = await this.getClient();
+      const call = await client.calls.create({
+        to,
+        from,
+        ...(opts.url ? { url: opts.url } : {}),
+        ...(opts.twiml ? { twiml: opts.twiml } : {}),
+        statusCallback: opts.statusCallback,
+        statusCallbackEvent: ['completed'],
+      });
+      return { callSid: call.sid };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create call';
+      throw new Error(message);
+    }
+  }
+
   /** Hold or unhold a participant */
   async holdParticipant(conferenceSid: string, callSid: string, hold: boolean): Promise<void> {
     try {

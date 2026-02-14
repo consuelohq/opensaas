@@ -36,4 +36,6 @@ export interface ApiRequest {
 export interface ApiResponse {
   status(code: number): ApiResponse;
   json(data: unknown): void;
+  type(contentType: string): ApiResponse;
+  send(body: string): void;
 }
