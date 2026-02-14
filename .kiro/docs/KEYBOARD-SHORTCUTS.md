@@ -13,107 +13,153 @@ linear proves that keyboard shortcuts aren't a power-user feature — they're th
 - **enter** always confirms
 - **?** shows the shortcut help menu
 
-## existing twenty shortcuts
+## twenty's hotkey system
 
-twenty already has a hotkey system (`react-hotkeys-hook` + recoil). these are built in:
+twenty has a full hotkey infrastructure. **always use it** — never raw `addEventListener`.
 
-| shortcut | action | source |
-|----------|--------|--------|
-| `⌘ K` | open command menu | useCommandMenuHotKeys |
-| `/` | search records | useCommandMenuHotKeys |
-| `@` | ask AI (if enabled) | useCommandMenuHotKeys |
-| `?` | keyboard shortcut help | KeyboardShortcutMenu |
-| `g s` | go to settings | GotoHotkeysEffectsProvider |
-| `g {key}` | go to object page | GoToHotkeyItemEffect (dynamic) |
-| `Escape` | back / close | useCommandMenuHotKeys |
+| hook | use case | location |
+|------|----------|----------|
+| `useGlobalHotkeys` | single key or modifier combos | `ui/utilities/hotkey/hooks/` |
+| `useGlobalHotkeysSequence` | two-key sequences (g+s pattern) | `ui/utilities/hotkey/hooks/` |
+| `useGoToHotkeys` | navigation via g+key | `ui/utilities/hotkey/hooks/` |
+| `useHotkeysOnFocusedElement` | context-scoped (focused element) | `ui/utilities/hotkey/hooks/` |
 
-twenty's hotkey hooks:
-- `useGlobalHotkeys` — single key or modifier combos
-- `useGlobalHotkeysSequence` — two-key sequences (g+s pattern)
-- `useGoToHotkeys` — navigation via g+key
-- `useHotkeysOnFocusedElement` — context-aware (scoped to focused element)
+action menu actions can also declare `hotKeys` in their `ActionConfig` — twenty uses this for navigation shortcuts.
 
-## dialer shortcuts (phase 2 — now)
-
-registered via `useDialerHotkeys` hook.
+## already built — twenty (do not duplicate)
 
 ### global
 
-| shortcut | action | context |
-|----------|--------|---------|
-| `d` | open/focus dialer sidebar | anywhere (not in text input) |
+| shortcut | action | source |
+|----------|--------|--------|
+| `⌘ K` | command menu | `useCommandMenuHotKeys` |
+| `/` | search records | `useCommandMenuHotKeys` |
+| `@` | ask AI | `useCommandMenuHotKeys` |
+| `?` | keyboard shortcut help | `KeyboardShortcutMenu` |
+| `Escape` | back / close | `useCommandMenuHotKeys` |
 
-### in-call (active call only)
+### navigation (g + key sequences)
+
+registered via `DefaultRecordActionsConfig` + `GotoHotkeysEffectsProvider`.
+
+| shortcut | action |
+|----------|--------|
+| `G P` | go to people |
+| `G C` | go to companies |
+| `G D` | go to dashboards |
+| `G O` | go to opportunities |
+| `G S` | go to settings |
+| `G T` | go to tasks |
+| `G N` | go to notes |
+| `G W` | go to workflows |
+
+### record table rows
+
+registered in `useRecordTableRowHotkeys` + `useRecordTableRowFocusHotkeys`.
+
+| shortcut | action |
+|----------|--------|
+| `j` / `↓` | move focus down |
+| `k` / `↑` | move focus up |
+| `x` | select / deselect row |
+| `Shift+x` | select range |
+| `Enter` | enter row (focus first cell) |
+| `Ctrl/Cmd+Enter` | open record in command menu |
+| `Escape` | unfocus row / deselect all |
+| `Ctrl/Cmd+a` | select all rows |
+
+### record board cards
+
+registered in `useRecordBoardCardHotkeys`.
+
+| shortcut | action |
+|----------|--------|
+| `x` | select / deselect card |
+| `Enter` / `Ctrl/Cmd+Enter` | open in command menu |
+| `Escape` | unfocus / deselect all |
+| `Ctrl/Cmd+a` | select all |
+
+## already built — consuelo dialer
+
+### in-call shortcuts
+
+registered via `useDialerHotkeys` hook (`modules/dialer/hooks/useDialerHotkeys.ts`).
 
 | shortcut | action | context |
 |----------|--------|---------|
 | `m` | toggle mute | during active call |
 | `h` | toggle hold | during active call |
 | `t` | open transfer modal | during active call |
-| `Escape` | close modal / cancel transfer | modal open |
-| `Enter` | confirm action | modal open |
+| `Escape` | close modal / end call | during active call |
+
+## not yet built — needs components first
+
+these shortcuts are planned but blocked on the underlying UI being built.
+
+### dialer global
+
+| shortcut | action | blocked by |
+|----------|--------|------------|
+| `d` | open/focus dialer sidebar | DEV-712 (DialerSidebar is a stub) |
 
 ### dial pad
 
-| shortcut | action | context |
-|----------|--------|---------|
-| `0-9` | type digit | dial pad focused |
-| `Enter` | dial / confirm | dial pad focused |
-| `Escape` | clear / close | dial pad focused |
+| shortcut | action | blocked by |
+|----------|--------|------------|
+| `0-9` | type digit | DEV-712 |
+| `Enter` | dial / confirm | DEV-712 |
 
-## planned shortcuts (future phases)
+### record-level actions (hover/focused)
 
-### navigation (g + key sequences)
+linear's killer feature — single keys on hovered records. needs deep integration with twenty's field editing meta-types system. use `useHotkeysOnFocusedElement` + twenty's field input components.
 
-| shortcut | action | phase |
-|----------|--------|-------|
-| `g d` | go to dashboard | 2 |
-| `g c` | go to contacts | 4 |
-| `g q` | go to queue | 4 |
-| `g a` | go to activities/calls | 5 |
-| `g k` | go to knowledge base | 6 |
-| `g s` | go to settings | exists |
-
-### record actions (when viewing a contact)
-
-| shortcut | action | phase |
-|----------|--------|-------|
-| `c` | call this contact | 4 |
-| `e` | edit record | 4 |
-| `n` | new note | 5 |
-
-### queue (phase 4)
-
-| shortcut | action | phase |
-|----------|--------|-------|
-| `Space` | start/pause queue | 4 |
-| `s` | skip current | 4 |
-| `r` | redial last | 4 |
+| shortcut | action | complexity | notes |
+|----------|--------|------------|-------|
+| `a` | assign to user | medium | open assignee picker on focused row |
+| `s` | change status/stage | medium | open status dropdown |
+| `l` | add/edit labels | medium | open label picker |
+| `p` | set priority | medium | open priority dropdown |
+| `e` | edit record | low | could alias Enter (already focuses cell) |
+| `Delete` | archive record | low | with confirmation dialog |
+| `⌘ C` | copy phone number | low | clipboard API |
 
 ### coaching panel (phase 3)
 
-| shortcut | action | phase |
-|----------|--------|-------|
-| `k` | toggle coaching panel | 3 |
+| shortcut | action | blocked by |
+|----------|--------|------------|
+| `k` | toggle coaching panel | phase 3 not started |
 
-## linear's full shortcut list (reference)
+### queue (phase 4)
 
-88 shortcuts total. key patterns we're borrowing:
+| shortcut | action | blocked by |
+|----------|--------|------------|
+| `Space` | start/pause queue | phase 4 not started |
+| `s` | skip current | phase 4 (context-scoped, won't conflict with record `s`) |
+| `r` | redial last | phase 4 |
 
-**navigation sequences (g + key):** inbox, my issues, backlog, archived, all issues, board, cycles, active cycle, projects, settings
+### quick actions (DEV-719)
 
-**single-key actions:** c=create, e=edit, a=assign, l=labels, s=status, p=priority, f=filter, x=select, r=rename
+| shortcut | action | blocked by |
+|----------|--------|------------|
+| `n` | add note | DEV-719 not built |
+| `f` | schedule follow-up | DEV-719 not built |
 
-**modifier combos:** ⌘+K=command menu, ⌘+I=details sidebar, ⌘+B=toggle view, ⌘+Delete=delete
+## linear's patterns (reference)
 
-**two-key sequences:** m+b=mark blocked, m+x=mark blocking, m+r=related, m+m=merge, o+i=open issue, o+f=open favorite
+88 shortcuts total. key patterns we borrow:
 
-**the pattern:** most frequent actions = single key. navigation = g+key. destructive = modifier. relationships = m+key. open = o+key.
+- **single-key actions:** c=create, e=edit, a=assign, l=labels, s=status, p=priority, f=filter, x=select
+- **navigation sequences (g+key):** inbox, my issues, backlog, projects, settings
+- **modifier combos:** ⌘+K=command menu, ⌘+Delete=delete
+- **two-key sequences:** m+b=mark blocked, o+i=open issue
+
+**the pattern:** most frequent = single key. navigation = g+key. destructive = modifier. relationships = m+key.
 
 ## implementation notes
 
-- all hooks use twenty's `useGlobalHotkeys` / `useGlobalHotkeysSequence`
-- shortcuts are disabled when typing in text inputs (default behavior)
-- in-call shortcuts only fire when `callStateAtom` indicates active call
-- dialer shortcuts registered in `useDialerHotkeys` hook, mounted in `DialerSidebar`
-- each phase adds its shortcuts to the relevant component, not a central registry
+- all hooks use twenty's `useGlobalHotkeys` / `useGlobalHotkeysSequence` / `useHotkeysOnFocusedElement`
+- shortcuts are disabled in text inputs by default
+- in-call shortcuts only fire when call is active
+- record-level shortcuts use `useHotkeysOnFocusedElement` scoped to the focused row/card
+- navigation shortcuts are declared as `hotKeys` in `ActionConfig` (twenty's action menu system)
+- each phase adds shortcuts to the relevant component — no central registry

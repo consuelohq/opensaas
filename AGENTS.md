@@ -371,6 +371,23 @@ the TwiML app in twilio console must have its voice URL pointed at `POST /v1/voi
 - frontend icons: `@tabler/icons-react` directly (not `twenty-ui/display`)
 - state atoms: `createState` from `@/ui/utilities/state/utils/createState`
 
+### keyboard shortcuts
+
+twenty has a full hotkey system built in. **always use it** — never raw `addEventListener` for keyboard shortcuts.
+
+| hook | use case |
+|------|----------|
+| `useGlobalHotkeys` | single key or modifier combos (e.g. `m` for mute) |
+| `useGlobalHotkeysSequence` | two-key sequences (e.g. `g` then `s` = go to settings) |
+| `useGoToHotkeys` | navigation via `g+key` (wraps sequence hook + `useNavigate`) |
+| `useHotkeysOnFocusedElement` | context-scoped (only fires when specific element focused) |
+
+all hooks live in `packages/twenty-front/src/modules/ui/utilities/hotkey/hooks/`.
+
+dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules/dialer/hooks/useDialerHotkeys.ts`) — takes callbacks, registers via `useGlobalHotkeys`.
+
+**full shortcut reference + planned shortcuts for all phases:** `.kiro/docs/KEYBOARD-SHORTCUTS.md`
+
 ## key files
 
 - `AUTH.md` — full JWT auth system documentation
