@@ -9,7 +9,6 @@ import {
   IconHeadphones,
   IconPhone,
   IconRobot,
-  IconSettings,
   IconToggleRight,
   IconCreditCard,
   IconBell,
@@ -17,6 +16,7 @@ import {
   IconUserCircle,
 } from 'twenty-ui/display';
 import { type IconComponent } from 'twenty-ui/display';
+import { AudioDeviceSettings } from '~/pages/settings/consuelo/AudioDeviceSettings';
 
 type ConsuelloSection = {
   id: string;
@@ -124,11 +124,15 @@ export const SettingsConsuelo = () => {
             ))}
           </StyledSidebar>
           <StyledContent>
-            <StyledPlaceholder>
-              {activeSectionConfig
-                ? `${activeSectionConfig.label} settings — coming in task 7.${CONSUELLO_SECTIONS.indexOf(activeSectionConfig) + 2}`
-                : 'Select a section'}
-            </StyledPlaceholder>
+            {activeSection === 'audio' ? (
+              <AudioDeviceSettings />
+            ) : (
+              <StyledPlaceholder>
+                {activeSectionConfig
+                  ? `${activeSectionConfig.label} settings — coming in task 7.${CONSUELLO_SECTIONS.indexOf(activeSectionConfig) + 2}`
+                  : 'Select a section'}
+              </StyledPlaceholder>
+            )}
           </StyledContent>
         </StyledContainer>
       </SettingsPageContainer>
