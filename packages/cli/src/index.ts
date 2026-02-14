@@ -7,7 +7,7 @@ import { createLogger } from '@consuelo/logger';
 import { initCommand } from './commands/init.js';
 import { callCommand } from './commands/call.js';
 import { coachCommand } from './commands/coach.js';
-import { contactsCommand } from './commands/contacts.js';
+import { registerContacts } from './commands/contacts.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -65,14 +65,7 @@ program
     await coachCommand({ transcript: opts.transcript });
   });
 
-program
-  .command('contacts')
-  .description('manage contacts (list|add|import)')
-  .argument('[action]', 'action to perform', 'list')
-  .argument('[args...]', 'additional arguments')
-  .action(async (action, args) => {
-    await contactsCommand(action, args);
-  });
+registerContacts(program);
 
 program
   .command('analytics')

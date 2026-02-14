@@ -12,17 +12,20 @@ export interface CliConfig {
   llmProvider?: 'groq' | 'openai';
   llmApiKey?: string;
   managed?: boolean;
+  apiUrl?: string;
+  apiKey?: string;
+  workspaceId?: string;
 }
 
-export function loadConfig(): CliConfig {
+export const loadConfig = (): CliConfig => {
   try {
     return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
   } catch {
     return {};
   }
-}
+};
 
-export function saveConfig(config: CliConfig): void {
+export const saveConfig = (config: CliConfig): void => {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-}
+};
