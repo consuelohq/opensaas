@@ -9,6 +9,7 @@ export interface RouteDefinition {
 }
 
 // Import + re-export route modules
+import { analyticsRoutes } from './analytics.js';
 import { callRoutes } from './calls.js';
 import { coachingRoutes } from './coaching.js';
 import { contactRoutes } from './contacts.js';
@@ -18,23 +19,14 @@ import { localPresenceRoutes } from './local-presence.js';
 import { parallelRoutes } from './parallel.js';
 import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
-export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, queueRoutes, voiceRoutes };
+export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, queueRoutes, voiceRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
-/** /v1/analytics routes */
-export const analyticsRoutes = (): RouteDefinition[] => [
-  { method: 'POST', path: '/v1/analytics/analyze', handler: errorHandler(async (req, res) => {
-    // STUB: implement with Analytics.analyzeCall() (DEV-698)
-    res.status(200).json({ message: 'Use @consuelo/analytics for full implementation' });
-  })},
-  { method: 'GET', path: '/v1/analytics/transcript/:callSid', handler: errorHandler(async (req, res) => {
-    // STUB: implement with AnalyticsStore.getTranscript() (DEV-698)
-    res.status(200).json({ callSid: req.params?.callSid, transcript: [] });
-  })},
-  { method: 'GET', path: '/v1/analytics/metrics', handler: errorHandler(async (_req, res) => {
-    // STUB: implement with AnalyticsStore.getAnalytics() (DEV-698)
-    res.status(200).json({ metrics: {} });
-  })},
+/** Health check route */
+export const healthRoutes = (): RouteDefinition[] => [
+  { method: 'GET' as const, path: "/health", handler: async (_req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  }},
 ];
 
 /** /v1/webhooks routes (Twilio callbacks) */
@@ -47,13 +39,6 @@ export const webhookRoutes = (): RouteDefinition[] => [
     // STUB: implement with status callback handler (DEV-698)
     res.status(200).json({ received: true });
   })},
-];
-
-/** Health check route */
-export const healthRoutes = (): RouteDefinition[] => [
-  { method: 'GET', path: '/health', handler: async (_req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-  }},
 ];
 
 /** All v1 routes combined */

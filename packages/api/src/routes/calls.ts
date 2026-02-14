@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { Dialer } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
+
+type Pool = {
+  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+};
 
 interface CallBody {
   to: string;
@@ -19,6 +24,32 @@ interface CallbackBody {
   contactId?: string;
 }
 
+interface AnalysisBody {
+  performanceScore?: number;
+  sentiment?: string;
+  keyMoments?: unknown[];
+  summary?: string;
+}
+
+// SQL constants
+const SQL_HISTORY =
+  'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.workspace_id = $1';
+
+const SQL_HISTORY_COUNT =
+  'SELECT COUNT(*) AS total FROM calls c WHERE c.workspace_id = $1';
+
+const SQL_GET_CALL =
+  'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.id = $1 AND c.workspace_id = $2';
+
+const SQL_GET_TRANSCRIPT =
+  'SELECT transcript FROM calls WHERE id = $1 AND workspace_id = $2';
+
+const SQL_GET_RECORDING_INFO =
+  'SELECT conference_name, recording_sid FROM calls WHERE id = $1 AND workspace_id = $2';
+
+const SQL_PERSIST_ANALYSIS =
+  'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING id';
+
 /** /v1/calls routes wired to @consuelo/dialer */
 export const callRoutes = (): RouteDefinition[] => {
   const dialer = new Dialer({
@@ -27,6 +58,31 @@ export const callRoutes = (): RouteDefinition[] => {
       authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
     },
   });
+
+  let pool: Pool | null = null;
+
+  const getPool = async (): Promise<Pool> => {
+    try {
+      if (pool === null) {
+        const { default: pg } = await import('pg');
+        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+      }
+      return pool;
+    } catch (err: unknown) {
+      pool = null;
+      throw err;
+    }
+  };
+
+  const requireAuth = (req: Parameters<RouteDefinition['handler']>[0], res: Parameters<RouteDefinition['handler']>[1]): { userId: string; workspaceId: string } | null => {
+    const userId = req.auth?.userId;
+    const workspaceId = req.auth?.workspaceId;
+    if (userId === undefined || workspaceId === undefined) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+      return null;
+    }
+    return { userId, workspaceId };
+  };
 
   return [
     {
@@ -137,11 +193,77 @@ export const callRoutes = (): RouteDefinition[] => {
       }),
     },
 
+    // --- literal route before :id ---
+    {
+      method: 'GET',
+      path: '/v1/calls/history',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const limit = Math.min(Number(req.query?.limit) || 50, 250);
+        const offset = Number(req.query?.offset) || 0;
+
+        // build dynamic WHERE clauses
+        const conditions = ['c.workspace_id = $1'];
+        const params: unknown[] = [auth.workspaceId];
+        let idx = 2;
+
+        if (req.query?.outcome) {
+          conditions.push(`c.outcome = $${idx}`);
+          params.push(req.query.outcome);
+          idx++;
+        }
+        if (req.query?.from) {
+          conditions.push(`c.start_time >= $${idx}`);
+          params.push(req.query.from);
+          idx++;
+        }
+        if (req.query?.to) {
+          conditions.push(`c.start_time <= $${idx}`);
+          params.push(req.query.to);
+          idx++;
+        }
+        if (req.query?.contactId) {
+          conditions.push(`c.contact_id = $${idx}`);
+          params.push(req.query.contactId);
+          idx++;
+        }
+
+        const where = conditions.join(' AND ');
+        const db = await getPool();
+
+        const countResult = await db.query(
+          'SELECT COUNT(*) AS total FROM calls c WHERE ' + where,
+          params,
+        );
+        const total = Number(countResult.rows[0]?.total ?? 0);
+
+        const dataParams = [...params, limit, offset];
+        const { rows } = await db.query(
+          'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE ' + where + ' ORDER BY c.start_time DESC LIMIT $' + String(idx) + ' OFFSET $' + String(idx + 1),
+          dataParams,
+        );
+
+        res.status(200).json({ calls: rows, total, limit, offset });
+      }),
+    },
+
     {
       method: 'GET',
       path: '/v1/calls/:id',
       handler: errorHandler(async (req, res) => {
-        res.status(501).json({ error: { code: 'NOT_IMPLEMENTED', message: 'Call status lookup not yet implemented' } });
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_GET_CALL, [req.params?.id, auth.workspaceId]);
+        if (rows.length === 0) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          return;
+        }
+
+        res.status(200).json(rows[0]);
       }),
     },
     {
@@ -172,21 +294,97 @@ export const callRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/calls/:id/analysis',
       handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
         const callId = req.params?.id;
         if (!callId) {
           res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing call ID' } });
           return;
         }
 
-        const body = req.body as Record<string, unknown> | undefined;
-        if (!body || !body.callId) {
+        const body = req.body as AnalysisBody | undefined;
+        if (!body) {
           res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing analysis body' } });
           return;
         }
 
-        // TODO DEV-736: persist to database (phase 5 history + analytics)
+        const db = await getPool();
+        const { rows } = await db.query(SQL_PERSIST_ANALYSIS, [
+          JSON.stringify(body), callId, auth.workspaceId,
+        ]);
+        if (rows.length === 0) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          return;
+        }
+
         res.status(201).json({ callId, persisted: true });
       }),
     },
+    {
+      method: 'GET',
+      path: '/v1/calls/:id/recording',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_GET_RECORDING_INFO, [req.params?.id, auth.workspaceId]);
+        if (rows.length === 0) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          return;
+        }
+
+        const recordingSid = rows[0].recording_sid as string | null;
+        const conferenceName = rows[0].conference_name as string | null;
+
+        if (recordingSid) {
+          try {
+            const recording = await dialer.getRecording(recordingSid);
+            res.status(200).json({ url: recording.url, duration: recording.duration });
+            return;
+          } catch (err: unknown) {
+            // fall through to conference lookup
+          }
+        }
+
+        if (conferenceName) {
+          try {
+            const recordings = await dialer.conference.listRecordings(conferenceName);
+            if (recordings.length > 0) {
+              res.status(200).json({ url: recordings[0].url, duration: recordings[0].duration });
+              return;
+            }
+          } catch (err: unknown) {
+            // no recordings found
+          }
+        }
+
+        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No recording available' } });
+      }),
+    },
+    {
+      method: 'GET',
+      path: '/v1/calls/:id/transcript',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_GET_TRANSCRIPT, [req.params?.id, auth.workspaceId]);
+        if (rows.length === 0) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          return;
+        }
+
+        const transcript = rows[0].transcript as unknown[] | null;
+        if (!transcript) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No transcript available' } });
+          return;
+        }
+
+        res.status(200).json({ entries: transcript });
+      }),
+    },
   ];
-}
+};
