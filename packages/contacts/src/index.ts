@@ -6,7 +6,7 @@ export { Queues } from './queues.js';
 export { MemoryProvider } from './providers/memory.js';
 
 // Utilities
-export { normalizePhone } from './utils.js';
+export { normalizePhone, isValidPhone } from './utils.js';
 
 // Parser
 export { parseDocument } from './parser.js';
