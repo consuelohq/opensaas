@@ -17,14 +17,20 @@ const OUTCOME_OPTIONS: Array<{
 }> = [
   { value: 'all', label: 'All Calls' },
   { value: 'connected', label: 'Answered' },
+  { value: 'interested', label: 'Interested' },
   { value: 'voicemail', label: 'Voicemail' },
   { value: 'no-answer', label: 'No Answer' },
+  { value: 'no_answer', label: 'No Answer (coaching)' },
   { value: 'busy', label: 'Busy' },
   { value: 'not-interested', label: 'Not Interested' },
+  { value: 'not_interested', label: 'Not Interested (coaching)' },
   { value: 'qualified', label: 'Qualified' },
   { value: 'callback-requested', label: 'Callback' },
+  { value: 'callback_scheduled', label: 'Callback (coaching)' },
   { value: 'wrong-number', label: 'Wrong Number' },
+  { value: 'wrong_number', label: 'Wrong Number (coaching)' },
   { value: 'dnc', label: 'DNC' },
+  { value: 'other', label: 'Other' },
 ];
 
 type DatePreset = 'today' | 'yesterday' | 'this-week' | 'this-month' | 'custom';
