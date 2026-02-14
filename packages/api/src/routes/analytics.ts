@@ -135,6 +135,9 @@ export const analyticsRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/analytics/analyze',
       handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
         const body = req.body as { callSid?: string; messages?: Message[] } | undefined;
         if (!body?.messages?.length) {
           res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "messages" array' } });
@@ -144,7 +147,7 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         try {
           const result = await coach.analyzeCall(body.messages, {
             callSid: body.callSid,
-            userId: req.auth?.userId,
+            userId: auth.userId,
           });
           res.status(200).json(result);
         } catch (err: unknown) {
