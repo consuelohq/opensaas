@@ -5,6 +5,7 @@ import {
   useCallAnalytics,
   type AnalyticsPeriod,
 } from '@/dialer/hooks/useCallAnalytics';
+import { formatDurationTimer } from '@/dialer/utils/callDuration';
 
 // region styled
 
@@ -118,12 +119,6 @@ const OUTCOME_COLORS: Record<string, string> = {
 
 const DEFAULT_COLOR = '#6b7280';
 
-const formatDuration = (seconds: number): string => {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-};
-
 export const AnalyticsDashboard = () => {
   const { metrics, loading, fetchMetrics } = useCallAnalytics();
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
@@ -174,7 +169,7 @@ export const AnalyticsDashboard = () => {
             </StyledCard>
             <StyledCard>
               <StyledCardValue>
-                {formatDuration(metrics.avgDuration)}
+                {formatDurationTimer(metrics.avgDuration)}
               </StyledCardValue>
               <StyledCardLabel>Avg Duration</StyledCardLabel>
             </StyledCard>
