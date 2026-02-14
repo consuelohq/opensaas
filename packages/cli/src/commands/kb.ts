@@ -30,6 +30,15 @@ interface KBStats {
   collections: Array<{ name: string; chunks: number; files: number; lastIndexed?: string }>;
 }
 
+const kbErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
+  const code = (data as { error?: { code?: string } })?.error?.code;
+  if (code === 'COLLECTION_NOT_FOUND') return `collection not found: ${ctx.collection ?? 'unknown'}`;
+  if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.fileId ?? 'unknown'} — upload it first with \`consuelo files upload\``;
+  if (code === 'ALREADY_INDEXED') return 'file is already indexed in this collection';
+  if (code === 'EMBEDDING_FAILED') return 'failed to generate embeddings — check your API key';
+  return null;
+};
+
 export const registerKb = (program: Command): void => {
   const kb = program
     .command('kb')
@@ -71,7 +80,11 @@ const kbSearch = async (query: string, opts: { collection?: string; limit: strin
     if (opts.collection) body.collection = opts.collection;
 
     const res = await apiPost<{ results: SearchResult[] }>('/v1/knowledge/search', body);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = kbErrorMessage(res.data, { collection: opts.collection ?? '' });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
@@ -138,11 +151,15 @@ const kbCollectionsCreate = async (opts: { name: string; description?: string })
 const kbCollectionsDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/knowledge/collections/${id}`);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = kbErrorMessage(res.data, { collection: id });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
-    log('collection deleted');
+    log(`collection deleted: ${id}`);
   } catch (err: unknown) {
     captureError(err, { command: 'kb collections delete' });
     error(err instanceof Error ? err.message : 'failed to delete collection');
@@ -157,11 +174,15 @@ const kbIndex = async (fileId: string, opts: { collection: string; chunkSize: st
       chunkSize: parseInt(opts.chunkSize, 10),
       chunkOverlap: parseInt(opts.chunkOverlap, 10),
     });
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = kbErrorMessage(res.data, { fileId, collection: opts.collection });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
-    log(`indexed → ${opts.collection} (${res.data.chunks} chunks)`);
+    log(`indexed ${fileId} → ${opts.collection} (${res.data.chunks} chunks)`);
   } catch (err: unknown) {
     captureError(err, { command: 'kb index' });
     error(err instanceof Error ? err.message : 'indexing failed');
@@ -172,11 +193,15 @@ const kbIndex = async (fileId: string, opts: { collection: string; chunkSize: st
 const kbDeindex = async (fileId: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deindexed: boolean }>(`/v1/files/${fileId}/index`);
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) {
+      const msg = kbErrorMessage(res.data, { fileId });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(res.status, res.data);
+    }
 
     if (isJson()) { json(res.data); return; }
 
-    log('file deindexed');
+    log(`deindexed ${fileId}`);
   } catch (err: unknown) {
     captureError(err, { command: 'kb deindex' });
     error(err instanceof Error ? err.message : 'deindexing failed');
