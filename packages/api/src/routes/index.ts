@@ -16,8 +16,9 @@ import { fileRoutes } from './files.js';
 import { knowledgeRoutes } from './knowledge.js';
 import { localPresenceRoutes } from './local-presence.js';
 import { parallelRoutes } from './parallel.js';
+import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
-export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, voiceRoutes };
+export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, queueRoutes, voiceRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** /v1/analytics routes */
@@ -65,6 +66,7 @@ export const allRoutes = (): RouteDefinition[] => [
   ...fileRoutes(),
   ...localPresenceRoutes(),
   ...parallelRoutes(),
+  ...queueRoutes(),
   ...voiceRoutes(),
   ...analyticsRoutes(),
   ...webhookRoutes(),
