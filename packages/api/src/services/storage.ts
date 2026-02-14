@@ -80,6 +80,23 @@ export class StorageService {
     }
   }
 
+  async getObject(key: string): Promise<Buffer> {
+    try {
+      const client = await this.getClient();
+      const { GetObjectCommand } = await import('@aws-sdk/client-s3');
+      const response = await client.send(new GetObjectCommand({
+        Bucket: this.config.bucket,
+        Key: key,
+      }));
+      const bytes = await response.Body?.transformToByteArray();
+      if (!bytes) throw new Error('Empty response body');
+      return Buffer.from(bytes);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch object';
+      throw new Error(message);
+    }
+  }
+
   async deleteObject(key: string): Promise<void> {
     try {
       const client = await this.getClient();
