@@ -15,7 +15,16 @@ import { FocusComponentType } from '@/ui/utilities/focus/types/FocusComponentTyp
 import { useHotkeysOnFocusedElement } from '@/ui/utilities/hotkey/hooks/useHotkeysOnFocusedElement';
 import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
+import { useCallback } from 'react';
 import { Key } from 'ts-key-enum';
+
+// DEV-800: single-key → candidate field names (first match wins)
+const FIELD_SHORTCUT_MAP: Record<string, string[]> = {
+  a: ['assignee', 'accountOwner'],
+  s: ['status', 'stage'],
+  l: ['label', 'labels', 'tags'],
+  p: ['priority'],
+};
 
 export const useRecordTableRowHotkeys = (focusId: string) => {
   const { isSelected, recordId, objectNameSingular, rowIndex } =
@@ -35,7 +44,8 @@ export const useRecordTableRowHotkeys = (focusId: string) => {
 
   const { pushFocusItemToFocusStack } = usePushFocusItemToFocusStack();
 
-  const { recordTableId } = useRecordTableContextOrThrow();
+  const { recordTableId, objectMetadataItem, visibleRecordFields } =
+    useRecordTableContextOrThrow();
 
   const handleSelectRow = () => {
     setCurrentRowSelected({
@@ -146,5 +156,77 @@ export const useRecordTableRowHotkeys = (focusId: string) => {
     options: {
       enableOnFormTags: false,
     },
+  });
+
+  // DEV-800: focus a cell by field name candidates (first match in visible columns wins)
+  const focusCellByFieldNames = useCallback(
+    (candidateNames: string[]) => {
+      const fields = objectMetadataItem.fields;
+
+      for (const name of candidateNames) {
+        const fieldMeta = fields.find((f) => f.name === name);
+        if (!fieldMeta) continue;
+
+        const columnIndex = visibleRecordFields.findIndex(
+          (rf) => rf.fieldMetadataItemId === fieldMeta.id,
+        );
+        if (columnIndex === -1) continue;
+
+        setIsRowFocusActive(false);
+        const cellPosition = { row: rowIndex, column: columnIndex };
+        focusRecordTableCell(cellPosition);
+
+        const cellFocusId = getRecordTableCellFocusId({
+          recordTableId,
+          cellPosition,
+        });
+
+        pushFocusItemToFocusStack({
+          focusId: cellFocusId,
+          component: {
+            type: FocusComponentType.RECORD_TABLE_CELL,
+            instanceId: cellFocusId,
+          },
+        });
+        return;
+      }
+    },
+    [
+      objectMetadataItem.fields,
+      visibleRecordFields,
+      rowIndex,
+      setIsRowFocusActive,
+      focusRecordTableCell,
+      recordTableId,
+      pushFocusItemToFocusStack,
+    ],
+  );
+
+  useHotkeysOnFocusedElement({
+    keys: ['a'],
+    callback: () => focusCellByFieldNames(FIELD_SHORTCUT_MAP.a),
+    focusId,
+    dependencies: [focusCellByFieldNames],
+  });
+
+  useHotkeysOnFocusedElement({
+    keys: ['s'],
+    callback: () => focusCellByFieldNames(FIELD_SHORTCUT_MAP.s),
+    focusId,
+    dependencies: [focusCellByFieldNames],
+  });
+
+  useHotkeysOnFocusedElement({
+    keys: ['l'],
+    callback: () => focusCellByFieldNames(FIELD_SHORTCUT_MAP.l),
+    focusId,
+    dependencies: [focusCellByFieldNames],
+  });
+
+  useHotkeysOnFocusedElement({
+    keys: ['p'],
+    callback: () => focusCellByFieldNames(FIELD_SHORTCUT_MAP.p),
+    focusId,
+    dependencies: [focusCellByFieldNames],
   });
 };
