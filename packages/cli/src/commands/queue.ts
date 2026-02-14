@@ -3,6 +3,13 @@ import { apiGet, apiPost, apiDelete, handleApiError } from '../api-client.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
+interface QueueResult {
+  contactId: string;
+  callSid?: string;
+  outcome?: string;
+  attemptedAt: string;
+}
+
 interface Queue {
   id: string;
   name: string;
@@ -10,6 +17,7 @@ interface Queue {
   ordering: 'sequential' | 'round-robin' | 'priority';
   currentIndex: number;
   status: 'idle' | 'active' | 'paused' | 'completed';
+  results: QueueResult[];
   createdAt: string;
 }
 
@@ -64,6 +72,13 @@ const handle501 = (status: number): boolean => {
   return false;
 };
 
+const formatProgress = (q: Queue): string => {
+  const total = q.contactIds.length;
+  const completed = q.currentIndex;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  return `${completed}/${total} (${pct}%)`;
+};
+
 const queueList = async (opts: { status?: string }): Promise<void> => {
   try {
     const query: Record<string, string> = {};
@@ -78,13 +93,14 @@ const queueList = async (opts: { status?: string }): Promise<void> => {
     const { queues } = res.data;
     if (!queues.length) { log('no queues'); return; }
 
-    log('id          | name              | status   | contacts | ordering');
-    log('------------|-------------------|----------|----------|----------');
+    log('id          | name              | status   | progress    | ordering');
+    log('------------|-------------------|----------|-------------|----------');
     for (const q of queues) {
       const id = q.id.padEnd(11).slice(0, 11);
       const name = q.name.padEnd(17).slice(0, 17);
       const status = q.status.padEnd(8).slice(0, 8);
-      log(`${id} | ${name} | ${status} | ${String(q.contactIds.length).padEnd(8)} | ${q.ordering}`);
+      const progress = formatProgress(q).padEnd(11).slice(0, 11);
+      log(`${id} | ${name} | ${status} | ${progress} | ${q.ordering}`);
     }
     log(`\n${queues.length} queue${queues.length === 1 ? '' : 's'}`);
   } catch (err: unknown) {
@@ -144,29 +160,77 @@ const queueCreate = async (opts: { name: string; contacts?: string; ordering: st
   }
 };
 
-const queueAction = async (action: string, id?: string, body?: unknown): Promise<void> => {
+const queueStart = async (id?: string, opts?: { mode: string }): Promise<void> => {
   try {
     const queueId = id ?? 'active';
-    const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/${action}`, body);
+    const mode = opts?.mode ?? 'power';
+    const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/start`, { mode });
     handle501(res.status);
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
-    log(`queue ${action === 'start' ? 'started' : action === 'stop' ? 'stopped' : `${action}d`}: ${res.data.queue.name}`);
+    const q = res.data.queue;
+    log(`queue started: ${q.name} (${mode} mode, ${q.contactIds.length} contacts)`);
   } catch (err: unknown) {
-    captureError(err, { command: `queue ${action}` });
-    error(err instanceof Error ? err.message : `failed to ${action} queue`);
+    captureError(err, { command: 'queue start' });
+    error(err instanceof Error ? err.message : 'failed to start queue');
     process.exit(1);
   }
 };
 
-const queueStart = async (id?: string, opts?: { mode: string }): Promise<void> =>
-  queueAction('start', id, { mode: opts?.mode ?? 'power' });
+const queuePause = async (id?: string): Promise<void> => {
+  try {
+    const queueId = id ?? 'active';
+    const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/pause`);
+    handle501(res.status);
+    if (!res.ok) handleApiError(res.status, res.data);
 
-const queuePause = async (id?: string): Promise<void> => queueAction('pause', id);
-const queueResume = async (id?: string): Promise<void> => queueAction('resume', id);
-const queueStop = async (id?: string): Promise<void> => queueAction('stop', id);
+    if (isJson()) { json(res.data); return; }
+
+    const q = res.data.queue;
+    log(`queue paused: ${q.name} (${formatProgress(q)} completed)`);
+  } catch (err: unknown) {
+    captureError(err, { command: 'queue pause' });
+    error(err instanceof Error ? err.message : 'failed to pause queue');
+    process.exit(1);
+  }
+};
+
+const queueResume = async (id?: string): Promise<void> => {
+  try {
+    const queueId = id ?? 'active';
+    const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/resume`);
+    handle501(res.status);
+    if (!res.ok) handleApiError(res.status, res.data);
+
+    if (isJson()) { json(res.data); return; }
+
+    log(`queue resumed: ${res.data.queue.name}`);
+  } catch (err: unknown) {
+    captureError(err, { command: 'queue resume' });
+    error(err instanceof Error ? err.message : 'failed to resume queue');
+    process.exit(1);
+  }
+};
+
+const queueStop = async (id?: string): Promise<void> => {
+  try {
+    const queueId = id ?? 'active';
+    const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/stop`);
+    handle501(res.status);
+    if (!res.ok) handleApiError(res.status, res.data);
+
+    if (isJson()) { json(res.data); return; }
+
+    const q = res.data.queue;
+    log(`queue stopped: ${q.name} (${formatProgress(q)} completed)`);
+  } catch (err: unknown) {
+    captureError(err, { command: 'queue stop' });
+    error(err instanceof Error ? err.message : 'failed to stop queue');
+    process.exit(1);
+  }
+};
 
 const queueAdd = async (queueId: string, contactId: string, opts: { priority: string }): Promise<void> => {
   try {
@@ -179,7 +243,8 @@ const queueAdd = async (queueId: string, contactId: string, opts: { priority: st
 
     if (isJson()) { json(res.data); return; }
 
-    log(`added ${contactId} to ${res.data.queue.name} (${res.data.queue.contactIds.length} contacts)`);
+    const q = res.data.queue;
+    log(`added ${contactId} to ${q.name} (${q.contactIds.length} contacts)`);
   } catch (err: unknown) {
     captureError(err, { command: 'queue add' });
     error(err instanceof Error ? err.message : 'failed to add contact to queue');
@@ -195,7 +260,7 @@ const queueRemove = async (queueId: string, contactId: string): Promise<void> =>
 
     if (isJson()) { json(res.data); return; }
 
-    log(`removed ${contactId} from queue`);
+    log(`removed ${contactId} from queue ${queueId}`);
   } catch (err: unknown) {
     captureError(err, { command: 'queue remove' });
     error(err instanceof Error ? err.message : 'failed to remove contact from queue');
