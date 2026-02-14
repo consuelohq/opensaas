@@ -5,9 +5,13 @@ globalThis.__consuelo_cli_mode = true;
 import { Command } from 'commander';
 import { createLogger } from '@consuelo/logger';
 import { initCommand } from './commands/init.js';
-import { callCommand } from './commands/call.js';
 import { coachCommand } from './commands/coach.js';
 import { registerContacts } from './commands/contacts.js';
+import { registerCalls } from './commands/calls.js';
+import { registerQueue } from './commands/queue.js';
+import { registerKb } from './commands/kb.js';
+import { registerFiles } from './commands/files.js';
+import { registerHistory } from './commands/history.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -50,14 +54,6 @@ program
   });
 
 program
-  .command('call')
-  .description('make a call with AI coaching')
-  .argument('<number>', 'phone number to call')
-  .action(async (number) => {
-    await callCommand(number);
-  });
-
-program
   .command('coach')
   .description('analyze a call transcript')
   .option('--transcript <file>', 'path to transcript file')
@@ -65,7 +61,13 @@ program
     await coachCommand({ transcript: opts.transcript });
   });
 
+// phase 8 command groups
 registerContacts(program);
+registerCalls(program);
+registerQueue(program);
+registerKb(program);
+registerFiles(program);
+registerHistory(program);
 
 program
   .command('analytics')
