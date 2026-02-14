@@ -46,7 +46,7 @@ export class ConferenceService {
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<Response>',
       `<Dial>`,
-      `<Conference startConferenceOnEnter="${startOnEnter}" endConferenceOnExit="${endOnExit}" waitUrl="${waitUrl}"${label}>`,
+      `<Conference startConferenceOnEnter="${startOnEnter}" endConferenceOnExit="${endOnExit}" beep="false" waitUrl="${waitUrl}"${label}>`,
       conferenceName,
       '</Conference>',
       '</Dial>',
@@ -77,6 +77,7 @@ export class ConferenceService {
       const participant = await client.conferences(conf.sid).participants.create({
         to,
         from,
+        earlyMedia: true,
         endConferenceOnExit: opts?.endConferenceOnExit ?? true,
         label: opts?.label ?? 'customer',
         statusCallback: opts?.statusCallback,

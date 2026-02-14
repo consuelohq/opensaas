@@ -3,8 +3,7 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import { randomUUID } from 'node:crypto';
 
-// in-memory conference name map: callSid → conferenceName
-// in production this would be redis-backed
+// TODO: DEV-798 — replace with redis for multi-instance support
 const conferenceMap = new Map<string, string>();
 
 interface TransferBody {
@@ -86,7 +85,7 @@ export const voiceRoutes = (): RouteDefinition[] => {
           });
         }
 
-        res.status(200).json(twiml);
+        res.type('text/xml').status(200).send(twiml);
       }),
     },
 
