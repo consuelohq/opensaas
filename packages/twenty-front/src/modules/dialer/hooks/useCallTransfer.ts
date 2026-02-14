@@ -5,6 +5,7 @@ import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { activeTransferState } from '@/dialer/states/activeTransferState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
+import { conferenceSidState } from '@/dialer/states/conferenceState';
 import type { TransferType, TransferStatus } from '@/dialer/types/dialer';
 
 interface TransferState {
@@ -46,6 +47,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
   const callState = useRecoilValue(callStateAtom);
   const setActiveTransfer = useSetRecoilState(activeTransferState);
   const setIsOnHold = useSetRecoilState(isOnHoldState);
+  const setConferenceSid = useSetRecoilState(conferenceSidState);
 
   const [transferState, setTransferState] = useState<TransferState>({
     status: 'idle',
@@ -70,6 +72,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
           conferenceSid: (data.conferenceSid as string) ?? null,
           error: null,
         });
+        if (data.conferenceSid) setConferenceSid(data.conferenceSid as string);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Transfer failed';
         setTransferState((prev) => ({ ...prev, status: 'failed', error: message }));
@@ -122,7 +125,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
       try {
         await postJson(`/v1/calls/${callSid}/hold`, { hold });
         setIsOnHold(hold);
-      } catch {
+      } catch (err: unknown) {
         // hold toggle failed — UI stays in previous state
       }
     },
