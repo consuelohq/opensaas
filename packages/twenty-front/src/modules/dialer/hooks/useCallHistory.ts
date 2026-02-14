@@ -59,8 +59,8 @@ export const useCallHistory = (): UseCallHistoryReturn => {
           throw new Error(`History API error: ${res.status}`);
         }
 
-        const data = (await res.json()) as CallHistoryItem[];
-        setCallHistory(data);
+        const data = (await res.json()) as { calls: CallHistoryItem[] };
+        setCallHistory(data.calls);
       } catch (err: unknown) {
         const message =
           // eslint-disable-next-line lingui/no-unlocalized-strings
