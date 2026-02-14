@@ -1,10 +1,27 @@
-import { Dialer, type TransferType } from '@consuelo/dialer';
+import { Dialer, type TransferType, type TransferStatus } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import { randomUUID } from 'node:crypto';
 
 // TODO: DEV-798 — replace with redis for multi-instance support
 const conferenceMap = new Map<string, string>();
+
+interface TransferRecord {
+  transferId: string;
+  status: TransferStatus;
+  transferType: TransferType;
+  recipientPhone: string;
+  conferenceName: string;
+  conferenceSid: string | null;
+  transferCallSid: string | null;
+  customerMuted: boolean;
+  initiatedAt: string;
+  connectedAt: string | null;
+  completedAt: string | null;
+}
+
+// TODO: DEV-798 — replace with redis for multi-instance support
+const transferMap = new Map<string, TransferRecord>();
 
 interface TransferBody {
   to: string;
@@ -134,7 +151,22 @@ export const voiceRoutes = (): RouteDefinition[] => {
             return;
           }
 
-          res.status(200).json(result);
+          const transferId = randomUUID();
+          transferMap.set(transferId, {
+            transferId,
+            status: body.type === 'warm' ? 'consulting' : 'completed',
+            transferType: body.type,
+            recipientPhone: body.to,
+            conferenceName,
+            conferenceSid: result.conferenceSid ?? null,
+            transferCallSid: result.transferCallSid ?? null,
+            customerMuted: false,
+            initiatedAt: new Date().toISOString(),
+            connectedAt: body.type === 'cold' ? new Date().toISOString() : null,
+            completedAt: body.type === 'cold' ? new Date().toISOString() : null,
+          });
+
+          res.status(200).json({ ...result, transferId });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
@@ -259,6 +291,107 @@ export const voiceRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Hold toggle failed';
           res.status(500).json({ error: { code: 'HOLD_FAILED', message } });
         }
+      }),
+    },
+
+    // --- transfer/:transferId param routes ---
+
+    {
+      method: 'POST',
+      path: '/v1/calls/transfer/:transferId/mute-customer',
+      handler: errorHandler(async (req, res) => {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          return;
+        }
+
+        const transferId = req.params?.transferId;
+        if (!transferId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing transferId' } });
+          return;
+        }
+
+        const record = transferMap.get(transferId);
+        if (!record) {
+          res.status(404).json({ error: { code: 'TRANSFER_NOT_FOUND', message: 'Transfer not found' } });
+          return;
+        }
+
+        if (record.transferType !== 'warm') {
+          res.status(400).json({ error: { code: 'INVALID_TRANSFER_TYPE', message: 'Mute only available for warm transfers' } });
+          return;
+        }
+
+        if (record.status === 'completed' || record.status === 'cancelled' || record.status === 'failed') {
+          res.status(400).json({ error: { code: 'TRANSFER_NOT_ACTIVE', message: 'Transfer is no longer active' } });
+          return;
+        }
+
+        const body = req.body as { muted?: boolean } | undefined;
+        if (body?.muted === undefined) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "muted" boolean' } });
+          return;
+        }
+
+        try {
+          const conferenceSid = record.conferenceSid ?? await dialer.conference.findConferenceSid(record.conferenceName);
+          if (!conferenceSid) {
+            res.status(404).json({ error: { code: 'CONFERENCE_NOT_FOUND', message: 'Conference not in-progress' } });
+            return;
+          }
+
+          const participants = await dialer.listParticipants(conferenceSid);
+          const customer = participants.find((p: { label: string }) => p.label === 'customer');
+          if (!customer) {
+            res.status(404).json({ error: { code: 'PARTICIPANT_NOT_FOUND', message: 'Customer not in conference' } });
+            return;
+          }
+
+          await dialer.muteParticipant(conferenceSid, customer.callSid, body.muted);
+          record.customerMuted = body.muted;
+
+          res.status(200).json({ transferId, customerMuted: body.muted });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Mute toggle failed';
+          res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
+        }
+      }),
+    },
+
+    {
+      method: 'GET',
+      path: '/v1/calls/transfer/:transferId/status',
+      handler: errorHandler(async (req, res) => {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          return;
+        }
+
+        const transferId = req.params?.transferId;
+        if (!transferId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing transferId' } });
+          return;
+        }
+
+        const record = transferMap.get(transferId);
+        if (!record) {
+          res.status(404).json({ error: { code: 'TRANSFER_NOT_FOUND', message: 'Transfer not found' } });
+          return;
+        }
+
+        res.status(200).json({
+          transferId: record.transferId,
+          status: record.status,
+          transferType: record.transferType,
+          recipientPhone: record.recipientPhone,
+          conferenceId: record.conferenceSid,
+          customerMuted: record.customerMuted,
+          initiatedAt: record.initiatedAt,
+          connectedAt: record.connectedAt,
+          completedAt: record.completedAt,
+        });
       }),
     },
   ];

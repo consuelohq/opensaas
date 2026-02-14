@@ -103,6 +103,16 @@ export class ConferenceService {
     }
   }
 
+  async muteParticipant(conferenceSid: string, callSid: string, muted: boolean): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.conferences(conferenceSid).participants(callSid).update({ muted });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Mute toggle failed';
+      throw new Error(message);
+    }
+  }
+
   /** Find the conference SID by friendly name */
   async findConferenceSid(conferenceName: string): Promise<string | null> {
     try {
