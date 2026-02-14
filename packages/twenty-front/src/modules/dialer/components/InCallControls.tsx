@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useCallback, useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
+  IconCheck,
   IconHash,
   IconMicrophone,
   IconMicrophoneOff,
@@ -9,9 +10,12 @@ import {
   IconPlayerPause,
   IconPlayerPlay,
   IconSwitchHorizontal,
+  IconX,
 } from '@tabler/icons-react';
 
 import { DialPad } from '@/dialer/components/DialPad';
+import { TransferModal } from '@/dialer/components/TransferModal';
+import { useCallTransfer } from '@/dialer/hooks/useCallTransfer';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isMutedState } from '@/dialer/states/isMutedState';
@@ -24,6 +28,7 @@ const StyledContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: ${({ theme }) => theme.spacing(3)};
+  position: relative;
 `;
 
 const StyledBar = styled.div`
@@ -87,14 +92,51 @@ const StyledOverlay = styled.div`
   width: 100%;
 `;
 
+const StyledWarmBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing(3)};
+  padding: ${({ theme }) => theme.spacing(2)};
+  background: ${({ theme }) => theme.background.tertiary};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  width: 100%;
+`;
+
+const StyledWarmLabel = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.font.color.secondary};
+  flex: 1;
+`;
+
+const StyledSmallButton = styled.button<{ danger?: boolean }>`
+  padding: 6px 12px;
+  border: none;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: ${({ danger, theme }) =>
+    danger ? '#ef4444' : theme.color.blue};
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 export const InCallControls = () => {
   const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const [isMuted, setIsMuted] = useRecoilState(isMutedState);
   const [isOnHold, setIsOnHold] = useRecoilState(isOnHoldState);
   const [isDTMFOpen, setIsDTMFOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
+
+  const { transferState, initiateTransfer, completeTransfer, cancelTransfer, toggleHold } =
+    useCallTransfer();
 
   const isActive = callState.status === 'active';
+  const isConsulting = transferState.status === 'consulting';
 
   const handleMuteToggle = useCallback(() => {
     if (!activeCall) return;
@@ -104,9 +146,9 @@ export const InCallControls = () => {
   }, [activeCall, isMuted, setIsMuted]);
 
   const handleHoldToggle = useCallback(() => {
-    // DEV-716: UI toggle only — server-side hold via TwiML in transfer task
-    setIsOnHold((prev) => !prev);
-  }, [setIsOnHold]);
+    const next = !isOnHold;
+    toggleHold(next);
+  }, [isOnHold, toggleHold]);
 
   const handleEndCall = useCallback(() => {
     activeCall?.disconnect();
@@ -115,6 +157,21 @@ export const InCallControls = () => {
   const handleDTMFToggle = useCallback(() => {
     setIsDTMFOpen((prev) => !prev);
   }, []);
+
+  const handleTransferToggle = useCallback(() => {
+    setIsTransferOpen((prev) => !prev);
+    setIsDTMFOpen(false);
+  }, []);
+
+  const handleTransfer = useCallback(
+    (to: string, type: 'cold' | 'warm') => {
+      initiateTransfer(to, type);
+      if (type === 'cold') {
+        setIsTransferOpen(false);
+      }
+    },
+    [initiateTransfer],
+  );
 
   // keyboard shortcuts
   useEffect(() => {
@@ -130,7 +187,11 @@ export const InCallControls = () => {
           handleHoldToggle();
           break;
         case 'escape':
-          handleEndCall();
+          if (isTransferOpen) {
+            setIsTransferOpen(false);
+          } else {
+            handleEndCall();
+          }
           break;
       }
     };
@@ -138,12 +199,26 @@ export const InCallControls = () => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleMuteToggle, handleHoldToggle, handleEndCall]);
+  }, [handleMuteToggle, handleHoldToggle, handleEndCall, isTransferOpen]);
 
   if (!VISIBLE_STATUSES.has(callState.status)) return null;
 
   return (
     <StyledContainer>
+      {isConsulting && (
+        <StyledWarmBar>
+          <StyledWarmLabel>Consulting with transfer target...</StyledWarmLabel>
+          <StyledSmallButton onClick={completeTransfer}>
+            <IconCheck size={14} />
+            Complete
+          </StyledSmallButton>
+          <StyledSmallButton danger onClick={cancelTransfer}>
+            <IconX size={14} />
+            Cancel
+          </StyledSmallButton>
+        </StyledWarmBar>
+      )}
+
       <StyledBar>
         <StyledButtonGroup>
           <StyledButton
@@ -204,8 +279,11 @@ export const InCallControls = () => {
 
         <StyledButtonGroup>
           <StyledButton
-            isDisabled
+            active={isTransferOpen}
+            onClick={handleTransferToggle}
+            isDisabled={!isActive}
             aria-label="Transfer"
+            aria-pressed={isTransferOpen}
           >
             <IconSwitchHorizontal size={20} />
           </StyledButton>
@@ -217,6 +295,14 @@ export const InCallControls = () => {
         <StyledOverlay>
           <DialPad />
         </StyledOverlay>
+      )}
+
+      {isTransferOpen && isActive && (
+        <TransferModal
+          onTransfer={handleTransfer}
+          onClose={() => setIsTransferOpen(false)}
+          isTransferring={transferState.status === 'initiating'}
+        />
       )}
     </StyledContainer>
   );

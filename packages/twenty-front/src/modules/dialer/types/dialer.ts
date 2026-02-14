@@ -71,12 +71,13 @@ export interface CallerIdOption {
 }
 
 /** Transfer types supported by the dialer */
-export type TransferType = 'blind' | 'warm';
+export type TransferType = 'cold' | 'warm';
 
 /** Transfer lifecycle states */
 export type TransferStatus =
-  | 'initiated'
+  | 'initiating'
   | 'ringing'
+  | 'consulting'
   | 'connected'
   | 'completed'
   | 'failed'

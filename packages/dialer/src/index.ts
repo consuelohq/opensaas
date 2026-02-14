@@ -8,6 +8,7 @@ export type { DialerProvider } from './providers/base.js';
 // Services
 export { LocalPresenceService, extractAreaCode } from './services/local-presence.js';
 export { CallerIdLockService, InMemoryLockStore } from './services/caller-id.js';
+export { ConferenceService } from './services/conference.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
@@ -24,4 +25,11 @@ export type {
   PhoneNumber,
   NumberSelection,
   CallerIdLock,
+  ConferenceParticipant,
+  ConferenceInfo,
+  TransferType,
+  TransferStatus,
+  TransferOptions,
+  TransferResult,
+  TwimlParams,
 } from './types.js';

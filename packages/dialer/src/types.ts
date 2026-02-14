@@ -114,3 +114,61 @@ export interface CallerIdLock {
   acquiredAt: Date;
   expiresAt: Date;
 }
+
+// --- Conference + Transfer types ---
+
+/** Conference participant info from Twilio */
+export interface ConferenceParticipant {
+  callSid: string;
+  conferenceSid: string;
+  label: string;
+  hold: boolean;
+  muted: boolean;
+  status: string;
+}
+
+/** Conference info tracked per call */
+export interface ConferenceInfo {
+  conferenceSid: string;
+  conferenceName: string;
+  callSid: string;
+  customerCallSid: string | null;
+  participants: ConferenceParticipant[];
+}
+
+/** Transfer type — cold (blind) or warm (consult) */
+export type TransferType = 'cold' | 'warm';
+
+/** Transfer lifecycle */
+export type TransferStatus =
+  | 'initiating'
+  | 'ringing'
+  | 'consulting'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
+
+/** Options to start a transfer */
+export interface TransferOptions {
+  callSid: string;
+  conferenceName: string;
+  to: string;
+  from: string;
+  type: TransferType;
+  userId: string;
+}
+
+/** Result of a transfer operation */
+export interface TransferResult {
+  success: boolean;
+  transferCallSid?: string;
+  conferenceSid?: string;
+  error?: string;
+}
+
+/** TwiML generation params for the conference webhook */
+export interface TwimlParams {
+  to: string;
+  from: string;
+  conferenceName?: string;
+}
