@@ -121,6 +121,7 @@ export const TranscriptView = ({
     try {
       const res = await fetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/transcript`,
+        { credentials: 'include' },
       );
       if (!res.ok) throw new Error('fetch failed');
       const data = (await res.json()) as { entries: TranscriptEntry[] };
