@@ -262,9 +262,10 @@ we're building a twenty CRM fork with an embedded dialer sidebar. the python bac
 | 5. history + analytics | DEV-736 | 7 | — | spec'd |
 | 6. files + KB | DEV-743 | 6 | 13 | **in progress** (DEV-748 ✅) |
 | 7. settings + config | DEV-750 | 10 | 18 | python extraction done |
-| 8. agent workflows | DEV-760 | 7 | — | spec'd |
-| 9. CLI + deploy | DEV-768 | 6 | — | spec'd |
+| 8. CLI data & action commands | DEV-760 | 6 | — | ✅ done |
+| 9. deploy + infra | DEV-768 | 7 | — | spec'd |
 | 10. GHL integration | DEV-779 | 7 | 13 | created with subtasks |
+| 11. natural language assistant | DEV-807 | 4 | 3 | spec'd |
 
 ### key patterns extracted from python codebase
 
@@ -291,6 +292,8 @@ Phase 1 → Phase 6 (independent)
 Phase 1 → Phase 8 (independent)
 Phase 1 → Phase 9
 Phase 2 → Phase 7 (settings needs dialer for audio/calling mode)
+Phase 8 → Phase 11 (assistant needs CLI commands as tools)
+Phase 1 → Phase 11 (sidebar needs twenty CRM)
 ```
 
 ## dialer module — conference-based architecture
