@@ -78,7 +78,7 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         const db = await getPool();
 
         const summary = await db.query(SQL_METRICS_SUMMARY, [
-          auth.workspaceId, 'answered', 'week', periodStart,
+          auth.workspaceId, 'connected', 'week', periodStart,
         ]);
         const outcomes = await db.query(SQL_OUTCOME_DIST, [auth.workspaceId, periodStart]);
         const daily = await db.query(SQL_DAILY_COUNTS, [auth.workspaceId, periodStart]);
