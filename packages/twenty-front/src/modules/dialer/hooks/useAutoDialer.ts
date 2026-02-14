@@ -58,7 +58,7 @@ export const useAutoDialer = () => {
       try {
         skipContact('Voicemail - auto-skipped');
       } catch {
-        // skip failed
+        // skip failed — auto-dialer retries on next interval
       }
       return;
     }
@@ -77,7 +77,7 @@ export const useAutoDialer = () => {
             try {
               advanceQueue();
             } catch {
-              // advance failed
+              // advance failed — queue stays at current item, user can retry
             }
             return null;
           }
@@ -103,7 +103,7 @@ export const useAutoDialer = () => {
           try {
             advanceQueue();
           } catch {
-            // advance failed
+            // advance failed — queue stays at current item, user can retry
           }
           return null;
         }

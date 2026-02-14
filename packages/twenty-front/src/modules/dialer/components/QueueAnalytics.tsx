@@ -9,7 +9,7 @@ import {
   activeQueueState,
   queueItemsState,
 } from '@/dialer/states/queueState';
-import { formatDuration } from '@/dialer/utils/analyticsCalculator';
+import { formatDurationHuman } from '@/dialer/utils/analyticsCalculator';
 
 // region styled
 
@@ -167,7 +167,7 @@ const StatCards = () => {
       </StyledCard>
       <StyledCard>
         <StyledCardValue>
-          {formatDuration(stats.avgCallDurationSeconds)}
+          {formatDurationHuman(stats.avgCallDurationSeconds)}
         </StyledCardValue>
         <StyledCardLabel>Avg Duration</StyledCardLabel>
       </StyledCard>
@@ -251,7 +251,7 @@ const QueueSessionSummary = () => {
       <StyledSummaryTitle>Queue Complete</StyledSummaryTitle>
       <StyledSummaryDetail>
         {totalCalls} calls · {stats.answerRatePercentage}% connected ·{' '}
-        {formatDuration(stats.totalTimeSeconds)} total
+        {formatDurationHuman(stats.totalTimeSeconds)} total
       </StyledSummaryDetail>
       <StyledExportButton onClick={handleExport}>
         <IconDownload size={14} />

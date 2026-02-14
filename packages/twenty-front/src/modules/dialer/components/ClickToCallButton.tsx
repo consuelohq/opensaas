@@ -76,8 +76,8 @@ export const ClickToCallButton = ({
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userPhone: userCallbackPhone,
-            contactPhone: phone,
+            agentPhone: userCallbackPhone,
+            customerPhone: phone,
           }),
         }).catch(() => {
           // callback initiation failure — user can still dial from sidebar
