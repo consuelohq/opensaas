@@ -141,7 +141,7 @@ const SQL_LIST_COLLECTIONS =
 const SQL_UPDATE_FILES_CLEAR_COLLECTION =
   'UPDATE files SET collection_id = NULL, indexed_at = NULL WHERE collection_id = $1';
 
-const SQL_DELETE_COLLECTION = 'DELETE FROM knowledge_collections WHERE id = $1';
+const SQL_DELETE_COLLECTION = 'DELETE FROM knowledge_collections WHERE id = $1 AND workspace_id = $2';
 
 const SQL_DELETE_CHUNKS_BY_FILE = 'DELETE FROM knowledge_chunks WHERE file_id = $1';
 
@@ -161,7 +161,7 @@ const SQL_AFFECTED_COLLECTIONS =
   'SELECT DISTINCT collection_id FROM knowledge_chunks WHERE file_id = $1';
 
 const SQL_CLEAR_FILE_INDEX =
-  'UPDATE files SET indexed_at = NULL, collection_id = NULL WHERE id = $1';
+  'UPDATE files SET indexed_at = NULL, collection_id = NULL WHERE id = $1 AND workspace_id = $2';
 
 const SQL_STATS =
   'SELECT kc.id AS collection_id, kc.name AS collection_name, kc.chunk_count, ' +
@@ -236,13 +236,13 @@ export class KnowledgeService {
     return result.rows.map(rowToCollection);
   }
 
-  async deleteCollection(collectionId: string): Promise<void> {
+  async deleteCollection(collectionId: string, workspaceId: string): Promise<void> {
     const pool = await this.getPool();
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
       await client.query(SQL_UPDATE_FILES_CLEAR_COLLECTION, [collectionId]);
-      await client.query(SQL_DELETE_COLLECTION, [collectionId]);
+      await client.query(SQL_DELETE_COLLECTION, [collectionId, workspaceId]);
       await client.query('COMMIT');
     } catch (err: unknown) {
       await client.query('ROLLBACK');
@@ -449,7 +449,7 @@ export class KnowledgeService {
     }
   }
 
-  async deindexFile(fileId: string): Promise<void> {
+  async deindexFile(fileId: string, workspaceId: string): Promise<void> {
     const pool = await this.getPool();
     const client = await pool.connect();
 
@@ -462,7 +462,7 @@ export class KnowledgeService {
         await client.query(SQL_UPDATE_COLLECTION_CHUNK_COUNT, [row.collection_id]);
       }
 
-      await client.query(SQL_CLEAR_FILE_INDEX, [fileId]);
+      await client.query(SQL_CLEAR_FILE_INDEX, [fileId, workspaceId]);
       await client.query('COMMIT');
     } catch (err: unknown) {
       await client.query('ROLLBACK');

@@ -125,7 +125,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        await knowledge.deleteCollection(collectionId);
+        await knowledge.deleteCollection(collectionId, workspaceId);
         res.status(204).json({});
       }),
     },
@@ -206,7 +206,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        await knowledge.deindexFile(fileId);
+        await knowledge.deindexFile(fileId, workspaceId);
         res.status(204).json({});
       }),
     },
