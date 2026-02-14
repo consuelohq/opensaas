@@ -1,0 +1,35 @@
+{
+  "vertical": "insurance",
+  "description": "Final expense insurance underwriting guides and rate tables",
+  "collections": [
+    {
+      "name": "insurance-final-expense",
+      "description": "Carrier underwriting guides for final expense products",
+      "strategy": {
+        "maxTokens": 500,
+        "overlap": 50,
+        "splitOn": "sentence",
+        "preserveHeaders": true,
+        "preserveTables": true
+      },
+      "files": [
+        {
+          "path": "americo-underwriting-guide.pdf",
+          "metadata": {
+            "carrier": "americo",
+            "productType": "final_expense",
+            "industry": "insurance"
+          }
+        },
+        {
+          "path": "mutual-of-omaha-underwriting-guide.pdf",
+          "metadata": {
+            "carrier": "mutual_of_omaha",
+            "productType": "final_expense",
+            "industry": "insurance"
+          }
+        }
+      ]
+    }
+  ]
+}
