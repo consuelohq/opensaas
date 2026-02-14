@@ -1,5 +1,5 @@
 import { createState } from '@/ui/utilities/state/utils/createState';
-import { type TalkingPoints, type TranscriptEntry } from '@/dialer/types/coaching';
+import { type CallAnalytics, type TalkingPoints, type TranscriptEntry } from '@/dialer/types/coaching';
 
 export const coachingLoadingState = createState<boolean>({
   key: 'coachingLoadingState',
@@ -23,5 +23,15 @@ export const transcriptState = createState<TranscriptEntry[]>({
 
 export const transcriptConnectedState = createState<boolean>({
   key: 'transcriptConnectedState',
+  defaultValue: false,
+});
+
+export const postCallAnalysisState = createState<CallAnalytics | null>({
+  key: 'postCallAnalysisState',
+  defaultValue: null,
+});
+
+export const isAnalyzingState = createState<boolean>({
+  key: 'isAnalyzingState',
   defaultValue: false,
 });

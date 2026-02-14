@@ -7,8 +7,10 @@ import { DialPad } from '@/dialer/components/DialPad';
 import { InCallControls } from '@/dialer/components/InCallControls';
 import { LiveTranscript } from '@/dialer/components/LiveTranscript';
 import { LocalPresenceIndicator } from '@/dialer/components/LocalPresenceIndicator';
+import { PostCallSummary } from '@/dialer/components/PostCallSummary';
 import { QuickActions } from '@/dialer/components/QuickActions';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
+import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
@@ -67,6 +69,7 @@ export const DialerSidebar = () => {
   const isInCall = callState.status !== 'idle';
   const { isLoading, talkingPoints } = useCoaching();
   const { transcript, isConnected } = useTranscript();
+  const { analysis, isAnalyzing } = usePostCallAnalysis();
 
   return (
     <StyledSidebar isOpen={isOpen}>
@@ -93,6 +96,7 @@ export const DialerSidebar = () => {
             isConnected={isConnected}
           />
         )}
+        <PostCallSummary analysis={analysis} isAnalyzing={isAnalyzing} />
       </StyledBody>
 
       <StyledFooter>
