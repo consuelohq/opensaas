@@ -2,14 +2,31 @@ import { useFieldFocus } from '@/object-record/record-field/ui/hooks/useFieldFoc
 import { usePhonesFieldDisplay } from '@/object-record/record-field/ui/meta-types/hooks/usePhonesFieldDisplay';
 import { PhonesDisplay } from '@/ui/field/display/components/PhonesDisplay';
 import { useLingui } from '@lingui/react/macro';
-import React from 'react';
+import React, { useContext } from 'react';
 import { FieldMetadataSettingsOnClickAction } from 'twenty-shared/types';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
+import { FieldContext } from '@/object-record/record-field/ui/contexts/FieldContext';
+import { ClickToCallButton } from '@/dialer/components/ClickToCallButton';
+import styled from '@emotion/styled';
+
+const StyledPhoneFieldWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+`;
+
+const StyledPhoneDisplayWrapper = styled.div`
+  min-width: 0;
+  flex: 1;
+`;
 
 export const PhonesFieldDisplay = () => {
   const { fieldValue, fieldDefinition } = usePhonesFieldDisplay();
   const { copyToClipboard } = useCopyToClipboard();
   const { isFocused } = useFieldFocus();
+  const { recordId } = useContext(FieldContext);
 
   const { t } = useLingui();
 
@@ -25,11 +42,22 @@ export const PhonesFieldDisplay = () => {
     }
   };
 
+  const primaryPhone = fieldValue?.primaryPhoneNumber
+    ? `${fieldValue.primaryPhoneCallingCode ?? ''}${fieldValue.primaryPhoneNumber}`
+    : null;
+
   return (
-    <PhonesDisplay
-      value={fieldValue}
-      isFocused={isFocused}
-      onPhoneNumberClick={handleClick}
-    />
+    <StyledPhoneFieldWrapper>
+      <StyledPhoneDisplayWrapper>
+        <PhonesDisplay
+          value={fieldValue}
+          isFocused={isFocused}
+          onPhoneNumberClick={handleClick}
+        />
+      </StyledPhoneDisplayWrapper>
+      {primaryPhone && (
+        <ClickToCallButton phone={primaryPhone} contactId={recordId} />
+      )}
+    </StyledPhoneFieldWrapper>
   );
 };
