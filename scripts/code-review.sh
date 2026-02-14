@@ -248,7 +248,7 @@ while IFS= read -r file; do
       pkg=$(echo "$line" | sed "s/.*from ['\"]//;s/['\"].*//" | sed 's|^\(@[^/]*/[^/]*\).*|\1|')
     fi
     # check if this package is in peerDependencies
-    if echo "$peer_deps" | grep -qx "$pkg"; then
+    if echo "$peer_deps" | grep -qxF "$pkg"; then
       # check if this is a top-level import (not inside a function — i.e. not indented)
       if echo "$line" | grep -qE '^import '; then
         report "OPTIONAL_IMPORT" "$file" "$lineno" "top-level import of peer dep '$pkg' — use lazy: await import('$pkg')"
