@@ -1,14 +1,16 @@
 import { FileCard } from '@/files/components/FileCard';
+import { FilePreview } from '@/files/components/FilePreview';
 import { useFiles } from '@/files/hooks/useFiles';
 import {
   fileBrowserViewState,
   type FileBrowserView,
 } from '@/files/states/fileBrowserViewState';
+import { filePreviewState } from '@/files/states/filePreviewState';
 import type { FileRecord } from '@/files/types/FileUpload';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useCallback, useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import {
   IconFile,
   IconFolder,
@@ -165,6 +167,7 @@ export type FileBrowserProps = {
 export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
   const { t } = useLingui();
   const [view, setView] = useRecoilState(fileBrowserViewState);
+  const setPreviewFile = useSetRecoilState(filePreviewState);
   const [activeFolder, setActiveFolder] = useState('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -204,9 +207,13 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
 
   const handleFileClick = useCallback(
     (file: FileRecord) => {
-      onFileClick?.(file);
+      if (onFileClick) {
+        onFileClick(file);
+      } else {
+        setPreviewFile(file);
+      }
     },
-    [onFileClick],
+    [onFileClick, setPreviewFile],
   );
 
   const handleBulkDelete = useCallback(async () => {
@@ -336,6 +343,7 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
           ))}
         </StyledList>
       )}
+      <FilePreview />
     </StyledContainer>
   );
 };
