@@ -139,7 +139,7 @@ export class ParallelDialerService {
       call.status = callStatus;
       if (answeredBy) call.amdResult = answeredBy === 'human' ? 'human' : answeredBy === 'unknown' ? 'unknown' : 'machine';
 
-      if (callStatus === 'in-progress' && call.amdResult === 'human') {
+      if (callStatus === 'in-progress' && (call.amdResult === 'human' || call.amdResult === 'unknown')) {
         const won = await this.store.setWinnerIfAbsent(groupId, callSid, GROUP_TTL_SECONDS);
         if (won) {
           group.winnerSid = callSid;
@@ -224,6 +224,22 @@ export class ParallelDialerService {
       const message = err instanceof Error ? err.message : 'TwiML generation failed';
       throw new Error(message);
     }
+  }
+
+  /** Get groupId for a call SID (reverse lookup) */
+  async getGroupIdForCall(callSid: string): Promise<string | null> {
+    try {
+      return await this.store.getCallMapping(callSid);
+    } catch (err: unknown) {
+      return null;
+    }
+  }
+
+  /** Get fromNumbers for non-winner calls (for lock release) */
+  getReleasableNumbers(group: ParallelGroup): string[] {
+    return group.calls
+      .filter((c) => c.callSid !== group.winnerSid)
+      .map((c) => c.fromNumber);
   }
 
   /** Check if user meets parallel dialing requirements */
