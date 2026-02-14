@@ -42,8 +42,8 @@ export type FileRecord = {
 };
 
 export type UploadUrlResponse = {
-  url: string;
-  key: string;
+  uploadUrl: string;
+  storageKey: string;
 };
 
 export type FileDropZoneProps = {

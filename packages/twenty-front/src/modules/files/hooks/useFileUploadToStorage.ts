@@ -133,10 +133,11 @@ export const useFileUploadToStorage = () => {
           );
         }
 
-        const { url, key } = (await urlResponse.json()) as UploadUrlResponse;
+        const { uploadUrl, storageKey } =
+          (await urlResponse.json()) as UploadUrlResponse;
 
         // step 2: upload directly to S3 via presigned URL
-        await uploadToPresignedUrl(url, file, (progress) => {
+        await uploadToPresignedUrl(uploadUrl, file, (progress) => {
           updateUpload(id, { progress });
         });
 
@@ -151,7 +152,7 @@ export const useFileUploadToStorage = () => {
               name: file.name,
               mimeType: file.type,
               size: file.size,
-              storageKey: key,
+              storageKey,
               folder: options?.folder,
               tags: options?.tags,
             }),
@@ -175,7 +176,7 @@ export const useFileUploadToStorage = () => {
         updateUpload(id, {
           status: 'complete',
           progress: 100,
-          storageKey: key,
+          storageKey,
         });
 
         return record;
