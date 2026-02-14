@@ -7,11 +7,14 @@ import type {
   VoiceToken,
   ProvisionNumberOptions,
   ProvisionResult,
+  TransferOptions,
+  TransferResult,
+  ConferenceParticipant,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
-import { LocalPresenceService } from './services/local-presence.js';
-import type { NumberPool } from './services/local-presence.js';
-import { CallerIdLockService } from './services/caller-id.js';
+import { LocalPresenceService, type NumberPool } from './services/local-presence.js';
+import type { CallerIdLockService } from './services/caller-id.js';
+import { ConferenceService } from './services/conference.js';
 
 /**
  * Main Dialer class — the public API for @consuelo/dialer.
@@ -30,6 +33,7 @@ import { CallerIdLockService } from './services/caller-id.js';
 export class Dialer {
   readonly provider: DialerProvider;
   readonly localPresence: LocalPresenceService;
+  readonly conference: ConferenceService;
   private callerIdLock?: CallerIdLockService;
   private config: DialerConfig;
 
@@ -37,6 +41,7 @@ export class Dialer {
     this.config = config;
     this.provider = new TwilioProvider(config.credentials);
     this.localPresence = new LocalPresenceService();
+    this.conference = new ConferenceService(config.credentials);
   }
 
   /** Attach a caller ID lock service (optional, for concurrent call protection) */
@@ -125,5 +130,46 @@ export class Dialer {
   /** Check if a call has reached a terminal status */
   async isCallCompleted(callSid: string): Promise<boolean> {
     return this.provider.isCallCompleted(callSid);
+  }
+
+  /** Generate conference TwiML for the browser's incoming webhook */
+  generateConferenceTwiml(conferenceName: string, participantLabel?: string): string {
+    return this.conference.generateConferenceTwiml(conferenceName, {
+      participantLabel,
+    });
+  }
+
+  /** Dial the customer into the agent's conference */
+  async addCustomerToConference(conferenceName: string, to: string, from: string, statusCallback?: string): Promise<{ callSid: string; conferenceSid: string }> {
+    return this.conference.addParticipant(conferenceName, to, from, {
+      label: 'customer',
+      endConferenceOnExit: true,
+      statusCallback,
+    });
+  }
+
+  /** Initiate a cold or warm transfer */
+  async initiateTransfer(options: TransferOptions): Promise<TransferResult> {
+    return this.conference.initiateTransfer(options);
+  }
+
+  /** Complete a warm transfer — unhold customer, remove agent */
+  async completeTransfer(conferenceSid: string, agentCallSid: string): Promise<TransferResult> {
+    return this.conference.completeTransfer(conferenceSid, agentCallSid);
+  }
+
+  /** Cancel a warm transfer — remove target, unhold customer */
+  async cancelTransfer(conferenceSid: string, transferCallSid: string): Promise<TransferResult> {
+    return this.conference.cancelTransfer(conferenceSid, transferCallSid);
+  }
+
+  /** Hold or unhold a participant in a conference */
+  async holdParticipant(conferenceSid: string, callSid: string, hold: boolean): Promise<void> {
+    return this.conference.holdParticipant(conferenceSid, callSid, hold);
+  }
+
+  /** List participants in a conference */
+  async listParticipants(conferenceSid: string): Promise<ConferenceParticipant[]> {
+    return this.conference.listParticipants(conferenceSid);
   }
 }
