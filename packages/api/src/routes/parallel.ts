@@ -2,6 +2,8 @@ import { Dialer, InMemoryLockStore, CallerIdLockService, type ParallelGroup } fr
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 
+const E164_REGEX = /^\+[1-9]\d{1,14}$/;
+
 interface ParallelDialBody {
   customerNumbers: string[];
   queueId: string;
@@ -37,6 +39,12 @@ export const parallelRoutes = (): RouteDefinition[] => {
         const body = req.body as ParallelDialBody | undefined;
         if (!body?.customerNumbers || body.customerNumbers.length !== 3 || !body.queueId) {
           res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Requires exactly 3 customerNumbers and a queueId' } });
+          return;
+        }
+
+        const invalidNumbers = body.customerNumbers.filter((n) => !E164_REGEX.test(n));
+        if (invalidNumbers.length > 0) {
+          res.status(400).json({ error: { code: 'INVALID_PHONE', message: `Invalid E.164 numbers: ${invalidNumbers.join(', ')}` } });
           return;
         }
 
@@ -119,6 +127,19 @@ export const parallelRoutes = (): RouteDefinition[] => {
 
         try {
           await dialer.parallel.handleStatusCallback(callSid, callStatus, answeredBy);
+
+          // release caller ID locks for completed non-winner calls
+          const groupId = await dialer.parallel.getGroupIdForCall(callSid);
+          if (groupId) {
+            const group = await dialer.parallel.getGroup(groupId);
+            if (group && (group.status === 'connected' || group.status === 'completed')) {
+              const releasable = dialer.parallel.getReleasableNumbers(group);
+              for (const num of releasable) {
+                await lockService.releaseLockByNumber(num);
+              }
+            }
+          }
+
           res.status(200).json({ received: true });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Status callback failed';
@@ -222,6 +243,13 @@ export const parallelRoutes = (): RouteDefinition[] => {
           if (!group) {
             res.status(404).json({ error: { code: 'GROUP_NOT_FOUND', message: 'Parallel group not found' } });
             return;
+          }
+
+          // release all caller ID locks before terminating
+          for (const call of group.calls) {
+            if (call.fromNumber) {
+              await lockService.releaseLockByNumber(call.fromNumber);
+            }
           }
 
           await dialer.parallel.terminateGroup(groupId);
