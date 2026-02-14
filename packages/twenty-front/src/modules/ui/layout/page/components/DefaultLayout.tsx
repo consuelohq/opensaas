@@ -1,3 +1,6 @@
+import { DialerSidebar } from '@/dialer/components/DialerSidebar';
+import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
+import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { AuthModal } from '@/auth/components/AuthModal';
 import { AppErrorBoundary } from '@/error-handler/components/AppErrorBoundary';
 import { AppFullScreenErrorFallback } from '@/error-handler/components/AppFullScreenErrorFallback';
@@ -20,7 +23,9 @@ import { useIsMobile } from '@/ui/utilities/responsive/hooks/useIsMobile';
 import { Global, css, useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
 import { useScreenSize } from 'twenty-ui/utilities';
 
 const StyledLayout = styled.div`
@@ -66,6 +71,13 @@ export const DefaultLayout = () => {
   const windowsWidth = useScreenSize().width;
   const showAuthModal = useShowAuthModal();
   const useShowFullScreen = useShowFullscreen();
+  const setDialerOpen = useSetRecoilState(dialerSidebarOpenState);
+
+  const handleToggleSidebar = useCallback(() => {
+    setDialerOpen((prev) => !prev);
+  }, [setDialerOpen]);
+
+  useDialerHotkeys({ onToggleSidebar: handleToggleSidebar });
 
   return (
     <>
@@ -123,6 +135,7 @@ export const DefaultLayout = () => {
                     </AppErrorBoundary>
                   </StyledMainContainer>
                 )}
+                {!showAuthModal && <DialerSidebar />}
               </PageDragDropProvider>
             </StyledPageContainer>
             {isMobile && !showAuthModal && <MobileNavigationBar />}
