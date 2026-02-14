@@ -168,5 +168,25 @@ export const callRoutes = (): RouteDefinition[] => {
         }
       }),
     },
+    {
+      method: 'POST',
+      path: '/v1/calls/:id/analysis',
+      handler: errorHandler(async (req, res) => {
+        const callId = req.params?.id;
+        if (!callId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing call ID' } });
+          return;
+        }
+
+        const body = req.body as Record<string, unknown> | undefined;
+        if (!body || !body.callId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing analysis body' } });
+          return;
+        }
+
+        // TODO DEV-736: persist to database (phase 5 history + analytics)
+        res.status(201).json({ callId, persisted: true });
+      }),
+    },
   ];
 }
