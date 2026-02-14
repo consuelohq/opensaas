@@ -14,9 +14,10 @@ import { coachingRoutes } from './coaching.js';
 import { contactRoutes } from './contacts.js';
 import { fileRoutes } from './files.js';
 import { knowledgeRoutes } from './knowledge.js';
+import { localPresenceRoutes } from './local-presence.js';
 import { parallelRoutes } from './parallel.js';
 import { voiceRoutes } from './voice.js';
-export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, parallelRoutes, voiceRoutes };
+export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, voiceRoutes };
 
 /** /v1/analytics routes */
 export const analyticsRoutes = (): RouteDefinition[] => [
@@ -61,6 +62,7 @@ export const allRoutes = (): RouteDefinition[] => [
   ...contactRoutes(),
   ...knowledgeRoutes(),
   ...fileRoutes(),
+  ...localPresenceRoutes(),
   ...parallelRoutes(),
   ...voiceRoutes(),
   ...analyticsRoutes(),
