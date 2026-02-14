@@ -7,6 +7,7 @@ import { DialPad } from '@/dialer/components/DialPad';
 import { InCallControls } from '@/dialer/components/InCallControls';
 import { LocalPresenceIndicator } from '@/dialer/components/LocalPresenceIndicator';
 import { QuickActions } from '@/dialer/components/QuickActions';
+import { useCoaching } from '@/dialer/hooks/useCoaching';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import styled from '@emotion/styled';
@@ -62,6 +63,7 @@ export const DialerSidebar = () => {
   const isOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const isInCall = callState.status !== 'idle';
+  const { isLoading, talkingPoints } = useCoaching();
 
   return (
     <StyledSidebar isOpen={isOpen}>
@@ -78,8 +80,8 @@ export const DialerSidebar = () => {
         {isInCall && <InCallControls />}
         {isInCall && <QuickActions />}
         <CoachingPanel
-          isLoading={false}
-          talkingPoints={null}
+          isLoading={isLoading}
+          talkingPoints={talkingPoints}
           callStatus={callState.status}
         />
       </StyledBody>
