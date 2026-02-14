@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react';
 
 import { type CallQueue, type QueueSettings } from '@/dialer/types/queue';
+import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { QueueControls } from '@/dialer/components/QueueControls';
 import { useAutoDialer } from '@/dialer/hooks/useAutoDialer';
 import {
@@ -514,6 +515,9 @@ export const QueuePanel = () => {
         </span>
       </StyledStats>
       <ProgressBar value={progress?.percentComplete ?? 0} />
+
+      {/* analytics */}
+      <QueueAnalytics />
 
       <StyledBody>
         {/* parallel dialing */}
