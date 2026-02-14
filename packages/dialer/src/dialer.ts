@@ -136,6 +136,11 @@ export class Dialer {
     return this.provider.isCallCompleted(callSid);
   }
 
+  /** Create an outbound call with a TwiML URL or inline TwiML */
+  async createCall(to: string, from: string, opts: { url?: string; twiml?: string; statusCallback?: string }): Promise<{ callSid: string }> {
+    return this.conference.createCall(to, from, opts);
+  }
+
   /** Generate conference TwiML for the browser's incoming webhook */
   generateConferenceTwiml(conferenceName: string, participantLabel?: string): string {
     return this.conference.generateConferenceTwiml(conferenceName, {
