@@ -10,6 +10,8 @@ type UseDialerHotkeysProps = {
   onHoldToggle?: () => void;
   onTransferToggle?: () => void;
   onEndCall?: () => void;
+  onCallSelectedContact?: () => void;
+  onToggleCallingMode?: () => void;
 };
 
 export const useDialerHotkeys = ({
@@ -18,6 +20,8 @@ export const useDialerHotkeys = ({
   onHoldToggle,
   onTransferToggle,
   onEndCall,
+  onCallSelectedContact,
+  onToggleCallingMode,
 }: UseDialerHotkeysProps) => {
   useGlobalHotkeys({
     keys: ['mod+d'],
@@ -56,6 +60,24 @@ export const useDialerHotkeys = ({
     callback: () => onEndCall?.(),
     containsModifier: false,
     dependencies: [onEndCall],
+    options: { enableOnFormTags: false, enableOnContentEditable: false },
+  });
+
+  // Cmd+Shift+C — call selected contact
+  useGlobalHotkeys({
+    keys: ['mod+shift+c'],
+    callback: () => onCallSelectedContact?.(),
+    containsModifier: true,
+    dependencies: [onCallSelectedContact],
+    options: { enableOnFormTags: false, enableOnContentEditable: false },
+  });
+
+  // Cmd+Shift+M — toggle calling mode (browser/phone)
+  useGlobalHotkeys({
+    keys: ['mod+shift+m'],
+    callback: () => onToggleCallingMode?.(),
+    containsModifier: true,
+    dependencies: [onToggleCallingMode],
     options: { enableOnFormTags: false, enableOnContentEditable: false },
   });
 };
