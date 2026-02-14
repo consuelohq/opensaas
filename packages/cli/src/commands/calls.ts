@@ -59,12 +59,13 @@ export const registerCalls = (program: Command): void => {
     .action(callsTransfer);
 };
 
-const handle501 = (status: number): boolean => {
+const E164_RE = /^\+[1-9]\d{1,14}$/;
+
+const handle501 = (status: number): void => {
   if (status === 501) {
     error('not available yet — this command requires dialer API routes (phase 2)');
     process.exit(1);
   }
-  return false;
 };
 
 const callsList = async (opts: { limit: string; status?: string }): Promise<void> => {
@@ -124,11 +125,17 @@ const callsGet = async (id: string): Promise<void> => {
 
 const callsStart = async (target: string, opts: { callerId?: string; localPresence?: boolean }): Promise<void> => {
   try {
+    if (opts.callerId && !E164_RE.test(opts.callerId)) {
+      error(`invalid caller ID: ${opts.callerId} — expected E.164 format (e.g. +15551234567)`);
+      process.exit(1);
+    }
+
     const body: Record<string, unknown> = { to: target };
     if (opts.callerId) body.callerIdNumber = opts.callerId;
     if (opts.localPresence) body.localPresence = true;
 
     const res = await apiPost<{ callSid: string; status: string }>('/v1/calls', body);
+    handle501(res.status);
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -144,6 +151,7 @@ const callsStart = async (target: string, opts: { callerId?: string; localPresen
 const callsEnd = async (id: string): Promise<void> => {
   try {
     const res = await apiPost<{ callSid: string; status: string }>(`/v1/calls/${id}/hangup`);
+    handle501(res.status);
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
