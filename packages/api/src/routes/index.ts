@@ -18,6 +18,7 @@ import { localPresenceRoutes } from './local-presence.js';
 import { parallelRoutes } from './parallel.js';
 import { voiceRoutes } from './voice.js';
 export { callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, voiceRoutes };
+export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** /v1/analytics routes */
 export const analyticsRoutes = (): RouteDefinition[] => [

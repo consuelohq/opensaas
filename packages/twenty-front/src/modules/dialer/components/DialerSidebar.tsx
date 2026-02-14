@@ -5,9 +5,11 @@ import { CoachingPanel } from '@/dialer/components/CoachingPanel';
 import { ContactHeader } from '@/dialer/components/ContactHeader';
 import { DialPad } from '@/dialer/components/DialPad';
 import { InCallControls } from '@/dialer/components/InCallControls';
+import { LiveTranscript } from '@/dialer/components/LiveTranscript';
 import { LocalPresenceIndicator } from '@/dialer/components/LocalPresenceIndicator';
 import { QuickActions } from '@/dialer/components/QuickActions';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
+import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import styled from '@emotion/styled';
@@ -64,6 +66,7 @@ export const DialerSidebar = () => {
   const callState = useRecoilValue(callStateAtom);
   const isInCall = callState.status !== 'idle';
   const { isLoading, talkingPoints } = useCoaching();
+  const { transcript, isConnected } = useTranscript();
 
   return (
     <StyledSidebar isOpen={isOpen}>
@@ -84,6 +87,12 @@ export const DialerSidebar = () => {
           talkingPoints={talkingPoints}
           callStatus={callState.status}
         />
+        {isInCall && (
+          <LiveTranscript
+            transcript={transcript}
+            isConnected={isConnected}
+          />
+        )}
       </StyledBody>
 
       <StyledFooter>
