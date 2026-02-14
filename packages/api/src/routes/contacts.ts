@@ -14,9 +14,31 @@ interface ImportBody {
   content: string;
 }
 
+type Pool = { query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }> };
+
+const SQL_INSERT_NOTE =
+  'INSERT INTO contact_notes (contact_id, content, call_id, created_by, workspace_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, contact_id, content, call_id, created_by, created_at';
+
+const SQL_INSERT_FOLLOW_UP =
+  'INSERT INTO contact_follow_ups (contact_id, scheduled_at, note, call_id, created_by, workspace_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, contact_id, scheduled_at, note, call_id, status, created_by, created_at';
+
 /** /v1/contacts routes wired to @consuelo/contacts */
-export function contactRoutes(): RouteDefinition[] {
+export const contactRoutes = (): RouteDefinition[] => {
   const contacts = new Contacts();
+  let pool: Pool | null = null;
+
+  const getPool = async (): Promise<Pool> => {
+    try {
+      if (!pool) {
+        const { default: pg } = await import('pg');
+        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+      }
+      return pool;
+    } catch (err: unknown) {
+      pool = null;
+      throw err;
+    }
+  };
 
   return [
     {
@@ -134,5 +156,63 @@ export function contactRoutes(): RouteDefinition[] {
         res.status(200).json({ deleted: true });
       }),
     },
+    {
+      method: 'POST',
+      path: '/v1/contacts/:id/notes',
+      handler: errorHandler(async (req, res) => {
+        const contactId = req.params?.id;
+        if (!contactId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing contact ID' } });
+          return;
+        }
+
+        const contact = await contacts.get(contactId);
+        if (!contact) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Contact not found' } });
+          return;
+        }
+
+        const body = req.body as { content?: string; callId?: string } | undefined;
+        if (!body?.content) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "content" field' } });
+          return;
+        }
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_INSERT_NOTE, [
+          contactId, body.content, body.callId ?? null, req.auth?.userId ?? '', req.auth?.workspaceId ?? '',
+        ]);
+        res.status(201).json(rows[0]);
+      }),
+    },
+    {
+      method: 'POST',
+      path: '/v1/contacts/:id/follow-ups',
+      handler: errorHandler(async (req, res) => {
+        const contactId = req.params?.id;
+        if (!contactId) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing contact ID' } });
+          return;
+        }
+
+        const contact = await contacts.get(contactId);
+        if (!contact) {
+          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Contact not found' } });
+          return;
+        }
+
+        const body = req.body as { scheduledAt?: string; note?: string; callId?: string } | undefined;
+        if (!body?.scheduledAt) {
+          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "scheduledAt" field' } });
+          return;
+        }
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_INSERT_FOLLOW_UP, [
+          contactId, body.scheduledAt, body.note ?? null, body.callId ?? null, req.auth?.userId ?? '', req.auth?.workspaceId ?? '',
+        ]);
+        res.status(201).json(rows[0]);
+      }),
+    },
   ];
-}
+};
