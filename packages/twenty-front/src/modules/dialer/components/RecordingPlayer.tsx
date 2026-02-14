@@ -105,6 +105,7 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
     try {
       const res = await fetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/recording`,
+        { credentials: 'include' },
       );
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();

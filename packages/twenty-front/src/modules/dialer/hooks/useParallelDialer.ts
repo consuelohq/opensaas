@@ -73,7 +73,7 @@ export const useParallelDialer = () => {
         try {
           const res = await fetch(
             `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}`,
-            { headers: { 'Content-Type': 'application/json' } },
+            { headers: { 'Content-Type': 'application/json' }, credentials: 'include' },
           );
           const data = await res.json();
           const calls: ParallelCall[] = data.calls ?? [];
@@ -126,6 +126,7 @@ export const useParallelDialer = () => {
       const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           queueId: queue.id,
           contacts: batchItems.map((item) => ({
@@ -173,6 +174,7 @@ export const useParallelDialer = () => {
         await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
         });
       } catch {
         // terminate request failed
