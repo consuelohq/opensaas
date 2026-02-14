@@ -28,6 +28,8 @@ export {
   knowledgeRoutes,
   analyticsRoutes,
   webhookRoutes,
+  setupCoachingWebSocket,
+  broadcastTranscript,
 } from './routes/index.js';
 export type { RouteDefinition } from './routes/index.js';
 
