@@ -10,6 +10,7 @@ export interface RouteDefinition {
 
 // Import + re-export route modules
 import { analyticsRoutes } from './analytics.js';
+import { assistantRoutes } from './assistant.js';
 import { callRoutes } from './calls.js';
 import { coachingRoutes } from './coaching.js';
 import { contactRoutes } from './contacts.js';
@@ -21,7 +22,7 @@ import { preferencesRoutes } from './preferences.js';
 import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
 import { workspaceRoutes } from './workspace.js';
-export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes };
+export { analyticsRoutes, assistantRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** Health check route */
@@ -46,6 +47,7 @@ export const webhookRoutes = (): RouteDefinition[] => [
 /** All v1 routes combined */
 export const allRoutes = (): RouteDefinition[] => [
   ...healthRoutes(),
+  ...assistantRoutes(),
   ...callRoutes(),
   ...coachingRoutes(),
   ...contactRoutes(),
