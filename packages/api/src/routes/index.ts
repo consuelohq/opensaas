@@ -22,7 +22,8 @@ import { preferencesRoutes } from './preferences.js';
 import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
 import { workspaceRoutes } from './workspace.js';
-export { analyticsRoutes, assistantRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes };
+import { ghlRoutes } from './ghl.js';
+export { analyticsRoutes, assistantRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes, ghlRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** Health check route */
@@ -60,5 +61,6 @@ export const allRoutes = (): RouteDefinition[] => [
   ...voiceRoutes(),
   ...analyticsRoutes(),
   ...workspaceRoutes(),
+  ...ghlRoutes(),
   ...webhookRoutes(),
 ];
