@@ -24,7 +24,7 @@ const MODELS = {
   },
 } as const;
 
-const MODELS_DIR = path.join(os.homedir(), '.opensaas', 'models');
+const MODELS_DIR = path.join(os.homedir(), '.consuelo', 'models');
 
 export type WhisperModelSize = keyof typeof MODELS;
 

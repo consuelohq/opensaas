@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { select, text, password, confirm, isCancel, cancel, log } from '@clack/prompts';
 import { printBanner, printEnd, spinner, success, stepComplete } from '../utils/ui.js';
 import { saveConfig } from '../config.js';
@@ -9,17 +10,35 @@ import { authenticateHosted } from '../auth.js';
 import { provisionDockerPostgres, validateConnectionStringFormat } from '../provisioning/database.js';
 import { setupWhisper } from '../provisioning/whisper.js';
 
-export async function initCommand(opts: { managed?: boolean }): Promise<void> {
+export type Template = 'full' | 'minimal' | 'api-only';
+
+export interface InitOptions {
+  managed?: boolean;
+  yes?: boolean;
+  template?: Template;
+}
+
+export async function initCommand(opts: InitOptions): Promise<void> {
   try {
+    checkPrerequisites();
+
     printBanner(['deployment', 'database', 'credentials', 'speech-to-text (optional)']);
 
     if (opts.managed) {
-      generateEnv({ deploymentType: 'hosted' });
+      generateEnv({ deploymentType: 'hosted', template: opts.template ?? 'full' });
       success('Configured for hosted mode');
       log.info('Run: npx @consuelo/cli status');
       printEnd();
       return;
     }
+
+    if (opts.yes) {
+      await runNonInteractive(opts.template ?? 'full');
+      return;
+    }
+
+    const template = opts.template ?? await promptTemplate();
+    if (isCancel(template)) { cancel('setup cancelled.'); process.exit(0); }
 
     const deploymentType = await select({
       message: 'how would you like to deploy?',
@@ -29,17 +48,15 @@ export async function initCommand(opts: { managed?: boolean }): Promise<void> {
       ],
     });
 
-    if (isCancel(deploymentType)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(deploymentType)) { cancel('setup cancelled.'); process.exit(0); }
 
     if (deploymentType === 'hosted') {
-      await handleHostedSetup();
+      await handleHostedSetup(template);
     } else {
-      await handleSelfHostedSetup();
+      await handleSelfHostedSetup(template);
     }
 
+    await promptAuthLogin();
     printNextSteps(deploymentType);
     printEnd();
   } catch (err: unknown) {
@@ -48,14 +65,72 @@ export async function initCommand(opts: { managed?: boolean }): Promise<void> {
   }
 }
 
-async function handleHostedSetup(): Promise<void> {
+function checkPrerequisites(): void {
+  const missing: string[] = [];
+
+  const nodeVersion = parseInt(process.version.slice(1), 10);
+  if (nodeVersion < 18) {
+    missing.push(`node 18+ required (found ${process.version}) — https://nodejs.org`);
+  }
+
+  try { execSync('git --version', { stdio: 'ignore' }); } catch {
+    missing.push('git not found — https://git-scm.com');
+  }
+
+  try { execSync('docker --version', { stdio: 'ignore' }); } catch {
+    missing.push('docker not found (needed for self-hosted) — https://docker.com');
+  }
+
+  if (missing.length > 0) {
+    log.error('missing prerequisites:');
+    for (const m of missing) log.error(`  ✗ ${m}`);
+    process.exit(1);
+  }
+}
+
+async function promptTemplate(): Promise<Template> {
+  const result = await select({
+    message: 'choose a template',
+    options: [
+      { value: 'full' as const, label: 'full', hint: 'CRM + dialer + coaching + analytics' },
+      { value: 'minimal' as const, label: 'minimal', hint: 'dialer + coaching only' },
+      { value: 'api-only' as const, label: 'api-only', hint: 'backend services, no CRM UI' },
+    ],
+  });
+  return result as Template;
+}
+
+async function runNonInteractive(template: Template): Promise<void> {
+  log.info('running in non-interactive mode (--yes)');
+
+  const spin = spinner('provisioning postgres...').start();
+  try {
+    const databaseUrl = await provisionDockerPostgres();
+    spin.succeed('database ready');
+
+    generateEnv({ deploymentType: 'self-hosted', template, databaseUrl });
+    success('configuration saved to .env (fill in credentials manually)');
+
+    generateDockerCompose();
+    success('docker files generated');
+
+    printNextSteps('self-hosted');
+    printEnd();
+  } catch (err: unknown) {
+    spin.fail('provisioning failed');
+    captureError(err, { command: 'init' });
+    throw err;
+  }
+}
+
+async function handleHostedSetup(template: Template): Promise<void> {
   const spin = spinner('waiting for authentication...').start();
 
   try {
     const { apiKey, email } = await authenticateHosted();
     spin.succeed(`authenticated as ${email}`);
 
-    generateEnv({ deploymentType: 'hosted', apiKey });
+    generateEnv({ deploymentType: 'hosted', template, apiKey });
     success('API key saved to .env');
   } catch (err: unknown) {
     spin.fail(err instanceof Error ? err.message : 'authentication failed');
@@ -64,7 +139,7 @@ async function handleHostedSetup(): Promise<void> {
   }
 }
 
-async function handleSelfHostedSetup(): Promise<void> {
+async function handleSelfHostedSetup(template: Template): Promise<void> {
   try {
     const dbChoice = await select({
       message: 'database setup',
@@ -74,10 +149,7 @@ async function handleSelfHostedSetup(): Promise<void> {
       ],
     });
 
-    if (isCancel(dbChoice)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(dbChoice)) { cancel('setup cancelled.'); process.exit(0); }
 
     let databaseUrl: string;
     if (dbChoice === 'docker') {
@@ -94,13 +166,9 @@ async function handleSelfHostedSetup(): Promise<void> {
         },
       });
 
-      if (isCancel(url)) {
-        cancel('setup cancelled.');
-        process.exit(0);
-      }
+      if (isCancel(url)) { cancel('setup cancelled.'); process.exit(0); }
 
-      const valid = validateConnectionStringFormat(url);
-      if (!valid) {
+      if (!validateConnectionStringFormat(url)) {
         throw new Error('invalid database connection string');
       }
       databaseUrl = url;
@@ -118,19 +186,10 @@ async function handleSelfHostedSetup(): Promise<void> {
       },
     });
 
-    if (isCancel(twilioAccountSid)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(twilioAccountSid)) { cancel('setup cancelled.'); process.exit(0); }
 
-    const twilioAuthToken = await password({
-      message: 'twilio auth token',
-    });
-
-    if (isCancel(twilioAuthToken)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    const twilioAuthToken = await password({ message: 'twilio auth token' });
+    if (isCancel(twilioAuthToken)) { cancel('setup cancelled.'); process.exit(0); }
 
     const twilioPhoneNumber = await text({
       message: 'twilio phone number (E.164)',
@@ -141,10 +200,7 @@ async function handleSelfHostedSetup(): Promise<void> {
       },
     });
 
-    if (isCancel(twilioPhoneNumber)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(twilioPhoneNumber)) { cancel('setup cancelled.'); process.exit(0); }
 
     const groqApiKey = await password({
       message: 'groq api key (https://console.groq.com)',
@@ -154,10 +210,7 @@ async function handleSelfHostedSetup(): Promise<void> {
       },
     });
 
-    if (isCancel(groqApiKey)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
+    if (isCancel(groqApiKey)) { cancel('setup cancelled.'); process.exit(0); }
 
     const spin = spinner('validating credentials...').start();
 
@@ -211,6 +264,7 @@ async function handleSelfHostedSetup(): Promise<void> {
 
     generateEnv({
       deploymentType: 'self-hosted',
+      template,
       databaseUrl,
       twilioAccountSid,
       twilioAuthToken,
@@ -228,10 +282,29 @@ async function handleSelfHostedSetup(): Promise<void> {
   }
 }
 
+async function promptAuthLogin(): Promise<void> {
+  try {
+    const shouldAuth = await confirm({
+      message: 'authenticate with twenty CRM now?',
+      initialValue: false,
+    });
+
+    if (isCancel(shouldAuth) || !shouldAuth) return;
+
+    const { registerCommands } = await import('twenty-sdk/cli');
+    const { Command } = await import('commander');
+    const sub = new Command();
+    registerCommands(sub);
+    await sub.parseAsync(['node', 'consuelo', 'auth:login']);
+  } catch {
+    log.warn('workspace auth skipped (twenty-sdk not available)');
+  }
+}
+
 function printNextSteps(deploymentType: 'hosted' | 'self-hosted'): void {
   log.step('next steps:');
   if (deploymentType === 'hosted') {
-    log.info('1. npx @consuelo/cli status');
+    log.info('1. consuelo status');
     log.info('2. https://consuelohq.com');
   } else {
     log.info('1. docker-compose up');

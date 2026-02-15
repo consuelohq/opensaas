@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 export interface EnvConfig {
   deploymentType: 'hosted' | 'self-hosted';
+  template?: 'full' | 'minimal' | 'api-only';
   twilioAccountSid?: string;
   twilioAuthToken?: string;
   twilioPhoneNumber?: string;
@@ -13,13 +14,13 @@ export interface EnvConfig {
 }
 
 export function generateEnv(config: EnvConfig, outputPath = '.env'): void {
-  const lines: string[] = ['# OpenSaaS Configuration', `# Generated at ${new Date().toISOString()}`, ''];
+  const lines: string[] = ['# Consuelo Configuration', `# Generated at ${new Date().toISOString()}`, ''];
 
-  lines.push(`OPENSAAS_MODE="${config.deploymentType}"`);
+  lines.push(`CONSUELO_MODE="${config.deploymentType}"`);
   lines.push('');
 
   if (config.deploymentType === 'hosted') {
-    if (config.apiKey) lines.push(`OPENSAAS_API_KEY="${config.apiKey}"`);
+    if (config.apiKey) lines.push(`CONSUELO_API_KEY="${config.apiKey}"`);
   } else {
     lines.push('# Twilio');
     if (config.twilioAccountSid) lines.push(`TWILIO_ACCOUNT_SID="${config.twilioAccountSid}"`);

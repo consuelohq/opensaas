@@ -132,7 +132,7 @@ REDIS_URL=redis://redis:6379
 # STORAGE_S3_NAME=
 # STORAGE_S3_ENDPOINT=
 
-# ── opensaas API ────────────────────────────────────────────────
+# ── Consuelo API ────────────────────────────────────────────────
 API_PORT=8000
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=

@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import ora from 'ora';
 
-const CONTAINER_NAME = 'opensaas-postgres';
+const CONTAINER_NAME = 'consuelo-postgres';
 const POSTGRES_IMAGE = 'postgres:15';
 const POSTGRES_PORT = 5432;
 
@@ -34,8 +34,8 @@ export async function provisionDockerPostgres(): Promise<string> {
   }
   execSync(
     `docker run -d --name ${CONTAINER_NAME} ` +
-    `-e POSTGRES_USER=opensaas -e POSTGRES_PASSWORD -e POSTGRES_DB=opensaas ` +
-    `-p ${POSTGRES_PORT}:5432 -v opensaas-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
+    `-e POSTGRES_USER=consuelo -e POSTGRES_PASSWORD -e POSTGRES_DB=consuelo ` +
+    `-p ${POSTGRES_PORT}:5432 -v consuelo-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
     { stdio: 'ignore', env: { ...process.env, POSTGRES_PASSWORD: password } }
   );
   spin.succeed(`Container ${CONTAINER_NAME} running`);
@@ -44,13 +44,13 @@ export async function provisionDockerPostgres(): Promise<string> {
   await waitForPostgres();
   spin.succeed('Database accepting connections');
 
-  return `postgres://opensaas:${password}@localhost:${POSTGRES_PORT}/opensaas`;
+  return `postgres://consuelo:${password}@localhost:${POSTGRES_PORT}/consuelo`;
 }
 
 async function waitForPostgres(maxAttempts = 30): Promise<void> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      execSync(`docker exec ${CONTAINER_NAME} pg_isready -U opensaas`, { stdio: 'ignore' });
+      execSync(`docker exec ${CONTAINER_NAME} pg_isready -U consuelo`, { stdio: 'ignore' });
       return;
     } catch {
       await new Promise(r => setTimeout(r, 1000));

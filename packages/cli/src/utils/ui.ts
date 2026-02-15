@@ -5,9 +5,7 @@ import { intro, outro, log } from '@clack/prompts';
 export function printBanner(steps?: string[]): void {
   // eslint-disable-next-line no-console -- clean UI output
   console.log();
-  intro(chalk.bold.white('O P E N S A A S'));
-  // eslint-disable-next-line no-console
-  console.log(`${chalk.dim('│')}  ${chalk.dim('made by consuelo')}`);
+  intro(chalk.bold.white('C O N S U E L O'));
   // eslint-disable-next-line no-console
   console.log(`${chalk.dim('│')}`);
   // eslint-disable-next-line no-console
