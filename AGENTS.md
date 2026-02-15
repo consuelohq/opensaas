@@ -605,10 +605,38 @@ private async getClient() {
 
 ### shared branch etiquette (multiple agents on one branch)
 
-multiple agents may push to the same branch concurrently. follow these rules to avoid stepping on each other:
+multiple agents work concurrently. **use feature branches** to avoid stepping on each other.
 
+#### workflow: feature branches → merge to target
+
+1. **create a feature branch** from the target branch before starting work:
+   ```bash
+   git checkout twenty-fork
+   git pull origin twenty-fork
+   git checkout -b twenty-fork-dev-846   # naming: {target}-{task-id}
+   ```
+2. **do all work on your feature branch.** commit freely — this branch is yours alone.
+3. **when done, merge back to the target branch:**
+   ```bash
+   git checkout twenty-fork
+   git pull origin twenty-fork
+   git merge twenty-fork-dev-846 --no-edit
+   git push origin twenty-fork
+   ```
+4. **if the merge has conflicts**, resolve them, then push. never force push the target branch.
+5. **delete your feature branch** after merging:
+   ```bash
+   git branch -d twenty-fork-dev-846
+   git push origin --delete twenty-fork-dev-846
+   ```
+
+all work still flows into the same PR (e.g. PR #1 on `twenty-fork`). feature branches are just scratch space.
+
+#### hard rules (no exceptions)
+
+- **never `git reset HEAD~N`** on a shared branch. if you committed wrong files, fix forward with a new commit or use `git revert`.
+- **never `git add .` or `git add -A`** — always `git add <specific files>` to avoid staging another agent's work.
+- **never force push** (`git push --force` / `git push -f`) a shared branch.
 - **one commit = one task.** never include another agent's files in your commit.
-- **pull before push.** always `git pull --rebase origin <branch>` before pushing to avoid conflicts.
-- **re-stage what you unstage.** if you `git reset HEAD` another agent's files to exclude them from your commit, `git add` them back immediately after committing so they aren't lost from the staging area.
 - **don't touch files outside your task scope.** if you see untracked/modified files that aren't yours, leave them alone.
-- **if push fails with conflicts**, rebase and resolve — don't force push.
+- **if push to the target branch fails**, pull --rebase and retry. if conflicts, resolve explicitly.
