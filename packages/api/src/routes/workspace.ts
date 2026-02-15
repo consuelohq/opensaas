@@ -78,19 +78,24 @@ export const workspaceRoutes = (): RouteDefinition[] => {
     res: Parameters<RouteDefinition['handler']>[1],
     allowed: readonly string[],
   ): Promise<string | null> => {
-    const { rows } = await db.query(SQL_CALLER_ROLE, [auth.workspaceId, auth.userId]);
-    if (rows.length === 0) {
-      Sentry.captureMessage('Non-member attempted workspace action', 'warning');
-      res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a workspace member' } });
-      return null;
+    try {
+      const { rows } = await db.query(SQL_CALLER_ROLE, [auth.workspaceId, auth.userId]);
+      if (rows.length === 0) {
+        Sentry.captureMessage('Non-member attempted workspace action', 'warning');
+        res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a workspace member' } });
+        return null;
+      }
+      const role = rows[0].role as string;
+      if (!allowed.includes(role)) {
+        Sentry.captureMessage('Insufficient role for workspace action', 'warning');
+        res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } });
+        return null;
+      }
+      return role;
+    } catch (err: unknown) {
+      Sentry.captureException(err instanceof Error ? err : new Error('RBAC check failed'));
+      throw err;
     }
-    const role = rows[0].role as string;
-    if (!allowed.includes(role)) {
-      Sentry.captureMessage('Insufficient role for workspace action', 'warning');
-      res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } });
-      return null;
-    }
-    return role;
   };
 
   return [
