@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Device, Call } from '@twilio/voice-sdk';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { deviceReadyState } from '@/dialer/states/deviceReadyState';
@@ -9,6 +9,8 @@ import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { reconnectingState } from '@/dialer/states/reconnectingState';
 import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
+import { selectedMicState } from '@/dialer/states/selectedMicState';
+import { selectedSpeakerState } from '@/dialer/states/selectedSpeakerState';
 import type { CallStatus } from '@/dialer/types/dialer';
 
 const EDGES: string[] = [
@@ -55,6 +57,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const deviceRef = useRef<Device | null>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const selectedMic = useRecoilValue(selectedMicState);
+  const selectedSpeaker = useRecoilValue(selectedSpeakerState);
 
   // request mic permission — returns true if granted
   const requestMicPermission = useCallback(async (): Promise<boolean> => {
@@ -245,6 +250,17 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       activeCall.disconnect();
     }
   }, [activeCall]);
+
+  // sync selected audio devices to twilio
+  useEffect(() => {
+    if (!deviceRef.current || !isReady || !selectedMic) return;
+    deviceRef.current.audio?.setInputDevice(selectedMic).catch(() => {});
+  }, [selectedMic, isReady]);
+
+  useEffect(() => {
+    if (!deviceRef.current || !isReady || !selectedSpeaker) return;
+    deviceRef.current.audio?.speakerDevices.set(selectedSpeaker).catch(() => {});
+  }, [selectedSpeaker, isReady]);
 
   // init on mount, cleanup on unmount
   useEffect(() => {
