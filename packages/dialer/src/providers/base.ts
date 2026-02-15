@@ -5,6 +5,7 @@ import type {
   VoiceToken,
   ProvisionNumberOptions,
   ProvisionResult,
+  PhoneNumber,
 } from '../types.js';
 
 /**
@@ -28,4 +29,7 @@ export interface DialerProvider {
 
   /** Check if a call is in a terminal state */
   isCallCompleted(callSid: string): Promise<boolean>;
+
+  /** List all incoming phone numbers on the account */
+  listNumbers(): Promise<PhoneNumber[]>;
 }

@@ -7,7 +7,9 @@ import type {
   VoiceToken,
   ProvisionNumberOptions,
   ProvisionResult,
+  PhoneNumber,
 } from '../types.js';
+import { extractAreaCode } from '../services/local-presence.js';
 import type TwilioClient from 'twilio';
 
 const TERMINAL_STATUSES = ['completed', 'failed', 'busy', 'no-answer', 'canceled'];
@@ -161,6 +163,27 @@ export class TwilioProvider implements DialerProvider {
       return TERMINAL_STATUSES.includes(call.status);
     } catch {
       return true; // if we can't fetch it, treat as completed
+    }
+  }
+
+  async listNumbers(): Promise<PhoneNumber[]> {
+    try {
+      const client = await this.getClient();
+      const numbers = await client.incomingPhoneNumbers.list();
+      return numbers.map((n) => {
+        const areaCode = extractAreaCode(n.phoneNumber);
+        return {
+          phoneNumber: n.phoneNumber,
+          areaCode: areaCode ?? '',
+          isPrimary: false,
+          isActive: true,
+          friendlyName: n.friendlyName,
+          twilioSid: n.sid,
+        };
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Failed to list numbers: ${message}`);
     }
   }
 }

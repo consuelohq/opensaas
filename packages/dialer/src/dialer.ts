@@ -186,4 +186,9 @@ export class Dialer {
   async listParticipants(conferenceSid: string): Promise<ConferenceParticipant[]> {
     return this.conference.listParticipants(conferenceSid);
   }
+
+  /** List all incoming phone numbers on the account */
+  async listNumbers(): Promise<import('./types.js').PhoneNumber[]> {
+    return this.provider.listNumbers();
+  }
 }
