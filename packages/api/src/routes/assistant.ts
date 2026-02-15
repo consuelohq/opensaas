@@ -1,6 +1,7 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import * as Sentry from '@sentry/node';
 import { errorHandler } from '../middleware/error-handler.js';
+import { AssistantConversationService } from '../services/assistant-conversations.js';
 import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import type OpenAI from 'openai';
@@ -24,12 +25,6 @@ interface AssistantResponse {
   conversationId: string;
 }
 
-interface ConversationTurn {
-  role: 'user' | 'assistant';
-  content: string;
-  commandsExecuted?: ExecutedCommand[];
-}
-
 interface CatalogTool {
   type: 'function';
   function: { name: string; description: string; parameters: unknown };
@@ -39,11 +34,9 @@ interface CatalogTool {
 
 const MAX_TOOL_CALLS = 5;
 const LLM_TIMEOUT_MS = 30_000;
-const MAX_CONVERSATION_TURNS = 20;
 
 // -- dynamic catalog loading --
 
-// fallback tools when CLI catalog is unavailable
 const FALLBACK_TOOLS: CatalogTool[] = [
   { type: 'function', function: { name: 'contacts_list', description: 'List contacts with optional filters', parameters: { type: 'object', properties: { limit: { type: 'number', description: 'Max results' }, filter: { type: 'string', description: 'Filter expression' } }, required: [] } } },
   { type: 'function', function: { name: 'contacts_search', description: 'Search contacts by name, phone, email, or tag', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } } },
@@ -80,9 +73,9 @@ const loadTools = async (): Promise<CatalogTool[]> => {
 
 // -- helpers --
 
-const buildSystemPrompt = (workspaceId: string, tools: CatalogTool[]): string => {
+const buildSystemPrompt = (workspaceId: string, tools: CatalogTool[], summary?: string): string => {
   const commandList = tools.map((t) => `- ${t.function.name}: ${t.function.description}`).join('\n');
-  return [
+  const parts = [
     "you are consuelo's assistant. you help users interact with their sales data through natural language.",
     'you have access to these commands:',
     commandList,
@@ -91,22 +84,11 @@ const buildSystemPrompt = (workspaceId: string, tools: CatalogTool[]): string =>
     'respond conversationally. when you need data, call the appropriate tool.',
     "summarize results in a helpful way — don't dump raw JSON at the user.",
     'if a multi-step task is needed, execute commands sequentially.',
-  ].join('\n');
-};
-
-// TODO: DEV-811 — replace with persistent storage
-const conversations = new Map<string, ConversationTurn[]>();
-
-const getConversation = (id: string): ConversationTurn[] =>
-  conversations.get(id) ?? [];
-
-const addTurn = (id: string, turn: ConversationTurn): void => {
-  const turns = getConversation(id);
-  turns.push(turn);
-  if (turns.length > MAX_CONVERSATION_TURNS) {
-    turns.splice(0, turns.length - MAX_CONVERSATION_TURNS);
+  ];
+  if (summary) {
+    parts.push(`\nconversation summary so far: ${summary}`);
   }
-  conversations.set(id, turns);
+  return parts.join('\n');
 };
 
 const withTimeout = <TResult>(promise: Promise<TResult>, ms: number): Promise<TResult> =>
@@ -127,7 +109,6 @@ interface RouteMapping {
 }
 
 const ROUTE_MAP: Record<string, RouteMapping> = {
-  // contacts
   contacts_list: { method: 'GET', path: '/v1/contacts', queryParams: ['limit', 'filter'] },
   contacts_get: { method: 'GET', path: '/v1/contacts', pathParam: 'id' },
   contacts_create: { method: 'POST', path: '/v1/contacts' },
@@ -135,13 +116,11 @@ const ROUTE_MAP: Record<string, RouteMapping> = {
   contacts_delete: { method: 'DELETE', path: '/v1/contacts', pathParam: 'id' },
   contacts_search: { method: 'GET', path: '/v1/contacts/search', queryParams: ['query'] },
   contacts_import: { method: 'POST', path: '/v1/contacts/import' },
-  // calls
   calls_list: { method: 'GET', path: '/v1/calls', queryParams: ['limit', 'status'] },
   calls_get: { method: 'GET', path: '/v1/calls', pathParam: 'id' },
   calls_start: { method: 'POST', path: '/v1/calls' },
   calls_end: { method: 'DELETE', path: '/v1/calls', pathParam: 'id' },
   calls_transfer: { method: 'POST', path: '/v1/calls', pathParam: 'id', queryParams: [] },
-  // queue
   queue_list: { method: 'GET', path: '/v1/queues', queryParams: ['status'] },
   queue_status: { method: 'GET', path: '/v1/queues', pathParam: 'id' },
   queue_create: { method: 'POST', path: '/v1/queues' },
@@ -150,7 +129,6 @@ const ROUTE_MAP: Record<string, RouteMapping> = {
   queue_resume: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
   queue_stop: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
   queue_delete: { method: 'DELETE', path: '/v1/queues', pathParam: 'id' },
-  // knowledge base
   kb_search: { method: 'POST', path: '/v1/knowledge/search' },
   kb_collections_list: { method: 'GET', path: '/v1/knowledge/collections' },
   kb_collections_create: { method: 'POST', path: '/v1/knowledge/collections' },
@@ -158,12 +136,10 @@ const ROUTE_MAP: Record<string, RouteMapping> = {
   kb_index: { method: 'POST', path: '/v1/knowledge/index' },
   kb_deindex: { method: 'DELETE', path: '/v1/knowledge/deindex', pathParam: 'fileId' },
   kb_stats: { method: 'GET', path: '/v1/knowledge/stats' },
-  // files
   files_list: { method: 'GET', path: '/v1/files', queryParams: ['type'] },
   files_get: { method: 'GET', path: '/v1/files', pathParam: 'id' },
   files_delete: { method: 'DELETE', path: '/v1/files', pathParam: 'id' },
   files_search: { method: 'GET', path: '/v1/files/search', queryParams: ['query'] },
-  // history
   history_list: { method: 'GET', path: '/v1/history', queryParams: ['limit', 'status', 'from', 'to'] },
   history_get: { method: 'GET', path: '/v1/history', pathParam: 'id' },
   history_stats: { method: 'GET', path: '/v1/history/stats', queryParams: ['period', 'from'] },
@@ -185,10 +161,8 @@ const executeCommand = async (
 
     let url = `${baseUrl}${route.path}`;
 
-    // append path parameter (e.g. /v1/contacts/:id)
     if (route.pathParam && args[route.pathParam]) {
       url += `/${String(args[route.pathParam])}`;
-      // append action suffix for commands like queue_start, calls_transfer
       const parts = name.split('_');
       const action = parts[parts.length - 1];
       if (['start', 'pause', 'resume', 'stop', 'transfer'].includes(action)) {
@@ -211,7 +185,6 @@ const executeCommand = async (
       const qs = params.toString();
       if (qs) url += `?${qs}`;
     } else if (['POST', 'PUT'].includes(route.method)) {
-      // exclude path param from body
       const body = { ...args };
       if (route.pathParam) delete body[route.pathParam];
       fetchOptions.body = JSON.stringify(body);
@@ -230,8 +203,8 @@ const executeCommand = async (
 
 /** /v1/assistant routes — natural language assistant with LLM tool calling */
 export const assistantRoutes = (): RouteDefinition[] => {
-  // LLM client — lazy init, cached (peer dep: openai)
   let llmClient: OpenAI | null = null;
+  const conversations = new AssistantConversationService();
 
   const getClient = async () => {
     try {
@@ -254,6 +227,25 @@ export const assistantRoutes = (): RouteDefinition[] => {
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000';
 
   return [
+    // literal routes first (ROUTE_ORDER check)
+    {
+      method: 'GET',
+      path: '/v1/assistant/conversations',
+      handler: errorHandler(async (req: ApiRequest, res: ApiResponse) => {
+        if (!req.auth) {
+          res.status(401).json({ error: { code: 'unauthorized', message: 'Authentication required' } });
+          return;
+        }
+
+        try {
+          const list = await conversations.listConversations(req.auth.workspaceId, req.auth.userId);
+          res.status(200).json({ conversations: list });
+        } catch (err: unknown) {
+          Sentry.captureException(err instanceof Error ? err : new Error('list conversations failed'));
+          res.status(500).json({ error: { code: 'internal_error', message: 'Failed to list conversations' } });
+        }
+      }),
+    },
     {
       method: 'POST',
       path: '/v1/assistant',
@@ -269,18 +261,34 @@ export const assistantRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const { randomUUID } = await import('node:crypto');
-        const conversationId = body.conversationId ?? randomUUID();
         const authHeader = req.headers['authorization'] ?? '';
 
         try {
+          // resolve or create conversation
+          let conversationId = body.conversationId;
+          let summary: string | undefined;
+          let recentMessages: Array<{ role: string; content: string }> = [];
+
+          if (conversationId) {
+            const existing = await conversations.getConversation(conversationId, req.auth.workspaceId);
+            if (!existing) {
+              res.status(404).json({ error: { code: 'not_found', message: 'Conversation not found' } });
+              return;
+            }
+            const context = await conversations.getContext(conversationId);
+            summary = context.summary;
+            recentMessages = context.recentMessages;
+          } else {
+            const conv = await conversations.createConversation(req.auth.workspaceId, req.auth.userId);
+            conversationId = conv.id;
+          }
+
           const client = await getClient();
           const tools = await loadTools();
-          const history = getConversation(conversationId);
 
           const messages: Array<{ role: string; content: string | null; tool_calls?: unknown[]; tool_call_id?: string }> = [
-            { role: 'system', content: buildSystemPrompt(req.auth.workspaceId, tools) },
-            ...history.map((t) => ({ role: t.role, content: t.content })),
+            { role: 'system', content: buildSystemPrompt(req.auth.workspaceId, tools, summary) },
+            ...recentMessages.map((m) => ({ role: m.role, content: m.content })),
             { role: 'user', content: body.message },
           ];
 
@@ -303,8 +311,8 @@ export const assistantRoutes = (): RouteDefinition[] => {
             if (choice.finish_reason !== 'tool_calls' || !choice.message.tool_calls?.length) {
               const reply = choice.message.content ?? "i couldn't generate a response. try rephrasing your request.";
 
-              addTurn(conversationId, { role: 'user', content: body.message });
-              addTurn(conversationId, { role: 'assistant', content: reply, commandsExecuted });
+              await conversations.addMessage(conversationId, 'user', body.message);
+              await conversations.addMessage(conversationId, 'assistant', reply, commandsExecuted.length > 0 ? commandsExecuted : undefined);
 
               const response: AssistantResponse = { reply, commandsExecuted, conversationId };
               res.status(200).json(response);
@@ -340,8 +348,8 @@ export const assistantRoutes = (): RouteDefinition[] => {
           }
 
           const reply = "i ran the maximum number of commands for this request. here's what i found so far.";
-          addTurn(conversationId, { role: 'user', content: body.message });
-          addTurn(conversationId, { role: 'assistant', content: reply, commandsExecuted });
+          await conversations.addMessage(conversationId, 'user', body.message);
+          await conversations.addMessage(conversationId, 'assistant', reply, commandsExecuted.length > 0 ? commandsExecuted : undefined);
 
           const response: AssistantResponse = { reply, commandsExecuted, conversationId };
           res.status(200).json(response);
@@ -351,6 +359,34 @@ export const assistantRoutes = (): RouteDefinition[] => {
             ? "i'm taking too long to think. try a simpler request."
             : 'something went wrong processing your request. please try again.';
           res.status(500).json({ error: { code: 'assistant_error', message } });
+        }
+      }),
+    },
+    {
+      method: 'DELETE',
+      path: '/v1/assistant/conversations/:id',
+      handler: errorHandler(async (req: ApiRequest, res: ApiResponse) => {
+        if (!req.auth) {
+          res.status(401).json({ error: { code: 'unauthorized', message: 'Authentication required' } });
+          return;
+        }
+
+        const conversationId = req.params?.id;
+        if (!conversationId) {
+          res.status(400).json({ error: { code: 'bad_request', message: 'conversation id is required' } });
+          return;
+        }
+
+        try {
+          const deleted = await conversations.deleteConversation(conversationId, req.auth.workspaceId, req.auth.userId);
+          if (!deleted) {
+            res.status(404).json({ error: { code: 'not_found', message: 'Conversation not found' } });
+            return;
+          }
+          res.status(200).json({ deleted: true });
+        } catch (err: unknown) {
+          Sentry.captureException(err instanceof Error ? err : new Error('delete conversation failed'));
+          res.status(500).json({ error: { code: 'internal_error', message: 'Failed to delete conversation' } });
         }
       }),
     },
