@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
+  IconAlertTriangle,
   IconBulb,
   IconChevronDown,
   IconChevronUp,
@@ -22,6 +23,8 @@ interface CoachingPanelProps {
   isLoading: boolean;
   talkingPoints: TalkingPoints | null;
   callStatus: CallStatus;
+  error: string | null;
+  onRetry: () => void;
 }
 
 // region styled
@@ -187,6 +190,22 @@ const StyledSpinner = styled(IconLoader2)`
   }
 `;
 
+const StyledRetryButton = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(3)};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.background.tertiary};
+  }
+`;
+
 const StyledSkeleton = styled.div`
   display: flex;
   flex-direction: column;
@@ -225,6 +244,8 @@ export const CoachingPanel = ({
   isLoading,
   talkingPoints,
   callStatus,
+  error,
+  onRetry,
 }: CoachingPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
@@ -261,6 +282,17 @@ export const CoachingPanel = ({
   const renderContent = () => {
     if (isLoading) {
       return <LoadingSkeleton />;
+    }
+
+    // W8: show error state with retry button
+    if (error) {
+      return (
+        <StyledEmpty>
+          <IconAlertTriangle size={20} />
+          <span>{error}</span>
+          <StyledRetryButton onClick={onRetry}>Retry</StyledRetryButton>
+        </StyledEmpty>
+      );
     }
 
     if (!hasPoints) {

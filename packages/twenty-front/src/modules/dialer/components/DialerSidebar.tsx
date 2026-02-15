@@ -68,9 +68,9 @@ export const DialerSidebar = () => {
   const isOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const isInCall = callState.status !== 'idle';
-  const { isLoading, talkingPoints } = useCoaching();
+  const { isLoading, talkingPoints, error: coachingError, retry: retryCoaching } = useCoaching();
   const { transcript, isConnected } = useTranscript();
-  const { analysis, isAnalyzing } = usePostCallAnalysis();
+  const { analysis, isAnalyzing, error: analysisError, retry: retryAnalysis } = usePostCallAnalysis();
   useResetCoachingState();
 
   return (
@@ -91,6 +91,8 @@ export const DialerSidebar = () => {
           isLoading={isLoading}
           talkingPoints={talkingPoints}
           callStatus={callState.status}
+          error={coachingError}
+          onRetry={retryCoaching}
         />
         {isInCall && (
           <LiveTranscript
@@ -98,7 +100,7 @@ export const DialerSidebar = () => {
             isConnected={isConnected}
           />
         )}
-        <PostCallSummary analysis={analysis} isAnalyzing={isAnalyzing} />
+        <PostCallSummary analysis={analysis} isAnalyzing={isAnalyzing} error={analysisError} onRetry={retryAnalysis} />
       </StyledBody>
 
       <StyledFooter>

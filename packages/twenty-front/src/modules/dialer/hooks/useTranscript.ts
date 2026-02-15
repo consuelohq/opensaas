@@ -6,6 +6,7 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   talkingPointsState,
   transcriptConnectedState,
+  transcriptErrorState,
   transcriptState,
 } from '@/dialer/states/coachingState';
 import { type TranscriptEntry } from '@/dialer/types/coaching';
@@ -14,10 +15,17 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_BASE_DELAY_MS = 1000;
 const COACHING_REFRESH_INTERVAL_MS = 30_000;
 const MAX_COACHING_REFRESHES = 10;
+// W3: minimum new words before triggering a coaching refresh
+const MIN_NEW_WORDS_THRESHOLD = 50;
 
 // converts http(s) base url to ws(s)
 function toWsUrl(httpUrl: string): string {
   return httpUrl.replace(/^http/, 'ws');
+}
+
+// W3: count words in transcript entries
+function countWords(entries: TranscriptEntry[]): number {
+  return entries.reduce((sum, e) => sum + e.text.split(' ').length, 0);
 }
 
 interface UseTranscriptReturn {
@@ -31,6 +39,7 @@ export const useTranscript = (): UseTranscriptReturn => {
   const callState = useRecoilValue(callStateAtom);
   const setTranscript = useSetRecoilState(transcriptState);
   const setConnected = useSetRecoilState(transcriptConnectedState);
+  const setTranscriptError = useSetRecoilState(transcriptErrorState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
   const transcript = useRecoilValue(transcriptState);
   const isConnected = useRecoilValue(transcriptConnectedState);
@@ -41,6 +50,17 @@ export const useTranscript = (): UseTranscriptReturn => {
   const lastRefreshTime = useRef(0);
   const refreshCount = useRef(0);
   const lastCallSid = useRef<string | null>(null);
+  // W7: track last sent index for delta-only refreshes
+  const lastRefreshIndex = useRef(0);
+  // W3: track word count at last refresh
+  const lastRefreshWordCount = useRef(0);
+  // W14: ref for callState.status to avoid stale closure in ws.onclose
+  const callStatusRef = useRef(callState.status);
+
+  // W14: keep ref in sync with current status
+  useEffect(() => {
+    callStatusRef.current = callState.status;
+  }, [callState.status]);
 
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimer.current) {
@@ -65,11 +85,21 @@ export const useTranscript = (): UseTranscriptReturn => {
       const now = Date.now();
       if (now - lastRefreshTime.current < COACHING_REFRESH_INTERVAL_MS) return;
 
+      // W3: skip if transcript hasn't grown enough since last refresh
+      const currentWordCount = countWords(entries);
+      if (currentWordCount - lastRefreshWordCount.current < MIN_NEW_WORDS_THRESHOLD) return;
+
       lastRefreshTime.current = now;
       refreshCount.current += 1;
+      lastRefreshWordCount.current = currentWordCount;
 
-      // send recent transcript to realtime coaching endpoint
-      const messages = entries.slice(-20).map((entry) => ({
+      // W7: send only delta (new entries since last refresh)
+      const delta = entries.slice(lastRefreshIndex.current);
+      lastRefreshIndex.current = entries.length;
+
+      if (delta.length === 0) return;
+
+      const messages = delta.map((entry) => ({
         role: entry.speaker === 'agent' ? 'sales_rep' : 'customer',
         content: entry.text,
       }));
@@ -85,8 +115,9 @@ export const useTranscript = (): UseTranscriptReturn => {
           },
         );
         if (res.ok) {
-          const data = await res.json();
-          setTalkingPoints(data);
+          // W10: unwrap { data } response from backend
+          const json = (await res.json()) as { data: unknown };
+          setTalkingPoints(json.data as Parameters<typeof setTalkingPoints>[0]);
         }
       } catch {
         // graceful degradation — coaching still works via initial REST fetch
@@ -94,6 +125,9 @@ export const useTranscript = (): UseTranscriptReturn => {
     },
     [setTalkingPoints],
   );
+
+  // W15: pending entry ref to trigger coaching refresh outside state updater
+  const pendingEntryRef = useRef<TranscriptEntry | null>(null);
 
   const connect = useCallback(
     (callId: string) => {
@@ -112,12 +146,10 @@ export const useTranscript = (): UseTranscriptReturn => {
       ws.onmessage = (event) => {
         try {
           const entry = JSON.parse(event.data as string) as TranscriptEntry;
-          setTranscript((prev) => {
-            const next = [...prev, entry];
-            // trigger coaching refresh check
-            void refreshCoaching(next);
-            return next;
-          });
+          // W15: pure state updater — no side effects inside
+          setTranscript((prev) => [...prev, entry]);
+          // store pending entry so useEffect can trigger refresh
+          pendingEntryRef.current = entry;
         } catch {
           // ignore malformed messages
         }
@@ -127,10 +159,10 @@ export const useTranscript = (): UseTranscriptReturn => {
         setConnected(false);
         wsRef.current = null;
 
-        // reconnect if call is still active
+        // W14: use ref instead of closure-captured callState.status
         if (
           reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS &&
-          callState.status === 'active'
+          callStatusRef.current === 'active'
         ) {
           const delay =
             RECONNECT_BASE_DELAY_MS *
@@ -144,14 +176,16 @@ export const useTranscript = (): UseTranscriptReturn => {
         // onclose fires after onerror — reconnect handled there
       };
     },
-    [
-      disconnect,
-      setConnected,
-      setTranscript,
-      refreshCoaching,
-      callState.status,
-    ],
+    [disconnect, setConnected, setTranscript],
   );
+
+  // W15: trigger coaching refresh outside state updater, watching transcript length
+  useEffect(() => {
+    if (transcript.length > 0 && pendingEntryRef.current) {
+      pendingEntryRef.current = null;
+      void refreshCoaching(transcript);
+    }
+  }, [transcript, refreshCoaching]);
 
   // auto-connect when call becomes active
   useEffect(() => {
@@ -163,6 +197,8 @@ export const useTranscript = (): UseTranscriptReturn => {
       lastCallSid.current = callState.callSid;
       refreshCount.current = 0;
       lastRefreshTime.current = 0;
+      lastRefreshIndex.current = 0;
+      lastRefreshWordCount.current = 0;
       setTranscript([]);
       connect(callState.callSid);
     }
@@ -173,9 +209,10 @@ export const useTranscript = (): UseTranscriptReturn => {
     if (callState.status === 'idle' || callState.status === 'ended') {
       disconnect();
       setTranscript([]);
+      setTranscriptError(null);
       lastCallSid.current = null;
     }
-  }, [callState.status, disconnect, setTranscript]);
+  }, [callState.status, disconnect, setTranscript, setTranscriptError]);
 
   // cleanup on unmount
   useEffect(() => {

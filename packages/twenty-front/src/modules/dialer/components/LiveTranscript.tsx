@@ -134,11 +134,15 @@ export const LiveTranscript = ({
     });
   }, []);
 
-  // auto-scroll to bottom on new entries
+  // N11: only auto-scroll if user is near the bottom (within 50px)
   useEffect(() => {
     const container = contentRef.current;
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [transcript.length]);
 
@@ -148,7 +152,11 @@ export const LiveTranscript = ({
         <StyledHeaderLeft>
           <IconMicrophone size={16} />
           <StyledHeaderTitle>Live Transcript</StyledHeaderTitle>
-          <StyledDot connected={isConnected} />
+          <StyledDot
+            connected={isConnected}
+            role="status"
+            aria-label={isConnected ? 'Connected' : 'Disconnected'}
+          />
         </StyledHeaderLeft>
         {isExpanded ? (
           <IconChevronUp size={14} />
