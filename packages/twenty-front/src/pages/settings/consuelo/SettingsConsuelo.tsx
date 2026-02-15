@@ -14,8 +14,9 @@ import {
   IconBell,
   IconBuildingSkyscraper,
   IconUserCircle,
+  IconPlugConnected,
+  type IconComponent,
 } from 'twenty-ui/display';
-import { type IconComponent } from 'twenty-ui/display';
 import { AudioDeviceSettings } from '~/pages/settings/consuelo/AudioDeviceSettings';
 import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings';
 import { PreferencesSettings } from '~/pages/settings/consuelo/PreferencesSettings';
