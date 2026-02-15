@@ -1,6 +1,6 @@
-export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type TeamRole = 'owner' | 'admin' | 'member';
 
-export type MemberStatus = 'active' | 'pending' | 'disabled';
+export type MemberStatus = 'active' | 'pending' | 'suspended';
 
 export type PlanTier = 'free' | 'pro' | 'team' | 'enterprise';
 
@@ -67,14 +67,12 @@ export const ROLE_PERMISSIONS: Record<TeamRole, string[]> = {
   owner: ['*'],
   admin: ['manage_team', 'manage_settings', 'manage_billing', 'make_calls', 'view_analytics'],
   member: ['make_calls', 'view_contacts', 'view_own_analytics'],
-  viewer: ['view_contacts', 'view_analytics'],
 };
 
 export const ROLE_DESCRIPTIONS: Record<TeamRole, string> = {
   owner: 'Full access to everything, including deleting the workspace',
   admin: 'Can manage team, settings, and billing',
   member: 'Can make calls and manage their own contacts',
-  viewer: 'Read-only access to contacts and analytics',
 };
 
 export const DEFAULT_BRANDING: WorkspaceBranding = {

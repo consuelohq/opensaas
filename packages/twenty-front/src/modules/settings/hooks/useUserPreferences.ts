@@ -79,7 +79,7 @@ export const useUserPreferences = () => {
         if (!res.ok) throw new Error(`${res.status}`);
         setError(null);
       } catch {
-        // silent — localStorage is the fallback
+        setError('Failed to save preferences');
       }
     }, DEBOUNCE_MS);
   }, []);
