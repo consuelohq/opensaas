@@ -4104,6 +4104,7 @@ __metadata:
     "@sentry/node": "npm:^10.38.0"
     "@types/jsonwebtoken": "npm:^9.0.0"
     "@types/pg": "npm:^8.0.0"
+    "@types/ws": "npm:^8.0.0"
   peerDependencies:
     "@aws-sdk/client-s3": ">=3.0.0"
     "@aws-sdk/s3-request-presigner": ">=3.0.0"
@@ -4111,6 +4112,7 @@ __metadata:
     openai: ">=4.0.0"
     pdf-parse: ">=1.1.1"
     pg: ">=8.0.0"
+    ws: ">=8.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4129,6 +4131,7 @@ __metadata:
     commander: "npm:^13.1.0"
     open: "npm:^11.0.0"
     ora: "npm:^9.3.0"
+    twenty-sdk: "npm:*"
   bin:
     consuelo: dist/index.js
   languageName: unknown
@@ -4145,7 +4148,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@consuelo/contacts@npm:*, @consuelo/contacts@npm:^0.0.1, @consuelo/contacts@workspace:packages/contacts":
+"@consuelo/contacts@npm:*, @consuelo/contacts@npm:^0.0.1, @consuelo/contacts@workspace:*, @consuelo/contacts@workspace:packages/contacts":
   version: 0.0.0-use.local
   resolution: "@consuelo/contacts@workspace:packages/contacts"
   dependencies:
@@ -59713,6 +59716,7 @@ __metadata:
     "@blocknote/xl-docx-exporter": "npm:^0.31.1"
     "@blocknote/xl-pdf-exporter": "npm:^0.31.1"
     "@calcom/embed-react": "npm:^1.5.3"
+    "@consuelo/contacts": "workspace:*"
     "@cyntler/react-doc-viewer": "npm:^1.17.0"
     "@dagrejs/dagre": "npm:^1.1.2"
     "@floating-ui/react": "npm:^0.24.3"
@@ -59833,6 +59837,43 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"twenty-sdk@npm:*":
+  version: 0.5.2
+  resolution: "twenty-sdk@npm:0.5.2"
+  dependencies:
+    "@genql/cli": "npm:^3.0.3"
+    "@quilted/threads": "npm:^4.0.1"
+    "@remote-dom/core": "npm:^1.10.1"
+    "@remote-dom/react": "npm:^1.2.2"
+    "@sniptt/guards": "npm:^0.2.0"
+    archiver: "npm:^7.0.1"
+    axios: "npm:^1.13.5"
+    chalk: "npm:^5.3.0"
+    chokidar: "npm:^4.0.0"
+    commander: "npm:^12.0.0"
+    dotenv: "npm:^16.4.0"
+    esbuild: "npm:^0.25.0"
+    fast-glob: "npm:^3.3.0"
+    fs-extra: "npm:^11.2.0"
+    graphql: "npm:^16.8.1"
+    graphql-sse: "npm:^2.5.4"
+    ink: "npm:^5.1.1"
+    inquirer: "npm:^10.0.0"
+    jsonc-parser: "npm:^3.2.0"
+    lodash.camelcase: "npm:^4.3.0"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    typescript: "npm:^5.9.2"
+    uuid: "npm:^13.0.0"
+    vite: "npm:^7.0.0"
+    vite-tsconfig-paths: "npm:^4.2.1"
+    zod: "npm:^4.1.11"
+  bin:
+    twenty: dist/cli.cjs
+  checksum: 10c0/b031c032453d13e13a61b7e8a2789d746b4e267dfb467a9c84f7f2c30aa096a25d15bbe53b7d6c38ab3fd8837f7e820c0813aabd5942bc36cf979913d1e2e4ce
+  languageName: node
+  linkType: hard
+
 "twenty-sdk@workspace:*, twenty-sdk@workspace:packages/twenty-sdk":
   version: 0.0.0-use.local
   resolution: "twenty-sdk@workspace:packages/twenty-sdk"
@@ -59860,7 +59901,7 @@ __metadata:
     axios: "npm:^1.13.5"
     chalk: "npm:^5.3.0"
     chokidar: "npm:^4.0.0"
-    commander: "npm:^12.0.0"
+    commander: "npm:^13.1.0"
     dotenv: "npm:^16.4.0"
     esbuild: "npm:^0.25.0"
     fast-glob: "npm:^3.3.0"
