@@ -17,6 +17,7 @@ import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand } from './commands/status.js';
 import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
+import { extractCatalog, catalogToTools } from './catalog.js';
 import './output.js';
 
 const logger = createLogger('CLI');
@@ -65,8 +66,10 @@ program
   .command('init')
   .description('interactive setup wizard')
   .option('--managed', 'use hosted infrastructure')
+  .option('--yes', 'non-interactive mode with sensible defaults')
+  .option('--template <type>', 'project template (full, minimal, api-only)')
   .action(async (opts) => {
-    await initCommand({ managed: opts.managed });
+    await initCommand({ managed: opts.managed, yes: opts.yes, template: opts.template });
   });
 
 program
@@ -108,6 +111,15 @@ program
   .description('show config and account status')
   .action(async () => {
     await statusCommand();
+  });
+
+program
+  .command('catalog', { hidden: true })
+  .description('generate command catalog for assistant')
+  .action(() => {
+    const catalog = extractCatalog(program);
+    const tools = catalogToTools(catalog);
+    json({ ...catalog, tools });
   });
 
 program.parseAsync().catch((err: unknown) => {
