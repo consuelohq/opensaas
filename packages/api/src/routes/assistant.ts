@@ -24,21 +24,15 @@ interface AssistantResponse {
   conversationId: string;
 }
 
-interface CommandDefinition {
-  name: string;
-  description: string;
-  parameters: Record<string, {
-    type: string;
-    description: string;
-    required?: boolean;
-    enum?: string[];
-  }>;
-}
-
 interface ConversationTurn {
   role: 'user' | 'assistant';
   content: string;
   commandsExecuted?: ExecutedCommand[];
+}
+
+interface CatalogTool {
+  type: 'function';
+  function: { name: string; description: string; parameters: unknown };
 }
 
 // -- constants --
@@ -47,101 +41,47 @@ const MAX_TOOL_CALLS = 5;
 const LLM_TIMEOUT_MS = 30_000;
 const MAX_CONVERSATION_TURNS = 20;
 
-// -- command catalog (static until 11.2 auto-generates) --
+// -- dynamic catalog loading --
 
-// DEV-809: replace with auto-generated catalog from commander.js tree
-const COMMAND_CATALOG: CommandDefinition[] = [
-  {
-    name: 'contacts_list',
-    description: 'List contacts with optional filters',
-    parameters: {
-      tag: { type: 'string', description: 'Filter by tag' },
-      limit: { type: 'number', description: 'Max results to return' },
-      search: { type: 'string', description: 'Search by name or phone' },
-    },
-  },
-  {
-    name: 'contacts_search',
-    description: 'Search contacts by name, phone, email, or tag',
-    parameters: {
-      query: { type: 'string', description: 'Search query', required: true },
-    },
-  },
-  {
-    name: 'history_list',
-    description: 'List call history with optional filters',
-    parameters: {
-      outcome: { type: 'string', description: 'Filter by outcome', enum: ['answered', 'no-answer', 'busy', 'voicemail', 'failed'] },
-      from: { type: 'string', description: 'Start date (ISO format)' },
-      to: { type: 'string', description: 'End date (ISO format)' },
-      limit: { type: 'number', description: 'Max results' },
-    },
-  },
-  {
-    name: 'history_stats',
-    description: 'Get call statistics for a time period',
-    parameters: {
-      period: { type: 'string', description: 'Time period', enum: ['day', 'week', 'month'] },
-      from: { type: 'string', description: 'Start date (ISO format)' },
-    },
-  },
-  {
-    name: 'kb_search',
-    description: 'Search the knowledge base for relevant content',
-    parameters: {
-      query: { type: 'string', description: 'Search query', required: true },
-      collection: { type: 'string', description: 'Collection name to search in' },
-    },
-  },
-  {
-    name: 'queue_list',
-    description: 'List call queues',
-    parameters: {
-      status: { type: 'string', description: 'Filter by status', enum: ['active', 'paused', 'completed'] },
-    },
-  },
-  {
-    name: 'queue_create',
-    description: 'Create a new call queue with contacts',
-    parameters: {
-      name: { type: 'string', description: 'Queue name', required: true },
-      contactIds: { type: 'string', description: 'Comma-separated contact IDs' },
-    },
-  },
-  {
-    name: 'files_list',
-    description: 'List uploaded files',
-    parameters: {
-      type: { type: 'string', description: 'Filter by file type' },
-    },
-  },
+// fallback tools when CLI catalog is unavailable
+const FALLBACK_TOOLS: CatalogTool[] = [
+  { type: 'function', function: { name: 'contacts_list', description: 'List contacts with optional filters', parameters: { type: 'object', properties: { limit: { type: 'number', description: 'Max results' }, filter: { type: 'string', description: 'Filter expression' } }, required: [] } } },
+  { type: 'function', function: { name: 'contacts_search', description: 'Search contacts by name, phone, email, or tag', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' } }, required: ['query'] } } },
+  { type: 'function', function: { name: 'history_list', description: 'List call history', parameters: { type: 'object', properties: { limit: { type: 'number', description: 'Max results' }, status: { type: 'string', description: 'Filter by status' } }, required: [] } } },
+  { type: 'function', function: { name: 'history_stats', description: 'Get call statistics', parameters: { type: 'object', properties: { period: { type: 'string', description: 'Time period (day|week|month)' } }, required: [] } } },
+  { type: 'function', function: { name: 'kb_search', description: 'Search the knowledge base', parameters: { type: 'object', properties: { query: { type: 'string', description: 'Search query' }, collection: { type: 'string', description: 'Collection name' } }, required: ['query'] } } },
+  { type: 'function', function: { name: 'queue_list', description: 'List call queues', parameters: { type: 'object', properties: { status: { type: 'string', description: 'Filter by status' } }, required: [] } } },
+  { type: 'function', function: { name: 'queue_create', description: 'Create a new call queue', parameters: { type: 'object', properties: { name: { type: 'string', description: 'Queue name' }, contacts: { type: 'string', description: 'Comma-separated contact IDs' } }, required: ['name'] } } },
+  { type: 'function', function: { name: 'files_list', description: 'List uploaded files', parameters: { type: 'object', properties: { type: { type: 'string', description: 'Filter by file type' } }, required: [] } } },
 ];
+
+let cachedTools: CatalogTool[] | null = null;
+
+const loadTools = async (): Promise<CatalogTool[]> => {
+  if (cachedTools) return cachedTools;
+  try {
+    const { execSync } = await import('node:child_process');
+    const output = execSync('consuelo catalog --json', {
+      timeout: 10_000,
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const parsed = JSON.parse(output.trim()) as { tools?: CatalogTool[] };
+    if (parsed.tools?.length) {
+      cachedTools = parsed.tools;
+      return cachedTools;
+    }
+  } catch {
+    // CLI not available — use fallback
+  }
+  cachedTools = FALLBACK_TOOLS;
+  return cachedTools;
+};
 
 // -- helpers --
 
-const buildToolDefinitions = (catalog: CommandDefinition[]) =>
-  catalog.map((cmd) => ({
-    type: 'function' as const,
-    function: {
-      name: cmd.name,
-      description: cmd.description,
-      parameters: {
-        type: 'object',
-        properties: Object.fromEntries(
-          Object.entries(cmd.parameters).map(([key, param]) => [
-            key,
-            { type: param.type, description: param.description, ...(param.enum ? { enum: param.enum } : {}) },
-          ]),
-        ),
-        required: Object.entries(cmd.parameters)
-          .filter(([, p]) => p.required)
-          .map(([k]) => k),
-      },
-    },
-  }));
-
-const buildSystemPrompt = (workspaceId: string): string => {
-  const commandList = COMMAND_CATALOG.map((c) => `- ${c.name}: ${c.description}`).join('\n');
+const buildSystemPrompt = (workspaceId: string, tools: CatalogTool[]): string => {
+  const commandList = tools.map((t) => `- ${t.function.name}: ${t.function.description}`).join('\n');
   return [
     "you are consuelo's assistant. you help users interact with their sales data through natural language.",
     'you have access to these commands:',
@@ -177,7 +117,60 @@ const withTimeout = <TResult>(promise: Promise<TResult>, ms: number): Promise<TR
     ),
   ]);
 
-// route-internal API executor — calls the same routes the CLI hits
+// -- command execution --
+
+interface RouteMapping {
+  method: string;
+  path: string;
+  pathParam?: string;
+  queryParams?: string[];
+}
+
+const ROUTE_MAP: Record<string, RouteMapping> = {
+  // contacts
+  contacts_list: { method: 'GET', path: '/v1/contacts', queryParams: ['limit', 'filter'] },
+  contacts_get: { method: 'GET', path: '/v1/contacts', pathParam: 'id' },
+  contacts_create: { method: 'POST', path: '/v1/contacts' },
+  contacts_update: { method: 'PUT', path: '/v1/contacts', pathParam: 'id' },
+  contacts_delete: { method: 'DELETE', path: '/v1/contacts', pathParam: 'id' },
+  contacts_search: { method: 'GET', path: '/v1/contacts/search', queryParams: ['query'] },
+  contacts_import: { method: 'POST', path: '/v1/contacts/import' },
+  // calls
+  calls_list: { method: 'GET', path: '/v1/calls', queryParams: ['limit', 'status'] },
+  calls_get: { method: 'GET', path: '/v1/calls', pathParam: 'id' },
+  calls_start: { method: 'POST', path: '/v1/calls' },
+  calls_end: { method: 'DELETE', path: '/v1/calls', pathParam: 'id' },
+  calls_transfer: { method: 'POST', path: '/v1/calls', pathParam: 'id', queryParams: [] },
+  // queue
+  queue_list: { method: 'GET', path: '/v1/queues', queryParams: ['status'] },
+  queue_status: { method: 'GET', path: '/v1/queues', pathParam: 'id' },
+  queue_create: { method: 'POST', path: '/v1/queues' },
+  queue_start: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
+  queue_pause: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
+  queue_resume: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
+  queue_stop: { method: 'POST', path: '/v1/queues', pathParam: 'id' },
+  queue_delete: { method: 'DELETE', path: '/v1/queues', pathParam: 'id' },
+  // knowledge base
+  kb_search: { method: 'POST', path: '/v1/knowledge/search' },
+  kb_collections_list: { method: 'GET', path: '/v1/knowledge/collections' },
+  kb_collections_create: { method: 'POST', path: '/v1/knowledge/collections' },
+  kb_collections_delete: { method: 'DELETE', path: '/v1/knowledge/collections', pathParam: 'id' },
+  kb_index: { method: 'POST', path: '/v1/knowledge/index' },
+  kb_deindex: { method: 'DELETE', path: '/v1/knowledge/deindex', pathParam: 'fileId' },
+  kb_stats: { method: 'GET', path: '/v1/knowledge/stats' },
+  // files
+  files_list: { method: 'GET', path: '/v1/files', queryParams: ['type'] },
+  files_get: { method: 'GET', path: '/v1/files', pathParam: 'id' },
+  files_delete: { method: 'DELETE', path: '/v1/files', pathParam: 'id' },
+  files_search: { method: 'GET', path: '/v1/files/search', queryParams: ['query'] },
+  // history
+  history_list: { method: 'GET', path: '/v1/history', queryParams: ['limit', 'status', 'from', 'to'] },
+  history_get: { method: 'GET', path: '/v1/history', pathParam: 'id' },
+  history_stats: { method: 'GET', path: '/v1/history/stats', queryParams: ['period', 'from'] },
+  history_export: { method: 'POST', path: '/v1/history/export' },
+  history_delete: { method: 'DELETE', path: '/v1/history', pathParam: 'id' },
+};
+
 const executeCommand = async (
   name: string,
   args: Record<string, unknown>,
@@ -185,23 +178,24 @@ const executeCommand = async (
   baseUrl: string,
 ): Promise<{ result: unknown; success: boolean }> => {
   try {
-    const routeMap: Record<string, { method: string; path: string; queryParams?: string[] }> = {
-      contacts_list: { method: 'GET', path: '/v1/contacts', queryParams: ['tag', 'limit', 'search'] },
-      contacts_search: { method: 'GET', path: '/v1/contacts/search', queryParams: ['query'] },
-      history_list: { method: 'GET', path: '/v1/calls', queryParams: ['outcome', 'from', 'to', 'limit'] },
-      history_stats: { method: 'GET', path: '/v1/analytics/stats', queryParams: ['period', 'from'] },
-      kb_search: { method: 'GET', path: '/v1/knowledge/search', queryParams: ['query', 'collection'] },
-      queue_list: { method: 'GET', path: '/v1/queues', queryParams: ['status'] },
-      queue_create: { method: 'POST', path: '/v1/queues' },
-      files_list: { method: 'GET', path: '/v1/files', queryParams: ['type'] },
-    };
-
-    const route = routeMap[name];
+    const route = ROUTE_MAP[name];
     if (!route) {
       return { result: { error: `unknown command: ${name}` }, success: false };
     }
 
     let url = `${baseUrl}${route.path}`;
+
+    // append path parameter (e.g. /v1/contacts/:id)
+    if (route.pathParam && args[route.pathParam]) {
+      url += `/${String(args[route.pathParam])}`;
+      // append action suffix for commands like queue_start, calls_transfer
+      const parts = name.split('_');
+      const action = parts[parts.length - 1];
+      if (['start', 'pause', 'resume', 'stop', 'transfer'].includes(action)) {
+        url += `/${action}`;
+      }
+    }
+
     const fetchOptions: RequestInit = {
       method: route.method,
       headers: { 'authorization': authHeader, 'content-type': 'application/json' },
@@ -216,8 +210,11 @@ const executeCommand = async (
       }
       const qs = params.toString();
       if (qs) url += `?${qs}`;
-    } else if (route.method === 'POST') {
-      fetchOptions.body = JSON.stringify(args);
+    } else if (['POST', 'PUT'].includes(route.method)) {
+      // exclude path param from body
+      const body = { ...args };
+      if (route.pathParam) delete body[route.pathParam];
+      fetchOptions.body = JSON.stringify(body);
     }
 
     const response = await fetch(url, fetchOptions);
@@ -278,12 +275,11 @@ export const assistantRoutes = (): RouteDefinition[] => {
 
         try {
           const client = await getClient();
-          const tools = buildToolDefinitions(COMMAND_CATALOG);
+          const tools = await loadTools();
           const history = getConversation(conversationId);
 
-          // build messages array
           const messages: Array<{ role: string; content: string | null; tool_calls?: unknown[]; tool_call_id?: string }> = [
-            { role: 'system', content: buildSystemPrompt(req.auth.workspaceId) },
+            { role: 'system', content: buildSystemPrompt(req.auth.workspaceId, tools) },
             ...history.map((t) => ({ role: t.role, content: t.content })),
             { role: 'user', content: body.message },
           ];
@@ -291,7 +287,6 @@ export const assistantRoutes = (): RouteDefinition[] => {
           const commandsExecuted: ExecutedCommand[] = [];
           let iterations = 0;
 
-          // tool calling loop
           while (iterations < MAX_TOOL_CALLS) {
             const completion = await withTimeout(
               client.chat.completions.create({
@@ -305,7 +300,6 @@ export const assistantRoutes = (): RouteDefinition[] => {
             const choice = completion.choices[0];
             if (!choice) break;
 
-            // no tool calls — we have the final response
             if (choice.finish_reason !== 'tool_calls' || !choice.message.tool_calls?.length) {
               const reply = choice.message.content ?? "i couldn't generate a response. try rephrasing your request.";
 
@@ -317,7 +311,6 @@ export const assistantRoutes = (): RouteDefinition[] => {
               return;
             }
 
-            // execute tool calls
             messages.push({
               role: 'assistant',
               content: null,
@@ -346,7 +339,6 @@ export const assistantRoutes = (): RouteDefinition[] => {
             iterations++;
           }
 
-          // hit max iterations — return what we have
           const reply = "i ran the maximum number of commands for this request. here's what i found so far.";
           addTurn(conversationId, { role: 'user', content: body.message });
           addTurn(conversationId, { role: 'assistant', content: reply, commandsExecuted });
