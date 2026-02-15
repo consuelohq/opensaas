@@ -31,10 +31,25 @@ program
   .option('--json', 'machine-readable output')
   .option('--quiet', 'suppress output')
   .option('--no-telemetry', 'disable error reporting')
-  .hook('preAction', (_thisCommand, actionCommand) => {
+  .option('--workspace <name>', 'use a specific workspace configuration')
+  .hook('preAction', async (_thisCommand, actionCommand) => {
     const opts = actionCommand.optsWithGlobals();
     if (opts.json) globalThis.__consuelo_json = true;
     if (opts.quiet) globalThis.__consuelo_quiet = true;
+
+    // twenty-sdk workspace resolution
+    try {
+      // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
+      const { ConfigService } = await import('twenty-sdk/cli');
+      let workspace = opts.workspace as string | undefined;
+      if (!workspace) {
+        const configService = new ConfigService();
+        workspace = await configService.getDefaultWorkspace();
+      }
+      ConfigService.setActiveWorkspace(workspace);
+    } catch {
+      // twenty-sdk not available — skip workspace resolution
+    }
   })
   .action(async () => {
     const config = loadConfig();
@@ -69,6 +84,15 @@ registerQueue(program);
 registerKb(program);
 registerFiles(program);
 registerHistory(program);
+
+// twenty-sdk platform commands (auth, app, entity, function)
+try {
+  // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
+  const { registerCommands } = await import('twenty-sdk/cli');
+  registerCommands(program);
+} catch {
+  // twenty-sdk not built — platform commands unavailable
+}
 
 program
   .command('analytics')
