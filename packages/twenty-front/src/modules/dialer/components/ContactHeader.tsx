@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { css, keyframes } from '@emotion/react';
 import { useRecoilValue } from 'recoil';
 
+import { useCallDuration } from '@/dialer/hooks/useCallDuration';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
@@ -112,6 +113,7 @@ export const ContactHeader = () => {
   const callState = useRecoilValue(callStateAtom);
   const contact = useRecoilValue(selectedContactState);
   const isOnHold = useRecoilValue(isOnHoldState);
+  const duration = useCallDuration();
 
   const displayStatus: DisplayStatus =
     isOnHold && callState.status === 'active' ? 'on-hold' : callState.status;
@@ -157,7 +159,7 @@ export const ContactHeader = () => {
         {config.label && (
           <StyledStatusLine>
             {config.label}
-            {showDuration && ` • ${formatDurationTimer(callState.duration)}`}
+            {showDuration && ` • ${formatDurationTimer(duration)}`}
           </StyledStatusLine>
         )}
       </StyledInfo>
