@@ -1,5 +1,6 @@
 import { DialerSidebar } from '@/dialer/components/DialerSidebar';
 import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
+import { callingModeState } from '@/dialer/states/callingModeState';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { AuthModal } from '@/auth/components/AuthModal';
 import { AppErrorBoundary } from '@/error-handler/components/AppErrorBoundary';
@@ -72,12 +73,20 @@ export const DefaultLayout = () => {
   const showAuthModal = useShowAuthModal();
   const useShowFullScreen = useShowFullscreen();
   const setDialerOpen = useSetRecoilState(dialerSidebarOpenState);
+  const setCallingMode = useSetRecoilState(callingModeState);
 
   const handleToggleSidebar = useCallback(() => {
     setDialerOpen((prev) => !prev);
   }, [setDialerOpen]);
 
-  useDialerHotkeys({ onToggleSidebar: handleToggleSidebar });
+  const handleToggleCallingMode = useCallback(() => {
+    setCallingMode((prev) => (prev === 'browser' ? 'phone' : 'browser'));
+  }, [setCallingMode]);
+
+  useDialerHotkeys({
+    onToggleSidebar: handleToggleSidebar,
+    onToggleCallingMode: handleToggleCallingMode,
+  });
 
   return (
     <>
