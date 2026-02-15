@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import { GHLAuthService, type GHLOAuthConfig } from '../services/ghl-auth.js';
+import { GHLWebhookHandler, verifyWebhookSignature, type GHLWebhookPayload, type GHLSyncServiceInterface } from '../services/ghl-webhook.js';
 
 type Pool = {
   query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
@@ -31,6 +32,7 @@ const loadConfig = (): GHLOAuthConfig => ({
 export const ghlRoutes = (): RouteDefinition[] => {
   let pool: Pool | null = null;
   let authService: GHLAuthService | null = null;
+  let webhookHandler: GHLWebhookHandler | null = null;
 
   const getPool = async (): Promise<Pool> => {
     try {
@@ -69,6 +71,30 @@ export const ghlRoutes = (): RouteDefinition[] => {
       return null;
     }
     return { userId, workspaceId };
+  };
+
+  // stub sync service — replaced by real implementation in DEV-782
+  const stubSyncService: GHLSyncServiceInterface = {
+    findMapping: async () => null,
+    createTwentyPerson: async () => ({ id: '' }),
+    updateTwentyPerson: async () => { /* noop */ },
+    createSyncMapping: async () => { /* noop */ },
+    updateSyncMapping: async () => { /* noop */ },
+    mapGhlContactToTwenty: () => ({}),
+    handleOpportunitySync: async () => { /* noop */ },
+  };
+
+  const getWebhookHandler = async (): Promise<GHLWebhookHandler> => {
+    try {
+      if (webhookHandler === null) {
+        const db = await getPool();
+        webhookHandler = new GHLWebhookHandler(stubSyncService, db);
+      }
+      return webhookHandler;
+    } catch (err: unknown) {
+      webhookHandler = null;
+      throw err;
+    }
   };
 
   return [
@@ -158,6 +184,33 @@ export const ghlRoutes = (): RouteDefinition[] => {
         await service.disconnect(auth.workspaceId);
         Sentry.captureMessage('GHL disconnected', { extra: { workspaceId: auth.workspaceId } });
         res.status(200).json({ disconnected: true });
+      }),
+    },
+
+    // POST /v1/webhooks/ghl — receive GHL webhook events
+    {
+      method: 'POST',
+      path: '/v1/webhooks/ghl',
+      handler: errorHandler(async (req, res) => {
+        const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
+        if (webhookSecret) {
+          const signature = req.headers['x-ghl-signature'];
+          const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+          if (!verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+            res.status(401).json({ error: { code: 'INVALID_SIGNATURE', message: 'webhook signature verification failed' } });
+            return;
+          }
+        }
+
+        const payload = req.body as GHLWebhookPayload;
+        if (!payload.type || !payload.locationId) {
+          res.status(400).json({ error: { code: 'INVALID_PAYLOAD', message: 'missing type or locationId' } });
+          return;
+        }
+
+        const handler = await getWebhookHandler();
+        await handler.handleWebhook(payload);
+        res.status(200).json({ received: true });
       }),
     },
   ];
