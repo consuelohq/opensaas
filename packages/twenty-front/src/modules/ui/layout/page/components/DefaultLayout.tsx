@@ -1,3 +1,4 @@
+import { AssistantSidebar } from '@/assistant/components/AssistantSidebar';
 import { DialerSidebar } from '@/dialer/components/DialerSidebar';
 import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
 import { callingModeState } from '@/dialer/states/callingModeState';
@@ -145,6 +146,7 @@ export const DefaultLayout = () => {
                   </StyledMainContainer>
                 )}
                 {!showAuthModal && <DialerSidebar />}
+                {!showAuthModal && <AssistantSidebar />}
               </PageDragDropProvider>
             </StyledPageContainer>
             {isMobile && !showAuthModal && <MobileNavigationBar />}

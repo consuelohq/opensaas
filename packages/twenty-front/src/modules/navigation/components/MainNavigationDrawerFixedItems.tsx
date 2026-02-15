@@ -1,3 +1,4 @@
+import { assistantSidebarOpenState } from '@/assistant/states/assistantState';
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
 import { useOpenRecordsSearchPageInCommandMenu } from '@/command-menu/hooks/useOpenRecordsSearchPageInCommandMenu';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
@@ -11,7 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { IconPhone, IconSearch, IconSettings, IconSparkles } from 'twenty-ui/display';
+import { IconMessage, IconPhone, IconSearch, IconSettings, IconSparkles } from 'twenty-ui/display';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
@@ -37,6 +38,9 @@ export const MainNavigationDrawerFixedItems = () => {
   const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
   const [isDialerOpen, setIsDialerOpen] = useRecoilState(
     dialerSidebarOpenState,
+  );
+  const [isAssistantOpen, setIsAssistantOpen] = useRecoilState(
+    assistantSidebarOpenState,
   );
 
   return (
@@ -64,6 +68,12 @@ export const MainNavigationDrawerFixedItems = () => {
           onClick={() => setIsDialerOpen(!isDialerOpen)}
           active={isDialerOpen}
           keyboard={['⌘', 'D']}
+        />
+        <NavigationDrawerItem
+          label={t`Assistant`}
+          Icon={IconMessage}
+          onClick={() => setIsAssistantOpen(!isAssistantOpen)}
+          active={isAssistantOpen}
         />
         <NavigationDrawerItem
           label={t`Settings`}
