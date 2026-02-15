@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 import { apiGet, apiPost, apiDelete, handleApiError } from '../api-client.js';
+import { getErrorCode, handle501 } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
@@ -31,7 +32,7 @@ interface KBStats {
 }
 
 const kbErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
-  const code = (data as { error?: { code?: string } })?.error?.code;
+  const code = getErrorCode(data);
   if (code === 'COLLECTION_NOT_FOUND') return `collection not found: ${ctx.collection ?? 'unknown'}`;
   if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.fileId ?? 'unknown'} — upload it first with \`consuelo files upload\``;
   if (code === 'ALREADY_INDEXED') return 'file is already indexed in this collection';
@@ -80,6 +81,7 @@ const kbSearch = async (query: string, opts: { collection?: string; limit: strin
     if (opts.collection) body.collection = opts.collection;
 
     const res = await apiPost<{ results: SearchResult[] }>('/v1/knowledge/search', body);
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { collection: opts.collection ?? '' });
       if (msg) { error(msg); process.exit(1); }
@@ -107,6 +109,7 @@ const kbSearch = async (query: string, opts: { collection?: string; limit: strin
 const kbCollectionsList = async (): Promise<void> => {
   try {
     const res = await apiGet<{ collections: Collection[] }>('/v1/knowledge/collections');
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -136,6 +139,7 @@ const kbCollectionsCreate = async (opts: { name: string; description?: string })
     if (opts.description) body.description = opts.description;
 
     const res = await apiPost<{ collection: Collection }>('/v1/knowledge/collections', body);
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -151,6 +155,7 @@ const kbCollectionsCreate = async (opts: { name: string; description?: string })
 const kbCollectionsDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/knowledge/collections/${id}`);
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { collection: id });
       if (msg) { error(msg); process.exit(1); }
@@ -174,6 +179,7 @@ const kbIndex = async (fileId: string, opts: { collection: string; chunkSize: st
       chunkSize: parseInt(opts.chunkSize, 10),
       chunkOverlap: parseInt(opts.chunkOverlap, 10),
     });
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { fileId, collection: opts.collection });
       if (msg) { error(msg); process.exit(1); }
@@ -193,6 +199,7 @@ const kbIndex = async (fileId: string, opts: { collection: string; chunkSize: st
 const kbDeindex = async (fileId: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deindexed: boolean }>(`/v1/files/${fileId}/index`);
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { fileId });
       if (msg) { error(msg); process.exit(1); }
@@ -212,6 +219,7 @@ const kbDeindex = async (fileId: string): Promise<void> => {
 const kbStats = async (): Promise<void> => {
   try {
     const res = await apiGet<{ stats: KBStats }>('/v1/knowledge/stats');
+    handle501(res.status, 'knowledge base API routes (phase 6)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }

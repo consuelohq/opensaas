@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 import { apiGet, apiPost, handleApiError } from '../api-client.js';
+import { handle501, formatDuration } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
@@ -14,13 +15,6 @@ interface Call {
   endedAt?: string;
   recordingUrl?: string;
 }
-
-const formatDuration = (seconds?: number): string => {
-  if (!seconds) return '—';
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
-};
 
 export const registerCalls = (program: Command): void => {
   const calls = program
@@ -61,20 +55,13 @@ export const registerCalls = (program: Command): void => {
 
 const E164_RE = /^\+[1-9]\d{1,14}$/;
 
-const handle501 = (status: number): void => {
-  if (status === 501) {
-    error('not available yet — this command requires dialer API routes (phase 2)');
-    process.exit(1);
-  }
-};
-
 const callsList = async (opts: { limit: string; status?: string }): Promise<void> => {
   try {
     const query: Record<string, string> = { limit: opts.limit };
     if (opts.status) query.status = opts.status;
 
     const res = await apiGet<{ calls: Call[] }>('/v1/calls', query);
-    handle501(res.status);
+    handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -102,7 +89,7 @@ const callsList = async (opts: { limit: string; status?: string }): Promise<void
 const callsGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ call: Call }>(`/v1/calls/${id}`);
-    handle501(res.status);
+    handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -135,7 +122,7 @@ const callsStart = async (target: string, opts: { callerId?: string; localPresen
     if (opts.localPresence) body.localPresence = true;
 
     const res = await apiPost<{ callSid: string; status: string }>('/v1/calls', body);
-    handle501(res.status);
+    handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -151,7 +138,7 @@ const callsStart = async (target: string, opts: { callerId?: string; localPresen
 const callsEnd = async (id: string): Promise<void> => {
   try {
     const res = await apiPost<{ callSid: string; status: string }>(`/v1/calls/${id}/hangup`);
-    handle501(res.status);
+    handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -170,7 +157,7 @@ const callsTransfer = async (id: string, opts: { to: string; type: string }): Pr
       to: opts.to,
       type: opts.type,
     });
-    handle501(res.status);
+    handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }

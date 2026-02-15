@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import type { Command } from 'commander';
 import { apiGet, apiPost, apiPut, apiDelete, handleApiError } from '../api-client.js';
+import { handle501 } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
@@ -77,6 +78,7 @@ const contactsList = async (opts: { limit: string; filter?: string }): Promise<v
     if (opts.filter) query.filter = opts.filter;
 
     const res = await apiGet<{ contacts: Contact[] }>('/v1/contacts', query);
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -107,6 +109,7 @@ const contactsList = async (opts: { limit: string; filter?: string }): Promise<v
 const contactsGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ contact: Contact }>(`/v1/contacts/${id}`);
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -134,6 +137,7 @@ const contactsCreate = async (opts: { name: string; phone: string; email?: strin
     if (opts.tags) body.tags = opts.tags.split(',').map((t: string) => t.trim());
 
     const res = await apiPost<{ contact: Contact }>('/v1/contacts', body);
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -162,6 +166,7 @@ const contactsUpdate = async (id: string, opts: { name?: string; phone?: string;
     }
 
     const res = await apiPut<{ contact: Contact }>(`/v1/contacts/${id}`, body);
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -177,6 +182,7 @@ const contactsUpdate = async (id: string, opts: { name?: string; phone?: string;
 const contactsDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/contacts/${id}`);
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -223,6 +229,7 @@ const contactsImport = async (file: string, opts: { dryRun?: boolean; map?: stri
     log(`importing from ${file}...`);
 
     const res = await apiPost<{ imported: number; contacts: Contact[] }>('/v1/contacts/import', { content });
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -241,6 +248,7 @@ const contactsImport = async (file: string, opts: { dryRun?: boolean; map?: stri
 const contactsSearch = async (query: string, opts: { limit: string }): Promise<void> => {
   try {
     const res = await apiGet<{ contacts: Contact[] }>('/v1/contacts/search', { q: query, limit: opts.limit });
+    handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }

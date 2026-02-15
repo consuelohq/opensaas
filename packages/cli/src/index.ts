@@ -3,6 +3,7 @@
 globalThis.__consuelo_cli_mode = true;
 
 import { Command } from 'commander';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
 import { createLogger } from '@consuelo/logger';
 import { initCommand } from './commands/init.js';
 import { coachCommand } from './commands/coach.js';
@@ -85,8 +86,8 @@ program
     await statusCommand();
   });
 
-program.parseAsync().catch((err) => {
+program.parseAsync().catch((err: unknown) => {
   captureError(err, { command: process.argv[2] ?? 'unknown' });
-  logger.error(err.message);
+  logger.error(err instanceof Error ? err.message : 'unexpected error');
   process.exit(1);
 });

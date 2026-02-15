@@ -3,6 +3,7 @@ import { basename } from 'node:path';
 import type { Command } from 'commander';
 import ora from 'ora';
 import { apiGet, apiPost, apiDelete, handleApiError } from '../api-client.js';
+import { getErrorCode, handle501 } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
@@ -38,7 +39,7 @@ const formatSize = (bytes: number): string => {
 };
 
 const filesErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
-  const code = (data as { error?: { code?: string } })?.error?.code;
+  const code = getErrorCode(data);
   if (code === 'FILE_NOT_FOUND') return `file not found: ${ctx.id ?? 'unknown'}`;
   if (code === 'FILE_TOO_LARGE') return 'file too large — max 50 MB';
   if (code === 'UNSUPPORTED_TYPE') return `unsupported file type: ${ctx.ext ?? 'unknown'} — supported: pdf, csv, txt, doc, docx`;
@@ -75,6 +76,7 @@ const filesList = async (opts: { type?: string; limit: string }): Promise<void> 
     if (opts.type) query.type = opts.type;
 
     const res = await apiGet<{ files: FileRecord[] }>('/v1/files', query);
+    handle501(res.status, 'files API routes (phase 6)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -103,6 +105,7 @@ const filesList = async (opts: { type?: string; limit: string }): Promise<void> 
 const filesGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ file: FileRecord }>(`/v1/files/${id}`);
+    handle501(res.status, 'files API routes (phase 6)');
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }
@@ -137,6 +140,13 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
     const stat = fs.statSync(filePath);
     const filename = basename(filePath);
     const contentType = inferMimeType(filename);
+
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
+    if (stat.size > MAX_FILE_SIZE) {
+      error(`file too large: ${formatSize(stat.size)} — max 50 MB`);
+      process.exit(1);
+    }
+
     const tags = opts.tags?.split(',').map((t: string) => t.trim());
 
     const spinner = ora(`uploading ${filename} (${formatSize(stat.size)})...`).start();
@@ -145,6 +155,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
     const initRes = await apiPost<{ fileId: string; uploadUrl: string }>('/v1/files/upload', {
       filename, contentType, size: stat.size, tags,
     });
+    handle501(initRes.status, 'files API routes (phase 6)');
     if (!initRes.ok) {
       spinner.fail('upload failed');
       const ext = filename.split('.').pop()?.toLowerCase() ?? '';
@@ -166,8 +177,14 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       process.exit(1);
     }
 
-    // step 3: confirm
-    await apiPost(`/v1/files/${initRes.data.fileId}/confirm`);
+    // step 3: confirm upload with API
+    const confirmRes = await apiPost(`/v1/files/${initRes.data.fileId}/confirm`);
+    if (!confirmRes.ok) {
+      spinner.fail('upload failed — file uploaded to storage but could not confirm with API');
+      const msg = filesErrorMessage(confirmRes.data, { id: initRes.data.fileId, ext: '' });
+      if (msg) { error(msg); process.exit(1); }
+      handleApiError(confirmRes.status, confirmRes.data);
+    }
 
     spinner.succeed(`uploaded ${filename} → ${initRes.data.fileId}`);
 
@@ -180,6 +197,8 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       });
       if (indexRes.ok) {
         log(`indexed into ${opts.collection} (${indexRes.data.chunks} chunks)`);
+      } else {
+        error(`uploaded but indexing failed — run \`consuelo kb index ${initRes.data.fileId} --collection ${opts.collection}\` to retry`);
       }
     }
   } catch (err: unknown) {
@@ -193,6 +212,7 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
   try {
     // get download URL
     const res = await apiGet<{ downloadUrl: string }>(`/v1/files/${id}/download`);
+    handle501(res.status, 'files API routes (phase 6)');
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }
@@ -214,8 +234,10 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
 
     try {
       fs.writeFileSync(outputPath, buffer);
-    } catch {
-      error(`could not write to ${outputPath} — check permissions`);
+    } catch (err: unknown) {
+      captureError(err, { command: 'files download' });
+      const detail = err instanceof Error ? `: ${err.message}` : '';
+      error(`could not write to ${outputPath}${detail}`);
       process.exit(1);
     }
 
@@ -232,6 +254,7 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
 const filesDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/files/${id}`);
+    handle501(res.status, 'files API routes (phase 6)');
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }

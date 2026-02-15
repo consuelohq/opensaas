@@ -1,5 +1,6 @@
 import type { Command } from 'commander';
 import { apiGet, handleApiError } from '../api-client.js';
+import { handle501, formatDuration, getErrorCode } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
@@ -45,15 +46,6 @@ interface HistoryStats {
   byDay?: Array<{ date: string; calls: number; duration: number; connectRate: number }>;
 }
 
-const formatDuration = (seconds: number): string => {
-  if (seconds < 60) return `0m ${seconds}s`;
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  if (m < 60) return `${m}m ${String(s).padStart(2, '0')}s`;
-  const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
-};
-
 const formatTimestamp = (seconds: number): string => {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -61,7 +53,7 @@ const formatTimestamp = (seconds: number): string => {
 };
 
 const historyErrorMessage = (data: unknown, ctx: Record<string, string>): string | null => {
-  const code = (data as { error?: { code?: string } })?.error?.code;
+  const code = getErrorCode(data);
   if (code === 'CALL_NOT_FOUND') return `call not found: ${ctx.callId ?? 'unknown'}`;
   return null;
 };
@@ -92,14 +84,6 @@ export const registerHistory = (program: Command): void => {
     .action(historyStats);
 };
 
-const handle501 = (status: number): boolean => {
-  if (status === 501) {
-    error('not available yet — history commands require phase 5 (history + analytics API routes)');
-    process.exit(1);
-  }
-  return false;
-};
-
 const historyList = async (opts: { limit: string; from?: string; to?: string; outcome?: string }): Promise<void> => {
   try {
     if (opts.from && !isValidDate(opts.from)) { error(`invalid date: ${opts.from}`); process.exit(1); }
@@ -111,7 +95,7 @@ const historyList = async (opts: { limit: string; from?: string; to?: string; ou
     if (opts.outcome) query.outcome = opts.outcome;
 
     const res = await apiGet<{ calls: HistoryEntry[]; total: number }>('/v1/history', query);
-    handle501(res.status);
+    handle501(res.status, 'history + analytics API routes (phase 5)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
@@ -139,7 +123,7 @@ const historyList = async (opts: { limit: string; from?: string; to?: string; ou
 const historyGet = async (callId: string): Promise<void> => {
   try {
     const res = await apiGet<{ call: HistoryDetail }>(`/v1/history/${callId}`);
-    handle501(res.status);
+    handle501(res.status, 'history + analytics API routes (phase 5)');
     if (!res.ok) {
       const msg = historyErrorMessage(res.data, { callId });
       if (msg) { error(msg); process.exit(1); }
@@ -188,7 +172,7 @@ const historyStats = async (opts: { period: string; from?: string; to?: string }
     if (opts.to) query.to = opts.to;
 
     const res = await apiGet<{ stats: HistoryStats }>('/v1/history/stats', query);
-    handle501(res.status);
+    handle501(res.status, 'history + analytics API routes (phase 5)');
     if (!res.ok) handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
