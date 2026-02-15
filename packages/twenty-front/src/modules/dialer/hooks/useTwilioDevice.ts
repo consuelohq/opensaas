@@ -7,6 +7,7 @@ import { deviceReadyState } from '@/dialer/states/deviceReadyState';
 import { deviceErrorState } from '@/dialer/states/deviceErrorState';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
+import { reconnectingState } from '@/dialer/states/reconnectingState';
 import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
 import type { CallStatus } from '@/dialer/types/dialer';
 
@@ -24,6 +25,7 @@ interface UseTwilioDeviceReturn {
   isReady: boolean;
   error: string | null;
   activeCall: Call | null;
+  reconnecting: boolean;
   connect: (params: { To: string; From: string }) => Promise<Call>;
   disconnect: () => void;
   refreshToken: () => Promise<void>;
@@ -47,6 +49,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const [isReady, setIsReady] = useRecoilState(deviceReadyState);
   const [error, setError] = useRecoilState(deviceErrorState);
   const [activeCall, setActiveCall] = useRecoilState(activeCallState);
+  const [reconnecting, setReconnecting] = useRecoilState(reconnectingState);
   const setCallState = useSetRecoilState(callStateAtom);
 
   const deviceRef = useRef<Device | null>(null);
@@ -118,8 +121,16 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setActiveCall(null);
         updateCallStatus('failed');
       });
+
+      call.on('reconnecting', () => {
+        setReconnecting(true);
+      });
+
+      call.on('reconnected', () => {
+        setReconnecting(false);
+      });
     },
-    [setActiveCall, setCallState, updateCallStatus],
+    [setActiveCall, setCallState, setReconnecting, updateCallStatus],
   );
 
   // create + register device
@@ -257,6 +268,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     isReady,
     error,
     activeCall,
+    reconnecting,
     connect,
     disconnect,
     refreshToken,
