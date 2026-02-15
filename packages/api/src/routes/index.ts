@@ -17,9 +17,10 @@ import { fileRoutes } from './files.js';
 import { knowledgeRoutes } from './knowledge.js';
 import { localPresenceRoutes } from './local-presence.js';
 import { parallelRoutes } from './parallel.js';
+import { preferencesRoutes } from './preferences.js';
 import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
-export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, queueRoutes, voiceRoutes };
+export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** Health check route */
@@ -51,6 +52,7 @@ export const allRoutes = (): RouteDefinition[] => [
   ...fileRoutes(),
   ...localPresenceRoutes(),
   ...parallelRoutes(),
+  ...preferencesRoutes(),
   ...queueRoutes(),
   ...voiceRoutes(),
   ...analyticsRoutes(),

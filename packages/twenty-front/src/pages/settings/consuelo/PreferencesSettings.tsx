@@ -1,15 +1,23 @@
-import { SettingsOptionCardContentToggle } from '@/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
 import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
+import { SettingsOptionCardContentToggle } from '@/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
+import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
+import { DEFAULT_SHORTCUTS } from '@/settings/types/preferences';
+import type {
+  DialerPreferences,
+  DisplayPreferences,
+  KeyboardPreferences,
+  NotificationPreferences,
+} from '@/settings/types/preferences';
 import { Select } from '@/ui/input/components/Select';
+import { useColorScheme } from '@/ui/theme/hooks/useColorScheme';
 import styled from '@emotion/styled';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   H2Title,
   IconBell,
   IconBellOff,
-  IconCheck,
-  IconCommand,
   IconClock,
+  IconCommand,
   IconDeviceFloppy,
   IconHeadphones,
   IconMicrophone,
@@ -19,110 +27,10 @@ import {
   IconRefresh,
   IconVolume,
 } from 'twenty-ui/display';
-import { Button } from 'twenty-ui/input';
+import { Button, ColorSchemePicker } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
-// -- types --
-
 type PreferencesTab = 'notifications' | 'dialer' | 'display' | 'keyboard';
-
-type NotificationPrefs = {
-  enableDesktop: boolean;
-  enableSound: boolean;
-  soundVolume: number;
-  notifyOnIncomingCall: boolean;
-  notifyOnMissedCall: boolean;
-  notifyOnVoicemail: boolean;
-  notifyOnCoachingSuggestion: boolean;
-  quietHoursEnabled: boolean;
-  quietHoursStart: string;
-  quietHoursEnd: string;
-};
-
-type DialerPrefs = {
-  autoAnswer: boolean;
-  autoAnswerDelay: number;
-  confirmBeforeHangup: boolean;
-  showCallTimer: boolean;
-  recordByDefault: boolean;
-  transcribeByDefault: boolean;
-  defaultCallDuration: number;
-};
-
-type DisplayPrefs = {
-  compactMode: boolean;
-  showAvatars: boolean;
-  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
-  timeFormat: '12h' | '24h';
-  timezone: string;
-};
-
-type KeyboardShortcut = {
-  id: string;
-  description: string;
-  keys: string;
-  customizable: boolean;
-};
-
-type KeyboardPrefs = {
-  enabled: boolean;
-  shortcuts: KeyboardShortcut[];
-};
-
-type UserPreferences = {
-  notifications: NotificationPrefs;
-  dialer: DialerPrefs;
-  display: DisplayPrefs;
-  keyboard: KeyboardPrefs;
-};
-
-const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
-  { id: 'toggle-sidebar', description: 'Toggle dialer sidebar', keys: 'Cmd+D', customizable: true },
-  { id: 'mute', description: 'Toggle mute', keys: 'M', customizable: true },
-  { id: 'hold', description: 'Toggle hold', keys: 'H', customizable: true },
-  { id: 'transfer', description: 'Open transfer dialog', keys: 'T', customizable: true },
-  { id: 'end-call', description: 'End call / close modal', keys: 'Escape', customizable: false },
-  { id: 'call-contact', description: 'Call selected contact', keys: 'Cmd+Shift+C', customizable: true },
-  { id: 'calling-mode', description: 'Toggle calling mode', keys: 'Cmd+Shift+M', customizable: true },
-  { id: 'search', description: 'Command menu', keys: 'Cmd+K', customizable: false },
-];
-
-const STORAGE_KEY = 'consuelo_preferences';
-
-const DEFAULT_PREFS: UserPreferences = {
-  notifications: {
-    enableDesktop: false,
-    enableSound: true,
-    soundVolume: 0.7,
-    notifyOnIncomingCall: true,
-    notifyOnMissedCall: true,
-    notifyOnVoicemail: true,
-    notifyOnCoachingSuggestion: true,
-    quietHoursEnabled: false,
-    quietHoursStart: '22:00',
-    quietHoursEnd: '08:00',
-  },
-  dialer: {
-    autoAnswer: false,
-    autoAnswerDelay: 3,
-    confirmBeforeHangup: true,
-    showCallTimer: true,
-    recordByDefault: false,
-    transcribeByDefault: false,
-    defaultCallDuration: 30,
-  },
-  display: {
-    compactMode: false,
-    showAvatars: true,
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  },
-  keyboard: {
-    enabled: true,
-    shortcuts: DEFAULT_SHORTCUTS,
-  },
-};
 
 // -- styled --
 
@@ -137,8 +45,10 @@ const StyledTabBar = styled.div`
 const StyledTab = styled.button<{ isActive: boolean }>`
   background: none;
   border: none;
-  border-bottom: 2px solid ${({ isActive, theme }) => (isActive ? theme.color.blue : 'transparent')};
-  color: ${({ isActive, theme }) => (isActive ? theme.font.color.primary : theme.font.color.tertiary)};
+  border-bottom: 2px solid
+    ${({ isActive, theme }) => (isActive ? theme.color.blue : 'transparent')};
+  color: ${({ isActive, theme }) =>
+    isActive ? theme.font.color.primary : theme.font.color.tertiary};
   cursor: pointer;
   font-size: ${({ theme }) => theme.font.size.sm};
   padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(3)}`};
@@ -190,7 +100,9 @@ const StyledTimeLabel = styled.span`
 const StyledPermissionBanner = styled.div<{ variant: 'warning' | 'info' }>`
   align-items: center;
   background: ${({ variant, theme }) =>
-    variant === 'warning' ? theme.background.danger : theme.background.transparent.lighter};
+    variant === 'warning'
+      ? theme.background.danger
+      : theme.background.transparent.lighter};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ variant, theme }) =>
     variant === 'warning' ? theme.color.red : theme.font.color.secondary};
@@ -261,75 +173,52 @@ const StyledResetRow = styled.div`
 
 // -- helpers --
 
-const loadPrefs = (): UserPreferences => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<UserPreferences>;
-      return { ...DEFAULT_PREFS, ...parsed };
-    }
-  } catch {
-    // fall through
-  }
-  return DEFAULT_PREFS;
-};
-
-const savePrefs = (prefs: UserPreferences) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-};
-
 const formatKeys = (keys: string): string[] => keys.split('+');
 
-const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
+const isMac =
+  typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
 
 // -- component --
 
 export const PreferencesSettings = () => {
   const [tab, setTab] = useState<PreferencesTab>('notifications');
-  const [prefs, setPrefs] = useState<UserPreferences>(loadPrefs);
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
-    typeof Notification !== 'undefined' ? Notification.permission : 'denied',
-  );
+  const { preferences: prefs, updatePreferences } = useUserPreferences();
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const [notifPermission, setNotifPermission] =
+    useState<NotificationPermission>(
+      typeof Notification !== 'undefined' ? Notification.permission : 'denied',
+    );
   const [editingShortcut, setEditingShortcut] = useState<string | null>(null);
   const [recordedKeys, setRecordedKeys] = useState('');
 
-  const update = useCallback(
-    (patch: Partial<UserPreferences>) => {
-      setPrefs((prev) => {
-        const next = { ...prev, ...patch };
-        savePrefs(next);
-        return next;
+  const updateNotif = useCallback(
+    (patch: Partial<NotificationPreferences>) => {
+      updatePreferences({
+        notifications: { ...prefs.notifications, ...patch },
       });
     },
-    [],
-  );
-
-  const updateNotif = useCallback(
-    (patch: Partial<NotificationPrefs>) => {
-      update({ notifications: { ...prefs.notifications, ...patch } });
-    },
-    [prefs.notifications, update],
+    [prefs.notifications, updatePreferences],
   );
 
   const updateDialer = useCallback(
-    (patch: Partial<DialerPrefs>) => {
-      update({ dialer: { ...prefs.dialer, ...patch } });
+    (patch: Partial<DialerPreferences>) => {
+      updatePreferences({ dialer: { ...prefs.dialer, ...patch } });
     },
-    [prefs.dialer, update],
+    [prefs.dialer, updatePreferences],
   );
 
   const updateDisplay = useCallback(
-    (patch: Partial<DisplayPrefs>) => {
-      update({ display: { ...prefs.display, ...patch } });
+    (patch: Partial<DisplayPreferences>) => {
+      updatePreferences({ display: { ...prefs.display, ...patch } });
     },
-    [prefs.display, update],
+    [prefs.display, updatePreferences],
   );
 
   const updateKeyboard = useCallback(
-    (patch: Partial<KeyboardPrefs>) => {
-      update({ keyboard: { ...prefs.keyboard, ...patch } });
+    (patch: Partial<KeyboardPreferences>) => {
+      updatePreferences({ keyboard: { ...prefs.keyboard, ...patch } });
     },
-    [prefs.keyboard, update],
+    [prefs.keyboard, updatePreferences],
   );
 
   const requestNotifPermission = useCallback(async () => {
@@ -342,8 +231,14 @@ export const PreferencesSettings = () => {
   }, [updateNotif]);
 
   const testNotification = useCallback(() => {
-    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    new Notification('Consuelo', { body: 'This is how your notifications will appear.' });
+    if (
+      typeof Notification === 'undefined' ||
+      Notification.permission !== 'granted'
+    )
+      return;
+    new Notification('Consuelo', {
+      body: 'This is how your notifications will appear.',
+    });
   }, []);
 
   const handleShortcutKeyDown = useCallback(
@@ -395,7 +290,11 @@ export const PreferencesSettings = () => {
     <>
       <StyledTabBar>
         {tabs.map((t) => (
-          <StyledTab key={t.id} isActive={tab === t.id} onClick={() => setTab(t.id)}>
+          <StyledTab
+            key={t.id}
+            isActive={tab === t.id}
+            onClick={() => setTab(t.id)}
+          >
             {t.label}
           </StyledTab>
         ))}
@@ -403,7 +302,6 @@ export const PreferencesSettings = () => {
 
       {tab === 'notifications' && (
         <>
-          {/* permission gate */}
           {notifPermission === 'denied' && (
             <StyledPermissionBanner variant="warning">
               <IconBellOff size={16} />
@@ -416,12 +314,19 @@ export const PreferencesSettings = () => {
                 <IconBell size={16} />
                 Enable desktop notifications to stay informed about calls.
               </StyledPermissionBanner>
-              <Button title="Enable Notifications" onClick={requestNotifPermission} variant="primary" />
+              <Button
+                title="Enable Notifications"
+                onClick={requestNotifPermission}
+                variant="primary"
+              />
             </Section>
           )}
 
           <Section>
-            <H2Title title="Desktop Notifications" description="Get notified about calls and coaching" />
+            <H2Title
+              title="Desktop Notifications"
+              description="Get notified about calls and coaching"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconBell}
@@ -447,59 +352,85 @@ export const PreferencesSettings = () => {
                   max="1"
                   step="0.1"
                   value={prefs.notifications.soundVolume}
-                  onChange={(e) => updateNotif({ soundVolume: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    updateNotif({ soundVolume: parseFloat(e.target.value) })
+                  }
                 />
-                <StyledSliderLabel>{Math.round(prefs.notifications.soundVolume * 100)}%</StyledSliderLabel>
+                <StyledSliderLabel>
+                  {Math.round(prefs.notifications.soundVolume * 100)}%
+                </StyledSliderLabel>
               </StyledSliderRow>
             )}
             {notifPermission === 'granted' && (
-              <Button title="Test Notification" Icon={IconBell} onClick={testNotification} variant="secondary" size="small" />
+              <Button
+                title="Test Notification"
+                Icon={IconBell}
+                onClick={testNotification}
+                variant="secondary"
+                size="small"
+              />
             )}
           </Section>
 
           <Section>
-            <H2Title title="Notify Me About" description="Choose which events trigger notifications" />
+            <H2Title
+              title="Notify Me About"
+              description="Choose which events trigger notifications"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
                 title="Incoming calls"
                 description="When a call comes in"
                 checked={prefs.notifications.notifyOnIncomingCall}
-                onChange={(val) => updateNotif({ notifyOnIncomingCall: val })}
+                onChange={(val) =>
+                  updateNotif({ notifyOnIncomingCall: val })
+                }
               />
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
                 title="Missed calls"
                 description="When you miss a call"
                 checked={prefs.notifications.notifyOnMissedCall}
-                onChange={(val) => updateNotif({ notifyOnMissedCall: val })}
+                onChange={(val) =>
+                  updateNotif({ notifyOnMissedCall: val })
+                }
               />
               <SettingsOptionCardContentToggle
                 Icon={IconMicrophone}
                 title="Voicemails"
                 description="When a new voicemail arrives"
                 checked={prefs.notifications.notifyOnVoicemail}
-                onChange={(val) => updateNotif({ notifyOnVoicemail: val })}
+                onChange={(val) =>
+                  updateNotif({ notifyOnVoicemail: val })
+                }
               />
               <SettingsOptionCardContentToggle
                 Icon={IconHeadphones}
                 title="AI coaching suggestions"
                 description="When coaching has a suggestion"
                 checked={prefs.notifications.notifyOnCoachingSuggestion}
-                onChange={(val) => updateNotif({ notifyOnCoachingSuggestion: val })}
+                onChange={(val) =>
+                  updateNotif({ notifyOnCoachingSuggestion: val })
+                }
               />
             </Card>
           </Section>
 
           <Section>
-            <H2Title title="Quiet Hours" description="Suppress notifications during off hours" />
+            <H2Title
+              title="Quiet Hours"
+              description="Suppress notifications during off hours"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconMoon}
                 title="Enable quiet hours"
                 description="No notifications during this window"
                 checked={prefs.notifications.quietHoursEnabled}
-                onChange={(val) => updateNotif({ quietHoursEnabled: val })}
+                onChange={(val) =>
+                  updateNotif({ quietHoursEnabled: val })
+                }
               />
             </Card>
             {prefs.notifications.quietHoursEnabled && (
@@ -508,13 +439,17 @@ export const PreferencesSettings = () => {
                 <StyledTimeInput
                   type="time"
                   value={prefs.notifications.quietHoursStart}
-                  onChange={(e) => updateNotif({ quietHoursStart: e.target.value })}
+                  onChange={(e) =>
+                    updateNotif({ quietHoursStart: e.target.value })
+                  }
                 />
                 <StyledTimeLabel>to</StyledTimeLabel>
                 <StyledTimeInput
                   type="time"
                   value={prefs.notifications.quietHoursEnd}
-                  onChange={(e) => updateNotif({ quietHoursEnd: e.target.value })}
+                  onChange={(e) =>
+                    updateNotif({ quietHoursEnd: e.target.value })
+                  }
                 />
               </StyledTimeRow>
             )}
@@ -525,7 +460,10 @@ export const PreferencesSettings = () => {
       {tab === 'dialer' && (
         <>
           <Section>
-            <H2Title title="Call Behavior" description="Defaults for incoming and outgoing calls" />
+            <H2Title
+              title="Call Behavior"
+              description="Defaults for incoming and outgoing calls"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
@@ -545,7 +483,9 @@ export const PreferencesSettings = () => {
                   <Select
                     dropdownId="auto-answer-delay"
                     value={prefs.dialer.autoAnswerDelay}
-                    onChange={(val) => updateDialer({ autoAnswerDelay: val })}
+                    onChange={(val) =>
+                      updateDialer({ autoAnswerDelay: val })
+                    }
                     options={[
                       { value: 1, label: '1 second' },
                       { value: 2, label: '2 seconds' },
@@ -561,14 +501,19 @@ export const PreferencesSettings = () => {
           </Section>
 
           <Section>
-            <H2Title title="Safety" description="Prevent accidental actions" />
+            <H2Title
+              title="Safety"
+              description="Prevent accidental actions"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
                 title="Confirm before hanging up"
                 description="Show confirmation dialog before ending calls"
                 checked={prefs.dialer.confirmBeforeHangup}
-                onChange={(val) => updateDialer({ confirmBeforeHangup: val })}
+                onChange={(val) =>
+                  updateDialer({ confirmBeforeHangup: val })
+                }
               />
               <SettingsOptionCardContentToggle
                 Icon={IconClock}
@@ -581,27 +526,37 @@ export const PreferencesSettings = () => {
           </Section>
 
           <Section>
-            <H2Title title="Recording & Transcription" description="Automatic recording and transcription" />
+            <H2Title
+              title="Recording & Transcription"
+              description="Automatic recording and transcription"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconPlayerRecord}
                 title="Record calls by default"
                 description="Automatically start recording on new calls"
                 checked={prefs.dialer.recordByDefault}
-                onChange={(val) => updateDialer({ recordByDefault: val })}
+                onChange={(val) =>
+                  updateDialer({ recordByDefault: val })
+                }
               />
               <SettingsOptionCardContentToggle
                 Icon={IconDeviceFloppy}
                 title="Transcribe calls by default"
                 description="Automatically transcribe recorded calls"
                 checked={prefs.dialer.transcribeByDefault}
-                onChange={(val) => updateDialer({ transcribeByDefault: val })}
+                onChange={(val) =>
+                  updateDialer({ transcribeByDefault: val })
+                }
               />
             </Card>
           </Section>
 
           <Section>
-            <H2Title title="Scheduling" description="Default values for calendar integration" />
+            <H2Title
+              title="Scheduling"
+              description="Default values for calendar integration"
+            />
             <Card rounded>
               <SettingsOptionCardContentSelect
                 Icon={IconClock}
@@ -611,7 +566,9 @@ export const PreferencesSettings = () => {
                 <Select
                   dropdownId="default-call-duration"
                   value={prefs.dialer.defaultCallDuration}
-                  onChange={(val) => updateDialer({ defaultCallDuration: val })}
+                  onChange={(val) =>
+                    updateDialer({ defaultCallDuration: val })
+                  }
                   options={[
                     { value: 15, label: '15 minutes' },
                     { value: 30, label: '30 minutes' },
@@ -630,7 +587,21 @@ export const PreferencesSettings = () => {
       {tab === 'display' && (
         <>
           <Section>
-            <H2Title title="Layout" description="Adjust how the interface looks" />
+            <H2Title title="Theme" description="Choose your color scheme" />
+            <ColorSchemePicker
+              value={colorScheme}
+              onChange={setColorScheme}
+              lightLabel="Light"
+              darkLabel="Dark"
+              systemLabel="System"
+            />
+          </Section>
+
+          <Section>
+            <H2Title
+              title="Layout"
+              description="Adjust how the interface looks"
+            />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconCommand}
@@ -650,7 +621,10 @@ export const PreferencesSettings = () => {
           </Section>
 
           <Section>
-            <H2Title title="Date & Time" description="Format preferences for dates and times" />
+            <H2Title
+              title="Date & Time"
+              description="Format preferences for dates and times"
+            />
             <Card rounded>
               <SettingsOptionCardContentSelect
                 Icon={IconClock}
@@ -662,9 +636,18 @@ export const PreferencesSettings = () => {
                   value={prefs.display.dateFormat}
                   onChange={(val) => updateDisplay({ dateFormat: val })}
                   options={[
-                    { value: 'MM/DD/YYYY' as const, label: 'MM/DD/YYYY (US)' },
-                    { value: 'DD/MM/YYYY' as const, label: 'DD/MM/YYYY (EU)' },
-                    { value: 'YYYY-MM-DD' as const, label: 'YYYY-MM-DD (ISO)' },
+                    {
+                      value: 'MM/DD/YYYY' as const,
+                      label: 'MM/DD/YYYY (US)',
+                    },
+                    {
+                      value: 'DD/MM/YYYY' as const,
+                      label: 'DD/MM/YYYY (EU)',
+                    },
+                    {
+                      value: 'YYYY-MM-DD' as const,
+                      label: 'YYYY-MM-DD (ISO)',
+                    },
                   ]}
                   selectSizeVariant="small"
                   dropdownWidth={200}
@@ -763,16 +746,17 @@ export const PreferencesSettings = () => {
                           )}
                         </td>
                         <td>
-                          {shortcut.customizable && editingShortcut !== shortcut.id && (
-                            <StyledEditButton
-                              onClick={() => {
-                                setEditingShortcut(shortcut.id);
-                                setRecordedKeys('');
-                              }}
-                            >
-                              Edit
-                            </StyledEditButton>
-                          )}
+                          {shortcut.customizable &&
+                            editingShortcut !== shortcut.id && (
+                              <StyledEditButton
+                                onClick={() => {
+                                  setEditingShortcut(shortcut.id);
+                                  setRecordedKeys('');
+                                }}
+                              >
+                                Edit
+                              </StyledEditButton>
+                            )}
                         </td>
                       </tr>
                     ))}
