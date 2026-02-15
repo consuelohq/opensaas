@@ -14,6 +14,7 @@ import { registerKb } from './commands/kb.js';
 import { registerFiles } from './commands/files.js';
 import { registerHistory } from './commands/history.js';
 import { registerConfig } from './commands/config.js';
+import { registerDeploy } from './commands/deploy.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -89,6 +90,7 @@ registerKb(program);
 registerFiles(program);
 registerHistory(program);
 registerConfig(program);
+registerDeploy(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {
