@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 
@@ -80,6 +81,7 @@ export const preferencesRoutes = (): RouteDefinition[] => {
 
         const body = req.body;
         if (!body || typeof body !== 'object') {
+          Sentry.captureMessage('Preferences update with invalid body', 'warning');
           res
             .status(400)
             .json({ error: { code: 'BAD_REQUEST', message: 'Request body required' } });
