@@ -18,6 +18,7 @@ import {
 import { type IconComponent } from 'twenty-ui/display';
 import { AudioDeviceSettings } from '~/pages/settings/consuelo/AudioDeviceSettings';
 import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings';
+import { PreferencesSettings } from '~/pages/settings/consuelo/PreferencesSettings';
 
 type ConsuelloSection = {
   id: string;
@@ -129,6 +130,8 @@ export const SettingsConsuelo = () => {
               <AudioDeviceSettings />
             ) : activeSection === 'ai' ? (
               <AIProviderSettings />
+            ) : activeSection === 'notifications' ? (
+              <PreferencesSettings />
             ) : (
               <StyledPlaceholder>
                 {activeSectionConfig
