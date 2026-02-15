@@ -1,4 +1,5 @@
 import { Dialer, InMemoryLockStore, CallerIdLockService, type ParallelGroup } from '@consuelo/dialer';
+import type { NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 
@@ -49,13 +50,14 @@ export const parallelRoutes = (): RouteDefinition[] => {
         }
 
         try {
+          // fetch account numbers and build pool for local presence
+          const accountNumbers = await dialer.listNumbers();
+          const pool: NumberPool = { numbers: accountNumbers, primaryNumber: accountNumbers[0] };
+
           // select caller IDs via local presence per contact
           const fromNumbers: string[] = [];
           for (const customerNumber of body.customerNumbers) {
-            const selection = await dialer.localPresence.selectNumber(
-              { numbers: [], primaryNumber: undefined },
-              customerNumber,
-            );
+            const selection = await dialer.localPresence.selectNumber(pool, customerNumber);
             fromNumbers.push(selection?.phoneNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '');
           }
 
@@ -103,10 +105,14 @@ export const parallelRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        // TODO: DEV-824 — fetch actual user phone number count from DB
-        const numberCount = 0;
-        const result = dialer.parallel.validateRequirements(numberCount);
-        res.status(200).json(result);
+        try {
+          const numbers = await dialer.listNumbers();
+          const result = dialer.parallel.validateRequirements(numbers.length);
+          res.status(200).json(result);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Validation failed';
+          res.status(500).json({ error: { code: 'VALIDATION_FAILED', message } });
+        }
       }),
     },
 
