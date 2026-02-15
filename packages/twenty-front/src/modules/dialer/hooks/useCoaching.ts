@@ -11,14 +11,20 @@ import {
 import { type TalkingPoints } from '@/dialer/types/coaching';
 import { type DialerContact } from '@/dialer/types/dialer';
 
-// builds a context message from contact info so the AI has something to work with
+// B6/W17: only send non-PII context — no name, phone, or email
 function buildContactContext(contact: DialerContact | null): string {
   if (!contact) return 'No contact information available.';
-  const parts = [`Contact: ${contact.name ?? 'Unknown'}`];
+  const parts: string[] = [];
   if (contact.company) parts.push(`Company: ${contact.company}`);
-  if (contact.email) parts.push(`Email: ${contact.email}`);
-  if (contact.phone) parts.push(`Phone: ${contact.phone}`);
-  return parts.join('\n');
+  if (contact.tags?.length) parts.push(`Tags: ${contact.tags.join(', ')}`);
+  return parts.length > 0 ? parts.join('\n') : 'Contact information available (details redacted).';
+}
+
+// W16: basic runtime validation for TalkingPoints shape
+function isValidTalkingPoints(data: unknown): data is TalkingPoints {
+  if (!data || typeof data !== 'object') return false;
+  const obj = data as Record<string, unknown>;
+  return Array.isArray(obj.details) && Array.isArray(obj.clarifying_questions) && Array.isArray(obj.objection_responses);
 }
 
 interface UseCoachingReturn {
@@ -67,7 +73,15 @@ export const useCoaching = (): UseCoachingReturn => {
           throw new Error(`Coaching API error: ${res.status}`);
         }
 
-        const data = (await res.json()) as TalkingPoints;
+        // W10: unwrap { data } from backend response
+        const json = (await res.json()) as { data: unknown };
+        const data = json.data;
+
+        // W16: validate LLM response shape
+        if (!isValidTalkingPoints(data)) {
+          throw new Error('Invalid coaching response format');
+        }
+
         cache.current.set(callSid, data);
         setTalkingPoints(data);
       } catch (err: unknown) {
@@ -93,13 +107,14 @@ export const useCoaching = (): UseCoachingReturn => {
     }
   }, [callState.status, callState.callSid, callState.contact, fetchCoaching]);
 
-  // clear state when call ends or goes idle
+  // clear state when call ends or goes idle — also clear cache (N8)
   useEffect(() => {
     if (callState.status === 'idle' || callState.status === 'ended') {
       setTalkingPoints(null);
       setError(null);
       setLoading(false);
       lastCallSid.current = null;
+      cache.current.clear();
     }
   }, [callState.status, setTalkingPoints, setError, setLoading]);
 

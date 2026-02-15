@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
+  IconAlertTriangle,
   IconChartBar,
   IconChevronDown,
   IconChevronUp,
@@ -16,6 +17,8 @@ const STORAGE_KEY = 'dialer_postcall_expanded';
 interface PostCallSummaryProps {
   analysis: CallAnalytics | null;
   isAnalyzing: boolean;
+  error: string | null;
+  onRetry: () => void;
 }
 
 // region styled
@@ -159,6 +162,22 @@ const StyledEmpty = styled.div`
   text-align: center;
 `;
 
+const StyledRetryButton = styled.button`
+  all: unset;
+  box-sizing: border-box;
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(3)};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.background.tertiary};
+  }
+`;
+
 // endregion
 
 const MOMENT_ICONS: Record<MomentType, string> = {
@@ -184,6 +203,8 @@ const formatDuration = (seconds: number): string => {
 export const PostCallSummary = ({
   analysis,
   isAnalyzing,
+  error,
+  onRetry,
 }: PostCallSummaryProps) => {
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
@@ -200,7 +221,7 @@ export const PostCallSummary = ({
       try {
         localStorage.setItem(STORAGE_KEY, String(next));
       } catch {
-        // noop
+        // noop — DEV-831
       }
       return next;
     });
@@ -212,6 +233,17 @@ export const PostCallSummary = ({
         <StyledEmpty>
           <StyledSpinner size={20} />
           <span>Analyzing call...</span>
+        </StyledEmpty>
+      );
+    }
+
+    // N12: show error state with retry instead of vanishing
+    if (error) {
+      return (
+        <StyledEmpty>
+          <IconAlertTriangle size={20} />
+          <span>{error}</span>
+          <StyledRetryButton onClick={onRetry}>Retry Analysis</StyledRetryButton>
         </StyledEmpty>
       );
     }
@@ -270,8 +302,8 @@ export const PostCallSummary = ({
     );
   };
 
-  // only render when there's something to show
-  if (!isAnalyzing && !analysis) return null;
+  // N12: only hide when there's truly nothing to show (no analyzing, no analysis, no error)
+  if (!isAnalyzing && !analysis && !error) return null;
 
   return (
     <StyledPanel>
