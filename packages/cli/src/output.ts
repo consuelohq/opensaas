@@ -9,18 +9,16 @@ declare global {
   var __consuelo_cli_mode: boolean | undefined;
 }
 
-export function log(msg: string): void {
+export const log = (msg: string): void => {
   if (!globalThis.__consuelo_quiet) process.stdout.write(`${msg}\n`);
-}
+};
 
-export function error(msg: string): void {
-  process.stderr.write(`${msg}\n`);
-}
+export const error = (msg: string): void => {
+  if (!globalThis.__consuelo_quiet) process.stderr.write(`${msg}\n`);
+};
 
-export function json(data: unknown): void {
-  process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
-}
+export const json = (data: unknown): void => {
+  if (!globalThis.__consuelo_quiet) process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+};
 
-export function isJson(): boolean {
-  return !!globalThis.__consuelo_json;
-}
+export const isJson = (): boolean => !!globalThis.__consuelo_json;

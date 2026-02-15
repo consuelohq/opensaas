@@ -20,7 +20,7 @@ export interface CliConfig {
 export const loadConfig = (): CliConfig => {
   try {
     return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
-  } catch {
+  } catch (_err: unknown) {
     return {};
   }
 };

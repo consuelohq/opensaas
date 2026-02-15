@@ -1,5 +1,6 @@
 import { loadConfig } from './config.js';
 import { error } from './output.js';
+import { captureError } from './sentry.js';
 
 interface ApiClientConfig {
   baseUrl: string;
@@ -7,11 +8,22 @@ interface ApiClientConfig {
   workspaceId?: string;
 }
 
-export interface ApiResponse<TData = unknown> {
-  ok: boolean;
-  status: number;
-  data: TData;
-}
+export type ApiResponse<TData = unknown> =
+  | { ok: true; status: number; data: TData }
+  | { ok: false; status: number; data: unknown };
+
+export const getApiError = (data: unknown): { code?: string; message?: string } | null => {
+  if (typeof data !== 'object' || data === null) return null;
+  // HACK: narrowing from unknown requires intermediate cast
+  const obj = data as Record<string, unknown>;
+  if (typeof obj.error !== 'object' || obj.error === null) return null;
+  // HACK: narrowing from unknown requires intermediate cast
+  const err = obj.error as Record<string, unknown>;
+  return {
+    code: typeof err.code === 'string' ? err.code : undefined,
+    message: typeof err.message === 'string' ? err.message : undefined,
+  };
+};
 
 const resolveConfig = (): ApiClientConfig => {
   const config = loadConfig();
@@ -43,14 +55,29 @@ const request = async <TData>(method: string, path: string, body?: unknown, quer
   };
   if (workspaceId) headers['X-Workspace-Id'] = workspaceId;
 
-  const res = await fetch(url.toString(), {
-    method,
-    headers,
-    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
-  });
+  try {
+    const res = await fetch(url.toString(), {
+      method,
+      headers,
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
 
-  const data = await res.json() as TData;
-  return { ok: res.ok, status: res.status, data };
+    const data: unknown = await res.json().catch(() => null);
+
+    if (res.ok) return { ok: true, status: res.status, data: data as TData };
+    return { ok: false, status: res.status, data };
+  } catch (err: unknown) {
+    captureError(err, { category: 'network' });
+    const message = err instanceof Error ? err.message : '';
+    if (message.includes('ECONNREFUSED') || message.includes('fetch failed')) {
+      error(`could not connect to API at ${baseUrl} — is the server running?`);
+    } else if (message.includes('ENOTFOUND')) {
+      error(`could not resolve ${url.hostname} — check your API URL`);
+    } else {
+      error(`network error: ${message || 'unknown'}`);
+    }
+    process.exit(1);
+  }
 };
 
 export const apiGet = async <TData>(path: string, query?: Record<string, string>): Promise<ApiResponse<TData>> =>
@@ -66,8 +93,8 @@ export const apiDelete = async <TData>(path: string): Promise<ApiResponse<TData>
   request<TData>('DELETE', path);
 
 export const handleApiError = (status: number, data: unknown): never => {
-  const apiErr = data as { error?: { code?: string; message?: string } };
-  const msg = apiErr?.error?.message ?? `request failed (${status})`;
+  const apiErr = getApiError(data);
+  const msg = apiErr?.message ?? `request failed (${status})`;
 
   if (status === 401) error('unauthorized — check your API key');
   else if (status === 404) error(msg);
