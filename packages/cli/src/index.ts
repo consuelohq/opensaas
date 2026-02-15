@@ -13,6 +13,7 @@ import { registerQueue } from './commands/queue.js';
 import { registerKb } from './commands/kb.js';
 import { registerFiles } from './commands/files.js';
 import { registerHistory } from './commands/history.js';
+import { registerConfig } from './commands/config.js';
 import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand } from './commands/status.js';
 import { loadConfig } from './config.js';
@@ -87,6 +88,7 @@ registerQueue(program);
 registerKb(program);
 registerFiles(program);
 registerHistory(program);
+registerConfig(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {
