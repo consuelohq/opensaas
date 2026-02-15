@@ -3,7 +3,7 @@ import type { ApiRequest, ApiResponse } from '../types.js';
 
 /** Route descriptor — framework-agnostic */
 export interface RouteDefinition {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   handler: (req: ApiRequest, res: ApiResponse) => Promise<void>;
 }
@@ -20,7 +20,8 @@ import { parallelRoutes } from './parallel.js';
 import { preferencesRoutes } from './preferences.js';
 import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
-export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes };
+import { workspaceRoutes } from './workspace.js';
+export { analyticsRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
 /** Health check route */
@@ -56,5 +57,6 @@ export const allRoutes = (): RouteDefinition[] => [
   ...queueRoutes(),
   ...voiceRoutes(),
   ...analyticsRoutes(),
+  ...workspaceRoutes(),
   ...webhookRoutes(),
 ];
