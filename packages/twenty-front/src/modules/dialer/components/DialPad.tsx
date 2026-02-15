@@ -116,20 +116,25 @@ export const DialPad = ({ onCall }: DialPadProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isCallActive = callState.status === 'active';
+  const isDialDisabled =
+    callState.status === 'connecting' || callState.status === 'ringing';
   const digits = stripNonDigits(rawNumber);
   const hasDigits = digits.length > 0;
 
   const handleKeyPress = useCallback(
     (key: DialPadKey) => {
+      if (isDialDisabled) return;
+
+      navigator.vibrate?.(10);
+
       if (isCallActive) {
         sendDigit(key.digit);
 
         return;
       }
-      navigator.vibrate?.(10);
       setRawNumber((previous) => previous + key.digit);
     },
-    [isCallActive, sendDigit, setRawNumber],
+    [isCallActive, isDialDisabled, sendDigit, setRawNumber],
   );
 
   const handleBackspace = useCallback(() => {
@@ -179,7 +184,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
           aria-label="Phone number"
         />
         <StyledBackspace
-          visible={hasDigits && !isCallActive}
+          visible={hasDigits && !isCallActive && !isDialDisabled}
           onClick={handleBackspace}
           onDoubleClick={handleClear}
           aria-label="Delete digit"
@@ -192,7 +197,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
         {DIAL_PAD_KEYS.map((key) => (
           <StyledKey
             key={key.digit}
-            disabled={isCallActive && callState.status !== 'active'}
+            disabled={isDialDisabled}
             onClick={() => handleKeyPress(key)}
             aria-label={
               key.letters
