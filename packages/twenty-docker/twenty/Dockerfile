@@ -16,6 +16,18 @@ COPY ./packages/twenty-shared/package.json /app/packages/twenty-shared/
 COPY ./packages/twenty-front/package.json /app/packages/twenty-front/
 COPY ./packages/twenty-sdk/package.json /app/packages/twenty-sdk/
 
+# opensaas packages (workspace deps)
+COPY ./packages/analytics/package.json /app/packages/analytics/
+COPY ./packages/api/package.json /app/packages/api/
+COPY ./packages/cli/package.json /app/packages/cli/
+COPY ./packages/coaching/package.json /app/packages/coaching/
+COPY ./packages/contacts/package.json /app/packages/contacts/
+COPY ./packages/dialer/package.json /app/packages/dialer/
+COPY ./packages/logger/package.json /app/packages/logger/
+COPY ./packages/metering/package.json /app/packages/metering/
+COPY ./packages/sdk/package.json /app/packages/sdk/
+COPY ./packages/workspace/package.json /app/packages/workspace/
+
 # Install all dependencies
 RUN yarn && yarn cache clean && npx nx reset
 
