@@ -2,13 +2,13 @@ import styled from '@emotion/styled';
 import { useCallback, useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import {
-  H2Title,
   IconCheck,
   IconLink,
   IconLinkOff,
   IconRefresh,
   IconX,
-} from 'twenty-ui/display';
+} from '@tabler/icons-react';
+import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';

@@ -3,7 +3,8 @@ import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsO
 import { Select } from '@/ui/input/components/Select';
 import styled from '@emotion/styled';
 import { useCallback, useRef, useState } from 'react';
-import { H2Title, IconHeadphones, IconMicrophone } from 'twenty-ui/display';
+import { IconHeadphones, IconMicrophone } from '@tabler/icons-react';
+import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
