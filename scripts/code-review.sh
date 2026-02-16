@@ -93,7 +93,7 @@ FAIL=0
 echo -n "  SQL_PARAM ........ "
 while IFS= read -r file; do
   while IFS=: read -r lineno _; do
-    report "SQL_PARAM" "$file" "$lineno" "template literal in SQL query — use parameterized ($1, $2)"
+    report "SQL_PARAM" "$file" "$lineno" 'template literal in SQL query — use parameterized queries'
   done < <(grep -n '\.query\s*(`' "$file" 2>/dev/null || true)
 done <<< "$CHANGED_FILES"
 if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
