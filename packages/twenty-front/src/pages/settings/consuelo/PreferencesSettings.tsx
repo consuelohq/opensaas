@@ -13,7 +13,6 @@ import { useColorScheme } from '@/ui/theme/hooks/useColorScheme';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
-  H2Title,
   IconBell,
   IconBellOff,
   IconClock,
@@ -26,7 +25,8 @@ import {
   IconPlayerRecord,
   IconRefresh,
   IconVolume,
-} from 'twenty-ui/display';
+} from '@tabler/icons-react';
+import { H2Title } from 'twenty-ui/display';
 import { Button, ColorSchemePicker } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
@@ -241,23 +241,20 @@ export const PreferencesSettings = () => {
     });
   }, []);
 
-  const handleShortcutKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      e.preventDefault();
-      const parts: string[] = [];
-      if (e.metaKey || e.ctrlKey) parts.push(isMac ? 'Cmd' : 'Ctrl');
-      if (e.altKey) parts.push('Alt');
-      if (e.shiftKey) parts.push('Shift');
-      const key = e.key;
-      if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
-        parts.push(key.length === 1 ? key.toUpperCase() : key);
-      }
-      if (parts.length > 0) {
-        setRecordedKeys(parts.join('+'));
-      }
-    },
-    [],
-  );
+  const handleShortcutKeyDown = useCallback((e: React.KeyboardEvent) => {
+    e.preventDefault();
+    const parts: string[] = [];
+    if (e.metaKey || e.ctrlKey) parts.push(isMac ? 'Cmd' : 'Ctrl');
+    if (e.altKey) parts.push('Alt');
+    if (e.shiftKey) parts.push('Shift');
+    const key = e.key;
+    if (!['Meta', 'Control', 'Alt', 'Shift'].includes(key)) {
+      parts.push(key.length === 1 ? key.toUpperCase() : key);
+    }
+    if (parts.length > 0) {
+      setRecordedKeys(parts.join('+'));
+    }
+  }, []);
 
   const saveShortcut = useCallback(
     (shortcutId: string) => {
@@ -383,27 +380,21 @@ export const PreferencesSettings = () => {
                 title="Incoming calls"
                 description="When a call comes in"
                 checked={prefs.notifications.notifyOnIncomingCall}
-                onChange={(val) =>
-                  updateNotif({ notifyOnIncomingCall: val })
-                }
+                onChange={(val) => updateNotif({ notifyOnIncomingCall: val })}
               />
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
                 title="Missed calls"
                 description="When you miss a call"
                 checked={prefs.notifications.notifyOnMissedCall}
-                onChange={(val) =>
-                  updateNotif({ notifyOnMissedCall: val })
-                }
+                onChange={(val) => updateNotif({ notifyOnMissedCall: val })}
               />
               <SettingsOptionCardContentToggle
                 Icon={IconMicrophone}
                 title="Voicemails"
                 description="When a new voicemail arrives"
                 checked={prefs.notifications.notifyOnVoicemail}
-                onChange={(val) =>
-                  updateNotif({ notifyOnVoicemail: val })
-                }
+                onChange={(val) => updateNotif({ notifyOnVoicemail: val })}
               />
               <SettingsOptionCardContentToggle
                 Icon={IconHeadphones}
@@ -428,9 +419,7 @@ export const PreferencesSettings = () => {
                 title="Enable quiet hours"
                 description="No notifications during this window"
                 checked={prefs.notifications.quietHoursEnabled}
-                onChange={(val) =>
-                  updateNotif({ quietHoursEnabled: val })
-                }
+                onChange={(val) => updateNotif({ quietHoursEnabled: val })}
               />
             </Card>
             {prefs.notifications.quietHoursEnabled && (
@@ -483,9 +472,7 @@ export const PreferencesSettings = () => {
                   <Select
                     dropdownId="auto-answer-delay"
                     value={prefs.dialer.autoAnswerDelay}
-                    onChange={(val) =>
-                      updateDialer({ autoAnswerDelay: val })
-                    }
+                    onChange={(val) => updateDialer({ autoAnswerDelay: val })}
                     options={[
                       { value: 1, label: '1 second' },
                       { value: 2, label: '2 seconds' },
@@ -501,19 +488,14 @@ export const PreferencesSettings = () => {
           </Section>
 
           <Section>
-            <H2Title
-              title="Safety"
-              description="Prevent accidental actions"
-            />
+            <H2Title title="Safety" description="Prevent accidental actions" />
             <Card rounded>
               <SettingsOptionCardContentToggle
                 Icon={IconPhone}
                 title="Confirm before hanging up"
                 description="Show confirmation dialog before ending calls"
                 checked={prefs.dialer.confirmBeforeHangup}
-                onChange={(val) =>
-                  updateDialer({ confirmBeforeHangup: val })
-                }
+                onChange={(val) => updateDialer({ confirmBeforeHangup: val })}
               />
               <SettingsOptionCardContentToggle
                 Icon={IconClock}
@@ -536,18 +518,14 @@ export const PreferencesSettings = () => {
                 title="Record calls by default"
                 description="Automatically start recording on new calls"
                 checked={prefs.dialer.recordByDefault}
-                onChange={(val) =>
-                  updateDialer({ recordByDefault: val })
-                }
+                onChange={(val) => updateDialer({ recordByDefault: val })}
               />
               <SettingsOptionCardContentToggle
                 Icon={IconDeviceFloppy}
                 title="Transcribe calls by default"
                 description="Automatically transcribe recorded calls"
                 checked={prefs.dialer.transcribeByDefault}
-                onChange={(val) =>
-                  updateDialer({ transcribeByDefault: val })
-                }
+                onChange={(val) => updateDialer({ transcribeByDefault: val })}
               />
             </Card>
           </Section>
@@ -566,9 +544,7 @@ export const PreferencesSettings = () => {
                 <Select
                   dropdownId="default-call-duration"
                   value={prefs.dialer.defaultCallDuration}
-                  onChange={(val) =>
-                    updateDialer({ defaultCallDuration: val })
-                  }
+                  onChange={(val) => updateDialer({ defaultCallDuration: val })}
                   options={[
                     { value: 15, label: '15 minutes' },
                     { value: 30, label: '30 minutes' },

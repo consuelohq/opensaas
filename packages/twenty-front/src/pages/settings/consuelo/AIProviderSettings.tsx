@@ -6,7 +6,6 @@ import { TextInput } from '@/ui/input/components/TextInput';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
-  H2Title,
   IconBolt,
   IconCheck,
   IconKey,
@@ -15,7 +14,8 @@ import {
   IconRobot,
   IconSettings,
   IconX,
-} from 'twenty-ui/display';
+} from '@tabler/icons-react';
+import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
