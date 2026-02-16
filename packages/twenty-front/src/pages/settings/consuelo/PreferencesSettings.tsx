@@ -1,15 +1,15 @@
-import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
-import { SettingsOptionCardContentToggle } from '@/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
-import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
-import { DEFAULT_SHORTCUTS } from '@/settings/types/preferences';
+import { SettingsOptionCardContentSelect } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
+import { SettingsOptionCardContentToggle } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
+import { useUserPreferences } from '~/modules/settings/hooks/useUserPreferences';
+import { DEFAULT_SHORTCUTS } from '~/modules/settings/types/preferences';
 import type {
   DialerPreferences,
   DisplayPreferences,
   KeyboardPreferences,
   NotificationPreferences,
-} from '@/settings/types/preferences';
-import { Select } from '@/ui/input/components/Select';
-import { useColorScheme } from '@/ui/theme/hooks/useColorScheme';
+} from '~/modules/settings/types/preferences';
+import { Select } from '~/modules/ui/input/components/Select';
+import { useColorScheme } from '~/modules/ui/theme/hooks/useColorScheme';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {

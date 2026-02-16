@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { useWorkspaceSettings } from '@/settings/hooks/useWorkspaceSettings';
+import { useWorkspaceSettings } from '~/modules/settings/hooks/useWorkspaceSettings';
 import { GeneralTab } from './workspace/GeneralTab';
 import { BrandingTab } from './workspace/BrandingTab';
 import { TeamTab } from './workspace/TeamTab';
@@ -21,7 +21,8 @@ const StyledTab = styled.button<{ active: boolean }>`
   background: none;
   border: none;
   border-bottom: 2px solid
-    ${({ active, theme }) => (active ? theme.font.color.primary : 'transparent')};
+    ${({ active, theme }) =>
+      active ? theme.font.color.primary : 'transparent'};
   color: ${({ active, theme }) =>
     active ? theme.font.color.primary : theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.sm};

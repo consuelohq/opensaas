@@ -2,8 +2,9 @@ import { useState } from 'react';
 import styled from '@emotion/styled';
 import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
-import { Button, TextInput } from 'twenty-ui/input';
-import type { WorkspaceBranding } from '@/settings/types/workspace';
+import { Button } from 'twenty-ui/input';
+import { TextInput } from '~/modules/ui/input/components/TextInput';
+import type { WorkspaceBranding } from '~/modules/settings/types/workspace';
 
 const StyledGrid = styled.div`
   display: grid;

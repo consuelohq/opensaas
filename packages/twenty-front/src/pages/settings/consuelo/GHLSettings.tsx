@@ -12,7 +12,7 @@ import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { ghlConnectionState } from '@/settings/integrations/states/ghlConnectionState';
+import { ghlConnectionState } from '~/modules/settings/integrations/states/ghlConnectionState';
 
 // -- types --
 
@@ -76,7 +76,7 @@ const fetchJson = async <TData,>(
     throw new Error(err?.error?.message ?? `Request failed: ${res.status}`);
   }
   return data;
-}
+};
 
 // -- styled --
 
@@ -110,7 +110,8 @@ const StyledSubText = styled.span`
 const StyledButtonRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
+  padding: ${({ theme }) =>
+    `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
 `;
 
 const StyledRadioGroup = styled.div`
@@ -133,7 +134,8 @@ const StyledIntervalRow = styled.div`
   align-items: center;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
+  padding: ${({ theme }) =>
+    `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
 `;
 
 const StyledSelect = styled.select`
@@ -262,7 +264,9 @@ export const GHLSettings = () => {
     try {
       setConnecting(true);
       setError(null);
-      const data = await fetchJson<{ url: string }>('/v1/integrations/ghl/auth');
+      const data = await fetchJson<{ url: string }>(
+        '/v1/integrations/ghl/auth',
+      );
       window.location.href = data.url;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start OAuth');

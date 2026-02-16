@@ -1,8 +1,8 @@
-import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
-import { SettingsOptionCardContentToggle } from '@/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
-import { Select } from '@/ui/input/components/Select';
-import { TextArea } from '@/ui/input/components/TextArea';
-import { TextInput } from '@/ui/input/components/TextInput';
+import { SettingsOptionCardContentSelect } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
+import { SettingsOptionCardContentToggle } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
+import { Select } from '~/modules/ui/input/components/Select';
+import { TextArea } from '~/modules/ui/input/components/TextArea';
+import { TextInput } from '~/modules/ui/input/components/TextInput';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
@@ -185,7 +185,8 @@ const StyledAdvancedContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
-  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
+  padding: ${({ theme }) =>
+    `${theme.spacing(2)} ${theme.spacing(4)} ${theme.spacing(3)}`};
 `;
 
 const StyledFieldLabel = styled.label`
@@ -262,9 +263,8 @@ export const AIProviderSettings = () => {
         apiKey: '',
         coaching: {
           ...config.coaching,
-          realTimeModel: newProviderDef.models.find(
-            (m) => m.speed === 'fast',
-          )!.id,
+          realTimeModel: newProviderDef.models.find((m) => m.speed === 'fast')!
+            .id,
           postCallModel: recommended.id,
         },
       });
@@ -400,7 +400,11 @@ export const AIProviderSettings = () => {
             />
             {testResult && (
               <StyledTestResult success={testResult.success}>
-                {testResult.success ? <IconCheck size={14} /> : <IconX size={14} />}{' '}
+                {testResult.success ? (
+                  <IconCheck size={14} />
+                ) : (
+                  <IconX size={14} />
+                )}{' '}
                 {testResult.message}
               </StyledTestResult>
             )}
@@ -444,9 +448,7 @@ export const AIProviderSettings = () => {
             title="Real-time coaching"
             description="Get AI suggestions during live calls"
             checked={config.coaching.enableRealTime}
-            onChange={(checked) =>
-              updateCoaching({ enableRealTime: checked })
-            }
+            onChange={(checked) => updateCoaching({ enableRealTime: checked })}
             divider
           />
           <SettingsOptionCardContentToggle
@@ -454,9 +456,7 @@ export const AIProviderSettings = () => {
             title="Post-call analysis"
             description="Automatic call summary and insights after each call"
             checked={config.coaching.enablePostCall}
-            onChange={(checked) =>
-              updateCoaching({ enablePostCall: checked })
-            }
+            onChange={(checked) => updateCoaching({ enablePostCall: checked })}
           />
         </Card>
       </Section>
@@ -539,9 +539,7 @@ export const AIProviderSettings = () => {
                 <TextArea
                   textAreaId="ai-system-prompt"
                   value={config.coaching.systemPrompt}
-                  onChange={(value) =>
-                    updateCoaching({ systemPrompt: value })
-                  }
+                  onChange={(value) => updateCoaching({ systemPrompt: value })}
                   placeholder="You are a helpful sales coach..."
                   minRows={3}
                 />

@@ -1,6 +1,6 @@
-import { useAudioDevices } from '@/dialer/hooks/useAudioDevices';
-import { SettingsOptionCardContentSelect } from '@/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
-import { Select } from '@/ui/input/components/Select';
+import { useAudioDevices } from '~/modules/dialer/hooks/useAudioDevices';
+import { SettingsOptionCardContentSelect } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
+import { Select } from '~/modules/ui/input/components/Select';
 import styled from '@emotion/styled';
 import { useCallback, useRef, useState } from 'react';
 import { IconHeadphones, IconMicrophone } from '@tabler/icons-react';
@@ -213,10 +213,7 @@ export const AudioDeviceSettings = () => {
       </Section>
 
       <Section>
-        <H2Title
-          title="Speaker"
-          description="Select output device for calls"
-        />
+        <H2Title title="Speaker" description="Select output device for calls" />
         <Card rounded>
           <SettingsOptionCardContentSelect
             Icon={IconHeadphones}

@@ -2,7 +2,10 @@ import styled from '@emotion/styled';
 import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
-import type { BillingInfo, WorkspaceLimits } from '@/settings/types/workspace';
+import type {
+  BillingInfo,
+  WorkspaceLimits,
+} from '~/modules/settings/types/workspace';
 
 const StyledPlanRow = styled.div`
   display: flex;
