@@ -53,6 +53,18 @@ COPY ./packages/twenty-front /app/packages/twenty-front
 COPY ./packages/twenty-ui /app/packages/twenty-ui
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-sdk /app/packages/twenty-sdk
+
+# opensaas packages (workspace deps needed by nx build graph)
+COPY ./packages/analytics /app/packages/analytics
+COPY ./packages/api /app/packages/api
+COPY ./packages/cli /app/packages/cli
+COPY ./packages/coaching /app/packages/coaching
+COPY ./packages/contacts /app/packages/contacts
+COPY ./packages/dialer /app/packages/dialer
+COPY ./packages/logger /app/packages/logger
+COPY ./packages/metering /app/packages/metering
+COPY ./packages/sdk /app/packages/sdk
+COPY ./packages/workspace /app/packages/workspace
 RUN npx nx build twenty-front
 
 
