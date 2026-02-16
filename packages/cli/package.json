@@ -1,0 +1,36 @@
+{
+  "name": "@consuelo/cli",
+  "version": "0.0.1",
+  "description": "CLI tool for Consuelo SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "consuelo": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.0.1",
+    "@consuelo/analytics": "*",
+    "@consuelo/coaching": "*",
+    "@consuelo/contacts": "*",
+    "@consuelo/dialer": "*",
+    "@consuelo/logger": "*",
+    "@sentry/node": "^9.0.0",
+    "chalk": "^5.6.2",
+    "commander": "^13.1.0",
+    "open": "^11.0.0",
+    "ora": "^9.3.0",
+    "pg": "^8.13.0",
+    "twenty-sdk": "*"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

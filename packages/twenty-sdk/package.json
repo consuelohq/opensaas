@@ -29,6 +29,11 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
+    "./cli": {
+      "types": "./dist/cli/register.d.ts",
+      "import": "./dist/register.mjs",
+      "require": "./dist/register.cjs"
+    },
     "./ui": {
       "types": "./dist/ui/index.d.ts",
       "import": "./dist/ui/index.mjs",
@@ -53,7 +58,7 @@
     "axios": "^1.13.5",
     "chalk": "^5.3.0",
     "chokidar": "^4.0.0",
-    "commander": "^12.0.0",
+    "commander": "^13.1.0",
     "dotenv": "^16.4.0",
     "esbuild": "^0.25.0",
     "fast-glob": "^3.3.0",
@@ -100,6 +105,9 @@
   },
   "typesVersions": {
     "*": {
+      "cli": [
+        "dist/cli/register.d.ts"
+      ],
       "ui": [
         "dist/ui/index.d.ts"
       ],

@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - name: twentycrm
-          image: twentycrm/twenty:latest
+          image: consuelo/opensaas:latest
           imagePullPolicy: Always
           env:
             - name: SERVER_URL

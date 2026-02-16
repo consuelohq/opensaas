@@ -40,7 +40,7 @@ import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { cookieStorage } from '~/utils/cookie-storage';
 import { isUndefinedOrNull } from '~/utils/isUndefinedOrNull';
 
-const logger = loggerLink(() => 'Twenty');
+const logger = loggerLink(() => 'Consuelo');
 
 // Shared across all ApolloFactory instances so concurrent
 // UNAUTHENTICATED errors from /graphql and /metadata clients

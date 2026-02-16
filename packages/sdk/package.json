@@ -1,0 +1,24 @@
+{
+  "name": "@consuelo/sdk",
+  "version": "0.0.1",
+  "description": "Unified re-export of all Consuelo SDK packages",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@consuelo/analytics": "*",
+    "@consuelo/coaching": "*",
+    "@consuelo/contacts": "*",
+    "@consuelo/dialer": "*"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}

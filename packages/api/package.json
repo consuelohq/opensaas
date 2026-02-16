@@ -1,0 +1,39 @@
+{
+  "name": "@consuelo/api",
+  "version": "0.0.1",
+  "description": "Unified REST API layer for all Consuelo SDK modules",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@consuelo/coaching": "^0.0.1",
+    "@consuelo/contacts": "^0.0.1",
+    "@consuelo/dialer": "^0.0.1",
+    "@consuelo/logger": "*",
+    "@sentry/node": "^10.38.0"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-s3": ">=3.0.0",
+    "@aws-sdk/s3-request-presigner": ">=3.0.0",
+    "jsonwebtoken": ">=9.0.0",
+    "openai": ">=4.0.0",
+    "pdf-parse": ">=1.1.1",
+    "pg": ">=8.0.0",
+    "ws": ">=8.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.0",
+    "@types/pg": "^8.0.0",
+    "@types/ws": "^8.0.0"
+  }
+}

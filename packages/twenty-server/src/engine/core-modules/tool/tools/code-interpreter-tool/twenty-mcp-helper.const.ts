@@ -86,6 +86,6 @@ class TwentyMCP:
         result = response.json()
         return result.get("result", {}).get("tools", [])
 
-# Pre-instantiated helper - use 'twenty' in your code
+# Pre-instantiated helper - use 'consuelo' in your code
 twenty = TwentyMCP()
 `;
