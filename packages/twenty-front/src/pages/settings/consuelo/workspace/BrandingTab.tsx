@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { Section } from '@/ui/layout/section/components/Section';
+import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
 import { Button, TextInput } from 'twenty-ui/input';
 import type { WorkspaceBranding } from '@/settings/types/workspace';
@@ -95,7 +95,11 @@ export const BrandingTab = ({ branding, onSave }: Props) => {
           <StyledField>
             <StyledLabel>Logo</StyledLabel>
             <StyledUploadBox
-              style={draft.logoUrl ? { backgroundImage: `url(${draft.logoUrl})` } : undefined}
+              style={
+                draft.logoUrl
+                  ? { backgroundImage: `url(${draft.logoUrl})` }
+                  : undefined
+              }
             >
               {!draft.logoUrl && 'Upload'}
               <input type="file" accept="image/*" onChange={() => {}} />
@@ -104,7 +108,11 @@ export const BrandingTab = ({ branding, onSave }: Props) => {
           <StyledField>
             <StyledLabel>Favicon</StyledLabel>
             <StyledUploadBox
-              style={draft.faviconUrl ? { backgroundImage: `url(${draft.faviconUrl})` } : undefined}
+              style={
+                draft.faviconUrl
+                  ? { backgroundImage: `url(${draft.faviconUrl})` }
+                  : undefined
+              }
             >
               {!draft.faviconUrl && 'Upload'}
               <input type="file" accept="image/*" onChange={() => {}} />
@@ -134,7 +142,10 @@ export const BrandingTab = ({ branding, onSave }: Props) => {
         </StyledColorRow>
       </Section>
       <Section>
-        <H2Title title="Company info" description="Name, email, and custom domain" />
+        <H2Title
+          title="Company info"
+          description="Name, email, and custom domain"
+        />
         <StyledGrid>
           <StyledField>
             <StyledLabel>Company name</StyledLabel>

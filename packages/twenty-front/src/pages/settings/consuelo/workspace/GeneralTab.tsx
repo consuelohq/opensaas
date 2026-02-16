@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { Section } from '@/ui/layout/section/components/Section';
+import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
 import { Button, TextInput } from 'twenty-ui/input';
 import type { WorkspaceConfig } from '@/settings/types/workspace';
@@ -67,11 +67,21 @@ export const GeneralTab = ({ workspace, onSave }: Props) => {
         <StyledRow>
           <StyledField>
             <StyledLabel>Name</StyledLabel>
-            <TextInput value={name} onChange={setName} placeholder="My workspace" fullWidth />
+            <TextInput
+              value={name}
+              onChange={setName}
+              placeholder="My workspace"
+              fullWidth
+            />
           </StyledField>
           <StyledField>
             <StyledLabel>Slug</StyledLabel>
-            <TextInput value={slug} onChange={setSlug} placeholder="my-workspace" fullWidth />
+            <TextInput
+              value={slug}
+              onChange={setSlug}
+              placeholder="my-workspace"
+              fullWidth
+            />
           </StyledField>
         </StyledRow>
         {dirty && (
@@ -89,7 +99,11 @@ export const GeneralTab = ({ workspace, onSave }: Props) => {
           <StyledDangerText>
             Delete this workspace and all its data permanently.
           </StyledDangerText>
-          <Button title="Delete workspace" variant="secondary" accent="danger" />
+          <Button
+            title="Delete workspace"
+            variant="secondary"
+            accent="danger"
+          />
         </StyledDanger>
       </Section>
     </>

@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { Section } from '@/ui/layout/section/components/Section';
+import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
 import { Button, TextInput } from 'twenty-ui/input';
-import type { TeamMember, TeamRole, UsageMetric } from '@/settings/types/workspace';
+import type {
+  TeamMember,
+  TeamRole,
+  UsageMetric,
+} from '@/settings/types/workspace';
 import { ROLE_DESCRIPTIONS } from '@/settings/types/workspace';
 
 const StyledSeatBar = styled.div`
@@ -68,11 +72,17 @@ const StyledBadge = styled.span<{ status: string }>`
   border-radius: 10px;
   font-size: 11px;
   background: ${({ status, theme }) =>
-    status === 'active' ? theme.color.green + '20' :
-    status === 'pending' ? theme.color.yellow + '20' : theme.color.red + '20'};
+    status === 'active'
+      ? theme.color.green + '20'
+      : status === 'pending'
+        ? theme.color.yellow + '20'
+        : theme.color.red + '20'};
   color: ${({ status, theme }) =>
-    status === 'active' ? theme.color.green :
-    status === 'pending' ? theme.color.yellow : theme.color.red};
+    status === 'active'
+      ? theme.color.green
+      : status === 'pending'
+        ? theme.color.yellow
+        : theme.color.red};
 `;
 
 const StyledRoleInfo = styled.div`
@@ -105,7 +115,13 @@ type Props = {
 
 const ROLES: TeamRole[] = ['owner', 'admin', 'member', 'viewer'];
 
-export const TeamTab = ({ team, seats, onInvite, onUpdateRole, onRemove }: Props) => {
+export const TeamTab = ({
+  team,
+  seats,
+  onInvite,
+  onUpdateRole,
+  onRemove,
+}: Props) => {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<TeamRole>('member');
   const [inviting, setInviting] = useState(false);
@@ -128,14 +144,22 @@ export const TeamTab = ({ team, seats, onInvite, onUpdateRole, onRemove }: Props
   return (
     <>
       <Section>
-        <H2Title title="Seats" description={`${seats.used} of ${seats.limit} seats used`} />
-        <StyledSeatLabel>{seats.used} / {seats.limit}</StyledSeatLabel>
+        <H2Title
+          title="Seats"
+          description={`${seats.used} of ${seats.limit} seats used`}
+        />
+        <StyledSeatLabel>
+          {seats.used} / {seats.limit}
+        </StyledSeatLabel>
         <StyledSeatBar>
           <StyledSeatFill percent={Math.min(seatPercent, 100)} />
         </StyledSeatBar>
       </Section>
       <Section>
-        <H2Title title="Invite member" description="Send an invitation by email" />
+        <H2Title
+          title="Invite member"
+          description="Send an invitation by email"
+        />
         <StyledInviteRow>
           <div style={{ flex: 1 }}>
             <TextInput
@@ -145,9 +169,14 @@ export const TeamTab = ({ team, seats, onInvite, onUpdateRole, onRemove }: Props
               fullWidth
             />
           </div>
-          <StyledSelect value={role} onChange={(e) => setRole(e.target.value as TeamRole)}>
+          <StyledSelect
+            value={role}
+            onChange={(e) => setRole(e.target.value as TeamRole)}
+          >
             {ROLES.map((r) => (
-              <option key={r} value={r}>{r}</option>
+              <option key={r} value={r}>
+                {r}
+              </option>
             ))}
           </StyledSelect>
           <Button
@@ -178,11 +207,15 @@ export const TeamTab = ({ team, seats, onInvite, onUpdateRole, onRemove }: Props
                 <StyledTd>
                   <StyledSelect
                     value={m.role}
-                    onChange={(e) => onUpdateRole(m.id, e.target.value as TeamRole)}
+                    onChange={(e) =>
+                      onUpdateRole(m.id, e.target.value as TeamRole)
+                    }
                     disabled={m.role === 'owner'}
                   >
                     {ROLES.map((r) => (
-                      <option key={r} value={r}>{r}</option>
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
                     ))}
                   </StyledSelect>
                 </StyledTd>
