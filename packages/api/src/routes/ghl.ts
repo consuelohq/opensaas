@@ -6,6 +6,7 @@ import { GHLAuthService, type GHLOAuthConfig } from '../services/ghl-auth.js';
 import { GHLClient } from '../services/ghl-client.js';
 import { GHLPushService, type GHLPushMappingService, type CallOutcomeData } from '../services/ghl-push.js';
 import { GHLWebhookHandler, verifyWebhookSignature, type GHLWebhookPayload, type GHLSyncServiceInterface } from '../services/ghl-webhook.js';
+import { GHLPipelineSync, type StageMapping } from '../services/ghl-pipeline.js';
 
 type Pool = {
   query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
@@ -238,6 +239,91 @@ export const ghlRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ pushed });
+      }),
+    },
+
+    // GET /v1/integrations/ghl/pipelines — list GHL pipelines with stages + existing mappings
+    {
+      method: 'GET',
+      path: '/v1/integrations/ghl/pipelines',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const authSvc = await getAuthService();
+        const status = await authSvc.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          return;
+        }
+
+        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const db = await getPool();
+        const pipelineSync = new GHLPipelineSync(client, db);
+
+        const pipelines = await client.getPipelines();
+        const mappings = await pipelineSync.getMappedPipelines(auth.workspaceId);
+
+        res.status(200).json({ pipelines, mappings });
+      }),
+    },
+
+    // POST /v1/integrations/ghl/pipelines/map — save stage mappings
+    {
+      method: 'POST',
+      path: '/v1/integrations/ghl/pipelines/map',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const { ghlPipelineId, twentyPipelineId, stageMappings } = req.body as {
+          ghlPipelineId: string;
+          twentyPipelineId: string;
+          stageMappings: StageMapping[];
+        };
+
+        if (!ghlPipelineId || !twentyPipelineId || !Array.isArray(stageMappings)) {
+          res.status(400).json({ error: { code: 'INVALID_PAYLOAD', message: 'missing ghlPipelineId, twentyPipelineId, or stageMappings' } });
+          return;
+        }
+
+        const db = await getPool();
+        const authSvc = await getAuthService();
+        const status = await authSvc.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          return;
+        }
+
+        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const pipelineSync = new GHLPipelineSync(client, db);
+        await pipelineSync.mapPipelineStages(auth.workspaceId, ghlPipelineId, twentyPipelineId, stageMappings);
+
+        res.status(200).json({ mapped: true, count: stageMappings.length });
+      }),
+    },
+
+    // POST /v1/integrations/ghl/pipelines/sync — sync opportunities for mapped pipelines
+    {
+      method: 'POST',
+      path: '/v1/integrations/ghl/pipelines/sync',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const authSvc = await getAuthService();
+        const status = await authSvc.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          return;
+        }
+
+        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const db = await getPool();
+        const pipelineSync = new GHLPipelineSync(client, db);
+        const result = await pipelineSync.syncOpportunities(auth.workspaceId);
+
+        res.status(200).json(result);
       }),
     },
 
