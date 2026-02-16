@@ -2,13 +2,14 @@ import { useState } from 'react';
 import styled from '@emotion/styled';
 import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
-import { Button, TextInput } from 'twenty-ui/input';
+import { Button } from 'twenty-ui/input';
+import { TextInput } from '~/modules/ui/input/components/TextInput';
 import type {
   TeamMember,
   TeamRole,
   UsageMetric,
-} from '@/settings/types/workspace';
-import { ROLE_DESCRIPTIONS } from '@/settings/types/workspace';
+} from '~/modules/settings/types/workspace';
+import { ROLE_DESCRIPTIONS } from '~/modules/settings/types/workspace';
 
 const StyledSeatBar = styled.div`
   height: 8px;

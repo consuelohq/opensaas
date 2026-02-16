@@ -1,5 +1,5 @@
-import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
-import { SubMenuTopBarContainer } from '@/ui/layout/page/components/SubMenuTopBarContainer';
+import { SettingsPageContainer } from '~/modules/settings/components/SettingsPageContainer';
+import { SubMenuTopBarContainer } from '~/modules/ui/layout/page/components/SubMenuTopBarContainer';
 import styled from '@emotion/styled';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { useNavigate, useParams } from 'react-router-dom';
