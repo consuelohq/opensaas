@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Section } from '@/ui/layout/section/components/Section';
+import { Section } from 'twenty-ui/layout';
 import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import type { BillingInfo, WorkspaceLimits } from '@/settings/types/workspace';
@@ -17,13 +17,21 @@ const StyledPlanBadge = styled.span<{ plan: string }>`
   font-weight: ${({ theme }) => theme.font.weight.medium};
   text-transform: capitalize;
   background: ${({ plan, theme }) =>
-    plan === 'enterprise' ? theme.color.blue + '20' :
-    plan === 'team' ? theme.color.green + '20' :
-    plan === 'pro' ? theme.color.yellow + '20' : theme.background.tertiary};
+    plan === 'enterprise'
+      ? theme.color.blue + '20'
+      : plan === 'team'
+        ? theme.color.green + '20'
+        : plan === 'pro'
+          ? theme.color.yellow + '20'
+          : theme.background.tertiary};
   color: ${({ plan, theme }) =>
-    plan === 'enterprise' ? theme.color.blue :
-    plan === 'team' ? theme.color.green :
-    plan === 'pro' ? theme.color.yellow : theme.font.color.secondary};
+    plan === 'enterprise'
+      ? theme.color.blue
+      : plan === 'team'
+        ? theme.color.green
+        : plan === 'pro'
+          ? theme.color.yellow
+          : theme.font.color.secondary};
 `;
 
 const StyledStatusBadge = styled.span<{ status: string }>`
@@ -31,13 +39,21 @@ const StyledStatusBadge = styled.span<{ status: string }>`
   border-radius: 10px;
   font-size: 11px;
   background: ${({ status, theme }) =>
-    status === 'active' ? theme.color.green + '20' :
-    status === 'past_due' ? theme.color.red + '20' :
-    status === 'trialing' ? theme.color.blue + '20' : theme.background.tertiary};
+    status === 'active'
+      ? theme.color.green + '20'
+      : status === 'past_due'
+        ? theme.color.red + '20'
+        : status === 'trialing'
+          ? theme.color.blue + '20'
+          : theme.background.tertiary};
   color: ${({ status, theme }) =>
-    status === 'active' ? theme.color.green :
-    status === 'past_due' ? theme.color.red :
-    status === 'trialing' ? theme.color.blue : theme.font.color.secondary};
+    status === 'active'
+      ? theme.color.green
+      : status === 'past_due'
+        ? theme.color.red
+        : status === 'trialing'
+          ? theme.color.blue
+          : theme.font.color.secondary};
 `;
 
 const StyledWarning = styled.div`
@@ -74,7 +90,8 @@ const StyledMeterBar = styled.div`
 const StyledMeterFill = styled.div<{ percent: number; warn: boolean }>`
   height: 100%;
   width: ${({ percent }) => Math.min(percent, 100)}%;
-  background: ${({ warn, theme }) => (warn ? theme.color.red : theme.color.blue)};
+  background: ${({ warn, theme }) =>
+    warn ? theme.color.red : theme.color.blue};
   border-radius: 4px;
 `;
 
@@ -109,11 +126,20 @@ type Props = {
 
 const formatBytes = (bytes: number) => {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 };
 
-const Meter = ({ label, used, limit }: { label: string; used: number; limit: number; }) => {
+const Meter = ({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+}) => {
   const percent = limit > 0 ? (used / limit) * 100 : 0;
   const isBytes = label.toLowerCase().includes('storage');
   const fmt = isBytes ? formatBytes : (n: number) => n.toLocaleString();
@@ -121,7 +147,9 @@ const Meter = ({ label, used, limit }: { label: string; used: number; limit: num
     <StyledMeterRow>
       <StyledMeterLabel>
         <span>{label}</span>
-        <span>{fmt(used)} / {fmt(limit)}</span>
+        <span>
+          {fmt(used)} / {fmt(limit)}
+        </span>
       </StyledMeterLabel>
       <StyledMeterBar>
         <StyledMeterFill percent={percent} warn={percent > 90} />
@@ -137,23 +165,42 @@ export const BillingTab = ({ billing, limits, onManageBilling }: Props) => {
     <>
       {billing.status === 'past_due' && (
         <StyledWarning>
-          Your payment is past due. Please update your billing information to avoid service interruption.
+          Your payment is past due. Please update your billing information to
+          avoid service interruption.
         </StyledWarning>
       )}
       <Section>
         <H2Title title="Plan" description="Current subscription" />
         <StyledPlanRow>
           <StyledPlanBadge plan={billing.plan}>{billing.plan}</StyledPlanBadge>
-          <StyledStatusBadge status={billing.status}>{billing.status.replace('_', ' ')}</StyledStatusBadge>
+          <StyledStatusBadge status={billing.status}>
+            {billing.status.replace('_', ' ')}
+          </StyledStatusBadge>
         </StyledPlanRow>
         <StyledPeriod>Current period ends {periodEnd}</StyledPeriod>
       </Section>
       <Section>
         <H2Title title="Usage" description="Current billing period" />
-        <Meter label="Seats" used={billing.seats.used} limit={billing.seats.limit} />
-        <Meter label="Calls" used={billing.usage.calls.used} limit={billing.usage.calls.limit} />
-        <Meter label="Minutes" used={billing.usage.minutes.used} limit={billing.usage.minutes.limit} />
-        <Meter label="Storage" used={billing.usage.storage.used} limit={billing.usage.storage.limit} />
+        <Meter
+          label="Seats"
+          used={billing.seats.used}
+          limit={billing.seats.limit}
+        />
+        <Meter
+          label="Calls"
+          used={billing.usage.calls.used}
+          limit={billing.usage.calls.limit}
+        />
+        <Meter
+          label="Minutes"
+          used={billing.usage.minutes.used}
+          limit={billing.usage.minutes.limit}
+        />
+        <Meter
+          label="Storage"
+          used={billing.usage.storage.used}
+          limit={billing.usage.storage.limit}
+        />
       </Section>
       <Section>
         <H2Title title="Features" description="Included in your plan" />
@@ -165,7 +212,11 @@ export const BillingTab = ({ billing, limits, onManageBilling }: Props) => {
       </Section>
       <Section>
         <H2Title title="Manage subscription" />
-        <Button title="Manage billing" onClick={onManageBilling} variant="secondary" />
+        <Button
+          title="Manage billing"
+          onClick={onManageBilling}
+          variant="secondary"
+        />
         {billing.plan === 'free' && (
           <Button title="Upgrade" variant="primary" style={{ marginLeft: 8 }} />
         )}
