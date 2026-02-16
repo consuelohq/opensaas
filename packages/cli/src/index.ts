@@ -18,10 +18,11 @@ import { registerDeploy } from './commands/deploy.js';
 import { registerDev } from './commands/dev.js';
 import { registerMigrate } from './commands/migrate.js';
 import { analyticsCommand } from './commands/analytics.js';
-import { statusCommand } from './commands/status.js';
+import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
 import { extractCatalog, catalogToTools } from './catalog.js';
+import { json } from './output.js';
 import './output.js';
 
 const logger = createLogger('CLI');
@@ -95,6 +96,7 @@ registerConfig(program);
 registerDeploy(program);
 registerDev(program);
 registerMigrate(program);
+registerStatus(program);
 
 // twenty-sdk platform commands (auth, app, entity, function)
 try {
@@ -112,13 +114,6 @@ program
   .option('--transcript <file>', 'path to transcript file')
   .action(async (callSid, opts) => {
     await analyticsCommand(callSid, { transcript: opts.transcript });
-  });
-
-program
-  .command('status')
-  .description('show config and account status')
-  .action(async () => {
-    await statusCommand();
   });
 
 program
