@@ -1,0 +1,233 @@
+name: Sync Upstream Twenty
+
+on:
+  schedule:
+    # Run daily at 6am UTC (1am EST)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      base_branch:
+        description: 'Base branch to sync against (default: main)'
+        required: false
+        default: 'main'
+        type: string
+
+env:
+  GIT_USER_NAME: suelo-kiro[bot]
+  GIT_USER_EMAIL: 260422584+suelo-kiro[bot]@users.noreply.github.com
+  UPSTREAM_URL: https://github.com/twentyhq/twenty.git
+
+jobs:
+  sync:
+    name: Sync Upstream Twenty
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "${{ env.GIT_USER_NAME }}"
+          git config --global user.email "${{ env.GIT_USER_EMAIL }}"
+
+      - name: Add and fetch upstream
+        run: |
+          git remote add upstream ${{ env.UPSTREAM_URL }}
+          git fetch upstream
+
+      - name: Check for new commits
+        id: check_commits
+        run: |
+          BASE_BRANCH="${{ github.event.inputs.base_branch || 'main' }}"
+          echo "base_branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+
+          NEW_COMMIT_COUNT=$(git log --oneline HEAD..upstream/main | wc -l)
+          echo "new_commit_count=$NEW_COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$NEW_COMMIT_COUNT" -eq 0 ]; then
+            echo "No new commits. Already up to date."
+            echo "has_new_commits=false" >> $GITHUB_OUTPUT
+          else
+            echo "Found $NEW_COMMIT_COUNT new commits."
+            echo "has_new_commits=true" >> $GITHUB_OUTPUT
+            
+            # Get the commit list for PR body
+            COMMIT_LIST=$(git log --oneline HEAD..upstream/main)
+            echo "commit_list<<EOF" >> $GITHUB_OUTPUT
+            echo "$COMMIT_LIST" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            
+            # Count commits
+            echo "commit_count=$NEW_COMMIT_COUNT" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Exit if no new commits
+        if: steps.check_commits.outputs.has_new_commits == 'false'
+        run: |
+          echo "Exiting - no new commits to sync."
+          exit 0
+
+      - name: Create sync branch and merge
+        id: merge
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          BRANCH_NAME="upstream-sync-${DATE}"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+
+          git checkout -b "$BRANCH_NAME"
+
+          if git merge upstream/main --no-edit; then
+            echo "merge_status=success" >> $GITHUB_OUTPUT
+            git push origin "$BRANCH_NAME"
+          else
+            echo "merge_status=conflict" >> $GITHUB_OUTPUT
+            
+            # Get conflicting files
+            CONFLICTS=$(git diff --name-only --diff-filter=U)
+            echo "conflicts<<EOF" >> $GITHUB_OUTPUT
+            echo "$CONFLICTS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            
+            exit 1
+          fi
+
+      - name: Create conflict issue
+        if: failure() && steps.merge.outputs.merge_status == 'conflict'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const date = '${{ steps.merge.outputs.date }}';
+            const conflicts = `${{ steps.merge.outputs.conflicts }}`;
+
+            const body = `## Upstream Sync Conflict
+
+            **Date:** ${date}
+
+            Failed to sync upstream commits from twentyhq/twenty due to merge conflicts.
+
+            ### Conflicting Files
+
+            \`\`\`
+            ${conflicts}
+            \`\`\`
+
+            ### Resolution Steps
+
+            1. Checkout the sync branch locally:
+               \`\`\`bash
+               git fetch origin
+               git checkout upstream-sync-${date}
+               \`\`\`
+
+            2. Resolve conflicts manually:
+               \`\`\`bash
+               git merge upstream/main
+               # Resolve conflicts in each file
+               git add .
+               git commit
+               git push origin upstream-sync-${date}
+               \`\`\`
+
+            3. Create a manual PR or this issue will be resolved.`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `upstream sync conflict (${date})`,
+              body: body,
+              labels: ['upstream-sync', 'conflict']
+            });
+
+      - name: Create or ensure upstream-sync label exists
+        if: steps.check_commits.outputs.has_new_commits == 'true' && steps.merge.outputs.merge_status == 'success'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'upstream-sync'
+              });
+            } catch (error) {
+              if (error.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: 'upstream-sync',
+                  color: '0366d6',
+                  description: 'Automated upstream sync from twentyhq/twenty'
+                });
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Create Pull Request
+        if: steps.check_commits.outputs.has_new_commits == 'true' && steps.merge.outputs.merge_status == 'success'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const date = '${{ steps.merge.outputs.date }}';
+            const branchName = '${{ steps.merge.outputs.branch_name }}';
+            const commitList = `${{ steps.check_commits.outputs.commit_list }}`;
+            const commitCount = '${{ steps.check_commits.outputs.commit_count }}';
+            const baseBranch = '${{ steps.check_commits.outputs.base_branch }}';
+
+            const body = `automated sync from twentyhq/twenty
+
+            ## New Commits (${commitCount} total)
+
+            \`\`\`
+            ${commitList}
+            \`\`\`
+
+            ---
+            *This PR was automatically generated by the upstream sync workflow.*`;
+
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `chore: sync upstream twenty (${date})`,
+              body: body,
+              head: branchName,
+              base: baseBranch
+            });
+
+            // Add label to the newly created PR
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branchName}`,
+              state: 'open'
+            });
+
+            if (pulls.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pulls[0].number,
+                labels: ['upstream-sync']
+              });
+            }
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "=== Upstream Sync Summary ==="
+          echo "Date: $(date +%Y-%m-%d)"
+          echo "Has new commits: ${{ steps.check_commits.outputs.has_new_commits }}"
+          echo "Merge status: ${{ steps.merge.outputs.merge_status || 'N/A' }}"
+          echo "Branch: ${{ steps.merge.outputs.branch_name || 'N/A' }}"
