@@ -73,13 +73,7 @@ export const voiceRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const { default: Twilio } = await import('twilio');
-          const client = Twilio(
-            process.env.TWILIO_ACCOUNT_SID,
-            process.env.TWILIO_AUTH_TOKEN,
-          );
-
-          const numbers = await client.incomingPhoneNumbers.list();
+          const numbers = await dialer.twilioClient.incomingPhoneNumbers.list();
 
           const phoneNumbers = numbers.map(
             (num: { phoneNumber: string; friendlyName: string }) => {
