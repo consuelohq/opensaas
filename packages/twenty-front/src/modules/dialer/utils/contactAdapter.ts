@@ -3,9 +3,7 @@ import { type DialerContact } from '@/dialer/types/dialer';
 import { normalizePhone, isValidPhone } from '@consuelo/contacts';
 
 // map a twenty Person to a DialerContact
-export const personToDialerContact = (
-  person: Person,
-): DialerContact | null => {
+export const personToDialerContact = (person: Person): DialerContact | null => {
   const phoneRaw = person.phone;
   if (!phoneRaw) return null;
 
@@ -52,11 +50,11 @@ export const checkDncStatus = async (phone: string): Promise<boolean> => {
     const normalized = normalizePhone(phone);
     const response = await fetch(
       `/api/dnc/check?phone=${encodeURIComponent(normalized)}`,
+      { credentials: 'include' },
     );
     const { isDnc } = await response.json();
     return isDnc === true;
   } catch (err: unknown) {
-    // DNC check failure defaults to not-on-list so calls aren't blocked
     return false;
   }
 };
@@ -71,6 +69,7 @@ export const filterDncContacts = async (
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phones }),
+      credentials: 'include',
     });
     const { dncPhones } = await response.json();
     const dncSet = new Set<string>(dncPhones);
@@ -78,7 +77,6 @@ export const filterDncContacts = async (
 
     return { filtered, dncCount: contacts.length - filtered.length };
   } catch (err: unknown) {
-    // DNC check failure returns all contacts unfiltered
     return { filtered: contacts, dncCount: 0 };
   }
 };
