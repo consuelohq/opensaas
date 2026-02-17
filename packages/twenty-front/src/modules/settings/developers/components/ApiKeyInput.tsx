@@ -1,3 +1,4 @@
+import { maskApiKey } from '@/settings/developers/utils/maskApiKey';
 import { SettingsTextInput } from '@/ui/input/components/SettingsTextInput';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
@@ -25,13 +26,16 @@ export const ApiKeyInput = ({ apiKey }: ApiKeyInputProps) => {
       <StyledLinkContainer>
         <SettingsTextInput
           instanceId="api-key-display"
-          value={apiKey}
+          value={maskApiKey(apiKey)}
+          aria-label={t`API Key (masked)`}
           fullWidth
+          readOnly
         />
       </StyledLinkContainer>
       <Button
         Icon={IconCopy}
         title={t`Copy`}
+        aria-label={t`Copy API key to clipboard`}
         onClick={() => {
           copyToClipboard(apiKey, t`API Key copied to clipboard`);
         }}
