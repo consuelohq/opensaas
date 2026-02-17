@@ -51,6 +51,7 @@ export const checkDncStatus = async (phone: string): Promise<boolean> => {
     const normalized = normalizePhone(phone);
     const response = await fetch(
       `/api/dnc/check?phone=${encodeURIComponent(normalized)}`,
+      { credentials: 'include' },
     );
     const { isDnc } = await response.json();
     return isDnc === true;
@@ -71,6 +72,7 @@ export const filterDncContacts = async (
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phones }),
+      credentials: 'include',
     });
     const { dncPhones } = await response.json();
     const dncSet = new Set<string>(dncPhones);

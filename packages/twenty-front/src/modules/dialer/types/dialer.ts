@@ -1,5 +1,5 @@
 /** Contact info displayed in the dialer sidebar */
-export interface DialerContact {
+export type DialerContact = {
   id: string;
   name: string | null;
   firstName: string | null;
@@ -18,7 +18,7 @@ export interface DialerContact {
   lastNote?: string | null;
   tags?: string[];
   dncStatus?: boolean;
-}
+};
 
 /** Call lifecycle states */
 export type CallStatus =
@@ -33,7 +33,7 @@ export type CallStatus =
 export type CallingMode = 'browser' | 'phone';
 
 /** Core call state tracked in recoil */
-export interface CallState {
+export type CallState = {
   status: CallStatus;
   callSid: string | null;
   duration: number;
@@ -43,14 +43,14 @@ export interface CallState {
   fromNumber: string | null;
   parallelGroupId: string | null;
   transferId: string | null;
-}
+};
 
 /** Audio input/output device info */
-export interface AudioDeviceInfo {
+export type AudioDeviceInfo = {
   deviceId: string;
   label: string;
   kind: 'audioinput' | 'audiooutput';
-}
+};
 
 /** DTMF tone keys */
 export type DTMFKey =
@@ -68,17 +68,17 @@ export type DTMFKey =
   | '#';
 
 /** Dial pad key with sub-label letters */
-export interface DialPadKey {
+export type DialPadKey = {
   digit: DTMFKey;
   letters: string;
-}
+};
 
 /** Available caller ID for outbound calls */
-export interface CallerIdOption {
+export type CallerIdOption = {
   phoneNumber: string;
   friendlyName: string;
   areaCode: string;
-}
+};
 
 /** Transfer types supported by the dialer */
 export type TransferType = 'cold' | 'warm';
@@ -105,7 +105,7 @@ export type TransferErrorCode =
   | 'VALIDATION_ERROR';
 
 /** Active transfer record */
-export interface TransferRecord {
+export type TransferRecord = {
   id: string;
   callSid: string;
   fromUserId: string;
@@ -118,7 +118,7 @@ export interface TransferRecord {
   initiatedAt: Date;
   completedAt: Date | null;
   durationBeforeTransfer: number;
-}
+};
 
 /** Parallel dialing — outcome per call leg */
 export type ParallelOutcome =
@@ -130,7 +130,7 @@ export type ParallelOutcome =
   | 'failed';
 
 /** Single call leg in a parallel group */
-export interface ParallelCall {
+export type ParallelCall = {
   callSid: string | null;
   customerNumber: string;
   fromNumber: string;
@@ -146,14 +146,14 @@ export interface ParallelCall {
   amdResult?: 'human' | 'machine' | 'unknown';
   contactId?: string;
   failureReason?: string;
-}
+};
 
 /** Parallel dial group (3 concurrent calls) */
-export interface ParallelGroup {
+export type ParallelGroup = {
   groupId: string;
   conferenceName: string;
   calls: ParallelCall[];
   winnerSid: string | null;
   status: 'dialing' | 'connected' | 'completed' | 'failed';
   createdAt: Date;
-}
+};
