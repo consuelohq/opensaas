@@ -1,9 +1,8 @@
-import { atom } from 'recoil';
-
 import { type MessageChannel } from '@/accounts/types/MessageChannel';
+import { createState } from '@/ui/utilities/state/utils/createState';
 
 export const settingsAccountsSelectedMessageChannelState =
-  atom<MessageChannel | null>({
-    key: 'settingsAccountsSelectedMessageChannelState',
-    default: null,
+  createState<MessageChannel | null>({
+    key: 'settings.settingsAccountsSelectedMessageChannelState',
+    defaultValue: null,
   });
