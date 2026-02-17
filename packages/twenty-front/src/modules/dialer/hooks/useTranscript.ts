@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException, captureMessage } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -87,7 +88,11 @@ export const useTranscript = (): UseTranscriptReturn => {
 
       // W3: skip if transcript hasn't grown enough since last refresh
       const currentWordCount = countWords(entries);
-      if (currentWordCount - lastRefreshWordCount.current < MIN_NEW_WORDS_THRESHOLD) return;
+      if (
+        currentWordCount - lastRefreshWordCount.current <
+        MIN_NEW_WORDS_THRESHOLD
+      )
+        return;
 
       lastRefreshTime.current = now;
       refreshCount.current += 1;
@@ -150,8 +155,12 @@ export const useTranscript = (): UseTranscriptReturn => {
           setTranscript((prev) => [...prev, entry]);
           // store pending entry so useEffect can trigger refresh
           pendingEntryRef.current = entry;
-        } catch {
-          // ignore malformed messages
+        } catch (err: unknown) {
+          // W15: log malformed messages for debugging
+          captureMessage('Malformed WebSocket message', {
+            level: 'warning',
+            extra: { data: event.data },
+          });
         }
       };
 
@@ -165,8 +174,7 @@ export const useTranscript = (): UseTranscriptReturn => {
           callStatusRef.current === 'active'
         ) {
           const delay =
-            RECONNECT_BASE_DELAY_MS *
-            Math.pow(2, reconnectAttempts.current);
+            RECONNECT_BASE_DELAY_MS * Math.pow(2, reconnectAttempts.current);
           reconnectAttempts.current += 1;
           reconnectTimer.current = setTimeout(() => connect(callId), delay);
         }
