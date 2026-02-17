@@ -62,6 +62,58 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
     {
       method: 'GET',
+      path: '/v1/phone-numbers',
+      handler: errorHandler(async (req, res) => {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
+          return;
+        }
+
+        try {
+          const { default: Twilio } = await import('twilio');
+          const client = Twilio(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_AUTH_TOKEN,
+          );
+
+          const numbers = await client.incomingPhoneNumbers.list();
+
+          const phoneNumbers = numbers.map(
+            (num: { phoneNumber: string; friendlyName: string }) => {
+              const phoneNumber = num.phoneNumber ?? '';
+              const areaCode =
+                phoneNumber.startsWith('+1') && phoneNumber.length >= 5
+                  ? phoneNumber.slice(2, 5)
+                  : '';
+
+              return {
+                phoneNumber,
+                friendlyName: num.friendlyName ?? '',
+                areaCode,
+              };
+            },
+          );
+
+          res.json({ phoneNumbers });
+        } catch (err: unknown) {
+          const { captureException } = await import('@sentry/node');
+          captureException(err);
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Failed to fetch phone numbers';
+          res
+            .status(500)
+            .json({ error: { code: 'PHONE_NUMBERS_ERROR', message } });
+        }
+      }),
+    },
+
+    {
+      method: 'GET',
       path: '/v1/voice/token',
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
@@ -99,11 +151,14 @@ export const voiceRoutes = (): RouteDefinition[] => {
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           const { createLogger } = await import('@consuelo/logger');
-          createLogger('voice:twiml').error('Failed to store conference mapping', {
-            callSid,
-            conferenceName,
-            error: message,
-          });
+          createLogger('voice:twiml').error(
+            'Failed to store conference mapping',
+            {
+              callSid,
+              conferenceName,
+              error: message,
+            },
+          );
         }
 
         const twiml = dialer.generateConferenceTwiml(conferenceName, 'agent');
@@ -130,11 +185,14 @@ export const voiceRoutes = (): RouteDefinition[] => {
               const message =
                 err instanceof Error ? err.message : 'Redis operation failed';
               const { createLogger } = await import('@consuelo/logger');
-              createLogger('voice:twiml').error('Failed to store customer mapping', {
-                callSid: customerResult.callSid,
-                conferenceName,
-                error: message,
-              });
+              createLogger('voice:twiml').error(
+                'Failed to store customer mapping',
+                {
+                  callSid: customerResult.callSid,
+                  conferenceName,
+                  error: message,
+                },
+              );
             }
           } catch (err: unknown) {
             const message =
@@ -149,6 +207,59 @@ export const voiceRoutes = (): RouteDefinition[] => {
         }
 
         res.type('text/xml').status(200).send(twiml);
+      }),
+    },
+
+    {
+      method: 'GET',
+      path: '/v1/voice/active-call',
+      handler: errorHandler(async (req, res) => {
+        const conferenceName = req.query?.conferenceName as string | undefined;
+
+        if (!conferenceName) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing conferenceName',
+            },
+          });
+          return;
+        }
+
+        try {
+          const { createLogger } = await import('@consuelo/logger');
+          const logger = createLogger('voice:active-call');
+
+          const conferences = await dialer.twilioClient.conferences.list({
+            friendlyName: conferenceName,
+            status: 'in-progress',
+            limit: 1,
+          });
+
+          const activeConference = conferences[0];
+          if (activeConference) {
+            logger.info('Active conference found', {
+              conferenceName,
+              conferenceSid: activeConference.sid,
+            });
+            res.json({ active: true, conferenceSid: activeConference.sid });
+          } else {
+            logger.info('No active conference', { conferenceName });
+            res.json({ active: false });
+          }
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : 'Conference check failed';
+          const { createLogger } = await import('@consuelo/logger');
+          createLogger('voice:active-call').error(
+            'Failed to check active conference',
+            {
+              conferenceName,
+              error: message,
+            },
+          );
+          res.status(500).json({ error: { code: 'CHECK_FAILED', message } });
+        }
       }),
     },
 
@@ -268,15 +379,21 @@ export const voiceRoutes = (): RouteDefinition[] => {
           record.customerMuted = body.muted;
 
           try {
-            await redisService.setTransfer(transferId, record as unknown as Record<string, unknown>);
+            await redisService.setTransfer(
+              transferId,
+              record as unknown as Record<string, unknown>,
+            );
           } catch (err: unknown) {
             const message =
               err instanceof Error ? err.message : 'Redis operation failed';
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:mute').error('Failed to update transfer record', {
-              transferId,
-              error: message,
-            });
+            createLogger('voice:mute').error(
+              'Failed to update transfer record',
+              {
+                transferId,
+                error: message,
+              },
+            );
           }
 
           res.status(200).json({ transferId, customerMuted: body.muted });
@@ -381,7 +498,8 @@ export const voiceRoutes = (): RouteDefinition[] => {
         let conferenceName: string | null = null;
         try {
           conferenceName =
-            body.conferenceName ?? (await redisService.getConferenceName(callSid));
+            body.conferenceName ??
+            (await redisService.getConferenceName(callSid));
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
@@ -443,10 +561,13 @@ export const voiceRoutes = (): RouteDefinition[] => {
             const message =
               err instanceof Error ? err.message : 'Redis operation failed';
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:transfer').error('Failed to store transfer record', {
-              transferId,
-              error: message,
-            });
+            createLogger('voice:transfer').error(
+              'Failed to store transfer record',
+              {
+                transferId,
+                error: message,
+              },
+            );
           }
 
           res.status(200).json({ ...result, transferId });
@@ -505,10 +626,13 @@ export const voiceRoutes = (): RouteDefinition[] => {
               const message =
                 err instanceof Error ? err.message : 'Redis operation failed';
               const { createLogger } = await import('@consuelo/logger');
-              createLogger('voice:complete').error('Failed to delete conference mapping', {
-                callSid,
-                error: message,
-              });
+              createLogger('voice:complete').error(
+                'Failed to delete conference mapping',
+                {
+                  callSid,
+                  error: message,
+                },
+              );
             }
           }
 
@@ -684,15 +808,19 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
         let conferenceName: string | null = null;
         try {
-          conferenceName = await redisService.getCustomerConferenceName(callSid);
+          conferenceName =
+            await redisService.getCustomerConferenceName(callSid);
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           const { createLogger } = await import('@consuelo/logger');
-          createLogger('voice:status').error('Failed to get customer conference', {
-            callSid,
-            error: message,
-          });
+          createLogger('voice:status').error(
+            'Failed to get customer conference',
+            {
+              callSid,
+              error: message,
+            },
+          );
         }
 
         if (conferenceName) {
@@ -735,21 +863,17 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res
-            .status(401)
-            .json({
-              error: { code: 'UNAUTHORIZED', message: 'Auth required' },
-            });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const callSid = req.params?.callSid;
         if (!callSid) {
-          res
-            .status(400)
-            .json({
-              error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
-            });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
+          });
           return;
         }
 
@@ -764,20 +888,19 @@ export const voiceRoutes = (): RouteDefinition[] => {
         }
 
         if (!conferenceName) {
-          res
-            .status(404)
-            .json({
-              error: {
-                code: 'CALL_NOT_FOUND',
-                message: 'No conference for this call',
-              },
-            });
+          res.status(404).json({
+            error: {
+              code: 'CALL_NOT_FOUND',
+              message: 'No conference for this call',
+            },
+          });
           return;
         }
 
         let status = 'unknown';
         try {
-          status = (await redisService.getCallStatus(conferenceName)) ?? 'unknown';
+          status =
+            (await redisService.getCallStatus(conferenceName)) ?? 'unknown';
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
