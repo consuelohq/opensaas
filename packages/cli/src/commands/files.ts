@@ -77,7 +77,7 @@ const filesList = async (opts: { type?: string; limit: string }): Promise<void> 
 
     const res = await apiGet<{ files: FileRecord[] }>('/v1/files', query);
     handle501(res.status, 'files API routes (phase 6)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -109,7 +109,7 @@ const filesGet = async (id: string): Promise<void> => {
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -161,7 +161,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       const ext = filename.split('.').pop()?.toLowerCase() ?? '';
       const msg = filesErrorMessage(initRes.data, { id: filename, ext });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(initRes.status, initRes.data);
+      return handleApiError(initRes.status, initRes.data);
     }
 
     // step 2: PUT to S3
@@ -183,7 +183,7 @@ const filesUpload = async (filePath: string, opts: { collection?: string; tags?:
       spinner.fail('upload failed — file uploaded to storage but could not confirm with API');
       const msg = filesErrorMessage(confirmRes.data, { id: initRes.data.fileId, ext: '' });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(confirmRes.status, confirmRes.data);
+      return handleApiError(confirmRes.status, confirmRes.data);
     }
 
     spinner.succeed(`uploaded ${filename} → ${initRes.data.fileId}`);
@@ -216,7 +216,7 @@ const filesDownload = async (id: string, opts: { output?: string }): Promise<voi
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     // fetch from S3
@@ -258,7 +258,7 @@ const filesDelete = async (id: string): Promise<void> => {
     if (!res.ok) {
       const msg = filesErrorMessage(res.data, { id });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
