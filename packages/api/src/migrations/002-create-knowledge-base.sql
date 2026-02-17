@@ -18,22 +18,25 @@ CREATE TABLE IF NOT EXISTS knowledge_collections (
 
 CREATE INDEX idx_knowledge_collections_workspace ON knowledge_collections(workspace_id);
 
--- chunks with 1536-dim embeddings (text-embedding-3-small)
+-- chunks with 384-dim embeddings (sentence-transformers/all-MiniLM-L6-v2)
 CREATE TABLE IF NOT EXISTS knowledge_chunks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  collection_id UUID NOT NULL REFERENCES knowledge_collections(id) ON DELETE CASCADE,
-  file_id UUID NOT NULL REFERENCES files(id) ON DELETE CASCADE,
-  chunk_index INT NOT NULL,
-  content TEXT NOT NULL,
-  embedding vector(1536),
-  metadata JSONB DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ collection_id UUID NOT NULL REFERENCES knowledge_collections(id) ON DELETE CASCADE,
+ file_id UUID NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+ chunk_index INT NOT NULL,
+ content TEXT NOT NULL,
+ embedding vector(384),
+ metadata JSONB DEFAULT '{}',
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ivfflat for approximate nearest neighbor on embeddings
 -- NOTE: ivfflat defaults to 100 lists, which is fine for <100k rows.
 -- creating on an empty table means empty lists — run REINDEX after initial
 -- data load, or consider switching to hnsw (no data-dependent build).
+-- hnsw has slower build times but faster search and no data dependency.
+-- For production with frequent updates, consider: 
+-- CREATE INDEX idx_chunks_embedding ON knowledge_chunks USING hnsw (embedding vector_cosine_ops);
 CREATE INDEX idx_chunks_embedding ON knowledge_chunks USING ivfflat (embedding vector_cosine_ops);
 CREATE INDEX idx_chunks_collection ON knowledge_chunks(collection_id);
 CREATE INDEX idx_chunks_file ON knowledge_chunks(file_id);
