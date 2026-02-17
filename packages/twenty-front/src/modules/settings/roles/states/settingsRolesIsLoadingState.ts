@@ -1,6 +1,6 @@
-import { atom } from 'recoil';
+import { createState } from '@/ui/utilities/state/utils/createState';
 
-export const settingsRolesIsLoadingState = atom<boolean>({
-  key: 'settingsRolesIsLoadingState',
-  default: true,
+export const settingsRolesIsLoadingState = createState<boolean>({
+  key: 'settings.settingsRolesIsLoadingState',
+  defaultValue: true,
 });
