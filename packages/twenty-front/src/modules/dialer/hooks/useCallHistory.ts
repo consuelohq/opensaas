@@ -78,6 +78,7 @@ export const useCallHistory = (): UseCallHistoryReturn => {
   }, [fetchHistory]);
 
   // auto-refresh every 30s, pause when tab hidden
+  // re-fetch when filters change (DEV-856)
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
 
@@ -114,7 +115,7 @@ export const useCallHistory = (): UseCallHistoryReturn => {
       stop();
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [fetchHistory]);
+  }, [fetchHistory, historyFilters]);
 
   return {
     callHistory,
