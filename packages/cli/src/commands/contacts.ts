@@ -1,6 +1,12 @@
 import * as fs from 'node:fs';
 import type { Command } from 'commander';
-import { apiGet, apiPost, apiPut, apiDelete, handleApiError } from '../api-client.js';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+  handleApiError,
+} from '../api-client.js';
 import { handle501 } from '../cli-utils.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
@@ -12,14 +18,15 @@ interface Contact {
   email?: string;
   company?: string;
   tags?: string[];
+  customFields?: Record<string, unknown>;
+  userId?: string;
+  orgId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export const registerContacts = (program: Command): void => {
-  const contacts = program
-    .command('contacts')
-    .description('manage contacts');
+  const contacts = program.command('contacts').description('manage contacts');
 
   contacts
     .command('list')
@@ -41,6 +48,7 @@ export const registerContacts = (program: Command): void => {
     .option('--email <email>', 'email address')
     .option('--company <company>', 'company name')
     .option('--tags <tags>', 'comma-separated tags')
+    .option('--custom-fields <json>', 'custom fields as JSON object')
     .action(contactsCreate);
 
   contacts
@@ -51,6 +59,7 @@ export const registerContacts = (program: Command): void => {
     .option('--email <email>')
     .option('--company <company>')
     .option('--tags <tags>')
+    .option('--custom-fields <json>', 'custom fields as JSON object')
     .action(contactsUpdate);
 
   contacts
@@ -62,7 +71,10 @@ export const registerContacts = (program: Command): void => {
     .command('import <file>')
     .description('import contacts from CSV')
     .option('--dry-run', 'preview without importing')
-    .option('--map <mapping>', 'column mapping (e.g. "Full Name=name,Phone=phone")')
+    .option(
+      '--map <mapping>',
+      'column mapping (e.g. "Full Name=name,Phone=phone")',
+    )
     .action(contactsImport);
 
   contacts
@@ -72,7 +84,10 @@ export const registerContacts = (program: Command): void => {
     .action(contactsSearch);
 };
 
-const contactsList = async (opts: { limit: string; filter?: string }): Promise<void> => {
+const contactsList = async (opts: {
+  limit: string;
+  filter?: string;
+}): Promise<void> => {
   try {
     const query: Record<string, string> = { limit: opts.limit };
     if (opts.filter) query.filter = opts.filter;
@@ -81,16 +96,25 @@ const contactsList = async (opts: { limit: string; filter?: string }): Promise<v
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
-
-    const { contacts } = res.data;
-    if (!contacts.length) {
-      log('no contacts yet — use `consuelo contacts create` or `consuelo contacts import`');
+    if (isJson()) {
+      json(res.data);
       return;
     }
 
-    log('name                 | phone            | email                | tags');
-    log('---------------------|------------------|----------------------|-----');
+    const { contacts } = res.data;
+    if (!contacts.length) {
+      log(
+        'no contacts yet — use `consuelo contacts create` or `consuelo contacts import`',
+      );
+      return;
+    }
+
+    log(
+      'name                 | phone            | email                | tags',
+    );
+    log(
+      '---------------------|------------------|----------------------|-----',
+    );
     for (const c of contacts) {
       const name = (c.name ?? '').padEnd(20).slice(0, 20);
       const phone = (c.phone ?? '').padEnd(16).slice(0, 16);
@@ -112,7 +136,10 @@ const contactsGet = async (id: string): Promise<void> => {
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     const c = res.data.contact;
     log(`id:       ${c.id}`);
@@ -129,18 +156,40 @@ const contactsGet = async (id: string): Promise<void> => {
   }
 };
 
-const contactsCreate = async (opts: { name: string; phone: string; email?: string; company?: string; tags?: string }): Promise<void> => {
+const contactsCreate = async (opts: {
+  name: string;
+  phone: string;
+  email?: string;
+  company?: string;
+  tags?: string;
+  customFields?: string;
+}): Promise<void> => {
   try {
-    const body: Record<string, unknown> = { name: opts.name, phone: opts.phone };
+    const body: Record<string, unknown> = {
+      name: opts.name,
+      phone: opts.phone,
+    };
     if (opts.email) body.email = opts.email;
     if (opts.company) body.company = opts.company;
-    if (opts.tags) body.tags = opts.tags.split(',').map((t: string) => t.trim());
+    if (opts.tags)
+      body.tags = opts.tags.split(',').map((t: string) => t.trim());
+    if (opts.customFields) {
+      try {
+        body.customFields = JSON.parse(opts.customFields);
+      } catch {
+        error('invalid --custom-fields: must be valid JSON');
+        process.exit(1);
+      }
+    }
 
     const res = await apiPost<{ contact: Contact }>('/v1/contacts', body);
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     const c = res.data.contact;
     log(`created: ${c.name} — ${c.phone}${c.email ? ` — ${c.email}` : ''}`);
@@ -151,14 +200,33 @@ const contactsCreate = async (opts: { name: string; phone: string; email?: strin
   }
 };
 
-const contactsUpdate = async (id: string, opts: { name?: string; phone?: string; email?: string; company?: string; tags?: string }): Promise<void> => {
+const contactsUpdate = async (
+  id: string,
+  opts: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    company?: string;
+    tags?: string;
+    customFields?: string;
+  },
+): Promise<void> => {
   try {
     const body: Record<string, unknown> = {};
     if (opts.name) body.name = opts.name;
     if (opts.phone) body.phone = opts.phone;
     if (opts.email) body.email = opts.email;
     if (opts.company) body.company = opts.company;
-    if (opts.tags) body.tags = opts.tags.split(',').map((t: string) => t.trim());
+    if (opts.tags)
+      body.tags = opts.tags.split(',').map((t: string) => t.trim());
+    if (opts.customFields) {
+      try {
+        body.customFields = JSON.parse(opts.customFields);
+      } catch {
+        error('invalid --custom-fields: must be valid JSON');
+        process.exit(1);
+      }
+    }
 
     if (!Object.keys(body).length) {
       error('nothing to update — provide at least one field');
@@ -169,7 +237,10 @@ const contactsUpdate = async (id: string, opts: { name?: string; phone?: string;
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     log(`updated: ${res.data.contact.name}`);
   } catch (err: unknown) {
@@ -185,7 +256,10 @@ const contactsDelete = async (id: string): Promise<void> => {
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     log('contact deleted');
   } catch (err: unknown) {
@@ -195,7 +269,10 @@ const contactsDelete = async (id: string): Promise<void> => {
   }
 };
 
-const contactsImport = async (file: string, opts: { dryRun?: boolean; map?: string }): Promise<void> => {
+const contactsImport = async (
+  file: string,
+  opts: { dryRun?: boolean; map?: string },
+): Promise<void> => {
   try {
     if (!fs.existsSync(file)) {
       error(`file not found: ${file}`);
@@ -228,15 +305,25 @@ const contactsImport = async (file: string, opts: { dryRun?: boolean; map?: stri
 
     log(`importing from ${file}...`);
 
-    const res = await apiPost<{ imported: number; contacts: Contact[] }>('/v1/contacts/import', { content });
+    const res = await apiPost<{ imported: number; contacts: Contact[] }>(
+      '/v1/contacts/import',
+      { content },
+    );
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
-    log(`imported ${res.data.imported} contact${res.data.imported === 1 ? '' : 's'}`);
+    log(
+      `imported ${res.data.imported} contact${res.data.imported === 1 ? '' : 's'}`,
+    );
     for (const c of res.data.contacts) {
-      log(`  + ${c.name}${c.phone ? ` — ${c.phone}` : ''}${c.email ? ` — ${c.email}` : ''}`);
+      log(
+        `  + ${c.name}${c.phone ? ` — ${c.phone}` : ''}${c.email ? ` — ${c.email}` : ''}`,
+      );
     }
   } catch (err: unknown) {
     captureError(err, { command: 'contacts import' });
@@ -245,13 +332,22 @@ const contactsImport = async (file: string, opts: { dryRun?: boolean; map?: stri
   }
 };
 
-const contactsSearch = async (query: string, opts: { limit: string }): Promise<void> => {
+const contactsSearch = async (
+  query: string,
+  opts: { limit: string },
+): Promise<void> => {
   try {
-    const res = await apiGet<{ contacts: Contact[] }>('/v1/contacts/search', { q: query, limit: opts.limit });
+    const res = await apiGet<{ contacts: Contact[] }>('/v1/contacts/search', {
+      q: query,
+      limit: opts.limit,
+    });
     handle501(res.status, 'contacts API routes');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     const { contacts } = res.data;
     if (!contacts.length) {
@@ -259,8 +355,12 @@ const contactsSearch = async (query: string, opts: { limit: string }): Promise<v
       return;
     }
 
-    log('name                 | phone            | email                | tags');
-    log('---------------------|------------------|----------------------|-----');
+    log(
+      'name                 | phone            | email                | tags',
+    );
+    log(
+      '---------------------|------------------|----------------------|-----',
+    );
     for (const c of contacts) {
       const name = (c.name ?? '').padEnd(20).slice(0, 20);
       const phone = (c.phone ?? '').padEnd(16).slice(0, 16);
@@ -287,7 +387,10 @@ const parseMappings = (map: string): Record<string, string> => {
   return result;
 };
 
-const remapCsvHeaders = (content: string, mappings: Record<string, string>): string => {
+const remapCsvHeaders = (
+  content: string,
+  mappings: Record<string, string>,
+): string => {
   const lines = content.split('\n');
   if (!lines.length) return content;
   const headers = lines[0].split(',').map((h: string) => {
