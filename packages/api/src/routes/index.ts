@@ -24,6 +24,7 @@ import { voiceRoutes } from './voice.js';
 import { workspaceRoutes } from './workspace.js';
 import { ghlRoutes } from './ghl.js';
 import { ghlIntegrationRoutes } from './integrations/ghl.js';
+import { ghlWebhookRoutes } from './webhooks/ghl.js';
 export {
   analyticsRoutes,
   assistantRoutes,
@@ -40,6 +41,7 @@ export {
   workspaceRoutes,
   ghlRoutes,
   ghlIntegrationRoutes,
+  ghlWebhookRoutes,
 };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
@@ -87,5 +89,6 @@ export const allRoutes = (): RouteDefinition[] => [
   ...workspaceRoutes(),
   ...ghlRoutes(),
   ...ghlIntegrationRoutes(),
+  ...ghlWebhookRoutes(),
   ...webhookRoutes(),
 ];
