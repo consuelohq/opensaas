@@ -8,8 +8,76 @@ import {
 import { errorHandler } from '../middleware/error-handler.js';
 import { redisService } from '../services/redis.js';
 import type { RouteDefinition } from './index.js';
+import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
+
+/**
+ * Validate Twilio signature on webhook requests.
+ * Twilio sends a signature in the X-Twilio-Signature header.
+ */
+async function validateTwilioSignature(
+  req: ApiRequest,
+  res: ApiResponse,
+): Promise<boolean> {
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!authToken) {
+    res.status(500).json({
+      error: {
+        code: 'CONFIG_ERROR',
+        message: 'TWILIO_AUTH_TOKEN is not configured',
+      },
+    });
+    return false;
+  }
+
+  const signature = req.headers['x-twilio-signature'];
+  if (!signature || typeof signature !== 'string') {
+    res.status(401).json({
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'Missing Twilio signature',
+      },
+    });
+    return false;
+  }
+
+  const protocol = req.headers['x-forwarded-proto'] ?? 'https';
+  const host = req.headers.host ?? '';
+  const url = `${protocol}://${host}${req.path}`;
+
+  try {
+    const twilio = await import('twilio');
+    const isValid = twilio.validateRequest(
+      authToken,
+      signature,
+      url,
+      req.body as Record<string, string> | undefined,
+    );
+
+    if (!isValid) {
+      res.status(401).json({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Invalid Twilio signature',
+        },
+      });
+      return false;
+    }
+
+    return true;
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : 'Signature validation failed';
+    res.status(500).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message,
+      },
+    });
+    return false;
+  }
+}
 
 interface TransferRecord {
   transferId: string;
