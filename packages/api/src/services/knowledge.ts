@@ -115,8 +115,8 @@ const DEFAULT_STRATEGY: ChunkingStrategy = {
   preserveTables: true,
 };
 
-const EMBEDDING_MODEL = 'text-embedding-3-small';
-const EMBEDDING_DIMENSIONS = 1536;
+const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
+const EMBEDDING_DIMENSIONS = 384;
 
 // sentence boundary regex — handles Mr./Mrs./Dr. abbreviations
 const SENTENCE_SPLIT_RE = /(?<=[.!?])\s+(?=[A-Z])/;
@@ -141,9 +141,11 @@ const SQL_LIST_COLLECTIONS =
 const SQL_UPDATE_FILES_CLEAR_COLLECTION =
   'UPDATE files SET collection_id = NULL, indexed_at = NULL WHERE collection_id = $1';
 
-const SQL_DELETE_COLLECTION = 'DELETE FROM knowledge_collections WHERE id = $1 AND workspace_id = $2';
+const SQL_DELETE_COLLECTION =
+  'DELETE FROM knowledge_collections WHERE id = $1 AND workspace_id = $2';
 
-const SQL_DELETE_CHUNKS_BY_FILE = 'DELETE FROM knowledge_chunks WHERE file_id = $1';
+const SQL_DELETE_CHUNKS_BY_FILE =
+  'DELETE FROM knowledge_chunks WHERE file_id = $1';
 
 const SQL_INSERT_CHUNK =
   'INSERT INTO knowledge_chunks (collection_id, file_id, chunk_index, content, embedding, metadata) ' +
@@ -183,7 +185,8 @@ export class KnowledgeService {
       if (!this.pool) {
         const { default: pg } = await import('pg');
         this.pool = new pg.Pool({
-          connectionString: process.env.KNOWLEDGE_DATABASE_URL ?? process.env.DATABASE_URL,
+          connectionString:
+            process.env.KNOWLEDGE_DATABASE_URL ?? process.env.DATABASE_URL,
           max: 5,
         });
       }
@@ -217,10 +220,18 @@ export class KnowledgeService {
   ): Promise<KnowledgeCollection> {
     const pool = await this.getPool();
     try {
-      const result = await pool.query(SQL_CREATE_COLLECTION, [workspaceId, name, description ?? null]);
+      const result = await pool.query(SQL_CREATE_COLLECTION, [
+        workspaceId,
+        name,
+        description ?? null,
+      ]);
       return rowToCollection(result.rows[0]);
     } catch (err: unknown) {
-      if (err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === '23505') {
+      if (
+        err instanceof Error &&
+        'code' in err &&
+        (err as NodeJS.ErrnoException).code === '23505'
+      ) {
         throw new KnowledgeError(
           'DUPLICATE_COLLECTION',
           'Collection "' + name + '" already exists in this workspace',
@@ -236,7 +247,10 @@ export class KnowledgeService {
     return result.rows.map(rowToCollection);
   }
 
-  async deleteCollection(collectionId: string, workspaceId: string): Promise<void> {
+  async deleteCollection(
+    collectionId: string,
+    workspaceId: string,
+  ): Promise<void> {
     const pool = await this.getPool();
     const client = await pool.connect();
     try {
@@ -254,10 +268,18 @@ export class KnowledgeService {
 
   // -- Text Extraction -------------------------------------------------------
 
-  async extractText(buffer: Buffer, mimeType: string): Promise<ExtractionResult> {
+  async extractText(
+    buffer: Buffer,
+    mimeType: string,
+  ): Promise<ExtractionResult> {
     try {
       if (mimeType === 'application/pdf') {
         return await this.extractPDF(buffer);
+      }
+
+      if (mimeType === 'application/msword' ||
+          mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        return await this.extractWord(buffer);
       }
 
       const text = buffer.toString('utf-8');
@@ -267,8 +289,26 @@ export class KnowledgeService {
         metadata: { pageCount: 1 },
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Text extraction failed';
+      const message =
+        err instanceof Error ? err.message : 'Text extraction failed';
       throw new KnowledgeError('EXTRACTION_FAILED', message);
+    }
+  }
+
+  private async extractWord(buffer: Buffer): Promise<ExtractionResult> {
+    try {
+      // Lazy import mammoth — peerDependency
+      const mammoth = await import('mammoth');
+      const result = await mammoth.extractRawText({ buffer });
+      return {
+        text: result.value,
+        pages: [{ pageNumber: 1, text: result.value }],
+        metadata: { pageCount: 1 },
+      };
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Word document extraction failed';
+      throw new KnowledgeError('WORD_EXTRACTION_FAILED', message);
     }
   }
 
@@ -278,9 +318,13 @@ export class KnowledgeService {
 
       const pages: Array<{ pageNumber: number; text: string }> = [];
       const data = await pdfParse(buffer, {
-        pagerender: (pageData: { getTextContent: () => Promise<{ items: Array<{ str: string }> }> }) =>
+        pagerender: (pageData: {
+          getTextContent: () => Promise<{ items: Array<{ str: string }> }>;
+        }) =>
           pageData.getTextContent().then((textContent) => {
-            const pageText = textContent.items.map((item) => item.str).join(' ');
+            const pageText = textContent.items
+              .map((item) => item.str)
+              .join(' ');
             pages.push({ pageNumber: pages.length + 1, text: pageText });
             return pageText;
           }),
@@ -296,14 +340,18 @@ export class KnowledgeService {
         },
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'PDF extraction failed';
+      const message =
+        err instanceof Error ? err.message : 'PDF extraction failed';
       throw new KnowledgeError('PDF_EXTRACTION_FAILED', message);
     }
   }
 
   // -- Chunking --------------------------------------------------------------
 
-  chunkDocument(text: string, strategy: ChunkingStrategy = DEFAULT_STRATEGY): DocumentChunk[] {
+  chunkDocument(
+    text: string,
+    strategy: ChunkingStrategy = DEFAULT_STRATEGY,
+  ): DocumentChunk[] {
     const sections = detectSections(text);
     const chunks: DocumentChunk[] = [];
 
@@ -313,7 +361,9 @@ export class KnowledgeService {
       if (strategy.preserveTables) {
         const separated = separateTablesFromProse(prose);
         for (const table of separated.tables) {
-          const content = section.header ? '## ' + section.header + '\n' + table : table;
+          const content = section.header
+            ? '## ' + section.header + '\n' + table
+            : table;
           chunks.push({
             content,
             tokenCount: estimateTokens(content),
@@ -326,15 +376,19 @@ export class KnowledgeService {
       }
 
       const sentences = splitSentences(prose);
-      let currentChunk = section.header && strategy.preserveHeaders
-        ? '## ' + section.header + '\n'
-        : '';
+      let currentChunk =
+        section.header && strategy.preserveHeaders
+          ? '## ' + section.header + '\n'
+          : '';
       let tokenCount = estimateTokens(currentChunk);
 
       for (const sentence of sentences) {
         const sentenceTokens = estimateTokens(sentence);
 
-        if (tokenCount + sentenceTokens > strategy.maxTokens && currentChunk.trim()) {
+        if (
+          tokenCount + sentenceTokens > strategy.maxTokens &&
+          currentChunk.trim()
+        ) {
           chunks.push({
             content: currentChunk.trim(),
             tokenCount,
@@ -343,9 +397,10 @@ export class KnowledgeService {
           });
 
           const overlapText = getLastNTokens(currentChunk, strategy.overlap);
-          currentChunk = section.header && strategy.preserveHeaders
-            ? '## ' + section.header + '\n' + overlapText
-            : overlapText;
+          currentChunk =
+            section.header && strategy.preserveHeaders
+              ? '## ' + section.header + '\n' + overlapText
+              : overlapText;
           tokenCount = estimateTokens(currentChunk);
         }
 
@@ -385,7 +440,8 @@ export class KnowledgeService {
           embeddings.push(item.embedding);
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Embedding generation failed';
+        const message =
+          err instanceof Error ? err.message : 'Embedding generation failed';
         throw new KnowledgeError('EMBEDDING_FAILED', message);
       }
     }
@@ -395,7 +451,7 @@ export class KnowledgeService {
 
   // -- Indexing ---------------------------------------------------------------
 
-  async indexFile(
+async indexFile(
     fileId: string,
     collectionId: string,
     content: string,
@@ -406,20 +462,34 @@ export class KnowledgeService {
     },
   ): Promise<{ chunkCount: number }> {
     const pool = await this.getPool();
-    const strategy = { ...DEFAULT_STRATEGY, ...options?.strategy };
-    const chunks = this.chunkDocument(content, strategy);
-
-    if (chunks.length === 0) {
-      return { chunkCount: 0 };
-    }
-
-    const embeddings = await this.generateEmbeddings(chunks.map((c) => c.content));
     const client = await pool.connect();
 
     try {
       await client.query('BEGIN');
-      await client.query(SQL_DELETE_CHUNKS_BY_FILE, [fileId]);
 
+      const strategy = { ...DEFAULT_STRATEGY, ...options?.strategy };
+      const chunks = this.chunkDocument(content, strategy);
+
+      if (chunks.length === 0) {
+        await client.query('COMMIT');
+        return { chunkCount: 0 };
+      }
+
+      // Delete existing chunks for this file in this collection
+      await client.query(
+        'DELETE FROM knowledge_chunks WHERE file_id = $1 AND collection_id = $2',
+        [fileId, collectionId]
+      );
+
+      // Generate embeddings with 5-minute timeout
+      const embeddings = await Promise.race([
+        this.generateEmbeddings(chunks.map((c) => c.content)),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new KnowledgeError('EMBEDDING_TIMEOUT', 'Embedding generation timed out after 5 minutes')), 300_000)
+        ),
+      ]);
+
+      // Insert chunks with embeddings
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const embedding = embeddings[i];
@@ -449,6 +519,49 @@ export class KnowledgeService {
     }
   }
 
+    const embeddings = await this.generateEmbeddings(
+      chunks.map((c) => c.content),
+    );
+    const client = await pool.connect();
+
+    try {
+      await client.query('BEGIN');
+      await client.query(SQL_DELETE_CHUNKS_BY_FILE, [fileId]);
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const embedding = embeddings[i];
+        const metadata: ChunkMetadata = {
+          source: options?.sourceName ?? 'unknown',
+          page: chunk.page,
+          section: chunk.section,
+          tokenCount: chunk.tokenCount,
+          isTable: chunk.isTable,
+          ...options?.metadata,
+        };
+
+        await client.query(SQL_INSERT_CHUNK, [
+          collectionId,
+          fileId,
+          i,
+          chunk.content,
+          vectorToString(embedding),
+          metadata,
+        ]);
+      }
+
+      await client.query(SQL_UPDATE_COLLECTION_CHUNK_COUNT, [collectionId]);
+      await client.query(SQL_MARK_FILE_INDEXED, [collectionId, fileId]);
+      await client.query('COMMIT');
+      return { chunkCount: chunks.length };
+    } catch (err: unknown) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
   async deindexFile(fileId: string, workspaceId: string): Promise<void> {
     const pool = await this.getPool();
     const client = await pool.connect();
@@ -459,7 +572,9 @@ export class KnowledgeService {
       await client.query(SQL_DELETE_CHUNKS_BY_FILE, [fileId]);
 
       for (const row of affected.rows) {
-        await client.query(SQL_UPDATE_COLLECTION_CHUNK_COUNT, [row.collection_id]);
+        await client.query(SQL_UPDATE_COLLECTION_CHUNK_COUNT, [
+          row.collection_id,
+        ]);
       }
 
       await client.query(SQL_CLEAR_FILE_INDEX, [fileId, workspaceId]);
@@ -474,7 +589,10 @@ export class KnowledgeService {
 
   // -- Search ----------------------------------------------------------------
 
-  async search(query: string, options: SearchOptions): Promise<KnowledgeResult[]> {
+  async search(
+    query: string,
+    options: SearchOptions,
+  ): Promise<KnowledgeResult[]> {
     try {
       const pool = await this.getPool();
       const limit = options.limit ?? 5;
@@ -493,7 +611,10 @@ export class KnowledgeService {
         idx++;
       }
 
-      if (options.metadataFilter && Object.keys(options.metadataFilter).length > 0) {
+      if (
+        options.metadataFilter &&
+        Object.keys(options.metadataFilter).length > 0
+      ) {
         conditions.push('kch.metadata @> $' + String(idx) + '::jsonb');
         params.push(JSON.stringify(options.metadataFilter));
         idx++;
@@ -505,16 +626,32 @@ export class KnowledgeService {
 
       const sql =
         'SELECT kch.id AS chunk_id, kch.content, ' +
-        '1 - (kch.embedding <=> ' + vecParam + '::vector) AS similarity, ' +
+        '1 - (kch.embedding <=> ' +
+        vecParam +
+        '::vector) AS similarity, ' +
         'kch.metadata, kch.collection_id, kc.name AS collection_name, kch.file_id ' +
         'FROM knowledge_chunks kch ' +
         'JOIN knowledge_collections kc ON kc.id = kch.collection_id ' +
-        'WHERE ' + conditions.join(' AND ') + ' ' +
-        'AND 1 - (kch.embedding <=> ' + vecParam + '::vector) >= ' + simParam + ' ' +
-        'ORDER BY kch.embedding <=> ' + vecParam + '::vector ' +
-        'LIMIT ' + limParam;
+        'WHERE ' +
+        conditions.join(' AND ') +
+        ' ' +
+        'AND 1 - (kch.embedding <=> ' +
+        vecParam +
+        '::vector) >= ' +
+        simParam +
+        ' ' +
+        'ORDER BY kch.embedding <=> ' +
+        vecParam +
+        '::vector ' +
+        'LIMIT ' +
+        limParam;
 
-      const result = await pool.query(sql, [...params, vectorToString(queryEmbedding), minSimilarity, limit]);
+      const result = await pool.query(sql, [
+        ...params,
+        vectorToString(queryEmbedding),
+        minSimilarity,
+        limit,
+      ]);
 
       return result.rows.map((row) => ({
         chunkId: row.chunk_id as string,
@@ -529,13 +666,17 @@ export class KnowledgeService {
       if (err instanceof KnowledgeError) {
         throw err;
       }
-      const message = err instanceof Error ? err.message : 'Vector search failed';
+      const message =
+        err instanceof Error ? err.message : 'Vector search failed';
       throw new KnowledgeError('SEARCH_FAILED', message);
     }
   }
 
   // convenience method for Phase 3 coaching integration
-  async getCoachingContext(query: string, workspaceId: string): Promise<string> {
+  async getCoachingContext(
+    query: string,
+    workspaceId: string,
+  ): Promise<string> {
     try {
       const results = await this.search(query, {
         workspaceId,
@@ -550,7 +691,17 @@ export class KnowledgeService {
       const contextParts = results.map((r, i) => {
         const source = r.metadata.source ?? 'unknown';
         const section = r.metadata.section ? ' > ' + r.metadata.section : '';
-        return '[' + String(i + 1) + '] (' + source + section + ', similarity: ' + r.similarity.toFixed(2) + ')\n' + r.content;
+        return (
+          '[' +
+          String(i + 1) +
+          '] (' +
+          source +
+          section +
+          ', similarity: ' +
+          r.similarity.toFixed(2) +
+          ')\n' +
+          r.content
+        );
       });
 
       return '--- Knowledge Base Context ---\n' + contextParts.join('\n\n');
@@ -574,7 +725,8 @@ export class KnowledgeService {
         fileCount: parseInt(row.file_count as string, 10),
       }));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch stats';
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch stats';
       throw new KnowledgeError('STATS_FAILED', message);
     }
   }
@@ -608,7 +760,9 @@ export class KnowledgeError extends Error {
 
 // -- Helpers (module-level, not exported) ------------------------------------
 
-const rowToCollection = (row: Record<string, unknown>): KnowledgeCollection => ({
+const rowToCollection = (
+  row: Record<string, unknown>,
+): KnowledgeCollection => ({
   id: row.id as string,
   workspaceId: row.workspace_id as string,
   name: row.name as string,
@@ -646,7 +800,10 @@ const detectSections = (text: string): DetectedSection[] => {
   for (const line of lines) {
     if (HEADER_RE.test(line.trim())) {
       if (currentContent.trim()) {
-        sections.push({ header: currentHeader, content: currentContent.trim() });
+        sections.push({
+          header: currentHeader,
+          content: currentContent.trim(),
+        });
       }
       currentHeader = line.trim().replace(/^#+\s+/, '');
       currentContent = '';
@@ -666,7 +823,9 @@ const detectSections = (text: string): DetectedSection[] => {
   return sections;
 };
 
-const separateTablesFromProse = (text: string): { tables: string[]; prose: string } => {
+const separateTablesFromProse = (
+  text: string,
+): { tables: string[]; prose: string } => {
   const lines = text.split('\n');
   const tables: string[] = [];
   let prose = '';
@@ -674,7 +833,8 @@ const separateTablesFromProse = (text: string): { tables: string[]; prose: strin
   let inTable = false;
 
   for (const line of lines) {
-    const isTableLine = TABLE_LINE_RE.test(line) || (inTable && line.trim().startsWith('|'));
+    const isTableLine =
+      TABLE_LINE_RE.test(line) || (inTable && line.trim().startsWith('|'));
     const isSeparator = /^\s*\|[-:|\s]+\|\s*$/.test(line);
 
     if (isTableLine || (inTable && isSeparator)) {
