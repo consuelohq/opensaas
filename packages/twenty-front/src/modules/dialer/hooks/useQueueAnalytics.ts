@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
-import { type CallOutcome, type QueueAggregatedStats } from '@/dialer/types/queue';
+import {
+  type QueueAggregatedStats,
+  type QueueOutcome,
+} from '@/dialer/types/queue';
 import {
   activeQueueState,
   queueItemsState,
@@ -14,7 +17,7 @@ import {
 
 export const useQueueAnalytics = (): {
   stats: QueueAggregatedStats | null;
-  outcomeBreakdown: Record<CallOutcome, number>;
+  outcomeBreakdown: Record<QueueOutcome, number>;
 } => {
   const items = useRecoilValue(queueItemsState);
   const session = useRecoilValue(queueSessionState);
@@ -39,9 +42,7 @@ export const useQueueAnalytics = (): {
     ) {
       return;
     }
-    setQueue((prev) =>
-      prev ? { ...prev, aggregatedStats: stats } : null,
-    );
+    setQueue((prev) => (prev ? { ...prev, aggregatedStats: stats } : null));
   }, [stats, queue, setQueue]);
 
   return { stats, outcomeBreakdown };
