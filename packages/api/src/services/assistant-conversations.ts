@@ -84,8 +84,8 @@ export class AssistantConversationService {
   async getPool(): Promise<Pool> {
     try {
       if (!this.pool) {
-        const { default: pg } = await import('pg');
-        this.pool = new pg.Pool({
+        const { Pool } = await import('pg');
+        this.pool = new Pool({
           connectionString: process.env.DATABASE_URL,
         });
       }
@@ -96,43 +96,76 @@ export class AssistantConversationService {
     }
   }
 
-  async createConversation(workspaceId: string, userId: string): Promise<ConversationRow> {
+  async createConversation(
+    workspaceId: string,
+    userId: string,
+  ): Promise<ConversationRow> {
     try {
       const pool = await this.getPool();
-      const { rows } = await pool.query<ConversationRow>(SQL_CREATE_CONVERSATION, [workspaceId, userId]);
+      const { rows } = await pool.query<ConversationRow>(
+        SQL_CREATE_CONVERSATION,
+        [workspaceId, userId],
+      );
       return rows[0];
     } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('failed to create conversation');
+      throw err instanceof Error
+        ? err
+        : new Error('failed to create conversation');
     }
   }
 
-  async getConversation(conversationId: string, workspaceId: string): Promise<ConversationRow | null> {
+  async getConversation(
+    conversationId: string,
+    workspaceId: string,
+  ): Promise<ConversationRow | null> {
     try {
       const pool = await this.getPool();
-      const { rows } = await pool.query<ConversationRow>(SQL_GET_CONVERSATION, [conversationId, workspaceId]);
+      const { rows } = await pool.query<ConversationRow>(SQL_GET_CONVERSATION, [
+        conversationId,
+        workspaceId,
+      ]);
       return rows[0] ?? null;
     } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('failed to get conversation');
+      throw err instanceof Error
+        ? err
+        : new Error('failed to get conversation');
     }
   }
 
-  async listConversations(workspaceId: string, userId: string): Promise<Array<ConversationRow & { last_message?: string }>> {
+  async listConversations(
+    workspaceId: string,
+    userId: string,
+  ): Promise<Array<ConversationRow & { last_message?: string }>> {
     try {
       const pool = await this.getPool();
-      const { rows } = await pool.query<ConversationRow & { last_message?: string }>(SQL_LIST_CONVERSATIONS, [workspaceId, userId]);
+      const { rows } = await pool.query<
+        ConversationRow & { last_message?: string }
+      >(SQL_LIST_CONVERSATIONS, [workspaceId, userId]);
       return rows;
     } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('failed to list conversations');
+      throw err instanceof Error
+        ? err
+        : new Error('failed to list conversations');
     }
   }
 
-  async deleteConversation(conversationId: string, workspaceId: string, userId: string): Promise<boolean> {
+  async deleteConversation(
+    conversationId: string,
+    workspaceId: string,
+    userId: string,
+  ): Promise<boolean> {
     try {
       const pool = await this.getPool();
-      const { rowCount } = await pool.query(SQL_DELETE_CONVERSATION, [conversationId, workspaceId, userId]);
+      const { rowCount } = await pool.query(SQL_DELETE_CONVERSATION, [
+        conversationId,
+        workspaceId,
+        userId,
+      ]);
       return (rowCount ?? 0) > 0;
     } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('failed to delete conversation');
+      throw err instanceof Error
+        ? err
+        : new Error('failed to delete conversation');
     }
   }
 
@@ -165,10 +198,10 @@ export class AssistantConversationService {
         [conversationId],
       );
       const summary = convRows[0]?.summary ?? undefined;
-      const { rows: messages } = await pool.query<MessageRow>(SQL_RECENT_MESSAGES, [
-        conversationId,
-        CONTEXT_WINDOW_SIZE,
-      ]);
+      const { rows: messages } = await pool.query<MessageRow>(
+        SQL_RECENT_MESSAGES,
+        [conversationId, CONTEXT_WINDOW_SIZE],
+      );
       messages.reverse();
       return { summary, recentMessages: messages };
     } catch (err: unknown) {
@@ -188,10 +221,14 @@ export class AssistantConversationService {
   async getMessageCount(conversationId: string): Promise<number> {
     try {
       const pool = await this.getPool();
-      const { rows } = await pool.query<{ count: number }>(SQL_MESSAGE_COUNT, [conversationId]);
+      const { rows } = await pool.query<{ count: number }>(SQL_MESSAGE_COUNT, [
+        conversationId,
+      ]);
       return rows[0]?.count ?? 0;
     } catch (err: unknown) {
-      throw err instanceof Error ? err : new Error('failed to get message count');
+      throw err instanceof Error
+        ? err
+        : new Error('failed to get message count');
     }
   }
 }
