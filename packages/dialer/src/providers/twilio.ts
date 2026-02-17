@@ -11,6 +11,7 @@ import type {
 } from '../types.js';
 import { extractAreaCode } from '../services/local-presence.js';
 import type TwilioClient from 'twilio';
+import * as Sentry from '@sentry/node';
 
 const TERMINAL_STATUSES = [
   'completed',
@@ -53,7 +54,7 @@ export class TwilioProvider implements DialerProvider {
         this.credentials.authToken,
       );
       return this.client;
-    } catch (err) {
+    } catch (err: unknown) {
       this.client = null;
       throw err;
     }
@@ -99,31 +100,36 @@ export class TwilioProvider implements DialerProvider {
   }
 
   async getToken(userId: string): Promise<VoiceToken> {
-    const { apiKey, apiSecret, twimlAppSid, accountSid } = this.credentials;
-    if (!apiKey || !apiSecret || !twimlAppSid) {
-      throw new Error(
-        'Twilio API key, secret, and TwiML app SID are required for voice tokens',
-      );
+    try {
+      const { apiKey, apiSecret, twimlAppSid, accountSid } = this.credentials;
+      if (!apiKey || !apiSecret || !twimlAppSid) {
+        throw new Error(
+          'Twilio API key, secret, and TwiML app SID are required for voice tokens',
+        );
+      }
+
+      const twilio = await import('twilio');
+      const { AccessToken } = twilio.jwt;
+      const { VoiceGrant } = AccessToken;
+
+      const identity = `user_${userId}`;
+      const ttl = 3600;
+
+      const token = new AccessToken(accountSid, apiKey, apiSecret, {
+        identity,
+        ttl,
+      });
+      const grant = new VoiceGrant({
+        outgoingApplicationSid: twimlAppSid,
+        incomingAllow: true,
+      });
+      token.addGrant(grant);
+
+      return { token: token.toJwt(), identity, ttl };
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
     }
-
-    const twilio = await import('twilio');
-    const { AccessToken } = twilio.jwt;
-    const { VoiceGrant } = AccessToken;
-
-    const identity = `user_${userId}`;
-    const ttl = 3600;
-
-    const token = new AccessToken(accountSid, apiKey, apiSecret, {
-      identity,
-      ttl,
-    });
-    const grant = new VoiceGrant({
-      outgoingApplicationSid: twimlAppSid,
-      incomingAllow: true,
-    });
-    token.addGrant(grant);
-
-    return { token: token.toJwt(), identity, ttl };
   }
 
   async provisionNumber(
