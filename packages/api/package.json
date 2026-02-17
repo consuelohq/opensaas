@@ -20,7 +20,8 @@
     "@consuelo/contacts": "^0.0.1",
     "@consuelo/dialer": "^0.0.1",
     "@consuelo/logger": "*",
-    "@sentry/node": "^10.38.0"
+    "@sentry/node": "^10.38.0",
+    "ioredis": "^5.6.0"
   },
   "peerDependencies": {
     "@aws-sdk/client-s3": ">=3.0.0",
