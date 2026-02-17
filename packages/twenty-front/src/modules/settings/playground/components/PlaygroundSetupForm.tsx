@@ -62,6 +62,7 @@ export const PlaygroundSetupForm = () => {
       const response = await fetch(
         `${REACT_APP_SERVER_BASE_URL}/rest/open-api/${values.schema}`,
         {
+          credentials: 'include',
           headers: { Authorization: `Bearer ${values.apiKeyForPlayground}` },
         },
       );

@@ -104,6 +104,7 @@ export const SettingsSSOSAMLForm = () => {
   const downloadMetadata = async () => {
     const response = await fetch(
       `${REACT_APP_SERVER_BASE_URL}/auth/saml/metadata/${getValues('id')}`,
+      { credentials: 'include' },
     );
     if (!response.ok) {
       return enqueueErrorSnackBar({

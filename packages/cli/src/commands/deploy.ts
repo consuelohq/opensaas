@@ -14,6 +14,7 @@ interface DeployOptions {
   skipBuild: boolean;
   skipMigrations: boolean;
   json: boolean;
+  quiet: boolean;
 }
 
 interface DeployResult {
@@ -61,7 +62,10 @@ const runCommand = (cmd: string, dryRun: boolean): string => {
     return '';
   }
   try {
-    return execSync(cmd, { encoding: 'utf-8', stdio: ['inherit', 'pipe', 'pipe'] }).trim();
+    return execSync(cmd, {
+      encoding: 'utf-8',
+      stdio: ['inherit', 'pipe', 'pipe'],
+    }).trim();
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(`command failed: ${cmd}\n${message}`);
@@ -71,17 +75,22 @@ const runCommand = (cmd: string, dryRun: boolean): string => {
 const preDeployChecks = (platform: Platform): void => {
   const cli = PLATFORM_CLIS[platform];
   if (!isCliInstalled(cli)) {
-    throw new Error(`${cli} CLI not found. install it first: https://docs.${platform === 'aws' ? 'aws.amazon.com/sam' : `${platform}.com`}`);
+    throw new Error(
+      `${cli} CLI not found. install it first: https://docs.${platform === 'aws' ? 'aws.amazon.com/sam' : `${platform}.com`}`,
+    );
   }
 
   const configFile = PLATFORM_CONFIG_FILES[platform];
   if (platform !== 'docker' && !fs.existsSync(configFile)) {
-    throw new Error(`${configFile} not found in project root. run \`consuelo init\` or create it manually.`);
+    throw new Error(
+      `${configFile} not found in project root. run \`consuelo init\` or create it manually.`,
+    );
   }
 };
 
 const deployRailway = (options: DeployOptions): string | undefined => {
-  const envFlag = options.env !== 'production' ? ` --environment ${options.env}` : '';
+  const envFlag =
+    options.env !== 'production' ? ` --environment ${options.env}` : '';
   const output = runCommand(`railway up${envFlag}`, options.dryRun);
   const urlMatch = output.match(/https?:\/\/[^\s]+\.up\.railway\.app/);
   return urlMatch?.[0];
@@ -103,12 +112,18 @@ const deployDocker = (options: DeployOptions): string | undefined => {
 const deployAws = (options: DeployOptions): string | undefined => {
   const stackSuffix = options.env !== 'production' ? `-${options.env}` : '';
   runCommand('sam build', options.dryRun);
-  const output = runCommand(`sam deploy --no-confirm-changeset --stack-name consuelo${stackSuffix}`, options.dryRun);
+  const output = runCommand(
+    `sam deploy --no-confirm-changeset --stack-name consuelo${stackSuffix}`,
+    options.dryRun,
+  );
   const urlMatch = output.match(/https?:\/\/[^\s]+\.amazonaws\.com[^\s]*/);
   return urlMatch?.[0];
 };
 
-const DEPLOY_HANDLERS: Record<Platform, (options: DeployOptions) => string | undefined> = {
+const DEPLOY_HANDLERS: Record<
+  Platform,
+  (options: DeployOptions) => string | undefined
+> = {
   railway: deployRailway,
   vercel: deployVercel,
   docker: deployDocker,
@@ -125,23 +140,44 @@ const deploy = async (options: DeployOptions): Promise<void> => {
   log(`deploying to ${platform} (${options.env})...`);
 
   preDeployChecks(platform);
-  log('  ✓ pre-deploy checks passed');
+  log(' ✓ pre-deploy checks passed');
 
   if (!options.skipBuild) {
-    log('  building...');
-    runCommand('npm run build', options.dryRun);
-    log('  ✓ build complete');
+    log(' building...');
+    try {
+      runCommand('npm run build', options.dryRun);
+    } catch (err: unknown) {
+      captureError(err, { command: 'deploy', step: 'build' });
+      error('build failed — fix errors above and retry');
+      process.exit(1);
+    }
+    log(' ✓ build complete');
   }
 
   if (!options.skipMigrations && platform !== 'docker') {
-    log('  running migrations...');
-    runCommand('npx nx run twenty-server:database:migrate:prod', options.dryRun);
-    log('  ✓ migrations complete');
+    log(' running migrations...');
+    try {
+      runCommand('npx nx run twenty-server:database:migrate:prod', options.dryRun);
+    } catch (err: unknown) {
+      captureError(err, { command: 'deploy', step: 'migrations' });
+      error('migrations failed — database may be in inconsistent state');
+      process.exit(1);
+    }
+    log(' ✓ migrations complete');
   }
 
   const start = Date.now();
-  log(`  deploying to ${platform}...`);
-  const url = DEPLOY_HANDLERS[platform]({ ...options, platform });
+  log(` deploying to ${platform}...`);
+
+  let url: string | undefined;
+  try {
+    url = DEPLOY_HANDLERS[platform]({ ...options, platform });
+  } catch (err: unknown) {
+    captureError(err, { command: 'deploy', platform, step: 'platform-deploy' });
+    error(`deploy to ${platform} failed: ${err instanceof Error ? err.message : 'unknown error'}`);
+    process.exit(1);
+  }
+
   const duration = Math.round((Date.now() - start) / 1000);
 
   const result: DeployResult = {
@@ -152,6 +188,16 @@ const deploy = async (options: DeployOptions): Promise<void> => {
     dryRun: options.dryRun,
     success: true,
   };
+
+  if (isJson()) {
+    json(result);
+  } else {
+    log('');
+    log(` ✓ deployed to ${platform}${options.dryRun ? ' (dry run)' : ''}`);
+    if (url) log(` url: ${url}`);
+    log(` duration: ${duration}s`);
+  }
+};
 
   if (isJson()) {
     json(result);
@@ -172,7 +218,11 @@ export const registerDeploy = (program: Command): void => {
     .option('--dry-run', 'show plan without deploying', false)
     .option('--skip-build', 'skip build step', false)
     .option('--skip-migrations', 'skip database migrations', false)
+    .option('--json', 'output as JSON')
+    .option('--quiet', 'suppress output')
     .action(async (opts: DeployOptions) => {
+      globalThis.__consuelo_json = opts.json;
+      globalThis.__consuelo_quiet = opts.quiet;
       try {
         await deploy(opts);
       } catch (err: unknown) {
