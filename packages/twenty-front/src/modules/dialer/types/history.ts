@@ -2,7 +2,7 @@ import {
   type CallAnalytics,
   type CallOutcome as CoachingOutcome,
 } from './coaching';
-import { type CallOutcome as QueueOutcome } from './queue';
+import { type QueueOutcome } from './queue';
 import { type DialerContact } from './dialer';
 
 // unified call outcome for history — superset of coaching + queue outcomes

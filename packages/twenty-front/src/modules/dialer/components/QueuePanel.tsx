@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
-import { useCallback, useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useState } from 'react';
+import { useRecoilValue } from 'recoil';
 import {
   IconList,
   IconPhoneCall,
@@ -9,9 +9,10 @@ import {
   IconX,
 } from '@tabler/icons-react';
 
-import { type CallQueue, type QueueSettings } from '@/dialer/types/queue';
+import { type CallQueue } from '@/dialer/types/queue';
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { QueueControls } from '@/dialer/components/QueueControls';
+import { QueueSettingsModal } from '@/dialer/components/QueueSettingsModal';
 import { useAutoDialer } from '@/dialer/hooks/useAutoDialer';
 import {
   activeQueueState,
@@ -178,8 +179,19 @@ const StyledCallStatus = styled.span<{ status: string }>`
   font-size: 11px;
   color: ${({ status, theme }) =>
     status === 'in-progress'
-      ? theme.color.green ?? '#16a34a'
+      ? (theme.color.green ?? '#16a34a')
       : theme.font.color.tertiary};
+`;
+
+const StyledEmpty = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(4)} 0;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  text-align: center;
 `;
 
 const StyledEmpty = styled.div`
@@ -257,8 +269,7 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
   cursor: pointer;
   background: ${({ accent, theme }) =>
     accent ? theme.color.blue : theme.background.tertiary};
-  color: ${({ accent, theme }) =>
-    accent ? '#fff' : theme.font.color.primary};
+  color: ${({ accent, theme }) => (accent ? '#fff' : theme.font.color.primary)};
 `;
 
 const StyledNumberInput = styled.input`
@@ -321,7 +332,9 @@ const ParallelDialingStatus = () => {
       <StyledParallelHeader>
         <IconPhoneCall size={14} />
         Parallel Dialing
-        <StyledCategoryBadge>{parallel.activeCalls.length} lines</StyledCategoryBadge>
+        <StyledCategoryBadge>
+          {parallel.activeCalls.length} lines
+        </StyledCategoryBadge>
       </StyledParallelHeader>
       {parallel.activeCalls.map((call) => (
         <StyledParallelCall key={call.callSid}>
@@ -335,141 +348,6 @@ const ParallelDialingStatus = () => {
         </StyledParallelCall>
       ))}
     </StyledParallelStatus>
-  );
-};
-
-const QueueSettingsModal = ({
-  queue,
-  onClose,
-}: {
-  queue: CallQueue;
-  onClose: () => void;
-}) => {
-  const [settings, setSettings] = useState<QueueSettings>(queue.settings);
-  const [, setQueue] = useRecoilState(activeQueueState);
-
-  const update = useCallback(
-    <TKey extends keyof QueueSettings>(key: TKey, value: QueueSettings[TKey]) => {
-      setSettings((prev) => ({ ...prev, [key]: value }));
-    },
-    [],
-  );
-
-  const handleSave = useCallback(() => {
-    setQueue((prev) => (prev ? { ...prev, settings } : null));
-    onClose();
-  }, [settings, setQueue, onClose]);
-
-  return (
-    <StyledOverlay onClick={onClose}>
-      <StyledModal onClick={(e) => e.stopPropagation()}>
-        <StyledModalHeader>Queue Settings</StyledModalHeader>
-        <StyledModalBody>
-          <StyledSettingRow>
-            Auto-advance
-            <input
-              type="checkbox"
-              checked={settings.autoAdvance}
-              onChange={(e) => update('autoAdvance', e.target.checked)}
-            />
-          </StyledSettingRow>
-          <StyledSettingRow>
-            Auto-advance delay (ms)
-            <StyledNumberInput
-              type="number"
-              value={settings.autoAdvanceDelay}
-              onChange={(e) =>
-                update('autoAdvanceDelay', Number(e.target.value))
-              }
-            />
-          </StyledSettingRow>
-          <StyledSettingRow>
-            Skip no-answer
-            <input
-              type="checkbox"
-              checked={settings.skipNoAnswer}
-              onChange={(e) => update('skipNoAnswer', e.target.checked)}
-            />
-          </StyledSettingRow>
-          <StyledSettingRow>
-            Max attempts
-            <StyledNumberInput
-              type="number"
-              value={settings.maxAttempts}
-              onChange={(e) => update('maxAttempts', Number(e.target.value))}
-            />
-          </StyledSettingRow>
-          <StyledSettingRow>
-            Call timeout (s)
-            <StyledNumberInput
-              type="number"
-              value={settings.callTimeout}
-              onChange={(e) => update('callTimeout', Number(e.target.value))}
-            />
-          </StyledSettingRow>
-          <StyledSettingRow>
-            Auto-skip voicemail
-            <input
-              type="checkbox"
-              checked={settings.autoSkipVoicemail}
-              onChange={(e) => update('autoSkipVoicemail', e.target.checked)}
-            />
-          </StyledSettingRow>
-          {settings.autoSkipVoicemail && (
-            <StyledSettingRow>
-              Voicemail skip delay (ms)
-              <StyledNumberInput
-                type="number"
-                value={settings.voicemailSkipDelay}
-                onChange={(e) =>
-                  update('voicemailSkipDelay', Number(e.target.value))
-                }
-              />
-            </StyledSettingRow>
-          )}
-          <StyledSettingRow>
-            Parallel dialing
-            <input
-              type="checkbox"
-              checked={settings.parallelDialingEnabled}
-              onChange={(e) =>
-                update('parallelDialingEnabled', e.target.checked)
-              }
-            />
-          </StyledSettingRow>
-          {settings.parallelDialingEnabled && (
-            <>
-              <StyledSettingRow>
-                Max parallel lines
-                <StyledNumberInput
-                  type="number"
-                  value={settings.parallelDialingMaxLines}
-                  onChange={(e) =>
-                    update('parallelDialingMaxLines', Number(e.target.value))
-                  }
-                />
-              </StyledSettingRow>
-              <StyledSettingRow>
-                Cooldown between batches (ms)
-                <StyledNumberInput
-                  type="number"
-                  value={settings.parallelDialingCooldown}
-                  onChange={(e) =>
-                    update('parallelDialingCooldown', Number(e.target.value))
-                  }
-                />
-              </StyledSettingRow>
-            </>
-          )}
-        </StyledModalBody>
-        <StyledModalActions>
-          <StyledModalButton onClick={onClose}>Cancel</StyledModalButton>
-          <StyledModalButton accent onClick={handleSave}>
-            Save
-          </StyledModalButton>
-        </StyledModalActions>
-      </StyledModal>
-    </StyledOverlay>
   );
 };
 
@@ -510,9 +388,7 @@ export const QueuePanel = () => {
           {progress?.completed ?? 0}/{progress?.total ?? 0} completed
         </span>
         <span>•</span>
-        <span>
-          {queue.aggregatedStats?.answerRatePercentage ?? 0}% connect
-        </span>
+        <span>{queue.aggregatedStats?.answerRatePercentage ?? 0}% connect</span>
       </StyledStats>
       <ProgressBar value={progress?.percentComplete ?? 0} />
 
@@ -586,8 +462,12 @@ export const QueuePanel = () => {
       {/* auto-advance countdown */}
       {isAutoAdvancing && (
         <StyledCountdown>
-          Next call in <StyledCountdownNumber>{countdown}</StyledCountdownNumber>s
-          <StyledCancelButton onClick={cancelAutoAdvance} aria-label="Cancel auto-advance">
+          Next call in{' '}
+          <StyledCountdownNumber>{countdown}</StyledCountdownNumber>s
+          <StyledCancelButton
+            onClick={cancelAutoAdvance}
+            aria-label="Cancel auto-advance"
+          >
             <IconX size={14} />
           </StyledCancelButton>
         </StyledCountdown>
