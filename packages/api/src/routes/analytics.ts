@@ -4,20 +4,57 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
 };
 
-const SQL_METRICS_SUMMARY =
-  'SELECT COUNT(*) AS total_calls, COUNT(*) FILTER (WHERE outcome = $2) AS answered_calls, COALESCE(AVG(duration_seconds), 0) AS avg_duration, COUNT(*) FILTER (WHERE start_time >= CURRENT_DATE) AS calls_today, COUNT(*) FILTER (WHERE start_time >= date_trunc($3, CURRENT_DATE)) AS calls_this_week FROM calls WHERE workspace_id = $1 AND start_time >= $4';
-
-const SQL_OUTCOME_DIST =
-  'SELECT outcome, COUNT(*) AS count FROM calls WHERE workspace_id = $1 AND start_time >= $2 AND outcome IS NOT NULL GROUP BY outcome';
-
-const SQL_DAILY_COUNTS =
-  'SELECT start_time::date AS date, COUNT(*) AS count FROM calls WHERE workspace_id = $1 AND start_time >= $2 GROUP BY start_time::date ORDER BY date';
-
-const SQL_TOP_CONTACTS =
-  'SELECT c.contact_id AS id, ct.name, COUNT(*) AS call_count FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.workspace_id = $1 AND c.start_time >= $2 AND c.contact_id IS NOT NULL GROUP BY c.contact_id, ct.name ORDER BY call_count DESC LIMIT 10';
+const SQL_METRICS_FULL = `
+WITH summary AS (
+  SELECT 
+    COUNT(*) AS total_calls,
+    COUNT(*) FILTER (WHERE outcome = 'connected') AS answered_calls,
+    COALESCE(AVG(duration_seconds), 0) AS avg_duration,
+    COUNT(*) FILTER (WHERE start_time >= CURRENT_DATE) AS calls_today,
+    COUNT(*) FILTER (WHERE start_time >= date_trunc('week', CURRENT_DATE)) AS calls_this_week
+  FROM calls 
+  WHERE workspace_id = $1 AND start_time >= $2
+),
+outcomes AS (
+  SELECT outcome, COUNT(*) AS count 
+  FROM calls 
+  WHERE workspace_id = $1 AND start_time >= $2 AND outcome IS NOT NULL 
+  GROUP BY outcome
+),
+daily AS (
+  SELECT start_time::date AS date, COUNT(*) AS count 
+  FROM calls 
+  WHERE workspace_id = $1 AND start_time >= $2 
+  GROUP BY start_time::date 
+  ORDER BY date
+),
+top_contacts AS (
+  SELECT c.contact_id AS id, ct.name, COUNT(*) AS call_count 
+  FROM calls c 
+  LEFT JOIN contacts ct ON c.contact_id = ct.id 
+  WHERE c.workspace_id = $1 AND c.start_time >= $2 AND c.contact_id IS NOT NULL 
+  GROUP BY c.contact_id, ct.name 
+  ORDER BY call_count DESC 
+  LIMIT 10
+)
+SELECT 
+  (SELECT jsonb_build_object(
+    'totalCalls', total_calls,
+    'answeredCalls', answered_calls,
+    'avgDuration', avg_duration,
+    'callsToday', calls_today,
+    'callsThisWeek', calls_this_week
+  ) FROM summary) AS metrics,
+  (SELECT jsonb_object_agg(outcome, count) FROM outcomes) AS outcome_distribution,
+  (SELECT jsonb_agg(jsonb_build_object('date', date, 'count', count)) FROM daily) AS daily_counts,
+  (SELECT jsonb_agg(jsonb_build_object('id', id, 'name', name, 'callCount', call_count)) FROM top_contacts) AS top_contacts
+`;
 
 const SQL_TRANSCRIPT_BY_SID =
   'SELECT transcript FROM calls WHERE call_sid = $1 AND workspace_id = $2';
@@ -25,7 +62,11 @@ const SQL_TRANSCRIPT_BY_SID =
 const getPeriodStart = (period: string): string => {
   const now = new Date();
   if (period === 'today') {
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    return new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).toISOString();
   }
   if (period === 'month') {
     return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -54,11 +95,18 @@ export const analyticsRoutes = (): RouteDefinition[] => {
     }
   };
 
-  const requireAuth = (req: Parameters<RouteDefinition['handler']>[0], res: Parameters<RouteDefinition['handler']>[1]): { userId: string; workspaceId: string } | null => {
+  const requireAuth = (
+    req: Parameters<RouteDefinition['handler']>[0],
+    res: Parameters<RouteDefinition['handler']>[1],
+  ): { userId: string; workspaceId: string } | null => {
     const userId = req.auth?.userId;
     const workspaceId = req.auth?.workspaceId;
     if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+      res
+        .status(401)
+        .json({
+          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+        });
       return null;
     }
     return { userId, workspaceId };
@@ -77,33 +125,46 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         const periodStart = getPeriodStart(period);
         const db = await getPool();
 
-        const summary = await db.query(SQL_METRICS_SUMMARY, [
-          auth.workspaceId, 'connected', 'week', periodStart,
+        const { rows } = await db.query(SQL_METRICS_FULL, [
+          auth.workspaceId,
+          periodStart,
         ]);
-        const outcomes = await db.query(SQL_OUTCOME_DIST, [auth.workspaceId, periodStart]);
-        const daily = await db.query(SQL_DAILY_COUNTS, [auth.workspaceId, periodStart]);
-        const top = await db.query(SQL_TOP_CONTACTS, [auth.workspaceId, periodStart]);
+        const result = rows[0];
 
-        const row = summary.rows[0] ?? {};
-        const totalCalls = Number(row.total_calls ?? 0);
-        const answeredCalls = Number(row.answered_calls ?? 0);
+        const metrics = (result?.metrics as Record<string, unknown>) ?? {};
+        const totalCalls = Number(metrics.total_calls ?? 0);
+        const answeredCalls = Number(metrics.answered_calls ?? 0);
 
-        const outcomeDistribution: Record<string, number> = {};
-        for (const r of outcomes.rows) {
-          outcomeDistribution[r.outcome as string] = Number(r.count);
-        }
+        const outcomeDistribution =
+          (result?.outcome_distribution as Record<string, number>) ?? {};
+
+        const dailyCounts =
+          (result?.daily_counts as { date: string; count: number }[]) ?? [];
+        const topContacts =
+          (result?.top_contacts as {
+            id: string;
+            name: string;
+            call_count: number;
+          }[]) ?? [];
 
         res.status(200).json({
           metrics: {
             totalCalls,
             answeredCalls,
             answerRate: totalCalls > 0 ? answeredCalls / totalCalls : 0,
-            avgDuration: Number(row.avg_duration ?? 0),
-            callsToday: Number(row.calls_today ?? 0),
-            callsThisWeek: Number(row.calls_this_week ?? 0),
+            avgDuration: Number(metrics.avg_duration ?? 0),
+            callsToday: Number(metrics.calls_today ?? 0),
+            callsThisWeek: Number(metrics.calls_this_week ?? 0),
             outcomeDistribution,
-            dailyCounts: daily.rows.map((r) => ({ date: String(r.date), count: Number(r.count) })),
-            topContacts: top.rows.map((r) => ({ id: String(r.id), name: String(r.name ?? ''), callCount: Number(r.call_count) })),
+            dailyCounts: dailyCounts.map((r) => ({
+              date: String(r.date),
+              count: Number(r.count),
+            })),
+            topContacts: topContacts.map((r) => ({
+              id: String(r.id),
+              name: String(r.name ?? ''),
+              callCount: Number(r.call_count),
+            })),
           },
         });
       }),
@@ -116,15 +177,24 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_TRANSCRIPT_BY_SID, [req.params?.callSid, auth.workspaceId]);
+        const { rows } = await db.query(SQL_TRANSCRIPT_BY_SID, [
+          req.params?.callSid,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
           return;
         }
 
         const transcript = rows[0].transcript as unknown[] | null;
         if (!transcript) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No transcript available' } });
+          res
+            .status(404)
+            .json({
+              error: { code: 'NOT_FOUND', message: 'No transcript available' },
+            });
           return;
         }
 
@@ -138,9 +208,18 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         const auth = requireAuth(req, res);
         if (!auth) return;
 
-        const body = req.body as { callSid?: string; messages?: Message[] } | undefined;
+        const body = req.body as
+          | { callSid?: string; messages?: Message[] }
+          | undefined;
         if (!body?.messages?.length) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "messages" array' } });
+          res
+            .status(400)
+            .json({
+              error: {
+                code: 'INVALID_REQUEST',
+                message: 'Missing "messages" array',
+              },
+            });
           return;
         }
 
