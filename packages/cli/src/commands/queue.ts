@@ -79,7 +79,7 @@ const queueList = async (opts: { status?: string }): Promise<void> => {
 
     const res = await apiGet<{ queues: Queue[] }>('/v1/queue', query);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -108,7 +108,7 @@ const queueStatus = async (id?: string): Promise<void> => {
     const path = id ? `/v1/queue/${id}` : '/v1/queue/active';
     const res = await apiGet<{ queue: Queue; progress: QueueProgress }>(path);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -140,7 +140,7 @@ const queueCreate = async (opts: { name: string; contacts?: string; ordering: st
 
     const res = await apiPost<{ queue: Queue }>('/v1/queue', body);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -159,7 +159,7 @@ const queueStart = async (id?: string, opts?: { mode: string }): Promise<void> =
     const mode = opts?.mode ?? 'power';
     const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/start`, { mode });
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -177,7 +177,7 @@ const queuePause = async (id?: string): Promise<void> => {
     const queueId = id ?? 'active';
     const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/pause`);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -195,7 +195,7 @@ const queueResume = async (id?: string): Promise<void> => {
     const queueId = id ?? 'active';
     const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/resume`);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -212,7 +212,7 @@ const queueStop = async (id?: string): Promise<void> => {
     const queueId = id ?? 'active';
     const res = await apiPost<{ queue: Queue }>(`/v1/queue/${queueId}/stop`);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -232,7 +232,7 @@ const queueAdd = async (queueId: string, contactId: string, opts: { priority: st
       priority: opts.priority,
     });
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -249,7 +249,7 @@ const queueRemove = async (queueId: string, contactId: string): Promise<void> =>
   try {
     const res = await apiDelete<{ removed: boolean }>(`/v1/queue/${queueId}/contacts/${contactId}`);
     handle501(res.status, 'queue API routes (phase 4)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 

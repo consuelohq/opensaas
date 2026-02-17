@@ -64,7 +64,7 @@ const callsList = async (opts: {
 
     const res = await apiGet<{ calls: Call[] }>('/v1/calls', query);
     handle501(res.status, 'dialer API routes (phase 2)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -104,7 +104,7 @@ const callsGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ call: Call }>(`/v1/calls/${id}`);
     handle501(res.status, 'dialer API routes (phase 2)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -157,7 +157,7 @@ const callsStart = async (
       body,
     );
     handle501(res.status, 'dialer API routes (phase 2)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -178,7 +178,7 @@ const callsEnd = async (id: string): Promise<void> => {
       `/v1/calls/${id}/hangup`,
     );
     handle501(res.status, 'dialer API routes (phase 2)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -206,7 +206,7 @@ const callsTransfer = async (
       },
     );
     handle501(res.status, 'dialer API routes (phase 2)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
