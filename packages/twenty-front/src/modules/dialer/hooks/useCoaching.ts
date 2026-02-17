@@ -7,9 +7,18 @@ import {
   coachingErrorState,
   coachingLoadingState,
   talkingPointsState,
+  transcriptState,
 } from '@/dialer/states/coachingState';
-import { type TalkingPoints } from '@/dialer/types/coaching';
+import {
+  type TalkingPoints,
+  type TranscriptEntry,
+} from '@/dialer/types/coaching';
 import { type DialerContact } from '@/dialer/types/dialer';
+
+// W3: periodic coaching refresh constants
+const COACHING_REFRESH_INTERVAL_MS = 30_000;
+const MAX_COACHING_REFRESHES = 10;
+const MIN_NEW_WORDS_THRESHOLD = 50;
 
 // B6/W17: only send non-PII context — no name, phone, or email
 function buildContactContext(contact: DialerContact | null): string {
@@ -17,14 +26,25 @@ function buildContactContext(contact: DialerContact | null): string {
   const parts: string[] = [];
   if (contact.company) parts.push(`Company: ${contact.company}`);
   if (contact.tags?.length) parts.push(`Tags: ${contact.tags.join(', ')}`);
-  return parts.length > 0 ? parts.join('\n') : 'Contact information available (details redacted).';
+  return parts.length > 0
+    ? parts.join('\n')
+    : 'Contact information available (details redacted).';
+}
+
+// W3: count words in transcript entries
+function countWords(entries: TranscriptEntry[]): number {
+  return entries.reduce((sum, e) => sum + e.text.split(' ').length, 0);
 }
 
 // W16: basic runtime validation for TalkingPoints shape
 function isValidTalkingPoints(data: unknown): data is TalkingPoints {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
-  return Array.isArray(obj.details) && Array.isArray(obj.clarifying_questions) && Array.isArray(obj.objection_responses);
+  return (
+    Array.isArray(obj.details) &&
+    Array.isArray(obj.clarifying_questions) &&
+    Array.isArray(obj.objection_responses)
+  );
 }
 
 interface UseCoachingReturn {
@@ -36,6 +56,7 @@ interface UseCoachingReturn {
 
 export const useCoaching = (): UseCoachingReturn => {
   const callState = useRecoilValue(callStateAtom);
+  const transcript = useRecoilValue(transcriptState);
   const setLoading = useSetRecoilState(coachingLoadingState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
   const setError = useSetRecoilState(coachingErrorState);
@@ -45,6 +66,12 @@ export const useCoaching = (): UseCoachingReturn => {
 
   const cache = useRef<Map<string, TalkingPoints>>(new Map());
   const lastCallSid = useRef<string | null>(null);
+
+  // W3: periodic refresh tracking
+  const refreshCount = useRef(0);
+  const lastRefreshTime = useRef(0);
+  const lastRefreshWordCount = useRef(0);
+  const lastRefreshIndex = useRef(0);
 
   const fetchCoaching = useCallback(
     async (callSid: string, contact: DialerContact | null) => {
@@ -107,6 +134,70 @@ export const useCoaching = (): UseCoachingReturn => {
     }
   }, [callState.status, callState.callSid, callState.contact, fetchCoaching]);
 
+  // W3: periodic coaching refresh with transcript delta
+  const refreshCoaching = useCallback(
+    async (callSid: string, delta: TranscriptEntry[]) => {
+      if (refreshCount.current >= MAX_COACHING_REFRESHES) return;
+
+      const messages = delta.map((entry) => ({
+        role: entry.speaker === 'agent' ? 'sales_rep' : 'customer',
+        content: entry.text,
+      }));
+
+      try {
+        const res = await fetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/coaching/realtime`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages }),
+          },
+        );
+        if (res.ok) {
+          // W10: unwrap { data } response from backend
+          const json = (await res.json()) as { data: unknown };
+          const data = json.data;
+          if (isValidTalkingPoints(data)) {
+            setTalkingPoints(data);
+          }
+        }
+      } catch {
+        // graceful degradation — coaching still works via initial REST fetch
+      }
+    },
+    [setTalkingPoints],
+  );
+
+  // W3: interval-based refresh effect
+  useEffect(() => {
+    if (callState.status !== 'active' || !callState.callSid) return;
+
+    const interval = setInterval(() => {
+      if (refreshCount.current >= MAX_COACHING_REFRESHES) return;
+
+      const currentWordCount = countWords(transcript);
+      if (
+        currentWordCount - lastRefreshWordCount.current <
+        MIN_NEW_WORDS_THRESHOLD
+      )
+        return;
+
+      // W7: send only delta (new entries since last refresh)
+      const delta = transcript.slice(lastRefreshIndex.current);
+      if (delta.length === 0) return;
+
+      void refreshCoaching(callState.callSid, delta);
+
+      refreshCount.current += 1;
+      lastRefreshTime.current = Date.now();
+      lastRefreshWordCount.current = currentWordCount;
+      lastRefreshIndex.current = transcript.length;
+    }, COACHING_REFRESH_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [callState.status, callState.callSid, transcript, refreshCoaching]);
+
   // clear state when call ends or goes idle — also clear cache (N8)
   useEffect(() => {
     if (callState.status === 'idle' || callState.status === 'ended') {
@@ -115,6 +206,11 @@ export const useCoaching = (): UseCoachingReturn => {
       setLoading(false);
       lastCallSid.current = null;
       cache.current.clear();
+      // W3: reset refresh tracking
+      refreshCount.current = 0;
+      lastRefreshTime.current = 0;
+      lastRefreshWordCount.current = 0;
+      lastRefreshIndex.current = 0;
     }
   }, [callState.status, setTalkingPoints, setError, setLoading]);
 
