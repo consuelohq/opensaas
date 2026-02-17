@@ -1,11 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import {
-  IconCalendar,
-  IconLoader2,
-  IconNote,
-} from '@tabler/icons-react';
+import { IconCalendar, IconLoader2, IconNote } from '@tabler/icons-react';
 
 import { useQuickActions } from '@/dialer/hooks/useQuickActions';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -194,6 +190,7 @@ export const QuickActions = () => {
       <StyledRow>
         <StyledActionButton
           isDisabled={!hasContact}
+          disabled={!hasContact}
           onClick={() => {
             setNoteOpen((p) => !p);
             setFollowUpOpen(false);
@@ -205,13 +202,12 @@ export const QuickActions = () => {
         </StyledActionButton>
         <StyledActionButton
           isDisabled={!hasContact}
+          disabled={!hasContact}
           onClick={() => {
             setFollowUpOpen((p) => !p);
             setNoteOpen(false);
           }}
-          title={
-            hasContact ? 'Schedule follow-up' : 'Save contact first'
-          }
+          title={hasContact ? 'Schedule follow-up' : 'Save contact first'}
         >
           <IconCalendar size={16} />
           Follow-up
