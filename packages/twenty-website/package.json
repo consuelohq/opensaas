@@ -31,9 +31,9 @@
     "twenty-ui": "workspace:*"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^14.2.0",
+    "@next/eslint-plugin-next": "^15.1.0",
     "@types/facepaint": "^1.2.5",
     "drizzle-kit": "^0.31.5",
-    "eslint-config-next": "^14.2.0"
+    "eslint-config-next": "^15.1.0"
   }
 }
