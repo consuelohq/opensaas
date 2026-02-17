@@ -1,7 +1,8 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { execSync } from 'node:child_process';
+import { createConnection } from 'node:net';
 import type { Command } from 'commander';
-import { log, error } from '../output.js';
+import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
 
 type ServiceName = 'postgres' | 'api' | 'twenty' | 'worker';
@@ -11,6 +12,8 @@ interface DevOptions {
   services?: string;
   skipDb: boolean;
   open: boolean;
+  json: boolean;
+  quiet: boolean;
 }
 
 const SERVICE_COLORS: Record<ServiceName, string> = {
@@ -27,7 +30,12 @@ const children: ChildProcess[] = [];
 const prefix = (name: ServiceName, line: string): string =>
   `${SERVICE_COLORS[name]}[${name}]${RESET} ${line}`;
 
-const spawnService = (name: ServiceName, cmd: string, args: string[], env?: Record<string, string>): ChildProcess => {
+const spawnService = (
+  name: ServiceName,
+  cmd: string,
+  args: string[],
+  env?: Record<string, string>,
+): ChildProcess => {
   const child = spawn(cmd, args, {
     stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, ...env },
@@ -57,11 +65,27 @@ const spawnService = (name: ServiceName, cmd: string, args: string[], env?: Reco
 
 const isDockerPostgresRunning = (): boolean => {
   try {
-    const out = execSync('docker inspect -f "{{.State.Running}}" consuelo-postgres 2>/dev/null', { encoding: 'utf-8' }).trim();
+    const out = execSync(
+      'docker inspect -f "{{.State.Running}}" consuelo-postgres 2>/dev/null',
+      { encoding: 'utf-8' },
+    ).trim();
     return out === 'true';
   } catch (_err: unknown) {
     return false;
   }
+};
+
+const isPortAvailable = (port: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const server = createConnection({ port, host: '127.0.0.1' });
+    server.once('connect', () => {
+      server.destroy();
+      resolve(false); // port is in use
+    });
+    server.once('error', () => {
+      resolve(true); // port is available
+    });
+  });
 };
 
 const shutdown = (): void => {
@@ -79,7 +103,7 @@ const shutdown = (): void => {
 
 const dev = async (options: DevOptions): Promise<void> => {
   const requested = options.services
-    ? (options.services.split(',').map(s => s.trim()) as ServiceName[])
+    ? (options.services.split(',').map((s) => s.trim()) as ServiceName[])
     : (['postgres', 'api', 'twenty', 'worker'] as ServiceName[]);
 
   const port = options.port;
@@ -94,7 +118,8 @@ const dev = async (options: DevOptions): Promise<void> => {
     } else {
       log(prefix('postgres', 'starting via docker...'));
       try {
-        const { provisionDockerPostgres } = await import('../provisioning/database.js');
+        const { provisionDockerPostgres } =
+          await import('../provisioning/database.js');
         const connStr = await provisionDockerPostgres();
         log(prefix('postgres', `ready — ${connStr}`));
       } catch (err: unknown) {
@@ -107,7 +132,9 @@ const dev = async (options: DevOptions): Promise<void> => {
   // api server
   if (requested.includes('api')) {
     log(prefix('api', `starting on port ${port}...`));
-    spawnService('api', 'npx', ['tsx', 'watch', 'packages/api/src/index.ts'], { PORT: port });
+    spawnService('api', 'npx', ['tsx', 'watch', 'packages/api/src/index.ts'], {
+      PORT: port,
+    });
   }
 
   // twenty frontend
@@ -141,7 +168,10 @@ export const registerDev = (program: Command): void => {
     .command('dev')
     .description('start local development environment')
     .option('--port <port>', 'API server port', '9000')
-    .option('--services <list>', 'comma-separated services (postgres,api,twenty,worker)')
+    .option(
+      '--services <list>',
+      'comma-separated services (postgres,api,twenty,worker)',
+    )
     .option('--skip-db', 'skip database setup', false)
     .option('--open', 'open browser on start', false)
     .action(async (opts: DevOptions) => {
