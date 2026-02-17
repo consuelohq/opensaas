@@ -6,6 +6,7 @@ import { GHLAuthService, type GHLOAuthConfig } from '../services/ghl-auth.js';
 import { GHLClient, type GHLContact } from '../services/ghl-client.js';
 import {
   GHLPushService,
+  GHLPushMappingServiceImpl,
   type GHLPushMappingService,
   type CallOutcomeData,
 } from '../services/ghl-push.js';
@@ -13,6 +14,7 @@ import {
   GHLWebhookHandler,
   verifyWebhookSignature,
   type GHLWebhookPayload,
+  type GHLSyncServiceInterface,
 } from '../services/ghl-webhook.js';
 import {
   GHLPipelineSync,
@@ -115,6 +117,16 @@ export const ghlRoutes = (): RouteDefinition[] => {
       return null;
     }
     return { userId, workspaceId };
+  };
+
+  const getMappingService = async (): Promise<GHLPushMappingService> => {
+    try {
+      const db = await getPool();
+      return new GHLPushMappingServiceImpl(db);
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
+    }
   };
 
   const getWebhookHandler = async (): Promise<GHLWebhookHandler> => {
