@@ -8,9 +8,9 @@ type Properties<T> = {
 };
 
 export class ObjectRecordBaseEvent<T = object> {
-  recordId: string;
+  recordId!: string;
   userId?: string;
   userWorkspaceId?: string;
   workspaceMemberId?: string;
-  properties: Properties<T>;
+  properties!: Properties<T>;
 }
