@@ -1,15 +1,13 @@
-import {
-  Dialer,
-  CallerIdLockService,
-  RedisLockStore,
-  type TransferType,
-  type TransferStatus,
-} from '@consuelo/dialer';
+import type { TransferType, TransferStatus } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import { redisService } from '../services/redis.js';
 import type { RouteDefinition } from './index.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
+import {
+  sharedDialer as dialer,
+  sharedCallerIdLockService,
+} from '../shared/dialer.js';
 
 interface TransferRecord {
   transferId: string;
@@ -53,33 +51,11 @@ const FAILURE_STATUSES = new Set(['failed', 'busy', 'no-answer', 'canceled']);
 // Maps agent callSid to callerIdNumber (for lock release on call end)
 const callerIdMap = new Map<string, string>(); // callSid → callerIdNumber
 
-let callerIdLockService: CallerIdLockService | null = null;
-
-function getCallerIdLockService(): CallerIdLockService {
-  if (!callerIdLockService) {
-    const redisUrl = process.env.REDIS_URL;
-    if (!redisUrl) {
-      throw new Error('REDIS_URL not configured for caller ID lock');
-    }
-    callerIdLockService = new CallerIdLockService(new RedisLockStore(redisUrl));
-  }
-  return callerIdLockService;
-}
-
 /** /v1/voice routes — token, TwiML webhook, transfers, hold */
-export const voiceRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-    baseUrl: process.env.API_BASE_URL,
-  });
+export const voiceRoutes = (): RouteDefinition[] => [
+  // --- literal routes first (ROUTE_ORDER) ---
 
-  return [
-    // --- literal routes first (ROUTE_ORDER) ---
-
-    {
+  {
       method: 'GET',
       path: '/v1/voice/token',
       handler: errorHandler(async (req, res) => {
@@ -128,9 +104,8 @@ export const voiceRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        try {
-          const lockService = getCallerIdLockService();
-          const acquired = await lockService.acquireLock(
+    try {
+      const acquired = await sharedCallerIdLockService.acquireLock(
             callerId,
             userId,
             callSid ?? `preflight-${randomUUID()}`,
@@ -829,12 +804,11 @@ export const voiceRoutes = (): RouteDefinition[] => {
           }
         }
 
-        // Check if this is an agent call ending (check callerIdMap)
-        const callerId = callerIdMap.get(callSid);
-        if (callerId && FAILURE_STATUSES.has(callStatus)) {
-          try {
-            const lockService = getCallerIdLockService();
-            await lockService.releaseLockByNumber(callerId);
+  // Check if this is an agent call ending (check callerIdMap)
+  const callerId = callerIdMap.get(callSid);
+  if (callerId && FAILURE_STATUSES.has(callStatus)) {
+    try {
+      await sharedCallerIdLockService.releaseLockByNumber(callerId);
             callerIdMap.delete(callSid);
           } catch (err: unknown) {
             const message =

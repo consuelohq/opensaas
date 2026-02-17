@@ -12,7 +12,13 @@ import type {
 import { extractAreaCode } from '../services/local-presence.js';
 import type TwilioClient from 'twilio';
 
-const TERMINAL_STATUSES = ['completed', 'failed', 'busy', 'no-answer', 'canceled'];
+const TERMINAL_STATUSES = [
+  'completed',
+  'failed',
+  'busy',
+  'no-answer',
+  'canceled',
+];
 
 /**
  * Twilio implementation of the DialerProvider.
@@ -29,7 +35,8 @@ export class TwilioProvider implements DialerProvider {
 
   constructor(credentials?: TwilioCredentials) {
     this.credentials = {
-      accountSid: credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+      accountSid:
+        credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
       authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
       apiKey: credentials?.apiKey ?? process.env.TWILIO_API_KEY,
       apiSecret: credentials?.apiSecret ?? process.env.TWILIO_API_SECRET,
@@ -38,10 +45,18 @@ export class TwilioProvider implements DialerProvider {
   }
 
   private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
-    if (this.client) return this.client;
-    const twilio = await import('twilio');
-    this.client = twilio.default(this.credentials.accountSid, this.credentials.authToken);
-    return this.client;
+    try {
+      if (this.client) return this.client;
+      const twilio = await import('twilio');
+      this.client = twilio.default(
+        this.credentials.accountSid,
+        this.credentials.authToken,
+      );
+      return this.client;
+    } catch (err) {
+      this.client = null;
+      throw err;
+    }
   }
 
   async dial(options: DialOptions): Promise<DialResult> {
@@ -86,7 +101,9 @@ export class TwilioProvider implements DialerProvider {
   async getToken(userId: string): Promise<VoiceToken> {
     const { apiKey, apiSecret, twimlAppSid, accountSid } = this.credentials;
     if (!apiKey || !apiSecret || !twimlAppSid) {
-      throw new Error('Twilio API key, secret, and TwiML app SID are required for voice tokens');
+      throw new Error(
+        'Twilio API key, secret, and TwiML app SID are required for voice tokens',
+      );
     }
 
     const twilio = await import('twilio');
@@ -96,14 +113,22 @@ export class TwilioProvider implements DialerProvider {
     const identity = `user_${userId}`;
     const ttl = 3600;
 
-    const token = new AccessToken(accountSid, apiKey, apiSecret, { identity, ttl });
-    const grant = new VoiceGrant({ outgoingApplicationSid: twimlAppSid, incomingAllow: true });
+    const token = new AccessToken(accountSid, apiKey, apiSecret, {
+      identity,
+      ttl,
+    });
+    const grant = new VoiceGrant({
+      outgoingApplicationSid: twimlAppSid,
+      incomingAllow: true,
+    });
     token.addGrant(grant);
 
     return { token: token.toJwt(), identity, ttl };
   }
 
-  async provisionNumber(options: ProvisionNumberOptions): Promise<ProvisionResult> {
+  async provisionNumber(
+    options: ProvisionNumberOptions,
+  ): Promise<ProvisionResult> {
     try {
       const client = await this.getClient();
 
@@ -132,7 +157,10 @@ export class TwilioProvider implements DialerProvider {
       });
 
       if (!available.length) {
-        return { success: false, error: `No numbers available for area code ${options.areaCode}` };
+        return {
+          success: false,
+          error: `No numbers available for area code ${options.areaCode}`,
+        };
       }
 
       const number = await client.incomingPhoneNumbers.create({

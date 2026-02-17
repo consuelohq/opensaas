@@ -95,6 +95,7 @@ export class InMemoryLockStore implements LockStore {
   }
 
   async getByCallSid(callSid: string): Promise<CallerIdLock | null> {
+    this.cleanExpired();
     for (const lock of this.locks.values()) {
       if (lock.callSid === callSid) return lock;
     }
@@ -102,6 +103,7 @@ export class InMemoryLockStore implements LockStore {
   }
 
   async getByUser(userId: string): Promise<CallerIdLock[]> {
+    this.cleanExpired();
     return [...this.locks.values()].filter((l) => l.userId === userId);
   }
 
@@ -155,7 +157,8 @@ export class RedisLockStore implements LockStore {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async getRedis(): Promise<any> { // HACK: ioredis peer dep — no static type
+  private async getRedis(): Promise<any> {
+    // HACK: ioredis peer dep — no static type
     if (!this.redis) {
       await this.init();
     }

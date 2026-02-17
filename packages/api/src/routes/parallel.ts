@@ -1,7 +1,10 @@
-import { Dialer, InMemoryLockStore, CallerIdLockService, type ParallelGroup } from '@consuelo/dialer';
-import type { NumberPool } from '@consuelo/dialer';
+import type { ParallelGroup, NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
+import {
+  sharedDialer as dialer,
+  sharedCallerIdLockService as lockService,
+} from '../shared/dialer.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -12,19 +15,7 @@ interface ParallelDialBody {
 }
 
 /** /v1/calls/parallel routes — parallel dialing (power dialer) */
-export const parallelRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-    baseUrl: process.env.API_BASE_URL,
-  });
-
-  const lockService = new CallerIdLockService(new InMemoryLockStore());
-  dialer.withCallerIdLock(lockService);
-
-  return [
+export const parallelRoutes = (): RouteDefinition[] => [
     // --- literal routes first (ROUTE_ORDER) ---
 
     {
