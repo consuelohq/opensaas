@@ -23,26 +23,48 @@ import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
 import { workspaceRoutes } from './workspace.js';
 import { ghlRoutes } from './ghl.js';
-export { analyticsRoutes, assistantRoutes, callRoutes, coachingRoutes, contactRoutes, fileRoutes, knowledgeRoutes, localPresenceRoutes, parallelRoutes, preferencesRoutes, queueRoutes, voiceRoutes, workspaceRoutes, ghlRoutes };
+export {
+  analyticsRoutes,
+  assistantRoutes,
+  callRoutes,
+  coachingRoutes,
+  contactRoutes,
+  fileRoutes,
+  knowledgeRoutes,
+  localPresenceRoutes,
+  parallelRoutes,
+  preferencesRoutes,
+  queueRoutes,
+  voiceRoutes,
+  workspaceRoutes,
+  ghlRoutes,
+};
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
-
-/** Health check route */
-export const healthRoutes = (): RouteDefinition[] => [
-  { method: 'GET' as const, path: "/health", handler: async (_req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-  }},
-];
 
 /** /v1/webhooks routes (Twilio callbacks) */
 export const webhookRoutes = (): RouteDefinition[] => [
-  { method: 'POST', path: '/v1/webhooks/transcription', handler: errorHandler(async (_req, res) => {
-    // STUB: implement with processTranscriptionEvent() (DEV-698)
-    res.status(200).json({ received: true });
-  })},
-  { method: 'POST', path: '/v1/webhooks/status', handler: errorHandler(async (_req, res) => {
-    // STUB: implement with status callback handler (DEV-698)
-    res.status(200).json({ received: true });
-  })},
+  {
+    method: 'POST',
+    path: '/v1/webhooks/transcription',
+    handler: errorHandler(async (_req, res) => {
+      // STUB: implement with processTranscriptionEvent() (DEV-698)
+      res.status(200).json({ received: true });
+    }),
+  },
+  // status webhook moved to voiceRoutes (DEV-816)
+];
+
+/** Health check route */
+export const healthRoutes = (): RouteDefinition[] => [
+  {
+    method: 'GET' as const,
+    path: '/health',
+    handler: async (_req, res) => {
+      res
+        .status(200)
+        .json({ status: 'ok', timestamp: new Date().toISOString() });
+    },
+  },
 ];
 
 /** All v1 routes combined */

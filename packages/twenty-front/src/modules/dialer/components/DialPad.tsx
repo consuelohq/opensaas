@@ -3,14 +3,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { DIAL_PAD_KEYS } from '@/dialer/constants/dialerConstants';
-import { useDTMF } from '@/dialer/hooks/useDTMF';
+import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { type DialPadKey } from '@/dialer/types/dialer';
-import {
-  formatPhone,
-  stripNonDigits,
-} from '@/dialer/utils/phoneFormat';
+import { formatPhone, stripNonDigits } from '@/dialer/utils/phoneFormat';
 
 type DialPadProps = {
   onCall?: (phoneNumber: string) => void;
@@ -112,7 +109,7 @@ const StyledLetters = styled.span`
 export const DialPad = ({ onCall }: DialPadProps) => {
   const [rawNumber, setRawNumber] = useRecoilState(phoneNumberState);
   const callState = useRecoilValue(callStateAtom);
-  const { sendDigit } = useDTMF();
+  const activeCall = useRecoilValue(activeCallState);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isCallActive = callState.status === 'active';
@@ -128,13 +125,13 @@ export const DialPad = ({ onCall }: DialPadProps) => {
       navigator.vibrate?.(10);
 
       if (isCallActive) {
-        sendDigit(key.digit);
+        activeCall?.sendDigits(key.digit);
 
         return;
       }
       setRawNumber((previous) => previous + key.digit);
     },
-    [isCallActive, isDialDisabled, sendDigit, setRawNumber],
+    [isCallActive, isDialDisabled, activeCall, setRawNumber],
   );
 
   const handleBackspace = useCallback(() => {
@@ -152,7 +149,10 @@ export const DialPad = ({ onCall }: DialPadProps) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key >= '0' && event.key <= '9') {
-        handleKeyPress({ digit: event.key as DialPadKey['digit'], letters: '' });
+        handleKeyPress({
+          digit: event.key as DialPadKey['digit'],
+          letters: '',
+        });
       } else if (event.key === '*' || event.key === '#') {
         handleKeyPress({ digit: event.key, letters: '' });
       } else if (event.key === 'Backspace') {
@@ -167,7 +167,14 @@ export const DialPad = ({ onCall }: DialPadProps) => {
     container.addEventListener('keydown', handleKeyDown);
 
     return () => container.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyPress, handleBackspace, handleClear, hasDigits, rawNumber, onCall]);
+  }, [
+    handleKeyPress,
+    handleBackspace,
+    handleClear,
+    hasDigits,
+    rawNumber,
+    onCall,
+  ]);
 
   // auto-focus container for keyboard capture
   useEffect(() => {
@@ -200,9 +207,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
             disabled={isDialDisabled}
             onClick={() => handleKeyPress(key)}
             aria-label={
-              key.letters
-                ? `${key.digit}, ${key.letters}`
-                : key.digit
+              key.letters ? `${key.digit}, ${key.letters}` : key.digit
             }
           >
             <StyledDigit>{key.digit}</StyledDigit>

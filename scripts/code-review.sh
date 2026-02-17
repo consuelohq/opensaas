@@ -194,7 +194,7 @@ FAIL=0
 while IFS= read -r file; do
   [[ ! "$file" == *routes/* ]] && continue
   # extract path lines in order, check if literal comes after param within same prefix
-  prev_was_param=""
+  prev_was_param="__none__"
   prev_prefix=""
   while IFS=: read -r lineno line; do
     route_path=$(echo "$line" | sed "s/.*path: *'\\([^']*\\)'.*/\\1/")

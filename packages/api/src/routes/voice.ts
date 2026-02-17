@@ -1,10 +1,16 @@
-import { Dialer, type TransferType, type TransferStatus } from '@consuelo/dialer';
+import {
+  Dialer,
+  type TransferType,
+  type TransferStatus,
+} from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import { randomUUID } from 'node:crypto';
 
 // TODO: DEV-798 — replace with redis for multi-instance support
 const conferenceMap = new Map<string, string>();
+const customerCallMap = new Map<string, string>(); // customerCallSid → conferenceName
+const callStatusMap = new Map<string, string>(); // conferenceName → status
 
 interface TransferRecord {
   transferId: string;
@@ -45,6 +51,9 @@ interface CancelBody {
   conferenceSid: string;
 }
 
+/** Twilio status callback events that indicate call failure */
+const FAILURE_STATUSES = new Set(['failed', 'busy', 'no-answer', 'canceled']);
+
 /** /v1/voice routes — token, TwiML webhook, transfers, hold */
 export const voiceRoutes = (): RouteDefinition[] => {
   const dialer = new Dialer({
@@ -64,7 +73,9 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
@@ -72,7 +83,8 @@ export const voiceRoutes = (): RouteDefinition[] => {
           const result = await dialer.getToken(userId);
           res.json(result);
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Token generation failed';
+          const message =
+            err instanceof Error ? err.message : 'Token generation failed';
           res.status(500).json({ error: { code: 'TOKEN_ERROR', message } });
         }
       }),
@@ -97,9 +109,24 @@ export const voiceRoutes = (): RouteDefinition[] => {
             ? `${process.env.API_BASE_URL}/v1/webhooks/status`
             : undefined;
 
-          dialer.addCustomerToConference(conferenceName, to, from, statusCallback).catch(() => {
-            // customer dial failed — agent hears hold music until they hang up
-          });
+          try {
+            const customerResult = await dialer.addCustomerToConference(
+              conferenceName,
+              to,
+              from,
+              statusCallback,
+            );
+            customerCallMap.set(customerResult.callSid, conferenceName);
+          } catch (err: unknown) {
+            const message =
+              err instanceof Error ? err.message : 'Customer dial failed';
+            const { createLogger } = await import('@consuelo/logger');
+            createLogger('voice:twiml').error('Customer dial failed', {
+              conferenceName,
+              to,
+              error: message,
+            });
+          }
         }
 
         res.type('text/xml').status(200).send(twiml);
@@ -114,58 +141,105 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const transferId = req.params?.transferId;
         if (!transferId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing transferId' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing transferId' },
+          });
           return;
         }
 
         const record = transferMap.get(transferId);
         if (!record) {
-          res.status(404).json({ error: { code: 'TRANSFER_NOT_FOUND', message: 'Transfer not found' } });
+          res.status(404).json({
+            error: {
+              code: 'TRANSFER_NOT_FOUND',
+              message: 'Transfer not found',
+            },
+          });
           return;
         }
 
         if (record.transferType !== 'warm') {
-          res.status(400).json({ error: { code: 'INVALID_TRANSFER_TYPE', message: 'Mute only available for warm transfers' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_TRANSFER_TYPE',
+              message: 'Mute only available for warm transfers',
+            },
+          });
           return;
         }
 
-        if (record.status === 'completed' || record.status === 'cancelled' || record.status === 'failed') {
-          res.status(400).json({ error: { code: 'TRANSFER_NOT_ACTIVE', message: 'Transfer is no longer active' } });
+        if (
+          record.status === 'completed' ||
+          record.status === 'cancelled' ||
+          record.status === 'failed'
+        ) {
+          res.status(400).json({
+            error: {
+              code: 'TRANSFER_NOT_ACTIVE',
+              message: 'Transfer is no longer active',
+            },
+          });
           return;
         }
 
         const body = req.body as { muted?: boolean } | undefined;
         if (body?.muted === undefined) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "muted" boolean' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "muted" boolean',
+            },
+          });
           return;
         }
 
         try {
-          const conferenceSid = record.conferenceSid ?? await dialer.conference.findConferenceSid(record.conferenceName);
+          const conferenceSid =
+            record.conferenceSid ??
+            (await dialer.conference.findConferenceSid(record.conferenceName));
           if (!conferenceSid) {
-            res.status(404).json({ error: { code: 'CONFERENCE_NOT_FOUND', message: 'Conference not in-progress' } });
+            res.status(404).json({
+              error: {
+                code: 'CONFERENCE_NOT_FOUND',
+                message: 'Conference not in-progress',
+              },
+            });
             return;
           }
 
           const participants = await dialer.listParticipants(conferenceSid);
-          const customer = participants.find((p: { label: string }) => p.label === 'customer');
+          const customer = participants.find(
+            (p: { label: string }) => p.label === 'customer',
+          );
           if (!customer) {
-            res.status(404).json({ error: { code: 'PARTICIPANT_NOT_FOUND', message: 'Customer not in conference' } });
+            res.status(404).json({
+              error: {
+                code: 'PARTICIPANT_NOT_FOUND',
+                message: 'Customer not in conference',
+              },
+            });
             return;
           }
 
-          await dialer.muteParticipant(conferenceSid, customer.callSid, body.muted);
+          await dialer.muteParticipant(
+            conferenceSid,
+            customer.callSid,
+            body.muted,
+          );
           record.customerMuted = body.muted;
 
           res.status(200).json({ transferId, customerMuted: body.muted });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Mute toggle failed';
+          const message =
+            err instanceof Error ? err.message : 'Mute toggle failed';
           res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
         }
       }),
@@ -177,19 +251,28 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const transferId = req.params?.transferId;
         if (!transferId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing transferId' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing transferId' },
+          });
           return;
         }
 
         const record = transferMap.get(transferId);
         if (!record) {
-          res.status(404).json({ error: { code: 'TRANSFER_NOT_FOUND', message: 'Transfer not found' } });
+          res.status(404).json({
+            error: {
+              code: 'TRANSFER_NOT_FOUND',
+              message: 'Transfer not found',
+            },
+          });
           return;
         }
 
@@ -215,25 +298,40 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const callSid = req.params?.callSid;
         if (!callSid) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing callSid' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
+          });
           return;
         }
 
         const body = req.body as TransferBody | undefined;
         if (!body?.to || !body?.type) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "to" or "type"' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "to" or "type"',
+            },
+          });
           return;
         }
 
-        const conferenceName = body.conferenceName ?? conferenceMap.get(callSid);
+        const conferenceName =
+          body.conferenceName ?? conferenceMap.get(callSid);
         if (!conferenceName) {
-          res.status(404).json({ error: { code: 'CONFERENCE_NOT_FOUND', message: 'No conference found for this call' } });
+          res.status(404).json({
+            error: {
+              code: 'CONFERENCE_NOT_FOUND',
+              message: 'No conference found for this call',
+            },
+          });
           return;
         }
 
@@ -248,7 +346,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
           });
 
           if (!result.success) {
-            res.status(500).json({ error: { code: 'TRANSFER_FAILED', message: result.error ?? 'Transfer failed' } });
+            res.status(500).json({
+              error: {
+                code: 'TRANSFER_FAILED',
+                message: result.error ?? 'Transfer failed',
+              },
+            });
             return;
           }
 
@@ -269,7 +372,8 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json({ ...result, transferId });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Transfer failed';
+          const message =
+            err instanceof Error ? err.message : 'Transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
         }
       }),
@@ -281,20 +385,35 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const body = req.body as CompleteBody | undefined;
         if (!body?.conferenceSid || !body?.agentCallSid) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing conferenceSid or agentCallSid' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing conferenceSid or agentCallSid',
+            },
+          });
           return;
         }
 
         try {
-          const result = await dialer.completeTransfer(body.conferenceSid, body.agentCallSid);
+          const result = await dialer.completeTransfer(
+            body.conferenceSid,
+            body.agentCallSid,
+          );
           if (!result.success) {
-            res.status(500).json({ error: { code: 'TRANSFER_FAILED', message: result.error ?? 'Complete failed' } });
+            res.status(500).json({
+              error: {
+                code: 'TRANSFER_FAILED',
+                message: result.error ?? 'Complete failed',
+              },
+            });
             return;
           }
 
@@ -304,7 +423,8 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json(result);
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Complete transfer failed';
+          const message =
+            err instanceof Error ? err.message : 'Complete transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
         }
       }),
@@ -316,26 +436,42 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const body = req.body as CancelBody | undefined;
         if (!body?.conferenceSid || !body?.transferCallSid) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing conferenceSid or transferCallSid' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing conferenceSid or transferCallSid',
+            },
+          });
           return;
         }
 
         try {
-          const result = await dialer.cancelTransfer(body.conferenceSid, body.transferCallSid);
+          const result = await dialer.cancelTransfer(
+            body.conferenceSid,
+            body.transferCallSid,
+          );
           if (!result.success) {
-            res.status(500).json({ error: { code: 'TRANSFER_FAILED', message: result.error ?? 'Cancel failed' } });
+            res.status(500).json({
+              error: {
+                code: 'TRANSFER_FAILED',
+                message: result.error ?? 'Cancel failed',
+              },
+            });
             return;
           }
 
           res.status(200).json(result);
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Cancel transfer failed';
+          const message =
+            err instanceof Error ? err.message : 'Cancel transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
         }
       }),
@@ -347,53 +483,169 @@ export const voiceRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
         if (!userId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          });
           return;
         }
 
         const body = req.body as HoldBody | undefined;
         if (body?.hold === undefined) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "hold" boolean' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "hold" boolean',
+            },
+          });
           return;
         }
 
         const callSid = req.params?.callSid;
         if (!callSid) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing callSid' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
+          });
           return;
         }
 
         const conferenceName = conferenceMap.get(callSid);
         if (!conferenceName) {
-          res.status(404).json({ error: { code: 'CONFERENCE_NOT_FOUND', message: 'No conference found for this call' } });
+          res.status(404).json({
+            error: {
+              code: 'CONFERENCE_NOT_FOUND',
+              message: 'No conference found for this call',
+            },
+          });
           return;
         }
 
         try {
-          const conferenceSid = await dialer.conference.findConferenceSid(conferenceName);
+          const conferenceSid =
+            await dialer.conference.findConferenceSid(conferenceName);
           if (!conferenceSid) {
-            res.status(404).json({ error: { code: 'CONFERENCE_NOT_FOUND', message: 'Conference not in-progress' } });
+            res.status(404).json({
+              error: {
+                code: 'CONFERENCE_NOT_FOUND',
+                message: 'Conference not in-progress',
+              },
+            });
             return;
           }
 
           if (body.participantCallSid) {
-            await dialer.holdParticipant(conferenceSid, body.participantCallSid, body.hold);
+            await dialer.holdParticipant(
+              conferenceSid,
+              body.participantCallSid,
+              body.hold,
+            );
           } else {
             // default: hold the customer
             const participants = await dialer.listParticipants(conferenceSid);
-            const customer = participants.find((p: { label: string }) => p.label === 'customer');
+            const customer = participants.find(
+              (p: { label: string }) => p.label === 'customer',
+            );
             if (customer) {
-              await dialer.holdParticipant(conferenceSid, customer.callSid, body.hold);
+              await dialer.holdParticipant(
+                conferenceSid,
+                customer.callSid,
+                body.hold,
+              );
             }
           }
 
           res.status(200).json({ success: true, hold: body.hold });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Hold toggle failed';
+          const message =
+            err instanceof Error ? err.message : 'Hold toggle failed';
           res.status(500).json({ error: { code: 'HOLD_FAILED', message } });
         }
       }),
     },
 
+    // --- Twilio webhook routes (no auth) ---
+
+    {
+      method: 'POST',
+      path: '/v1/webhooks/status',
+      handler: errorHandler(async (req, res) => {
+        const body = req.body as Record<string, string> | undefined;
+        const callSid = body?.CallSid;
+        const callStatus = body?.CallStatus;
+
+        if (!callSid || !callStatus) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing CallSid or CallStatus',
+            },
+          });
+          return;
+        }
+
+        const conferenceName = customerCallMap.get(callSid);
+        if (conferenceName) {
+          callStatusMap.set(conferenceName, callStatus);
+
+          if (FAILURE_STATUSES.has(callStatus)) {
+            try {
+              const { createLogger } = await import('@consuelo/logger');
+              createLogger('voice:status').warn('Customer call failed', {
+                callSid,
+                conferenceName,
+                status: callStatus,
+              });
+            } catch {
+              // logger unavailable, continue
+            }
+          }
+        }
+
+        res.status(200).json({ received: true });
+      }),
+    },
+
+    // --- authenticated status check for polling ---
+
+    {
+      method: 'GET',
+      path: '/v1/calls/status/:callSid',
+      handler: errorHandler(async (req, res) => {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res
+            .status(401)
+            .json({
+              error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+            });
+          return;
+        }
+
+        const callSid = req.params?.callSid;
+        if (!callSid) {
+          res
+            .status(400)
+            .json({
+              error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
+            });
+          return;
+        }
+
+        const conferenceName = conferenceMap.get(callSid);
+        if (!conferenceName) {
+          res
+            .status(404)
+            .json({
+              error: {
+                code: 'CALL_NOT_FOUND',
+                message: 'No conference for this call',
+              },
+            });
+          return;
+        }
+
+        const status = callStatusMap.get(conferenceName) ?? 'unknown';
+        res.status(200).json({ callSid, conferenceName, status });
+      }),
+    },
   ];
 };

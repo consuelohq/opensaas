@@ -1,6 +1,5 @@
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallButton } from '@/dialer/components/CallButton';
-import { CallingModeToggle } from '@/dialer/components/CallingModeToggle';
 import { CoachingPanel } from '@/dialer/components/CoachingPanel';
 import { ContactHeader } from '@/dialer/components/ContactHeader';
 import { DialPad } from '@/dialer/components/DialPad';
@@ -68,16 +67,25 @@ export const DialerSidebar = () => {
   const isOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const isInCall = callState.status !== 'idle';
-  const { isLoading, talkingPoints, error: coachingError, retry: retryCoaching } = useCoaching();
+  const {
+    isLoading,
+    talkingPoints,
+    error: coachingError,
+    retry: retryCoaching,
+  } = useCoaching();
   const { transcript, isConnected } = useTranscript();
-  const { analysis, isAnalyzing, error: analysisError, retry: retryAnalysis } = usePostCallAnalysis();
+  const {
+    analysis,
+    isAnalyzing,
+    error: analysisError,
+    retry: retryAnalysis,
+  } = usePostCallAnalysis();
   useResetCoachingState();
 
   return (
     <StyledSidebar isOpen={isOpen}>
       <StyledHeader>
         <StyledTitle>Dialer</StyledTitle>
-        <CallingModeToggle />
       </StyledHeader>
 
       <StyledBody>
@@ -95,12 +103,14 @@ export const DialerSidebar = () => {
           onRetry={retryCoaching}
         />
         {isInCall && (
-          <LiveTranscript
-            transcript={transcript}
-            isConnected={isConnected}
-          />
+          <LiveTranscript transcript={transcript} isConnected={isConnected} />
         )}
-        <PostCallSummary analysis={analysis} isAnalyzing={isAnalyzing} error={analysisError} onRetry={retryAnalysis} />
+        <PostCallSummary
+          analysis={analysis}
+          isAnalyzing={isAnalyzing}
+          error={analysisError}
+          onRetry={retryAnalysis}
+        />
       </StyledBody>
 
       <StyledFooter>

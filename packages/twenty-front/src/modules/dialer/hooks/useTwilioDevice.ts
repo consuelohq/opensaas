@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Device, Call } from '@twilio/voice-sdk';
+import { captureException } from '@sentry/react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -8,6 +9,7 @@ import { deviceErrorState } from '@/dialer/states/deviceErrorState';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { reconnectingState } from '@/dialer/states/reconnectingState';
+import { callErrorState } from '@/dialer/states/callErrorState';
 import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
 import { selectedMicState } from '@/dialer/states/selectedMicState';
 import { selectedSpeakerState } from '@/dialer/states/selectedSpeakerState';
@@ -34,17 +36,22 @@ interface UseTwilioDeviceReturn {
 }
 
 async function fetchVoiceToken(): Promise<string> {
-  const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/voice/token`, {
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    throw new Error(`Token fetch failed: ${res.status}`);
+  try {
+    const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/voice/token`, {
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Token fetch failed: ${res.status}`);
+    }
+    const data = (await res.json()) as { token?: string };
+    if (!data.token) {
+      throw new Error('No token in response');
+    }
+    return data.token;
+  } catch (err: unknown) {
+    captureException(err, { extra: { context: 'fetchVoiceToken' } });
+    throw err;
   }
-  const data = (await res.json()) as { token?: string };
-  if (!data.token) {
-    throw new Error('No token in response');
-  }
-  return data.token;
 }
 
 export const useTwilioDevice = (): UseTwilioDeviceReturn => {
@@ -53,10 +60,12 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const [activeCall, setActiveCall] = useRecoilState(activeCallState);
   const [reconnecting, setReconnecting] = useRecoilState(reconnectingState);
   const setCallState = useSetRecoilState(callStateAtom);
+  const setCallError = useSetRecoilState(callErrorState);
 
   const deviceRef = useRef<Device | null>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const selectedMic = useRecoilValue(selectedMicState);
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
@@ -69,8 +78,13 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       return true;
     } catch (err: unknown) {
       const name = err instanceof Error ? err.name : '';
+      captureException(err, {
+        extra: { context: 'requestMicPermission', errorName: name },
+      });
       if (name === 'NotAllowedError') {
-        setError('Microphone permission denied. Enable it in browser settings.');
+        setError(
+          'Microphone permission denied. Enable it in browser settings.',
+        );
       } else if (name === 'NotFoundError') {
         setError('No microphone found. Connect a mic and try again.');
       } else {
@@ -87,6 +101,55 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     [setCallState],
   );
 
+  // poll call status for failure detection (DEV-816)
+  const startStatusPolling = useCallback(
+    (callSid: string) => {
+      if (statusPollRef.current) clearInterval(statusPollRef.current);
+
+      statusPollRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(
+            `${REACT_APP_SERVER_BASE_URL}/v1/calls/status/${callSid}`,
+            { credentials: 'include' },
+          );
+          if (!res.ok) return;
+
+          const data = (await res.json()) as { status?: string };
+          if (
+            data.status &&
+            ['failed', 'busy', 'no-answer', 'canceled'].includes(data.status)
+          ) {
+            const reasonMap: Record<
+              string,
+              'failed' | 'busy' | 'no-answer' | 'canceled'
+            > = {
+              failed: 'failed',
+              busy: 'busy',
+              'no-answer': 'no-answer',
+              canceled: 'canceled',
+            };
+            setCallError({
+              reason: reasonMap[data.status] ?? 'unknown',
+              message: `Call ${data.status === 'no-answer' ? 'was not answered' : data.status}`,
+              occurredAt: new Date(),
+            });
+            if (statusPollRef.current) clearInterval(statusPollRef.current);
+          }
+        } catch {
+          // polling failure is non-fatal
+        }
+      }, 3000);
+    },
+    [setCallError],
+  );
+
+  const stopStatusPolling = useCallback(() => {
+    if (statusPollRef.current) {
+      clearInterval(statusPollRef.current);
+      statusPollRef.current = null;
+    }
+  }, []);
+
   // fetch token and refresh device
   const refreshToken = useCallback(async () => {
     try {
@@ -96,6 +159,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Token refresh failed';
+      captureException(err, { extra: { context: 'refreshToken' } });
       setError(msg);
     }
   }, [setError]);
@@ -105,16 +169,20 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     (call: Call) => {
       call.on('accept', () => {
         setActiveCall(call);
+        const callSid = call.parameters?.CallSid ?? null;
         setCallState((prev) => ({
           ...prev,
           status: 'active',
-          callSid: call.parameters?.CallSid ?? null,
+          callSid,
           startedAt: new Date(),
         }));
+        if (callSid) startStatusPolling(callSid);
       });
 
       const handleEnd = () => {
         setActiveCall(null);
+        stopStatusPolling();
+        setCallError(null);
         updateCallStatus('ended');
       };
 
@@ -124,6 +192,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
 
       call.on('error', () => {
         setActiveCall(null);
+        stopStatusPolling();
         updateCallStatus('failed');
       });
 
@@ -135,7 +204,15 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setReconnecting(false);
       });
     },
-    [setActiveCall, setCallState, setReconnecting, updateCallStatus],
+    [
+      setActiveCall,
+      setCallState,
+      setReconnecting,
+      setCallError,
+      updateCallStatus,
+      startStatusPolling,
+      stopStatusPolling,
+    ],
   );
 
   // create + register device
@@ -195,6 +272,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       tokenTimerRef.current = setInterval(refreshToken, TOKEN_REFRESH_INTERVAL);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Device init failed';
+      captureException(err, { extra: { context: 'initDevice' } });
       setError(msg);
 
       // null out on failure
@@ -237,6 +315,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         bindCallEvents(call);
         return call;
       } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'connect', to: params.To, from: params.From },
+        });
         updateCallStatus('failed');
         throw err;
       }
@@ -259,7 +340,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
 
   useEffect(() => {
     if (!deviceRef.current || !isReady || !selectedSpeaker) return;
-    deviceRef.current.audio?.speakerDevices.set(selectedSpeaker).catch(() => {});
+    deviceRef.current.audio?.speakerDevices
+      .set(selectedSpeaker)
+      .catch(() => {});
   }, [selectedSpeaker, isReady]);
 
   // init on mount, cleanup on unmount
@@ -269,6 +352,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     return () => {
       if (tokenTimerRef.current) clearInterval(tokenTimerRef.current);
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      if (statusPollRef.current) clearInterval(statusPollRef.current);
       if (deviceRef.current) {
         deviceRef.current.destroy();
         deviceRef.current = null;

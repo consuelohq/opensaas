@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { captureException } from '@sentry/react';
 
 import { CoreObjectNameSingular } from '@/object-metadata/types/CoreObjectNameSingular';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
@@ -25,21 +26,19 @@ export const useQuickActions = ({
     objectNameSingular: CoreObjectNameSingular.Note,
   });
 
-  const { createOneRecord: createNoteTarget } =
-    useCreateOneRecord<NoteTarget>({
-      objectNameSingular: CoreObjectNameSingular.NoteTarget,
-      shouldMatchRootQueryFilter: true,
-    });
+  const { createOneRecord: createNoteTarget } = useCreateOneRecord<NoteTarget>({
+    objectNameSingular: CoreObjectNameSingular.NoteTarget,
+    shouldMatchRootQueryFilter: true,
+  });
 
   const { createOneRecord: createTask } = useCreateOneRecord<Task>({
     objectNameSingular: CoreObjectNameSingular.Task,
   });
 
-  const { createOneRecord: createTaskTarget } =
-    useCreateOneRecord<TaskTarget>({
-      objectNameSingular: CoreObjectNameSingular.TaskTarget,
-      shouldMatchRootQueryFilter: true,
-    });
+  const { createOneRecord: createTaskTarget } = useCreateOneRecord<TaskTarget>({
+    objectNameSingular: CoreObjectNameSingular.TaskTarget,
+    shouldMatchRootQueryFilter: true,
+  });
 
   const saveNote = useCallback(
     async (content: string) => {
@@ -57,7 +56,10 @@ export const useQuickActions = ({
           personId: contactId,
         } as Partial<NoteTarget>);
         return true;
-      } catch (_err: unknown) {
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'saveNote', contactId, callSid },
+        });
         return false;
       } finally {
         setIsSaving(false);
@@ -76,9 +78,7 @@ export const useQuickActions = ({
           title,
           status: TASK_STATUS_OPEN,
           dueAt: dueAt.toISOString(),
-          ...(note
-            ? { bodyV2: { blocknote: null, markdown: note } }
-            : {}),
+          ...(note ? { bodyV2: { blocknote: null, markdown: note } } : {}),
           position: 'last',
         } as Partial<Task>);
         await createTaskTarget({
@@ -86,7 +86,10 @@ export const useQuickActions = ({
           personId: contactId,
         } as Partial<TaskTarget>);
         return true;
-      } catch (_err: unknown) {
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'scheduleFollowUp', contactId },
+        });
         return false;
       } finally {
         setIsSaving(false);
