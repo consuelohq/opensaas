@@ -73,7 +73,7 @@ export const voiceRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const numbers = await dialer.twilioClient.incomingPhoneNumbers.list();
+          const numbers = await dialer.listNumbers();
 
           const phoneNumbers = numbers.map(
             (num: { phoneNumber: string; friendlyName: string }) => {
@@ -224,19 +224,15 @@ export const voiceRoutes = (): RouteDefinition[] => {
           const { createLogger } = await import('@consuelo/logger');
           const logger = createLogger('voice:active-call');
 
-          const conferences = await dialer.twilioClient.conferences.list({
-            friendlyName: conferenceName,
-            status: 'in-progress',
-            limit: 1,
-          });
+          const conferenceSid =
+            await dialer.conference.findConferenceSid(conferenceName);
 
-          const activeConference = conferences[0];
-          if (activeConference) {
+          if (conferenceSid) {
             logger.info('Active conference found', {
               conferenceName,
-              conferenceSid: activeConference.sid,
+              conferenceSid,
             });
-            res.json({ active: true, conferenceSid: activeConference.sid });
+            res.json({ active: true, conferenceSid });
           } else {
             logger.info('No active conference', { conferenceName });
             res.json({ active: false });
