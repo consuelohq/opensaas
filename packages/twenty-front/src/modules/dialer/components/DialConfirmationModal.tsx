@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { IconPhone, IconX } from '@tabler/icons-react';
 
@@ -8,6 +8,8 @@ import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
+import { hashColor } from '@/dialer/utils/avatarColor';
+import { useGlobalHotkeys } from '@/ui/utilities/hotkey/hooks/useGlobalHotkeys';
 
 type DialConfirmationModalProps = {
   onClose: () => void;
@@ -15,14 +17,6 @@ type DialConfirmationModalProps = {
 };
 
 // consistent hue from string (same as ContactHeader)
-const hashColor = (id: string): string => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  return `hsl(${Math.abs(hash) % 360}, 55%, 45%)`;
-};
 
 const StyledOverlay = styled.div`
   position: absolute;
@@ -186,16 +180,10 @@ export const DialConfirmationModal = ({
     onConfirm(callerId);
   }, [callerId, onConfirm]);
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-      if (event.key === 'Enter') handleConfirm();
-    };
-
-    document.addEventListener('keydown', handler);
-
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose, handleConfirm]);
+  useGlobalHotkeys({
+    Escape: onClose,
+    Enter: handleConfirm,
+  });
 
   const initials = contact
     ? [contact.firstName, contact.lastName]

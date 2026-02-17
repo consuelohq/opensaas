@@ -2,9 +2,12 @@ import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { IconPhone, IconX } from '@tabler/icons-react';
 
-import { formatPhone, stripNonDigits } from '@/dialer/utils/phoneFormat';
-
-type TransferType = 'cold' | 'warm';
+import { type TransferType } from '@/dialer/types/dialer';
+import {
+  formatPhone,
+  stripNonDigits,
+  toE164,
+} from '@/dialer/utils/phoneFormat';
 
 type TransferModalProps = {
   onTransfer: (to: string, type: TransferType) => void;
@@ -150,12 +153,8 @@ export const TransferModal = ({
   }, []);
 
   const handleTransfer = useCallback(() => {
-    const digits = stripNonDigits(phoneNumber);
-    if (digits.length < 10 || isTransferring) return;
-    onTransfer(
-      digits.length === 10 ? `+1${digits}` : `+${digits}`,
-      transferType,
-    );
+    if (isTransferring) return;
+    onTransfer(toE164(phoneNumber), transferType);
   }, [phoneNumber, transferType, isTransferring, onTransfer]);
 
   const handleKeyDown = useCallback(
