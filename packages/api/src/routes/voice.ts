@@ -257,6 +257,50 @@ export const voiceRoutes = (): RouteDefinition[] => {
       }),
     },
 
+    {
+      method: 'GET',
+      path: '/v1/voice/conference-by-call/:callSid',
+      handler: errorHandler(async (req, res) => {
+        const callSid = req.params?.callSid;
+
+        if (!callSid) {
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing callSid' },
+          });
+          return;
+        }
+
+        try {
+          const conferenceName = await redisService.getConferenceName(callSid);
+
+          if (conferenceName) {
+            res.json({ conferenceName });
+          } else {
+            res.status(404).json({
+              error: {
+                code: 'NOT_FOUND',
+                message: 'Conference not found for callSid',
+              },
+            });
+          }
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Failed to get conference name';
+          const { createLogger } = await import('@consuelo/logger');
+          createLogger('voice:conference-by-call').error(
+            'Failed to get conference name',
+            {
+              callSid,
+              error: message,
+            },
+          );
+          res.status(500).json({ error: { code: 'GET_FAILED', message } });
+        }
+      }),
+    },
+
     // --- literal "transfer" routes first (ROUTE_ORDER) ---
 
     {

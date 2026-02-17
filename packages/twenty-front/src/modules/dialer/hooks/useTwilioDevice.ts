@@ -4,6 +4,7 @@ import { captureException } from '@sentry/react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { useCallPersistence } from '@/dialer/hooks/useCallPersistence';
 import { deviceReadyState } from '@/dialer/states/deviceReadyState';
 import { deviceErrorState } from '@/dialer/states/deviceErrorState';
 import { activeCallState } from '@/dialer/states/activeCallState';
@@ -61,6 +62,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const [reconnecting, setReconnecting] = useRecoilState(reconnectingState);
   const setCallState = useSetRecoilState(callStateAtom);
   const setCallError = useSetRecoilState(callErrorState);
+
+  const { persistCurrentCall, clearPersistence, getConferenceNameByCallSid } =
+    useCallPersistence();
 
   const deviceRef = useRef<Device | null>(null);
   const tokenTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -167,16 +171,28 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   // wire call-level events
   const bindCallEvents = useCallback(
     (call: Call) => {
-      call.on('accept', () => {
-        setActiveCall(call);
-        const callSid = call.parameters?.CallSid ?? null;
-        setCallState((prev) => ({
-          ...prev,
-          status: 'active',
-          callSid,
-          startedAt: new Date(),
-        }));
-        if (callSid) startStatusPolling(callSid);
+      call.on('accept', async () => {
+        try {
+          setActiveCall(call);
+          const callSid = call.parameters?.CallSid ?? null;
+          setCallState((prev) => ({
+            ...prev,
+            status: 'active',
+            callSid,
+            startedAt: new Date(),
+          }));
+          if (callSid) {
+            startStatusPolling(callSid);
+            const conferenceName = await getConferenceNameByCallSid(callSid);
+            if (conferenceName) {
+              const toNumber = call.parameters?.To ?? '';
+              const fromNumber = call.parameters?.From ?? '';
+              persistCurrentCall(callSid, conferenceName, fromNumber, toNumber);
+            }
+          }
+        } catch (err: unknown) {
+          captureException(err, { extra: { context: 'call:accept' } });
+        }
       });
 
       const handleEnd = () => {
@@ -184,6 +200,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         stopStatusPolling();
         setCallError(null);
         updateCallStatus('ended');
+        clearPersistence();
       };
 
       call.on('disconnect', handleEnd);
@@ -212,6 +229,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       updateCallStatus,
       startStatusPolling,
       stopStatusPolling,
+      persistCurrentCall,
+      clearPersistence,
+      getConferenceNameByCallSid,
     ],
   );
 
