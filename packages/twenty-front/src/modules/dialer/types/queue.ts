@@ -29,7 +29,7 @@ export type QueueItemStatus =
   | 'skipped'
   | 'failed';
 
-export type CallOutcome =
+export type QueueOutcome =
   | 'connected'
   | 'no-answer'
   | 'voicemail'
@@ -100,7 +100,7 @@ export interface QueueItem {
   status: QueueItemStatus;
   attempts: number;
   lastAttemptAt: string | null;
-  callOutcome: CallOutcome | null;
+  callOutcome: QueueOutcome | null;
   notes: string | null;
   skipReason: string | null;
   callDurationSeconds: number | null;
@@ -115,7 +115,7 @@ export interface QueueSession {
   callsConnected: number;
   totalTalkTime: number;
   avgCallDuration: number;
-  outcomeBreakdown: Record<CallOutcome, number>;
+  outcomeBreakdown: Record<QueueOutcome, number>;
 }
 
 export const DEFAULT_QUEUE_SETTINGS: QueueSettings = {
