@@ -95,6 +95,9 @@ export const voiceRoutes = (): RouteDefinition[] => {
           const result = await dialer.getToken(userId);
           res.json(result);
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+          );
           const message =
             err instanceof Error ? err.message : 'Token generation failed';
           res.status(500).json({ error: { code: 'TOKEN_ERROR', message } });
@@ -174,6 +177,16 @@ export const voiceRoutes = (): RouteDefinition[] => {
         try {
           await redisService.setConferenceName(callSid, conferenceName);
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'twiml_redis_setConferenceName',
+                callSid,
+                conferenceName,
+              },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           const { createLogger } = await import('@consuelo/logger');
@@ -213,6 +226,16 @@ export const voiceRoutes = (): RouteDefinition[] => {
                 conferenceName,
               );
             } catch (err: unknown) {
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(String(err)),
+                {
+                  extra: {
+                    context: 'twiml_redis_setCustomerConferenceName',
+                    callSid: customerResult.callSid,
+                    conferenceName,
+                  },
+                },
+              );
               const message =
                 err instanceof Error ? err.message : 'Redis operation failed';
               const { createLogger } = await import('@consuelo/logger');
@@ -226,6 +249,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
               );
             }
           } catch (err: unknown) {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'twiml_customer_dial', conferenceName, to },
+              },
+            );
             const message =
               err instanceof Error ? err.message : 'Customer dial failed';
             const { createLogger } = await import('@consuelo/logger');
@@ -270,6 +299,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
             record = raw as unknown as TransferRecord;
           }
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'mute_getTransfer', transferId },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           res.status(500).json({ error: { code: 'REDIS_ERROR', message } });
@@ -362,6 +397,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
               record as Record<string, unknown>,
             );
           } catch (err: unknown) {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'mute_setTransfer', transferId },
+              },
+            );
             const message =
               err instanceof Error ? err.message : 'Redis operation failed';
             const { createLogger } = await import('@consuelo/logger');
@@ -376,6 +417,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json({ transferId, customerMuted: body.muted });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'muteParticipant', transferId },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Mute toggle failed';
           res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
@@ -410,6 +457,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
             record = raw as unknown as TransferRecord;
           }
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'status_getTransfer', transferId },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           res.status(500).json({ error: { code: 'REDIS_ERROR', message } });
@@ -479,6 +532,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
             body.conferenceName ??
             (await redisService.getConferenceName(callSid));
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'transfer_getConferenceName', callSid },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
           res.status(500).json({ error: { code: 'REDIS_ERROR', message } });
@@ -536,6 +595,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
               transferRecord as unknown as Record<string, unknown>,
             );
           } catch (err: unknown) {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'transfer_setTransfer', transferId },
+              },
+            );
             const message =
               err instanceof Error ? err.message : 'Redis operation failed';
             const { createLogger } = await import('@consuelo/logger');
@@ -550,6 +615,17 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json({ ...result, transferId });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'initiateTransfer',
+                callSid,
+                to: body.to,
+                type: body.type,
+              },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
@@ -601,6 +677,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
             try {
               await redisService.deleteConferenceName(callSid);
             } catch (err: unknown) {
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(String(err)),
+                {
+                  extra: { context: 'complete_deleteConferenceName', callSid },
+                },
+              );
               const message =
                 err instanceof Error ? err.message : 'Redis operation failed';
               const { createLogger } = await import('@consuelo/logger');
@@ -616,6 +698,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json(result);
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'completeTransfer' },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Complete transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
@@ -663,6 +751,12 @@ export const voiceRoutes = (): RouteDefinition[] => {
 
           res.status(200).json(result);
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'cancelTransfer' },
+            },
+          );
           const message =
             err instanceof Error ? err.message : 'Cancel transfer failed';
           res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });

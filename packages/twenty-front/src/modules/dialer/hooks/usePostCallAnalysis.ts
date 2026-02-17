@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -9,7 +10,10 @@ import {
   postCallAnalysisState,
   transcriptState,
 } from '@/dialer/states/coachingState';
-import { type CallAnalytics, type TranscriptEntry } from '@/dialer/types/coaching';
+import {
+  type CallAnalytics,
+  type TranscriptEntry,
+} from '@/dialer/types/coaching';
 
 // W16: basic runtime validation for CallAnalytics shape
 function isValidCallAnalytics(data: unknown): data is CallAnalytics {
@@ -92,10 +96,13 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
-        }).catch(() => {
-          // persistence failure is non-blocking
+        }).catch((err: unknown) => {
+          captureException(err, {
+            extra: { context: 'persistAnalysis', callId },
+          });
         });
       } catch (err: unknown) {
+        captureException(err, { extra: { context: 'analyze', callId } });
         // W9: set error state so UI can show failure + retry
         const message = err instanceof Error ? err.message : 'Analysis failed';
         setError(message);
@@ -112,7 +119,11 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     const prev = prevStatusRef.current;
     prevStatusRef.current = callState.status;
 
-    if (prev === 'active' && callState.status === 'ended' && callState.callSid) {
+    if (
+      prev === 'active' &&
+      callState.status === 'ended' &&
+      callState.callSid
+    ) {
       lastCallSidRef.current = callState.callSid;
       lastTranscriptRef.current = transcript;
       void analyze(callState.callSid, transcript);

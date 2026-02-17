@@ -1,11 +1,10 @@
 import { type Person } from '@/people/types/Person';
 import { type DialerContact } from '@/dialer/types/dialer';
 import { normalizePhone, isValidPhone } from '@consuelo/contacts';
+import { captureException } from '@sentry/react';
 
 // map a twenty Person to a DialerContact
-export const personToDialerContact = (
-  person: Person,
-): DialerContact | null => {
+export const personToDialerContact = (person: Person): DialerContact | null => {
   const phoneRaw = person.phone;
   if (!phoneRaw) return null;
 
@@ -56,6 +55,7 @@ export const checkDncStatus = async (phone: string): Promise<boolean> => {
     const { isDnc } = await response.json();
     return isDnc === true;
   } catch (err: unknown) {
+    captureException(err, { extra: { context: 'checkDncStatus', phone } });
     // DNC check failure defaults to not-on-list so calls aren't blocked
     return false;
   }
@@ -78,6 +78,9 @@ export const filterDncContacts = async (
 
     return { filtered, dncCount: contacts.length - filtered.length };
   } catch (err: unknown) {
+    captureException(err, {
+      extra: { context: 'filterDncContacts', contactCount: contacts.length },
+    });
     // DNC check failure returns all contacts unfiltered
     return { filtered: contacts, dncCount: 0 };
   }

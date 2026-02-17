@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
@@ -9,16 +10,27 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
-import type { CallOutcome, QueueItem, QueueSettings } from '@/dialer/types/queue';
+import type {
+  CallOutcome,
+  QueueItem,
+  QueueSettings,
+} from '@/dialer/types/queue';
 
 const shouldRetry = (item: QueueItem, settings: QueueSettings): boolean => {
   if (item.attempts >= settings.maxAttempts) return false;
   const outcome = item.callOutcome;
   if (!outcome) return false;
-  if (outcome === 'connected' || outcome === 'wrong-number' || outcome === 'not-interested' || outcome === 'dnc') {
+  if (
+    outcome === 'connected' ||
+    outcome === 'wrong-number' ||
+    outcome === 'not-interested' ||
+    outcome === 'dnc'
+  ) {
     return false;
   }
-  return outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'busy';
+  return (
+    outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'busy'
+  );
 };
 
 const getRetryDelay = (attempts: number): number =>
@@ -45,7 +57,8 @@ export const useAutoDialer = () => {
 
   // watch for call end → start countdown
   useEffect(() => {
-    const wasActive = prevStatusRef.current === 'active' || prevStatusRef.current === 'ringing';
+    const wasActive =
+      prevStatusRef.current === 'active' || prevStatusRef.current === 'ringing';
     prevStatusRef.current = callState.status;
 
     if (callState.status !== 'ended') return;
@@ -57,8 +70,10 @@ export const useAutoDialer = () => {
     if (queue.settings.autoSkipVoicemail && callOutcome === 'voicemail') {
       try {
         skipContact('Voicemail - auto-skipped');
-      } catch {
-        // skip failed — auto-dialer retries on next interval
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'skipContact', reason: 'voicemail auto-skip' },
+        });
       }
       return;
     }
@@ -76,8 +91,10 @@ export const useAutoDialer = () => {
             clearTimer();
             try {
               advanceQueue();
-            } catch {
-              // advance failed — queue stays at current item, user can retry
+            } catch (err: unknown) {
+              captureException(err, {
+                extra: { context: 'advanceQueue', interval: 'retry' },
+              });
             }
             return null;
           }
@@ -102,8 +119,10 @@ export const useAutoDialer = () => {
           clearTimer();
           try {
             advanceQueue();
-          } catch {
-            // advance failed — queue stays at current item, user can retry
+          } catch (err: unknown) {
+            captureException(err, {
+              extra: { context: 'advanceQueue', interval: 'normal' },
+            });
           }
           return null;
         }

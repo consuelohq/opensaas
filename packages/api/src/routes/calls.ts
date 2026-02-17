@@ -3,11 +3,15 @@ import { randomUUID } from 'node:crypto';
 import { Dialer } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
+import * as Sentry from '@sentry/node';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
 };
 
 interface CallBody {
@@ -74,11 +78,16 @@ export const callRoutes = (): RouteDefinition[] => {
     }
   };
 
-  const requireAuth = (req: Parameters<RouteDefinition['handler']>[0], res: Parameters<RouteDefinition['handler']>[1]): { userId: string; workspaceId: string } | null => {
+  const requireAuth = (
+    req: Parameters<RouteDefinition['handler']>[0],
+    res: Parameters<RouteDefinition['handler']>[1],
+  ): { userId: string; workspaceId: string } | null => {
     const userId = req.auth?.userId;
     const workspaceId = req.auth?.workspaceId;
     if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+      res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+      });
       return null;
     }
     return { userId, workspaceId };
@@ -91,7 +100,9 @@ export const callRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const body = req.body as CallBody | undefined;
         if (!body?.to) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "to" field' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing "to" field' },
+          });
           return;
         }
 
@@ -104,12 +115,25 @@ export const callRoutes = (): RouteDefinition[] => {
           });
 
           if (!result.success) {
-            res.status(500).json({ error: { code: 'DIAL_FAILED', message: result.error ?? 'Unknown error' } });
+            res.status(500).json({
+              error: {
+                code: 'DIAL_FAILED',
+                message: result.error ?? 'Unknown error',
+              },
+            });
             return;
           }
 
-          res.status(201).json({ callSid: result.callSid, status: 'initiated' });
+          res
+            .status(201)
+            .json({ callSid: result.callSid, status: 'initiated' });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'dial', to: body.to },
+            },
+          );
           const message = err instanceof Error ? err.message : 'Unknown error';
           res.status(500).json({ error: { code: 'DIAL_FAILED', message } });
         }
@@ -124,30 +148,66 @@ export const callRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const body = req.body as CallbackBody | undefined;
         if (!body?.agentPhone || !body?.customerPhone) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing agentPhone or customerPhone' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing agentPhone or customerPhone',
+            },
+          });
           return;
         }
-        if (!E164_REGEX.test(body.agentPhone) || !E164_REGEX.test(body.customerPhone)) {
-          res.status(400).json({ error: { code: 'INVALID_PHONE', message: 'Phone numbers must be E.164 format' } });
+        if (
+          !E164_REGEX.test(body.agentPhone) ||
+          !E164_REGEX.test(body.customerPhone)
+        ) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PHONE',
+              message: 'Phone numbers must be E.164 format',
+            },
+          });
           return;
         }
         if (body.callerId && !E164_REGEX.test(body.callerId)) {
-          res.status(400).json({ error: { code: 'INVALID_PHONE', message: 'callerId must be E.164 format' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PHONE',
+              message: 'callerId must be E.164 format',
+            },
+          });
           return;
         }
 
         // TODO DEV-750: validate agentPhone belongs to authenticated user (phase 7 phone management)
 
         const conferenceName = `conf-${randomUUID()}`;
-        const callerId = body.callerId ?? process.env.TWILIO_CALLER_ID ?? body.agentPhone;
+        const callerId =
+          body.callerId ?? process.env.TWILIO_CALLER_ID ?? body.agentPhone;
         const baseUrl = process.env.API_BASE_URL ?? '';
         const twimlUrl = `${baseUrl}/v1/calls/callback/twiml?customer=${encodeURIComponent(body.customerPhone)}&conf=${encodeURIComponent(conferenceName)}&from=${encodeURIComponent(callerId)}`;
 
         try {
-          const { callSid } = await dialer.createCall(body.agentPhone, callerId, { url: twimlUrl });
-          res.status(201).json({ callSid, conferenceName, status: 'calling-agent' });
+          const { callSid } = await dialer.createCall(
+            body.agentPhone,
+            callerId,
+            { url: twimlUrl },
+          );
+          res
+            .status(201)
+            .json({ callSid, conferenceName, status: 'calling-agent' });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Twilio API failure';
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'callback_createCall',
+                agentPhone: body.agentPhone,
+                customerPhone: body.customerPhone,
+              },
+            },
+          );
+          const message =
+            err instanceof Error ? err.message : 'Twilio API failure';
           res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
         }
       }),
@@ -162,7 +222,12 @@ export const callRoutes = (): RouteDefinition[] => {
         const from = req.query?.from ?? '';
 
         if (!conf || !customer) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing query params' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing query params',
+            },
+          });
           return;
         }
 
@@ -187,9 +252,16 @@ export const callRoutes = (): RouteDefinition[] => {
           endOnExit: true,
           participantLabel: 'customer',
         });
-        dialer.createCall(customer, from, { twiml: customerTwiml }).catch(() => {
-          // customer dial failed — agent hears silence until they hang up
-        });
+        dialer
+          .createCall(customer, from, { twiml: customerTwiml })
+          .catch((err: unknown) => {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'callback_customer_dial', customer, conf },
+              },
+            );
+          });
       }),
     },
 
@@ -241,7 +313,12 @@ export const callRoutes = (): RouteDefinition[] => {
 
         const dataParams = [...params, limit, offset];
         const { rows } = await db.query(
-          'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE ' + where + ' ORDER BY c.start_time DESC LIMIT $' + String(idx) + ' OFFSET $' + String(idx + 1),
+          'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE ' +
+            where +
+            ' ORDER BY c.start_time DESC LIMIT $' +
+            String(idx) +
+            ' OFFSET $' +
+            String(idx + 1),
           dataParams,
         );
 
@@ -257,9 +334,14 @@ export const callRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_GET_CALL, [req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_GET_CALL, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
           return;
         }
 
@@ -272,19 +354,32 @@ export const callRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const callSid = req.params?.id;
         if (!callSid) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing call ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing call ID' },
+          });
           return;
         }
 
         try {
           const result = await dialer.hangup(callSid);
           if (!result.success) {
-            res.status(500).json({ error: { code: 'HANGUP_FAILED', message: result.error ?? 'Unknown error' } });
+            res.status(500).json({
+              error: {
+                code: 'HANGUP_FAILED',
+                message: result.error ?? 'Unknown error',
+              },
+            });
             return;
           }
 
           res.status(200).json({ callSid, status: 'completed' });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'hangup', callSid },
+            },
+          );
           const message = err instanceof Error ? err.message : 'Unknown error';
           res.status(500).json({ error: { code: 'HANGUP_FAILED', message } });
         }
@@ -299,22 +394,33 @@ export const callRoutes = (): RouteDefinition[] => {
 
         const callId = req.params?.id;
         if (!callId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing call ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing call ID' },
+          });
           return;
         }
 
         const body = req.body as AnalysisBody | undefined;
         if (!body) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing analysis body' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing analysis body',
+            },
+          });
           return;
         }
 
         const db = await getPool();
         const { rows } = await db.query(SQL_PERSIST_ANALYSIS, [
-          JSON.stringify(body), callId, auth.workspaceId,
+          JSON.stringify(body),
+          callId,
+          auth.workspaceId,
         ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
           return;
         }
 
@@ -329,9 +435,14 @@ export const callRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_GET_RECORDING_INFO, [req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_GET_RECORDING_INFO, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
           return;
         }
 
@@ -341,26 +452,44 @@ export const callRoutes = (): RouteDefinition[] => {
         if (recordingSid) {
           try {
             const recording = await dialer.getRecording(recordingSid);
-            res.status(200).json({ url: recording.url, duration: recording.duration });
+            res
+              .status(200)
+              .json({ url: recording.url, duration: recording.duration });
             return;
           } catch (err: unknown) {
-            // fall through to conference lookup
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'getRecording', recordingSid },
+              },
+            );
           }
         }
 
         if (conferenceName) {
           try {
-            const recordings = await dialer.conference.listRecordings(conferenceName);
+            const recordings =
+              await dialer.conference.listRecordings(conferenceName);
             if (recordings.length > 0) {
-              res.status(200).json({ url: recordings[0].url, duration: recordings[0].duration });
+              res.status(200).json({
+                url: recordings[0].url,
+                duration: recordings[0].duration,
+              });
               return;
             }
           } catch (err: unknown) {
-            // no recordings found
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: { context: 'listRecordings', conferenceName },
+              },
+            );
           }
         }
 
-        res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No recording available' } });
+        res.status(404).json({
+          error: { code: 'NOT_FOUND', message: 'No recording available' },
+        });
       }),
     },
     {
@@ -371,15 +500,22 @@ export const callRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_GET_TRANSCRIPT, [req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_GET_TRANSCRIPT, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Call not found' } });
           return;
         }
 
         const transcript = rows[0].transcript as unknown[] | null;
         if (!transcript) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'No transcript available' } });
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'No transcript available' },
+          });
           return;
         }
 

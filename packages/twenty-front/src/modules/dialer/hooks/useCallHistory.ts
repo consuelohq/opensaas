@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import {
@@ -62,6 +63,9 @@ export const useCallHistory = (): UseCallHistoryReturn => {
         const data = (await res.json()) as { calls: CallHistoryItem[] };
         setCallHistory(data.calls);
       } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'fetchHistory', filters: historyFilters },
+        });
         const message =
           // eslint-disable-next-line lingui/no-unlocalized-strings
           err instanceof Error ? err.message : 'Failed to fetch call history';

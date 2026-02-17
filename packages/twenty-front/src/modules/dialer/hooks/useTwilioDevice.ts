@@ -335,14 +335,24 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   // sync selected audio devices to twilio
   useEffect(() => {
     if (!deviceRef.current || !isReady || !selectedMic) return;
-    deviceRef.current.audio?.setInputDevice(selectedMic).catch(() => {});
+    deviceRef.current.audio
+      ?.setInputDevice(selectedMic)
+      .catch((err: unknown) => {
+        captureException(err, {
+          extra: { context: 'setInputDevice', deviceId: selectedMic },
+        });
+      });
   }, [selectedMic, isReady]);
 
   useEffect(() => {
     if (!deviceRef.current || !isReady || !selectedSpeaker) return;
     deviceRef.current.audio?.speakerDevices
       .set(selectedSpeaker)
-      .catch(() => {});
+      .catch((err: unknown) => {
+        captureException(err, {
+          extra: { context: 'setSpeakerDevice', deviceId: selectedSpeaker },
+        });
+      });
   }, [selectedSpeaker, isReady]);
 
   // init on mount, cleanup on unmount

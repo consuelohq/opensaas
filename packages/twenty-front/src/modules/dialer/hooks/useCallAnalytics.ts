@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import {
@@ -25,7 +26,8 @@ export const useCallAnalytics = () => {
         if (!res.ok) throw new Error('fetch failed');
         const data = (await res.json()) as { metrics: CallMetrics };
         setMetrics(data.metrics);
-      } catch {
+      } catch (err: unknown) {
+        captureException(err, { extra: { context: 'fetchMetrics', period } });
         setMetrics(null);
       } finally {
         setLoading(false);
