@@ -8,7 +8,14 @@ interface Call {
   callSid: string;
   to: string;
   from: string;
-  status: 'initiated' | 'ringing' | 'in-progress' | 'completed' | 'failed' | 'no-answer' | 'busy';
+  status:
+    | 'initiated'
+    | 'ringing'
+    | 'in-progress'
+    | 'completed'
+    | 'failed'
+    | 'no-answer'
+    | 'busy';
   direction: 'outbound' | 'inbound';
   duration?: number;
   startedAt?: string;
@@ -17,9 +24,7 @@ interface Call {
 }
 
 export const registerCalls = (program: Command): void => {
-  const calls = program
-    .command('calls')
-    .description('manage calls');
+  const calls = program.command('calls').description('manage calls');
 
   calls
     .command('list')
@@ -28,10 +33,7 @@ export const registerCalls = (program: Command): void => {
     .option('--status <status>', 'filter by status (active|completed|failed)')
     .action(callsList);
 
-  calls
-    .command('get <id>')
-    .description('get call details')
-    .action(callsGet);
+  calls.command('get <id>').description('get call details').action(callsGet);
 
   calls
     .command('start <target>')
@@ -40,10 +42,7 @@ export const registerCalls = (program: Command): void => {
     .option('--local-presence', 'auto-select local number')
     .action(callsStart);
 
-  calls
-    .command('end <id>')
-    .description('end an active call')
-    .action(callsEnd);
+  calls.command('end <id>').description('end an active call').action(callsEnd);
 
   calls
     .command('transfer <id>')
@@ -55,7 +54,10 @@ export const registerCalls = (program: Command): void => {
 
 const E164_RE = /^\+[1-9]\d{1,14}$/;
 
-const callsList = async (opts: { limit: string; status?: string }): Promise<void> => {
+const callsList = async (opts: {
+  limit: string;
+  status?: string;
+}): Promise<void> => {
   try {
     const query: Record<string, string> = { limit: opts.limit };
     if (opts.status) query.status = opts.status;
@@ -64,19 +66,31 @@ const callsList = async (opts: { limit: string; status?: string }): Promise<void
     handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     const { calls } = res.data;
-    if (!calls.length) { log('no calls found'); return; }
+    if (!calls.length) {
+      log('no calls found');
+      return;
+    }
 
-    log('sid                  | to               | from             | status      | duration');
-    log('---------------------|------------------|------------------|-------------|--------');
+    log(
+      'sid                  | to               | from             | status      | duration',
+    );
+    log(
+      '---------------------|------------------|------------------|-------------|--------',
+    );
     for (const c of calls) {
       const sid = c.callSid.padEnd(20).slice(0, 20);
       const to = c.to.padEnd(16).slice(0, 16);
       const from = c.from.padEnd(16).slice(0, 16);
       const status = c.status.padEnd(11).slice(0, 11);
-      log(`${sid} | ${to} | ${from} | ${status} | ${formatDuration(c.duration)}`);
+      log(
+        `${sid} | ${to} | ${from} | ${status} | ${formatDuration(c.duration)}`,
+      );
     }
     log(`\n${calls.length} call${calls.length === 1 ? '' : 's'}`);
   } catch (err: unknown) {
@@ -92,7 +106,10 @@ const callsGet = async (id: string): Promise<void> => {
     handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     const c = res.data.call;
     log(`sid:       ${c.callSid}`);
@@ -110,10 +127,24 @@ const callsGet = async (id: string): Promise<void> => {
   }
 };
 
-const callsStart = async (target: string, opts: { callerId?: string; localPresence?: boolean }): Promise<void> => {
+const callsStart = async (
+  target: string,
+  opts: { callerId?: string; localPresence?: boolean },
+): Promise<void> => {
   try {
     if (opts.callerId && !E164_RE.test(opts.callerId)) {
-      error(`invalid caller ID: ${opts.callerId} — expected E.164 format (e.g. +15551234567)`);
+      error(
+        `invalid caller ID: ${opts.callerId} — expected E.164 format (e.g. +15551234567)`,
+      );
+      process.exit(1);
+    }
+
+    // Validate target if it looks like a phone number (starts with + or is all digits)
+    const looksLikePhone = target.startsWith('+') || /^\d+$/.test(target);
+    if (looksLikePhone && !E164_RE.test(target)) {
+      error(
+        `invalid target: ${target} — expected E.164 format (e.g. +15551234567) or contact ID`,
+      );
       process.exit(1);
     }
 
@@ -121,11 +152,17 @@ const callsStart = async (target: string, opts: { callerId?: string; localPresen
     if (opts.callerId) body.callerIdNumber = opts.callerId;
     if (opts.localPresence) body.localPresence = true;
 
-    const res = await apiPost<{ callSid: string; status: string }>('/v1/calls', body);
+    const res = await apiPost<{ callSid: string; status: string }>(
+      '/v1/calls',
+      body,
+    );
     handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     log(`call started: ${res.data.callSid} → ${target}`);
   } catch (err: unknown) {
@@ -137,11 +174,16 @@ const callsStart = async (target: string, opts: { callerId?: string; localPresen
 
 const callsEnd = async (id: string): Promise<void> => {
   try {
-    const res = await apiPost<{ callSid: string; status: string }>(`/v1/calls/${id}/hangup`);
+    const res = await apiPost<{ callSid: string; status: string }>(
+      `/v1/calls/${id}/hangup`,
+    );
     handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     log(`call ended: ${id}`);
   } catch (err: unknown) {
@@ -151,16 +193,25 @@ const callsEnd = async (id: string): Promise<void> => {
   }
 };
 
-const callsTransfer = async (id: string, opts: { to: string; type: string }): Promise<void> => {
+const callsTransfer = async (
+  id: string,
+  opts: { to: string; type: string },
+): Promise<void> => {
   try {
-    const res = await apiPost<{ transferId: string; status: string }>(`/v1/calls/${id}/transfer`, {
-      to: opts.to,
-      type: opts.type,
-    });
+    const res = await apiPost<{ transferId: string; status: string }>(
+      `/v1/calls/${id}/transfer`,
+      {
+        to: opts.to,
+        type: opts.type,
+      },
+    );
     handle501(res.status, 'dialer API routes (phase 2)');
     if (!res.ok) handleApiError(res.status, res.data);
 
-    if (isJson()) { json(res.data); return; }
+    if (isJson()) {
+      json(res.data);
+      return;
+    }
 
     log(`transfer initiated: ${opts.type} → ${opts.to}`);
   } catch (err: unknown) {
