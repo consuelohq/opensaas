@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -17,14 +18,20 @@ function buildContactContext(contact: DialerContact | null): string {
   const parts: string[] = [];
   if (contact.company) parts.push(`Company: ${contact.company}`);
   if (contact.tags?.length) parts.push(`Tags: ${contact.tags.join(', ')}`);
-  return parts.length > 0 ? parts.join('\n') : 'Contact information available (details redacted).';
+  return parts.length > 0
+    ? parts.join('\n')
+    : 'Contact information available (details redacted).';
 }
 
 // W16: basic runtime validation for TalkingPoints shape
 function isValidTalkingPoints(data: unknown): data is TalkingPoints {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
-  return Array.isArray(obj.details) && Array.isArray(obj.clarifying_questions) && Array.isArray(obj.objection_responses);
+  return (
+    Array.isArray(obj.details) &&
+    Array.isArray(obj.clarifying_questions) &&
+    Array.isArray(obj.objection_responses)
+  );
 }
 
 interface UseCoachingReturn {
@@ -85,6 +92,7 @@ export const useCoaching = (): UseCoachingReturn => {
         cache.current.set(callSid, data);
         setTalkingPoints(data);
       } catch (err: unknown) {
+        captureException(err, { extra: { context: 'fetchCoaching', callSid } });
         const message =
           err instanceof Error ? err.message : 'Failed to fetch coaching';
         setError(message);
