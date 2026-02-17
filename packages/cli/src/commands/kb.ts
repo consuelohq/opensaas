@@ -85,7 +85,7 @@ const kbSearch = async (query: string, opts: { collection?: string; limit: strin
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { collection: opts.collection ?? '' });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -110,7 +110,7 @@ const kbCollectionsList = async (): Promise<void> => {
   try {
     const res = await apiGet<{ collections: Collection[] }>('/v1/knowledge/collections');
     handle501(res.status, 'knowledge base API routes (phase 6)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -140,7 +140,7 @@ const kbCollectionsCreate = async (opts: { name: string; description?: string })
 
     const res = await apiPost<{ collection: Collection }>('/v1/knowledge/collections', body);
     handle501(res.status, 'knowledge base API routes (phase 6)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -159,7 +159,7 @@ const kbCollectionsDelete = async (id: string): Promise<void> => {
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { collection: id });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -183,7 +183,7 @@ const kbIndex = async (fileId: string, opts: { collection: string; chunkSize: st
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { fileId, collection: opts.collection });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -203,7 +203,7 @@ const kbDeindex = async (fileId: string): Promise<void> => {
     if (!res.ok) {
       const msg = kbErrorMessage(res.data, { fileId });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -220,7 +220,7 @@ const kbStats = async (): Promise<void> => {
   try {
     const res = await apiGet<{ stats: KBStats }>('/v1/knowledge/stats');
     handle501(res.status, 'knowledge base API routes (phase 6)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 

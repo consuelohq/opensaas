@@ -82,7 +82,7 @@ function downloadWithProgress(
 
     file.on('error', (err) => {
       fs.unlink(dest, () => {});
-      reject(new Error(`Failed to write model file: ${err.message}`, { cause: err }));
+      reject(new Error(`Failed to write model file: ${err.message}`));
     });
 
     const doRequest = (targetUrl: string): void => {
@@ -122,7 +122,7 @@ function downloadWithProgress(
       }).on('error', (err) => {
         file.close();
         fs.unlink(dest, () => {});
-        reject(new Error(`Whisper model download error: ${err.message}`, { cause: err }));
+        reject(new Error(`Whisper model download error: ${err.message}`));
       });
     };
 

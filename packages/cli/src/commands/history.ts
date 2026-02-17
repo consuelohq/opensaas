@@ -96,7 +96,7 @@ const historyList = async (opts: { limit: string; from?: string; to?: string; ou
 
     const res = await apiGet<{ calls: HistoryEntry[]; total: number }>('/v1/history', query);
     handle501(res.status, 'history + analytics API routes (phase 5)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
@@ -127,7 +127,7 @@ const historyGet = async (callId: string): Promise<void> => {
     if (!res.ok) {
       const msg = historyErrorMessage(res.data, { callId });
       if (msg) { error(msg); process.exit(1); }
-      handleApiError(res.status, res.data);
+      return handleApiError(res.status, res.data);
     }
 
     if (isJson()) { json(res.data); return; }
@@ -173,7 +173,7 @@ const historyStats = async (opts: { period: string; from?: string; to?: string }
 
     const res = await apiGet<{ stats: HistoryStats }>('/v1/history/stats', query);
     handle501(res.status, 'history + analytics API routes (phase 5)');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) { json(res.data); return; }
 
