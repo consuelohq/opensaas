@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
+  IconAlertCircle,
   IconCheck,
   IconHash,
   IconMicrophone,
@@ -19,6 +20,7 @@ import { useCallTransfer } from '@/dialer/hooks/useCallTransfer';
 import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
+import { callErrorState } from '@/dialer/states/callErrorState';
 import { isMutedState } from '@/dialer/states/isMutedState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 
@@ -57,13 +59,11 @@ const StyledButton = styled.button<{
   justify-content: center;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ isDisabled }) => (isDisabled ? 0.5 : 1)};
-  transition: background 120ms, transform 80ms;
+  transition:
+    background 120ms,
+    transform 80ms;
   background: ${({ active, danger, theme }) =>
-    danger
-      ? '#ef4444'
-      : active
-        ? theme.color.blue
-        : theme.background.tertiary};
+    danger ? '#ef4444' : active ? theme.color.blue : theme.background.tertiary};
   color: ${({ active, danger, theme }) =>
     active || danger ? '#fff' : theme.font.color.primary};
 
@@ -117,27 +117,73 @@ const StyledSmallButton = styled.button<{ danger?: boolean }>`
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  background: ${({ danger, theme }) =>
-    danger ? '#ef4444' : theme.color.blue};
+  background: ${({ danger, theme }) => (danger ? '#ef4444' : theme.color.blue)};
   color: #fff;
   display: flex;
   align-items: center;
   gap: 4px;
 `;
 
+const StyledErrorBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(2)};
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  width: 100%;
+  color: #ef4444;
+  font-size: 12px;
+`;
+
+const StyledErrorIcon = styled(IconAlertCircle)`
+  flex-shrink: 0;
+`;
+
+const StyledErrorText = styled.span`
+  flex: 1;
+  text-align: center;
+`;
+
+const StyledErrorDismiss = styled.button`
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  &:hover {
+    opacity: 1;
+  }
+`;
+
 export const InCallControls = () => {
   const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
+  const [callError, setCallError] = useRecoilState(callErrorState);
   const [isMuted, setIsMuted] = useRecoilState(isMutedState);
   const [isOnHold, setIsOnHold] = useRecoilState(isOnHoldState);
   const [isDTMFOpen, setIsDTMFOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
 
-  const { transferState, initiateTransfer, completeTransfer, cancelTransfer, toggleHold } =
-    useCallTransfer();
+  const {
+    transferState,
+    initiateTransfer,
+    completeTransfer,
+    cancelTransfer,
+    toggleHold,
+  } = useCallTransfer();
 
   const isActive = callState.status === 'active';
   const isConsulting = transferState.status === 'consulting';
+
+  const handleDismissError = useCallback(() => {
+    setCallError(null);
+  }, [setCallError]);
 
   const handleMuteToggle = useCallback(() => {
     if (!activeCall) return;
@@ -179,9 +225,7 @@ export const InCallControls = () => {
     onMuteToggle: handleMuteToggle,
     onHoldToggle: handleHoldToggle,
     onTransferToggle: handleTransferToggle,
-    onEndCall: isTransferOpen
-      ? () => setIsTransferOpen(false)
-      : handleEndCall,
+    onEndCall: isTransferOpen ? () => setIsTransferOpen(false) : handleEndCall,
   });
 
   if (!VISIBLE_STATUSES.has(callState.status)) return null;
@@ -200,6 +244,19 @@ export const InCallControls = () => {
             Cancel
           </StyledSmallButton>
         </StyledWarmBar>
+      )}
+
+      {callError && (
+        <StyledErrorBar>
+          <StyledErrorIcon size={16} />
+          <StyledErrorText>{callError.message}</StyledErrorText>
+          <StyledErrorDismiss
+            onClick={handleDismissError}
+            aria-label="Dismiss error"
+          >
+            <IconX size={14} />
+          </StyledErrorDismiss>
+        </StyledErrorBar>
       )}
 
       <StyledBar>
@@ -237,11 +294,7 @@ export const InCallControls = () => {
         </StyledButtonGroup>
 
         <StyledButtonGroup>
-          <StyledButton
-            danger
-            onClick={handleEndCall}
-            aria-label="End call"
-          >
+          <StyledButton danger onClick={handleEndCall} aria-label="End call">
             <IconPhoneOff size={20} />
           </StyledButton>
           <StyledLabel>End</StyledLabel>

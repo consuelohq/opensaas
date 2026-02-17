@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
 import { IconLoader2, IconPhone, IconPhoneOff } from '@tabler/icons-react';
+import { captureException } from '@sentry/react';
 
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -29,15 +30,26 @@ const StyledButton = styled.button<{ variant: 'call' | 'end' | 'disabled' }>`
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.medium};
   color: #fff;
-  cursor: ${({ variant }) => (variant === 'disabled' ? 'not-allowed' : 'pointer')};
+  cursor: ${({ variant }) =>
+    variant === 'disabled' ? 'not-allowed' : 'pointer'};
   opacity: ${({ variant }) => (variant === 'disabled' ? 0.5 : 1)};
-  transition: background 120ms, transform 80ms;
+  transition:
+    background 120ms,
+    transform 80ms;
   background: ${({ variant }) =>
-    variant === 'end' ? '#ef4444' : variant === 'disabled' ? '#9ca3af' : '#22c55e'};
+    variant === 'end'
+      ? '#ef4444'
+      : variant === 'disabled'
+        ? '#9ca3af'
+        : '#22c55e'};
 
   &:hover:not(:disabled) {
     background: ${({ variant }) =>
-      variant === 'end' ? '#dc2626' : variant === 'disabled' ? '#9ca3af' : '#16a34a'};
+      variant === 'end'
+        ? '#dc2626'
+        : variant === 'disabled'
+          ? '#9ca3af'
+          : '#16a34a'};
   }
 
   &:active:not(:disabled) {
@@ -63,11 +75,13 @@ export const CallButton = () => {
   const contact = useRecoilValue(selectedContactState);
   const { connect, disconnect } = useTwilioDevice();
 
-  const isConnecting = callState.status === 'connecting' || callState.status === 'ringing';
+  const isConnecting =
+    callState.status === 'connecting' || callState.status === 'ringing';
   const isActive = callState.status === 'active';
   const isInCall = isConnecting || isActive;
   const valid = isValidNumber(rawNumber);
-  const fromNumber = selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
+  const fromNumber =
+    selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
 
   const handleClick = useCallback(async () => {
     if (isInCall) {
@@ -81,6 +95,13 @@ export const CallButton = () => {
     try {
       await connect({ To: rawNumber, From: fromNumber });
     } catch (err: unknown) {
+      captureException(err, {
+        extra: {
+          context: 'CallButton.connect',
+          to: rawNumber,
+          from: fromNumber,
+        },
+      });
       // connect failure already sets callState to 'failed' via useTwilioDevice
     }
   }, [isInCall, valid, fromNumber, rawNumber, connect, disconnect]);

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -23,7 +24,10 @@ interface UseCallTransferReturn {
   toggleHold: (hold: boolean) => Promise<void>;
 }
 
-async function postJson(path: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+async function postJson(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
   try {
     const res = await fetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
       method: 'POST',
@@ -38,6 +42,7 @@ async function postJson(path: string, body: Record<string, unknown>): Promise<Re
     }
     return data;
   } catch (err: unknown) {
+    captureException(err, { extra: { path } });
     if (err instanceof Error) throw err;
     throw new Error('Network request failed');
   }
@@ -61,10 +66,18 @@ export const useCallTransfer = (): UseCallTransferReturn => {
       const callSid = callState.callSid;
       if (!callSid) return;
 
-      setTransferState({ status: 'initiating', transferCallSid: null, conferenceSid: null, error: null });
+      setTransferState({
+        status: 'initiating',
+        transferCallSid: null,
+        conferenceSid: null,
+        error: null,
+      });
 
       try {
-        const data = await postJson(`/v1/calls/${callSid}/transfer`, { to, type });
+        const data = await postJson(`/v1/calls/${callSid}/transfer`, {
+          to,
+          type,
+        });
 
         setTransferState({
           status: type === 'warm' ? 'consulting' : 'completed',
@@ -74,8 +87,15 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         });
         if (data.conferenceSid) setConferenceSid(data.conferenceSid as string);
       } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'initiateTransfer', callSid, to, type },
+        });
         const message = err instanceof Error ? err.message : 'Transfer failed';
-        setTransferState((prev) => ({ ...prev, status: 'failed', error: message }));
+        setTransferState((prev) => ({
+          ...prev,
+          status: 'failed',
+          error: message,
+        }));
       }
     },
     [callState.callSid],
@@ -91,17 +111,38 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         agentCallSid: callSid,
       });
 
-      setTransferState({ status: 'completed', transferCallSid: null, conferenceSid: null, error: null });
+      setTransferState({
+        status: 'completed',
+        transferCallSid: null,
+        conferenceSid: null,
+        error: null,
+      });
       setActiveTransfer(null);
     } catch (err: unknown) {
+      captureException(err, {
+        extra: {
+          context: 'completeTransfer',
+          callSid,
+          conferenceSid: transferState.conferenceSid,
+        },
+      });
       const message = err instanceof Error ? err.message : 'Complete failed';
-      setTransferState((prev) => ({ ...prev, status: 'failed', error: message }));
+      setTransferState((prev) => ({
+        ...prev,
+        status: 'failed',
+        error: message,
+      }));
     }
   }, [callState.callSid, transferState.conferenceSid, setActiveTransfer]);
 
   const cancelTransfer = useCallback(async () => {
     const callSid = callState.callSid;
-    if (!callSid || !transferState.conferenceSid || !transferState.transferCallSid) return;
+    if (
+      !callSid ||
+      !transferState.conferenceSid ||
+      !transferState.transferCallSid
+    )
+      return;
 
     try {
       await postJson(`/v1/calls/${callSid}/transfer/cancel`, {
@@ -109,13 +150,35 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         transferCallSid: transferState.transferCallSid,
       });
 
-      setTransferState({ status: 'cancelled', transferCallSid: null, conferenceSid: null, error: null });
+      setTransferState({
+        status: 'cancelled',
+        transferCallSid: null,
+        conferenceSid: null,
+        error: null,
+      });
       setActiveTransfer(null);
     } catch (err: unknown) {
+      captureException(err, {
+        extra: {
+          context: 'cancelTransfer',
+          callSid,
+          conferenceSid: transferState.conferenceSid,
+          transferCallSid: transferState.transferCallSid,
+        },
+      });
       const message = err instanceof Error ? err.message : 'Cancel failed';
-      setTransferState((prev) => ({ ...prev, status: 'failed', error: message }));
+      setTransferState((prev) => ({
+        ...prev,
+        status: 'failed',
+        error: message,
+      }));
     }
-  }, [callState.callSid, transferState.conferenceSid, transferState.transferCallSid, setActiveTransfer]);
+  }, [
+    callState.callSid,
+    transferState.conferenceSid,
+    transferState.transferCallSid,
+    setActiveTransfer,
+  ]);
 
   const toggleHold = useCallback(
     async (hold: boolean) => {
@@ -126,11 +189,20 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         await postJson(`/v1/calls/${callSid}/hold`, { hold });
         setIsOnHold(hold);
       } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'toggleHold', callSid, hold },
+        });
         // hold toggle failed — UI stays in previous state
       }
     },
     [callState.callSid, setIsOnHold],
   );
 
-  return { transferState, initiateTransfer, completeTransfer, cancelTransfer, toggleHold };
+  return {
+    transferState,
+    initiateTransfer,
+    completeTransfer,
+    cancelTransfer,
+    toggleHold,
+  };
 };
