@@ -1,9 +1,6 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
-import {
-  IconPhone,
-  IconX,
-} from '@tabler/icons-react';
+import { IconPhone, IconX } from '@tabler/icons-react';
 
 import { formatPhone, stripNonDigits } from '@/dialer/utils/phoneFormat';
 
@@ -13,17 +10,18 @@ type TransferModalProps = {
   onTransfer: (to: string, type: TransferType) => void;
   onClose: () => void;
   isTransferring: boolean;
+  error: string | null;
 };
 
 const StyledOverlay = styled.div`
-  position: absolute;
-  inset: 0;
   background: ${({ theme }) => theme.background.primary};
-  z-index: 10;
   display: flex;
   flex-direction: column;
-  padding: ${({ theme }) => theme.spacing(4)};
   gap: ${({ theme }) => theme.spacing(3)};
+  inset: 0;
+  padding: ${({ theme }) => theme.spacing(4)};
+  position: absolute;
+  z-index: 10;
 `;
 
 const StyledHeader = styled.div`
@@ -33,9 +31,9 @@ const StyledHeader = styled.div`
 `;
 
 const StyledTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: 14px;
   font-weight: 600;
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledCloseButton = styled.button`
@@ -98,6 +96,12 @@ const StyledDescription = styled.span`
   line-height: 1.4;
 `;
 
+const StyledError = styled.span`
+  font-size: 12px;
+  color: #ef4444;
+  line-height: 1.4;
+`;
+
 const StyledTransferButton = styled.button<{ isDisabled: boolean }>`
   display: flex;
   align-items: center;
@@ -128,6 +132,7 @@ export const TransferModal = ({
   onTransfer,
   onClose,
   isTransferring,
+  error,
 }: TransferModalProps) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [transferType, setTransferType] = useState<TransferType>('warm');
@@ -140,10 +145,17 @@ export const TransferModal = ({
     [],
   );
 
+  const handleClearError = useCallback(() => {
+    setPhoneNumber('');
+  }, []);
+
   const handleTransfer = useCallback(() => {
     const digits = stripNonDigits(phoneNumber);
     if (digits.length < 10 || isTransferring) return;
-    onTransfer(digits.length === 10 ? `+1${digits}` : `+${digits}`, transferType);
+    onTransfer(
+      digits.length === 10 ? `+1${digits}` : `+${digits}`,
+      transferType,
+    );
   }, [phoneNumber, transferType, isTransferring, onTransfer]);
 
   const handleKeyDown = useCallback(
@@ -174,6 +186,8 @@ export const TransferModal = ({
         onKeyDown={handleKeyDown}
         autoFocus
       />
+
+      {error && <StyledError>{error}</StyledError>}
 
       <StyledToggle>
         <StyledToggleOption
