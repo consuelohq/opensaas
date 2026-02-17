@@ -47,7 +47,7 @@ export class GHLPushMappingServiceImpl implements GHLPushMappingService {
     if (changes.lastName !== undefined)
       mapped.lastName = changes.lastName as string;
     if (changes.email !== undefined) mapped.email = changes.email as string;
-    if (changes.phone !== undefined) mapped.phone = changes.phone as string;
+    if ('phone' in changes) mapped.phone = changes.phone as string;
     if (changes.address1 !== undefined)
       mapped.address1 = changes.address1 as string;
     if (changes.city !== undefined) mapped.city = changes.city as string;
