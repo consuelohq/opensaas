@@ -94,7 +94,7 @@ const contactsList = async (opts: {
 
     const res = await apiGet<{ contacts: Contact[] }>('/v1/contacts', query);
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -134,7 +134,7 @@ const contactsGet = async (id: string): Promise<void> => {
   try {
     const res = await apiGet<{ contact: Contact }>(`/v1/contacts/${id}`);
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -184,7 +184,7 @@ const contactsCreate = async (opts: {
 
     const res = await apiPost<{ contact: Contact }>('/v1/contacts', body);
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -235,7 +235,7 @@ const contactsUpdate = async (
 
     const res = await apiPut<{ contact: Contact }>(`/v1/contacts/${id}`, body);
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -254,7 +254,7 @@ const contactsDelete = async (id: string): Promise<void> => {
   try {
     const res = await apiDelete<{ deleted: boolean }>(`/v1/contacts/${id}`);
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -310,7 +310,7 @@ const contactsImport = async (
       { content },
     );
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);
@@ -342,7 +342,7 @@ const contactsSearch = async (
       limit: opts.limit,
     });
     handle501(res.status, 'contacts API routes');
-    if (!res.ok) handleApiError(res.status, res.data);
+    if (!res.ok) return handleApiError(res.status, res.data);
 
     if (isJson()) {
       json(res.data);

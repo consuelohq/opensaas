@@ -199,16 +199,6 @@ const deploy = async (options: DeployOptions): Promise<void> => {
   }
 };
 
-  if (isJson()) {
-    json(result);
-  } else {
-    log('');
-    log(`  ✓ deployed to ${platform}${options.dryRun ? ' (dry run)' : ''}`);
-    if (url) log(`  url: ${url}`);
-    log(`  duration: ${duration}s`);
-  }
-};
-
 export const registerDeploy = (program: Command): void => {
   program
     .command('deploy')

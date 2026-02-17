@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import crypto from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import ora from 'ora';
 
 const CONTAINER_NAME = 'consuelo-postgres';
@@ -21,7 +21,7 @@ export async function provisionDockerPostgres(): Promise<string> {
   execSync(`docker pull ${POSTGRES_IMAGE}`, { stdio: 'ignore' });
   spin.succeed('Image ready');
 
-  const password = crypto.randomBytes(16).toString('hex');
+  const password = randomBytes(16).toString('hex');
 
   spin.start('Starting database container...');
   try {

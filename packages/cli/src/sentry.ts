@@ -41,7 +41,7 @@ export const initSentry = async (): Promise<void> => {
   initialized = true;
 };
 
-export const captureError = (err: unknown, context?: { command?: string; category?: string }): void => {
+export const captureError = (err: unknown, context?: Record<string, string>): void => {
   if (!initialized || !Sentry) return;
   Sentry.captureException(err, {
     tags: {
