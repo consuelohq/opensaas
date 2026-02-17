@@ -1,15 +1,17 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { IconLoader2, IconPhone, IconPhoneOff } from '@tabler/icons-react';
 import { captureException } from '@sentry/react';
 
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
+import { callErrorState } from '@/dialer/states/callErrorState';
 import { stripNonDigits } from '@/dialer/utils/phoneFormat';
 
 const isValidNumber = (phone: string): boolean => {
@@ -73,6 +75,7 @@ export const CallButton = () => {
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const contact = useRecoilValue(selectedContactState);
+  const setCallError = useSetRecoilState(callErrorState);
   const { connect, disconnect } = useTwilioDevice();
 
   const isConnecting =
@@ -93,6 +96,35 @@ export const CallButton = () => {
     if (!valid || !fromNumber) return;
 
     try {
+      // Preflight check: acquire caller ID lock before initiating call
+      const preflightRes = await fetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ callerId: fromNumber }),
+        },
+      );
+
+      if (!preflightRes.ok) {
+        if (preflightRes.status === 409) {
+          setCallError({
+            reason: 'caller_id_locked',
+            message: 'Number in use by another agent',
+            occurredAt: new Date(),
+          });
+          return;
+        }
+        // For other errors, try to proceed with the call anyway
+        captureException(
+          new Error(`Preflight failed: ${preflightRes.status}`),
+          {
+            extra: { status: preflightRes.status, callerId: fromNumber },
+          },
+        );
+      }
+
       await connect({ To: rawNumber, From: fromNumber });
     } catch (err: unknown) {
       captureException(err, {
@@ -104,7 +136,15 @@ export const CallButton = () => {
       });
       // connect failure already sets callState to 'failed' via useTwilioDevice
     }
-  }, [isInCall, valid, fromNumber, rawNumber, connect, disconnect]);
+  }, [
+    isInCall,
+    valid,
+    fromNumber,
+    rawNumber,
+    connect,
+    disconnect,
+    setCallError,
+  ]);
 
   const variant = isInCall ? 'end' : !valid ? 'disabled' : 'call';
   const isDisabled = !isInCall && !valid;

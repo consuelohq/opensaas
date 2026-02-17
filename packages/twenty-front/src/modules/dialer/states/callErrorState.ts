@@ -5,7 +5,8 @@ export type CallErrorReason =
   | 'busy'
   | 'no-answer'
   | 'canceled'
-  | 'unknown';
+  | 'unknown'
+  | 'caller_id_locked';
 
 export interface CallError {
   reason: CallErrorReason;

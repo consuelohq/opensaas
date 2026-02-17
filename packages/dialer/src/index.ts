@@ -6,10 +6,20 @@ export { TwilioProvider } from './providers/twilio.js';
 export type { DialerProvider } from './providers/base.js';
 
 // Services
-export { LocalPresenceService, extractAreaCode } from './services/local-presence.js';
-export { CallerIdLockService, InMemoryLockStore } from './services/caller-id.js';
+export {
+  LocalPresenceService,
+  extractAreaCode,
+} from './services/local-presence.js';
+export {
+  CallerIdLockService,
+  InMemoryLockStore,
+  RedisLockStore,
+} from './services/caller-id.js';
 export { ConferenceService } from './services/conference.js';
-export { ParallelDialerService, InMemoryParallelStore } from './services/parallel-dialer.js';
+export {
+  ParallelDialerService,
+  InMemoryParallelStore,
+} from './services/parallel-dialer.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
