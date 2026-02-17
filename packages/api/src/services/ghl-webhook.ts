@@ -2,11 +2,23 @@ import * as Sentry from '@sentry/node';
 import * as crypto from 'node:crypto';
 import type { GHLContact, GHLOpportunity } from './ghl-client.js';
 
-// region — types
-
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
+
+const createLogger = async (component: string) => {
+  try {
+    const { createLogger: logger } = await import('@consuelo/logger');
+    return logger(component);
+  } catch {
+    return null;
+  }
+};
+
+// region — types
 
 export type GHLWebhookEventType =
   | 'ContactCreate'
@@ -28,13 +40,30 @@ export interface GHLWebhookPayload {
 
 // sync service interface — actual implementation is DEV-782
 export interface GHLSyncServiceInterface {
-  findMapping(workspaceId: string, ghlId: string): Promise<{ id: string; twentyPersonId: string } | null>;
-  createTwentyPerson(workspaceId: string, data: Record<string, unknown>): Promise<{ id: string }>;
-  updateTwentyPerson(twentyPersonId: string, data: Record<string, unknown>): Promise<void>;
-  createSyncMapping(workspaceId: string, ghlId: string, twentyPersonId: string): Promise<void>;
+  findMapping(
+    workspaceId: string,
+    ghlId: string,
+  ): Promise<{ id: string; twentyPersonId: string } | null>;
+  createTwentyPerson(
+    workspaceId: string,
+    data: Record<string, unknown>,
+  ): Promise<{ id: string }>;
+  updateTwentyPerson(
+    twentyPersonId: string,
+    data: Record<string, unknown>,
+  ): Promise<void>;
+  createSyncMapping(
+    workspaceId: string,
+    ghlId: string,
+    twentyPersonId: string,
+  ): Promise<void>;
   updateSyncMapping(mappingId: string): Promise<void>;
   mapGhlContactToTwenty(contact: GHLContact): Record<string, unknown>;
-  handleOpportunitySync(workspaceId: string, opportunity: GHLOpportunity, eventType: string): Promise<void>;
+  handleOpportunitySync(
+    workspaceId: string,
+    opportunity: GHLOpportunity,
+    eventType: string,
+  ): Promise<void>;
 }
 
 // endregion
@@ -48,8 +77,14 @@ export const verifyWebhookSignature = (
 ): boolean => {
   if (!signature) return false;
   try {
-    const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    const expected = crypto
+      .createHmac('sha256', secret)
+      .update(rawBody)
+      .digest('hex');
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expected),
+    );
   } catch (err: unknown) {
     Sentry.captureException(err);
     return false;
@@ -67,18 +102,35 @@ export class GHLWebhookHandler {
   ) {}
 
   async handleWebhook(payload: GHLWebhookPayload): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
+      logger?.info('[GHLWebhook] Received event', {
+        eventType: payload.type,
+        eventId: payload.id,
+        locationId: payload.locationId,
+      });
+
       // idempotency — skip if we've already processed this event
       if (payload.id) {
         const existing = await this.db.query(
           'SELECT 1 FROM ghl_webhook_events WHERE event_id = $1',
           [payload.id],
         );
-        if (existing.rowCount > 0) return;
+        if (existing.rowCount > 0) {
+          logger?.info('[GHLWebhook] Skipping duplicate event', {
+            eventId: payload.id,
+          });
+          return;
+        }
       }
 
       const workspaceId = await this.getWorkspaceByLocation(payload.locationId);
-      if (!workspaceId) return;
+      if (!workspaceId) {
+        logger?.warn('[GHLWebhook] Unknown location ID, skipping', {
+          locationId: payload.locationId,
+        });
+        return;
+      }
 
       switch (payload.type) {
         case 'ContactCreate':
@@ -100,6 +152,12 @@ export class GHLWebhookHandler {
           break;
       }
 
+      logger?.info('[GHLWebhook] Event processed successfully', {
+        eventType: payload.type,
+        eventId: payload.id,
+        workspaceId,
+      });
+
       // record processed event for idempotency
       if (payload.id) {
         await this.db.query(
@@ -108,12 +166,20 @@ export class GHLWebhookHandler {
         );
       }
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Event processing failed', {
+        eventType: payload.type,
+        eventId: payload.id,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async getWorkspaceByLocation(locationId: string): Promise<string | null> {
+  private async getWorkspaceByLocation(
+    locationId: string,
+  ): Promise<string | null> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const result = await this.db.query(
         'SELECT workspace_id FROM ghl_connections WHERE location_id = $1 AND disconnected_at IS NULL',
@@ -122,71 +188,200 @@ export class GHLWebhookHandler {
       if (result.rowCount === 0) return null;
       return result.rows[0].workspace_id as string;
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Failed to lookup workspace', {
+        locationId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async handleContactCreate(workspaceId: string, body: Record<string, unknown>): Promise<void> {
+  private async handleContactCreate(
+    workspaceId: string,
+    body: Record<string, unknown>,
+  ): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const ghlContact = body as unknown as GHLContact;
-      const existing = await this.syncService.findMapping(workspaceId, ghlContact.id);
-      if (existing) return;
+      const existing = await this.syncService.findMapping(
+        workspaceId,
+        ghlContact.id,
+      );
+      if (existing) {
+        logger?.info('[GHLWebhook] Contact already mapped, skipping create', {
+          ghlContactId: ghlContact.id,
+          workspaceId,
+        });
+        return;
+      }
 
       const twentyData = this.syncService.mapGhlContactToTwenty(ghlContact);
-      const person = await this.syncService.createTwentyPerson(workspaceId, twentyData);
-      await this.syncService.createSyncMapping(workspaceId, ghlContact.id, person.id);
+      const person = await this.syncService.createTwentyPerson(
+        workspaceId,
+        twentyData,
+      );
+      await this.syncService.createSyncMapping(
+        workspaceId,
+        ghlContact.id,
+        person.id,
+      );
+
+      logger?.info('[GHLWebhook] Contact created', {
+        ghlContactId: ghlContact.id,
+        twentyPersonId: person.id,
+        workspaceId,
+      });
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Contact create failed', {
+        ghlContactId: (body as { id?: string }).id,
+        workspaceId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async handleContactUpdate(workspaceId: string, body: Record<string, unknown>): Promise<void> {
+  private async handleContactUpdate(
+    workspaceId: string,
+    body: Record<string, unknown>,
+  ): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const ghlContact = body as unknown as GHLContact;
-      const mapping = await this.syncService.findMapping(workspaceId, ghlContact.id);
-      if (!mapping) return;
+      const mapping = await this.syncService.findMapping(
+        workspaceId,
+        ghlContact.id,
+      );
+      if (!mapping) {
+        logger?.info('[GHLWebhook] No mapping found for contact update', {
+          ghlContactId: ghlContact.id,
+          workspaceId,
+        });
+        return;
+      }
 
       const twentyData = this.syncService.mapGhlContactToTwenty(ghlContact);
-      await this.syncService.updateTwentyPerson(mapping.twentyPersonId, twentyData);
+      await this.syncService.updateTwentyPerson(
+        mapping.twentyPersonId,
+        twentyData,
+      );
       await this.syncService.updateSyncMapping(mapping.id);
+
+      logger?.info('[GHLWebhook] Contact updated', {
+        ghlContactId: ghlContact.id,
+        twentyPersonId: mapping.twentyPersonId,
+        workspaceId,
+      });
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Contact update failed', {
+        ghlContactId: (body as { id?: string }).id,
+        workspaceId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async handleContactDelete(workspaceId: string, body: Record<string, unknown>): Promise<void> {
+  private async handleContactDelete(
+    workspaceId: string,
+    body: Record<string, unknown>,
+  ): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const { id } = body as { id: string };
       const mapping = await this.syncService.findMapping(workspaceId, id);
-      if (!mapping) return;
+      if (!mapping) {
+        logger?.info('[GHLWebhook] No mapping found for contact delete', {
+          ghlContactId: id,
+          workspaceId,
+        });
+        return;
+      }
       // remove mapping only — don't delete the twenty record
-      await this.db.query('DELETE FROM ghl_sync_mappings WHERE id = $1', [mapping.id]);
+      await this.db.query('DELETE FROM ghl_sync_mappings WHERE id = $1', [
+        mapping.id,
+      ]);
+
+      logger?.info('[GHLWebhook] Contact mapping deleted', {
+        ghlContactId: id,
+        twentyPersonId: mapping.twentyPersonId,
+        workspaceId,
+      });
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Contact delete failed', {
+        ghlContactId: (body as { id?: string }).id,
+        workspaceId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async handleDndUpdate(workspaceId: string, body: Record<string, unknown>): Promise<void> {
+  private async handleDndUpdate(
+    workspaceId: string,
+    body: Record<string, unknown>,
+  ): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const { id, dnd } = body as { id: string; dnd: boolean };
       const mapping = await this.syncService.findMapping(workspaceId, id);
-      if (!mapping) return;
-      await this.syncService.updateTwentyPerson(mapping.twentyPersonId, { dncStatus: dnd });
+      if (!mapping) {
+        logger?.info('[GHLWebhook] No mapping found for DND update', {
+          ghlContactId: id,
+          workspaceId,
+        });
+        return;
+      }
+      await this.syncService.updateTwentyPerson(mapping.twentyPersonId, {
+        dncStatus: dnd,
+      });
+
+      logger?.info('[GHLWebhook] DND status updated', {
+        ghlContactId: id,
+        twentyPersonId: mapping.twentyPersonId,
+        dnd,
+        workspaceId,
+      });
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] DND update failed', {
+        ghlContactId: (body as { id?: string }).id,
+        workspaceId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
   }
 
-  private async handleOpportunityEvent(workspaceId: string, payload: GHLWebhookPayload): Promise<void> {
+  private async handleOpportunityEvent(
+    workspaceId: string,
+    payload: GHLWebhookPayload,
+  ): Promise<void> {
+    const logger = await createLogger('api:ghl-webhook');
     try {
       const opportunity = payload.body as unknown as GHLOpportunity;
-      await this.syncService.handleOpportunitySync(workspaceId, opportunity, payload.type);
+      await this.syncService.handleOpportunitySync(
+        workspaceId,
+        opportunity,
+        payload.type,
+      );
+
+      logger?.info('[GHLWebhook] Opportunity event processed', {
+        opportunityId: opportunity.id,
+        eventType: payload.type,
+        workspaceId,
+      });
     } catch (err: unknown) {
+      logger?.error('[GHLWebhook] Opportunity event failed', {
+        opportunityId: (payload.body as { id?: string }).id,
+        eventType: payload.type,
+        workspaceId,
+        error: err instanceof Error ? err.message : 'unknown error',
+      });
       Sentry.captureException(err);
       throw err;
     }
