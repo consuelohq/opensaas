@@ -1,18 +1,11 @@
 import { randomUUID } from 'node:crypto';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { Dialer } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
+import { sharedDialer as dialer } from '../shared/dialer.js';
+import { getSharedPool } from '../shared/db.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
-
-type Pool = {
-  query(
-    text: string,
-    values?: unknown[],
-  ): Promise<{ rows: Record<string, unknown>[] }>;
-};
 
 interface CallBody {
   to: string;
@@ -35,7 +28,6 @@ interface AnalysisBody {
   summary?: string;
 }
 
-// SQL constants
 const SQL_HISTORY =
   'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.workspace_id = $1';
 
@@ -54,30 +46,9 @@ const SQL_GET_RECORDING_INFO =
 const SQL_PERSIST_ANALYSIS =
   'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING id';
 
-/** /v1/calls routes wired to @consuelo/dialer */
+const getPool = getSharedPool;
+
 export const callRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-  });
-
-  let pool: Pool | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
-
   const requireAuth = (
     req: Parameters<RouteDefinition['handler']>[0],
     res: Parameters<RouteDefinition['handler']>[1],
@@ -140,8 +111,6 @@ export const callRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // --- callback mode (literal routes before :id param routes) ---
-
     {
       method: 'POST',
       path: '/v1/calls/callback',
@@ -177,8 +146,6 @@ export const callRoutes = (): RouteDefinition[] => {
           });
           return;
         }
-
-        // TODO DEV-750: validate agentPhone belongs to authenticated user (phase 7 phone management)
 
         const conferenceName = `conf-${randomUUID()}`;
         const callerId =
@@ -216,7 +183,6 @@ export const callRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/calls/callback/twiml',
       handler: errorHandler(async (req, res) => {
-        // TwiML webhook — twilio calls this when agent answers in callback mode
         const customer = req.query?.customer ?? '';
         const conf = req.query?.conf ?? '';
         const from = req.query?.from ?? '';
@@ -243,10 +209,8 @@ export const callRoutes = (): RouteDefinition[] => {
           '</Response>',
         ].join('');
 
-        // return TwiML to twilio for the agent leg
         res.type('text/xml').status(200).send(agentTwiml);
 
-        // fire-and-forget: dial customer into the same conference
         const customerTwiml = dialer.conference.generateConferenceTwiml(conf, {
           startOnEnter: false,
           endOnExit: true,
@@ -265,7 +229,6 @@ export const callRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // --- literal route before :id ---
     {
       method: 'GET',
       path: '/v1/calls/history',
@@ -276,7 +239,6 @@ export const callRoutes = (): RouteDefinition[] => {
         const limit = Math.min(Number(req.query?.limit) || 50, 250);
         const offset = Number(req.query?.offset) || 0;
 
-        // build dynamic WHERE clauses
         const conditions = ['c.workspace_id = $1'];
         const params: unknown[] = [auth.workspaceId];
         let idx = 2;

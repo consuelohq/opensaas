@@ -2,6 +2,7 @@ import { Contacts } from '@consuelo/contacts';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
+import { getSharedPool } from '../shared/db.js';
 
 interface CreateContactBody {
   name: string;
@@ -15,42 +16,17 @@ interface ImportBody {
   content: string;
 }
 
-type Pool = {
-  query(
-    text: string,
-    values?: unknown[],
-  ): Promise<{ rows: Record<string, unknown>[] }>;
-};
-
 const SQL_INSERT_NOTE =
   'INSERT INTO contact_notes (contact_id, content, call_id, created_by, workspace_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, contact_id, content, call_id, created_by, created_at';
 
 const SQL_INSERT_FOLLOW_UP =
   'INSERT INTO contact_follow_ups (contact_id, scheduled_at, note, call_id, created_by, workspace_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, contact_id, scheduled_at, note, call_id, status, created_by, created_at';
 
+const getPool = getSharedPool;
+
 /** /v1/contacts routes wired to @consuelo/contacts */
 export const contactRoutes = (): RouteDefinition[] => {
   const contacts = new Contacts();
-  let pool: Pool | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (!pool) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      Sentry.captureException(
-        err instanceof Error ? err : new Error(String(err)),
-        {
-          extra: { context: 'contacts_getPool' },
-        },
-      );
-      pool = null;
-      throw err;
-    }
-  };
 
   return [
     {

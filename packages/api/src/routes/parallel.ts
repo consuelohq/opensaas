@@ -1,13 +1,11 @@
-import {
-  Dialer,
-  InMemoryLockStore,
-  CallerIdLockService,
-  type ParallelGroup,
-} from '@consuelo/dialer';
-import type { NumberPool } from '@consuelo/dialer';
+import type { ParallelGroup, NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
+import {
+  sharedDialer as dialer,
+  sharedCallerIdLockService as lockService,
+} from '../shared/dialer.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -18,19 +16,7 @@ interface ParallelDialBody {
 }
 
 /** /v1/calls/parallel routes — parallel dialing (power dialer) */
-export const parallelRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-    baseUrl: process.env.API_BASE_URL,
-  });
-
-  const lockService = new CallerIdLockService(new InMemoryLockStore());
-  dialer.withCallerIdLock(lockService);
-
-  return [
+export const parallelRoutes = (): RouteDefinition[] => [
     // --- literal routes first (ROUTE_ORDER) ---
 
     {
@@ -74,14 +60,12 @@ export const parallelRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          // fetch account numbers and build pool for local presence
           const accountNumbers = await dialer.listNumbers();
           const pool: NumberPool = {
             numbers: accountNumbers,
             primaryNumber: accountNumbers[0],
           };
 
-          // select caller IDs via local presence per contact
           const fromNumbers: string[] = [];
           for (const customerNumber of body.customerNumbers) {
             const selection = await dialer.localPresence.selectNumber(
@@ -93,7 +77,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
             );
           }
 
-          // acquire caller ID locks
           for (let i = 0; i < fromNumbers.length; i++) {
             if (fromNumbers[i]) {
               const locked = await lockService.acquireLock(
@@ -102,7 +85,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
                 `parallel-${i}`,
               );
               if (!locked) {
-                // release any already-acquired locks
                 for (let j = 0; j < i; j++) {
                   await lockService.releaseLockByNumber(fromNumbers[j]);
                 }
@@ -181,7 +163,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/calls/parallel/status-callback',
       handler: errorHandler(async (req, res) => {
-        // twilio webhook — no auth required
         const body = req.body as Record<string, string> | undefined;
         const callSid = body?.CallSid;
         const callStatus = body?.CallStatus;
@@ -204,7 +185,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
             answeredBy,
           );
 
-          // release caller ID locks for completed non-winner calls
           const groupId = await dialer.parallel.getGroupIdForCall(callSid);
           if (groupId) {
             const group = await dialer.parallel.getGroup(groupId);
@@ -238,7 +218,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/calls/parallel/customer-twiml',
       handler: errorHandler(async (req, res) => {
-        // twilio webhook — no auth required
         const body = req.body as Record<string, string> | undefined;
         const callSid = body?.CallSid;
 
@@ -261,7 +240,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
             return;
           }
 
-          // TwiML response — uses Express methods not on ApiResponse interface (same as voice.ts)
           (res as Record<string, Function>)
             .type('text/xml')
             .status(200)
@@ -341,14 +319,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
 
     {
       method: 'POST',
-      path: '/v1/calls/parallel/:groupId/terminate',            .status(500)
-            .json({ error: { code: 'GROUP_LOOKUP_FAILED', message } });
-        }
-      }),
-    },
-
-    {
-      method: 'POST',
       path: '/v1/calls/parallel/:groupId/terminate',
       handler: errorHandler(async (req, res) => {
         const userId = req.auth?.userId;
@@ -379,7 +349,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
             return;
           }
 
-          // release all caller ID locks before terminating
           for (const call of group.calls) {
             if (call.fromNumber) {
               await lockService.releaseLockByNumber(call.fromNumber);
@@ -395,12 +364,6 @@ export const parallelRoutes = (): RouteDefinition[] => {
           const message =
             err instanceof Error ? err.message : 'Terminate failed';
           res.status(500).json({ error: { code: 'TERMINATE_FAILED', message } });
-        }
-      }),
-    },
-  ];
-};            .status(500)
-            .json({ error: { code: 'TERMINATE_FAILED', message } });
         }
       }),
     },
