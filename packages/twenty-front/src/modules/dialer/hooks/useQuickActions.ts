@@ -5,11 +5,11 @@ import { CoreObjectNameSingular } from '@/object-metadata/types/CoreObjectNameSi
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { type Note } from '@/activities/types/Note';
 import { type NoteTarget } from '@/activities/types/NoteTarget';
-import { type Task } from '@/activities/types/Task';
+import { type ActivityStatus, type Task } from '@/activities/types/Task';
 import { type TaskTarget } from '@/activities/types/TaskTarget';
 
 // twenty's open task status value
-const TASK_STATUS_OPEN = 'TODO'; // TODO(DEV-719) twenty's ActivityStatus enum value
+const TASK_STATUS_OPEN: ActivityStatus = 'TODO';
 
 type UseQuickActionsProps = {
   contactId: string | null;
