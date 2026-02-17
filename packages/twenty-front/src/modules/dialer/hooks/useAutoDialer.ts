@@ -9,16 +9,27 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
-import type { CallOutcome, QueueItem, QueueSettings } from '@/dialer/types/queue';
+import type {
+  QueueItem,
+  QueueOutcome,
+  QueueSettings,
+} from '@/dialer/types/queue';
 
 const shouldRetry = (item: QueueItem, settings: QueueSettings): boolean => {
   if (item.attempts >= settings.maxAttempts) return false;
   const outcome = item.callOutcome;
   if (!outcome) return false;
-  if (outcome === 'connected' || outcome === 'wrong-number' || outcome === 'not-interested' || outcome === 'dnc') {
+  if (
+    outcome === 'connected' ||
+    outcome === 'wrong-number' ||
+    outcome === 'not-interested' ||
+    outcome === 'dnc'
+  ) {
     return false;
   }
-  return outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'busy';
+  return (
+    outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'busy'
+  );
 };
 
 const getRetryDelay = (attempts: number): number =>
@@ -45,7 +56,8 @@ export const useAutoDialer = () => {
 
   // watch for call end → start countdown
   useEffect(() => {
-    const wasActive = prevStatusRef.current === 'active' || prevStatusRef.current === 'ringing';
+    const wasActive =
+      prevStatusRef.current === 'active' || prevStatusRef.current === 'ringing';
     prevStatusRef.current = callState.status;
 
     if (callState.status !== 'ended') return;

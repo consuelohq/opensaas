@@ -3,17 +3,17 @@ import { selector } from 'recoil';
 import { createState } from '@/ui/utilities/state/utils/createState';
 
 import {
-  type CallOutcome,
   type CallQueue,
   type QueueCategory,
   type QueueItem,
+  type QueueOutcome,
   type QueueSession,
   type QueueStatus,
 } from '@/dialer/types/queue';
 
 // atoms
 
-export const lastCallOutcomeState = createState<CallOutcome | null>({
+export const lastCallOutcomeState = createState<QueueOutcome | null>({
   key: 'dialerLastCallOutcome',
   defaultValue: null,
 });

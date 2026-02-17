@@ -38,7 +38,16 @@ CREATE TABLE queue_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- existing indexes
 CREATE INDEX idx_queue_items_queue_id ON queue_items(queue_id);
 CREATE INDEX idx_queue_items_status ON queue_items(status);
 CREATE INDEX idx_call_queues_user ON call_queues(user_id, workspace_id);
 CREATE INDEX idx_call_queues_status ON call_queues(status);
+
+-- additional indexes for queue performance (DEV-855)
+CREATE INDEX idx_call_queues_workspace ON call_queues(workspace_id);
+CREATE INDEX idx_call_queues_workspace_status ON call_queues(workspace_id, status);
+CREATE INDEX idx_queue_items_queue ON queue_items(queue_id);
+CREATE INDEX idx_queue_items_contact ON queue_items(contact_id);
+CREATE INDEX idx_queue_items_queue_status ON queue_items(queue_id, status);
+CREATE INDEX idx_queue_items_outcome ON queue_items(call_outcome) WHERE call_outcome IS NOT NULL;

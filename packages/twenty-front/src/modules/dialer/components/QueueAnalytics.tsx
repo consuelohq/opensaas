@@ -3,12 +3,9 @@ import { useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
 import { IconDownload } from '@tabler/icons-react';
 
-import { type CallOutcome } from '@/dialer/types/queue';
+import { type QueueOutcome } from '@/dialer/types/queue';
 import { useQueueAnalytics } from '@/dialer/hooks/useQueueAnalytics';
-import {
-  activeQueueState,
-  queueItemsState,
-} from '@/dialer/states/queueState';
+import { activeQueueState, queueItemsState } from '@/dialer/states/queueState';
 import { formatDurationHuman } from '@/dialer/utils/analyticsCalculator';
 
 // region styled
@@ -122,28 +119,28 @@ const StyledExportButton = styled.button`
 
 // endregion
 
-const OUTCOME_COLORS: Record<CallOutcome, string> = {
-  'connected': '#16a34a',
-  'qualified': '#22c55e',
+const OUTCOME_COLORS: Record<QueueOutcome, string> = {
+  connected: '#16a34a',
+  qualified: '#22c55e',
   'callback-requested': '#3b82f6',
-  'voicemail': '#f59e0b',
-  'busy': '#ef4444',
+  voicemail: '#f59e0b',
+  busy: '#ef4444',
   'no-answer': '#6b7280',
   'not-interested': '#9ca3af',
   'wrong-number': '#dc2626',
-  'dnc': '#991b1b',
+  dnc: '#991b1b',
 };
 
-const OUTCOME_LABELS: Record<CallOutcome, string> = {
-  'connected': 'Connected',
+const OUTCOME_LABELS: Record<QueueOutcome, string> = {
+  connected: 'Connected',
   'no-answer': 'No Answer',
-  'voicemail': 'Voicemail',
-  'busy': 'Busy',
+  voicemail: 'Voicemail',
+  busy: 'Busy',
   'wrong-number': 'Wrong #',
   'callback-requested': 'Callback',
   'not-interested': 'Not Int.',
-  'qualified': 'Qualified',
-  'dnc': 'DNC',
+  qualified: 'Qualified',
+  dnc: 'DNC',
 };
 
 // stat cards
@@ -152,8 +149,11 @@ const StatCards = () => {
   const { stats } = useQueueAnalytics();
   if (!stats) return null;
 
-  const totalCalls = stats.answeredCount + stats.noAnswerCount +
-    stats.busyCount + stats.voicemailCount;
+  const totalCalls =
+    stats.answeredCount +
+    stats.noAnswerCount +
+    stats.busyCount +
+    stats.voicemailCount;
 
   return (
     <StyledGrid>
@@ -184,8 +184,9 @@ const StatCards = () => {
 const OutcomeChart = () => {
   const { outcomeBreakdown } = useQueueAnalytics();
 
-  const entries = (Object.entries(outcomeBreakdown) as [CallOutcome, number][])
-    .filter(([, count]) => count > 0);
+  const entries = (
+    Object.entries(outcomeBreakdown) as [QueueOutcome, number][]
+  ).filter(([, count]) => count > 0);
 
   if (entries.length === 0) return null;
 
@@ -195,9 +196,7 @@ const OutcomeChart = () => {
     <StyledOutcomeSection>
       {entries.map(([outcome, count]) => (
         <StyledOutcomeRow key={outcome}>
-          <StyledOutcomeLabel>
-            {OUTCOME_LABELS[outcome]}
-          </StyledOutcomeLabel>
+          <StyledOutcomeLabel>{OUTCOME_LABELS[outcome]}</StyledOutcomeLabel>
           <StyledOutcomeTrack>
             <StyledOutcomeFill
               width={max > 0 ? (count / max) * 100 : 0}
@@ -243,8 +242,11 @@ const QueueSessionSummary = () => {
 
   if (queue?.status !== 'completed' || !stats) return null;
 
-  const totalCalls = stats.answeredCount + stats.noAnswerCount +
-    stats.busyCount + stats.voicemailCount;
+  const totalCalls =
+    stats.answeredCount +
+    stats.noAnswerCount +
+    stats.busyCount +
+    stats.voicemailCount;
 
   return (
     <StyledSummary>
