@@ -157,6 +157,7 @@ export class RedisLockStore implements LockStore {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // HACK: ioredis peer dep — no static type
   private async getRedis(): Promise<any> {
     // HACK: ioredis peer dep — no static type
     if (!this.redis) {
