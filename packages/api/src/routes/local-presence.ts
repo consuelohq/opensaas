@@ -1,7 +1,4 @@
 import {
-  Dialer,
-  InMemoryLockStore,
-  CallerIdLockService,
   LocalPresenceService,
   extractAreaCode,
   type NumberPool,
@@ -10,26 +7,19 @@ import {
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
+import {
+  sharedDialer as dialer,
+  sharedCallerIdLockService as lockService,
+} from '../shared/dialer.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
-// in-memory local presence toggle per user (replaced by user_profiles in phase 7)
 const localPresenceEnabled = new Map<string, boolean>();
 
+const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
+
 /** /v1/local-presence + /v1/caller-id routes */
-export const localPresenceRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-    baseUrl: process.env.API_BASE_URL,
-  });
-
-  const lockService = new CallerIdLockService(new InMemoryLockStore());
-  const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
-
-  return [
+export const localPresenceRoutes = (): RouteDefinition[] => [
     // POST /v1/local-presence/toggle
     {
       method: 'POST',
@@ -61,7 +51,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
             {
-              extra: { context: 'local_presence_toggle', userId },
+              extra: { context: 'local_presence_toggle', userId: req.auth?.userId },
             },
           );
           const message = err instanceof Error ? err.message : 'unknown error';
@@ -95,7 +85,6 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
             return;
           }
 
-          // fromNumbers: comma-separated E.164 numbers (until phone management lands in phase 7)
           const fromNumbersRaw = req.query?.fromNumbers;
           if (!fromNumbersRaw) {
             res.status(400).json({
@@ -169,7 +158,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
             {
-              extra: { context: 'local_presence_preview', userId, phoneNumber },
+              extra: { context: 'local_presence_preview', userId: req.auth?.userId, phoneNumber: req.query?.phoneNumber },
             },
           );
           const message = err instanceof Error ? err.message : 'unknown error';
@@ -206,7 +195,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
             {
-              extra: { context: 'caller_id_locks', userId },
+              extra: { context: 'caller_id_locks', userId: req.auth?.userId },
             },
           );
           const message = err instanceof Error ? err.message : 'unknown error';
@@ -251,7 +240,6 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
                   },
                 },
               );
-              // call lookup failed — release stale lock defensively
               await lockService.releaseLock(lock.callSid);
               cleaned++;
             }
@@ -263,7 +251,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
             {
-              extra: { context: 'cleanup_locks', userId },
+              extra: { context: 'cleanup_locks', userId: req.auth?.userId },
             },
           );
           const message = err instanceof Error ? err.message : 'unknown error';
