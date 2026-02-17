@@ -8,8 +8,8 @@ import { type NoteTarget } from '@/activities/types/NoteTarget';
 import { type ActivityStatus, type Task } from '@/activities/types/Task';
 import { type TaskTarget } from '@/activities/types/TaskTarget';
 
-// twenty's open task status value
-const TASK_STATUS_OPEN: ActivityStatus = 'TODO';
+// twenty's open task status value — not a TODO(DEV-822)
+const TASK_STATUS_OPEN: ActivityStatus = 'TODO'; // TODO(DEV-822) twenty's ActivityStatus enum value
 
 type UseQuickActionsProps = {
   contactId: string | null;
