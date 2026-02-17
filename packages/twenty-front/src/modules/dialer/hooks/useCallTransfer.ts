@@ -18,6 +18,7 @@ interface TransferState {
 
 interface UseCallTransferReturn {
   transferState: TransferState;
+  holdError: string | null;
   initiateTransfer: (to: string, type: TransferType) => Promise<void>;
   completeTransfer: () => Promise<void>;
   cancelTransfer: () => Promise<void>;
@@ -60,6 +61,8 @@ export const useCallTransfer = (): UseCallTransferReturn => {
     conferenceSid: null,
     error: null,
   });
+
+  const [holdError, setHoldError] = useState<string | null>(null);
 
   const initiateTransfer = useCallback(
     async (to: string, type: TransferType) => {
@@ -185,6 +188,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
       const callSid = callState.callSid;
       if (!callSid) return;
 
+      setHoldError(null);
       try {
         await postJson(`/v1/calls/${callSid}/hold`, { hold });
         setIsOnHold(hold);
@@ -192,7 +196,9 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         captureException(err, {
           extra: { context: 'toggleHold', callSid, hold },
         });
-        // hold toggle failed — UI stays in previous state
+        const message =
+          err instanceof Error ? err.message : 'Hold toggle failed';
+        setHoldError(message);
       }
     },
     [callState.callSid, setIsOnHold],
@@ -200,6 +206,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
 
   return {
     transferState,
+    holdError,
     initiateTransfer,
     completeTransfer,
     cancelTransfer,

@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
   IconAlertCircle,
@@ -23,6 +23,7 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { callErrorState } from '@/dialer/states/callErrorState';
 import { isMutedState } from '@/dialer/states/isMutedState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
+import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 
 const VISIBLE_STATUSES = new Set(['connecting', 'ringing', 'active']);
 
@@ -105,9 +106,9 @@ const StyledWarmBar = styled.div`
 `;
 
 const StyledWarmLabel = styled.span`
-  font-size: 12px;
   color: ${({ theme }) => theme.font.color.secondary};
   flex: 1;
+  font-size: 12px;
 `;
 
 const StyledSmallButton = styled.button<{ danger?: boolean }>`
@@ -125,17 +126,17 @@ const StyledSmallButton = styled.button<{ danger?: boolean }>`
 `;
 
 const StyledErrorBar = styled.div`
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(2)};
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid #ef4444;
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  width: 100%;
   color: #ef4444;
+  display: flex;
   font-size: 12px;
+  gap: ${({ theme }) => theme.spacing(2)};
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing(2)};
+  width: 100%;
 `;
 
 const StyledErrorIcon = styled(IconAlertCircle)`
@@ -170,8 +171,11 @@ export const InCallControls = () => {
   const [isDTMFOpen, setIsDTMFOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
 
+  const { enqueueErrorSnackBar } = useSnackBar();
+
   const {
     transferState,
+    holdError,
     initiateTransfer,
     completeTransfer,
     cancelTransfer,
@@ -180,6 +184,27 @@ export const InCallControls = () => {
 
   const isActive = callState.status === 'active';
   const isConsulting = transferState.status === 'consulting';
+
+  useEffect(() => {
+    if (transferState.error) {
+      enqueueErrorSnackBar({ message: transferState.error });
+    }
+  }, [transferState.error, enqueueErrorSnackBar]);
+
+  useEffect(() => {
+    if (holdError) {
+      enqueueErrorSnackBar({ message: holdError });
+    }
+  }, [holdError, enqueueErrorSnackBar]);
+
+  useEffect(() => {
+    if (
+      transferState.status === 'completed' ||
+      transferState.status === 'cancelled'
+    ) {
+      setCallError(null);
+    }
+  }, [transferState.status, setCallError]);
 
   const handleDismissError = useCallback(() => {
     setCallError(null);
@@ -338,6 +363,7 @@ export const InCallControls = () => {
           onTransfer={handleTransfer}
           onClose={() => setIsTransferOpen(false)}
           isTransferring={transferState.status === 'initiating'}
+          error={transferState.status === 'failed' ? transferState.error : null}
         />
       )}
     </StyledContainer>
