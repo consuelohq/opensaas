@@ -183,8 +183,8 @@ export class KnowledgeService {
   private async getPool(): Promise<Pool> {
     try {
       if (!this.pool) {
-        const { default: pg } = await import('pg');
-        this.pool = new pg.Pool({
+        const { Pool } = await import('pg');
+        this.pool = new Pool({
           connectionString:
             process.env.KNOWLEDGE_DATABASE_URL ?? process.env.DATABASE_URL,
           max: 5,
