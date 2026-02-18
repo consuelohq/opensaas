@@ -9,20 +9,22 @@ import { type AuthProviderEnum } from 'src/engine/core-modules/workspace/types/w
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { type WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: UserEntity | null;
-    apiKey?: ApiKeyEntity | null;
-    application?: ApplicationEntity | null;
-    userWorkspace?: UserWorkspaceEntity;
-    locale: keyof typeof APP_LOCALES;
-    workspace?: WorkspaceEntity;
-    workspaceId?: string;
-    workspaceMetadataVersion?: number;
-    workspaceMemberId?: string;
-    workspaceMember?: WorkspaceMemberWorkspaceEntity;
-    userWorkspaceId?: string;
-    authProvider?: AuthProviderEnum | null;
-    impersonationContext?: AuthContext['impersonationContext'];
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserEntity | null | undefined;
+      apiKey?: ApiKeyEntity | null | undefined;
+      application?: ApplicationEntity | null | undefined;
+      userWorkspace?: UserWorkspaceEntity;
+      locale: keyof typeof APP_LOCALES;
+      workspace?: WorkspaceEntity;
+      workspaceId?: string;
+      workspaceMetadataVersion?: number;
+      workspaceMemberId?: string;
+      workspaceMember?: WorkspaceMemberWorkspaceEntity;
+      userWorkspaceId?: string;
+      authProvider?: AuthProviderEnum | null | undefined;
+      impersonationContext?: AuthContext['impersonationContext'];
+    }
   }
 }
