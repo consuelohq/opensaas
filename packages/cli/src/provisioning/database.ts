@@ -12,7 +12,8 @@ export async function provisionDockerPostgres(): Promise<string> {
   try {
     execSync('docker info', { stdio: 'ignore' });
     spin.succeed('Docker is running');
-  } catch {
+  } catch (_err: unknown) {
+    // Docker not available — intentional: config optional, will fail later with better message
     spin.fail('Docker is not running. Please start Docker and try again.');
     throw new Error('Docker not available');
   }
@@ -29,14 +30,14 @@ export async function provisionDockerPostgres(): Promise<string> {
     spin.warn(`Removing existing container '${CONTAINER_NAME}'`);
     execSync(`docker rm -f ${CONTAINER_NAME}`, { stdio: 'ignore' });
     spin.start('Starting database container...');
-  } catch {
-    // container doesn't exist, that's fine
+  } catch (_err: unknown) {
+    // container doesn't exist, that's fine — intentional: cleanup best-effort
   }
   execSync(
     `docker run -d --name ${CONTAINER_NAME} ` +
-    `-e POSTGRES_USER=consuelo -e POSTGRES_PASSWORD -e POSTGRES_DB=consuelo ` +
-    `-p ${POSTGRES_PORT}:5432 -v consuelo-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
-    { stdio: 'ignore', env: { ...process.env, POSTGRES_PASSWORD: password } }
+      `-e POSTGRES_USER=consuelo -e POSTGRES_PASSWORD -e POSTGRES_DB=consuelo ` +
+      `-p ${POSTGRES_PORT}:5432 -v consuelo-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
+    { stdio: 'ignore', env: { ...process.env, POSTGRES_PASSWORD: password } },
   );
   spin.succeed(`Container ${CONTAINER_NAME} running`);
 
@@ -50,10 +51,13 @@ export async function provisionDockerPostgres(): Promise<string> {
 async function waitForPostgres(maxAttempts = 30): Promise<void> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      execSync(`docker exec ${CONTAINER_NAME} pg_isready -U consuelo`, { stdio: 'ignore' });
+      execSync(`docker exec ${CONTAINER_NAME} pg_isready -U consuelo`, {
+        stdio: 'ignore',
+      });
       return;
-    } catch {
-      await new Promise(r => setTimeout(r, 1000));
+    } catch (_err: unknown) {
+      // not ready yet — intentional: cleanup best-effort
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
   throw new Error('Database failed to start');
@@ -63,7 +67,8 @@ export function validateConnectionStringFormat(url: string): boolean {
   try {
     const parsed = new URL(url);
     return parsed.protocol === 'postgres:' || parsed.protocol === 'postgresql:';
-  } catch {
+  } catch (_err: unknown) {
+    // invalid URL — intentional: config optional
     return false;
   }
 }
