@@ -74,8 +74,6 @@ const SQL_CONTACT_CALLS =
 
 /** /v1/queues routes + /v1/contacts/:id/dialer */
 export const queueRoutes = (): RouteDefinition[] => {
-  };
-
   return [
     // 1. POST /v1/queues — create queue
     {

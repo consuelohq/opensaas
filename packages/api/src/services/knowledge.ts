@@ -184,14 +184,17 @@ export class KnowledgeService {
   private async getPool(): Promise<Pool> {
     try {
       if (!this.pool) {
-        const { default: pg } = await import('pg');
-        this.pool = new pg.Pool({
+        const pg = await import('pg');
+        const PoolClass =
+          pg.Pool ??
+          (pg as unknown as { default: { Pool: typeof Pool } }).default.Pool;
+        this.pool = new PoolClass({
           connectionString:
             process.env.KNOWLEDGE_DATABASE_URL ?? process.env.DATABASE_URL,
           max: 5,
         });
       }
-      return this.pool;
+      return this.pool!;
     } catch (err: unknown) {
       this.pool = null;
       throw err;
@@ -278,8 +281,11 @@ export class KnowledgeService {
         return await this.extractPDF(buffer);
       }
 
-      if (mimeType === 'application/msword' ||
-          mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      if (
+        mimeType === 'application/msword' ||
+        mimeType ===
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
         return await this.extractWord(buffer);
       }
 
@@ -452,7 +458,7 @@ export class KnowledgeService {
 
   // -- Indexing ---------------------------------------------------------------
 
-async indexFile(
+  async indexFile(
     fileId: string,
     collectionId: string,
     content: string,
@@ -463,16 +469,6 @@ async indexFile(
     },
   ): Promise<{ chunkCount: number }> {
     const pool = await this.getPool();
-    const strategy = { ...DEFAULT_STRATEGY, ...options?.strategy };
-    const chunks = this.chunkDocument(content, strategy);
-
-    if (chunks.length === 0) {
-      return { chunkCount: 0 };
-    }
-
-    const embeddings = await this.generateEmbeddings(
-      chunks.map((c) => c.content),
-    );
     const client = await pool.connect();
 
     try {
@@ -489,61 +485,27 @@ async indexFile(
       // Delete existing chunks for this file in this collection
       await client.query(
         'DELETE FROM knowledge_chunks WHERE file_id = $1 AND collection_id = $2',
-        [fileId, collectionId]
+        [fileId, collectionId],
       );
 
       // Generate embeddings with 5-minute timeout
       const embeddings = await Promise.race([
         this.generateEmbeddings(chunks.map((c) => c.content)),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new KnowledgeError('EMBEDDING_TIMEOUT', 'Embedding generation timed out after 5 minutes')), 300_000)
+          setTimeout(
+            () =>
+              reject(
+                new KnowledgeError(
+                  'EMBEDDING_TIMEOUT',
+                  'Embedding generation timed out after 5 minutes',
+                ),
+              ),
+            300_000,
+          ),
         ),
       ]);
 
       // Insert chunks with embeddings
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
-        const embedding = embeddings[i];
-        const metadata: ChunkMetadata = {
-          source: options?.sourceName ?? 'unknown',
-          page: chunk.page,
-          section: chunk.section,
-          tokenCount: chunk.tokenCount,
-          isTable: chunk.isTable,
-          ...options?.metadata,
-        };
-
-        await client.query(SQL_INSERT_CHUNK, [
-          collectionId,
-          fileId,
-          i,
-          chunk.content,
-          vectorToString(embedding),
-          metadata,
-        ]);
-      }
-
-      await client.query(SQL_UPDATE_COLLECTION_CHUNK_COUNT, [collectionId]);
-      await client.query(SQL_MARK_FILE_INDEXED, [collectionId, fileId]);
-      await client.query('COMMIT');
-      return { chunkCount: chunks.length };
-    } catch (err: unknown) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
-  }
-
-    const embeddings = await this.generateEmbeddings(
-      chunks.map((c) => c.content),
-    );
-    const client = await pool.connect();
-
-    try {
-      await client.query('BEGIN');
-      await client.query(SQL_DELETE_CHUNKS_BY_FILE, [fileId]);
-
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const embedding = embeddings[i];

@@ -73,13 +73,16 @@ export const fileRoutes = (): RouteDefinition[] => {
   const getPool = async (): Promise<Pool> => {
     try {
       if (!pool) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({
+        const pg = await import('pg');
+        const PoolClass =
+          pg.Pool ??
+          (pg as unknown as { default: { Pool: typeof Pool } }).default.Pool;
+        pool = new PoolClass({
           connectionString:
             process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL,
         });
       }
-      return pool;
+      return pool!;
     } catch (err: unknown) {
       pool = null;
       throw err;
@@ -105,7 +108,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        if (!ALLOWED_TYPES.has(body.mimeType)) {
+        if (!ALLOWED_MIME_TYPES.has(body.mimeType)) {
           res.status(400).json({
             error: {
               code: 'INVALID_FILE_TYPE',

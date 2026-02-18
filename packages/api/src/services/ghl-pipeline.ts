@@ -188,9 +188,9 @@ export class GHLPipelineSync {
 
       for (const pipelineId of pipelineIds) {
         try {
-          const oppList = await this.client.getOpportunities(pipelineId);
+          const opportunities = await this.client.getOpportunities(pipelineId);
 
-          for (const opp of oppList.opportunities) {
+          for (const opp of opportunities) {
             try {
               await this.syncSingleOpportunity(workspaceId, opp, result);
             } catch (err: unknown) {
