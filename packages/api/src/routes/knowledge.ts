@@ -1,9 +1,12 @@
 // DEV-748: Knowledge base routes — collections, indexing, search, stats
 // 7 routes for RAG-powered AI coaching context
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import * as Sentry from '@sentry/node';
 import { KnowledgeService, KnowledgeError } from '../services/knowledge.js';
 import { StorageService } from '../services/storage.js';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Pool } from 'pg';
 
@@ -20,7 +23,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
     try {
       if (!pool) {
         const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL });
+        pool = new pg.Pool({
+          connectionString:
+            process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL,
+        });
       }
       return pool;
     } catch (err: unknown) {
@@ -36,24 +42,35 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/knowledge/collections',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
-        const body = req.body as { name?: string; description?: string } | undefined;
+        const body = req.body as
+          | { name?: string; description?: string }
+          | undefined;
         if (!body?.name) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "name"' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing "name"' },
+          });
           return;
         }
 
         try {
-          const collection = await knowledge.createCollection(workspaceId, body.name, body.description);
+          const collection = await knowledge.createCollection(
+            auth.workspaceId,
+            body.name,
+            body.description,
+          );
           res.status(201).json(collection);
         } catch (err: unknown) {
-          if (err instanceof KnowledgeError && err.code === 'DUPLICATE_COLLECTION') {
-            res.status(409).json({ error: { code: err.code, message: err.message } });
+          if (
+            err instanceof KnowledgeError &&
+            err.code === 'DUPLICATE_COLLECTION'
+          ) {
+            Sentry.captureException(err);
+            res
+              .status(409)
+              .json({ error: { code: err.code, message: err.message } });
             return;
           }
           throw err;
@@ -64,13 +81,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'GET',
       path: '/v1/knowledge/collections',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
-        const collections = await knowledge.listCollections(workspaceId);
+        const collections = await knowledge.listCollections(auth.workspaceId);
         res.status(200).json({ collections });
       }),
     },
@@ -78,15 +92,17 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'GET',
       path: '/v1/knowledge/search',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const query = req.query?.q;
         if (!query) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing query parameter "q"' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing query parameter "q"',
+            },
+          });
           return;
         }
 
@@ -94,18 +110,28 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         let metadataFilter: Record<string, string> | undefined;
         if (req.query?.metadata) {
           try {
-            metadataFilter = JSON.parse(req.query.metadata) as Record<string, string>;
+            metadataFilter = JSON.parse(req.query.metadata) as Record<
+              string,
+              string
+            >;
           } catch (_err: unknown) {
-            res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Invalid "metadata" JSON' } });
+            res.status(400).json({
+              error: {
+                code: 'INVALID_REQUEST',
+                message: 'Invalid "metadata" JSON',
+              },
+            });
             return;
           }
         }
 
         const results = await knowledge.search(query, {
-          workspaceId,
+          workspaceId: auth.workspaceId,
           collectionId: req.query?.collection,
           limit: req.query?.limit ? parseInt(req.query.limit, 10) : undefined,
-          minSimilarity: req.query?.min_similarity ? parseFloat(req.query.min_similarity) : undefined,
+          minSimilarity: req.query?.min_similarity
+            ? parseFloat(req.query.min_similarity)
+            : undefined,
           metadataFilter,
         });
 
@@ -116,13 +142,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'GET',
       path: '/v1/knowledge/stats',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
-        const stats = await knowledge.getStats(workspaceId);
+        const stats = await knowledge.getStats(auth.workspaceId);
         res.status(200).json({ stats });
       }),
     },
@@ -131,19 +154,21 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'DELETE',
       path: '/v1/knowledge/collections/:id',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const collectionId = req.params?.id;
         if (!collectionId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing collection ID' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing collection ID',
+            },
+          });
           return;
         }
 
-        await knowledge.deleteCollection(collectionId, workspaceId);
+        await knowledge.deleteCollection(collectionId, auth.workspaceId);
         res.status(204).json({});
       }),
     },
@@ -155,35 +180,52 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/files/:id/index',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const fileId = req.params?.id;
         if (!fileId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing file ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing file ID' },
+          });
           return;
         }
 
-        const body = req.body as {
-          collectionId?: string;
-          metadata?: Record<string, string>;
-          strategy?: Partial<{ maxTokens: number; overlap: number; preserveTables: boolean }>;
-        } | undefined;
+        const body = req.body as
+          | {
+              collectionId?: string;
+              metadata?: Record<string, string>;
+              strategy?: Partial<{
+                maxTokens: number;
+                overlap: number;
+                preserveTables: boolean;
+              }>;
+            }
+          | undefined;
 
         if (!body?.collectionId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "collectionId"' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "collectionId"',
+            },
+          });
           return;
         }
 
         // fetch file record to get storage key + mime type
         const db = await getPool();
-        const fileResult = await db.query(SQL_GET_FILE, [fileId, workspaceId]);
-        const file = fileResult.rows[0] as { id: string; name: string; mime_type: string; storage_key: string } | undefined;
+        const fileResult = await db.query(SQL_GET_FILE, [
+          fileId,
+          auth.workspaceId,
+        ]);
+        const file = fileResult.rows[0] as
+          | { id: string; name: string; mime_type: string; storage_key: string }
+          | undefined;
         if (!file) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'File not found' } });
           return;
         }
 
@@ -194,20 +236,33 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           content = bodyExt.content;
         } else {
           const buffer = await storage.getObject(file.storage_key);
-          const extraction = await knowledge.extractText(buffer, file.mime_type);
+          const extraction = await knowledge.extractText(
+            buffer,
+            file.mime_type,
+          );
           content = extraction.text;
         }
 
         try {
-          const result = await knowledge.indexFile(fileId, body.collectionId, content, {
-            strategy: body.strategy,
-            metadata: body.metadata,
-            sourceName: file.name,
-          });
-          res.status(200).json({ indexed: true, chunkCount: result.chunkCount });
+          const result = await knowledge.indexFile(
+            fileId,
+            body.collectionId,
+            content,
+            {
+              strategy: body.strategy,
+              metadata: body.metadata,
+              sourceName: file.name,
+            },
+          );
+          res
+            .status(200)
+            .json({ indexed: true, chunkCount: result.chunkCount });
         } catch (err: unknown) {
           if (err instanceof KnowledgeError) {
-            res.status(400).json({ error: { code: err.code, message: err.message } });
+            Sentry.captureException(err);
+            res
+              .status(400)
+              .json({ error: { code: err.code, message: err.message } });
             return;
           }
           throw err;
@@ -218,19 +273,18 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
       method: 'DELETE',
       path: '/v1/files/:id/index',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const fileId = req.params?.id;
         if (!fileId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing file ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing file ID' },
+          });
           return;
         }
 
-        await knowledge.deindexFile(fileId, workspaceId);
+        await knowledge.deindexFile(fileId, auth.workspaceId);
         res.status(204).json({});
       }),
     },
