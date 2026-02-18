@@ -7,7 +7,6 @@ import {
 
 import { createHash } from 'crypto';
 
-import { type Request as ExpressRequest } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { ExtractJwt, type JwtFromRequestFunction } from 'passport-jwt';
 import { isDefined } from 'twenty-shared/utils';
@@ -98,7 +97,7 @@ export class JwtWrapperService {
         ...options,
         secret: this.generateAppSecret(type, appSecretBody),
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof jwt.TokenExpiredError) {
         throw new AuthException(
           'Token has expired.',
@@ -131,7 +130,7 @@ export class JwtWrapperService {
   }
 
   extractJwtFromRequest(): JwtFromRequestFunction {
-    return (request: ExpressRequest) => {
+    return (request) => {
       // First try to extract token from Authorization header
       const tokenFromHeader = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
 

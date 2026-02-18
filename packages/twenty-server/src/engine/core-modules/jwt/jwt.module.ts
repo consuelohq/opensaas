@@ -10,7 +10,8 @@ const InternalJwtModule = NestJwtModule.registerAsync({
     return {
       secret: twentyConfigService.get('APP_SECRET'),
       signOptions: {
-        expiresIn: twentyConfigService.get('ACCESS_TOKEN_EXPIRES_IN'),
+        // HACK: expiresIn is typed as StringValue in newer @types/jsonwebtoken, but string is valid at runtime
+        expiresIn: twentyConfigService.get('ACCESS_TOKEN_EXPIRES_IN') as any,
       },
     };
   },

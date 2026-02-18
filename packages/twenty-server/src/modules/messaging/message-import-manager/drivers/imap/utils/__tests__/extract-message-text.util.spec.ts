@@ -97,6 +97,7 @@ Developer Support
 >>> -John
 `,
       attachments: [],
+      headerLines: [],
       headers: [],
     };
 
@@ -131,6 +132,7 @@ Developer Support`);
         
       `,
       attachments: [],
+      headerLines: [],
       headers: [],
     };
 
@@ -152,6 +154,7 @@ Developer Support`);
         </blockquote>
       </div>`,
       attachments: [],
+      headerLines: [],
       headers: [],
     };
 
@@ -163,6 +166,7 @@ Developer Support`);
   it('should return empty string when no text or html content', () => {
     const parsed: ParsedMail = {
       attachments: [],
+      headerLines: [],
       headers: [],
     };
 
@@ -174,6 +178,7 @@ Developer Support`);
   it('should preserve new lines in html email', () => {
     const parsed: ParsedMail = {
       attachments: [],
+      headerLines: [],
       headers: [],
       html: `<html><head><style>
   html, body {
@@ -315,6 +320,7 @@ John`);
       text: 'Plain text content\n\nOn 2023-01-01, user@example.com wrote:\n> Reply',
       html: '<html><body><p>HTML content</p></body></html>',
       attachments: [],
+      headerLines: [],
       headers: [],
     };
 
