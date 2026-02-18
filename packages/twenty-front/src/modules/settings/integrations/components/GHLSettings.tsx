@@ -5,6 +5,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '@emotion/react';
 import { useRecoilValue } from 'recoil';
 import styled from '@emotion/styled';
 import * as Sentry from '@sentry/react';
@@ -264,6 +265,7 @@ const formatDirection = (direction: GHLSyncDirection): string => {
 };
 
 export const GHLSettings = () => {
+  const theme = useTheme();
   const connection = useRecoilValue(ghlConnectionState);
   const syncConfig = useRecoilValue(ghlSyncConfigState);
   const syncHistory = useRecoilValue(ghlSyncHistoryState);
@@ -711,11 +713,14 @@ export const GHLSettings = () => {
                             <StyledTd>{entry.recordsUpdated}</StyledTd>
                             <StyledTd>
                               {entry.recordsFailed > 0 ? (
-                                <span style={{ color: '#ef4444' }}>
+                                <span style={{ color: theme.color.red }}>
                                   {entry.recordsFailed}
                                 </span>
                               ) : (
-                                <IconCheck size={16} color="#22c55e" />
+                                <IconCheck
+                                  size={16}
+                                  color={theme.color.green}
+                                />
                               )}
                             </StyledTd>
                           </StyledRow>

@@ -1,6 +1,6 @@
-import { atom } from 'recoil';
+import { createState } from '@/ui/utilities/state/utils/createState';
 
-export const settingsRoleIdsState = atom<string[]>({
+export const settingsRoleIdsState = createState<string[]>({
   key: 'settingsRoleIdsState',
-  default: [],
+  defaultValue: [],
 });
