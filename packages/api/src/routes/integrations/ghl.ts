@@ -6,6 +6,11 @@ import {
   GHLAuthService,
   type GHLOAuthConfig,
 } from '../../services/ghl-auth.js';
+import { GHLClient } from '../../services/ghl-client.js';
+import {
+  GHLPipelineSync,
+  type PipelineMappingInput,
+} from '../../services/ghl-pipeline.js';
 
 type Pool = {
   query(
@@ -77,11 +82,9 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
     const userId = req.auth?.userId;
     const workspaceId = req.auth?.workspaceId;
     if (userId === undefined || workspaceId === undefined) {
-      res
-        .status(401)
-        .json({
-          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-        });
+      res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+      });
       return null;
     }
     return { userId, workspaceId };
@@ -98,14 +101,12 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
 
         const config = loadConfig();
         if (!config.clientId || !config.clientSecret) {
-          res
-            .status(503)
-            .json({
-              error: {
-                code: 'GHL_NOT_CONFIGURED',
-                message: 'GHL integration not configured',
-              },
-            });
+          res.status(503).json({
+            error: {
+              code: 'GHL_NOT_CONFIGURED',
+              message: 'GHL integration not configured',
+            },
+          });
           return;
         }
 
@@ -134,39 +135,33 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         const error = req.query?.error;
 
         if (error) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'GHL_AUTH_DENIED',
-                message: `GHL authorization denied: ${error}`,
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'GHL_AUTH_DENIED',
+              message: `GHL authorization denied: ${error}`,
+            },
+          });
           return;
         }
 
         if (!code || !state) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_CALLBACK',
-                message: 'Missing code or state parameter',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_CALLBACK',
+              message: 'Missing code or state parameter',
+            },
+          });
           return;
         }
 
         const pending = pendingVerifiers.get(state);
         if (!pending) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_STATE',
-                message: 'Invalid or expired state parameter',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_STATE',
+              message: 'Invalid or expired state parameter',
+            },
+          });
           return;
         }
 
@@ -210,6 +205,146 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
           extra: { workspaceId: auth.workspaceId },
         });
         res.status(200).json({ disconnected: true });
+      }),
+    },
+
+    // GET /v1/integrations/ghl/pipelines — list GHL pipelines with stages and mappings
+    {
+      method: 'GET',
+      path: '/v1/integrations/ghl/pipelines',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const service = await getAuthService();
+        const status = await service.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
+          return;
+        }
+
+        const client = new GHLClient(
+          () => service.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
+        const db = await getPool();
+        const pipelineSync = new GHLPipelineSync(client, db);
+        const pipelines = await pipelineSync.getPipelines(auth.workspaceId);
+        const mappings = await pipelineSync.getMappings(auth.workspaceId);
+
+        res.status(200).json({ pipelines, mappings });
+      }),
+    },
+
+    // PUT /v1/integrations/ghl/pipelines/mappings — update stage mappings
+    {
+      method: 'PUT',
+      path: '/v1/integrations/ghl/pipelines/mappings',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const { mappings } = req.body as { mappings: PipelineMappingInput[] };
+        if (!Array.isArray(mappings)) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PAYLOAD',
+              message: 'mappings must be an array',
+            },
+          });
+          return;
+        }
+
+        // Validate each mapping has required fields
+        for (const mapping of mappings) {
+          if (
+            !mapping.ghlPipelineId ||
+            !mapping.ghlStageId ||
+            !mapping.twentyPipelineId ||
+            !mapping.twentyStageId
+          ) {
+            res.status(400).json({
+              error: {
+                code: 'INVALID_PAYLOAD',
+                message:
+                  'each mapping must have ghlPipelineId, ghlStageId, twentyPipelineId, and twentyStageId',
+              },
+            });
+            return;
+          }
+        }
+
+        const service = await getAuthService();
+        const status = await service.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
+          return;
+        }
+
+        const client = new GHLClient(
+          () => service.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
+        const db = await getPool();
+        const pipelineSync = new GHLPipelineSync(client, db);
+        await pipelineSync.updateMappings(auth.workspaceId, mappings);
+
+        res.status(200).json({ updated: true, count: mappings.length });
+      }),
+    },
+
+    // POST /v1/integrations/ghl/pipelines/sync — sync opportunities with conflict detection
+    {
+      method: 'POST',
+      path: '/v1/integrations/ghl/pipelines/sync',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const { checkConflicts } = req.body as { checkConflicts?: boolean };
+
+        const service = await getAuthService();
+        const status = await service.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
+          return;
+        }
+
+        const client = new GHLClient(
+          () => service.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
+        const db = await getPool();
+        const pipelineSync = new GHLPipelineSync(client, db);
+
+        // Check for conflicts if requested
+        let conflicts = null;
+        if (checkConflicts) {
+          conflicts = await pipelineSync.detectConflicts(auth.workspaceId);
+        }
+
+        // Sync opportunities
+        const result = await pipelineSync.syncOpportunities(auth.workspaceId);
+
+        res.status(200).json({
+          ...result,
+          conflicts,
+        });
       }),
     },
   ];
