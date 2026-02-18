@@ -4302,6 +4302,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@consuelo/dialer@workspace:packages/dialer"
   dependencies:
+    "@consuelo/logger": "workspace:*"
     twilio: "npm:^5.12.1"
   peerDependencies:
     ioredis: ^5.0.0
@@ -4314,7 +4315,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@consuelo/logger@npm:*, @consuelo/logger@workspace:packages/logger":
+"@consuelo/logger@npm:*, @consuelo/logger@workspace:*, @consuelo/logger@workspace:packages/logger":
   version: 0.0.0-use.local
   resolution: "@consuelo/logger@workspace:packages/logger"
   dependencies:

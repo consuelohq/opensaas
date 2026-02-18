@@ -3,7 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src"]
 }
