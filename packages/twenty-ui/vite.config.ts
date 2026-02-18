@@ -75,7 +75,6 @@ export default defineConfig(({ command }) => {
     plugins: [
       react({
         jsxImportSource: '@emotion/react',
-        plugins: [['@swc/plugin-emotion', {}]],
       }),
       tsconfigPaths({
         root: __dirname,
