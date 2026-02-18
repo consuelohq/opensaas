@@ -1,20 +1,48 @@
 import * as Sentry from '@sentry/node';
 import * as crypto from 'node:crypto';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 import { GHLAuthService, type GHLOAuthConfig } from '../services/ghl-auth.js';
-import { GHLClient } from '../services/ghl-client.js';
-import { GHLPushService, type GHLPushMappingService, type CallOutcomeData } from '../services/ghl-push.js';
-import { GHLWebhookHandler, verifyWebhookSignature, type GHLWebhookPayload, type GHLSyncServiceInterface } from '../services/ghl-webhook.js';
-import { GHLPipelineSync, type StageMapping } from '../services/ghl-pipeline.js';
+import { GHLClient, type GHLContact } from '../services/ghl-client.js';
+import {
+  GHLPushService,
+  GHLPushMappingServiceImpl,
+  type GHLPushMappingService,
+  type CallOutcomeData,
+} from '../services/ghl-push.js';
+import {
+  GHLWebhookHandler,
+  verifyWebhookSignature,
+  type GHLWebhookPayload,
+  type GHLSyncServiceInterface,
+} from '../services/ghl-webhook.js';
+import {
+  GHLPipelineSync,
+  type StageMapping,
+} from '../services/ghl-pipeline.js';
+import {
+  GHLSyncService,
+  type SyncOptions,
+  type ConflictResolution,
+} from '../services/ghl-sync.js';
 
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
+
+const getPool = getSharedPool;
 
 // in-memory PKCE verifier store (keyed by state param)
 // in production, use redis with short TTL — DEV-779
-const pendingVerifiers = new Map<string, { codeVerifier: string; workspaceId: string; createdAt: number }>();
+const pendingVerifiers = new Map<
+  string,
+  { codeVerifier: string; workspaceId: string; createdAt: number }
+>();
 
 // clean up stale verifiers older than 10 minutes
 const cleanStaleVerifiers = (): void => {
@@ -28,27 +56,17 @@ const loadConfig = (): GHLOAuthConfig => ({
   clientId: process.env.GHL_CLIENT_ID ?? '',
   clientSecret: process.env.GHL_CLIENT_SECRET ?? '',
   redirectUri: process.env.GHL_REDIRECT_URI ?? '',
-  scopes: (process.env.GHL_SCOPES ?? 'contacts.readonly contacts.write opportunities.readonly').split(' '),
+  scopes: (
+    process.env.GHL_SCOPES ??
+    'contacts.readonly contacts.write opportunities.readonly'
+  ).split(' '),
 });
 
 /** /v1/integrations/ghl routes — OAuth + connection management */
 export const ghlRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
   let authService: GHLAuthService | null = null;
+  let syncService: GHLSyncService | null = null;
   let webhookHandler: GHLWebhookHandler | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
 
   const getAuthService = async (): Promise<GHLAuthService> => {
     try {
@@ -63,41 +81,35 @@ export const ghlRoutes = (): RouteDefinition[] => {
     }
   };
 
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'authentication required' } });
-      return null;
+  const getSyncService = async (): Promise<GHLSyncService> => {
+    try {
+      if (syncService === null) {
+        const db = await getPool();
+        syncService = new GHLSyncService(db);
+      }
+      return syncService;
+    } catch (err: unknown) {
+      syncService = null;
+      throw err;
     }
-    return { userId, workspaceId };
   };
 
-  // stub sync service — replaced by real implementation in DEV-782
-  const stubSyncService: GHLSyncServiceInterface = {
-    findMapping: async () => null,
-    createTwentyPerson: async () => ({ id: '' }),
-    updateTwentyPerson: async () => { /* noop */ },
-    createSyncMapping: async () => { /* noop */ },
-    updateSyncMapping: async () => { /* noop */ },
-    mapGhlContactToTwenty: () => ({}),
-    handleOpportunitySync: async () => { /* noop */ },
-  };
-
-  // stub mapping service — replaced by real implementation in DEV-782
-  const stubMappingService: GHLPushMappingService = {
-    findMappingByTwentyId: async () => null,
-    mapTwentyToGhl: () => ({}),
+  const getMappingService = async (): Promise<GHLPushMappingService> => {
+    try {
+      const db = await getPool();
+      return new GHLPushMappingServiceImpl(db);
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
+    }
   };
 
   const getWebhookHandler = async (): Promise<GHLWebhookHandler> => {
     try {
       if (webhookHandler === null) {
         const db = await getPool();
-        webhookHandler = new GHLWebhookHandler(stubSyncService, db);
+        const syncSvc = await getSyncService();
+        webhookHandler = new GHLWebhookHandler(syncSvc, db);
       }
       return webhookHandler;
     } catch (err: unknown) {
@@ -117,7 +129,12 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
         const config = loadConfig();
         if (!config.clientId || !config.clientSecret) {
-          res.status(503).json({ error: { code: 'GHL_NOT_CONFIGURED', message: 'GHL integration not configured' } });
+          res.status(503).json({
+            error: {
+              code: 'GHL_NOT_CONFIGURED',
+              message: 'GHL integration not configured',
+            },
+          });
           return;
         }
 
@@ -126,7 +143,11 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const { url, codeVerifier } = service.getAuthUrl(state);
 
         cleanStaleVerifiers();
-        pendingVerifiers.set(state, { codeVerifier, workspaceId: auth.workspaceId, createdAt: Date.now() });
+        pendingVerifiers.set(state, {
+          codeVerifier,
+          workspaceId: auth.workspaceId,
+          createdAt: Date.now(),
+        });
 
         res.status(200).json({ url, state });
       }),
@@ -142,18 +163,33 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const error = req.query?.error;
 
         if (error) {
-          res.status(400).json({ error: { code: 'GHL_AUTH_DENIED', message: `GHL authorization denied: ${error}` } });
+          res.status(400).json({
+            error: {
+              code: 'GHL_AUTH_DENIED',
+              message: `GHL authorization denied: ${error}`,
+            },
+          });
           return;
         }
 
         if (!code || !state) {
-          res.status(400).json({ error: { code: 'INVALID_CALLBACK', message: 'missing code or state parameter' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_CALLBACK',
+              message: 'missing code or state parameter',
+            },
+          });
           return;
         }
 
         const pending = pendingVerifiers.get(state);
         if (!pending) {
-          res.status(400).json({ error: { code: 'INVALID_STATE', message: 'invalid or expired state parameter' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_STATE',
+              message: 'invalid or expired state parameter',
+            },
+          });
           return;
         }
 
@@ -163,7 +199,9 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const tokens = await service.handleCallback(code, pending.codeVerifier);
         await service.storeTokens(pending.workspaceId, tokens);
 
-        res.status(200).json({ connected: true, locationId: tokens.locationId });
+        res
+          .status(200)
+          .json({ connected: true, locationId: tokens.locationId });
       }),
     },
 
@@ -191,7 +229,9 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
         const service = await getAuthService();
         await service.disconnect(auth.workspaceId);
-        Sentry.captureMessage('GHL disconnected', { extra: { workspaceId: auth.workspaceId } });
+        Sentry.captureMessage('GHL disconnected', {
+          extra: { workspaceId: auth.workspaceId },
+        });
         res.status(200).json({ disconnected: true });
       }),
     },
@@ -211,14 +251,24 @@ export const ghlRoutes = (): RouteDefinition[] => {
         };
 
         if (!type || !contactId) {
-          res.status(400).json({ error: { code: 'INVALID_PAYLOAD', message: 'missing type or contactId' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PAYLOAD',
+              message: 'missing type or contactId',
+            },
+          });
           return;
         }
 
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
-          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
           return;
         }
 
@@ -226,16 +276,28 @@ export const ghlRoutes = (): RouteDefinition[] => {
           () => authSvc.getValidToken(auth.workspaceId),
           status.locationId,
         );
-        const pushService = new GHLPushService(client, stubMappingService);
+        const syncSvc = await getSyncService();
+        const pushService = new GHLPushService(client, syncSvc);
 
         let pushed = false;
         if (type === 'call-outcome') {
-          pushed = await pushService.pushCallOutcome(auth.workspaceId, { contactId, ...(data as Omit<CallOutcomeData, 'contactId'>) }); // HACK: spread call data from request body
+          pushed = await pushService.pushCallOutcome(auth.workspaceId, {
+            contactId,
+            ...(data as Omit<CallOutcomeData, 'contactId'>),
+          }); // HACK: spread call data from request body
         } else if (type === 'tags') {
           const { tags } = (data ?? {}) as { tags?: string[] };
-          pushed = await pushService.pushTagUpdate(auth.workspaceId, contactId, tags ?? []);
+          pushed = await pushService.pushTagUpdate(
+            auth.workspaceId,
+            contactId,
+            tags ?? [],
+          );
         } else if (type === 'contact-update') {
-          pushed = await pushService.pushContactUpdate(auth.workspaceId, contactId, (data ?? {}) as Record<string, unknown>);
+          pushed = await pushService.pushContactUpdate(
+            auth.workspaceId,
+            contactId,
+            (data ?? {}) as Record<string, unknown>,
+          );
         }
 
         res.status(200).json({ pushed });
@@ -253,16 +315,26 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
-          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
           return;
         }
 
-        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const client = new GHLClient(
+          () => authSvc.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
         const db = await getPool();
         const pipelineSync = new GHLPipelineSync(client, db);
 
         const pipelines = await client.getPipelines();
-        const mappings = await pipelineSync.getMappedPipelines(auth.workspaceId);
+        const mappings = await pipelineSync.getMappedPipelines(
+          auth.workspaceId,
+        );
 
         res.status(200).json({ pipelines, mappings });
       }),
@@ -282,8 +354,18 @@ export const ghlRoutes = (): RouteDefinition[] => {
           stageMappings: StageMapping[];
         };
 
-        if (!ghlPipelineId || !twentyPipelineId || !Array.isArray(stageMappings)) {
-          res.status(400).json({ error: { code: 'INVALID_PAYLOAD', message: 'missing ghlPipelineId, twentyPipelineId, or stageMappings' } });
+        if (
+          !ghlPipelineId ||
+          !twentyPipelineId ||
+          !Array.isArray(stageMappings)
+        ) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PAYLOAD',
+              message:
+                'missing ghlPipelineId, twentyPipelineId, or stageMappings',
+            },
+          });
           return;
         }
 
@@ -291,13 +373,26 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
-          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
           return;
         }
 
-        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const client = new GHLClient(
+          () => authSvc.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
         const pipelineSync = new GHLPipelineSync(client, db);
-        await pipelineSync.mapPipelineStages(auth.workspaceId, ghlPipelineId, twentyPipelineId, stageMappings);
+        await pipelineSync.mapPipelineStages(
+          auth.workspaceId,
+          ghlPipelineId,
+          twentyPipelineId,
+          stageMappings,
+        );
 
         res.status(200).json({ mapped: true, count: stageMappings.length });
       }),
@@ -314,16 +409,220 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
-          res.status(400).json({ error: { code: 'GHL_NOT_CONNECTED', message: 'GHL integration not connected' } });
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
           return;
         }
 
-        const client = new GHLClient(() => authSvc.getValidToken(auth.workspaceId), status.locationId);
+        const client = new GHLClient(
+          () => authSvc.getValidToken(auth.workspaceId),
+          status.locationId,
+        );
         const db = await getPool();
         const pipelineSync = new GHLPipelineSync(client, db);
         const result = await pipelineSync.syncOpportunities(auth.workspaceId);
 
         res.status(200).json(result);
+      }),
+    },
+
+    // POST /v1/integrations/ghl/import — initial import with pagination
+    {
+      method: 'POST',
+      path: '/v1/integrations/ghl/import',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const authSvc = await getAuthService();
+        const status = await authSvc.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
+          return;
+        }
+
+        const { tags, skipExisting, conflictResolution } = req.body as {
+          tags?: string[];
+          skipExisting?: boolean;
+          conflictResolution?: ConflictResolution;
+        };
+
+        const syncSvc = await getSyncService();
+        const logId = await syncSvc.createSyncLog(
+          auth.workspaceId,
+          'import',
+          0,
+        );
+
+        try {
+          const client = new GHLClient(
+            () => authSvc.getValidToken(auth.workspaceId),
+            status.locationId,
+          );
+
+          // fetch all contacts with pagination
+          const allContacts: GHLContact[] = [];
+          let startAfterId: string | undefined;
+          let hasMore = true;
+          const limit = 100;
+
+          while (hasMore) {
+            const response = await client.getContacts({
+              limit,
+              startAfterId,
+            });
+
+            allContacts.push(...response.contacts);
+            hasMore =
+              response.contacts.length === limit &&
+              !!response.meta.startAfterId;
+            startAfterId = response.meta.startAfterId;
+          }
+
+          const options: SyncOptions = {
+            tags,
+            skipExisting,
+            conflictResolution: conflictResolution ?? 'merge',
+          };
+
+          const result = await syncSvc.importContacts(
+            auth.workspaceId,
+            allContacts,
+            options,
+          );
+
+          await syncSvc.updateSyncLog(logId, 'completed', result);
+
+          res.status(200).json({
+            success: true,
+            logId,
+            ...result,
+          });
+        } catch (err: unknown) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'Import failed';
+          await syncSvc.updateSyncLog(logId, 'failed', {}, errorMessage);
+          Sentry.captureException(err);
+          throw err;
+        }
+      }),
+    },
+
+    // POST /v1/integrations/ghl/sync — incremental sync
+    {
+      method: 'POST',
+      path: '/v1/integrations/ghl/sync',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const authSvc = await getAuthService();
+        const status = await authSvc.getStatus(auth.workspaceId);
+        if (!status.connected || !status.locationId) {
+          res.status(400).json({
+            error: {
+              code: 'GHL_NOT_CONNECTED',
+              message: 'GHL integration not connected',
+            },
+          });
+          return;
+        }
+
+        const { tags, skipExisting, conflictResolution } = req.body as {
+          tags?: string[];
+          skipExisting?: boolean;
+          conflictResolution?: ConflictResolution;
+        };
+
+        const syncSvc = await getSyncService();
+        const logId = await syncSvc.createSyncLog(
+          auth.workspaceId,
+          'incremental',
+          0,
+        );
+
+        try {
+          const client = new GHLClient(
+            () => authSvc.getValidToken(auth.workspaceId),
+            status.locationId,
+          );
+
+          // fetch contacts updated since last sync
+          const allContacts: GHLContact[] = [];
+          let startAfterId: string | undefined;
+          let hasMore = true;
+          const limit = 100;
+
+          while (hasMore) {
+            const response = await client.getContacts({
+              limit,
+              startAfterId,
+            });
+
+            allContacts.push(...response.contacts);
+            hasMore =
+              response.contacts.length === limit &&
+              !!response.meta.startAfterId;
+            startAfterId = response.meta.startAfterId;
+          }
+
+          const options: SyncOptions = {
+            tags,
+            skipExisting,
+            incremental: true,
+            conflictResolution: conflictResolution ?? 'merge',
+          };
+
+          const result = await syncSvc.importContacts(
+            auth.workspaceId,
+            allContacts,
+            options,
+          );
+
+          await syncSvc.updateSyncLog(logId, 'completed', result);
+
+          res.status(200).json({
+            success: true,
+            logId,
+            ...result,
+          });
+        } catch (err: unknown) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'Sync failed';
+          await syncSvc.updateSyncLog(logId, 'failed', {}, errorMessage);
+          Sentry.captureException(err);
+          throw err;
+        }
+      }),
+    },
+
+    // GET /v1/integrations/ghl/sync/log — get sync logs
+    {
+      method: 'GET',
+      path: '/v1/integrations/ghl/sync/log',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (!auth) return;
+
+        const limit = Math.min(
+          parseInt(String(req.query?.limit ?? '50'), 10),
+          100,
+        );
+        const offset = parseInt(String(req.query?.offset ?? '0'), 10);
+
+        const syncSvc = await getSyncService();
+        const logs = await syncSvc.getSyncLogs(auth.workspaceId, limit, offset);
+
+        res.status(200).json({ logs });
       }),
     },
 
@@ -335,16 +634,27 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
         if (webhookSecret) {
           const signature = req.headers['x-ghl-signature'];
-          const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+          const rawBody =
+            typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
           if (!verifyWebhookSignature(rawBody, signature, webhookSecret)) {
-            res.status(401).json({ error: { code: 'INVALID_SIGNATURE', message: 'webhook signature verification failed' } });
+            res.status(401).json({
+              error: {
+                code: 'INVALID_SIGNATURE',
+                message: 'webhook signature verification failed',
+              },
+            });
             return;
           }
         }
 
         const payload = req.body as GHLWebhookPayload;
         if (!payload.type || !payload.locationId) {
-          res.status(400).json({ error: { code: 'INVALID_PAYLOAD', message: 'missing type or locationId' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PAYLOAD',
+              message: 'missing type or locationId',
+            },
+          });
           return;
         }
 

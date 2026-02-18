@@ -115,8 +115,9 @@ const DEFAULT_STRATEGY: ChunkingStrategy = {
   preserveTables: true,
 };
 
-const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
-const EMBEDDING_DIMENSIONS = 384;
+const EMBEDDING_MODEL = 'text-embedding-3-small';
+// NOTE: using text-embedding-3-small (1536 dims) instead of MiniLM (384 dims) for better quality. spec DEV-743 should be updated.
+const EMBEDDING_DIMENSIONS = 1536;
 
 // sentence boundary regex — handles Mr./Mrs./Dr. abbreviations
 const SENTENCE_SPLIT_RE = /(?<=[.!?])\s+(?=[A-Z])/;
@@ -183,8 +184,8 @@ export class KnowledgeService {
   private async getPool(): Promise<Pool> {
     try {
       if (!this.pool) {
-        const { Pool } = await import('pg');
-        this.pool = new Pool({
+        const { default: pg } = await import('pg');
+        this.pool = new pg.Pool({
           connectionString:
             process.env.KNOWLEDGE_DATABASE_URL ?? process.env.DATABASE_URL,
           max: 5,
@@ -462,6 +463,16 @@ async indexFile(
     },
   ): Promise<{ chunkCount: number }> {
     const pool = await this.getPool();
+    const strategy = { ...DEFAULT_STRATEGY, ...options?.strategy };
+    const chunks = this.chunkDocument(content, strategy);
+
+    if (chunks.length === 0) {
+      return { chunkCount: 0 };
+    }
+
+    const embeddings = await this.generateEmbeddings(
+      chunks.map((c) => c.content),
+    );
     const client = await pool.connect();
 
     try {
@@ -503,7 +514,12 @@ async indexFile(
         };
 
         await client.query(SQL_INSERT_CHUNK, [
-          collectionId, fileId, i, chunk.content, vectorToString(embedding), metadata,
+          collectionId,
+          fileId,
+          i,
+          chunk.content,
+          vectorToString(embedding),
+          metadata,
         ]);
       }
 

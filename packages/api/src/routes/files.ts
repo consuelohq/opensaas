@@ -1,6 +1,9 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import * as Sentry from '@sentry/node';
 import { StorageService } from '../services/storage.js';
 import { KnowledgeService } from '../services/knowledge.js';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Pool } from 'pg';
 
@@ -102,7 +105,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        if (!ALLOWED_MIME_TYPES.has(body.mimeType)) {
+        if (!ALLOWED_TYPES.has(body.mimeType)) {
           res.status(400).json({
             error: {
               code: 'INVALID_FILE_TYPE',
@@ -122,21 +125,13 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const sanitized = body.name.replace(/[^a-zA-Z0-9._-]/g, '_');
         const prefix = body.folder
-          ? `${workspaceId}/${body.folder}`
-          : workspaceId;
+          ? `${auth.workspaceId}/${body.folder}`
+          : auth.workspaceId;
         const storageKey = `${prefix}/${Date.now()}__${sanitized}`;
 
         try {
@@ -175,84 +170,36 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const workspaceId = req.auth?.workspaceId;
-        const userId = req.auth?.userId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         try {
           const db = await getPool();
           const result = await db.query(SQL_CREATE_FILE, [
-            workspaceId,
+            auth.workspaceId,
             body.name,
             body.mimeType,
             body.size,
             body.storageKey,
             body.folder ?? null,
             body.tags ?? null,
-            userId ?? null,
+            auth.userId ?? null,
           ]);
           res.status(201).json({ file: result.rows[0] });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to create file record';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
     },
-{
-      method: 'DELETE',
-      path: '/v1/files/:id',
+    {
+      method: 'GET',
+      path: '/v1/files',
       handler: errorHandler(async (req, res) => {
-        const fileId = req.params?.id;
-        if (!fileId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing file ID' } });
-          return;
-        }
-
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
-          return;
-        }
-
-        try {
-          const db = await getPool();
-          const result = await db.query(SQL_DELETE_FILE, [fileId, workspaceId]);
-          if (result.rows.length === 0) {
-            res.status(404).json({ error: { code: 'NOT_FOUND', message: 'File not found' } });
-            return;
-          }
-
-          const storageKey = result.rows[0].storage_key as string;
-
-          // Delete from S3 (blocking to ensure cleanup)
-          await storage.deleteObject(storageKey);
-
-          // Also deindex from knowledge base if indexed
-          try {
-            await knowledge.deindexFile(fileId, workspaceId);
-          } catch {
-            // Ignore if not indexed or deindex fails
-          }
-
-          res.status(200).json({ success: true });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to delete file';
-          res.status(500).json({ error: { code: 'DELETE_FAILED', message } });
-        }
-      }),
-    },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const limit = Math.min(Number(req.query?.limit) || 50, 250);
         const offset = Number(req.query?.offset) || 0;
@@ -265,7 +212,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           if (search) {
             const searchPattern = '%' + search + '%';
             result = await db.query(SQL_SEARCH_FILES, [
-              workspaceId,
+              auth.workspaceId,
               searchPattern,
               limit,
               offset,
@@ -273,20 +220,21 @@ export const fileRoutes = (): RouteDefinition[] => {
           } else if (type) {
             const typePattern = type + '%';
             result = await db.query(SQL_LIST_FILES_BY_TYPE, [
-              workspaceId,
+              auth.workspaceId,
               typePattern,
               limit,
               offset,
             ]);
           } else {
             result = await db.query(SQL_LIST_FILES, [
-              workspaceId,
+              auth.workspaceId,
               limit,
               offset,
             ]);
           }
           res.status(200).json({ files: result.rows });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to list files';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
@@ -297,16 +245,8 @@ export const fileRoutes = (): RouteDefinition[] => {
       method: 'GET',
       path: '/v1/files/by-entity/:entityType/:entityId',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const entityType = req.params?.entityType;
         const entityId = req.params?.entityId;
@@ -325,10 +265,11 @@ export const fileRoutes = (): RouteDefinition[] => {
           const result = await db.query(SQL_LIST_ATTACHMENTS, [
             entityType,
             entityId,
-            workspaceId,
+            auth.workspaceId,
           ]);
           res.status(200).json({ files: result.rows });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to list attachments';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
@@ -347,20 +288,15 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         try {
           const db = await getPool();
-          const result = await db.query(SQL_GET_FILE, [fileId, workspaceId]);
+          const result = await db.query(SQL_GET_FILE, [
+            fileId,
+            auth.workspaceId,
+          ]);
           if (result.rows.length === 0) {
             res.status(404).json({
               error: { code: 'NOT_FOUND', message: 'File not found' },
@@ -371,6 +307,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           const downloadUrl = await storage.getDownloadUrl(file.storage_key);
           res.status(200).json({ file: { ...file, downloadUrl } });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to get file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
@@ -381,16 +318,8 @@ export const fileRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/files/:id/attach',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const fileId = req.params?.id;
         const body = req.body as
@@ -423,7 +352,7 @@ export const fileRoutes = (): RouteDefinition[] => {
             fileId,
             body.entityType,
             body.entityId,
-            workspaceId,
+            auth.workspaceId,
           ]);
           if (result.rows.length === 0) {
             // either file doesn't exist in this workspace, or already attached (ON CONFLICT DO NOTHING)
@@ -434,6 +363,7 @@ export const fileRoutes = (): RouteDefinition[] => {
             .status(201)
             .json({ success: true, created: true, attachment: result.rows[0] });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to attach file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
@@ -444,16 +374,8 @@ export const fileRoutes = (): RouteDefinition[] => {
       method: 'DELETE',
       path: '/v1/files/:id/attach/:attachmentId',
       handler: errorHandler(async (req, res) => {
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         const attachmentId = req.params?.attachmentId;
         if (!attachmentId) {
@@ -469,11 +391,12 @@ export const fileRoutes = (): RouteDefinition[] => {
         try {
           const db = await getPool();
           // workspace scoped via subquery on files table
-          await db.query(SQL_DETACH_FILE, [attachmentId, workspaceId]);
+          await db.query(SQL_DETACH_FILE, [attachmentId, auth.workspaceId]);
           res.status(200).json({ success: true });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
-            err instanceof Error ? err.message : 'Failed to detach file';
+            err instanceof Error ? err.message : 'Failed to delete file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -490,29 +413,30 @@ export const fileRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const workspaceId = req.auth?.workspaceId;
-        if (!workspaceId) {
-          res.status(401).json({
-            error: {
-              code: 'UNAUTHORIZED',
-              message: 'Missing workspace context',
-            },
-          });
-          return;
-        }
+        const auth = requireAuth(req, res);
+        if (!auth) return;
 
         try {
           const db = await getPool();
-          const result = await db.query(SQL_DELETE_FILE, [fileId, workspaceId]);
-          if (result.rows.length > 0) {
-            // fire-and-forget S3 cleanup — don't block the response
-            storage.deleteObject(result.rows[0].storage_key).catch(() => {});
+          const result = await db.query(SQL_DELETE_FILE, [
+            fileId,
+            auth.workspaceId,
+          ]);
+          if (result.rows.length === 0) {
+            res.status(404).json({
+              error: { code: 'NOT_FOUND', message: 'File not found' },
+            });
+            return;
           }
+
+          const storageKey = result.rows[0].storage_key as string;
+          await storage.deleteObject(storageKey);
           res.status(200).json({ success: true });
         } catch (err: unknown) {
+          Sentry.captureException(err);
           const message =
             err instanceof Error ? err.message : 'Failed to delete file';
-          res.status(500).json({ error: { code: 'DB_ERROR', message } });
+          res.status(500).json({ error: { code: 'STORAGE_ERROR', message } });
         }
       }),
     },

@@ -1,6 +1,6 @@
 import { createState } from '@/ui/utilities/state/utils/createState';
 
 export const settingsRolesIsLoadingState = createState<boolean>({
-  key: 'settings.settingsRolesIsLoadingState',
+  key: 'settingsRolesIsLoadingState',
   defaultValue: true,
 });

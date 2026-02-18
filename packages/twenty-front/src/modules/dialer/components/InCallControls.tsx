@@ -217,10 +217,16 @@ export const InCallControls = () => {
     setIsMuted(next);
   }, [activeCall, isMuted, setIsMuted]);
 
-  const handleHoldToggle = useCallback(() => {
+  const handleHoldToggle = useCallback(async () => {
     const next = !isOnHold;
-    toggleHold(next);
-  }, [isOnHold, toggleHold]);
+    try {
+      await toggleHold(next);
+    } catch (err: unknown) {
+      enqueueErrorSnackBar({
+        message: err instanceof Error ? err.message : 'Failed to toggle hold',
+      });
+    }
+  }, [isOnHold, toggleHold, enqueueErrorSnackBar]);
 
   const handleEndCall = useCallback(() => {
     activeCall?.disconnect();

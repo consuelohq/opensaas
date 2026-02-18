@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { audioDevicesState } from '@/dialer/states/audioDevicesState';
 import { selectedMicState } from '@/dialer/states/selectedMicState';
@@ -54,8 +55,8 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
         (d) => d.kind === 'audioinput' || d.kind === 'audiooutput',
       );
       setAllDevices(audioDevices);
-    } catch {
-      // browser doesn't support enumerateDevices
+    } catch (err: unknown) {
+      captureException(err, { extra: { context: 'refreshDevices' } });
     }
   }, [setAllDevices]);
 
@@ -80,12 +81,7 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
         setSelectedSpeakerAtom(spkrs[0].deviceId);
       }
     },
-    [
-      selectedMic,
-      selectedSpeaker,
-      setSelectedMicAtom,
-      setSelectedSpeakerAtom,
-    ],
+    [selectedMic, selectedSpeaker, setSelectedMicAtom, setSelectedSpeakerAtom],
   );
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
@@ -94,7 +90,8 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
       stream.getTracks().forEach((t) => t.stop());
       await refreshDevices();
       return true;
-    } catch {
+    } catch (err: unknown) {
+      captureException(err, { extra: { context: 'requestPermission' } });
       return false;
     }
   }, [refreshDevices]);
@@ -128,8 +125,8 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
         );
         setAllDevices(audioDevices);
         restoreOrDefault(audioDevices);
-      } catch {
-        // no mediaDevices support
+      } catch (err: unknown) {
+        captureException(err, { extra: { context: 'initAudioDevices' } });
       }
     };
 
