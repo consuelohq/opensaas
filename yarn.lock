@@ -4277,6 +4277,8 @@ __metadata:
 "@consuelo/coaching@npm:*, @consuelo/coaching@npm:^0.0.1, @consuelo/coaching@workspace:packages/coaching":
   version: 0.0.0-use.local
   resolution: "@consuelo/coaching@workspace:packages/coaching"
+  dependencies:
+    openai: "npm:^6.22.0"
   peerDependencies:
     openai: ">=4.0.0"
   peerDependenciesMeta:
@@ -47524,6 +47526,23 @@ __metadata:
     is-docker: "npm:^2.1.1"
     is-wsl: "npm:^2.2.0"
   checksum: 10c0/bb6b3a58401dacdb0aad14360626faf3fb7fba4b77816b373495988b724fb48941cad80c1b65d62bb31a17609b2cd91c41a181602caea597ca80dfbcc27e84c9
+  languageName: node
+  linkType: hard
+
+"openai@npm:^6.22.0":
+  version: 6.22.0
+  resolution: "openai@npm:6.22.0"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: 10c0/b0dcfce1fcaa84b9c92a00745fcd1bfa7573002d50e7a32dfe91b6e0acd6e950814891cef79de31f406f0454c6042baceb7c3843d9beadbd57148fbe42111a6f
   languageName: node
   linkType: hard
 
