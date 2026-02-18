@@ -11,6 +11,7 @@ import {
 } from '@tabler/icons-react';
 
 import { type CallAnalytics, type MomentType } from '@/dialer/types/coaching';
+import { formatDurationTimer } from '@/dialer/utils/callDuration';
 
 const STORAGE_KEY = 'dialer_postcall_expanded';
 
@@ -205,12 +206,6 @@ const SENTIMENT_EMOJI: Record<string, string> = {
   negative: '😞',
 };
 
-const formatDuration = (seconds: number): string => {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-};
-
 export const PostCallSummary = ({
   analysis,
   isAnalyzing,
@@ -266,7 +261,7 @@ export const PostCallSummary = ({
     return (
       <>
         <StyledMetaRow>
-          <span>Duration: {formatDuration(analysis.duration)}</span>
+          <span>Duration: {formatDurationTimer(analysis.duration)}</span>
           <span>•</span>
           <span>
             Score:{' '}
