@@ -15616,64 +15616,108 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ptc-org/nestjs-query-core@npm:9.4.0":
-  version: 9.4.0
-  resolution: "@ptc-org/nestjs-query-core@npm:9.4.0"
+"@ptc-org/nestjs-query-core@npm:4.2.0":
+  version: 4.2.0
+  resolution: "@ptc-org/nestjs-query-core@npm:4.2.0"
   dependencies:
     lodash.merge: "npm:^4.6.2"
-    reflect-metadata: "npm:^0.2.2"
-    tslib: "npm:^2.8.1"
+    reflect-metadata: "npm:^0.1.13"
+    tslib: "npm:^2.6.2"
   peerDependencies:
-    "@nestjs/common": ^9.0.0 || ^10.0.0 || ^11.0.0
+    "@nestjs/common": ^9.0.0 || ^10.0.0
     class-transformer: ^0.5
-  checksum: 10c0/0d6b2275cf572a9ac6e13ae4080c3a8c23049dced2dfc80a38413ef39b85fa7fac409ce5b1036707c6bc6841045089f6a8cdabf3c89253e331aef9e7664b9f19
+  checksum: 10c0/9c7f683f22b4e27f47fce70b7624d5e65f03da78f6408ab4e4983787345816d7ff5ec6013bf721bb7b0565b8939beb3ca70871897e736dff3b93eb8008360aa2
   languageName: node
   linkType: hard
 
-"@ptc-org/nestjs-query-graphql@npm:9.4.0":
-  version: 9.4.0
-  resolution: "@ptc-org/nestjs-query-graphql@npm:9.4.0"
+"@ptc-org/nestjs-query-core@npm:4.4.0":
+  version: 4.4.0
+  resolution: "@ptc-org/nestjs-query-core@npm:4.4.0"
   dependencies:
-    "@ptc-org/nestjs-query-core": "npm:9.4.0"
-    dataloader: "npm:^2.2.3"
+    lodash.merge: "npm:^4.6.2"
+    reflect-metadata: "npm:^0.2.1"
+    tslib: "npm:^2.6.2"
+  peerDependencies:
+    "@nestjs/common": ^9.0.0 || ^10.0.0
+    class-transformer: ^0.5
+  checksum: 10c0/d734151a3573eda72552664b5fb684d1d9d6fbf207d2b4e5b48a5a140bbc3f699c6fa29e76a2c31a74be3ec2ed4f54bcfcf95ecf414a7ccc0258c83e3b4a6b3b
+  languageName: node
+  linkType: hard
+
+"@ptc-org/nestjs-query-graphql@npm:4.2.0":
+  version: 4.2.0
+  resolution: "@ptc-org/nestjs-query-graphql@npm:4.2.0"
+  dependencies:
+    "@ptc-org/nestjs-query-core": "npm:4.2.0"
+    dataloader: "npm:^2.2.2"
     graphql-fields: "npm:^2.0.3"
     lodash.merge: "npm:4.6.2"
     lodash.omit: "npm:^4.5.0"
+    lower-case-first: "npm:^2.0.2"
     pluralize: "npm:^8.0.0"
-    reflect-metadata: "npm:0.2.2"
-    tslib: "npm:^2.8.1"
+    reflect-metadata: "npm:0.1.13"
+    tslib: "npm:^2.6.2"
+    upper-case-first: "npm:^2.0.2"
   peerDependencies:
     "@apollo/gateway": ^0.44.1 || ^0.46.0 || ^0.48.0 || ^0.49.0 || ^0.50.0 || ^2.0.0
-    "@nestjs/common": ^9.0.0 || ^10.0.0 || ^11.0.0
-    "@nestjs/core": ^9.0.0 || ^10.0.0 || ^11.0.0
-    "@nestjs/graphql": ^11.0.0 || ^12.0.0 || ^13.0.0
+    "@nestjs/common": ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^9.0.0 || ^10.0.0
+    "@nestjs/graphql": ^11.0.0 || ^12.0.0
     class-transformer: ^0.5
     class-validator: ^0.14.0
     graphql: ^16.0.0
-    graphql-subscriptions: ^3.0.0
-    ts-morph: ^19.0.0 || ^20.0.0 || ^21.0.0 || ^24.0.0 || ^25.0.0
-  checksum: 10c0/651d0be3ff77fd922ea29a621ca4c96e98df1ea15e05742cbe1fe10a157d46c019d728a38418662aa83414e1e6c78a3d2c9f6f25eec61f79075884dc4d1c1935
+    graphql-subscriptions: ^2.0.0
+    ts-morph: ^19.0.0
+  checksum: 10c0/8a5c5da602e68ff4875f19a19baa2b15bdefc9c5b467d3a55898fbbe411744762fcd42cf078e2ebc5cd53f1a12e67c7fbd698b3696ce1bb85e41dc9d0da72441
   languageName: node
   linkType: hard
 
-"@ptc-org/nestjs-query-typeorm@npm:9.4.0":
-  version: 9.4.0
-  resolution: "@ptc-org/nestjs-query-typeorm@npm:9.4.0"
+"@ptc-org/nestjs-query-graphql@patch:@ptc-org/nestjs-query-graphql@4.2.0#./patches/@ptc-org+nestjs-query-graphql+4.2.0.patch::locator=twenty-server%40workspace%3Apackages%2Ftwenty-server":
+  version: 4.2.0
+  resolution: "@ptc-org/nestjs-query-graphql@patch:@ptc-org/nestjs-query-graphql@npm%3A4.2.0#./patches/@ptc-org+nestjs-query-graphql+4.2.0.patch::version=4.2.0&hash=2d5c00&locator=twenty-server%40workspace%3Apackages%2Ftwenty-server"
   dependencies:
-    "@ptc-org/nestjs-query-core": "npm:9.4.0"
+    "@ptc-org/nestjs-query-core": "npm:4.2.0"
+    dataloader: "npm:^2.2.2"
+    graphql-fields: "npm:^2.0.3"
+    lodash.merge: "npm:4.6.2"
+    lodash.omit: "npm:^4.5.0"
+    lower-case-first: "npm:^2.0.2"
+    pluralize: "npm:^8.0.0"
+    reflect-metadata: "npm:0.1.13"
+    tslib: "npm:^2.6.2"
+    upper-case-first: "npm:^2.0.2"
+  peerDependencies:
+    "@apollo/gateway": ^0.44.1 || ^0.46.0 || ^0.48.0 || ^0.49.0 || ^0.50.0 || ^2.0.0
+    "@nestjs/common": ^9.0.0 || ^10.0.0
+    "@nestjs/core": ^9.0.0 || ^10.0.0
+    "@nestjs/graphql": ^11.0.0 || ^12.0.0
+    class-transformer: ^0.5
+    class-validator: ^0.14.0
+    graphql: ^16.0.0
+    graphql-subscriptions: ^2.0.0
+    ts-morph: ^19.0.0
+  checksum: 10c0/e22941524df13a20a67176aac42d27f6ac7860c72a4189eca91846d493f3da63b7d3ea71f2979bfb38de5e159fc6ac70d898fce20ef443e235f3b9202073441a
+  languageName: node
+  linkType: hard
+
+"@ptc-org/nestjs-query-typeorm@npm:4.2.1-alpha.2":
+  version: 4.2.1-alpha.2
+  resolution: "@ptc-org/nestjs-query-typeorm@npm:4.2.1-alpha.2"
+  dependencies:
     camel-case: "npm:^4.1.2"
     lodash.filter: "npm:^4.6.0"
     lodash.merge: "npm:^4.6.2"
     lodash.omit: "npm:^4.5.0"
-    reflect-metadata: "npm:0.2.2"
-    tslib: "npm:^2.8.1"
-    uuid: "npm:^10.0.0"
+    tslib: "npm:^2.6.2"
+    uuid: "npm:^9.0.0"
   peerDependencies:
-    "@nestjs/common": ^9.0.0 || ^10.0.0 || ^11.0.0
-    "@nestjs/typeorm": ^9.0.0 || ^10.0.0 || ^11.0.0
+    "@nestjs/common": ^9.0.0 || ^10.0.0
+    "@nestjs/typeorm": ^9.0.0 || ^10.0.0
+    "@ptc-org/nestjs-query-core": 4.2.0
     class-transformer: ^0.5
+    reflect-metadata: 0.1.13
     typeorm: ^0.3.15
-  checksum: 10c0/8732a44b1fd311be5e58dd14b99005ee27106f8ad3408e17d68b411a36b4910c40d07f9c429c9322af95bd625810c106b2473a494c096817ade38a338c8956f5
+  checksum: 10c0/470eb55b0ff0c05a469e3749d3576ef3a9d5cfbcd8d7fcf0eca384bde46fd614e3401882342ffed72ac14cd92a11c35a4ea86e89dd26dd867b2948fd5f005565
   languageName: node
   linkType: hard
 
@@ -32237,7 +32281,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dataloader@npm:^2.2.1, dataloader@npm:^2.2.2, dataloader@npm:^2.2.3":
+"dataloader@npm:^2.2.1, dataloader@npm:^2.2.2":
   version: 2.2.3
   resolution: "dataloader@npm:2.2.3"
   checksum: 10c0/9b9a056fbc863ca86da87d59e053e871e263b4966aa4d55e40d61a65e96815fae5530ca220629064ca5f8e3000c0c4ec93292e170c38ff393fb34256b4d7c1aa
@@ -37376,12 +37420,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-subscriptions@npm:3.0.0":
-  version: 3.0.0
-  resolution: "graphql-subscriptions@npm:3.0.0"
+"graphql-subscriptions@npm:2.0.0":
+  version: 2.0.0
+  resolution: "graphql-subscriptions@npm:2.0.0"
+  dependencies:
+    iterall: "npm:^1.3.0"
   peerDependencies:
     graphql: ^15.7.2 || ^16.0.0
-  checksum: 10c0/10445c0d376773d15c887237ac460226b03e0b9c76789846f9133e3cfba6275b529f946634cd5a4e1f1f6c728b960714c8efc6c504af20ab05a3a1219ac9cc09
+  checksum: 10c0/d48559de5d76a9e5bca882be1b52b779f270039f9e7b2210c005128b08b4dca100d3ee37a5c00862b668f17208c43737ab10322565f30bfabf477a25e76f254e
   languageName: node
   linkType: hard
 
@@ -40468,7 +40514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:^1.2.1":
+"iterall@npm:^1.2.1, iterall@npm:^1.3.0":
   version: 1.3.0
   resolution: "iterall@npm:1.3.0"
   checksum: 10c0/40de624e5fe937c4c0e511981b91caea9ff2142bfc0316cccc8506eaa03aa253820cc17c5bc5f0a98706c7268a373e5ebee9af9a0c8a359730cf7c05938b57b5
@@ -51618,10 +51664,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"reflect-metadata@npm:0.1.13":
+  version: 0.1.13
+  resolution: "reflect-metadata@npm:0.1.13"
+  checksum: 10c0/728bff0b376b05639fd11ed80c648b61f7fe653c5b506d7ca118e58b6752b9b00810fe0c86227ecf02bd88da6251ab3eb19fd403aaf2e9ff5ef36a2fda643026
+  languageName: node
+  linkType: hard
+
 "reflect-metadata@npm:0.2.2, reflect-metadata@npm:^0.2.1, reflect-metadata@npm:^0.2.2":
   version: 0.2.2
   resolution: "reflect-metadata@npm:0.2.2"
   checksum: 10c0/1cd93a15ea291e420204955544637c264c216e7aac527470e393d54b4bb075f10a17e60d8168ec96600c7e0b9fcc0cb0bb6e91c3fbf5b0d8c9056f04e6ac1ec2
+  languageName: node
+  linkType: hard
+
+"reflect-metadata@npm:^0.1.13":
+  version: 0.1.14
+  resolution: "reflect-metadata@npm:0.1.14"
+  checksum: 10c0/3a6190c7f6cb224f26a012d11f9e329360c01c1945e2cbefea23976a8bacf9db6b794aeb5bf18adcb673c448a234fbc06fc41853c00a6c206b30f0777ecf019e
   languageName: node
   linkType: hard
 
@@ -56905,9 +56965,9 @@ __metadata:
     "@opentelemetry/exporter-prometheus": "npm:^0.211.0"
     "@opentelemetry/sdk-metrics": "npm:^2.0.0"
     "@opentelemetry/sdk-node": "npm:^0.202.0"
-    "@ptc-org/nestjs-query-core": "npm:9.4.0"
-    "@ptc-org/nestjs-query-graphql": "npm:9.4.0"
-    "@ptc-org/nestjs-query-typeorm": "npm:9.4.0"
+    "@ptc-org/nestjs-query-core": "npm:4.4.0"
+    "@ptc-org/nestjs-query-graphql": "patch:@ptc-org/nestjs-query-graphql@4.2.0#./patches/@ptc-org+nestjs-query-graphql+4.2.0.patch"
+    "@ptc-org/nestjs-query-typeorm": "npm:4.2.1-alpha.2"
     "@react-email/render": "npm:^1.2.3"
     "@sentry/nestjs": "npm:^10.27.0"
     "@sentry/node": "npm:^10.27.0"
@@ -56982,7 +57042,7 @@ __metadata:
     graphql-middleware: "npm:^6.1.35"
     graphql-redis-subscriptions: "npm:2.7.0"
     graphql-scalars: "npm:1.23.0"
-    graphql-subscriptions: "npm:3.0.0"
+    graphql-subscriptions: "npm:2.0.0"
     graphql-tag: "npm:2.12.6"
     graphql-type-json: "npm:0.3.2"
     graphql-upload: "npm:16.0.2"
