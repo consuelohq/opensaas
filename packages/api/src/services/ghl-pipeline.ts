@@ -1,8 +1,16 @@
 import * as Sentry from '@sentry/node';
-import type { GHLClient, GHLOpportunity } from './ghl-client.js';
+import type {
+  GHLClient,
+  GHLOpportunity,
+  GHLPipeline,
+  GHLPipelineStage,
+} from './ghl-client.js';
 
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
 
 export interface StageMapping {
@@ -18,11 +26,37 @@ export interface PipelineMapping {
   twentyStageId: string;
 }
 
+export interface PipelineMappingInput {
+  ghlPipelineId: string;
+  ghlStageId: string;
+  twentyPipelineId: string;
+  twentyStageId: string;
+}
+
 export interface SyncResult {
   created: number;
   updated: number;
   skipped: number;
   errors: string[];
+}
+
+export interface PipelineWithMappings {
+  pipeline: GHLPipeline;
+  stages: Array<{
+    stage: GHLPipelineStage;
+    mapping: PipelineMapping | null;
+  }>;
+}
+
+export interface ConflictDetectionResult {
+  hasConflict: boolean;
+  conflicts: Array<{
+    opportunityId: string;
+    ghlStageId: string;
+    twentyStageId: string;
+    ghlUpdatedAt: string;
+    twentyUpdatedAt: string;
+  }>;
 }
 
 // region — SQL
@@ -46,7 +80,8 @@ const SQL_SELECT_STAGE = [
   'FROM ghl_pipeline_mappings WHERE workspace_id = $1 AND ghl_stage_id = $2',
 ].join(' ');
 
-const SQL_DELETE_MAPPINGS = 'DELETE FROM ghl_pipeline_mappings WHERE workspace_id = $1 AND ghl_pipeline_id = $2';
+const SQL_DELETE_MAPPINGS =
+  'DELETE FROM ghl_pipeline_mappings WHERE workspace_id = $1 AND ghl_pipeline_id = $2';
 
 const SQL_SELECT_OPP_SYNC = [
   'SELECT id, ghl_stage_id AS "ghlStageId" FROM ghl_opportunity_sync',
@@ -84,7 +119,11 @@ export class GHLPipelineSync {
     try {
       for (const mapping of stageMappings) {
         await this.db.query(SQL_UPSERT_MAPPING, [
-          workspaceId, ghlPipelineId, mapping.ghlStageId, twentyPipelineId, mapping.twentyStageId,
+          workspaceId,
+          ghlPipelineId,
+          mapping.ghlStageId,
+          twentyPipelineId,
+          mapping.twentyStageId,
         ]);
       }
     } catch (err: unknown) {
@@ -103,17 +142,28 @@ export class GHLPipelineSync {
     }
   }
 
-  async getStageMapping(workspaceId: string, ghlStageId: string): Promise<PipelineMapping | null> {
+  async getStageMapping(
+    workspaceId: string,
+    ghlStageId: string,
+  ): Promise<PipelineMapping | null> {
     try {
-      const result = await this.db.query(SQL_SELECT_STAGE, [workspaceId, ghlStageId]);
-      return result.rows.length > 0 ? (result.rows[0] as unknown as PipelineMapping) : null;
+      const result = await this.db.query(SQL_SELECT_STAGE, [
+        workspaceId,
+        ghlStageId,
+      ]);
+      return result.rows.length > 0
+        ? (result.rows[0] as unknown as PipelineMapping)
+        : null;
     } catch (err: unknown) {
       Sentry.captureException(err);
       return null;
     }
   }
 
-  async deletePipelineMappings(workspaceId: string, ghlPipelineId: string): Promise<void> {
+  async deletePipelineMappings(
+    workspaceId: string,
+    ghlPipelineId: string,
+  ): Promise<void> {
     try {
       await this.db.query(SQL_DELETE_MAPPINGS, [workspaceId, ghlPipelineId]);
     } catch (err: unknown) {
@@ -123,7 +173,12 @@ export class GHLPipelineSync {
   }
 
   async syncOpportunities(workspaceId: string): Promise<SyncResult> {
-    const result: SyncResult = { created: 0, updated: 0, skipped: 0, errors: [] };
+    const result: SyncResult = {
+      created: 0,
+      updated: 0,
+      skipped: 0,
+      errors: [],
+    };
 
     try {
       const mappings = await this.getMappedPipelines(workspaceId);
@@ -164,19 +219,31 @@ export class GHLPipelineSync {
     result: SyncResult,
   ): Promise<void> {
     try {
-      const stageMapping = await this.getStageMapping(workspaceId, opp.pipelineStageId);
+      const stageMapping = await this.getStageMapping(
+        workspaceId,
+        opp.pipelineStageId,
+      );
       if (!stageMapping) {
         result.skipped++;
         return;
       }
 
-      const existing = await this.db.query(SQL_SELECT_OPP_SYNC, [workspaceId, opp.id]);
+      const existing = await this.db.query(SQL_SELECT_OPP_SYNC, [
+        workspaceId,
+        opp.id,
+      ]);
 
       if (existing.rows.length > 0) {
-        const prev = existing.rows[0] as unknown as { id: string; ghlStageId: string };
+        const prev = existing.rows[0] as unknown as {
+          id: string;
+          ghlStageId: string;
+        };
         if (prev.ghlStageId !== opp.pipelineStageId) {
           await this.db.query(SQL_UPDATE_OPP_SYNC, [
-            opp.pipelineStageId, stageMapping.twentyStageId, workspaceId, opp.id,
+            opp.pipelineStageId,
+            stageMapping.twentyStageId,
+            workspaceId,
+            opp.id,
           ]);
           result.updated++;
         } else {
@@ -184,15 +251,103 @@ export class GHLPipelineSync {
         }
       } else {
         await this.db.query(SQL_INSERT_OPP_SYNC, [
-          workspaceId, opp.id, opp.pipelineId, opp.pipelineStageId,
-          stageMapping.twentyPipelineId, stageMapping.twentyStageId,
-          opp.contactId, opp.monetaryValue, opp.status,
+          workspaceId,
+          opp.id,
+          opp.pipelineId,
+          opp.pipelineStageId,
+          stageMapping.twentyPipelineId,
+          stageMapping.twentyStageId,
+          opp.contactId,
+          opp.monetaryValue,
+          opp.status,
         ]);
         result.created++;
       }
     } catch (err: unknown) {
       Sentry.captureException(err);
       throw err;
+    }
+  }
+
+  async getPipelines(workspaceId: string): Promise<PipelineWithMappings[]> {
+    try {
+      const pipelines = await this.client.getPipelines();
+      const mappings = await this.getMappedPipelines(workspaceId);
+      const mappingMap = new Map(mappings.map((m) => [m.ghlStageId, m]));
+
+      const result: PipelineWithMappings[] = [];
+      for (const pipeline of pipelines) {
+        const stages = await this.client.getPipelineStages(pipeline.id);
+        const stagesWithMappings = stages.map((stage) => ({
+          stage,
+          mapping: mappingMap.get(stage.id) ?? null,
+        }));
+        result.push({ pipeline, stages: stagesWithMappings });
+      }
+      return result;
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
+    }
+  }
+
+  async getMappings(workspaceId: string): Promise<PipelineMapping[]> {
+    try {
+      const result = await this.db.query(SQL_SELECT_MAPPINGS, [workspaceId]);
+      return result.rows as unknown as PipelineMapping[];
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
+    }
+  }
+
+  async updateMappings(
+    workspaceId: string,
+    mappings: PipelineMappingInput[],
+  ): Promise<void> {
+    try {
+      for (const mapping of mappings) {
+        await this.db.query(SQL_UPSERT_MAPPING, [
+          workspaceId,
+          mapping.ghlPipelineId,
+          mapping.ghlStageId,
+          mapping.twentyPipelineId,
+          mapping.twentyStageId,
+        ]);
+      }
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      throw err;
+    }
+  }
+
+  async detectConflicts(workspaceId: string): Promise<ConflictDetectionResult> {
+    try {
+      const sql = [
+        'SELECT g.ghl_opportunity_id, g.ghl_stage_id, g.twenty_stage_id,',
+        'g.updated_at AS ghl_updated_at, o.updated_at AS twenty_updated_at',
+        'FROM ghl_opportunity_sync g',
+        'LEFT JOIN opportunities o ON o.id = g.twenty_opportunity_id',
+        'WHERE g.workspace_id = $1',
+        'AND g.ghl_stage_id != o.pipeline_stage_id',
+      ].join(' ');
+      const result = await this.db.query(sql, [workspaceId]);
+
+      const conflicts = result.rows.map((row) => ({
+        opportunityId: row.ghl_opportunity_id as string,
+        ghlStageId: row.ghl_stage_id as string,
+        twentyStageId: row.twenty_stage_id as string,
+        ghlUpdatedAt: row.ghl_updated_at as string,
+        twentyUpdatedAt: row.twenty_updated_at as string,
+      }));
+
+      return {
+        hasConflict: conflicts.length > 0,
+        conflicts,
+      };
+    } catch (err: unknown) {
+      Sentry.captureException(err);
+      return { hasConflict: false, conflicts: [] };
     }
   }
 }
