@@ -200,7 +200,7 @@ export class AdminPanelHealthService {
     timeRange: QueueMetricsTimeRange = QueueMetricsTimeRange.OneDay,
   ): Promise<QueueMetricsDataDTO> {
     const redis = this.redisClient.getQueueClient();
-    const queue = new Queue(queueName, { connection: redis });
+    const queue = new Queue(queueName, { connection: redis as any });
 
     try {
       const { pointsNeeded, samplingFactor } =
