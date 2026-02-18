@@ -72,6 +72,7 @@ const StyledContent = styled.div`
   gap: ${({ theme }) => theme.spacing(3)};
   max-height: 40vh;
   overflow-y: auto;
+  aria-live: polite;
 `;
 
 const StyledBadge = styled.span`
@@ -203,6 +204,11 @@ const StyledRetryButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.background.tertiary};
+  }
+
+  &:focus-visible {
+    outline: 2px solid blue;
+    outline-offset: 2px;
   }
 `;
 

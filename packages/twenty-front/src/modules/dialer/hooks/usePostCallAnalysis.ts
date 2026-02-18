@@ -15,7 +15,6 @@ import {
   type TranscriptEntry,
 } from '@/dialer/types/coaching';
 
-// W16: basic runtime validation for CallAnalytics shape
 function isValidCallAnalytics(data: unknown): data is CallAnalytics {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
@@ -51,10 +50,16 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
   const analyzedCallsRef = useRef<Set<string>>(new Set());
   const lastCallSidRef = useRef<string | null>(null);
   const lastTranscriptRef = useRef<TranscriptEntry[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const analyze = useCallback(
     async (callId: string, entries: TranscriptEntry[]) => {
       if (analyzedCallsRef.current.has(callId)) return;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
       analyzedCallsRef.current.add(callId);
       setIsAnalyzing(true);
       setError(null);
@@ -71,6 +76,7 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
+            signal: abortControllerRef.current.signal,
             body: JSON.stringify({ messages, callSid: callId }),
           },
         );
@@ -79,18 +85,15 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
           throw new Error(`Analysis API error: ${res.status}`);
         }
 
-        // W10: unwrap { data } from backend response
         const json = (await res.json()) as { data: unknown };
         const data = json.data;
 
-        // W16: validate LLM response shape
         if (!isValidCallAnalytics(data)) {
           throw new Error('Invalid analysis response format');
         }
 
         setAnalysis(data);
 
-        // persist to call record (fire-and-forget)
         fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`, {
           method: 'POST',
           credentials: 'include',
@@ -102,8 +105,8 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
           });
         });
       } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
         captureException(err, { extra: { context: 'analyze', callId } });
-        // W9: set error state so UI can show failure + retry
         const message = err instanceof Error ? err.message : 'Analysis failed';
         setError(message);
         analyzedCallsRef.current.delete(callId);
@@ -133,12 +136,16 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
   // clear analysis when a new call starts
   useEffect(() => {
     if (callState.status === 'idle') {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       setAnalysis(null);
       setError(null);
     }
   }, [callState.status, setAnalysis, setError]);
 
-  // W9: retry with last known callSid + transcript
+  // retry with last known callSid + transcript
   const retry = useCallback(() => {
     if (lastCallSidRef.current && lastTranscriptRef.current.length > 0) {
       analyzedCallsRef.current.delete(lastCallSidRef.current);

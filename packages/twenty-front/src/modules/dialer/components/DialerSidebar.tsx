@@ -102,7 +102,7 @@ export const DialerSidebar = () => {
           error={coachingError}
           onRetry={retryCoaching}
         />
-        {isInCall && (
+        {transcript.length > 0 && (
           <LiveTranscript transcript={transcript} isConnected={isConnected} />
         )}
         <PostCallSummary

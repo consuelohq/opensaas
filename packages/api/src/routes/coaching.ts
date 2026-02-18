@@ -57,8 +57,9 @@ const withTimeout = <TResult>(
   ]);
 
 // B4: construct a valid WAV header for mulaw/8000/mono audio
+// W24: mulaw (format 7) requires 18-byte fmt chunk (16 + 2 for cbSize)
 const buildWavHeader = (dataLength: number): Buffer => {
-  const header = Buffer.alloc(44);
+  const header = Buffer.alloc(46);
   const sampleRate = 8000;
   const numChannels = 1;
   const bitsPerSample = 8;
@@ -69,38 +70,115 @@ const buildWavHeader = (dataLength: number): Buffer => {
   header.writeUInt32LE(36 + dataLength, 4);
   header.write('WAVE', 8);
   header.write('fmt ', 12);
-  header.writeUInt32LE(16, 16); // PCM chunk size
-  header.writeUInt16LE(7, 20); // format: 7 = mulaw
-  header.writeUInt16LE(numChannels, 22);
-  header.writeUInt32LE(sampleRate, 24);
-  header.writeUInt32LE(byteRate, 28);
-  header.writeUInt16LE(blockAlign, 32);
-  header.writeUInt16LE(bitsPerSample, 34);
-  header.write('data', 36);
-  header.writeUInt32LE(dataLength, 40);
+  header.writeUInt32LE(18, 16); // W24: 18 bytes for mulaw (includes cbSize)
+  header.writeUInt16LE(7, 20); // format: 7 = mulaw (MAU)
+  header.writeUInt16LE(0, 22); // cbSize - required for non-PCM formats
+  header.writeUInt16LE(numChannels, 24);
+  header.writeUInt32LE(sampleRate, 26);
+  header.writeUInt32LE(byteRate, 30);
+  header.writeUInt16LE(blockAlign, 34);
+  header.writeUInt16LE(bitsPerSample, 36);
+  header.write('data', 38);
+  header.writeUInt32LE(dataLength, 42);
   return header;
 };
 
-// W2: lazy logger init
+interface SnakeCaseCallAnalytics {
+  call_sid: string;
+  user_id: string;
+  phone_number: string;
+  call_date: string;
+  key_moments: Array<{
+    timestamp: string;
+    type: string;
+    description: string;
+    transcript_snippet: string;
+  }>;
+  sentiment_analysis: {
+    customer_sentiment: string;
+    engagement_level: string;
+    objections_raised: string[];
+    buying_signals: string[];
+  };
+  performance_metrics: {
+    talk_ratio: number;
+    questions_asked: number;
+    objections_handled: number;
+    next_steps_established: boolean;
+    call_duration_minutes: number;
+  };
+  overall_score: number;
+  strengths: string[];
+  improvement_areas: string[];
+  action_items: string[];
+  generated_at: string;
+}
+
+function transformCallAnalytics(
+  input: SnakeCaseCallAnalytics,
+  callSid?: string,
+): Record<string, unknown> {
+  return {
+    id: `${input.call_sid}-${Date.now()}`,
+    callId: callSid ?? input.call_sid,
+    keyMoments: input.key_moments.map((m) => ({
+      timestamp: new Date(m.timestamp).getTime(),
+      type: m.type,
+      text: m.description,
+      speaker: 'agent' as const,
+    })),
+    sentiment: {
+      overall: input.sentiment_analysis.customer_sentiment,
+      agentScore: Math.round(input.performance_metrics.talk_ratio * 100),
+      customerScore: Math.round(
+        (1 - input.performance_metrics.talk_ratio) * 100,
+      ),
+      trajectory: 'stable' as const,
+    },
+    performanceScore: input.overall_score,
+    summary:
+      input.strengths.join(' ') + ' ' + input.improvement_areas.join(' '),
+    duration: input.performance_metrics.call_duration_minutes * 60,
+    outcome: 'other' as const,
+    nextSteps: input.action_items,
+    tokensUsed: { input: 0, output: 0 },
+    modelUsed: 'groq',
+    latencyMs: 0,
+    createdAt: input.generated_at,
+  };
+}
+
+// W2: lazy logger init - N17: cache resolved promise at module level
 let loggerInstance: {
   error: (msg: string, meta?: Record<string, unknown>) => void;
   info: (msg: string, meta?: Record<string, unknown>) => void;
 } | null = null;
+let loggerPromise: Promise<{
+  error: (msg: string, meta?: Record<string, unknown>) => void;
+  info: (msg: string, meta?: Record<string, unknown>) => void;
+}> | null = null;
+
 const getLogger = async () => {
-  if (!loggerInstance) {
-    try {
-      // eslint-disable-next-line @nx/enforce-module-boundaries
-      const { createLogger } = await import('@consuelo/logger');
-      loggerInstance = createLogger('coaching');
-    } catch (_err: unknown) {
-      // fallback if logger package unavailable — intentional: graceful fallback when logger not installed
-      loggerInstance = {
-        error: () => {},
-        info: () => {},
-      };
+  if (loggerPromise) return loggerPromise;
+
+  loggerPromise = (async () => {
+    if (!loggerInstance) {
+      try {
+        // eslint-disable-next-line @nx/enforce-module-boundaries
+        const { createLogger } = await import('@consuelo/logger');
+        loggerInstance = createLogger('coaching');
+      } catch (_err: unknown) {
+        // fallback if logger package unavailable — intentional: graceful fallback when logger not installed
+        loggerInstance = {
+          error: () => {},
+          info: () => {},
+        };
+      }
     }
-  }
-  return loggerInstance;
+    return loggerInstance;
+  })();
+
+  return loggerPromise;
 };
 
 /** /v1/coaching routes wired to @consuelo/coaching */
@@ -219,7 +297,11 @@ export const coachingRoutes = (): RouteDefinition[] => {
             }),
             LLM_TIMEOUT_MS,
           );
-          res.status(200).json({ data: result });
+          const transformed = transformCallAnalytics(
+            result as unknown as SnakeCaseCallAnalytics,
+            body.callSid,
+          );
+          res.status(200).json({ data: transformed });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
@@ -286,6 +368,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
 // N4: in-memory map — known limitation, needs redis pub/sub for multi-server (DEV-831)
 const clientsByCall = new Map<string, Set<WebSocketClient>>();
+const entryCountersByCall = new Map<string, number>();
 
 /** broadcast a transcript entry to all frontend clients for a given call */
 export const broadcastTranscript = (
@@ -338,6 +421,10 @@ export const setupCoachingWebSocket = async (
           streamWss.emit('connection', ws, request);
         });
       } else if (url.pathname === '/v1/coaching/media') {
+        // W21: Twilio Media Streams do not send JWTs in the WebSocket connection.
+        // This is intentional — auth is validated at the Twilio webhook level
+        // when the media stream is initiated. The call must already be authenticated
+        // by the time Twilio connects here.
         mediaWss.handleUpgrade(request, socket, head, (ws) => {
           mediaWss.emit('connection', ws, request);
         });
@@ -397,13 +484,21 @@ export const setupCoachingWebSocket = async (
         return;
       }
 
+      if (!entryCountersByCall.has(callId)) {
+        entryCountersByCall.set(callId, 0);
+      }
+      const getEntryCounter = () => {
+        const current = entryCountersByCall.get(callId) ?? 0;
+        entryCountersByCall.set(callId, current + 1);
+        return entryCountersByCall.get(callId) ?? 0;
+      };
+
       // W4: separate buffers per track for speaker diarization
       const audioBuffers: Record<string, Buffer[]> = {
         inbound: [],
         outbound: [],
       };
       let transcribeTimer: ReturnType<typeof setInterval> | null = null;
-      let entryCounter = 0;
 
       const transcribeBuffer = async (track: 'inbound' | 'outbound') => {
         const buffer = audioBuffers[track];
@@ -440,7 +535,7 @@ export const setupCoachingWebSocket = async (
           );
 
           if (transcription.text?.trim()) {
-            entryCounter += 1;
+            const entryCounter = getEntryCounter();
             const entry: TranscriptEntry = {
               id: `${callId}-${entryCounter}`,
               // W4: inbound = customer, outbound = agent
