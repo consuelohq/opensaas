@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { HealthCheck, HealthCheckService } from '@nestjs/terminus';
 
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
@@ -11,14 +11,12 @@ export class HealthController {
   @Get()
   @UseGuards(PublicEndpointGuard, NoPermissionGuard)
   @HealthCheck()
-  check() {
-    return this.health.check([]);
-  }
+  check(@Query('debug') debug?: string) {
+    if (debug === '1') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (global as any).__lastGraphQLError ?? { message: 'no error captured yet' };
+    }
 
-  @Get('/debug-error')
-  @UseGuards(PublicEndpointGuard, NoPermissionGuard)
-  debugError() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (global as any).__lastGraphQLError ?? { message: 'no error captured yet' };
+    return this.health.check([]);
   }
 }
