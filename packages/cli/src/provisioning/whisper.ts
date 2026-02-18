@@ -70,9 +70,11 @@ export async function setupWhisper(
   const stats = fs.statSync(modelPath);
   if (stats.size < model.bytes * 0.9) {
     spinner.fail('Model file appears corrupted');
-    try { fs.unlinkSync(modelPath); } catch (_err: unknown) { /* cleanup best-effort — intentional: cleanup */ }
-    throw new Error('Model file appears corrupted');
-  }
+    try {
+      fs.unlinkSync(modelPath);
+    } catch (_err: unknown) {
+      /* cleanup best-effort — intentional: cleanup */
+    }
     throw new Error('Model file appears corrupted');
   }
   spinner.succeed('Model verified');
