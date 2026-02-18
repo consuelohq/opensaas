@@ -311,10 +311,17 @@ export class ChatExecutionService {
   private getNativeWebSearchTool(provider: ModelProvider): ToolSet {
     switch (provider) {
       case ModelProvider.ANTHROPIC:
-        return { web_search: anthropic.tools.webSearch_20250305() };
+        // HACK: anthropic tool type doesn't match expected ToolSet generic signature
+        // Type assertion needed due to @ai-sdk/anthropic tool type mismatch
+        return {
+          web_search: anthropic.tools.webSearch_20250305() as ToolSet[string],
+        };
       case ModelProvider.OPENAI:
-        return { web_search: openai.tools.webSearch() };
+        // HACK: openai tool type doesn't match expected ToolSet generic signature
+        // Type assertion needed due to @ai-sdk/openai tool type mismatch
+        return { web_search: openai.tools.webSearch() as ToolSet[string] };
       case ModelProvider.GROQ:
+        // HACK: groq tool type doesn't match expected ToolSet generic signature
         // Type assertion needed due to @ai-sdk/groq tool type mismatch
         return {
           web_search: groq.tools.browserSearch({}) as ToolSet[string],

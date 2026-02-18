@@ -15,6 +15,9 @@ declare module 'graphql' {
       code?: string;
       stackTrace?: ReadonlyArray<string>;
     };
+    http?: {
+      status?: number;
+    };
   }
 }
 

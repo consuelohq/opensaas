@@ -17,18 +17,19 @@ export class MicrosoftAPIsOauthExchangeCodeForTokenStrategy extends MicrosoftAPI
   }
 
   async validate(
-    request: MicrosoftAPIsRequest,
+    request: Express.Request,
     accessToken: string,
     refreshToken: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any,
     done: VerifyCallback,
   ): Promise<void> {
+    const microsoftApisRequest = request as unknown as MicrosoftAPIsRequest;
     const { name, emails, photos } = profile;
 
     const state =
-      typeof request.query.state === 'string'
-        ? JSON.parse(request.query.state)
+      typeof microsoftApisRequest.query.state === 'string'
+        ? JSON.parse(microsoftApisRequest.query.state)
         : undefined;
 
     const user: MicrosoftAPIsRequest['user'] = {
