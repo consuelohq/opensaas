@@ -1,11 +1,22 @@
 /** Validate Twilio credentials by calling the API */
-export async function validateTwilio(accountSid: string, authToken: string): Promise<boolean> {
+export async function validateTwilio(
+  accountSid: string,
+  authToken: string,
+): Promise<boolean> {
   try {
-    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}.json`, {
-      headers: { Authorization: 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64') },
-    });
+    const res = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}.json`,
+      {
+        headers: {
+          Authorization:
+            'Basic ' +
+            Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+        },
+      },
+    );
     return res.ok;
-  } catch {
+  } catch (_err: unknown) {
+    // fetch failed — intentional: JSON parse fail
     return false;
   }
 }
@@ -17,7 +28,8 @@ export async function validateGroq(apiKey: string): Promise<boolean> {
       headers: { Authorization: `Bearer ${apiKey}` },
     });
     return res.ok;
-  } catch {
+  } catch (_err: unknown) {
+    // fetch failed — intentional: JSON parse fail
     return false;
   }
 }
@@ -28,7 +40,8 @@ export async function validateDatabase(url: string): Promise<boolean> {
   try {
     const parsed = new URL(url);
     return parsed.protocol === 'postgres:' || parsed.protocol === 'postgresql:';
-  } catch {
+  } catch (_err: unknown) {
+    // invalid URL — intentional: JSON parse fail
     return false;
   }
 }

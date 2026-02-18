@@ -58,7 +58,9 @@ const StyledDot = styled.span<{ connected: boolean }>`
   height: 8px;
   border-radius: 50%;
   background: ${({ connected, theme }) =>
-    connected ? (theme.color.green ?? '#16a34a') : (theme.font.color.tertiary ?? '#999')};
+    connected
+      ? (theme.color.green ?? '#16a34a')
+      : (theme.font.color.tertiary ?? '#999')};
 `;
 
 const StyledContent = styled.div`
@@ -68,6 +70,7 @@ const StyledContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  aria-live: polite;
 `;
 
 const StyledEntry = styled.div<{ isAgent: boolean }>`
@@ -77,7 +80,7 @@ const StyledEntry = styled.div<{ isAgent: boolean }>`
   padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ isAgent, theme }) =>
-    isAgent ? (theme.background.secondary) : (theme.background.tertiary)};
+    isAgent ? theme.background.secondary : theme.background.tertiary};
   align-self: ${({ isAgent }) => (isAgent ? 'flex-end' : 'flex-start')};
   max-width: 85%;
 `;
@@ -139,7 +142,8 @@ export const LiveTranscript = ({
     const container = contentRef.current;
     if (container) {
       const isNearBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        50;
       if (isNearBottom) {
         container.scrollTop = container.scrollHeight;
       }

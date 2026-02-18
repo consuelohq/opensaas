@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports — DEV-788: twenty-ui module resolution conflict
 import { IconChevronDown, IconChevronUp, IconCopy } from '@tabler/icons-react';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { type TranscriptEntry } from '@/dialer/types/coaching';
@@ -126,8 +127,9 @@ export const TranscriptView = ({
       if (!res.ok) throw new Error('fetch failed');
       const data = (await res.json()) as { entries: TranscriptEntry[] };
       setEntries(data.entries);
-    } catch {
+    } catch (err: unknown) {
       setEntries([]);
+      captureException(err);
     } finally {
       setLoading(false);
     }

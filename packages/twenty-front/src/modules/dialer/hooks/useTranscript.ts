@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { captureException, captureMessage } from '@sentry/react';
+import { captureException } from '@sentry/react';
 
+import { cookieStorage } from '~/utils/cookie-storage';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
@@ -16,8 +17,25 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const RECONNECT_BASE_DELAY_MS = 1000;
 const COACHING_REFRESH_INTERVAL_MS = 30_000;
 const MAX_COACHING_REFRESHES = 10;
-// W3: minimum new words before triggering a coaching refresh
 const MIN_NEW_WORDS_THRESHOLD = 50;
+
+function getAuthToken(): string | null {
+  try {
+    const tokenPairStr = cookieStorage.getItem('tokenPair');
+    if (!tokenPairStr) return null;
+    const tokenPair = JSON.parse(tokenPairStr) as {
+      accessToken?: string;
+      accessOrWorkspaceAgnosticToken?: { token: string };
+    };
+    return (
+      tokenPair.accessToken ??
+      tokenPair.accessOrWorkspaceAgnosticToken?.token ??
+      null
+    );
+  } catch {
+    return null;
+  }
+}
 
 // converts http(s) base url to ws(s)
 function toWsUrl(httpUrl: string): string {
@@ -124,8 +142,8 @@ export const useTranscript = (): UseTranscriptReturn => {
           const json = (await res.json()) as { data: unknown };
           setTalkingPoints(json.data as Parameters<typeof setTalkingPoints>[0]);
         }
-      } catch {
-        // graceful degradation — coaching still works via initial REST fetch
+      } catch (err: unknown) {
+        captureException(err, { extra: { context: 'refreshCoaching' } });
       }
     },
     [setTalkingPoints],
@@ -139,7 +157,10 @@ export const useTranscript = (): UseTranscriptReturn => {
       disconnect();
       reconnectAttempts.current = 0;
 
-      const wsUrl = `${toWsUrl(REACT_APP_SERVER_BASE_URL)}/v1/coaching/stream?callId=${encodeURIComponent(callId)}`;
+      const token = getAuthToken();
+      const wsUrl = token
+        ? `${toWsUrl(REACT_APP_SERVER_BASE_URL)}/v1/coaching/stream?callId=${encodeURIComponent(callId)}&token=${encodeURIComponent(token)}`
+        : `${toWsUrl(REACT_APP_SERVER_BASE_URL)}/v1/coaching/stream?callId=${encodeURIComponent(callId)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -151,16 +172,10 @@ export const useTranscript = (): UseTranscriptReturn => {
       ws.onmessage = (event) => {
         try {
           const entry = JSON.parse(event.data as string) as TranscriptEntry;
-          // W15: pure state updater — no side effects inside
           setTranscript((prev) => [...prev, entry]);
-          // store pending entry so useEffect can trigger refresh
           pendingEntryRef.current = entry;
         } catch (err: unknown) {
-          // W15: log malformed messages for debugging
-          captureMessage('Malformed WebSocket message', {
-            level: 'warning',
-            extra: { data: event.data },
-          });
+          captureException(err, { extra: { context: 'wsOnMessage' } });
         }
       };
 
@@ -168,23 +183,25 @@ export const useTranscript = (): UseTranscriptReturn => {
         setConnected(false);
         wsRef.current = null;
 
-        // W14: use ref instead of closure-captured callState.status
         if (
           reconnectAttempts.current < MAX_RECONNECT_ATTEMPTS &&
           callStatusRef.current === 'active'
         ) {
+          const jitter = 0.5 + Math.random();
           const delay =
-            RECONNECT_BASE_DELAY_MS * Math.pow(2, reconnectAttempts.current);
+            RECONNECT_BASE_DELAY_MS *
+            Math.pow(2, reconnectAttempts.current) *
+            jitter;
           reconnectAttempts.current += 1;
           reconnectTimer.current = setTimeout(() => connect(callId), delay);
         }
       };
 
       ws.onerror = () => {
-        // onclose fires after onerror — reconnect handled there
+        setTranscriptError('WebSocket connection failed');
       };
     },
-    [disconnect, setConnected, setTranscript],
+    [disconnect, setConnected, setTranscript, setTranscriptError],
   );
 
   // W15: trigger coaching refresh outside state updater, watching transcript length

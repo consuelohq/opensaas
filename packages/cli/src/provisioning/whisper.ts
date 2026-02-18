@@ -28,7 +28,9 @@ const MODELS_DIR = path.join(os.homedir(), '.consuelo', 'models');
 
 export type WhisperModelSize = keyof typeof MODELS;
 
-export async function setupWhisper(modelSize: WhisperModelSize): Promise<string> {
+export async function setupWhisper(
+  modelSize: WhisperModelSize,
+): Promise<string> {
   const model = MODELS[modelSize];
   const modelPath = path.join(MODELS_DIR, `whisper-${modelSize}.bin`);
 
@@ -36,13 +38,22 @@ export async function setupWhisper(modelSize: WhisperModelSize): Promise<string>
 
   const spinner = ora(`Downloading whisper ${modelSize} model...`).start();
   try {
-    await downloadWithProgress(model.url, modelPath, model.bytes, (progress) => {
-      spinner.text = `Downloading whisper ${modelSize} model... ${progress}%`;
-    });
+    await downloadWithProgress(
+      model.url,
+      modelPath,
+      model.bytes,
+      (progress) => {
+        spinner.text = `Downloading whisper ${modelSize} model... ${progress}%`;
+      },
+    );
     spinner.succeed('Model downloaded');
   } catch (err: unknown) {
     spinner.fail('Download failed');
-    try { fs.unlinkSync(modelPath); } catch { /* cleanup best-effort */ }
+    try {
+      fs.unlinkSync(modelPath);
+    } catch (_err: unknown) {
+      /* cleanup best-effort — intentional: cleanup */
+    }
     throw err;
   }
 
@@ -50,7 +61,8 @@ export async function setupWhisper(modelSize: WhisperModelSize): Promise<string>
   try {
     execSync('pip install pywhispercpp', { stdio: 'ignore' });
     spinner.succeed('pywhispercpp installed');
-  } catch {
+  } catch (_err: unknown) {
+    // pip install failed — intentional: download failure
     spinner.warn('pywhispercpp install skipped (pip not available)');
   }
 
@@ -58,12 +70,16 @@ export async function setupWhisper(modelSize: WhisperModelSize): Promise<string>
   const stats = fs.statSync(modelPath);
   if (stats.size < model.bytes * 0.9) {
     spinner.fail('Model file appears corrupted');
-    try { fs.unlinkSync(modelPath); } catch { /* cleanup best-effort */ }
+    try { fs.unlinkSync(modelPath); } catch (_err: unknown) { /* cleanup best-effort — intentional: cleanup */ }
+    throw new Error('Model file appears corrupted');
+  }
     throw new Error('Model file appears corrupted');
   }
   spinner.succeed('Model verified');
 
-  logger.info(`\n✓ Local speech-to-text ready!\n  Model location: ${modelPath}\n`);
+  logger.info(
+    `\n✓ Local speech-to-text ready!\n  Model location: ${modelPath}\n`,
+  );
   return modelPath;
 }
 
@@ -73,7 +89,7 @@ function downloadWithProgress(
   url: string,
   dest: string,
   totalBytes: number,
-  onProgress: (percent: number) => void
+  onProgress: (percent: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dest);
@@ -82,48 +98,65 @@ function downloadWithProgress(
 
     file.on('error', (err) => {
       fs.unlink(dest, () => {});
-      reject(new Error(`Failed to write model file: ${err.message}`));
+      reject(
+        new Error(`Failed to write model file: ${err.message}`, { cause: err }),
+      );
     });
 
     const doRequest = (targetUrl: string): void => {
       const client = targetUrl.startsWith('https') ? https : http;
-      client.get(targetUrl, (response) => {
-        if (response.statusCode && [301, 302, 307, 308].includes(response.statusCode)) {
-          if (++redirects > MAX_REDIRECTS) {
+      client
+        .get(targetUrl, (response) => {
+          if (
+            response.statusCode &&
+            [301, 302, 307, 308].includes(response.statusCode)
+          ) {
+            if (++redirects > MAX_REDIRECTS) {
+              file.close();
+              fs.unlink(dest, () => {});
+              reject(new Error('Too many redirects'));
+              return;
+            }
+            const loc = response.headers.location;
+            if (loc) {
+              response.resume();
+              doRequest(loc);
+              return;
+            }
+          }
+
+          if (!response.statusCode || response.statusCode >= 400) {
             file.close();
             fs.unlink(dest, () => {});
-            reject(new Error('Too many redirects'));
+            const err = new Error(
+              `Download failed: HTTP ${response.statusCode}`,
+            );
+            captureError(err); // Sentry.captureException via wrapper
+            reject(err);
             return;
           }
-          const loc = response.headers.location;
-          if (loc) { response.resume(); doRequest(loc); return; }
-        }
 
-        if (!response.statusCode || response.statusCode >= 400) {
+          response.on('data', (chunk: Buffer) => {
+            downloaded += chunk.length;
+            const percent = Math.round((downloaded / totalBytes) * 100);
+            onProgress(Math.min(percent, 100));
+          });
+
+          response.pipe(file);
+          file.on('finish', () => {
+            file.close();
+            resolve();
+          });
+        })
+        .on('error', (err) => {
           file.close();
           fs.unlink(dest, () => {});
-          const err = new Error(`Download failed: HTTP ${response.statusCode}`);
-          captureError(err); // Sentry.captureException via wrapper
-          reject(err);
-          return;
-        }
-
-        response.on('data', (chunk: Buffer) => {
-          downloaded += chunk.length;
-          const percent = Math.round((downloaded / totalBytes) * 100);
-          onProgress(Math.min(percent, 100));
+          reject(
+            new Error(`Whisper model download error: ${err.message}`, {
+              cause: err,
+            }),
+          );
         });
-
-        response.pipe(file);
-        file.on('finish', () => {
-          file.close();
-          resolve();
-        });
-      }).on('error', (err) => {
-        file.close();
-        fs.unlink(dest, () => {});
-        reject(new Error(`Whisper model download error: ${err.message}`));
-      });
     };
 
     doRequest(url);

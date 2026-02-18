@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -31,19 +32,14 @@ function buildContactContext(contact: DialerContact | null): string {
     : 'Contact information available (details redacted).';
 }
 
-// W3: count words in transcript entries
-function countWords(entries: TranscriptEntry[]): number {
-  return entries.reduce((sum, e) => sum + e.text.split(' ').length, 0);
-}
-
-// W16: basic runtime validation for TalkingPoints shape
 function isValidTalkingPoints(data: unknown): data is TalkingPoints {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
   return (
     Array.isArray(obj.details) &&
-    Array.isArray(obj.clarifying_questions) &&
-    Array.isArray(obj.objection_responses)
+    (obj.clarifying_questions === null ||
+      obj.clarifying_questions === undefined ||
+      Array.isArray(obj.clarifying_questions))
   );
 }
 
@@ -66,6 +62,7 @@ export const useCoaching = (): UseCoachingReturn => {
 
   const cache = useRef<Map<string, TalkingPoints>>(new Map());
   const lastCallSid = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // W3: periodic refresh tracking
   const refreshCount = useRef(0);
@@ -75,6 +72,11 @@ export const useCoaching = (): UseCoachingReturn => {
 
   const fetchCoaching = useCallback(
     async (callSid: string, contact: DialerContact | null) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
       const cached = cache.current.get(callSid);
       if (cached) {
         setTalkingPoints(cached);
@@ -89,9 +91,13 @@ export const useCoaching = (): UseCoachingReturn => {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
+          signal: abortControllerRef.current.signal,
           body: JSON.stringify({
             messages: [
-              { role: 'sales_rep', content: buildContactContext(contact) },
+              {
+                role: 'system',
+                content: `CONTEXT: ${buildContactContext(contact)}`,
+              },
             ],
           }),
         });
@@ -100,11 +106,9 @@ export const useCoaching = (): UseCoachingReturn => {
           throw new Error(`Coaching API error: ${res.status}`);
         }
 
-        // W10: unwrap { data } from backend response
         const json = (await res.json()) as { data: unknown };
         const data = json.data;
 
-        // W16: validate LLM response shape
         if (!isValidTalkingPoints(data)) {
           throw new Error('Invalid coaching response format');
         }
@@ -112,6 +116,8 @@ export const useCoaching = (): UseCoachingReturn => {
         cache.current.set(callSid, data);
         setTalkingPoints(data);
       } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        captureException(err, { extra: { context: 'fetchCoaching', callSid } });
         const message =
           err instanceof Error ? err.message : 'Failed to fetch coaching';
         setError(message);
@@ -201,6 +207,10 @@ export const useCoaching = (): UseCoachingReturn => {
   // clear state when call ends or goes idle — also clear cache (N8)
   useEffect(() => {
     if (callState.status === 'idle' || callState.status === 'ended') {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       setTalkingPoints(null);
       setError(null);
       setLoading(false);

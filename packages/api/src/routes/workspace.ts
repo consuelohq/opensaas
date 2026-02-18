@@ -1,6 +1,8 @@
 import * as Sentry from '@sentry/node';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 
 type Pool = {
   query(
@@ -8,6 +10,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[] }>;
 };
+
+const getPool = getSharedPool;
 
 const VALID_ROLES = ['owner', 'admin', 'member'] as const;
 
@@ -41,36 +45,6 @@ const SQL_MEMBER_ROLE =
   'SELECT role FROM workspace_members WHERE id = $1 AND workspace_id = $2';
 
 export const workspaceRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { Pool } = await import('pg');
-        pool = new Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
-
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res
-        .status(401)
-        .json({
-          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-        });
-      return null;
-    }
-    return { userId, workspaceId };
   };
 
   // B1: returns caller's role if it's in the allowed list, or null (with 403 sent)
@@ -90,11 +64,9 @@ export const workspaceRoutes = (): RouteDefinition[] => {
           'Non-member attempted workspace action',
           'warning',
         );
-        res
-          .status(403)
-          .json({
-            error: { code: 'FORBIDDEN', message: 'Not a workspace member' },
-          });
+        res.status(403).json({
+          error: { code: 'FORBIDDEN', message: 'Not a workspace member' },
+        });
         return null;
       }
       const role = rows[0].role as string;
@@ -103,11 +75,9 @@ export const workspaceRoutes = (): RouteDefinition[] => {
           'Insufficient role for workspace action',
           'warning',
         );
-        res
-          .status(403)
-          .json({
-            error: { code: 'FORBIDDEN', message: 'Insufficient permissions' },
-          });
+        res.status(403).json({
+          error: { code: 'FORBIDDEN', message: 'Insufficient permissions' },
+        });
         return null;
       }
       return role;
@@ -132,17 +102,15 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         const { rows } = await db.query(SQL_GET, [auth.workspaceId]);
 
         if (rows.length === 0) {
-          res
-            .status(200)
-            .json({
-              id: auth.workspaceId,
-              name: '',
-              slug: '',
-              branding: {},
-              team: [],
-              billing: {},
-              limits: {},
-            });
+          res.status(200).json({
+            id: auth.workspaceId,
+            name: '',
+            slug: '',
+            branding: {},
+            team: [],
+            billing: {},
+            limits: {},
+          });
           return;
         }
 
@@ -247,11 +215,9 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         const { email, role } = req.body as { email: string; role?: string };
         if (!email) {
           Sentry.captureMessage('Invite missing email', 'warning');
-          res
-            .status(400)
-            .json({
-              error: { code: 'BAD_REQUEST', message: 'Email is required' },
-            });
+          res.status(400).json({
+            error: { code: 'BAD_REQUEST', message: 'Email is required' },
+          });
           return;
         }
 
@@ -262,14 +228,12 @@ export const workspaceRoutes = (): RouteDefinition[] => {
             `Invalid invite role: ${targetRole}`,
             'warning',
           );
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'BAD_REQUEST',
-                message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
+            },
+          });
           return;
         }
 
@@ -304,14 +268,12 @@ export const workspaceRoutes = (): RouteDefinition[] => {
           !VALID_ROLES.includes(role as (typeof VALID_ROLES)[number])
         ) {
           Sentry.captureMessage(`Invalid role change: ${role}`, 'warning');
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'BAD_REQUEST',
-                message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
+            },
+          });
           return;
         }
 
@@ -323,11 +285,9 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         if (rows.length === 0) {
           Sentry.captureMessage('Role change target not found', 'warning');
-          res
-            .status(404)
-            .json({
-              error: { code: 'NOT_FOUND', message: 'Member not found' },
-            });
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Member not found' },
+          });
           return;
         }
 
@@ -358,14 +318,12 @@ export const workspaceRoutes = (): RouteDefinition[] => {
               'Admin attempted to remove non-member role',
               'warning',
             );
-            res
-              .status(403)
-              .json({
-                error: {
-                  code: 'FORBIDDEN',
-                  message: 'Admins can only remove members',
-                },
-              });
+            res.status(403).json({
+              error: {
+                code: 'FORBIDDEN',
+                message: 'Admins can only remove members',
+              },
+            });
             return;
           }
         }

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
@@ -38,7 +39,10 @@ export const useQueueControls = () => {
       if (from && item.contact.phone) {
         try {
           await connect({ To: item.contact.phone, From: from });
-        } catch {
+        } catch (err: unknown) {
+          captureException(err, {
+            extra: { context: 'callContact', contactId: item.contactId },
+          });
           // call initiation failed — mark item as failed
           setItems((prev) =>
             prev.map((i) =>
@@ -76,22 +80,34 @@ export const useQueueControls = () => {
           await callContact(nextItem);
         }
       }
-    } catch {
-      // advance failed — queue stays at current position
+    } catch (err: unknown) {
+      captureException(err, { extra: { context: 'advanceQueue' } });
     }
-  }, [currentIndex, items, queue?.status, setQueue, setCurrentIndex, callContact]);
+  }, [
+    currentIndex,
+    items,
+    queue?.status,
+    setQueue,
+    setCurrentIndex,
+    callContact,
+  ]);
 
   const startQueue = useCallback(async () => {
     if (!queue) return;
 
     try {
-      setQueue({ ...queue, status: 'active', startedAt: new Date().toISOString() });
+      setQueue({
+        ...queue,
+        status: 'active',
+        startedAt: new Date().toISOString(),
+      });
 
       const firstItem = items[0];
       if (firstItem) {
         await callContact(firstItem);
       }
-    } catch {
+    } catch (err: unknown) {
+      captureException(err, { extra: { context: 'startQueue' } });
       // start failed — revert to idle
       setQueue((prev) => (prev ? { ...prev, status: 'idle' } : null));
     }
@@ -112,7 +128,8 @@ export const useQueueControls = () => {
       if (currentItem && currentItem.status === 'pending') {
         await callContact(currentItem);
       }
-    } catch {
+    } catch (err: unknown) {
+      captureException(err, { extra: { context: 'resumeQueue' } });
       // resume failed — revert to paused
       setQueue((prev) => (prev ? { ...prev, status: 'paused' } : null));
     }
@@ -138,15 +155,13 @@ export const useQueueControls = () => {
         );
 
         setQueue((prev) =>
-          prev
-            ? { ...prev, skippedContacts: prev.skippedContacts + 1 }
-            : null,
+          prev ? { ...prev, skippedContacts: prev.skippedContacts + 1 } : null,
         );
 
         disconnect();
         await advanceQueue();
-      } catch {
-        // skip failed — item stays at current status
+      } catch (err: unknown) {
+        captureException(err, { extra: { context: 'skipContact', reason } });
       }
     },
     [items, currentIndex, setItems, setQueue, disconnect, advanceQueue],

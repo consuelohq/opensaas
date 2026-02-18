@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import {
@@ -13,7 +14,9 @@ import type { ParallelCall } from '@/dialer/types/dialer';
 export const useParallelDialer = () => {
   const [queue, setQueue] = useRecoilState(activeQueueState);
   const [items, setItems] = useRecoilState(queueItemsState);
-  const [currentIndex, setCurrentIndex] = useRecoilState(currentQueueIndexState);
+  const [currentIndex, setCurrentIndex] = useRecoilState(
+    currentQueueIndexState,
+  );
   const callState = useRecoilValue(callStateAtom);
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
@@ -33,14 +36,24 @@ export const useParallelDialer = () => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
           if (!call) return item;
           if (call.callSid === winner.callSid) {
-            return { ...item, status: 'calling' as const, callOutcome: 'connected' as const };
+            return {
+              ...item,
+              status: 'calling' as const,
+              callOutcome: 'connected' as const,
+            };
           }
-          return { ...item, status: 'completed' as const, callOutcome: 'no-answer' as const };
+          return {
+            ...item,
+            status: 'completed' as const,
+            callOutcome: 'no-answer' as const,
+          };
         }),
       );
 
       setQueue((prev) =>
-        prev ? { ...prev, parallelDialingActive: false, parallelActiveCalls: [] } : null,
+        prev
+          ? { ...prev, parallelDialingActive: false, parallelActiveCalls: [] }
+          : null,
       );
       setIsDialing(false);
     },
@@ -53,7 +66,11 @@ export const useParallelDialer = () => {
         prev.map((item) => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
           if (!call) return item;
-          return { ...item, status: 'completed' as const, callOutcome: 'no-answer' as const };
+          return {
+            ...item,
+            status: 'completed' as const,
+            callOutcome: 'no-answer' as const,
+          };
         }),
       );
 
@@ -64,7 +81,12 @@ export const useParallelDialer = () => {
         setIsDialing(false);
       }, cooldown);
     },
-    [queue?.settings.parallelDialingCooldown, currentIndex, setItems, setCurrentIndex],
+    [
+      queue?.settings.parallelDialingCooldown,
+      currentIndex,
+      setItems,
+      setCurrentIndex,
+    ],
   );
 
   const startPolling = useCallback(
@@ -73,7 +95,10 @@ export const useParallelDialer = () => {
         try {
           const res = await fetch(
             `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}`,
-            { headers: { 'Content-Type': 'application/json' }, credentials: 'include' },
+            {
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+            },
           );
           const data = await res.json();
           const calls: ParallelCall[] = data.calls ?? [];
@@ -88,14 +113,19 @@ export const useParallelDialer = () => {
           }
 
           const allDone = calls.every(
-            (c: ParallelCall) => c.status === 'completed' || c.status === 'failed' || c.status === 'terminated',
+            (c: ParallelCall) =>
+              c.status === 'completed' ||
+              c.status === 'failed' ||
+              c.status === 'terminated',
           );
           if (allDone) {
             clearPoll();
             handleAllFailed(calls);
           }
-        } catch {
-          // poll failed — will retry on next interval
+        } catch (err: unknown) {
+          captureException(err, {
+            extra: { context: 'pollParallelCalls', groupId },
+          });
         }
       }, 500);
     },
@@ -117,25 +147,33 @@ export const useParallelDialer = () => {
     setItems((prev) =>
       prev.map((item) =>
         batchItems.find((b) => b.id === item.id)
-          ? { ...item, status: 'calling' as const, lastAttemptAt: new Date().toISOString(), attempts: item.attempts + 1 }
+          ? {
+              ...item,
+              status: 'calling' as const,
+              lastAttemptAt: new Date().toISOString(),
+              attempts: item.attempts + 1,
+            }
           : item,
       ),
     );
 
     try {
-      const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          queueId: queue.id,
-          contacts: batchItems.map((item) => ({
-            contactId: item.contactId,
-            phone: item.contact.phone,
-          })),
-          fromNumber: callState.fromNumber,
-        }),
-      });
+      const res = await fetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            queueId: queue.id,
+            contacts: batchItems.map((item) => ({
+              contactId: item.contactId,
+              phone: item.contact.phone,
+            })),
+            fromNumber: callState.fromNumber,
+          }),
+        },
+      );
 
       const { groupId, calls } = await res.json();
 
@@ -153,7 +191,10 @@ export const useParallelDialer = () => {
 
       setActiveCalls(calls);
       startPolling(groupId);
-    } catch {
+    } catch (err: unknown) {
+      captureException(err, {
+        extra: { context: 'startParallelBatch', queueId: queue?.id },
+      });
       setIsDialing(false);
       // revert items to pending on failure
       setItems((prev) =>
@@ -164,26 +205,47 @@ export const useParallelDialer = () => {
         ),
       );
     }
-  }, [queue, isDialing, items, currentIndex, callState.fromNumber, setItems, setQueue, startPolling]);
+  }, [
+    queue,
+    isDialing,
+    items,
+    currentIndex,
+    callState.fromNumber,
+    setItems,
+    setQueue,
+    startPolling,
+  ]);
 
   const cancelParallelDial = useCallback(async () => {
     clearPoll();
     const groupId = queue?.parallelGroupId;
     if (groupId) {
       try {
-        await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+        await fetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          },
+        );
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'cancelParallelDial', groupId },
         });
-      } catch {
-        // terminate best-effort — group expires server-side regardless
       }
     }
     setIsDialing(false);
     setActiveCalls([]);
     setQueue((prev) =>
-      prev ? { ...prev, parallelDialingActive: false, parallelActiveCalls: [], parallelGroupId: null } : null,
+      prev
+        ? {
+            ...prev,
+            parallelDialingActive: false,
+            parallelActiveCalls: [],
+            parallelGroupId: null,
+          }
+        : null,
     );
   }, [clearPoll, queue?.parallelGroupId, setQueue]);
 

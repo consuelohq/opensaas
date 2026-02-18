@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { IconPhone } from '@tabler/icons-react';
 import styled from '@emotion/styled';
+import { captureException } from '@sentry/react';
 
 import { callingModeState } from '@/dialer/states/callingModeState';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
@@ -79,8 +80,8 @@ export const ClickToCallButton = ({
             agentPhone: userCallbackPhone,
             customerPhone: phone,
           }),
-        }).catch(() => {
-          // callback initiation failure — user can still dial from sidebar
+        }).catch((err: unknown) => {
+          captureException(err, { extra: { context: 'callbackFetch', phone } });
         });
       }
     },

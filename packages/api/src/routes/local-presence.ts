@@ -1,7 +1,4 @@
 import {
-  Dialer,
-  InMemoryLockStore,
-  CallerIdLockService,
   LocalPresenceService,
   extractAreaCode,
   type NumberPool,
@@ -9,26 +6,20 @@ import {
 } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
+import * as Sentry from '@sentry/node';
+import {
+  sharedDialer as dialer,
+  sharedCallerIdLockService as lockService,
+} from '../shared/dialer.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
-// in-memory local presence toggle per user (replaced by user_profiles in phase 7)
 const localPresenceEnabled = new Map<string, boolean>();
 
+const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
+
 /** /v1/local-presence + /v1/caller-id routes */
-export const localPresenceRoutes = (): RouteDefinition[] => {
-  const dialer = new Dialer({
-    credentials: {
-      accountSid: process.env.TWILIO_ACCOUNT_SID ?? '',
-      authToken: process.env.TWILIO_AUTH_TOKEN ?? '',
-    },
-    baseUrl: process.env.API_BASE_URL,
-  });
-
-  const lockService = new CallerIdLockService(new InMemoryLockStore());
-  const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
-
-  return [
+export const localPresenceRoutes = (): RouteDefinition[] => [
     // POST /v1/local-presence/toggle
     {
       method: 'POST',
@@ -37,19 +28,32 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
         try {
           const userId = req.auth?.userId;
           if (!userId) {
-            res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'auth required' } });
+            res.status(401).json({
+              error: { code: 'UNAUTHORIZED', message: 'auth required' },
+            });
             return;
           }
 
           const body = req.body as { enabled?: boolean } | undefined;
           if (typeof body?.enabled !== 'boolean') {
-            res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'enabled (boolean) is required' } });
+            res.status(400).json({
+              error: {
+                code: 'BAD_REQUEST',
+                message: 'enabled (boolean) is required',
+              },
+            });
             return;
           }
 
           localPresenceEnabled.set(userId, body.enabled);
           res.status(200).json({ enabled: body.enabled, userId });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'local_presence_toggle', userId: req.auth?.userId },
+            },
+          );
           const message = err instanceof Error ? err.message : 'unknown error';
           res.status(500).json({ error: { code: 'TOGGLE_FAILED', message } });
         }
@@ -64,26 +68,46 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
         try {
           const userId = req.auth?.userId;
           if (!userId) {
-            res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'auth required' } });
+            res.status(401).json({
+              error: { code: 'UNAUTHORIZED', message: 'auth required' },
+            });
             return;
           }
 
           const phoneNumber = req.query?.phoneNumber;
           if (!phoneNumber || !E164_REGEX.test(phoneNumber)) {
-            res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'valid E.164 phoneNumber query param required' } });
+            res.status(400).json({
+              error: {
+                code: 'BAD_REQUEST',
+                message: 'valid E.164 phoneNumber query param required',
+              },
+            });
             return;
           }
 
-          // fromNumbers: comma-separated E.164 numbers (until phone management lands in phase 7)
           const fromNumbersRaw = req.query?.fromNumbers;
           if (!fromNumbersRaw) {
-            res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'fromNumbers query param required (comma-separated E.164)' } });
+            res.status(400).json({
+              error: {
+                code: 'BAD_REQUEST',
+                message:
+                  'fromNumbers query param required (comma-separated E.164)',
+              },
+            });
             return;
           }
 
-          const fromNumbers = fromNumbersRaw.split(',').filter((n) => E164_REGEX.test(n.trim()));
+          const fromNumbers = fromNumbersRaw
+            .split(',')
+            .filter((n) => E164_REGEX.test(n.trim()));
           if (!fromNumbers.length) {
-            res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'at least one valid E.164 number required in fromNumbers' } });
+            res.status(400).json({
+              error: {
+                code: 'BAD_REQUEST',
+                message:
+                  'at least one valid E.164 number required in fromNumbers',
+              },
+            });
             return;
           }
 
@@ -99,7 +123,10 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
             primaryNumber: numbers[0],
           };
 
-          const selection = await presenceService.selectNumber(pool, phoneNumber);
+          const selection = await presenceService.selectNumber(
+            pool,
+            phoneNumber,
+          );
           const enabled = localPresenceEnabled.get(userId) ?? false;
           const customerAreaCode = extractAreaCode(phoneNumber) ?? '';
 
@@ -128,6 +155,12 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
             localPresenceEnabled: enabled,
           });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'local_presence_preview', userId: req.auth?.userId, phoneNumber: req.query?.phoneNumber },
+            },
+          );
           const message = err instanceof Error ? err.message : 'unknown error';
           res.status(500).json({ error: { code: 'PREVIEW_FAILED', message } });
         }
@@ -142,7 +175,9 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
         try {
           const userId = req.auth?.userId;
           if (!userId) {
-            res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'auth required' } });
+            res.status(401).json({
+              error: { code: 'UNAUTHORIZED', message: 'auth required' },
+            });
             return;
           }
 
@@ -157,8 +192,16 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
             count: locks.length,
           });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'caller_id_locks', userId: req.auth?.userId },
+            },
+          );
           const message = err instanceof Error ? err.message : 'unknown error';
-          res.status(500).json({ error: { code: 'LOCKS_FETCH_FAILED', message } });
+          res
+            .status(500)
+            .json({ error: { code: 'LOCKS_FETCH_FAILED', message } });
         }
       }),
     },
@@ -171,7 +214,9 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
         try {
           const userId = req.auth?.userId;
           if (!userId) {
-            res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'auth required' } });
+            res.status(401).json({
+              error: { code: 'UNAUTHORIZED', message: 'auth required' },
+            });
             return;
           }
 
@@ -186,7 +231,15 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
                 cleaned++;
               }
             } catch (_err: unknown) {
-              // call lookup failed — release stale lock defensively
+              Sentry.captureException(
+                _err instanceof Error ? _err : new Error(String(_err)),
+                {
+                  extra: {
+                    context: 'cleanup_isCallCompleted',
+                    callSid: lock.callSid,
+                  },
+                },
+              );
               await lockService.releaseLock(lock.callSid);
               cleaned++;
             }
@@ -195,6 +248,12 @@ export const localPresenceRoutes = (): RouteDefinition[] => {
           const remaining = locks.length - cleaned;
           res.status(200).json({ cleaned, remaining });
         } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: { context: 'cleanup_locks', userId: req.auth?.userId },
+            },
+          );
           const message = err instanceof Error ? err.message : 'unknown error';
           res.status(500).json({ error: { code: 'CLEANUP_FAILED', message } });
         }

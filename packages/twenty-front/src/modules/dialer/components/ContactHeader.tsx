@@ -9,6 +9,7 @@ import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { type CallStatus } from '@/dialer/types/dialer';
 import { formatDurationTimer } from '@/dialer/utils/callDuration';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
+import { hashColor } from '@/dialer/utils/avatarColor';
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
@@ -31,13 +32,6 @@ const STATUS_CONFIG: Record<
 };
 
 // derive a consistent hue from a string
-const hashColor = (id: string): string => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return `hsl(${Math.abs(hash) % 360}, 55%, 45%)`;
-};
 
 const StyledContainer = styled.div`
   display: flex;
