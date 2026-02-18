@@ -1,3 +1,5 @@
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import * as Sentry from '@sentry/node';
 import { StorageService } from '../services/storage.js';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
@@ -45,8 +47,7 @@ const SQL_LIST_FILES_BY_TYPE =
 const SQL_SEARCH_FILES =
   'SELECT * FROM files WHERE workspace_id = $1 AND name ILIKE $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4';
 
-const SQL_GET_FILE =
-  'SELECT * FROM files WHERE id = $1 AND workspace_id = $2';
+const SQL_GET_FILE = 'SELECT * FROM files WHERE id = $1 AND workspace_id = $2';
 
 const SQL_DELETE_FILE =
   'DELETE FROM files WHERE id = $1 AND workspace_id = $2 RETURNING storage_key';
@@ -69,7 +70,10 @@ export const fileRoutes = (): RouteDefinition[] => {
     try {
       if (!pool) {
         const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL });
+        pool = new pg.Pool({
+          connectionString:
+            process.env.FILES_DATABASE_URL ?? process.env.DATABASE_URL,
+        });
       }
       return pool;
     } catch (err: unknown) {
@@ -84,37 +88,67 @@ export const fileRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/files/upload-url',
       handler: errorHandler(async (req, res) => {
-        const body = req.body as { name?: string; mimeType?: string; size?: number; folder?: string } | undefined;
+        const body = req.body as
+          | { name?: string; mimeType?: string; size?: number; folder?: string }
+          | undefined;
         if (!body?.name || !body?.mimeType) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "name" or "mimeType"' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "name" or "mimeType"',
+            },
+          });
           return;
         }
 
         if (!ALLOWED_TYPES.has(body.mimeType)) {
-          res.status(400).json({ error: { code: 'INVALID_FILE_TYPE', message: 'Unsupported file type' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_FILE_TYPE',
+              message: 'Unsupported file type',
+            },
+          });
           return;
         }
 
         if (body.size && body.size > MAX_FILE_SIZE) {
-          res.status(400).json({ error: { code: 'FILE_TOO_LARGE', message: 'File exceeds 100MB limit' } });
+          res.status(400).json({
+            error: {
+              code: 'FILE_TOO_LARGE',
+              message: 'File exceeds 100MB limit',
+            },
+          });
           return;
         }
 
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         const sanitized = body.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const prefix = body.folder ? `${workspaceId}/${body.folder}` : workspaceId;
+        const prefix = body.folder
+          ? `${workspaceId}/${body.folder}`
+          : workspaceId;
         const storageKey = `${prefix}/${Date.now()}__${sanitized}`;
 
         try {
-          const uploadUrl = await storage.getUploadUrl(storageKey, body.mimeType);
+          const uploadUrl = await storage.getUploadUrl(
+            storageKey,
+            body.mimeType,
+          );
           res.status(200).json({ uploadUrl, storageKey });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to generate upload URL';
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Failed to generate upload URL';
           res.status(500).json({ error: { code: 'STORAGE_ERROR', message } });
         }
       }),
@@ -124,27 +158,51 @@ export const fileRoutes = (): RouteDefinition[] => {
       path: '/v1/files',
       handler: errorHandler(async (req, res) => {
         const body = req.body as CreateFileBody | undefined;
-        if (!body?.name || !body?.mimeType || !body?.size || !body?.storageKey) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing required fields: name, mimeType, size, storageKey' } });
+        if (
+          !body?.name ||
+          !body?.mimeType ||
+          !body?.size ||
+          !body?.storageKey
+        ) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message:
+                'Missing required fields: name, mimeType, size, storageKey',
+            },
+          });
           return;
         }
 
         const workspaceId = req.auth?.workspaceId;
         const userId = req.auth?.userId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         try {
           const db = await getPool();
           const result = await db.query(SQL_CREATE_FILE, [
-            workspaceId, body.name, body.mimeType, body.size,
-            body.storageKey, body.folder ?? null, body.tags ?? null, userId ?? null,
+            workspaceId,
+            body.name,
+            body.mimeType,
+            body.size,
+            body.storageKey,
+            body.folder ?? null,
+            body.tags ?? null,
+            userId ?? null,
           ]);
           res.status(201).json({ file: result.rows[0] });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to create file record';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to create file record';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -155,7 +213,12 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
@@ -169,16 +232,32 @@ export const fileRoutes = (): RouteDefinition[] => {
           let result;
           if (search) {
             const searchPattern = '%' + search + '%';
-            result = await db.query(SQL_SEARCH_FILES, [workspaceId, searchPattern, limit, offset]);
+            result = await db.query(SQL_SEARCH_FILES, [
+              workspaceId,
+              searchPattern,
+              limit,
+              offset,
+            ]);
           } else if (type) {
             const typePattern = type + '%';
-            result = await db.query(SQL_LIST_FILES_BY_TYPE, [workspaceId, typePattern, limit, offset]);
+            result = await db.query(SQL_LIST_FILES_BY_TYPE, [
+              workspaceId,
+              typePattern,
+              limit,
+              offset,
+            ]);
           } else {
-            result = await db.query(SQL_LIST_FILES, [workspaceId, limit, offset]);
+            result = await db.query(SQL_LIST_FILES, [
+              workspaceId,
+              limit,
+              offset,
+            ]);
           }
           res.status(200).json({ files: result.rows });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to list files';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to list files';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -189,23 +268,39 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         const entityType = req.params?.entityType;
         const entityId = req.params?.entityId;
         if (!entityType || !entityId || !VALID_ENTITY_TYPES.has(entityType)) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Invalid entity type or missing entity ID' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Invalid entity type or missing entity ID',
+            },
+          });
           return;
         }
 
         try {
           const db = await getPool();
-          const result = await db.query(SQL_LIST_ATTACHMENTS, [entityType, entityId, workspaceId]);
+          const result = await db.query(SQL_LIST_ATTACHMENTS, [
+            entityType,
+            entityId,
+            workspaceId,
+          ]);
           res.status(200).json({ files: result.rows });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to list attachments';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to list attachments';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -216,13 +311,20 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const fileId = req.params?.id;
         if (!fileId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing file ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing file ID' },
+          });
           return;
         }
 
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
@@ -230,14 +332,18 @@ export const fileRoutes = (): RouteDefinition[] => {
           const db = await getPool();
           const result = await db.query(SQL_GET_FILE, [fileId, workspaceId]);
           if (result.rows.length === 0) {
-            res.status(404).json({ error: { code: 'NOT_FOUND', message: 'File not found' } });
+            res.status(404).json({
+              error: { code: 'NOT_FOUND', message: 'File not found' },
+            });
             return;
           }
           const file = result.rows[0];
           const downloadUrl = await storage.getDownloadUrl(file.storage_key);
           res.status(200).json({ file: { ...file, downloadUrl } });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to get file';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to get file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -248,34 +354,60 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         const fileId = req.params?.id;
-        const body = req.body as { entityType?: string; entityId?: string } | undefined;
+        const body = req.body as
+          | { entityType?: string; entityId?: string }
+          | undefined;
         if (!fileId || !body?.entityType || !body?.entityId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing fileId, entityType, or entityId' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing fileId, entityType, or entityId',
+            },
+          });
           return;
         }
 
         if (!VALID_ENTITY_TYPES.has(body.entityType)) {
-          res.status(400).json({ error: { code: 'INVALID_ENTITY_TYPE', message: 'entityType must be contact, call, company, or deal' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_ENTITY_TYPE',
+              message: 'entityType must be contact, call, company, or deal',
+            },
+          });
           return;
         }
 
         try {
           const db = await getPool();
           // subquery ensures file belongs to workspace before inserting
-          const result = await db.query(SQL_ATTACH_FILE, [fileId, body.entityType, body.entityId, workspaceId]);
+          const result = await db.query(SQL_ATTACH_FILE, [
+            fileId,
+            body.entityType,
+            body.entityId,
+            workspaceId,
+          ]);
           if (result.rows.length === 0) {
             // either file doesn't exist in this workspace, or already attached (ON CONFLICT DO NOTHING)
             res.status(200).json({ success: true, created: false });
             return;
           }
-          res.status(201).json({ success: true, created: true, attachment: result.rows[0] });
+          res
+            .status(201)
+            .json({ success: true, created: true, attachment: result.rows[0] });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to attach file';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to attach file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -286,13 +418,23 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         const attachmentId = req.params?.attachmentId;
         if (!attachmentId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing attachment ID' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing attachment ID',
+            },
+          });
           return;
         }
 
@@ -302,7 +444,9 @@ export const fileRoutes = (): RouteDefinition[] => {
           await db.query(SQL_DETACH_FILE, [attachmentId, workspaceId]);
           res.status(200).json({ success: true });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to detach file';
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error ? err.message : 'Failed to delete file';
           res.status(500).json({ error: { code: 'DB_ERROR', message } });
         }
       }),
@@ -313,27 +457,36 @@ export const fileRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const fileId = req.params?.id;
         if (!fileId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing file ID' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing file ID' },
+          });
           return;
         }
 
         const workspaceId = req.auth?.workspaceId;
         if (!workspaceId) {
-          res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Missing workspace context' } });
+          res.status(401).json({
+            error: {
+              code: 'UNAUTHORIZED',
+              message: 'Missing workspace context',
+            },
+          });
           return;
         }
 
         try {
-          const db = await getPool();
-          const result = await db.query(SQL_DELETE_FILE, [fileId, workspaceId]);
-          if (result.rows.length > 0) {
-            // fire-and-forget S3 cleanup — don't block the response
-            storage.deleteObject(result.rows[0].storage_key).catch(() => {});
-          }
-          res.status(200).json({ success: true });
+          const uploadUrl = await storage.getUploadUrl(
+            storageKey,
+            body.mimeType,
+          );
+          res.status(200).json({ uploadUrl, storageKey });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Failed to delete file';
-          res.status(500).json({ error: { code: 'DB_ERROR', message } });
+          Sentry.captureException(err);
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Failed to generate upload URL';
+          res.status(500).json({ error: { code: 'STORAGE_ERROR', message } });
         }
       }),
     },

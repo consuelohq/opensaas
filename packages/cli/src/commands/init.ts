@@ -1,13 +1,30 @@
 import { execSync } from 'node:child_process';
-import { select, text, password, confirm, isCancel, cancel, log } from '@clack/prompts';
-import { printBanner, printEnd, spinner, success, stepComplete } from '../utils/ui.js';
+import {
+  select,
+  text,
+  password,
+  confirm,
+  isCancel,
+  cancel,
+  log,
+} from '@clack/prompts';
+import {
+  printBanner,
+  printEnd,
+  spinner,
+  success,
+  stepComplete,
+} from '../utils/ui.js';
 import { saveConfig } from '../config.js';
 import { captureError } from '../sentry.js';
 import { validateTwilio, validateGroq } from '../validators/index.js';
 import { generateEnv } from '../generators/env.js';
 import { generateDockerCompose } from '../generators/docker.js';
 import { authenticateHosted } from '../auth.js';
-import { provisionDockerPostgres, validateConnectionStringFormat } from '../provisioning/database.js';
+import {
+  provisionDockerPostgres,
+  validateConnectionStringFormat,
+} from '../provisioning/database.js';
 import { setupWhisper } from '../provisioning/whisper.js';
 
 export type Template = 'full' | 'minimal' | 'api-only';
@@ -22,10 +39,18 @@ export async function initCommand(opts: InitOptions): Promise<void> {
   try {
     checkPrerequisites();
 
-    printBanner(['deployment', 'database', 'credentials', 'speech-to-text (optional)']);
+    printBanner([
+      'deployment',
+      'database',
+      'credentials',
+      'speech-to-text (optional)',
+    ]);
 
     if (opts.managed) {
-      generateEnv({ deploymentType: 'hosted', template: opts.template ?? 'full' });
+      generateEnv({
+        deploymentType: 'hosted',
+        template: opts.template ?? 'full',
+      });
       success('Configured for hosted mode');
       log.info('Run: npx @consuelo/cli status');
       printEnd();
@@ -37,18 +62,32 @@ export async function initCommand(opts: InitOptions): Promise<void> {
       return;
     }
 
-    const template = opts.template ?? await promptTemplate();
-    if (isCancel(template)) { cancel('setup cancelled.'); process.exit(0); }
+    const template = opts.template ?? (await promptTemplate());
+    if (isCancel(template)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     const deploymentType = await select({
       message: 'how would you like to deploy?',
       options: [
-        { value: 'hosted' as const, label: 'hosted (mercury)', hint: 'we handle infrastructure' },
-        { value: 'self-hosted' as const, label: 'self-hosted', hint: 'you control everything' },
+        {
+          value: 'hosted' as const,
+          label: 'hosted (mercury)',
+          hint: 'we handle infrastructure',
+        },
+        {
+          value: 'self-hosted' as const,
+          label: 'self-hosted',
+          hint: 'you control everything',
+        },
       ],
     });
 
-    if (isCancel(deploymentType)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(deploymentType)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     if (deploymentType === 'hosted') {
       await handleHostedSetup(template);
@@ -70,15 +109,25 @@ function checkPrerequisites(): void {
 
   const nodeVersion = parseInt(process.version.slice(1), 10);
   if (nodeVersion < 18) {
-    missing.push(`node 18+ required (found ${process.version}) — https://nodejs.org`);
+    missing.push(
+      `node 18+ required (found ${process.version}) — https://nodejs.org`,
+    );
   }
 
-  try { execSync('git --version', { stdio: 'ignore' }); } catch {
+  try {
+    execSync('git --version', { stdio: 'ignore' });
+  } catch (_err: unknown) {
+    // git not available — intentional: tool missing
     missing.push('git not found — https://git-scm.com');
   }
 
-  try { execSync('docker --version', { stdio: 'ignore' }); } catch {
-    missing.push('docker not found (needed for self-hosted) — https://docker.com');
+  try {
+    execSync('docker --version', { stdio: 'ignore' });
+  } catch (_err: unknown) {
+    // docker not available — intentional: tool missing
+    missing.push(
+      'docker not found (needed for self-hosted) — https://docker.com',
+    );
   }
 
   if (missing.length > 0) {
@@ -92,9 +141,21 @@ async function promptTemplate(): Promise<Template> {
   const result = await select({
     message: 'choose a template',
     options: [
-      { value: 'full' as const, label: 'full', hint: 'CRM + dialer + coaching + analytics' },
-      { value: 'minimal' as const, label: 'minimal', hint: 'dialer + coaching only' },
-      { value: 'api-only' as const, label: 'api-only', hint: 'backend services, no CRM UI' },
+      {
+        value: 'full' as const,
+        label: 'full',
+        hint: 'CRM + dialer + coaching + analytics',
+      },
+      {
+        value: 'minimal' as const,
+        label: 'minimal',
+        hint: 'dialer + coaching only',
+      },
+      {
+        value: 'api-only' as const,
+        label: 'api-only',
+        hint: 'backend services, no CRM UI',
+      },
     ],
   });
   return result as Template;
@@ -144,18 +205,30 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
     const dbChoice = await select({
       message: 'database setup',
       options: [
-        { value: 'docker' as const, label: 'spin up docker', hint: 'recommended' },
-        { value: 'connection' as const, label: 'use existing connection string' },
+        {
+          value: 'docker' as const,
+          label: 'spin up docker',
+          hint: 'recommended',
+        },
+        {
+          value: 'connection' as const,
+          label: 'use existing connection string',
+        },
       ],
     });
 
-    if (isCancel(dbChoice)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(dbChoice)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     let databaseUrl: string;
     if (dbChoice === 'docker') {
       const spin = spinner('provisioning postgres...').start();
       databaseUrl = await provisionDockerPostgres();
-      spin.succeed(`database ready at ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`);
+      spin.succeed(
+        `database ready at ${databaseUrl.replace(/:[^:@]+@/, ':****@')}`,
+      );
     } else {
       const url = await text({
         message: 'database url',
@@ -166,7 +239,10 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
         },
       });
 
-      if (isCancel(url)) { cancel('setup cancelled.'); process.exit(0); }
+      if (isCancel(url)) {
+        cancel('setup cancelled.');
+        process.exit(0);
+      }
 
       if (!validateConnectionStringFormat(url)) {
         throw new Error('invalid database connection string');
@@ -186,21 +262,31 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
       },
     });
 
-    if (isCancel(twilioAccountSid)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(twilioAccountSid)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     const twilioAuthToken = await password({ message: 'twilio auth token' });
-    if (isCancel(twilioAuthToken)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(twilioAuthToken)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     const twilioPhoneNumber = await text({
       message: 'twilio phone number (E.164)',
       placeholder: '+1234567890',
       validate: (v) => {
-        if (!v || !/^\+\d{10,15}$/.test(v)) return 'must be E.164 format (+1234567890)';
+        if (!v || !/^\+\d{10,15}$/.test(v))
+          return 'must be E.164 format (+1234567890)';
         return undefined;
       },
     });
 
-    if (isCancel(twilioPhoneNumber)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(twilioPhoneNumber)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     const groqApiKey = await password({
       message: 'groq api key (https://console.groq.com)',
@@ -210,14 +296,19 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
       },
     });
 
-    if (isCancel(groqApiKey)) { cancel('setup cancelled.'); process.exit(0); }
+    if (isCancel(groqApiKey)) {
+      cancel('setup cancelled.');
+      process.exit(0);
+    }
 
     const spin = spinner('validating credentials...').start();
 
     const twilioValid = await validateTwilio(twilioAccountSid, twilioAuthToken);
     if (!twilioValid) {
       spin.fail('invalid twilio credentials');
-      throw new Error('check your Account SID and Auth Token at https://console.twilio.com');
+      throw new Error(
+        'check your Account SID and Auth Token at https://console.twilio.com',
+      );
     }
     spin.text = 'twilio ✓ validating groq...';
 
@@ -248,8 +339,16 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
       const modelSize = await select({
         message: 'choose model size',
         options: [
-          { value: 'tiny' as const, label: 'tiny (~75MB)', hint: 'fastest, good for voice commands' },
-          { value: 'base' as const, label: 'base (~150MB)', hint: 'better accuracy' },
+          {
+            value: 'tiny' as const,
+            label: 'tiny (~75MB)',
+            hint: 'fastest, good for voice commands',
+          },
+          {
+            value: 'base' as const,
+            label: 'base (~150MB)',
+            hint: 'better accuracy',
+          },
         ],
       });
 
@@ -296,7 +395,8 @@ async function promptAuthLogin(): Promise<void> {
     const sub = new Command();
     registerCommands(sub);
     await sub.parseAsync(['node', 'consuelo', 'auth:login']);
-  } catch {
+  } catch (_err: unknown) {
+    // auth optional — intentional: optional dep
     log.warn('workspace auth skipped (twenty-sdk not available)');
   }
 }

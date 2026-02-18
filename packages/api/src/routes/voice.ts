@@ -960,9 +960,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 conferenceName,
                 status: callStatus,
               });
-            } catch {
-              // logger unavailable, continue
-            }
+      } catch (_err: unknown) {
+        // logger unavailable, continue — intentional: logger optional in webhook handler
+      }
           }
         }
 
