@@ -17,18 +17,19 @@ export class GoogleAPIsOauthExchangeCodeForTokenStrategy extends GoogleAPIsOauth
   }
 
   async validate(
-    request: GoogleAPIsRequest,
+    request: Express.Request,
     accessToken: string,
     refreshToken: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any,
     done: VerifyCallback,
   ): Promise<void> {
+    const googleApisRequest = request as unknown as GoogleAPIsRequest;
     const { name, emails, photos } = profile;
 
     const state =
-      typeof request.query.state === 'string'
-        ? JSON.parse(request.query.state)
+      typeof googleApisRequest.query.state === 'string'
+        ? JSON.parse(googleApisRequest.query.state)
         : undefined;
 
     const user: GoogleAPIsRequest['user'] = {

@@ -52,9 +52,11 @@ export class RedisClientService implements OnModuleDestroy {
     if (!this.redisPubSubClient) {
       const redisClient = this.getClient();
 
+      // HACK: ioredis duplicate() returns a different Redis type than graphql-redis-subscriptions expects
+      // Type assertion needed to bridge version mismatch between ioredis and graphql-redis-subscriptions
       this.redisPubSubClient = new RedisPubSub({
-        publisher: redisClient.duplicate(),
-        subscriber: redisClient.duplicate(),
+        publisher: redisClient.duplicate() as never,
+        subscriber: redisClient.duplicate() as never,
       });
     }
 

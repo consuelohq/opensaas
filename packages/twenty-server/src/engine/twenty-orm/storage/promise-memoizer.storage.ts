@@ -1,4 +1,6 @@
-import { type Milliseconds } from 'cache-manager';
+// cache-manager v7 does not export Milliseconds - define locally
+type Milliseconds = number;
+
 import { isDefined } from 'twenty-shared/utils';
 
 import { type CacheKey } from 'src/engine/twenty-orm/storage/types/cache-key.type';

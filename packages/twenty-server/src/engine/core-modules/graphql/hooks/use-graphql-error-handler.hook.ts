@@ -163,9 +163,11 @@ export const useGraphQLErrorHandlerHook = <
                   metricKey = MetricsKeys.GraphqlOperation400;
                 }
               } else if (error instanceof GraphQLError) {
-                const status = error.extensions?.http?.status as number;
+                const status = error.extensions?.http?.status;
 
-                metricKey = statusToMetricKey[status];
+                if (status !== undefined) {
+                  metricKey = statusToMetricKey[status];
+                }
               }
 
               if (metricKey) {
