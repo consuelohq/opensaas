@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/node';
 import * as crypto from 'node:crypto';
 import { errorHandler } from '../../middleware/error-handler.js';
 import type { RouteDefinition } from '../index.js';
+import { getSharedPool } from '../../shared/db.js';
 import {
   GHLAuthService,
   type GHLOAuthConfig,
@@ -13,6 +14,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
+
+const getPool = getSharedPool;
 
 // in-memory PKCE verifier store (keyed by state param)
 // in production, use redis with short TTL — DEV-779
@@ -41,21 +44,7 @@ const loadConfig = (): GHLOAuthConfig => ({
 
 /** /v1/integrations/ghl routes — OAuth + connection management */
 export const ghlIntegrationRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
   let authService: GHLAuthService | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
 
   const getAuthService = async (): Promise<GHLAuthService> => {
     try {
@@ -77,11 +66,9 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
     const userId = req.auth?.userId;
     const workspaceId = req.auth?.workspaceId;
     if (userId === undefined || workspaceId === undefined) {
-      res
-        .status(401)
-        .json({
-          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-        });
+      res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+      });
       return null;
     }
     return { userId, workspaceId };
@@ -98,14 +85,12 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
 
         const config = loadConfig();
         if (!config.clientId || !config.clientSecret) {
-          res
-            .status(503)
-            .json({
-              error: {
-                code: 'GHL_NOT_CONFIGURED',
-                message: 'GHL integration not configured',
-              },
-            });
+          res.status(503).json({
+            error: {
+              code: 'GHL_NOT_CONFIGURED',
+              message: 'GHL integration not configured',
+            },
+          });
           return;
         }
 
@@ -134,39 +119,33 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         const error = req.query?.error;
 
         if (error) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'GHL_AUTH_DENIED',
-                message: `GHL authorization denied: ${error}`,
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'GHL_AUTH_DENIED',
+              message: `GHL authorization denied: ${error}`,
+            },
+          });
           return;
         }
 
         if (!code || !state) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_CALLBACK',
-                message: 'Missing code or state parameter',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_CALLBACK',
+              message: 'Missing code or state parameter',
+            },
+          });
           return;
         }
 
         const pending = pendingVerifiers.get(state);
         if (!pending) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_STATE',
-                message: 'Invalid or expired state parameter',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_STATE',
+              message: 'Invalid or expired state parameter',
+            },
+          });
           return;
         }
 
