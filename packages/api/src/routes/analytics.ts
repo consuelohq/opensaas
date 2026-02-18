@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Coach, type Message } from '@consuelo/coaching';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 
 type Pool = {
@@ -61,21 +62,6 @@ export const analyticsRoutes = (): RouteDefinition[] => {
       pool = null;
       throw err;
     }
-  };
-
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({
-        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-      });
-      return null;
-    }
-    return { userId, workspaceId };
   };
 
   return [
