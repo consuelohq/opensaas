@@ -109,7 +109,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       if (webhookHandler === null) {
         const db = await getPool();
         const syncSvc = await getSyncService();
-        webhookHandler = new GHLWebhookHandler(syncSvc, db);
+        webhookHandler = new GHLWebhookHandler(
+          syncSvc as unknown as GHLSyncServiceInterface,
+          db,
+        );
       }
       return webhookHandler;
     } catch (err: unknown) {
@@ -471,21 +474,16 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
           // fetch all contacts with pagination
           const allContacts: GHLContact[] = [];
-          let startAfterId: string | undefined;
+          let page = 1;
           let hasMore = true;
           const limit = 100;
 
           while (hasMore) {
-            const response = await client.getContacts({
-              limit,
-              startAfterId,
-            });
+            const response = await client.getContacts(page, limit);
 
             allContacts.push(...response.contacts);
-            hasMore =
-              response.contacts.length === limit &&
-              !!response.meta.startAfterId;
-            startAfterId = response.meta.startAfterId;
+            hasMore = response.contacts.length === limit;
+            page++;
           }
 
           const options: SyncOptions = {
@@ -558,21 +556,16 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
           // fetch contacts updated since last sync
           const allContacts: GHLContact[] = [];
-          let startAfterId: string | undefined;
+          let page = 1;
           let hasMore = true;
           const limit = 100;
 
           while (hasMore) {
-            const response = await client.getContacts({
-              limit,
-              startAfterId,
-            });
+            const response = await client.getContacts(page, limit);
 
             allContacts.push(...response.contacts);
-            hasMore =
-              response.contacts.length === limit &&
-              !!response.meta.startAfterId;
-            startAfterId = response.meta.startAfterId;
+            hasMore = response.contacts.length === limit;
+            page++;
           }
 
           const options: SyncOptions = {

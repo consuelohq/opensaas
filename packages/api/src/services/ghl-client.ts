@@ -10,6 +10,11 @@ export interface GHLContact {
   tags: string[];
   customFields: Record<string, unknown>;
   dndStatus?: boolean;
+  address1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  dateUpdated?: string;
   createdAt: string;
   updatedAt: string;
 }

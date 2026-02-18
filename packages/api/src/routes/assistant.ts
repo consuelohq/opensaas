@@ -563,24 +563,24 @@ export const assistantRoutes = (): RouteDefinition[] => {
             });
 
             for (const toolCall of choice.message.tool_calls) {
+              const fn = (
+                toolCall as unknown as {
+                  function: { name: string; arguments: string };
+                }
+              ).function;
               let args: Record<string, unknown> = {};
               try {
-                args = JSON.parse(toolCall.function.arguments) as Record<
-                  string,
-                  unknown
-                >;
+                args = JSON.parse(fn.arguments) as Record<string, unknown>;
               } catch (_err: unknown) {
                 // malformed args — skip — intentional: skip malformed tool args
               }
 
               const cmdString =
-                `consuelo ${toolCall.function.name.replace(/_/g, ' ')} ${Object.entries(
-                  args,
-                )
+                `consuelo ${fn.name.replace(/_/g, ' ')} ${Object.entries(args)
                   .map(([k, v]) => `--${k} ${String(v)}`)
                   .join(' ')}`.trim();
               const { result, success } = await executeCommand(
-                toolCall.function.name,
+                fn.name,
                 args,
                 authHeader,
                 baseUrl,

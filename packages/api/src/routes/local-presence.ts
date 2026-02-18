@@ -20,244 +20,254 @@ const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
 
 /** /v1/local-presence + /v1/caller-id routes */
 export const localPresenceRoutes = (): RouteDefinition[] => [
-    // POST /v1/local-presence/toggle
-    {
-      method: 'POST',
-      path: '/v1/local-presence/toggle',
-      handler: errorHandler(async (req, res) => {
-        try {
-          const userId = req.auth?.userId;
-          if (!userId) {
-            res.status(401).json({
-              error: { code: 'UNAUTHORIZED', message: 'auth required' },
-            });
-            return;
-          }
-
-          const body = req.body as { enabled?: boolean } | undefined;
-          if (typeof body?.enabled !== 'boolean') {
-            res.status(400).json({
-              error: {
-                code: 'BAD_REQUEST',
-                message: 'enabled (boolean) is required',
-              },
-            });
-            return;
-          }
-
-          localPresenceEnabled.set(userId, body.enabled);
-          res.status(200).json({ enabled: body.enabled, userId });
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'local_presence_toggle', userId: req.auth?.userId },
-            },
-          );
-          const message = err instanceof Error ? err.message : 'unknown error';
-          res.status(500).json({ error: { code: 'TOGGLE_FAILED', message } });
+  // POST /v1/local-presence/toggle
+  {
+    method: 'POST',
+    path: '/v1/local-presence/toggle',
+    handler: errorHandler(async (req, res) => {
+      try {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'auth required' },
+          });
+          return;
         }
-      }),
-    },
 
-    // GET /v1/local-presence/preview
-    {
-      method: 'GET',
-      path: '/v1/local-presence/preview',
-      handler: errorHandler(async (req, res) => {
-        try {
-          const userId = req.auth?.userId;
-          if (!userId) {
-            res.status(401).json({
-              error: { code: 'UNAUTHORIZED', message: 'auth required' },
-            });
-            return;
-          }
+        const body = req.body as { enabled?: boolean } | undefined;
+        if (typeof body?.enabled !== 'boolean') {
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: 'enabled (boolean) is required',
+            },
+          });
+          return;
+        }
 
-          const phoneNumber = req.query?.phoneNumber;
-          if (!phoneNumber || !E164_REGEX.test(phoneNumber)) {
-            res.status(400).json({
-              error: {
-                code: 'BAD_REQUEST',
-                message: 'valid E.164 phoneNumber query param required',
-              },
-            });
-            return;
-          }
+        localPresenceEnabled.set(userId, body.enabled);
+        res.status(200).json({ enabled: body.enabled, userId });
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          {
+            extra: {
+              context: 'local_presence_toggle',
+              userId: req.auth?.userId,
+            },
+          },
+        );
+        const message = err instanceof Error ? err.message : 'unknown error';
+        res.status(500).json({ error: { code: 'TOGGLE_FAILED', message } });
+      }
+    }),
+  },
 
-          const fromNumbersRaw = req.query?.fromNumbers;
-          if (!fromNumbersRaw) {
-            res.status(400).json({
-              error: {
-                code: 'BAD_REQUEST',
-                message:
-                  'fromNumbers query param required (comma-separated E.164)',
-              },
-            });
-            return;
-          }
+  // GET /v1/local-presence/preview
+  {
+    method: 'GET',
+    path: '/v1/local-presence/preview',
+    handler: errorHandler(async (req, res) => {
+      try {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'auth required' },
+          });
+          return;
+        }
 
-          const fromNumbers = fromNumbersRaw
-            .split(',')
-            .filter((n) => E164_REGEX.test(n.trim()));
-          if (!fromNumbers.length) {
-            res.status(400).json({
-              error: {
-                code: 'BAD_REQUEST',
-                message:
-                  'at least one valid E.164 number required in fromNumbers',
-              },
-            });
-            return;
-          }
+        const phoneNumber = req.query?.phoneNumber;
+        if (!phoneNumber || !E164_REGEX.test(phoneNumber)) {
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: 'valid E.164 phoneNumber query param required',
+            },
+          });
+          return;
+        }
 
-          const numbers: PhoneNumber[] = fromNumbers.map((n, i) => ({
-            phoneNumber: n.trim(),
-            areaCode: extractAreaCode(n.trim()) ?? '',
-            isPrimary: i === 0,
-            isActive: true,
-          }));
+        const fromNumbersRaw = req.query?.fromNumbers;
+        if (!fromNumbersRaw) {
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message:
+                'fromNumbers query param required (comma-separated E.164)',
+            },
+          });
+          return;
+        }
 
-          const pool: NumberPool = {
-            numbers,
-            primaryNumber: numbers[0],
-          };
+        const fromNumbers = fromNumbersRaw
+          .split(',')
+          .filter((n) => E164_REGEX.test(n.trim()));
+        if (!fromNumbers.length) {
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message:
+                'at least one valid E.164 number required in fromNumbers',
+            },
+          });
+          return;
+        }
 
-          const selection = await presenceService.selectNumber(
-            pool,
-            phoneNumber,
-          );
-          const enabled = localPresenceEnabled.get(userId) ?? false;
-          const customerAreaCode = extractAreaCode(phoneNumber) ?? '';
+        const numbers: PhoneNumber[] = fromNumbers.map((n, i) => ({
+          phoneNumber: n.trim(),
+          areaCode: extractAreaCode(n.trim()) ?? '',
+          isPrimary: i === 0,
+          isActive: true,
+        }));
 
-          if (!selection) {
-            res.status(200).json({
-              selectedNumber: numbers[0]?.phoneNumber ?? null,
-              areaCode: numbers[0]?.areaCode ?? '',
-              localMatch: false,
-              proximityMatch: false,
-              distanceMiles: null,
-              isPrimary: true,
-              customerAreaCode,
-              localPresenceEnabled: enabled,
-            });
-            return;
-          }
+        const pool: NumberPool = {
+          numbers,
+          primaryNumber: numbers[0],
+        };
 
+        const selection = await presenceService.selectNumber(pool, phoneNumber);
+        const enabled = localPresenceEnabled.get(userId) ?? false;
+        const customerAreaCode = extractAreaCode(phoneNumber) ?? '';
+
+        if (!selection) {
           res.status(200).json({
-            selectedNumber: selection.phoneNumber,
-            areaCode: selection.areaCode,
-            localMatch: selection.localMatch,
-            proximityMatch: selection.proximityMatch,
-            distanceMiles: selection.distanceMiles ?? null,
-            isPrimary: selection.isPrimary,
-            customerAreaCode: selection.customerAreaCode ?? customerAreaCode,
+            selectedNumber: numbers[0]?.phoneNumber ?? null,
+            areaCode: numbers[0]?.areaCode ?? '',
+            localMatch: false,
+            proximityMatch: false,
+            distanceMiles: null,
+            isPrimary: true,
+            customerAreaCode,
             localPresenceEnabled: enabled,
           });
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'local_presence_preview', userId: req.auth?.userId, phoneNumber: req.query?.phoneNumber },
-            },
-          );
-          const message = err instanceof Error ? err.message : 'unknown error';
-          res.status(500).json({ error: { code: 'PREVIEW_FAILED', message } });
+          return;
         }
-      }),
-    },
 
-    // GET /v1/caller-id/locks
-    {
-      method: 'GET',
-      path: '/v1/caller-id/locks',
-      handler: errorHandler(async (req, res) => {
-        try {
-          const userId = req.auth?.userId;
-          if (!userId) {
-            res.status(401).json({
-              error: { code: 'UNAUTHORIZED', message: 'auth required' },
-            });
-            return;
-          }
+        res.status(200).json({
+          selectedNumber: selection.phoneNumber,
+          areaCode: selection.areaCode,
+          localMatch: selection.localMatch,
+          proximityMatch: selection.proximityMatch,
+          distanceMiles: selection.distanceMiles ?? null,
+          isPrimary: selection.isPrimary,
+          customerAreaCode: selection.customerAreaCode ?? customerAreaCode,
+          localPresenceEnabled: enabled,
+        });
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          {
+            extra: {
+              context: 'local_presence_preview',
+              userId: req.auth?.userId,
+              phoneNumber: req.query?.phoneNumber,
+            },
+          },
+        );
+        const message = err instanceof Error ? err.message : 'unknown error';
+        res.status(500).json({ error: { code: 'PREVIEW_FAILED', message } });
+      }
+    }),
+  },
 
-          const locks = await lockService.getUserLocks(userId);
-          res.status(200).json({
-            locks: locks.map((l) => ({
+  // GET /v1/caller-id/locks
+  {
+    method: 'GET',
+    path: '/v1/caller-id/locks',
+    handler: errorHandler(async (req, res) => {
+      try {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'auth required' },
+          });
+          return;
+        }
+
+        const locks = await lockService.getUserLocks(userId);
+        res.status(200).json({
+          locks: locks.map(
+            (l: {
+              phoneNumber: string;
+              callSid: string;
+              acquiredAt: Date;
+              expiresAt: Date;
+            }) => ({
               phoneNumber: l.phoneNumber,
               callSid: l.callSid,
               acquiredAt: l.acquiredAt.toISOString(),
               expiresAt: l.expiresAt.toISOString(),
-            })),
-            count: locks.length,
+            }),
+          ),
+          count: locks.length,
+        });
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          {
+            extra: { context: 'caller_id_locks', userId: req.auth?.userId },
+          },
+        );
+        const message = err instanceof Error ? err.message : 'unknown error';
+        res
+          .status(500)
+          .json({ error: { code: 'LOCKS_FETCH_FAILED', message } });
+      }
+    }),
+  },
+
+  // POST /v1/caller-id/locks/cleanup
+  {
+    method: 'POST',
+    path: '/v1/caller-id/locks/cleanup',
+    handler: errorHandler(async (req, res) => {
+      try {
+        const userId = req.auth?.userId;
+        if (!userId) {
+          res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'auth required' },
           });
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'caller_id_locks', userId: req.auth?.userId },
-            },
-          );
-          const message = err instanceof Error ? err.message : 'unknown error';
-          res
-            .status(500)
-            .json({ error: { code: 'LOCKS_FETCH_FAILED', message } });
+          return;
         }
-      }),
-    },
 
-    // POST /v1/caller-id/locks/cleanup
-    {
-      method: 'POST',
-      path: '/v1/caller-id/locks/cleanup',
-      handler: errorHandler(async (req, res) => {
-        try {
-          const userId = req.auth?.userId;
-          if (!userId) {
-            res.status(401).json({
-              error: { code: 'UNAUTHORIZED', message: 'auth required' },
-            });
-            return;
-          }
+        const locks = await lockService.getUserLocks(userId);
+        let cleaned = 0;
 
-          const locks = await lockService.getUserLocks(userId);
-          let cleaned = 0;
-
-          for (const lock of locks) {
-            try {
-              const completed = await dialer.isCallCompleted(lock.callSid);
-              if (completed) {
-                await lockService.releaseLock(lock.callSid);
-                cleaned++;
-              }
-            } catch (_err: unknown) {
-              Sentry.captureException(
-                _err instanceof Error ? _err : new Error(String(_err)),
-                {
-                  extra: {
-                    context: 'cleanup_isCallCompleted',
-                    callSid: lock.callSid,
-                  },
-                },
-              );
+        for (const lock of locks) {
+          try {
+            const completed = await dialer.isCallCompleted(lock.callSid);
+            if (completed) {
               await lockService.releaseLock(lock.callSid);
               cleaned++;
             }
+          } catch (_err: unknown) {
+            Sentry.captureException(
+              _err instanceof Error ? _err : new Error(String(_err)),
+              {
+                extra: {
+                  context: 'cleanup_isCallCompleted',
+                  callSid: lock.callSid,
+                },
+              },
+            );
+            await lockService.releaseLock(lock.callSid);
+            cleaned++;
           }
-
-          const remaining = locks.length - cleaned;
-          res.status(200).json({ cleaned, remaining });
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'cleanup_locks', userId: req.auth?.userId },
-            },
-          );
-          const message = err instanceof Error ? err.message : 'unknown error';
-          res.status(500).json({ error: { code: 'CLEANUP_FAILED', message } });
         }
-      }),
-    },
-  ];
-};
+
+        const remaining = locks.length - cleaned;
+        res.status(200).json({ cleaned, remaining });
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          {
+            extra: { context: 'cleanup_locks', userId: req.auth?.userId },
+          },
+        );
+        const message = err instanceof Error ? err.message : 'unknown error';
+        res.status(500).json({ error: { code: 'CLEANUP_FAILED', message } });
+      }
+    }),
+  },
+];

@@ -45,8 +45,6 @@ const SQL_MEMBER_ROLE =
   'SELECT role FROM workspace_members WHERE id = $1 AND workspace_id = $2';
 
 export const workspaceRoutes = (): RouteDefinition[] => {
-  };
-
   // B1: returns caller's role if it's in the allowed list, or null (with 403 sent)
   const requireRole = async (
     db: Pool,

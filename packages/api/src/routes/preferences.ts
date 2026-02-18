@@ -21,8 +21,6 @@ const SQL_UPSERT =
 
 /** /v1/settings/preferences routes */
 export const preferencesRoutes = (): RouteDefinition[] => {
-  };
-
   return [
     // GET /v1/settings/preferences — fetch user preferences
     {
