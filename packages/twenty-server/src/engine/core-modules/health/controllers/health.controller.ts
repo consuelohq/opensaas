@@ -14,4 +14,11 @@ export class HealthController {
   check() {
     return this.health.check([]);
   }
+
+  @Get('/debug-error')
+  @UseGuards(PublicEndpointGuard, NoPermissionGuard)
+  debugError() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (global as any).__lastGraphQLError ?? { message: 'no error captured yet' };
+  }
 }
