@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/node';
 import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 
 type Pool = {
   query(
@@ -9,6 +10,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[] }>;
 };
+
+const getPool = getSharedPool;
 
 const SQL_GET =
   'SELECT preferences FROM user_settings WHERE user_id = $1 AND workspace_id = $2';
@@ -18,19 +21,6 @@ const SQL_UPSERT =
 
 /** /v1/settings/preferences routes */
 export const preferencesRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
   };
 
   return [
