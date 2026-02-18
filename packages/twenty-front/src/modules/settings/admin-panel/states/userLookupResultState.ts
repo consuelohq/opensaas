@@ -1,7 +1,7 @@
 import { type UserLookup } from '@/settings/admin-panel/types/UserLookup';
-import { atom } from 'recoil';
+import { createState } from '@/ui/utilities/state/utils/createState';
 
-export const userLookupResultState = atom<UserLookup | null>({
+export const userLookupResultState = createState<UserLookup | null>({
   key: 'userLookupResultState',
-  default: null,
+  defaultValue: null,
 });

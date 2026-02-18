@@ -63,6 +63,7 @@ export const PlaygroundSetupForm = () => {
         `${REACT_APP_SERVER_BASE_URL}/rest/open-api/${values.schema}`,
         {
           headers: { Authorization: `Bearer ${values.apiKeyForPlayground}` },
+          credentials: 'include',
         },
       );
 
