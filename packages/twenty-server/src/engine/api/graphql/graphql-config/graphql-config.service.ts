@@ -111,6 +111,10 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             application?.id,
           );
         } catch (error) {
+          // DEBUG: log the actual error that's causing 500s
+          // eslint-disable-next-line no-console
+          console.error('[GraphQL conditionalSchema ERROR]', error);
+
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
               extensions: {
