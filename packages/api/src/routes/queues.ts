@@ -1,6 +1,7 @@
 import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 
 type Pool = {
   query(
@@ -8,6 +9,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[] }>;
 };
+
+const getPool = getSharedPool;
 
 interface CreateQueueBody {
   name: string;
@@ -71,19 +74,6 @@ const SQL_CONTACT_CALLS =
 
 /** /v1/queues routes + /v1/contacts/:id/dialer */
 export const queueRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
   };
 
   return [

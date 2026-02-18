@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { errorHandler } from '../../middleware/error-handler.js';
 import type { RouteDefinition } from '../index.js';
+import { getSharedPool } from '../../shared/db.js';
 import {
   GHLWebhookHandler,
   verifyWebhookSignature,
@@ -14,6 +15,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
+
+const getPool = getSharedPool;
 
 const stubSyncService: GHLSyncServiceInterface = {
   findMapping: async () => null,
@@ -34,21 +37,7 @@ const stubSyncService: GHLSyncServiceInterface = {
 };
 
 export const ghlWebhookRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
   let webhookHandler: GHLWebhookHandler | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
 
   const getWebhookHandler = async (): Promise<GHLWebhookHandler> => {
     try {

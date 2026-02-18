@@ -3,6 +3,7 @@ import * as crypto from 'node:crypto';
 import { errorHandler } from '../../middleware/error-handler.js';
 import { requireAuth } from '../../middleware/requireAuth.js';
 import type { RouteDefinition } from '../index.js';
+import { getSharedPool } from '../../shared/db.js';
 import {
   GHLAuthService,
   type GHLOAuthConfig,
@@ -19,6 +20,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
+
+const getPool = getSharedPool;
 
 // in-memory PKCE verifier store (keyed by state param)
 // in production, use redis with short TTL — DEV-779
@@ -47,21 +50,7 @@ const loadConfig = (): GHLOAuthConfig => ({
 
 /** /v1/integrations/ghl routes — OAuth + connection management */
 export const ghlIntegrationRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
   let authService: GHLAuthService | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
 
   const getAuthService = async (): Promise<GHLAuthService> => {
     try {

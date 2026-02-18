@@ -5,6 +5,7 @@ import { Coach, type Message } from '@consuelo/coaching';
 import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 
 type Pool = {
   query(
@@ -12,6 +13,8 @@ type Pool = {
     values?: unknown[],
   ): Promise<{ rows: Record<string, unknown>[] }>;
 };
+
+const getPool = getSharedPool;
 
 const SQL_METRICS_SUMMARY =
   'SELECT COUNT(*) AS total_calls, COUNT(*) FILTER (WHERE outcome = $2) AS answered_calls, COALESCE(AVG(duration_seconds), 0) AS avg_duration, COUNT(*) FILTER (WHERE start_time >= CURRENT_DATE) AS calls_today, COUNT(*) FILTER (WHERE start_time >= date_trunc($3, CURRENT_DATE)) AS calls_this_week FROM calls WHERE workspace_id = $1 AND start_time >= $4';
@@ -49,19 +52,7 @@ const getPeriodStart = (period: string): string => {
 /** /v1/analytics routes */
 export const analyticsRoutes = (): RouteDefinition[] => {
   const coach = new Coach({ apiKey: process.env.GROQ_API_KEY ?? '' });
-  let pool: Pool | null = null;
 
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
   };
 
   return [
