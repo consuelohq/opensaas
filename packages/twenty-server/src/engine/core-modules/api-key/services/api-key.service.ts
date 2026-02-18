@@ -147,15 +147,11 @@ export class ApiKeyService {
       workspaceId,
     );
 
-    let expiresIn: string | number;
-
-    if (expiresAt) {
-      expiresIn = Math.floor(
-        (new Date(expiresAt).getTime() - new Date().getTime()) / 1000,
-      );
-    } else {
-      expiresIn = '100y';
-    }
+    const expiresIn = expiresAt
+      ? Math.floor(
+          (new Date(expiresAt).getTime() - new Date().getTime()) / 1000,
+        )
+      : ('100y' as const);
 
     const token = this.jwtWrapperService.sign(
       {

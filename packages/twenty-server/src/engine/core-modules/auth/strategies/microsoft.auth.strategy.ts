@@ -42,8 +42,9 @@ export class MicrosoftStrategy extends PassportStrategy(Strategy, 'microsoft') {
     });
   }
 
+  // HACK: passport strategy base class uses any for req/options — must match signature
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  authenticate(req: Request, options: any) {
+  authenticate(req: any, options?: any) {
     options = {
       ...options,
       state: JSON.stringify({

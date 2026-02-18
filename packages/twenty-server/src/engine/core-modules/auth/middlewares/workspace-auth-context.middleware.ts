@@ -9,28 +9,45 @@ import {
 } from 'src/engine/core-modules/auth/auth.exception';
 import { withWorkspaceAuthContext } from 'src/engine/core-modules/auth/storage/workspace-auth-context.storage';
 import { type WorkspaceAuthContext } from 'src/engine/core-modules/auth/types/workspace-auth-context.type';
+import { type UserEntity } from 'src/engine/core-modules/user/user.entity';
+import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { type WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
+import { type ApplicationEntity } from 'src/engine/core-modules/application/application.entity';
+import { type ApiKeyEntity } from 'src/engine/core-modules/api-key/api-key.entity';
 import { buildApiKeyAuthContext } from 'src/engine/core-modules/auth/utils/build-api-key-auth-context.util';
 import { buildApplicationAuthContext } from 'src/engine/core-modules/auth/utils/build-application-auth-context.util';
 import { buildPendingActivationUserAuthContext } from 'src/engine/core-modules/auth/utils/build-pending-activation-user-auth-context.util';
 import { buildUserAuthContext } from 'src/engine/core-modules/auth/utils/build-user-auth-context.util';
 
+type AuthRequest = Request & {
+  workspace?: WorkspaceEntity;
+  user?: UserEntity;
+  apiKey?: ApiKeyEntity;
+  application?: ApplicationEntity;
+  userWorkspaceId?: string;
+  workspaceMemberId?: string;
+  workspaceMember?: WorkspaceMemberWorkspaceEntity;
+};
+
 @Injectable()
 export class WorkspaceAuthContextMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
-    if (!isDefined(req.workspace)) {
+    const authReq = req as AuthRequest;
+
+    if (!isDefined(authReq.workspace)) {
       next();
 
       return;
     }
 
-    const authContext = this.buildAuthContext(req);
+    const authContext = this.buildAuthContext(authReq);
 
     withWorkspaceAuthContext(authContext, () => {
       next();
     });
   }
 
-  private buildAuthContext(req: Request): WorkspaceAuthContext {
+  private buildAuthContext(req: AuthRequest): WorkspaceAuthContext {
     if (isDefined(req.apiKey)) {
       return buildApiKeyAuthContext({
         workspace: req.workspace!,

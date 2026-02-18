@@ -28,7 +28,6 @@ export const metadataModuleFactory = async (
   const config: YogaDriverConfig = {
     autoSchemaFile: true,
     include: [MetadataGraphQLApiModule],
-    resolverSchemaScope: 'metadata',
     buildSchemaOptions: {
       orphanedTypes: [ClientConfig],
     },

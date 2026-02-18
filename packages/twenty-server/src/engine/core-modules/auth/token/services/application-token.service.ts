@@ -202,7 +202,7 @@ export class ApplicationTokenService {
           tokenType,
           workspaceId,
         ),
-        expiresIn,
+        expiresIn: ms(expiresIn),
       }),
       expiresAt,
     };

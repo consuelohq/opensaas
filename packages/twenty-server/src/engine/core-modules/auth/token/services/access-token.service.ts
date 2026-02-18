@@ -147,7 +147,7 @@ export class AccessTokenService {
           JwtTokenTypeEnum.ACCESS,
           workspaceId,
         ),
-        expiresIn,
+        expiresIn: ms(expiresIn),
       }),
       expiresAt,
     };
@@ -164,7 +164,11 @@ export class AccessTokenService {
   }
 
   async validateTokenByRequest(request: Request): Promise<AuthContext> {
-    const token = this.jwtWrapperService.extractJwtFromRequest()(request);
+    // HACK: passport-jwt uses a different @types/express than our express — safe cast
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const token = this.jwtWrapperService.extractJwtFromRequest()(
+      request as any,
+    );
 
     if (!token) {
       throw new AuthException(

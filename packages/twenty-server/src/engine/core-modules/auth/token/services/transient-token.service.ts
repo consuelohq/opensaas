@@ -48,7 +48,7 @@ export class TransientTokenService {
     return {
       token: this.jwtWrapperService.sign(jwtPayload, {
         secret,
-        expiresIn,
+        expiresIn: ms(expiresIn),
       }),
       expiresAt,
     };

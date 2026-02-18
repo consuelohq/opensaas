@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 
 import { msg } from '@lingui/core/macro';
 import { isNonEmptyString } from '@sniptt/guards';
+import ms from 'ms';
 import { FileFolder } from 'twenty-shared/types';
 import { Like, Repository } from 'typeorm';
 import { v4 } from 'uuid';
@@ -183,7 +184,7 @@ export class FilesFieldService {
 
     const token = this.jwtWrapperService.sign(payload, {
       secret,
-      expiresIn: fileTokenExpiresIn,
+      expiresIn: ms(fileTokenExpiresIn) as number,
     });
 
     return `${process.env.SERVER_URL}/files-field/${payloadToEncode.fileId}?token=${token}`;

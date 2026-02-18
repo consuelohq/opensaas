@@ -4,6 +4,7 @@ import { basename, dirname, extname } from 'path';
 import { type Readable } from 'stream';
 
 import { isNonEmptyString } from '@sniptt/guards';
+import ms from 'ms';
 import {
   buildSignedPath,
   extractFolderPathFilenameAndTypeOrThrow,
@@ -70,7 +71,7 @@ export class FileService {
 
     return this.jwtWrapperService.sign(payload, {
       secret,
-      expiresIn: fileTokenExpiresIn,
+      expiresIn: ms(fileTokenExpiresIn) as number,
     });
   }
 
