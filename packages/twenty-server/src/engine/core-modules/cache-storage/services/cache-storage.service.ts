@@ -1,8 +1,10 @@
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 
-import { type Milliseconds } from 'cache-manager';
 import { type RedisCache } from 'cache-manager-redis-yet';
+
+// cache-manager v7 does not export Milliseconds — define locally
+type Milliseconds = number;
 
 import { CacheStorageNamespace } from 'src/engine/core-modules/cache-storage/types/cache-storage-namespace.enum';
 
@@ -20,8 +22,8 @@ export class CacheStorageService {
     return value;
   }
 
-  async set<T>(key: string, value: T, ttl?: Milliseconds) {
-    return this.cache.set(this.getKey(key), value, ttl);
+  async set<T>(key: string, value: T, ttl?: Milliseconds): Promise<void> {
+    await this.cache.set(this.getKey(key), value, ttl);
   }
 
   async del(key: string) {
@@ -36,7 +38,7 @@ export class CacheStorageService {
     if (this.isRedisCache()) {
       const prefixedKeys = keys.map((k) => this.getKey(k));
 
-      await (this.cache as RedisCache).store.client.del(prefixedKeys);
+      await (this.cache as unknown as RedisCache).store.client.del(prefixedKeys);
 
       return;
     }
@@ -47,7 +49,7 @@ export class CacheStorageService {
   async mget<T = unknown>(keys: string[]): Promise<(T | undefined)[]> {
     if (this.isRedisCache()) {
       const prefixedKeys = keys.map((k) => this.getKey(k));
-      const values = await (this.cache as RedisCache).store.client.mGet(
+      const values = await (this.cache as unknown as RedisCache).store.client.mGet(
         prefixedKeys,
       );
 
@@ -82,13 +84,13 @@ export class CacheStorageService {
     }
 
     if (this.isRedisCache()) {
-      await (this.cache as RedisCache).store.client.sAdd(
+      await (this.cache as unknown as RedisCache).store.client.sAdd(
         this.getKey(key),
         value,
       );
 
       if (ttl) {
-        await (this.cache as RedisCache).store.client.expire(
+        await (this.cache as unknown as RedisCache).store.client.expire(
           this.getKey(key),
           ttl / 1000,
         );
@@ -97,7 +99,7 @@ export class CacheStorageService {
       return;
     }
 
-    this.get(key).then((res: string[]) => {
+    this.get(key).then((res: string[] | undefined) => {
       if (res) {
         this.set(key, [...res, ...value], ttl);
       } else {
@@ -112,7 +114,7 @@ export class CacheStorageService {
     }
 
     if (this.isRedisCache()) {
-      return (this.cache as RedisCache).store.client.sRem(
+      return (this.cache as unknown as RedisCache).store.client.sRem(
         this.getKey(key),
         values,
       );
@@ -140,13 +142,13 @@ export class CacheStorageService {
 
   async setPop(key: string, size = 1) {
     if (this.isRedisCache()) {
-      return (this.cache as RedisCache).store.client.sPop(
+      return (this.cache as unknown as RedisCache).store.client.sPop(
         this.getKey(key),
         size,
       );
     }
 
-    return this.get(key).then((res: string[]) => {
+    return this.get(key).then((res: string[] | undefined) => {
       if (res) {
         this.set(key, res.slice(0, -size));
 
@@ -159,26 +161,26 @@ export class CacheStorageService {
 
   async getSetLength(key: string) {
     if (this.isRedisCache()) {
-      return await (this.cache as RedisCache).store.client.sCard(
+      return await (this.cache as unknown as RedisCache).store.client.sCard(
         this.getKey(key),
       );
     }
 
-    return this.get(key).then((res: string[]) => {
-      return res.length;
+    return this.get(key).then((res: string[] | undefined) => {
+      return res?.length ?? 0;
     });
   }
 
   async setMembers(key: string): Promise<string[]> {
     if (this.isRedisCache()) {
-      return (this.cache as RedisCache).store.client.sMembers(this.getKey(key));
+      return (this.cache as unknown as RedisCache).store.client.sMembers(this.getKey(key));
     }
 
     return (await this.get<string[]>(key)) ?? [];
   }
 
   async flush() {
-    return this.cache.reset();
+    return this.cache.clear();
   }
 
   async flushByPattern(scanPattern: string): Promise<void> {
@@ -186,7 +188,7 @@ export class CacheStorageService {
       throw new Error('flushByPattern is only supported with Redis cache');
     }
 
-    const redisClient = (this.cache as RedisCache).store.client;
+    const redisClient = (this.cache as unknown as RedisCache).store.client;
     let cursor = 0;
 
     do {
@@ -213,7 +215,7 @@ export class CacheStorageService {
       );
     }
 
-    const redisClient = (this.cache as RedisCache).store.client;
+    const redisClient = (this.cache as unknown as RedisCache).store.client;
     let cursor = 0;
     let totalCount = 0;
 
@@ -252,7 +254,7 @@ export class CacheStorageService {
       throw new Error('acquireLock is only supported with Redis cache');
     }
 
-    const redisClient = (this.cache as RedisCache).store.client;
+    const redisClient = (this.cache as unknown as RedisCache).store.client;
 
     const result = await redisClient.set(this.getKey(key), 'lock', {
       NX: true,
@@ -272,7 +274,7 @@ export class CacheStorageService {
 
   async incrBy(key: string, increment: number): Promise<number> {
     if (this.isRedisCache()) {
-      return (this.cache as RedisCache).store.client.incrBy(
+      return (this.cache as unknown as RedisCache).store.client.incrBy(
         this.getKey(key),
         increment,
       );
@@ -288,7 +290,7 @@ export class CacheStorageService {
 
   async expire(key: string, ttlMs: Milliseconds): Promise<boolean> {
     if (this.isRedisCache()) {
-      return (this.cache as RedisCache).store.client.expire(
+      return (this.cache as unknown as RedisCache).store.client.expire(
         this.getKey(key),
         ttlMs / 1000,
       );
@@ -306,8 +308,8 @@ export class CacheStorageService {
   }
 
   private isRedisCache() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (this.cache.store as any)?.name === 'redis';
+    // HACK: cache-manager v7 Cache type doesn't expose store directly; cast to access redis store
+    return (this.cache as any).store?.name === 'redis';
   }
 
   private getKey(key: string) {

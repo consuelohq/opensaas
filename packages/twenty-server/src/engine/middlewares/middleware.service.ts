@@ -34,7 +34,8 @@ export class MiddlewareService {
   ) {}
 
   public isTokenPresent(request: Request): boolean {
-    const token = this.jwtWrapperService.extractJwtFromRequest()(request);
+    // HACK: Request from @types/express v4 vs @types/passport-jwt's @types/express v5 mismatch
+    const token = this.jwtWrapperService.extractJwtFromRequest()(request as any);
 
     return !!token;
   }
