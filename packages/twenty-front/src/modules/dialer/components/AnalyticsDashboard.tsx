@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
+import { IconChartBar } from '@tabler/icons-react';
 
 import {
   useCallAnalytics,
@@ -34,7 +35,8 @@ const StyledSelect = styled.select`
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.xs};
-  padding: ${({ theme }) => theme.spacing(0.5)} ${({ theme }) => theme.spacing(1)};
+  padding: ${({ theme }) => theme.spacing(0.5)}
+    ${({ theme }) => theme.spacing(1)};
   cursor: pointer;
 `;
 
@@ -138,7 +140,10 @@ export const AnalyticsDashboard = () => {
   return (
     <StyledContainer>
       <StyledHeader>
-        <StyledTitle>📊 Call Analytics</StyledTitle>
+        <StyledTitle>
+          <IconChartBar size={16} style={{ marginRight: 4 }} />
+          Call Analytics
+        </StyledTitle>
         <StyledSelect value={period} onChange={handlePeriodChange}>
           {PERIOD_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
