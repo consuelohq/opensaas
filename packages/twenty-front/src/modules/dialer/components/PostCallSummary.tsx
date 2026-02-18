@@ -11,6 +11,7 @@ import {
 } from '@tabler/icons-react';
 
 import { type CallAnalytics, type MomentType } from '@/dialer/types/coaching';
+import { formatDurationTimer } from '@/dialer/utils/callDuration';
 
 const STORAGE_KEY = 'dialer_postcall_expanded';
 
@@ -194,12 +195,6 @@ const SENTIMENT_EMOJI: Record<string, string> = {
   negative: '😞',
 };
 
-const formatDuration = (seconds: number): string => {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-};
-
 export const PostCallSummary = ({
   analysis,
   isAnalyzing,
@@ -243,7 +238,9 @@ export const PostCallSummary = ({
         <StyledEmpty>
           <IconAlertTriangle size={20} />
           <span>{error}</span>
-          <StyledRetryButton onClick={onRetry}>Retry Analysis</StyledRetryButton>
+          <StyledRetryButton onClick={onRetry}>
+            Retry Analysis
+          </StyledRetryButton>
         </StyledEmpty>
       );
     }
@@ -253,10 +250,13 @@ export const PostCallSummary = ({
     return (
       <>
         <StyledMetaRow>
-          <span>Duration: {formatDuration(analysis.duration)}</span>
+          <span>Duration: {formatDurationTimer(analysis.duration)}</span>
           <span>•</span>
           <span>
-            Score: <StyledScoreBadge score={analysis.performanceScore}>{analysis.performanceScore}/100</StyledScoreBadge>
+            Score:{' '}
+            <StyledScoreBadge score={analysis.performanceScore}>
+              {analysis.performanceScore}/100
+            </StyledScoreBadge>
           </span>
           <span>•</span>
           <span>
@@ -273,13 +273,19 @@ export const PostCallSummary = ({
               onClick={() => setMomentsOpen((prev) => !prev)}
               aria-expanded={momentsOpen}
             >
-              {momentsOpen ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+              {momentsOpen ? (
+                <IconChevronUp size={14} />
+              ) : (
+                <IconChevronDown size={14} />
+              )}
               Key Moments ({analysis.keyMoments.length})
             </StyledSectionLabel>
             {momentsOpen &&
               analysis.keyMoments.map((moment, i) => (
                 <StyledMomentItem key={i}>
-                  <StyledMomentIcon>{MOMENT_ICONS[moment.type] ?? '•'}</StyledMomentIcon>
+                  <StyledMomentIcon>
+                    {MOMENT_ICONS[moment.type] ?? '•'}
+                  </StyledMomentIcon>
                   <span>{moment.text}</span>
                 </StyledMomentItem>
               ))}
