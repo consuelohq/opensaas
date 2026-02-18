@@ -47,6 +47,9 @@ const SQL_GET_RECORDING_INFO =
 const SQL_PERSIST_ANALYSIS =
   'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING id';
 
+const SQL_GET_CALL_BY_RECORDING_SID =
+  'SELECT id FROM calls WHERE recording_sid = $1 AND workspace_id = $2';
+
 const getPool = getSharedPool;
 
 export const callRoutes = (): RouteDefinition[] => {
@@ -281,14 +284,12 @@ export const callRoutes = (): RouteDefinition[] => {
       handler: errorHandler(async (req, res) => {
         const recordingSid = req.params?.sid;
         if (!recordingSid) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'INVALID_REQUEST',
-                message: 'Missing recording SID',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing recording SID',
+            },
+          });
           return;
         }
         const auth = requireAuth(req, res);
@@ -311,7 +312,7 @@ export const callRoutes = (): RouteDefinition[] => {
         // STUB: redirect to Twilio URL (replace with proxy streaming if needed)
         const apiBaseUrl = process.env.API_BASE_URL ?? '';
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID ?? ''}/Recordings/${recordingSid}.mp3`;
-        res.redirect(twilioUrl);
+        res.status(200).json({ url: twilioUrl });
       }),
     },
 

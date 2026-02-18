@@ -21,7 +21,11 @@ interface AccessTokenPayload {
  *
  * See: packages/twenty-server/src/engine/core-modules/jwt/services/jwt-wrapper.service.ts
  */
-function deriveSecret(appSecret: string, workspaceId: string, tokenType: string): string {
+function deriveSecret(
+  appSecret: string,
+  workspaceId: string,
+  tokenType: string,
+): string {
   return createHash('sha256')
     .update(`${appSecret}${workspaceId}${tokenType}`)
     .digest('hex');
@@ -41,33 +45,53 @@ export function authMiddleware() {
     const appSecret = process.env.APP_SECRET;
 
     if (!appSecret) {
-      res.status(500).json({ error: { code: 'config_error', message: 'APP_SECRET is not configured' } });
+      res.status(500).json({
+        error: {
+          code: 'config_error',
+          message: 'APP_SECRET is not configured',
+        },
+      });
       return;
     }
 
-    const header = req.headers['authorization'] ?? req.headers['Authorization'] ?? '';
+    const header =
+      req.headers['authorization'] ?? req.headers['Authorization'] ?? '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : '';
 
     if (!token) {
-      res.status(401).json({ error: { code: 'unauthorized', message: 'Missing authentication token' } });
+      res.status(401).json({
+        error: {
+          code: 'unauthorized',
+          message: 'Missing authentication token',
+        },
+      });
       return;
     }
 
     try {
       // Lazy import — jsonwebtoken is a peer dependency
-      const { default: jwt } = await import('jsonwebtoken');
+      const jwtModule = await import('jsonwebtoken');
+      const jwtDecode =
+        jwtModule.decode ??
+        (jwtModule as unknown as { default: typeof import('jsonwebtoken') })
+          .default.decode;
+      const jwtVerify =
+        jwtModule.verify ??
+        (jwtModule as unknown as { default: typeof import('jsonwebtoken') })
+          .default.verify;
 
-      // Decode without verification first to extract workspaceId for secret derivation
-      const decoded = jwt.decode(token) as AccessTokenPayload | null;
+      const decoded = jwtDecode(token) as AccessTokenPayload | null;
 
       if (!decoded || decoded.type !== 'ACCESS' || !decoded.workspaceId) {
-        res.status(401).json({ error: { code: 'unauthorized', message: 'Invalid token' } });
+        res
+          .status(401)
+          .json({ error: { code: 'unauthorized', message: 'Invalid token' } });
         return;
       }
 
       const secret = deriveSecret(appSecret, decoded.workspaceId, decoded.type);
 
-      jwt.verify(token, secret, { algorithms: ['HS256'] });
+      jwtVerify(token, secret, { algorithms: ['HS256'] });
 
       const auth: AuthContext = {
         userId: decoded.userId,
@@ -79,9 +103,10 @@ export function authMiddleware() {
       req.auth = auth;
       next();
     } catch (err: unknown) {
-      const message = err instanceof Error && err.name === 'TokenExpiredError'
-        ? 'Token expired'
-        : 'Invalid token';
+      const message =
+        err instanceof Error && err.name === 'TokenExpiredError'
+          ? 'Token expired'
+          : 'Invalid token';
       res.status(401).json({ error: { code: 'unauthorized', message } });
     }
   };

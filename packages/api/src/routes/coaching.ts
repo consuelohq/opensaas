@@ -165,7 +165,7 @@ let loggerInstance: {
 let loggerPromise: Promise<{
   error: (msg: string, meta?: Record<string, unknown>) => void;
   info: (msg: string, meta?: Record<string, unknown>) => void;
-}> | null = null;
+} | null> | null = null;
 
 const getLogger = async () => {
   if (loggerPromise) return loggerPromise;
@@ -197,7 +197,17 @@ export const coachingRoutes = (): RouteDefinition[] => {
     throw new Error('[Coaching] GROQ_API_KEY environment variable is required');
   }
 
-  const coach = new Coach({ apiKey: process.env.GROQ_API_KEY });
+  const apiKey = process.env.GROQ_API_KEY;
+  let coachInstance: InstanceType<
+    Awaited<ReturnType<typeof getCoachModule>>['Coach']
+  > | null = null;
+  const getCoach = async () => {
+    if (!coachInstance) {
+      const mod = await getCoachModule();
+      coachInstance = new mod.Coach({ apiKey });
+    }
+    return coachInstance;
+  };
 
   return [
     {
@@ -221,7 +231,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
         const startTime = Date.now();
         try {
           const { Coach } = await getCoachModule();
-          const coach = new Coach({ apiKey: process.env.GROQ_API_KEY });
+          const coach = await getCoach();
           const result = await withTimeout(
             coach.coach(body.messages, { contextChunks: body.contextChunks }),
             LLM_TIMEOUT_MS,
@@ -245,7 +255,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err); // W1
           const logger = await getLogger();
-          logger.error('[Coaching] coach failed', {
+          logger?.error('[Coaching] coach failed', {
             userId: auth.userId,
             error: message,
           });
@@ -279,7 +289,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
         const startTime = Date.now();
         try {
           const { Coach } = await getCoachModule();
-          const coach = new Coach({ apiKey: process.env.GROQ_API_KEY });
+          const coach = await getCoach();
           const result = await withTimeout(
             coach.coach(coachMessages, { contextChunks: body.contextChunks }),
             LLM_TIMEOUT_MS,
@@ -302,7 +312,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] realtime coach failed', {
+          logger?.error('[Coaching] realtime coach failed', {
             userId: auth.userId,
             error: message,
           });
@@ -333,7 +343,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
         const startTime = Date.now();
         try {
           const { Coach } = await getCoachModule();
-          const coach = new Coach({ apiKey: process.env.GROQ_API_KEY });
+          const coach = await getCoach();
           const result = await withTimeout(
             coach.analyzeCall(body.messages, {
               callSid: body.callSid,
@@ -350,7 +360,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] analysis failed', {
+          logger?.error('[Coaching] analysis failed', {
             userId: auth.userId,
             callSid: body.callSid,
             error: message,
@@ -389,7 +399,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
         try {
           // TODO(DEV-831): persist to database when call_analytics table exists
           const logger = await getLogger();
-          logger.info('[Coaching] analysis persisted', {
+          logger?.info('[Coaching] analysis persisted', {
             callId,
             userId: auth.userId,
           });
@@ -398,7 +408,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] analysis persist failed', {
+          logger?.error('[Coaching] analysis persist failed', {
             callId,
             userId: auth.userId,
             error: message,
@@ -593,7 +603,7 @@ export const setupCoachingWebSocket = async (
           }
         } catch (err: unknown) {
           Sentry.captureException(err);
-          logger.error('[Coaching] transcription failed', {
+          logger?.error('[Coaching] transcription failed', {
             callId,
             track,
             error: err instanceof Error ? err.message : 'unknown',
@@ -635,11 +645,11 @@ export const setupCoachingWebSocket = async (
       }) as unknown as (data: Buffer) => void);
     });
 
-    logger.info('[Coaching] WebSocket servers initialized');
+    logger?.info('[Coaching] WebSocket servers initialized');
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     Sentry.captureException(err);
-    logger.error('[Coaching] WebSocket setup failed', { error: message });
+    logger?.error('[Coaching] WebSocket setup failed', { error: message });
     throw new Error(`Failed to set up coaching WebSocket: ${message}`);
   }
 };

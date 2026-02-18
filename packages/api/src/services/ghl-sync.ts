@@ -86,7 +86,9 @@ export class FieldMapper {
         : FieldMapper.getDefaultMappings();
 
     for (const mapping of mappings) {
-      const ghlValue = (contact as Record<string, unknown>)[mapping.ghlField];
+      const ghlValue = (contact as unknown as Record<string, unknown>)[
+        mapping.ghlField
+      ];
       if (ghlValue === undefined || ghlValue === null || ghlValue === '')
         continue;
 
@@ -325,7 +327,9 @@ export class GHLSyncService {
       if (rows.length === 0) return false;
 
       const twentyUpdatedAt = new Date(String(rows[0].updated_at));
-      const ghlUpdatedAt = new Date(ghlContact.dateUpdated);
+      const ghlUpdatedAt = new Date(
+        ghlContact.dateUpdated ?? ghlContact.updatedAt,
+      );
       const lastSyncedAt = mapping.id
         ? await this.getMappingLastSynced(workspaceId, ghlContact.id)
         : null;
@@ -511,7 +515,9 @@ export class GHLSyncService {
             const lastSync = rows[0]?.last_sync_at
               ? new Date(String(rows[0].last_sync_at))
               : null;
-            const contactUpdated = new Date(contact.dateUpdated);
+            const contactUpdated = new Date(
+              contact.dateUpdated ?? contact.updatedAt,
+            );
             if (lastSync && contactUpdated <= lastSync) {
               result.skippedCount++;
               continue;
