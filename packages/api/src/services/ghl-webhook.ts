@@ -13,7 +13,8 @@ const createLogger = async (component: string) => {
   try {
     const { createLogger: logger } = await import('@consuelo/logger');
     return logger(component);
-  } catch {
+  } catch (_err: unknown) {
+    // logger optional — intentional: graceful fallback when logger not available
     return null;
   }
 };

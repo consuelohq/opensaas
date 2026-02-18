@@ -53,8 +53,8 @@ program
         workspace = await configService.getDefaultWorkspace();
       }
       ConfigService.setActiveWorkspace(workspace);
-    } catch {
-      // twenty-sdk not available — skip workspace resolution
+    } catch (_err: unknown) {
+      // twenty-sdk not available — skip workspace resolution — intentional: optional dep
     }
   })
   .action(async () => {
@@ -74,7 +74,11 @@ program
   .option('--yes', 'non-interactive mode with sensible defaults')
   .option('--template <type>', 'project template (full, minimal, api-only)')
   .action(async (opts) => {
-    await initCommand({ managed: opts.managed, yes: opts.yes, template: opts.template });
+    await initCommand({
+      managed: opts.managed,
+      yes: opts.yes,
+      template: opts.template,
+    });
   });
 
 program
@@ -103,8 +107,8 @@ try {
   // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
   const { registerCommands } = await import('twenty-sdk/cli');
   registerCommands(program);
-} catch {
-  // twenty-sdk not built — platform commands unavailable
+} catch (_err: unknown) {
+  // twenty-sdk not built — platform commands unavailable — intentional: optional dep
 }
 
 program
