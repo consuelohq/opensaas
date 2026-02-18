@@ -55,7 +55,7 @@ export class WorkerHealthIndicator {
     },
   ): Promise<WorkerQueueHealth | null> {
     const redis = this.redisClient.getQueueClient();
-    const queue = new Queue(queueName, { connection: redis });
+    const queue = new Queue(queueName, { connection: redis as any });
 
     try {
       const workers = await queue.getWorkers();

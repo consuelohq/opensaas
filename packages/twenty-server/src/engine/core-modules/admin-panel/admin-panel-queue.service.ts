@@ -31,7 +31,7 @@ export class AdminPanelQueueService {
     offset = 0,
   ) {
     const redis = this.redisClient.getQueueClient();
-    const queue = new Queue(queueName, { connection: redis });
+    const queue = new Queue(queueName, { connection: redis as any });
 
     try {
       const validLimit = Math.min(Math.max(1, limit), 200);
@@ -125,7 +125,7 @@ export class AdminPanelQueueService {
     results: JobOperationResult[];
   }> {
     const redis = this.redisClient.getQueueClient();
-    const queue = new Queue(queueName, { connection: redis });
+    const queue = new Queue(queueName, { connection: redis as any });
 
     try {
       if (jobIds.length === 0) {
@@ -197,7 +197,7 @@ export class AdminPanelQueueService {
     results: JobOperationResult[];
   }> {
     const redis = this.redisClient.getQueueClient();
-    const queue = new Queue(queueName, { connection: redis });
+    const queue = new Queue(queueName, { connection: redis as any });
 
     try {
       const results: JobOperationResult[] = [];
