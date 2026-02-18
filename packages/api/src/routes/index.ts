@@ -78,8 +78,9 @@ export const allRoutes = (): RouteDefinition[] => [
   ...callRoutes(),
   ...coachingRoutes(),
   ...contactRoutes(),
-  ...knowledgeRoutes(),
+  // fileRoutes before knowledgeRoutes — base resource before extensions
   ...fileRoutes(),
+  ...knowledgeRoutes(),
   ...localPresenceRoutes(),
   ...parallelRoutes(),
   ...preferencesRoutes(),
