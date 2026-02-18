@@ -83,7 +83,9 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     ];
 
     if (Sentry.isInitialized()) {
-      plugins.push(useSentryTracing());
+      // HACK: useSentryTracing() returns a Plugin type incompatible with graphql-yoga's Plugin — safe cast
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      plugins.push(useSentryTracing() as any);
     }
 
     const config: YogaDriverConfig = {
@@ -103,7 +105,11 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             return new GraphQLSchema({});
           }
 
-          return await this.createSchema(context, workspace, application?.id);
+          return await this.createSchema(
+            context as YogaDriverServerContext<'express'> & YogaInitialContext,
+            workspace,
+            application?.id,
+          );
         } catch (error) {
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {

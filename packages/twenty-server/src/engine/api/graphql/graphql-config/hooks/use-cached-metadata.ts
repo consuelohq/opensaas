@@ -1,10 +1,17 @@
 import { createHash } from 'crypto';
 
-import { type Request } from 'express';
 import { type Plugin } from 'graphql-yoga';
 import { isDefined } from 'twenty-shared/utils';
 
 import { InternalServerError } from 'src/engine/core-modules/graphql/utils/graphql-errors.util';
+import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+
+type CustomRequest = {
+  workspace?: WorkspaceEntity & { metadataVersion?: string };
+  locale?: string;
+  userWorkspaceId?: string;
+  body?: { query?: string };
+};
 
 export type CacheMetadataPluginConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,7 +27,7 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
     request,
   }: {
     operationName: string;
-    request: Pick<Request, 'workspace' | 'locale' | 'body' | 'userWorkspaceId'>;
+    request: CustomRequest;
   }) => {
     const workspace = request.workspace;
 
@@ -31,7 +38,7 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
     const workspaceMetadataVersion = workspace.metadataVersion ?? '0';
     const locale = request.locale;
     const queryHash = createHash('sha256')
-      .update(request.body.query)
+      .update(request.body?.query ?? '')
       .digest('hex');
 
     // For FindAllCoreViews, use user-specific cache key since visibility filtering is user-dependent
@@ -47,9 +54,10 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
     serverContext?.req?.body?.operationName;
 
   return {
-    onRequest: async ({ endResponse, serverContext }) => {
-      // TODO: we should probably override the graphql-yoga request type to include the workspace and locale
-      const request = (serverContext as unknown as { req: Request }).req;
+    // HACK: graphql-yoga Plugin hook types don't expose serverContext — safe destructure
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onRequest: async ({ endResponse, serverContext }: any) => {
+      const request = serverContext.req as CustomRequest;
 
       if (!request.workspace?.id) {
         return;
@@ -71,8 +79,10 @@ export function useCachedMetadata(config: CacheMetadataPluginConfig): Plugin {
         return endResponse(earlyResponse);
       }
     },
-    onResponse: async ({ response, serverContext }) => {
-      const request = (serverContext as unknown as { req: Request }).req;
+    // HACK: graphql-yoga Plugin hook types don't expose serverContext — safe destructure
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onResponse: async ({ response, serverContext }: any) => {
+      const request = serverContext.req as CustomRequest;
 
       if (!request.workspace?.id) {
         return;
