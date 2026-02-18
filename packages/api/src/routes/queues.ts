@@ -1,8 +1,12 @@
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 
 type Pool = {
-  query(text: string, values?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>;
+  query(
+    text: string,
+    values?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
 };
 
 interface CreateQueueBody {
@@ -82,16 +86,6 @@ export const queueRoutes = (): RouteDefinition[] => {
     }
   };
 
-  const requireAuth = (req: Parameters<RouteDefinition['handler']>[0], res: Parameters<RouteDefinition['handler']>[1]): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
-      return null;
-    }
-    return { userId, workspaceId };
-  };
-
   return [
     // 1. POST /v1/queues — create queue
     {
@@ -102,16 +96,29 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const body = req.body as CreateQueueBody | undefined;
-        if (!body?.name || !Array.isArray(body.contactIds) || body.contactIds.length === 0) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'name and contactIds[] required' } });
+        if (
+          !body?.name ||
+          !Array.isArray(body.contactIds) ||
+          body.contactIds.length === 0
+        ) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'name and contactIds[] required',
+            },
+          });
           return;
         }
 
         const db = await getPool();
         const { rows } = await db.query(SQL_INSERT_QUEUE, [
-          auth.workspaceId, auth.userId, body.name,
-          body.sourceType ?? 'manual', body.sourceId ?? null,
-          body.category ?? 'all', JSON.stringify(body.settings ?? {}),
+          auth.workspaceId,
+          auth.userId,
+          body.name,
+          body.sourceType ?? 'manual',
+          body.sourceId ?? null,
+          body.category ?? 'all',
+          JSON.stringify(body.settings ?? {}),
           body.contactIds.length,
         ]);
 
@@ -141,9 +148,14 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -161,13 +173,22 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_UPDATE_QUEUE_STARTED, ['active', req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_UPDATE_QUEUE_STARTED, [
+          'active',
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
-        const next = await db.query(SQL_NEXT_PENDING, [req.params?.id, 'pending']);
+        const next = await db.query(SQL_NEXT_PENDING, [
+          req.params?.id,
+          'pending',
+        ]);
         if (next.rows.length > 0) {
           await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
         }
@@ -185,9 +206,15 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_UPDATE_QUEUE_STATUS, ['paused', req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_UPDATE_QUEUE_STATUS, [
+          'paused',
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -204,9 +231,14 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const check = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const check = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (check.rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -217,11 +249,18 @@ export const queueRoutes = (): RouteDefinition[] => {
         );
 
         if (current.rows.length > 0) {
-          await db.query(SQL_UPDATE_ITEM_SKIP, ['skipped', body?.reason ?? null, current.rows[0].id]);
+          await db.query(SQL_UPDATE_ITEM_SKIP, [
+            'skipped',
+            body?.reason ?? null,
+            current.rows[0].id,
+          ]);
           await db.query(SQL_INCREMENT_SKIPPED, [req.params?.id]);
         }
 
-        const next = await db.query(SQL_NEXT_PENDING, [req.params?.id, 'pending']);
+        const next = await db.query(SQL_NEXT_PENDING, [
+          req.params?.id,
+          'pending',
+        ]);
         if (next.rows.length > 0) {
           await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
         }
@@ -239,9 +278,14 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const check = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const check = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (check.rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -255,12 +299,19 @@ export const queueRoutes = (): RouteDefinition[] => {
           [req.params?.id],
         );
 
-        const next = await db.query(SQL_NEXT_PENDING, [req.params?.id, 'pending']);
+        const next = await db.query(SQL_NEXT_PENDING, [
+          req.params?.id,
+          'pending',
+        ]);
         if (next.rows.length > 0) {
           await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
           res.status(200).json({ nextItem: next.rows[0] });
         } else {
-          await db.query(SQL_UPDATE_QUEUE_STATUS, ['completed', req.params?.id, auth.workspaceId]);
+          await db.query(SQL_UPDATE_QUEUE_STATUS, [
+            'completed',
+            req.params?.id,
+            auth.workspaceId,
+          ]);
           res.status(200).json({ nextItem: null, queueCompleted: true });
         }
       }),
@@ -275,9 +326,14 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -301,14 +357,22 @@ export const queueRoutes = (): RouteDefinition[] => {
 
         const body = req.body as AssignBody | undefined;
         if (!body?.userId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'userId required' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'userId required' },
+          });
           return;
         }
 
         const db = await getPool();
-        const { rows } = await db.query(SQL_UPDATE_QUEUE_ASSIGN, [body.userId, req.params?.id, auth.workspaceId]);
+        const { rows } = await db.query(SQL_UPDATE_QUEUE_ASSIGN, [
+          body.userId,
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -325,9 +389,14 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const check = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const check = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (check.rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
@@ -355,15 +424,21 @@ export const queueRoutes = (): RouteDefinition[] => {
         const startedAt = queue.started_at as string | null;
         let callsPerHour = 0;
         if (startedAt !== null && totalCalls > 0) {
-          const hoursElapsed = (Date.now() - new Date(startedAt).getTime()) / 3_600_000;
-          callsPerHour = hoursElapsed > 0 ? Math.round(totalCalls / hoursElapsed) : totalCalls;
+          const hoursElapsed =
+            (Date.now() - new Date(startedAt).getTime()) / 3_600_000;
+          callsPerHour =
+            hoursElapsed > 0
+              ? Math.round(totalCalls / hoursElapsed)
+              : totalCalls;
         }
 
         res.status(200).json({
           totalCalls,
           answeredCount,
-          answerRatePercentage: totalCalls > 0 ? Math.round((answeredCount / totalCalls) * 100) : 0,
-          avgCallDurationSeconds: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
+          answerRatePercentage:
+            totalCalls > 0 ? Math.round((answeredCount / totalCalls) * 100) : 0,
+          avgCallDurationSeconds:
+            totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
           callsPerHour,
           outcomeBreakdown,
         });
@@ -379,22 +454,36 @@ export const queueRoutes = (): RouteDefinition[] => {
         if (auth === null) return;
 
         const db = await getPool();
-        const check = await db.query(SQL_GET_QUEUE, [req.params?.id, auth.workspaceId]);
+        const check = await db.query(SQL_GET_QUEUE, [
+          req.params?.id,
+          auth.workspaceId,
+        ]);
         if (check.rows.length === 0) {
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
           return;
         }
 
         const { rows } = await db.query(SQL_GET_ITEMS, [req.params?.id]);
 
-        const header = 'position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
+        const header =
+          'position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
         const lines = rows.map((r) => {
           const fields = [
-            r.position, r.contact_id, r.status,
-            r.call_outcome ?? '', r.call_duration_seconds ?? '',
-            r.skip_reason ?? '', r.last_attempt_at ?? '',
+            r.position,
+            r.contact_id,
+            r.status,
+            r.call_outcome ?? '',
+            r.call_duration_seconds ?? '',
+            r.skip_reason ?? '',
+            r.last_attempt_at ?? '',
           ];
-          return fields.map((f) => String(f).includes(',') ? `"${String(f)}"` : String(f)).join(',');
+          return fields
+            .map((f) =>
+              String(f).includes(',') ? `"${String(f)}"` : String(f),
+            )
+            .join(',');
         });
 
         res.type('text/csv').send([header, ...lines].join('\n'));

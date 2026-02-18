@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 
 type Pool = {
@@ -56,21 +57,6 @@ export const workspaceRoutes = (): RouteDefinition[] => {
     }
   };
 
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res
-        .status(401)
-        .json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
-      return null;
-    }
-    return { userId, workspaceId };
-  };
-
   // B1: returns caller's role if it's in the allowed list, or null (with 403 sent)
   const requireRole = async (
     db: Pool,
@@ -79,21 +65,36 @@ export const workspaceRoutes = (): RouteDefinition[] => {
     allowed: readonly string[],
   ): Promise<string | null> => {
     try {
-      const { rows } = await db.query(SQL_CALLER_ROLE, [auth.workspaceId, auth.userId]);
+      const { rows } = await db.query(SQL_CALLER_ROLE, [
+        auth.workspaceId,
+        auth.userId,
+      ]);
       if (rows.length === 0) {
-        Sentry.captureMessage('Non-member attempted workspace action', 'warning');
-        res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Not a workspace member' } });
+        Sentry.captureMessage(
+          'Non-member attempted workspace action',
+          'warning',
+        );
+        res.status(403).json({
+          error: { code: 'FORBIDDEN', message: 'Not a workspace member' },
+        });
         return null;
       }
       const role = rows[0].role as string;
       if (!allowed.includes(role)) {
-        Sentry.captureMessage('Insufficient role for workspace action', 'warning');
-        res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Insufficient permissions' } });
+        Sentry.captureMessage(
+          'Insufficient role for workspace action',
+          'warning',
+        );
+        res.status(403).json({
+          error: { code: 'FORBIDDEN', message: 'Insufficient permissions' },
+        });
         return null;
       }
       return role;
     } catch (err: unknown) {
-      Sentry.captureException(err instanceof Error ? err : new Error('RBAC check failed'));
+      Sentry.captureException(
+        err instanceof Error ? err : new Error('RBAC check failed'),
+      );
       throw err;
     }
   };
@@ -111,12 +112,22 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         const { rows } = await db.query(SQL_GET, [auth.workspaceId]);
 
         if (rows.length === 0) {
-          res.status(200).json({ id: auth.workspaceId, name: '', slug: '', branding: {}, team: [], billing: {}, limits: {} });
+          res.status(200).json({
+            id: auth.workspaceId,
+            name: '',
+            slug: '',
+            branding: {},
+            team: [],
+            billing: {},
+            limits: {},
+          });
           return;
         }
 
         const ws = rows[0];
-        const { rows: members } = await db.query(SQL_MEMBERS, [auth.workspaceId]);
+        const { rows: members } = await db.query(SQL_MEMBERS, [
+          auth.workspaceId,
+        ]);
         const team = members.map((m) => ({
           id: m.id,
           email: m.email,
@@ -192,7 +203,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         // STUB: file upload requires multipart handling — DEV-758
         res.status(501).json({
-          error: { code: 'NOT_IMPLEMENTED', message: 'File upload not yet implemented' },
+          error: {
+            code: 'NOT_IMPLEMENTED',
+            message: 'File upload not yet implemented',
+          },
         });
       }),
     },
@@ -211,15 +225,25 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         const { email, role } = req.body as { email: string; role?: string };
         if (!email) {
           Sentry.captureMessage('Invite missing email', 'warning');
-          res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'Email is required' } });
+          res.status(400).json({
+            error: { code: 'BAD_REQUEST', message: 'Email is required' },
+          });
           return;
         }
 
         // B2: validate role if provided
         const targetRole = role ?? 'member';
-        if (!VALID_ROLES.includes(targetRole as typeof VALID_ROLES[number])) {
-          Sentry.captureMessage(`Invalid invite role: ${targetRole}`, 'warning');
-          res.status(400).json({ error: { code: 'BAD_REQUEST', message: `Role must be one of: ${VALID_ROLES.join(', ')}` } });
+        if (!VALID_ROLES.includes(targetRole as (typeof VALID_ROLES)[number])) {
+          Sentry.captureMessage(
+            `Invalid invite role: ${targetRole}`,
+            'warning',
+          );
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
+            },
+          });
           return;
         }
 
@@ -249,9 +273,17 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         const { role } = req.body as { role: string };
 
         // B2: validate role value
-        if (!role || !VALID_ROLES.includes(role as typeof VALID_ROLES[number])) {
+        if (
+          !role ||
+          !VALID_ROLES.includes(role as (typeof VALID_ROLES)[number])
+        ) {
           Sentry.captureMessage(`Invalid role change: ${role}`, 'warning');
-          res.status(400).json({ error: { code: 'BAD_REQUEST', message: `Role must be one of: ${VALID_ROLES.join(', ')}` } });
+          res.status(400).json({
+            error: {
+              code: 'BAD_REQUEST',
+              message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
+            },
+          });
           return;
         }
 
@@ -263,7 +295,9 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         if (rows.length === 0) {
           Sentry.captureMessage('Role change target not found', 'warning');
-          res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Member not found' } });
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Member not found' },
+          });
           return;
         }
 
@@ -285,10 +319,21 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         // admin can only remove members, not other admins or owners
         if (callerRole === 'admin') {
-          const { rows: target } = await db.query(SQL_MEMBER_ROLE, [req.params?.memberId, auth.workspaceId]);
+          const { rows: target } = await db.query(SQL_MEMBER_ROLE, [
+            req.params?.memberId,
+            auth.workspaceId,
+          ]);
           if (target.length > 0 && target[0].role !== 'member') {
-            Sentry.captureMessage('Admin attempted to remove non-member role', 'warning');
-            res.status(403).json({ error: { code: 'FORBIDDEN', message: 'Admins can only remove members' } });
+            Sentry.captureMessage(
+              'Admin attempted to remove non-member role',
+              'warning',
+            );
+            res.status(403).json({
+              error: {
+                code: 'FORBIDDEN',
+                message: 'Admins can only remove members',
+              },
+            });
             return;
           }
         }
@@ -302,7 +347,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         if (rows.length === 0) {
           Sentry.captureMessage('Member removal target not found', 'warning');
           res.status(404).json({
-            error: { code: 'NOT_FOUND', message: 'Member not found or is owner' },
+            error: {
+              code: 'NOT_FOUND',
+              message: 'Member not found or is owner',
+            },
           });
           return;
         }
@@ -321,7 +369,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         // STUB: stripe portal session creation — DEV-758
         res.status(501).json({
-          error: { code: 'NOT_IMPLEMENTED', message: 'Stripe billing portal not yet implemented' },
+          error: {
+            code: 'NOT_IMPLEMENTED',
+            message: 'Stripe billing portal not yet implemented',
+          },
         });
       }),
     },

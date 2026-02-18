@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { Coach, type Message } from '@consuelo/coaching';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Server as HttpServer } from 'http';
 
@@ -41,11 +42,17 @@ interface WebSocketClient {
 
 // W11: timeout wrapper for LLM calls
 const LLM_TIMEOUT_MS = 30_000;
-const withTimeout = <TResult>(promise: Promise<TResult>, ms: number): Promise<TResult> =>
+const withTimeout = <TResult>(
+  promise: Promise<TResult>,
+  ms: number,
+): Promise<TResult> =>
   Promise.race([
     promise,
     new Promise<never>((_resolve, reject) =>
-      setTimeout(() => reject(new Error(`LLM call timed out after ${ms}ms`)), ms),
+      setTimeout(
+        () => reject(new Error(`LLM call timed out after ${ms}ms`)),
+        ms,
+      ),
     ),
   ]);
 
@@ -75,7 +82,10 @@ const buildWavHeader = (dataLength: number): Buffer => {
 };
 
 // W2: lazy logger init
-let loggerInstance: { error: (msg: string, meta?: Record<string, unknown>) => void; info: (msg: string, meta?: Record<string, unknown>) => void } | null = null;
+let loggerInstance: {
+  error: (msg: string, meta?: Record<string, unknown>) => void;
+  info: (msg: string, meta?: Record<string, unknown>) => void;
+} | null = null;
 const getLogger = async () => {
   if (!loggerInstance) {
     try {
@@ -102,20 +112,6 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
   const coach = new Coach({ apiKey: process.env.GROQ_API_KEY });
 
-  // B1: auth helper — same pattern as analytics.ts, calls.ts
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
-      return null;
-    }
-    return { userId, workspaceId };
-  };
-
   return [
     {
       method: 'POST',
@@ -126,7 +122,12 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
         const body = req.body as CoachBody | undefined;
         if (!body?.messages?.length) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "messages" array' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "messages" array',
+            },
+          });
           return;
         }
 
@@ -141,7 +142,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err); // W1
           const logger = await getLogger();
-          logger.error('[Coaching] coach failed', { userId: auth.userId, error: message });
+          logger.error('[Coaching] coach failed', {
+            userId: auth.userId,
+            error: message,
+          });
           res.status(500).json({ error: { code: 'COACHING_FAILED', message } });
         }
       }),
@@ -155,7 +159,12 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
         const body = req.body as RealtimeBody | undefined;
         if (!body?.messages?.length) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "messages" array' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "messages" array',
+            },
+          });
           return;
         }
 
@@ -174,8 +183,13 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] realtime coach failed', { userId: auth.userId, error: message });
-          res.status(500).json({ error: { code: 'COACHING_REALTIME_FAILED', message } });
+          logger.error('[Coaching] realtime coach failed', {
+            userId: auth.userId,
+            error: message,
+          });
+          res
+            .status(500)
+            .json({ error: { code: 'COACHING_REALTIME_FAILED', message } });
         }
       }),
     },
@@ -188,7 +202,12 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
         const body = req.body as AnalyzeBody | undefined;
         if (!body?.messages?.length) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing "messages" array' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing "messages" array',
+            },
+          });
           return;
         }
 
@@ -205,7 +224,11 @@ export const coachingRoutes = (): RouteDefinition[] => {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] analysis failed', { userId: auth.userId, callSid: body.callSid, error: message });
+          logger.error('[Coaching] analysis failed', {
+            userId: auth.userId,
+            callSid: body.callSid,
+            error: message,
+          });
           res.status(500).json({ error: { code: 'ANALYSIS_FAILED', message } });
         }
       }),
@@ -220,26 +243,40 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
         const callId = req.params?.callId;
         if (!callId) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing callId' } });
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing callId' },
+          });
           return;
         }
 
         const body = req.body;
         if (!body) {
-          res.status(400).json({ error: { code: 'INVALID_REQUEST', message: 'Missing analysis body' } });
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing analysis body',
+            },
+          });
           return;
         }
 
         try {
           // TODO(DEV-831): persist to database when call_analytics table exists
           const logger = await getLogger();
-          logger.info('[Coaching] analysis persisted', { callId, userId: auth.userId });
+          logger.info('[Coaching] analysis persisted', {
+            callId,
+            userId: auth.userId,
+          });
           res.status(200).json({ data: { callId, persisted: true } });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
           const logger = await getLogger();
-          logger.error('[Coaching] analysis persist failed', { callId, userId: auth.userId, error: message });
+          logger.error('[Coaching] analysis persist failed', {
+            callId,
+            userId: auth.userId,
+            error: message,
+          });
           res.status(500).json({ error: { code: 'PERSIST_FAILED', message } });
         }
       }),
@@ -251,7 +288,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
 const clientsByCall = new Map<string, Set<WebSocketClient>>();
 
 /** broadcast a transcript entry to all frontend clients for a given call */
-export const broadcastTranscript = (callId: string, entry: TranscriptEntry): void => {
+export const broadcastTranscript = (
+  callId: string,
+  entry: TranscriptEntry,
+): void => {
   const clients = clientsByCall.get(callId);
   if (!clients) return;
   const data = JSON.stringify(entry);
@@ -271,7 +311,9 @@ export const broadcastTranscript = (callId: string, entry: TranscriptEntry): voi
  * Frontend clients connect to /v1/coaching/stream?callId=xxx&token=jwt
  * Twilio Media Streams connect to /v1/coaching/media (audio → transcription)
  */
-export const setupCoachingWebSocket = async (server: HttpServer): Promise<void> => {
+export const setupCoachingWebSocket = async (
+  server: HttpServer,
+): Promise<void> => {
   const logger = await getLogger();
 
   try {
@@ -377,9 +419,18 @@ export const setupCoachingWebSocket = async (server: HttpServer): Promise<void> 
           const wavHeader = buildWavHeader(combined.length);
           const wavBuffer = Buffer.concat([wavHeader, combined]);
 
-          const file = new File([wavBuffer], 'audio.wav', { type: 'audio/wav' });
+          const file = new File([wavBuffer], 'audio.wav', {
+            type: 'audio/wav',
+          });
           // HACK: groq client typed as Record<string, unknown> because openai types may not be installed — DEV-831
-          const audio = groq.audio as { transcriptions: { create: (p: { model: string; file: File }) => Promise<{ text?: string }> } };
+          const audio = groq.audio as {
+            transcriptions: {
+              create: (p: {
+                model: string;
+                file: File;
+              }) => Promise<{ text?: string }>;
+            };
+          };
           const transcription = await withTimeout(
             audio.transcriptions.create({
               model: 'whisper-large-v3-turbo',
@@ -403,7 +454,11 @@ export const setupCoachingWebSocket = async (server: HttpServer): Promise<void> 
           }
         } catch (err: unknown) {
           Sentry.captureException(err);
-          logger.error('[Coaching] transcription failed', { callId, track, error: err instanceof Error ? err.message : 'unknown' });
+          logger.error('[Coaching] transcription failed', {
+            callId,
+            track,
+            error: err instanceof Error ? err.message : 'unknown',
+          });
         }
       };
 
@@ -420,7 +475,8 @@ export const setupCoachingWebSocket = async (server: HttpServer): Promise<void> 
           };
           if (msg.event === 'media' && msg.media?.payload) {
             // W4: route audio to correct buffer based on track
-            const track = msg.media.track === 'outbound' ? 'outbound' : 'inbound';
+            const track =
+              msg.media.track === 'outbound' ? 'outbound' : 'inbound';
             audioBuffers[track].push(Buffer.from(msg.media.payload, 'base64'));
           }
         } catch {
