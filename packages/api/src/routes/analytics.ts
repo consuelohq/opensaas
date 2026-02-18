@@ -53,8 +53,6 @@ const getPeriodStart = (period: string): string => {
 export const analyticsRoutes = (): RouteDefinition[] => {
   const coach = new Coach({ apiKey: process.env.GROQ_API_KEY ?? '' });
 
-  };
-
   return [
     // literal routes first
     {
@@ -87,21 +85,24 @@ export const analyticsRoutes = (): RouteDefinition[] => {
           periodStart,
         ]);
 
-        const metrics = (result?.metrics as Record<string, unknown>) ?? {};
+        const metrics = (summary.rows[0] as Record<string, unknown>) ?? {};
         const totalCalls = Number(metrics.total_calls ?? 0);
         const answeredCalls = Number(metrics.answered_calls ?? 0);
 
-        const outcomeDistribution =
-          (result?.outcome_distribution as Record<string, number>) ?? {};
+        const outcomeDistribution: Record<string, number> = {};
+        for (const row of outcomes.rows) {
+          outcomeDistribution[String(row.outcome)] = Number(row.count);
+        }
 
-        const dailyCounts =
-          (result?.daily_counts as { date: string; count: number }[]) ?? [];
-        const topContacts =
-          (result?.top_contacts as {
-            id: string;
-            name: string;
-            call_count: number;
-          }[]) ?? [];
+        const dailyCounts = daily.rows.map((r) => ({
+          date: String(r.date),
+          count: Number(r.count),
+        }));
+        const topContacts = top.rows.map((r) => ({
+          id: String(r.id),
+          name: String(r.name ?? ''),
+          callCount: Number(r.call_count),
+        }));
 
         res.status(200).json({
           metrics: {
@@ -112,15 +113,8 @@ export const analyticsRoutes = (): RouteDefinition[] => {
             callsToday: Number(metrics.calls_today ?? 0),
             callsThisWeek: Number(metrics.calls_this_week ?? 0),
             outcomeDistribution,
-            dailyCounts: daily.rows.map((r) => ({
-              date: String(r.date),
-              count: Number(r.count),
-            })),
-            topContacts: top.rows.map((r) => ({
-              id: String(r.id),
-              name: String(r.name ?? ''),
-              callCount: Number(r.call_count),
-            })),
+            dailyCounts,
+            topContacts,
           },
         });
       }),

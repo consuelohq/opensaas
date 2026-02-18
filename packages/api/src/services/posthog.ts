@@ -25,7 +25,7 @@ const getLogger = async () => {
       };
     }
   }
-  return loggerInstance;
+  return loggerInstance!;
 };
 
 // LLM usage event interface

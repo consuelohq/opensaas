@@ -38,12 +38,12 @@ export function twilioSignatureMiddleware() {
     // Construct the full URL (protocol + host + path)
     const protocol = req.headers['x-forwarded-proto'] ?? 'https';
     const host = req.headers.host ?? '';
-    const url = `${protocol}://${host}${req.originalUrl ?? req.url}`;
+    const url = `${protocol}://${host}${(req as unknown as { originalUrl?: string }).originalUrl ?? req.path}`;
 
     // Get the raw body for signature validation
     // The raw body should be available on req.rawBody if body parser is configured
     // Otherwise, we use the parsed body
-    const body = (req as Record<string, unknown>).rawBody;
+    const body = (req as unknown as Record<string, unknown>).rawBody;
     const params =
       typeof body === 'string'
         ? undefined
