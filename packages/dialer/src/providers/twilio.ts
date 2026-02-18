@@ -11,6 +11,7 @@ import type {
 } from '../types.js';
 import { extractAreaCode } from '../services/local-presence.js';
 import type TwilioClient from 'twilio';
+import type { IncomingPhoneNumberInstance } from 'twilio/lib/rest/api/v2010/account/incomingPhoneNumber.js';
 import * as Sentry from '@sentry/node';
 
 const TERMINAL_STATUSES = [
@@ -204,7 +205,7 @@ export class TwilioProvider implements DialerProvider {
     try {
       const client = await this.getClient();
       const numbers = await client.incomingPhoneNumbers.list();
-      return numbers.map((n) => {
+      return numbers.map((n: IncomingPhoneNumberInstance) => {
         const areaCode = extractAreaCode(n.phoneNumber);
         return {
           phoneNumber: n.phoneNumber,

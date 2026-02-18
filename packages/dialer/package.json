@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
+  "dependencies": {
+    "@consuelo/logger": "workspace:*"
+  },
   "peerDependencies": {
     "ioredis": "^5.0.0",
     "twilio": ">=4.0.0"
