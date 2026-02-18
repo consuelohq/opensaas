@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/node';
 import * as crypto from 'node:crypto';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
+import { getSharedPool } from '../shared/db.js';
 import { GHLAuthService, type GHLOAuthConfig } from '../services/ghl-auth.js';
 import { GHLClient, type GHLContact } from '../services/ghl-client.js';
 import {
@@ -33,6 +34,8 @@ type Pool = {
   ): Promise<{ rows: Record<string, unknown>[]; rowCount: number }>;
 };
 
+const getPool = getSharedPool;
+
 // in-memory PKCE verifier store (keyed by state param)
 // in production, use redis with short TTL — DEV-779
 const pendingVerifiers = new Map<
@@ -60,23 +63,9 @@ const loadConfig = (): GHLOAuthConfig => ({
 
 /** /v1/integrations/ghl routes — OAuth + connection management */
 export const ghlRoutes = (): RouteDefinition[] => {
-  let pool: Pool | null = null;
   let authService: GHLAuthService | null = null;
   let syncService: GHLSyncService | null = null;
   let webhookHandler: GHLWebhookHandler | null = null;
-
-  const getPool = async (): Promise<Pool> => {
-    try {
-      if (pool === null) {
-        const { default: pg } = await import('pg');
-        pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-      }
-      return pool;
-    } catch (err: unknown) {
-      pool = null;
-      throw err;
-    }
-  };
 
   const getAuthService = async (): Promise<GHLAuthService> => {
     try {
