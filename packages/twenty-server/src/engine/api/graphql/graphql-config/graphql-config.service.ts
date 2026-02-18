@@ -34,15 +34,22 @@ import { DataloaderService } from 'src/engine/dataloaders/dataloader.service';
 import { handleExceptionAndConvertToGraphQLError } from 'src/engine/utils/global-exception-handler.util';
 import { renderApolloPlayground } from 'src/engine/utils/render-apollo-playground.util';
 
+// Custom request type with our augmented properties
+type CustomRequest = {
+  workspace?: WorkspaceEntity;
+  user?: UserEntity;
+  application?: { id: string };
+};
+
 export interface GraphQLContext extends YogaDriverServerContext<'express'> {
   user?: UserEntity;
   workspace?: WorkspaceEntity;
 }
 
 @Injectable()
-export class GraphQLConfigService
-  implements GqlOptionsFactory<YogaDriverConfig<'express'>>
-{
+export class GraphQLConfigService implements GqlOptionsFactory<
+  YogaDriverConfig<'express'>
+> {
   constructor(
     private readonly exceptionHandlerService: ExceptionHandlerService,
     private readonly twentyConfigService: TwentyConfigService,
@@ -82,10 +89,14 @@ export class GraphQLConfigService
     const config: YogaDriverConfig = {
       autoSchemaFile: true,
       include: [CoreEngineModule],
-      resolverSchemaScope: 'core',
       buildSchemaOptions: {},
       conditionalSchema: async (context) => {
-        const { workspace, user, application } = context.req;
+        const customReq = context.req as typeof context.req & {
+          workspace?: WorkspaceEntity;
+          user?: UserEntity;
+          application?: { id: string };
+        };
+        const { workspace, user, application } = customReq;
 
         try {
           if (!isDefined(workspace)) {
