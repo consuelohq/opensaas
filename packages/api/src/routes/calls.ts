@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { errorHandler } from '../middleware/error-handler.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { sharedDialer as dialer } from '../shared/dialer.js';
@@ -49,21 +50,6 @@ const SQL_PERSIST_ANALYSIS =
 const getPool = getSharedPool;
 
 export const callRoutes = (): RouteDefinition[] => {
-  const requireAuth = (
-    req: Parameters<RouteDefinition['handler']>[0],
-    res: Parameters<RouteDefinition['handler']>[1],
-  ): { userId: string; workspaceId: string } | null => {
-    const userId = req.auth?.userId;
-    const workspaceId = req.auth?.workspaceId;
-    if (userId === undefined || workspaceId === undefined) {
-      res.status(401).json({
-        error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-      });
-      return null;
-    }
-    return { userId, workspaceId };
-  };
-
   return [
     {
       method: 'POST',
