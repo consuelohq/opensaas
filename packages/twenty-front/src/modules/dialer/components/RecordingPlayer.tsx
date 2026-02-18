@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
+import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { activePlaybackIdState } from '@/dialer/states/historyState';
@@ -113,6 +114,7 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
       return data.url as string;
     } catch (err: unknown) {
       setError('Recording unavailable');
+      captureException(err);
       return null;
     } finally {
       setLoading(false);
@@ -165,7 +167,10 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!audioRef.current || audioDuration === 0) return;
       const rect = e.currentTarget.getBoundingClientRect();
-      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const ratio = Math.max(
+        0,
+        Math.min(1, (e.clientX - rect.left) / rect.width),
+      );
       audioRef.current.currentTime = ratio * audioDuration;
       setCurrentTime(audioRef.current.currentTime);
     },
@@ -177,7 +182,12 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
   if (error) {
     return (
       <StyledContainer>
-        <StyledError onClick={() => { setError(null); toggle(); }}>
+        <StyledError
+          onClick={() => {
+            setError(null);
+            toggle();
+          }}
+        >
           {error} — retry
         </StyledError>
       </StyledContainer>
