@@ -152,6 +152,54 @@ export class GraphQLConfigService implements GqlOptionsFactory<
           }
         },
       },
+      // DEV-878: catch validation errors (the "Cannot convert undefined or null to object" source)
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onValidate({ validateFn, params, setResult }: any) {
+          try {
+            const errors = validateFn(params.schema, params.documentAST);
+
+            if (errors && errors.length > 0) {
+              setResult(errors);
+            }
+          } catch (err: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const g = global as any;
+            const e = err instanceof Error ? err : new Error(String(err));
+
+            // dump broken types from the schema
+            const brokenTypes: string[] = [];
+
+            try {
+              const typeMap = params.schema?.getTypeMap?.();
+
+              if (typeMap) {
+                for (const [name, type] of Object.entries(typeMap)) {
+                  try {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (typeof (type as any).getFields === 'function') {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (type as any).getFields();
+                    }
+                  } catch {
+                    brokenTypes.push(name);
+                  }
+                }
+              }
+            } catch {
+              // ignore
+            }
+
+            g.__lastValidationError = {
+              message: e.message,
+              stack: e.stack,
+              brokenTypes,
+              timestamp: new Date().toISOString(),
+            };
+            throw err;
+          }
+        },
+      },
       useGraphQLErrorHandlerHook({
         metricsService: this.metricsService,
         exceptionHandlerService: this.exceptionHandlerService,

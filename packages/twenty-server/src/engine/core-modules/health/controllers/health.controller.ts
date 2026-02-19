@@ -19,6 +19,7 @@ export class HealthController {
       return {
         schemaError: g.__lastGraphQLError ?? null,
         schemaMergeError: g.__lastSchemaMergeError ?? null,
+        validationError: g.__lastValidationError ?? null,
         middlewareError: g.__lastMiddlewareError ?? null,
         yogaExecError: g.__lastYogaExecError ?? null,
         yogaResultError: g.__lastYogaResultError ?? null,
