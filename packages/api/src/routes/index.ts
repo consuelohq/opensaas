@@ -52,7 +52,14 @@ export const webhookRoutes = (): RouteDefinition[] => [
     path: '/v1/webhooks/transcription',
     handler: errorHandler(async (_req, res) => {
       // STUB: implement with processTranscriptionEvent() (DEV-698)
-      res.status(200).json({ received: true });
+      res
+        .status(501)
+        .json({
+          error: {
+            code: 'NOT_IMPLEMENTED',
+            message: 'Transcription webhook not yet implemented (DEV-698)',
+          },
+        });
     }),
   },
   // status webhook moved to voiceRoutes (DEV-816)
