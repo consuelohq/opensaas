@@ -7,7 +7,13 @@ import {
   type YogaDriverServerContext,
 } from '@graphql-yoga/nestjs';
 import * as Sentry from '@sentry/node';
-import { GraphQLError, GraphQLSchema } from 'graphql';
+import {
+  GraphQLError,
+  GraphQLSchema,
+  isObjectType,
+  isInterfaceType,
+  isInputObjectType,
+} from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import {
   type GraphQLSchemaWithContext,
@@ -92,7 +98,34 @@ export class GraphQLConfigService
             return new GraphQLSchema({});
           }
 
-          return await this.createSchema(context, workspace, application?.id);
+          const schema = await this.createSchema(
+            context,
+            workspace,
+            application?.id,
+          );
+
+          // Sanitize: fix types with null/undefined field maps that crash mergeSchemas
+          for (const type of Object.values(schema.getTypeMap())) {
+            if (
+              isObjectType(type) ||
+              isInterfaceType(type) ||
+              isInputObjectType(type)
+            ) {
+              try {
+                const fields = type.getFields();
+
+                if (!fields || typeof fields !== 'object') {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (type as any)._fields = {};
+                }
+              } catch {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (type as any)._fields = {};
+              }
+            }
+          }
+
+          return schema;
         } catch (error) {
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
