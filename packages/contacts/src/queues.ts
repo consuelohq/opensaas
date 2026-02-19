@@ -18,7 +18,7 @@ export class Queues {
   /** Get the next contact ID in the queue, advancing the pointer */
   async getNext(queueId: string): Promise<string | null> {
     const queue = await this.store.getQueue(queueId);
-    if (!queue || queue.status === 'completed' || queue.currentIndex >= queue.contactIds.length) return null;
+    if (!queue || queue.status === 'completed' || queue.status === 'paused' || queue.currentIndex >= queue.contactIds.length) return null;
 
     const contactId = queue.contactIds[queue.currentIndex];
     await this.store.updateQueue(queueId, {
