@@ -115,12 +115,6 @@ export const useGraphQLErrorHandlerHook = <
             }
 
             // DEV-878: log graphql errors with stack traces
-            for (const err of result.errors) {
-              const orig = err.originalError || err;
-
-              console.error('[GQL_ERROR]', orig.message, orig.stack ?? '(no stack)');
-            }
-
             // Step 1: Process errors - extract original errors and convert to BaseGraphQLError
             const processedErrors = result.errors.map((error) => {
               const originalError = error.originalError || error;

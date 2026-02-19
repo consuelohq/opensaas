@@ -63,13 +63,12 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     const isDebugMode =
       this.twentyConfigService.get('NODE_ENV') === NodeEnvironment.DEVELOPMENT;
     const plugins = [
-      // DEV-878: useGraphQLErrorHandlerHook disabled to isolate "Cannot convert undefined or null to object"
-      // useGraphQLErrorHandlerHook({
-      //   metricsService: this.metricsService,
-      //   exceptionHandlerService: this.exceptionHandlerService,
-      //   i18nService: this.i18nService,
-      //   twentyConfigService: this.twentyConfigService,
-      // }),
+      useGraphQLErrorHandlerHook({
+        metricsService: this.metricsService,
+        exceptionHandlerService: this.exceptionHandlerService,
+        i18nService: this.i18nService,
+        twentyConfigService: this.twentyConfigService,
+      }),
       useDisableIntrospectionAndSuggestionsForUnauthenticatedUsers(
         this.twentyConfigService.get('NODE_ENV') === NodeEnvironment.PRODUCTION,
       ),
@@ -84,18 +83,62 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     ];
 
     if (Sentry.isInitialized()) {
-      // HACK: useSentryTracing() returns a Plugin type incompatible with graphql-yoga's Plugin — safe cast
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      plugins.push(useSentryTracing() as any);
+      plugins.push(useSentryTracing());
     }
 
     const config: YogaDriverConfig = {
       autoSchemaFile: true,
       include: [CoreEngineModule],
+      resolverSchemaScope: 'core',
       buildSchemaOptions: {},
-      conditionalSchema: async () => {
-        // DEV-878: return undefined so patch skips merging — isolate if empty schema was the problem
-        return undefined as unknown as GraphQLSchemaWithContext<YogaDriverServerContext<'express'>>;
+      conditionalSchema: async (context) => {
+        const { workspace, user, application } = context.req as unknown as CustomRequest;
+
+        try {
+          if (!isDefined(workspace)) {
+            return new GraphQLSchema({});
+          }
+
+          return await this.createSchema(context, workspace, application?.id);
+        } catch (error) {
+          if (error instanceof UnauthorizedException) {
+            throw new GraphQLError('Unauthenticated', {
+              extensions: { code: 'UNAUTHENTICATED' },
+            });
+          }
+
+          if (error instanceof JsonWebTokenError) {
+            throw new GraphQLError('Unauthenticated', {
+              extensions: { code: 'UNAUTHENTICATED' },
+            });
+          }
+
+          if (error instanceof TokenExpiredError) {
+            throw new GraphQLError('Unauthenticated', {
+              extensions: { code: 'UNAUTHENTICATED' },
+            });
+          }
+
+          throw handleExceptionAndConvertToGraphQLError(
+            error,
+            this.exceptionHandlerService,
+            isDefined(user)
+              ? {
+                  id: user.id,
+                  email: user.email,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                }
+              : undefined,
+            isDefined(workspace)
+              ? {
+                  id: workspace.id,
+                  displayName: workspace.displayName,
+                  activationStatus: workspace.activationStatus,
+                }
+              : undefined,
+          );
+        }
       },
       resolvers: { JSON: GraphQLJSON },
       plugins: plugins,
