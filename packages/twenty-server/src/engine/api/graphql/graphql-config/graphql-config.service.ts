@@ -63,6 +63,21 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     const isDebugMode =
       this.twentyConfigService.get('NODE_ENV') === NodeEnvironment.DEVELOPMENT;
     const plugins = [
+      // DEV-878: phase tracker — stores timestamp for every yoga phase
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onParams() { (global as any).__yogaPhases = { onParams: Date.now() }; },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onParse() { (global as any).__yogaPhases.onParse = Date.now(); return () => { (global as any).__yogaPhases.onParseEnd = Date.now(); }; },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onValidate() { (global as any).__yogaPhases.onValidate = Date.now(); return () => { (global as any).__yogaPhases.onValidateEnd = Date.now(); }; },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onContextBuilding() { (global as any).__yogaPhases.onContextBuilding = Date.now(); return () => { (global as any).__yogaPhases.onContextBuildingEnd = Date.now(); }; },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onExecute() { (global as any).__yogaPhases.onExecute = Date.now(); return { onExecuteDone() { (global as any).__yogaPhases.onExecuteDone = Date.now(); } }; },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onResultProcess() { (global as any).__yogaPhases.onResultProcess = Date.now(); },
+      },
       // DEV-878: debug plugin to capture errors at every yoga phase
       {
         onExecute({
