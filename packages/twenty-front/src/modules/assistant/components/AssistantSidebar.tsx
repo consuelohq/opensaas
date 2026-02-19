@@ -1,4 +1,6 @@
 import styled from '@emotion/styled';
+import { AnimatePresence, motion } from 'framer-motion';
+import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 import { useEffect, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { IconTrash } from 'twenty-ui/display';
@@ -13,7 +15,7 @@ import {
 
 const SIDEBAR_WIDTH = 380;
 
-const StyledSidebar = styled.div<{ isOpen: boolean }>`
+const StyledSidebar = styled(motion.div)`
   width: ${SIDEBAR_WIDTH}px;
   min-width: ${SIDEBAR_WIDTH}px;
   height: 100%;
@@ -22,12 +24,16 @@ const StyledSidebar = styled.div<{ isOpen: boolean }>`
   background: ${({ theme }) => theme.background.primary};
   border-left: 1px solid ${({ theme }) => theme.border.color.medium};
   overflow: hidden;
-  transform: translateX(${({ isOpen }) => (isOpen ? '0' : '100%')});
-  margin-right: ${({ isOpen }) => (isOpen ? '0' : `-${SIDEBAR_WIDTH}px`)};
-  transition:
-    transform 200ms ease-out,
-    margin-right 200ms ease-out;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: ${RootStackingContextZIndices.CommandMenu - 2};
 `;
+
+const ASSISTANT_SIDEBAR_VARIANTS = {
+  open: { x: '0%' },
+  closed: { x: '100%' },
+};
 
 const StyledHeader = styled.div`
   display: flex;
@@ -124,35 +130,50 @@ export const AssistantSidebar = () => {
   }, [messages]);
 
   return (
-    <StyledSidebar isOpen={isOpen}>
-      <StyledHeader>
-        <StyledTitle>Assistant</StyledTitle>
-        {messages.length > 0 && (
-          <StyledClearButton onClick={clearConversation} title="Clear conversation">
-            <IconTrash size={16} />
-          </StyledClearButton>
-        )}
-      </StyledHeader>
+    <AnimatePresence>
+      {isOpen && (
+        <StyledSidebar
+          initial="closed"
+          animate="open"
+          exit="closed"
+          variants={ASSISTANT_SIDEBAR_VARIANTS}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <StyledHeader>
+            <StyledTitle>Assistant</StyledTitle>
+            {messages.length > 0 && (
+              <StyledClearButton
+                onClick={clearConversation}
+                title="Clear conversation"
+              >
+                <IconTrash size={16} />
+              </StyledClearButton>
+            )}
+          </StyledHeader>
 
-      <StyledMessages>
-        {messages.length === 0 ? (
-          <StyledEmptyState>Ask me anything about your data</StyledEmptyState>
-        ) : (
-          messages.map((msg) => (
-            <AssistantMessage key={msg.id} message={msg} />
-          ))
-        )}
-        {isLoading && (
-          <StyledTypingIndicator>
-            <span />
-            <span />
-            <span />
-          </StyledTypingIndicator>
-        )}
-        <div ref={messagesEndRef} />
-      </StyledMessages>
+          <StyledMessages>
+            {messages.length === 0 ? (
+              <StyledEmptyState>
+                Ask me anything about your data
+              </StyledEmptyState>
+            ) : (
+              messages.map((msg) => (
+                <AssistantMessage key={msg.id} message={msg} />
+              ))
+            )}
+            {isLoading && (
+              <StyledTypingIndicator>
+                <span />
+                <span />
+                <span />
+              </StyledTypingIndicator>
+            )}
+            <div ref={messagesEndRef} />
+          </StyledMessages>
 
-      <AssistantMessageInput onSend={sendMessage} disabled={isLoading} />
-    </StyledSidebar>
+          <AssistantMessageInput onSend={sendMessage} disabled={isLoading} />
+        </StyledSidebar>
+      )}
+    </AnimatePresence>
   );
 };
