@@ -370,14 +370,14 @@ export const GHLSettings = () => {
           <Section>
             <H2Title
               title="Sync Settings"
-              description="Configure how contacts sync between GHL and Twenty"
+              description="Configure how contacts sync between GHL and Consuelo"
             />
             <Card rounded>
               <StyledRadioGroup>
                 {(
                   [
-                    ['ghl-to-twenty', 'GHL → Twenty (one-way import)'],
-                    ['twenty-to-ghl', 'Twenty → GHL (one-way push)'],
+                    ['ghl-to-twenty', 'GHL → Consuelo (one-way import)'],
+                    ['twenty-to-ghl', 'Consuelo → GHL (one-way push)'],
                     ['bidirectional', 'Bidirectional (recommended)'],
                   ] as const
                 ).map(([value, label]) => (
@@ -418,7 +418,7 @@ export const GHLSettings = () => {
           <Section>
             <H2Title
               title="Field Mapping"
-              description="Map GHL contact fields to Twenty person fields"
+              description="Map GHL contact fields to Consuelo person fields"
             />
             <Card rounded>
               <StyledMappingTable>
@@ -426,7 +426,7 @@ export const GHLSettings = () => {
                   <tr>
                     <StyledMappingTh>GHL Field</StyledMappingTh>
                     <StyledMappingTh />
-                    <StyledMappingTh>Twenty Field</StyledMappingTh>
+                    <StyledMappingTh>Consuelo Field</StyledMappingTh>
                     <StyledMappingTh />
                   </tr>
                 </thead>
