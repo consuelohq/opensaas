@@ -65,30 +65,88 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     const plugins = [
       // DEV-878: debug plugin to capture errors at every yoga phase
       {
-        onExecute({ args }: { args: { contextValue: { req: { workspace?: { id: string } } } } }) {
-          return {
-            onExecuteDone({ result }: { result: { errors?: Array<{ message: string; originalError?: Error }> } }) {
-              if (result && 'errors' in result && result.errors) {
-                for (const err of result.errors) {
-                  const orig = (err.originalError || err) as Error;
+        onExecute({
+          args,
+        }: {
+          args: { contextValue: { req: { workspace?: { id: string } } } };
+        }) {
+          try {
+            return {
+              onExecuteDone({
+                result,
+              }: {
+                result: {
+                  errors?: Array<{ message: string; originalError?: Error }>;
+                };
+              }) {
+                try {
+                  if (result && 'errors' in result && result.errors) {
+                    for (const err of result.errors) {
+                      const orig = (err.originalError || err) as Error;
 
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (global as any).__lastYogaExecError = {
+                        message: orig.message ?? err.message,
+                        stack: orig.stack ?? '(no stack)',
+                        name: orig.constructor?.name ?? typeof orig,
+                        timestamp: new Date().toISOString(),
+                      };
+                    }
+                  }
+                } catch (innerErr) {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   (global as any).__lastYogaExecError = {
-                    message: orig.message ?? err.message,
-                    stack: orig.stack ?? '(no stack)',
-                    name: orig.constructor?.name ?? typeof orig,
+                    message:
+                      innerErr instanceof Error
+                        ? (innerErr as Error).message
+                        : String(innerErr),
+                    stack:
+                      innerErr instanceof Error
+                        ? (innerErr as Error).stack
+                        : undefined,
+                    name: 'PluginError',
                     timestamp: new Date().toISOString(),
                   };
                 }
-              }
-            },
-          };
+              },
+            };
+          } catch (outerErr) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (global as any).__lastYogaExecError = {
+              message:
+                outerErr instanceof Error
+                  ? (outerErr as Error).message
+                  : String(outerErr),
+              stack:
+                outerErr instanceof Error
+                  ? (outerErr as Error).stack
+                  : undefined,
+              name: 'PluginError',
+              timestamp: new Date().toISOString(),
+            };
+          }
         },
-        onResultProcess({ result }: { result: { errors?: Array<{ message: string }> } }) {
-          if (result && 'errors' in result && result.errors) {
+        onResultProcess({
+          result,
+        }: {
+          result: { errors?: Array<{ message: string }> };
+        }) {
+          try {
+            if (result && 'errors' in result && result.errors) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (global as any).__lastYogaResultError = {
+                errors: result.errors.map(
+                  (e: { message: string }) => e.message,
+                ),
+                timestamp: new Date().toISOString(),
+              };
+            }
+          } catch (err) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (global as any).__lastYogaResultError = {
-              errors: result.errors.map((e: { message: string }) => e.message),
+              message: err instanceof Error ? err.message : String(err),
+              stack: err instanceof Error ? err.stack : undefined,
+              name: 'PluginError',
               timestamp: new Date().toISOString(),
             };
           }
@@ -147,7 +205,8 @@ export class GraphQLConfigService implements GqlOptionsFactory<
           (global as any).__lastGraphQLError = {
             message: error instanceof Error ? error.message : String(error),
             stack: error instanceof Error ? error.stack : undefined,
-            name: error instanceof Error ? error.constructor.name : typeof error,
+            name:
+              error instanceof Error ? error.constructor.name : typeof error,
             timestamp: new Date().toISOString(),
           };
 
