@@ -100,6 +100,29 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             application?.id,
           );
 
+          // DEBUG: log workspace schema type map to find null fields
+          const typeMap = schema.getTypeMap();
+
+          for (const [name, type] of Object.entries(typeMap)) {
+            try {
+              if ('getFields' in type) {
+                const fields = (type as any).getFields();
+
+                if (!fields || typeof fields !== 'object') {
+                  console.error(
+                    `[SCHEMA_DEBUG] Type "${name}" has null/invalid fields:`,
+                    fields,
+                  );
+                }
+              }
+            } catch (e: unknown) {
+              console.error(
+                `[SCHEMA_DEBUG] Type "${name}" getFields() threw:`,
+                e instanceof Error ? e.message : e,
+              );
+            }
+          }
+
           return pruneSchema(schema);
         } catch (error) {
           if (error instanceof UnauthorizedException) {
