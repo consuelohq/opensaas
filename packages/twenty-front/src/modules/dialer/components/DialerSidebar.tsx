@@ -18,12 +18,14 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
+import { AnimatePresence, motion } from 'framer-motion';
+import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 import styled from '@emotion/styled';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const SIDEBAR_WIDTH = 380;
 
-const StyledSidebar = styled.div<{ isOpen: boolean }>`
+const StyledSidebar = styled(motion.div)`
   width: ${SIDEBAR_WIDTH}px;
   min-width: ${SIDEBAR_WIDTH}px;
   height: 100%;
@@ -32,12 +34,16 @@ const StyledSidebar = styled.div<{ isOpen: boolean }>`
   background: ${({ theme }) => theme.background.primary};
   border-left: 1px solid ${({ theme }) => theme.border.color.medium};
   overflow-y: auto;
-  transform: translateX(${({ isOpen }) => (isOpen ? '0' : '100%')});
-  margin-right: ${({ isOpen }) => (isOpen ? '0' : `-${SIDEBAR_WIDTH}px`)};
-  transition:
-    transform 200ms ease-out,
-    margin-right 200ms ease-out;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: ${RootStackingContextZIndices.CommandMenu - 1};
 `;
+
+const DIALER_SIDEBAR_VARIANTS = {
+  open: { x: '0%' },
+  closed: { x: '100%' },
+};
 
 const StyledHeader = styled.div`
   align-items: center;
@@ -152,54 +158,67 @@ export const DialerSidebar = () => {
   };
 
   return (
-    <StyledSidebar isOpen={isOpen}>
-      <StyledHeader>
-        <StyledTitle>Mercury</StyledTitle>
-      </StyledHeader>
+    <AnimatePresence>
+      {isOpen && (
+        <StyledSidebar
+          initial="closed"
+          animate="open"
+          exit="closed"
+          variants={DIALER_SIDEBAR_VARIANTS}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <StyledHeader>
+            <StyledTitle>Mercury</StyledTitle>
+          </StyledHeader>
 
-      <StyledBody>
-        {reconnectPrompt?.visible && (
-          <StyledReconnectBanner>
-            <StyledReconnectText>
-              Active call detected. Reconnect?
-            </StyledReconnectText>
-            <StyledReconnectButtons>
-              <StyledReconnectPrimary onClick={handleReconnect}>
-                Reconnect
-              </StyledReconnectPrimary>
-              <StyledReconnectSecondary onClick={handleDismiss}>
-                Dismiss
-              </StyledReconnectSecondary>
-            </StyledReconnectButtons>
-          </StyledReconnectBanner>
-        )}
-        <ContactHeader />
-        <LocalPresenceIndicator />
-        <DialPad />
-        <CallButton />
-        {isInCall && <InCallControls />}
-        {isInCall && <QuickActions />}
-        <CoachingPanel
-          isLoading={isLoading}
-          talkingPoints={talkingPoints}
-          callStatus={callState.status}
-          error={coachingError}
-          onRetry={retryCoaching}
-        />
-        {transcript.length > 0 && (
-          <LiveTranscript transcript={transcript} isConnected={isConnected} />
-        )}
-        <PostCallSummary
-          analysis={analysis}
-          isAnalyzing={isAnalyzing}
-          error={analysisError}
-          onRetry={retryAnalysis}
-        />
-      </StyledBody>
+          <StyledBody>
+            {reconnectPrompt?.visible && (
+              <StyledReconnectBanner>
+                <StyledReconnectText>
+                  Active call detected. Reconnect?
+                </StyledReconnectText>
+                <StyledReconnectButtons>
+                  <StyledReconnectPrimary onClick={handleReconnect}>
+                    Reconnect
+                  </StyledReconnectPrimary>
+                  <StyledReconnectSecondary onClick={handleDismiss}>
+                    Dismiss
+                  </StyledReconnectSecondary>
+                </StyledReconnectButtons>
+              </StyledReconnectBanner>
+            )}
+            <ContactHeader />
+            <LocalPresenceIndicator />
+            <DialPad />
+            <CallButton />
+            {isInCall && <InCallControls />}
+            {isInCall && <QuickActions />}
+            <CoachingPanel
+              isLoading={isLoading}
+              talkingPoints={talkingPoints}
+              callStatus={callState.status}
+              error={coachingError}
+              onRetry={retryCoaching}
+            />
+            {transcript.length > 0 && (
+              <LiveTranscript
+                transcript={transcript}
+                isConnected={isConnected}
+              />
+            )}
+            <PostCallSummary
+              analysis={analysis}
+              isAnalyzing={isAnalyzing}
+              error={analysisError}
+              onRetry={retryAnalysis}
+            />
+          </StyledBody>
 
-      <StyledFooter>
-        <AudioDeviceSelector compact />
-      </StyledFooter>
-    </StyledSidebar>
+          <StyledFooter>
+            <AudioDeviceSelector compact />
+          </StyledFooter>
+        </StyledSidebar>
+      )}
+    </AnimatePresence>
   );
 };
