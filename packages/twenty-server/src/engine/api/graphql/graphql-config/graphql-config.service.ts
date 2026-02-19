@@ -104,11 +104,18 @@ export class GraphQLConfigService
           );
 
           // Rebuild from SDL to get a clean schema object for mergeSchemas
-          // The original schema may have types with null internal properties
-          // (e.g. _interfaces, _fields) that crash Object.values() in
-          // @graphql-tools/utils getDocumentNodeFromSchema
           return buildSchema(printSchema(schema));
         } catch (error) {
+          // Expose stack trace for debugging the mergeSchemas crash
+          if (
+            error instanceof TypeError &&
+            error.message.includes('Cannot convert')
+          ) {
+            throw new GraphQLError(
+              `[DEBUG] ${error.message} | stack: ${error.stack?.split('\n').slice(0, 5).join(' <- ')}`,
+            );
+          }
+
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
               extensions: {
