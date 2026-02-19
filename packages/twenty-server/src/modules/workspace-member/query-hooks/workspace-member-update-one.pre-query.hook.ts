@@ -18,9 +18,7 @@ import { WorkspaceNotFoundDefaultError } from 'src/engine/core-modules/workspace
 import { WorkspaceMemberPreQueryHookService } from 'src/modules/workspace-member/query-hooks/workspace-member-pre-query-hook.service';
 
 @WorkspaceQueryHook(`workspaceMember.updateOne`)
-export class WorkspaceMemberUpdateOnePreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class WorkspaceMemberUpdateOnePreQueryHook implements WorkspacePreQueryHookInstance {
   constructor(
     private readonly workspaceMemberPreQueryHookService: WorkspaceMemberPreQueryHookService,
     @InjectRepository(UserWorkspaceEntity)
@@ -45,27 +43,6 @@ export class WorkspaceMemberUpdateOnePreQueryHook
         workspaceMemberId: authContext.workspaceMemberId,
       },
     );
-
-    // TODO: remove this code once we have migrated locale update to userWorkspace update
-    if (payload.data.locale) {
-      const userWorkspace = await this.userWorkspaceRepository.findOne({
-        where: {
-          id: authContext.userWorkspaceId,
-        },
-      });
-
-      if (!isDefined(userWorkspace)) {
-        throw new AuthException(
-          'User workspace not found',
-          AuthExceptionCode.USER_WORKSPACE_NOT_FOUND,
-        );
-      }
-
-      await this.userWorkspaceRepository.save({
-        ...userWorkspace,
-        locale: payload.data.locale,
-      });
-    }
 
     await this.workspaceMemberPreQueryHookService.completeOnboardingProfileStepIfNameProvided(
       {
