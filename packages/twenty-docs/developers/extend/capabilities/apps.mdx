@@ -1,6 +1,6 @@
 ---
-title: Twenty Apps
-description: Build and manage Twenty customizations as code.
+title: Consuelo Apps
+description: Build and manage Consuelo customizations as code.
 ---
 
 <Warning>
@@ -9,7 +9,7 @@ Apps are currently in alpha testing. The feature is functional but still evolvin
 
 ## What Are Apps?
 
-Apps let you build and manage Twenty customizations **as code**. Instead of configuring everything through the UI, you define your data model and logic functions in code — making it faster to build, maintain, and roll out to multiple workspaces.
+Apps let you build and manage Consuelo customizations **as code**. Instead of configuring everything through the UI, you define your data model and logic functions in code — making it faster to build, maintain, and roll out to multiple workspaces.
 
 **What you can do today:**
 - Define custom objects and fields as code (managed data model)
@@ -19,7 +19,7 @@ Apps let you build and manage Twenty customizations **as code**. Instead of conf
 ## Prerequisites
 
 - Node.js 24+ and Yarn 4
-- A Twenty workspace and an API key (create one at https://app.twenty.com/settings/api-webhooks)
+- A Consuelo workspace and an API key (create one at https://app.twenty.com/settings/api-webhooks)
 
 ## Getting Started
 
@@ -47,7 +47,7 @@ From here you can:
 # Add a new entity to your application (guided)
 yarn twenty entity:add
 
-# Generate a typed Twenty client and workspace entity types
+# Generate a typed Consuelo client and workspace entity types
 yarn twenty app:generate
 
 # Watch your application's function logs
@@ -140,7 +140,7 @@ export default defineObject({
 
 Later commands will add more files and folders:
 
-- `yarn twenty app:generate` will create a `generated/` folder (typed Twenty client + workspace types).
+- `yarn twenty app:generate` will create a `generated/` folder (typed Consuelo client + workspace types).
 - `yarn twenty entity:add` will add entity definition files under `src/` for your custom objects, functions, front components, or roles.
 
 ## Authentication
@@ -277,7 +277,7 @@ Key points:
 - You can scaffold new objects using `yarn twenty entity:add`, which guides you through naming, fields, and relationships.
 
 <Note>
-**Base fields are created automatically.** When you define a custom object, Twenty automatically adds standard fields such as `name`, `createdAt`, `updatedAt`, `createdBy`, `position`, and `deletedAt`. You don't need to define these in your `fields` array — only add your custom fields.
+**Base fields are created automatically.** When you define a custom object, Consuelo automatically adds standard fields such as `name`, `createdAt`, `updatedAt`, `createdBy`, `position`, and `deletedAt`. You don't need to define these in your `fields` array — only add your custom fields.
 </Note>
 
 
@@ -298,8 +298,8 @@ import { DEFAULT_ROLE_UNIVERSAL_IDENTIFIER } from 'src/roles/default-role';
 
 export default defineApplication({
   universalIdentifier: '4ec0391d-18d5-411c-b2f3-266ddc1c3ef7',
-  displayName: 'My Twenty App',
-  description: 'My first Twenty app',
+  displayName: 'My Consuelo App',
+  description: 'My first Consuelo app',
   icon: 'IconWorld',
   applicationVariables: {
     DEFAULT_RECIPIENT_NAME: {
@@ -340,7 +340,7 @@ export const DEFAULT_ROLE_UNIVERSAL_IDENTIFIER =
 export default defineRole({
   universalIdentifier: DEFAULT_ROLE_UNIVERSAL_IDENTIFIER,
   label: 'Default function role',
-  description: 'Default role for function Twenty client',
+  description: 'Default role for function Consuelo client',
   canReadAllObjectRecords: false,
   canUpdateAllObjectRecords: false,
   canSoftDeleteAllObjectRecords: false,
@@ -389,10 +389,10 @@ Each function file uses `defineLogicFunction()` to export a configuration with a
 // src/app/createPostCard.logic-function.ts
 import { defineLogicFunction } from 'twenty-sdk';
 import type { DatabaseEventPayload, ObjectRecordCreateEvent, CronPayload, RoutePayload } from 'twenty-sdk';
-import Twenty, { type Person } from '~/generated';
+import Consuelo, { type Person } from '~/generated';
 
 const handler = async (params: RoutePayload) => {
-  const client = new Twenty(); // generated typed client
+  const client = new Consuelo(); // generated typed client
   const name = 'name' in params.queryStringParameters
     ? params.queryStringParameters.name ?? process.env.DEFAULT_RECIPIENT_NAME ?? 'Hello world'
     : 'Hello world';
@@ -546,7 +546,7 @@ You can create new functions in two ways:
 
 ### Front components
 
-Front components let you build custom React components that render within Twenty's UI. Use `defineFrontComponent()` to define components with built-in validation:
+Front components let you build custom React components that render within Consuelo's UI. Use `defineFrontComponent()` to define components with built-in validation:
 
 ```typescript
 // src/my-widget.front-component.tsx
@@ -556,7 +556,7 @@ const MyWidget = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>My Custom Widget</h1>
-      <p>This is a custom front component for Twenty.</p>
+      <p>This is a custom front component for Consuelo.</p>
     </div>
   );
 };
@@ -570,7 +570,7 @@ export default defineFrontComponent({
 ```
 
 Key points:
-- Front components are React components that render in isolated contexts within Twenty.
+- Front components are React components that render in isolated contexts within Consuelo.
 - Use the `*.front-component.tsx` file suffix for automatic detection.
 - The `component` field references your React component.
 - Components are built and synced automatically during `yarn twenty app:dev`.
@@ -585,9 +585,9 @@ You can create new front components in two ways:
 Run `yarn twenty app:generate` to create a local typed client in `generated/` based on your workspace schema. Use it in your functions:
 
 ```typescript
-import Twenty from '~/generated';
+import Consuelo from '~/generated';
 
-const client = new Twenty();
+const client = new Consuelo();
 const { me } = await client.query({ me: { id: true, displayName: true } });
 ```
 
@@ -595,9 +595,9 @@ The client is re-generated by `yarn twenty app:generate`. Re-run after changing 
 
 #### Runtime credentials in logic functions
 
-When your function runs on Twenty, the platform injects credentials as environment variables before your code executes:
+When your function runs on Consuelo, the platform injects credentials as environment variables before your code executes:
 
-- `TWENTY_API_URL`: Base URL of the Twenty API your app targets.
+- `TWENTY_API_URL`: Base URL of the Consuelo API your app targets.
 - `TWENTY_API_KEY`: Short‑lived key scoped to your application's default function role.
 
 Notes:
@@ -633,7 +633,7 @@ Now you can run all commands via `yarn twenty <command>`, e.g. `yarn twenty app:
 ## Troubleshooting
 
 - Authentication errors: run `yarn twenty auth:login` and ensure your API key has the required permissions.
-- Cannot connect to server: verify the API URL and that the Twenty server is reachable.
+- Cannot connect to server: verify the API URL and that the Consuelo server is reachable.
 - Types or client missing/outdated: run `yarn twenty app:generate`.
 - Dev mode not syncing: ensure `yarn twenty app:dev` is running and that changes are not ignored by your environment.
 

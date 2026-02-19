@@ -1,0 +1,146 @@
+---
+title: Contacts API
+description: Reference for contact management endpoints.
+---
+
+The Contacts API allows you to create, read, update, and delete contacts.
+
+## Endpoints Overview
+
+| Method | Endpoint                 | Description            |
+| ------ | ------------------------ | ---------------------- |
+| GET    | `/v1/contacts`           | List contacts          |
+| POST   | `/v1/contacts`           | Create contact         |
+| GET    | `/v1/contacts/:id`       | Get contact            |
+| PATCH  | `/v1/contacts/:id`       | Update contact         |
+| DELETE | `/v1/contacts/:id`       | Delete contact         |
+| POST   | `/v1/contacts/import`    | Import from CSV        |
+| GET    | `/v1/contacts/search`    | Search contacts        |
+| POST   | `/v1/contacts/normalize` | Normalize phone number |
+| POST   | `/v1/dnc`                | Add to DNC list        |
+
+## List Contacts
+
+```bash
+GET /v1/contacts?workspaceId=ws_abc123&limit=20&offset=0
+Authorization: Bearer <access_token>
+```
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": "contact_123",
+      "firstName": "John",
+      "lastName": "Smith",
+      "phone": "+14155551234",
+      "email": "john@example.com",
+      "company": "Acme Inc",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "meta": {
+    "total": 150,
+    "hasMore": true
+  }
+}
+```
+
+## Create Contact
+
+```bash
+POST /v1/contacts
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "workspaceId": "ws_abc123",
+  "firstName": "John",
+  "lastName": "Smith",
+  "phone": "+14155551234",
+  "email": "john@example.com",
+  "company": "Acme Inc"
+}
+```
+
+## Update Contact
+
+```bash
+PATCH /v1/contacts/:id
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "notes": "Interested in premium plan"
+}
+```
+
+## Delete Contact
+
+```bash
+DELETE /v1/contacts/:id
+Authorization: Bearer <access_token>
+```
+
+## Search Contacts
+
+```bash
+POST /v1/contacts/search
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "workspaceId": "ws_abc123",
+  "query": "John Smith",
+  "filters": {
+    "company": "Acme Inc"
+  },
+  "limit": 10
+}
+```
+
+## Normalize Phone Number
+
+```bash
+POST /v1/contacts/normalize
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "phone": "(415) 555-1234"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "original": "(415) 555-1234",
+    "normalized": "+14155551234",
+    "isValid": true,
+    "countryCode": "US",
+    "areaCode": "415"
+  }
+}
+```
+
+## Do Not Call (DNC)
+
+Add a number to the DNC list:
+
+```bash
+POST /v1/dnc
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{
+  "workspaceId": "ws_abc123",
+  "phone": "+14155551234",
+  "reason": "Customer request"
+}
+```

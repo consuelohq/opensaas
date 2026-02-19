@@ -5,10 +5,10 @@ title: Setup
 # Configuration Management
 
 <Warning>
-**First time installing?** Follow the [Docker Compose installation guide](/developers/self-host/capabilities/docker-compose) to get Twenty running, then return here for configuration.
+**First time installing?** Follow the [Docker Compose installation guide](/developers/self-host/capabilities/docker-compose) to get Consuelo running, then return here for configuration.
 </Warning>
 
-Twenty offers **two configuration modes** to suit different deployment needs:
+Consuelo offers **two configuration modes** to suit different deployment needs:
 
 **Admin panel access:** Only users with admin privileges (`canAccessFullAdminPanel: true`) can access the configuration interface.
 
@@ -20,7 +20,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # default
 
 **Most configuration happens through the UI** after installation:
 
-1. Access your Twenty instance (usually `http://localhost:3000`)
+1. Access your Consuelo instance (usually `http://localhost:3000`)
 2. Go to **Settings / Admin Panel / Configuration Variables**
 3. Configure integrations, email, storage, and more
 4. Changes take effect immediately (within 15 seconds for multi-container deployments)
@@ -61,7 +61,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## Multi-Workspace Mode
 
-By default, Twenty runs in **single-workspace mode** — ideal for most self-hosted deployments where you need one CRM instance for your organization.
+By default, Consuelo runs in **single-workspace mode** — ideal for most self-hosted deployments where you need one CRM instance for your organization.
 
 ### Single-Workspace Mode (Default)
 
@@ -69,7 +69,7 @@ By default, Twenty runs in **single-workspace mode** — ideal for most self-hos
 IS_MULTIWORKSPACE_ENABLED=false  # default
 ```
 
-- One workspace per Twenty instance
+- One workspace per Consuelo instance
 - First user automatically becomes admin with full privileges (`canImpersonate` and `canAccessFullAdminPanel`)
 - New signups are disabled after the first workspace is created
 - Simple URL structure: `https://your-domain.com`
@@ -81,7 +81,7 @@ IS_MULTIWORKSPACE_ENABLED=true
 DEFAULT_SUBDOMAIN=app  # default value
 ```
 
-Enable multi-workspace mode for SaaS-like deployments where multiple independent teams need their own workspaces on the same Twenty instance.
+Enable multi-workspace mode for SaaS-like deployments where multiple independent teams need their own workspaces on the same Consuelo instance.
 
 **Key differences from single-workspace mode:**
 - Multiple workspaces can be created on the same instance
@@ -133,7 +133,7 @@ When enabled, only users with `canAccessFullAdminPanel` can create additional wo
    - `https://{your-domain}/auth/google/redirect` (for SSO)
    - `https://{your-domain}/auth/google-apis/get-access-token` (for integrations)
 
-### Configure in Twenty
+### Configure in Consuelo
 
 1. Go to **Settings → Admin Panel → Configuration Variables**
 2. Find the **Google Auth** section
@@ -164,7 +164,7 @@ Under [OAuth consent screen](https://console.cloud.google.com/apis/credentials/c
 ## Microsoft 365 Integration
 
 <Warning>
-Users must have a [Microsoft 365 Licence](https://admin.microsoft.com/Adminportal/Home) to be able to use the Calendar and Messaging API. They will not be able to sync their account on Twenty without one.
+Users must have a [Microsoft 365 Licence](https://admin.microsoft.com/Adminportal/Home) to be able to use the Calendar and Messaging API. They will not be able to sync their account on Consuelo without one.
 </Warning>
 
 ### Create a project in Microsoft Azure
@@ -192,7 +192,7 @@ You need to add the following redirect URIs to your project:
 - `https://{your-domain}/auth/microsoft/redirect` if you want to use Microsoft SSO
 - `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### Configure in Twenty
+### Configure in Consuelo
 
 1. Go to **Settings → Admin Panel → Configuration Variables**
 2. Find the **Microsoft Auth** section
@@ -291,7 +291,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## Logic Functions
 
-Twenty supports logic functions for workflows and custom logic. The execution environment is configured via the `SERVERLESS_TYPE` environment variable.
+Consuelo supports logic functions for workflows and custom logic. The execution environment is configured via the `SERVERLESS_TYPE` environment variable.
 
 <Warning>
 **Security Notice:** The local driver (`SERVERLESS_TYPE=LOCAL`) runs code directly on the host in a Node.js process with no sandboxing. It should only be used for trusted code in development. For production deployments handling untrusted code, we highly recommend using `SERVERLESS_TYPE=LAMBDA` or `SERVERLESS_TYPE=DISABLED`.
@@ -327,5 +327,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-When using `SERVERLESS_TYPE=DISABLED`, any attempt to execute a logic function will return an error. This is useful if you want to run Twenty without logic function capabilities.
+When using `SERVERLESS_TYPE=DISABLED`, any attempt to execute a logic function will return an error. This is useful if you want to run Consuelo without logic function capabilities.
 </Note>
