@@ -103,8 +103,10 @@ export class GraphQLConfigService
             application?.id,
           );
 
-          // Rebuild from SDL to get a clean schema object for mergeSchemas
-          return buildSchema(printSchema(schema));
+          // DEBUG: return null to test if the crash is in core schema or workspace schema
+          // If this fixes the crash, the issue is in the workspace schema
+          // If it still crashes, the issue is in the core schema
+          return null as unknown as GraphQLSchema;
         } catch (error) {
           // Expose stack trace for debugging the mergeSchemas crash
           if (
