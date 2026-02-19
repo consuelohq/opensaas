@@ -98,19 +98,19 @@ export const SettingsConsuelo = () => {
 
   const handleSectionClick = (sectionId: string) => {
     navigate(
-      getSettingsPath(SettingsPath.ConsuelloSection, { section: sectionId }),
+      getSettingsPath(SettingsPath.MercurySection, { section: sectionId }),
     );
   };
 
   return (
     <SubMenuTopBarContainer
-      title={t`Consuelo`}
+      title={t`Mercury`}
       links={[
         {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        { children: <Trans>Consuelo</Trans> },
+        { children: <Trans>Mercury</Trans> },
       ]}
     >
       <SettingsPageContainer>

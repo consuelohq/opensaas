@@ -154,7 +154,7 @@ export const DialerSidebar = () => {
   return (
     <StyledSidebar isOpen={isOpen}>
       <StyledHeader>
-        <StyledTitle>Dialer</StyledTitle>
+        <StyledTitle>Mercury</StyledTitle>
       </StyledHeader>
 
       <StyledBody>

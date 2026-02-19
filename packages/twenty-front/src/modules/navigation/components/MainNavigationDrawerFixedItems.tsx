@@ -12,7 +12,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { IconMessage, IconPhone, IconSearch, IconSettings, IconSparkles } from 'twenty-ui/display';
+import {
+  IconMessage,
+  IconPhone,
+  IconSearch,
+  IconSettings,
+  IconSparkles,
+} from 'twenty-ui/display';
 import { useIsMobile } from 'twenty-ui/utilities';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
@@ -63,7 +69,7 @@ export const MainNavigationDrawerFixedItems = () => {
           />
         )}
         <NavigationDrawerItem
-          label={t`Dialer`}
+          label={t`Mercury`}
           Icon={IconPhone}
           onClick={() => setIsDialerOpen(!isDialerOpen)}
           active={isDialerOpen}
