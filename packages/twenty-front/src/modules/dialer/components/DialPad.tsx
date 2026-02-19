@@ -45,30 +45,40 @@ const StyledPhoneDisplay = styled.input`
 `;
 
 const StyledBackspace = styled.button<{ visible: boolean }>`
-  background: none;
+  width: clamp(44px, 10vh, 96px);
+  aspect-ratio: 1;
+  border-radius: 50%;
   border: none;
+  background: transparent;
   color: ${({ theme }) => theme.font.color.secondary};
   cursor: pointer;
-  font-size: 20px;
-  padding: ${({ theme }) => theme.spacing(1)};
+  display: flex;
+  align-items: center;
+  justify-content: center;
   visibility: ${({ visible }) => (visible ? 'visible' : 'hidden')};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
+  transition: transform 75ms;
 
   &:hover {
+    transform: scale(0.98);
     color: ${({ theme }) => theme.font.color.primary};
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
 const StyledGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: ${({ theme }) => theme.spacing(3)};
+  gap: clamp(6px, 1.5vh, 20px);
+  padding: 0 ${({ theme }) => theme.spacing(2)};
   justify-items: center;
 `;
 
 const StyledKey = styled.button<{ disabled: boolean }>`
-  width: 56px;
-  height: 56px;
+  width: clamp(44px, 10vh, 96px);
+  aspect-ratio: 1;
   border-radius: 50%;
   border: none;
   background: ${({ theme }) => theme.background.tertiary};
@@ -79,12 +89,11 @@ const StyledKey = styled.button<{ disabled: boolean }>`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: background 120ms;
+  transition: transform 75ms;
   user-select: none;
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.color.green};
-    color: #fff;
+    transform: scale(0.98);
   }
 
   &:active:not(:disabled) {
@@ -93,17 +102,26 @@ const StyledKey = styled.button<{ disabled: boolean }>`
 `;
 
 const StyledDigit = styled.span`
-  font-size: 22px;
+  font-size: clamp(14px, 2.5vh, 30px);
   font-weight: ${({ theme }) => theme.font.weight.medium};
   line-height: 1;
 `;
 
 const StyledLetters = styled.span`
-  font-size: 9px;
+  font-size: clamp(8px, 1vh, 14px);
   letter-spacing: 1.5px;
   color: ${({ theme }) => theme.font.color.tertiary};
   line-height: 1;
   min-height: 11px;
+  margin-top: 2px;
+`;
+
+const StyledActionRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: clamp(6px, 1.5vh, 20px);
+  padding: 0 ${({ theme }) => theme.spacing(2)};
 `;
 
 export const DialPad = ({ onCall }: DialPadProps) => {
@@ -111,6 +129,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
   const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const containerRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isCallActive = callState.status === 'active';
   const isDialDisabled =
@@ -133,6 +152,39 @@ export const DialPad = ({ onCall }: DialPadProps) => {
     },
     [isCallActive, isDialDisabled, activeCall, setRawNumber],
   );
+
+  const handlePressStart = useCallback(
+    (key: DialPadKey) => {
+      if (key.digit === '0') {
+        longPressTimerRef.current = setTimeout(() => {
+          longPressTimerRef.current = null;
+          if (isCallActive) {
+            activeCall?.sendDigits('+');
+          } else {
+            setRawNumber((prev) => prev + '+');
+          }
+        }, 500);
+      }
+    },
+    [isCallActive, activeCall, setRawNumber],
+  );
+
+  const handlePressEnd = useCallback(
+    (key: DialPadKey) => {
+      if (key.digit === '0' && longPressTimerRef.current !== null) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+        handleKeyPress(key);
+      }
+    },
+    [handleKeyPress],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    };
+  }, []);
 
   const handleBackspace = useCallback(() => {
     setRawNumber((previous) => previous.slice(0, -1));
@@ -190,14 +242,6 @@ export const DialPad = ({ onCall }: DialPadProps) => {
           readOnly
           aria-label="Phone number"
         />
-        <StyledBackspace
-          visible={hasDigits && !isCallActive && !isDialDisabled}
-          onClick={handleBackspace}
-          onDoubleClick={handleClear}
-          aria-label="Delete digit"
-        >
-          ⌫
-        </StyledBackspace>
       </StyledInputRow>
 
       <StyledGrid role="group" aria-label="Dial pad">
@@ -205,7 +249,19 @@ export const DialPad = ({ onCall }: DialPadProps) => {
           <StyledKey
             key={key.digit}
             disabled={isDialDisabled}
-            onClick={() => handleKeyPress(key)}
+            onClick={key.digit === '0' ? undefined : () => handleKeyPress(key)}
+            onMouseDown={
+              key.digit === '0' ? () => handlePressStart(key) : undefined
+            }
+            onMouseUp={
+              key.digit === '0' ? () => handlePressEnd(key) : undefined
+            }
+            onTouchStart={
+              key.digit === '0' ? () => handlePressStart(key) : undefined
+            }
+            onTouchEnd={
+              key.digit === '0' ? () => handlePressEnd(key) : undefined
+            }
             aria-label={
               key.letters ? `${key.digit}, ${key.letters}` : key.digit
             }
@@ -215,6 +271,19 @@ export const DialPad = ({ onCall }: DialPadProps) => {
           </StyledKey>
         ))}
       </StyledGrid>
+
+      <StyledActionRow>
+        <div />
+        <div />
+        <StyledBackspace
+          visible={hasDigits && !isCallActive && !isDialDisabled}
+          onClick={handleBackspace}
+          onDoubleClick={handleClear}
+          aria-label="Delete digit"
+        >
+          ⌫
+        </StyledBackspace>
+      </StyledActionRow>
     </StyledContainer>
   );
 };
