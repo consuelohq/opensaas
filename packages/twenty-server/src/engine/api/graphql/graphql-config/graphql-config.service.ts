@@ -35,12 +35,6 @@ import { handleExceptionAndConvertToGraphQLError } from 'src/engine/utils/global
 import { renderApolloPlayground } from 'src/engine/utils/render-apollo-playground.util';
 
 // Custom request type with our augmented properties
-type CustomRequest = {
-  workspace?: WorkspaceEntity;
-  user?: UserEntity;
-  application?: { id: string };
-};
-
 export interface GraphQLContext extends YogaDriverServerContext<'express'> {
   user?: UserEntity;
   workspace?: WorkspaceEntity;
@@ -92,7 +86,7 @@ export class GraphQLConfigService implements GqlOptionsFactory<
       resolverSchemaScope: 'core',
       buildSchemaOptions: {},
       conditionalSchema: async (context) => {
-        const { workspace, user, application } = context.req as unknown as CustomRequest;
+        const { workspace, user, application } = context.req;
 
         try {
           if (!isDefined(workspace)) {

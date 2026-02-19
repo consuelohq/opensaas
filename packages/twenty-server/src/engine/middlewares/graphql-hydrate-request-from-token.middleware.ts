@@ -14,13 +14,6 @@ export class GraphQLHydrateRequestFromTokenMiddleware
     try {
       await this.middlewareService.hydrateGraphqlRequest(req);
     } catch (error: unknown) {
-      // DEV-878: store error for debug endpoint (Railway logs are rate-limited)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (global as any).__lastMiddlewareError = {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        timestamp: new Date().toISOString(),
-      };
       this.middlewareService.writeGraphqlResponseOnExceptionCaught(res, error);
 
       return;
