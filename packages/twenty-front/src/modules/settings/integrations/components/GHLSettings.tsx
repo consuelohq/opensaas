@@ -544,7 +544,7 @@ export const GHLSettings = () => {
                     >
                       <option value="newest">Newest record wins</option>
                       <option value="ghl-wins">GHL always wins</option>
-                      <option value="twenty-wins">Twenty always wins</option>
+                      <option value="twenty-wins">Consuelo always wins</option>
                     </StyledSelect>
                   </StyledConfigItem>
 
@@ -658,13 +658,13 @@ export const GHLSettings = () => {
           {/* Field Mappings */}
           <GHLFieldMapping
             title="Field Mappings"
-            description="Configure how fields map between GHL and Twenty"
+            description="Configure how fields map between GHL and Consuelo"
           />
 
           {/* Pipeline Mappings */}
           <GHLPipelineMapping
             title="Pipeline Mappings"
-            description="Map GHL pipeline stages to Twenty pipeline stages"
+            description="Map GHL pipeline stages to Consuelo pipeline stages"
           />
 
           {/* Sync History */}
