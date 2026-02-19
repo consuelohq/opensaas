@@ -78,6 +78,31 @@ const bootstrap = async () => {
   // Inject the server url in the frontend page
   generateFrontConfig();
 
+  // Mount @consuelo/api routes on the Express instance
+  const { allRoutes } =
+    await import('../../../packages/api/dist/routes/index.js');
+  const express = app.getHttpAdapter().getInstance();
+  for (const route of allRoutes()) {
+    const method = route.method.toLowerCase() as
+      | 'get'
+      | 'post'
+      | 'put'
+      | 'patch'
+      | 'delete';
+    express[method](route.path, async (req: any, res: any) => {
+      try {
+        await route.handler(req, res);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'unknown error';
+        if (!res.headersSent) {
+          res
+            .status(500)
+            .json({ error: { code: 'INTERNAL_SERVER_ERROR', message } });
+        }
+      }
+    });
+  }
+
   await app.listen(twentyConfigService.get('NODE_PORT'));
 };
 
