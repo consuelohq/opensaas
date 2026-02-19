@@ -3,18 +3,22 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { getSharedPool } from '../shared/db.js';
+import { z } from 'zod';
 
-interface CreateContactBody {
-  name: string;
-  phone: string;
-  email?: string;
-  company?: string;
-  tags?: string[];
-}
+const CreateContactSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().optional().default(''),
+  email: z.string().email().optional(),
+  company: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
 
-interface ImportBody {
-  content: string;
-}
+const ImportSchema = z.object({
+  content: z.string().min(1),
+});
+
+type CreateContactBody = z.infer<typeof CreateContactSchema>;
+type ImportBody = z.infer<typeof ImportSchema>;
 
 const SQL_INSERT_NOTE =
   'INSERT INTO contact_notes (contact_id, content, call_id, created_by, workspace_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, contact_id, content, call_id, created_by, created_at';
@@ -42,16 +46,18 @@ export const contactRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/contacts',
       handler: errorHandler(async (req, res) => {
-        const body = req.body as CreateContactBody | undefined;
-        if (!body?.name) {
+        const parsed = CreateContactSchema.safeParse(req.body);
+        if (!parsed.success) {
           res.status(400).json({
             error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "name" field',
+              code: 'VALIDATION_ERROR',
+              message:
+                parsed.error.issues[0]?.message ?? 'Invalid request body',
             },
           });
           return;
         }
+        const body = parsed.data;
 
         const contact = await contacts.create({
           name: body.name,
@@ -88,16 +94,18 @@ export const contactRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/contacts/import',
       handler: errorHandler(async (req, res) => {
-        const body = req.body as ImportBody | undefined;
-        if (!body?.content) {
+        const parsed = ImportSchema.safeParse(req.body);
+        if (!parsed.success) {
           res.status(400).json({
             error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "content" field',
+              code: 'VALIDATION_ERROR',
+              message:
+                parsed.error.issues[0]?.message ?? 'Invalid request body',
             },
           });
           return;
         }
+        const body = parsed.data;
 
         const groqApiKey = process.env.GROQ_API_KEY ?? '';
         const created = await contacts.importDocument(
@@ -142,8 +150,20 @@ export const contactRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const body = req.body as Partial<CreateContactBody> | undefined;
-        const contact = await contacts.update(id, body ?? {});
+        const parsed = CreateContactSchema.partial().safeParse(req.body);
+        if (!parsed.success) {
+          res.status(400).json({
+            error: {
+              code: 'VALIDATION_ERROR',
+              message:
+                parsed.error.issues[0]?.message ?? 'Invalid request body',
+            },
+          });
+          return;
+        }
+        const body = parsed.data;
+
+        const contact = await contacts.update(id, body);
         if (!contact) {
           res.status(404).json({
             error: { code: 'NOT_FOUND', message: 'Contact not found' },
