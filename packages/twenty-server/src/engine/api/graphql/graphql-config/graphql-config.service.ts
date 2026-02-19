@@ -93,9 +93,12 @@ export class GraphQLConfigService implements GqlOptionsFactory<
       autoSchemaFile: true,
       include: [CoreEngineModule],
       buildSchemaOptions: {},
-      // DEV-878: conditionalSchema removed entirely to isolate
+      conditionalSchema: async () => {
+        // DEV-878: return undefined so patch skips merging — isolate if empty schema was the problem
+        return undefined as unknown as GraphQLSchemaWithContext<YogaDriverServerContext<'express'>>;
+      },
       resolvers: { JSON: GraphQLJSON },
-      plugins: [],
+      plugins: plugins,
       context: () => ({
         loaders: this.dataloaderService.createLoaders(),
       }),
