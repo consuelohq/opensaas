@@ -214,7 +214,7 @@ export const PostCallSummary = ({
 }: PostCallSummaryProps) => {
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
-      return localStorage.getItem(STORAGE_KEY) !== 'false';
+      return localStorage.getItem(STORAGE_KEY) === 'true';
     } catch {
       return true;
     }
