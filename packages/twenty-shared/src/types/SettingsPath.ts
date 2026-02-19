@@ -65,7 +65,7 @@ export enum SettingsPath {
   RoleObjectLevel = 'roles/:roleId/object/:objectMetadataId',
   RoleAddObjectLevel = 'roles/:roleId/add-object-permission',
 
-  // consuelo settings
-  Consuelo = 'consuelo',
-  ConsuelloSection = 'consuelo/:section',
+  // mercury settings
+  Mercury = 'mercury',
+  MercurySection = 'mercury/:section',
 }
