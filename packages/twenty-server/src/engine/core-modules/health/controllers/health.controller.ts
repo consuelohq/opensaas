@@ -14,7 +14,14 @@ export class HealthController {
   check(@Query('debug') debug?: string) {
     if (debug === '1') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (global as any).__lastGraphQLError ?? { message: 'no error captured yet' };
+      const g = global as any;
+
+      return {
+        schemaError: g.__lastGraphQLError ?? null,
+        middlewareError: g.__lastMiddlewareError ?? null,
+        yogaExecError: g.__lastYogaExecError ?? null,
+        yogaResultError: g.__lastYogaResultError ?? null,
+      };
     }
 
     return this.health.check([]);

@@ -14,15 +14,13 @@ export class GraphQLHydrateRequestFromTokenMiddleware
     try {
       await this.middlewareService.hydrateGraphqlRequest(req);
     } catch (error: unknown) {
-      // DEV-878: log full stack trace for graphql hydration errors
-      const msg = error instanceof Error ? error.message : String(error);
-      const stack = error instanceof Error ? error.stack : undefined;
-
-      console.error('[GRAPHQL_HYDRATE_ERROR]', msg);
-
-      if (stack) {
-        console.error('[GRAPHQL_HYDRATE_STACK]', stack);
-      }
+      // DEV-878: store error for debug endpoint (Railway logs are rate-limited)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (global as any).__lastMiddlewareError = {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        timestamp: new Date().toISOString(),
+      };
       this.middlewareService.writeGraphqlResponseOnExceptionCaught(res, error);
 
       return;

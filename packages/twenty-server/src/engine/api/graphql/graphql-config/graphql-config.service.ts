@@ -70,9 +70,15 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             onExecuteDone({ result }: { result: { errors?: Array<{ message: string; originalError?: Error }> } }) {
               if (result && 'errors' in result && result.errors) {
                 for (const err of result.errors) {
-                  const orig = err.originalError || err;
+                  const orig = (err.originalError || err) as Error;
 
-                  console.error('[YOGA_EXEC_ERROR]', (orig as Error).message ?? err.message, (orig as Error).stack ?? '(no stack)');
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (global as any).__lastYogaExecError = {
+                    message: orig.message ?? err.message,
+                    stack: orig.stack ?? '(no stack)',
+                    name: orig.constructor?.name ?? typeof orig,
+                    timestamp: new Date().toISOString(),
+                  };
                 }
               }
             },
@@ -80,9 +86,11 @@ export class GraphQLConfigService implements GqlOptionsFactory<
         },
         onResultProcess({ result }: { result: { errors?: Array<{ message: string }> } }) {
           if (result && 'errors' in result && result.errors) {
-            for (const err of result.errors) {
-              console.error('[YOGA_RESULT_ERROR]', err.message);
-            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (global as any).__lastYogaResultError = {
+              errors: result.errors.map((e: { message: string }) => e.message),
+              timestamp: new Date().toISOString(),
+            };
           }
         },
       },
