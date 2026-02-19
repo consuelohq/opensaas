@@ -55,9 +55,8 @@ index 1684394..8604546 100644
 +                    }
 +                }
 +
-+                const sanitizedSchemas = schemas.map(schema => (0, schema_1.pruneSchema)(schema));
 +                const mergedSchemas = (0, schema_1.mergeSchemas)({
-+                    schemas: sanitizedSchemas,
++                    schemas,
 +                });
 +
 +                for (const key of this.schemaCache.keys()) {
@@ -108,9 +107,8 @@ index 1684394..8604546 100644
 +                    }
 +                }
 +
-+                const sanitizedSchemas = schemas.map(schema => (0, schema_1.pruneSchema)(schema));
 +                const mergedSchemas = (0, schema_1.mergeSchemas)({
-+                    schemas: sanitizedSchemas,
++                    schemas,
 +                });
 +
 +                for (const key of this.schemaCache.keys()) {
@@ -134,7 +132,7 @@ index 7068c51..95b4fbe 100644
 -import { __decorate } from "tslib";
 -import { printSchema } from 'graphql';
 -import { createYoga, filter, pipe } from 'graphql-yoga';
-+import { mergeSchemas, pruneSchema } from '@graphql-tools/schema';
++import { mergeSchemas } from '@graphql-tools/schema';
  import { Injectable, Logger } from '@nestjs/common';
  import { AbstractGraphQLDriver, GqlSubscriptionService, } from '@nestjs/graphql';
 +import { printSchema } from 'graphql';
@@ -186,9 +184,8 @@ index 7068c51..95b4fbe 100644
 +                }
 +                }
 +
-+                const sanitizedSchemas = schemas.map(schema => pruneSchema(schema));
 +                const mergedSchemas = mergeSchemas({
-+                    schemas: sanitizedSchemas,
++                    schemas,
 +                });
 +
 +                for (const key of this.schemaCache.keys()) {
@@ -240,9 +237,8 @@ index 7068c51..95b4fbe 100644
 +                }
 +                }
 +
-+                const sanitizedSchemas = schemas.map(schema => pruneSchema(schema));
 +                const mergedSchemas = mergeSchemas({
-+                schemas: sanitizedSchemas,
++                schemas,
 +                });
 +
 +                for (const key of this.schemaCache.keys()) {
@@ -348,7 +344,7 @@ index ce142f6..95a1faf 100644
 +import { createYoga, filter, pipe, YogaServerInstance, YogaServerOptions, GraphQLSchemaWithContext, PromiseOrValue, YogaInitialContext } from 'graphql-yoga';
  import type { ExecutionParams } from 'subscriptions-transport-ws';
  import { Injectable, Logger } from '@nestjs/common';
-+import { mergeSchemas, pruneSchema } from '@graphql-tools/schema';
++import { mergeSchemas } from '@graphql-tools/schema';
  import {
    AbstractGraphQLDriver,
    GqlModuleOptions,
@@ -441,9 +437,8 @@ index ce142f6..95a1faf 100644
 +          }
 +        }
 +
-+        const sanitizedSchemas = schemas.map(schema => pruneSchema(schema));
 +        const mergedSchemas = mergeSchemas({
-+          schemas: sanitizedSchemas,
++          schemas,
 +        });
 +
 +        this.schemaCache.set(cacheKey, mergedSchemas)
@@ -503,9 +498,8 @@ index ce142f6..95a1faf 100644
 +          }
 +        }
 +
-+        const sanitizedSchemas = schemas.map(schema => pruneSchema(schema));
 +        const mergedSchemas = mergeSchemas({
-+          schemas: sanitizedSchemas,
++          schemas,
 +        });
 +
 +        this.schemaCache.set(cacheKey, mergedSchemas)
