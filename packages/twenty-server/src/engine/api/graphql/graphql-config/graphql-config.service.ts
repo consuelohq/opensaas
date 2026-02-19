@@ -7,7 +7,6 @@ import {
   type YogaDriverServerContext,
 } from '@graphql-yoga/nestjs';
 import * as Sentry from '@sentry/node';
-import { pruneSchema } from '@graphql-tools/utils';
 import { GraphQLError, GraphQLSchema } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import {
@@ -35,16 +34,15 @@ import { DataloaderService } from 'src/engine/dataloaders/dataloader.service';
 import { handleExceptionAndConvertToGraphQLError } from 'src/engine/utils/global-exception-handler.util';
 import { renderApolloPlayground } from 'src/engine/utils/render-apollo-playground.util';
 
-// Custom request type with our augmented properties
 export interface GraphQLContext extends YogaDriverServerContext<'express'> {
   user?: UserEntity;
   workspace?: WorkspaceEntity;
 }
 
 @Injectable()
-export class GraphQLConfigService implements GqlOptionsFactory<
-  YogaDriverConfig<'express'>
-> {
+export class GraphQLConfigService
+  implements GqlOptionsFactory<YogaDriverConfig<'express'>>
+{
   constructor(
     private readonly exceptionHandlerService: ExceptionHandlerService,
     private readonly twentyConfigService: TwentyConfigService,
@@ -94,52 +92,30 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             return new GraphQLSchema({});
           }
 
-          const schema = await this.createSchema(
-            context,
-            workspace,
-            application?.id,
-          );
-
-          // DEBUG: log workspace schema type map to find null fields
-          const typeMap = schema.getTypeMap();
-
-          for (const [name, type] of Object.entries(typeMap)) {
-            try {
-              if ('getFields' in type) {
-                const fields = (type as any).getFields();
-
-                if (!fields || typeof fields !== 'object') {
-                  console.error(
-                    `[SCHEMA_DEBUG] Type "${name}" has null/invalid fields:`,
-                    fields,
-                  );
-                }
-              }
-            } catch (e: unknown) {
-              console.error(
-                `[SCHEMA_DEBUG] Type "${name}" getFields() threw:`,
-                e instanceof Error ? e.message : e,
-              );
-            }
-          }
-
-          return pruneSchema(schema);
+          return await this.createSchema(context, workspace, application?.id);
         } catch (error) {
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
-              extensions: { code: 'UNAUTHENTICATED' },
+              extensions: {
+                code: 'UNAUTHENTICATED',
+              },
             });
           }
 
           if (error instanceof JsonWebTokenError) {
+            //mockedUserJWT
             throw new GraphQLError('Unauthenticated', {
-              extensions: { code: 'UNAUTHENTICATED' },
+              extensions: {
+                code: 'UNAUTHENTICATED',
+              },
             });
           }
 
           if (error instanceof TokenExpiredError) {
             throw new GraphQLError('Unauthenticated', {
-              extensions: { code: 'UNAUTHENTICATED' },
+              extensions: {
+                code: 'UNAUTHENTICATED',
+              },
             });
           }
 
