@@ -43,5 +43,3 @@ export class DialerSidebar {
     return this.numberInput;
   }
 }
-
-export default DialerSidebar;
