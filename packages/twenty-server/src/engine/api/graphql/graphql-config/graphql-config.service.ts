@@ -10,9 +10,8 @@ import * as Sentry from '@sentry/node';
 import {
   GraphQLError,
   GraphQLSchema,
-  isObjectType,
-  isInterfaceType,
-  isInputObjectType,
+  buildSchema,
+  printSchema,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import {
@@ -104,28 +103,11 @@ export class GraphQLConfigService
             application?.id,
           );
 
-          // Sanitize: fix types with null/undefined field maps that crash mergeSchemas
-          for (const type of Object.values(schema.getTypeMap())) {
-            if (
-              isObjectType(type) ||
-              isInterfaceType(type) ||
-              isInputObjectType(type)
-            ) {
-              try {
-                const fields = type.getFields();
-
-                if (!fields || typeof fields !== 'object') {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (type as any)._fields = {};
-                }
-              } catch {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (type as any)._fields = {};
-              }
-            }
-          }
-
-          return schema;
+          // Rebuild from SDL to get a clean schema object for mergeSchemas
+          // The original schema may have types with null internal properties
+          // (e.g. _interfaces, _fields) that crash Object.values() in
+          // @graphql-tools/utils getDocumentNodeFromSchema
+          return buildSchema(printSchema(schema));
         } catch (error) {
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
