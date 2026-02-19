@@ -63,6 +63,29 @@ export class GraphQLConfigService implements GqlOptionsFactory<
     const isDebugMode =
       this.twentyConfigService.get('NODE_ENV') === NodeEnvironment.DEVELOPMENT;
     const plugins = [
+      // DEV-878: debug plugin to capture errors at every yoga phase
+      {
+        onExecute({ args }: { args: { contextValue: { req: { workspace?: { id: string } } } } }) {
+          return {
+            onExecuteDone({ result }: { result: { errors?: Array<{ message: string; originalError?: Error }> } }) {
+              if (result && 'errors' in result && result.errors) {
+                for (const err of result.errors) {
+                  const orig = err.originalError || err;
+
+                  console.error('[YOGA_EXEC_ERROR]', (orig as Error).message ?? err.message, (orig as Error).stack ?? '(no stack)');
+                }
+              }
+            },
+          };
+        },
+        onResultProcess({ result }: { result: { errors?: Array<{ message: string }> } }) {
+          if (result && 'errors' in result && result.errors) {
+            for (const err of result.errors) {
+              console.error('[YOGA_RESULT_ERROR]', err.message);
+            }
+          }
+        },
+      },
       useGraphQLErrorHandlerHook({
         metricsService: this.metricsService,
         exceptionHandlerService: this.exceptionHandlerService,
