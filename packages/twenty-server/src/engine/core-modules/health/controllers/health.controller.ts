@@ -23,6 +23,10 @@ export class HealthController {
         middlewareError: g.__lastMiddlewareError ?? null,
         yogaExecError: g.__lastYogaExecError ?? null,
         yogaResultError: g.__lastYogaResultError ?? null,
+        yogaParseSuccess: g.__lastYogaParseSuccess ?? null,
+        yogaValidateCall: g.__lastYogaValidateCall ?? null,
+        yogaExecuteCall: g.__lastYogaExecuteCall ?? null,
+        yogaResultProcess: g.__lastYogaResultProcess ?? null,
       };
     }
 

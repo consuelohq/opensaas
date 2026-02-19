@@ -22,7 +22,7 @@ index 1684394..8604546 100644
          // noop
      }
 -    registerExpress(options, { preStartHook } = {}) {
-+    registerExpress({ conditionalSchema, ...options }, { preStartHook } = {}) {
++         registerExpress({ conditionalSchema, ...options }, { preStartHook } = {}) {
          const app = this.httpAdapterHost.httpAdapter.getInstance();
          preStartHook?.(app);
          // nest's logger doesnt have the info method
@@ -30,6 +30,52 @@ index 1684394..8604546 100644
          }
          const yoga = (0, graphql_yoga_1.createYoga)({
              ...options,
++            plugins: [
++                {
++                    onParse({ result }) {
++                        try {
++                            if (result?.kind === 'Document') {
++                                global.__lastYogaParseSuccess = { timestamp: new Date().toISOString() };
++                            }
++                        } catch (e) {}
++                    },
++                    onValidate({ schema, document, params }) {
++                        try {
++                            const actualSchema = schema || params?.schema;
++                            global.__lastYogaValidateCall = { 
++                                hasSchema: !!actualSchema, 
++                                schemaType: actualSchema?.constructor?.name,
++                                docLen: document?.definitions?.length,
++                                hasParamsSchema: !!params?.schema,
++                                timestamp: new Date().toISOString() 
++                            };
++                        } catch (e) {}
++                    },
++                    onExecute({ args }) {
++                        try {
++                            global.__lastYogaExecuteCall = { 
++                                hasSchema: !!args.schema,
++                                schemaType: args.schema?.constructor?.name,
++                                opName: args.operationName,
++                                timestamp: new Date().toISOString()
++                            };
++                        } catch (e) {}
++                        return {
++                            onExecuteDone() {}
++                        };
++                    },
++                    onResultProcess({ result }) {
++                        try {
++                            global.__lastYogaResultProcess = { 
++                                hasResult: !!result,
++                                resultKeys: result ? Object.keys(result) : null,
++                                timestamp: new Date().toISOString() 
++                            };
++                        } catch (e) {}
++                    }
++                },
++                ...(options.plugins || [])
++            ],
 +            schema: async (request) => {
 +                const workspaceId = request.req.workspace?.id ?? 'anonymous'
 +                const workspaceCacheVersion = request.req.workspaceMetadataVersion ?? '0'
@@ -77,11 +123,57 @@ index 1684394..8604546 100644
          app.use(yoga.graphqlEndpoint, (req, res) => yoga(req, res, { req, res }));
      }
 -    registerFastify(options, { preStartHook } = {}) {
-+    registerFastify({ conditionalSchema, ...options }, { preStartHook } = {}) {
++         registerFastify({ conditionalSchema, ...options }, { preStartHook } = {}) {
          const app = this.httpAdapterHost.httpAdapter.getInstance();
          preStartHook?.(app);
          const yoga = (0, graphql_yoga_1.createYoga)({
              ...options,
++            plugins: [
++                {
++                    onParse({ result }) {
++                        try {
++                            if (result?.kind === 'Document') {
++                                global.__lastYogaParseSuccess = { timestamp: new Date().toISOString() };
++                            }
++                        } catch (e) {}
++                    },
++                    onValidate({ schema, document, params }) {
++                        try {
++                            const actualSchema = schema || params?.schema;
++                            global.__lastYogaValidateCall = { 
++                                hasSchema: !!actualSchema, 
++                                schemaType: actualSchema?.constructor?.name,
++                                docLen: document?.definitions?.length,
++                                hasParamsSchema: !!params?.schema,
++                                timestamp: new Date().toISOString() 
++                            };
++                        } catch (e) {}
++                    },
++                    onExecute({ args }) {
++                        try {
++                            global.__lastYogaExecuteCall = { 
++                                hasSchema: !!args.schema,
++                                schemaType: args.schema?.constructor?.name,
++                                opName: args.operationName,
++                                timestamp: new Date().toISOString()
++                            };
++                        } catch (e) {}
++                        return {
++                            onExecuteDone() {}
++                        };
++                    },
++                    onResultProcess({ result }) {
++                        try {
++                            global.__lastYogaResultProcess = { 
++                                hasResult: !!result,
++                                resultKeys: result ? Object.keys(result) : null,
++                                timestamp: new Date().toISOString() 
++                            };
++                        } catch (e) {}
++                    }
++                },
++                ...(options.plugins || [])
++            ],
 +            schema: async (request) => {
 +                const workspaceId = request.req.workspace?.id ?? 'anonymous'
 +                const workspaceCacheVersion = request.req.workspaceMetadataVersion ?? '0'

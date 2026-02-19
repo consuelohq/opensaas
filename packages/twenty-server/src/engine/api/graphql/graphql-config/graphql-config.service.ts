@@ -157,6 +157,17 @@ export class GraphQLConfigService implements GqlOptionsFactory<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onValidate({ validateFn, params, setResult }: any) {
           try {
+            // Guard against null/undefined schema
+            if (!params.schema) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (global as any).__lastValidationError = {
+                message: 'Schema is null or undefined in onValidate',
+                schemaType: params.schema?.constructor?.name,
+                timestamp: new Date().toISOString(),
+              };
+              return;
+            }
+
             const errors = validateFn(params.schema, params.documentAST);
 
             if (errors && errors.length > 0) {
