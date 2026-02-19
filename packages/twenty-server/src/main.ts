@@ -78,6 +78,38 @@ const bootstrap = async () => {
   // Inject the server url in the frontend page
   generateFrontConfig();
 
+  // Mount @consuelo/api routes on the Express instance (optional — server works without them)
+  try {
+    const routesModule = await import('../../api/src/routes/index.js');
+    const expressApp = app.getHttpAdapter().getInstance();
+    for (const route of routesModule.allRoutes()) {
+      const method = route.method.toLowerCase() as
+        | 'get'
+        | 'post'
+        | 'put'
+        | 'patch'
+        | 'delete';
+      expressApp[method](route.path, async (req: any, res: any) => {
+        // HACK: Express types are compatible with ApiRequest/ApiResponse but TypeScript cannot verify across packages
+        try {
+          await route.handler(req, res);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'unknown error';
+          if (!res.headersSent) {
+            res
+              .status(500)
+              .json({ error: { code: 'INTERNAL_SERVER_ERROR', message } });
+          }
+        }
+      });
+    }
+    console.log(
+      `Mounted ${routesModule.allRoutes().length} @consuelo/api routes`,
+    ); // HACK: one-time startup log is acceptable
+  } catch {
+    console.log('@consuelo/api routes not available, skipping'); // HACK: one-time startup log is acceptable
+  }
+
   await app.listen(twentyConfigService.get('NODE_PORT'));
 };
 
