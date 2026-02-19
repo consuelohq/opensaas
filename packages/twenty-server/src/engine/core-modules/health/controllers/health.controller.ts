@@ -17,16 +17,13 @@ export class HealthController {
       const g = global as any;
 
       return {
+        yogaPhases: g.__yogaPhases ?? null,
         schemaError: g.__lastGraphQLError ?? null,
         schemaMergeError: g.__lastSchemaMergeError ?? null,
         validationError: g.__lastValidationError ?? null,
         middlewareError: g.__lastMiddlewareError ?? null,
         yogaExecError: g.__lastYogaExecError ?? null,
         yogaResultError: g.__lastYogaResultError ?? null,
-        yogaParseSuccess: g.__lastYogaParseSuccess ?? null,
-        yogaValidateCall: g.__lastYogaValidateCall ?? null,
-        yogaExecuteCall: g.__lastYogaExecuteCall ?? null,
-        yogaResultProcess: g.__lastYogaResultProcess ?? null,
       };
     }
 
