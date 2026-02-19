@@ -114,11 +114,7 @@ export const NavigationDrawerItemForObjectMetadataItem = ({
       ? getIcon(navigationMenuItem.Icon)
       : getIcon(objectMetadataItem.icon);
 
-  const iconBackgroundColor = isRecord
-    ? undefined
-    : isViewWithCustomName
-      ? iconColors.view
-      : iconColors.object;
+  const iconBackgroundColor = undefined;
 
   const secondaryLabel =
     isRecord || isViewWithCustomName
