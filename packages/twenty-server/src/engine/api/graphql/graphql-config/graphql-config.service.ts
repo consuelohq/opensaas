@@ -7,6 +7,7 @@ import {
   type YogaDriverServerContext,
 } from '@graphql-yoga/nestjs';
 import * as Sentry from '@sentry/node';
+import { pruneSchema } from '@graphql-tools/utils';
 import { GraphQLError, GraphQLSchema } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import {
@@ -93,7 +94,13 @@ export class GraphQLConfigService implements GqlOptionsFactory<
             return new GraphQLSchema({});
           }
 
-          return await this.createSchema(context, workspace, application?.id);
+          const schema = await this.createSchema(
+            context,
+            workspace,
+            application?.id,
+          );
+
+          return pruneSchema(schema);
         } catch (error) {
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
