@@ -79,8 +79,10 @@ const bootstrap = async () => {
   generateFrontConfig();
 
   // Mount @consuelo/api routes on the Express instance (optional — server works without them)
+  // HACK: dynamic path prevents nx from detecting this as a build dependency (DEV-878)
+  const apiRoutesPath = ['..', '..', 'api', 'src', 'routes', 'index.js'].join('/');
   try {
-    const routesModule = await import('../../api/src/routes/index.js');
+    const routesModule = await import(apiRoutesPath);
     const expressApp = app.getHttpAdapter().getInstance();
     for (const route of routesModule.allRoutes()) {
       const method = route.method.toLowerCase() as

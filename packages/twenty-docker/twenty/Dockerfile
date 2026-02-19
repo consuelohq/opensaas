@@ -40,18 +40,6 @@ COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
-# opensaas packages (nx builds these as twenty-server dependencies)
-COPY ./packages/logger /app/packages/logger
-COPY ./packages/contacts /app/packages/contacts
-COPY ./packages/coaching /app/packages/coaching
-COPY ./packages/dialer /app/packages/dialer
-COPY ./packages/api /app/packages/api
-COPY ./packages/analytics /app/packages/analytics
-COPY ./packages/metering /app/packages/metering
-COPY ./packages/sdk /app/packages/sdk
-COPY ./packages/cli /app/packages/cli
-COPY ./packages/workspace /app/packages/workspace
-
 RUN npx nx run twenty-server:build
 
 RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server
