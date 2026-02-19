@@ -94,8 +94,8 @@ export class GraphQLConfigService implements GqlOptionsFactory<
       include: [CoreEngineModule],
       buildSchemaOptions: {},
       conditionalSchema: async () => {
-        // DEV-878: return empty schema to isolate if mergeSchemas is the problem
-        return new GraphQLSchema({});
+        // DEV-878: return undefined so patch skips merging — isolate if empty schema was the problem
+        return undefined as unknown as GraphQLSchemaWithContext<YogaDriverServerContext<'express'>>;
       },
       resolvers: { JSON: GraphQLJSON },
       plugins: plugins,
