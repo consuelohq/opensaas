@@ -93,80 +93,9 @@ export class GraphQLConfigService implements GqlOptionsFactory<
       autoSchemaFile: true,
       include: [CoreEngineModule],
       buildSchemaOptions: {},
-      conditionalSchema: async (context) => {
-        const customReq = context.req as typeof context.req & {
-          workspace?: WorkspaceEntity;
-          user?: UserEntity;
-          application?: { id: string };
-        };
-        const { workspace, user, application } = customReq;
-
-        try {
-          if (!isDefined(workspace)) {
-            return new GraphQLSchema({});
-          }
-
-          return await this.createSchema(
-            context as YogaDriverServerContext<'express'> & YogaInitialContext,
-            workspace,
-            application?.id,
-          );
-        } catch (error) {
-          // DEBUG: store error for /debug-error endpoint
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (global as any).__lastGraphQLError = {
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-            name:
-              error instanceof Error ? error.constructor.name : typeof error,
-            timestamp: new Date().toISOString(),
-          };
-
-          if (error instanceof UnauthorizedException) {
-            throw new GraphQLError('Unauthenticated', {
-              extensions: {
-                code: 'UNAUTHENTICATED',
-              },
-            });
-          }
-
-          if (error instanceof JsonWebTokenError) {
-            //mockedUserJWT
-            throw new GraphQLError('Unauthenticated', {
-              extensions: {
-                code: 'UNAUTHENTICATED',
-              },
-            });
-          }
-
-          if (error instanceof TokenExpiredError) {
-            throw new GraphQLError('Unauthenticated', {
-              extensions: {
-                code: 'UNAUTHENTICATED',
-              },
-            });
-          }
-
-          throw handleExceptionAndConvertToGraphQLError(
-            error,
-            this.exceptionHandlerService,
-            isDefined(user)
-              ? {
-                  id: user.id,
-                  email: user.email,
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                }
-              : undefined,
-            isDefined(workspace)
-              ? {
-                  id: workspace.id,
-                  displayName: workspace.displayName,
-                  activationStatus: workspace.activationStatus,
-                }
-              : undefined,
-          );
-        }
+      conditionalSchema: async () => {
+        // DEV-878: return empty schema to isolate if mergeSchemas is the problem
+        return new GraphQLSchema({});
       },
       resolvers: { JSON: GraphQLJSON },
       plugins: plugins,
