@@ -12,8 +12,6 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { callErrorState } from '@/dialer/states/callErrorState';
-import { deviceReadyState } from '@/dialer/states/deviceReadyState';
-import { deviceErrorState } from '@/dialer/states/deviceErrorState';
 import { stripNonDigits } from '@/dialer/utils/phoneFormat';
 
 const isValidNumber = (phone: string): boolean => {
@@ -78,8 +76,6 @@ export const CallButton = () => {
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const contact = useRecoilValue(selectedContactState);
   const setCallError = useSetRecoilState(callErrorState);
-  const isDeviceReady = useRecoilValue(deviceReadyState);
-  const deviceError = useRecoilValue(deviceErrorState);
   const { connect, disconnect } = useTwilioDevice();
 
   const isConnecting =
@@ -97,14 +93,8 @@ export const CallButton = () => {
       return;
     }
 
-    if (!valid || !fromNumber || !isDeviceReady) {
-      if (!isDeviceReady && deviceError) {
-        setCallError({
-          reason: 'device_error',
-          message: deviceError,
-          occurredAt: new Date(),
-        });
-      } else if (!fromNumber) {
+    if (!valid || !fromNumber) {
+      if (!fromNumber) {
         setCallError({
           reason: 'no_caller_id',
           message:
@@ -164,22 +154,18 @@ export const CallButton = () => {
     connect,
     disconnect,
     setCallError,
-    isDeviceReady,
-    deviceError,
   ]);
 
-  const isDisabled = !isInCall && (!valid || !fromNumber || !isDeviceReady);
+  const isDisabled = !isInCall && (!valid || !fromNumber);
   const variant = isInCall ? 'end' : isDisabled ? 'disabled' : 'call';
 
   const label = isConnecting
     ? 'Connecting...'
     : isActive
       ? 'End Call'
-      : !isDeviceReady
-        ? 'Device not ready'
-        : contact?.firstName
-          ? `Call ${contact.firstName}`
-          : 'Call';
+      : contact?.firstName
+        ? `Call ${contact.firstName}`
+        : 'Call';
 
   return (
     <StyledButton
