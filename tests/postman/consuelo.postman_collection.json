@@ -68,7 +68,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json"
             },
@@ -103,7 +103,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json"
             },
@@ -142,7 +142,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json"
             },
@@ -247,9 +247,18 @@
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
-                { "key": "CallSid", "value": "CA{{call_sid}}" },
-                { "key": "From", "value": "+15551234567" },
-                { "key": "To", "value": "+15559876543" }
+                {
+                  "key": "CallSid",
+                  "value": "CA{{call_sid}}"
+                },
+                {
+                  "key": "From",
+                  "value": "+15551234567"
+                },
+                {
+                  "key": "To",
+                  "value": "+15559876543"
+                }
               ]
             }
           }
@@ -781,7 +790,13 @@
             },
             "body": {
               "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
             }
           }
         },
@@ -870,7 +885,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -905,7 +920,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -940,7 +955,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -975,7 +990,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -1010,7 +1025,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -1045,7 +1060,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"
@@ -1080,7 +1095,7 @@
           ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/",
+            "url": "{{base_url}}/graphql",
             "header": {
               "Content-Type": "application/json",
               "Authorization": "Bearer {{access_token}}"

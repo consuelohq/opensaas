@@ -1,4 +1,9 @@
-import type { TwilioCredentials, ConferenceParticipant, TransferOptions, TransferResult } from '../types.js';
+import type {
+  TwilioCredentials,
+  ConferenceParticipant,
+  TransferOptions,
+  TransferResult,
+} from '../types.js';
 import type TwilioClient from 'twilio';
 
 /**
@@ -13,7 +18,8 @@ export class ConferenceService {
 
   constructor(credentials?: TwilioCredentials) {
     this.credentials = {
-      accountSid: credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+      accountSid:
+        credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
       authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
     };
   }
@@ -22,7 +28,10 @@ export class ConferenceService {
     if (this.client) return this.client;
     try {
       const twilio = await import('twilio');
-      this.client = twilio.default(this.credentials.accountSid, this.credentials.authToken);
+      this.client = twilio.default(
+        this.credentials.accountSid,
+        this.credentials.authToken,
+      );
       return this.client;
     } catch (err: unknown) {
       this.client = null;
@@ -31,16 +40,21 @@ export class ConferenceService {
   }
 
   /** Generate conference TwiML for the agent's browser connection */
-  generateConferenceTwiml(conferenceName: string, opts?: {
-    startOnEnter?: boolean;
-    endOnExit?: boolean;
-    waitUrl?: string;
-    participantLabel?: string;
-  }): string {
+  generateConferenceTwiml(
+    conferenceName: string,
+    opts?: {
+      startOnEnter?: boolean;
+      endOnExit?: boolean;
+      waitUrl?: string;
+      participantLabel?: string;
+    },
+  ): string {
     const startOnEnter = opts?.startOnEnter ?? true;
     const endOnExit = opts?.endOnExit ?? false;
     const waitUrl = opts?.waitUrl ?? '';
-    const label = opts?.participantLabel ? ` participantLabel="${opts.participantLabel}"` : '';
+    const label = opts?.participantLabel
+      ? ` participantLabel="${opts.participantLabel}"`
+      : '';
 
     return [
       '<?xml version="1.0" encoding="UTF-8"?>',
@@ -55,11 +69,16 @@ export class ConferenceService {
   }
 
   /** Dial the customer into the conference via REST API */
-  async addParticipant(conferenceName: string, to: string, from: string, opts?: {
-    label?: string;
-    endConferenceOnExit?: boolean;
-    statusCallback?: string;
-  }): Promise<{ callSid: string; conferenceSid: string }> {
+  async addParticipant(
+    conferenceName: string,
+    to: string,
+    from: string,
+    opts?: {
+      label?: string;
+      endConferenceOnExit?: boolean;
+      statusCallback?: string;
+    },
+  ): Promise<{ callSid: string; conferenceSid: string }> {
     try {
       const client = await this.getClient();
 
@@ -70,34 +89,46 @@ export class ConferenceService {
       });
 
       if (!conferences.length) {
-        throw Object.assign(new Error(`Conference "${conferenceName}" not found or not in-progress`), { status: 404 });
+        throw Object.assign(
+          new Error(
+            `Conference "${conferenceName}" not found or not in-progress`,
+          ),
+          { status: 404 },
+        );
       }
 
       const conf = conferences[0];
-      const participant = await client.conferences(conf.sid).participants.create({
-        to,
-        from,
-        earlyMedia: true,
-        endConferenceOnExit: opts?.endConferenceOnExit ?? true,
-        label: opts?.label ?? 'customer',
-        statusCallback: opts?.statusCallback,
-        statusCallbackEvent: ['ringing', 'answered', 'completed'],
-      });
+      const participant = await client
+        .conferences(conf.sid)
+        .participants.create({
+          to,
+          from,
+          earlyMedia: true,
+          endConferenceOnExit: opts?.endConferenceOnExit ?? true,
+          label: opts?.label ?? 'customer',
+          statusCallback: opts?.statusCallback,
+          statusCallbackEvent: ['ringing', 'answered', 'completed'],
+        });
 
       return { callSid: participant.callSid, conferenceSid: conf.sid };
     } catch (err: unknown) {
       if (err instanceof Error && 'status' in err) throw err;
-      const message = err instanceof Error ? err.message : 'Failed to add participant';
+      const message =
+        err instanceof Error ? err.message : 'Failed to add participant';
       throw new Error(message);
     }
   }
 
   /** Create an outbound call with a TwiML URL or inline TwiML */
-  async createCall(to: string, from: string, opts: {
-    url?: string;
-    twiml?: string;
-    statusCallback?: string;
-  }): Promise<{ callSid: string }> {
+  async createCall(
+    to: string,
+    from: string,
+    opts: {
+      url?: string;
+      twiml?: string;
+      statusCallback?: string;
+    },
+  ): Promise<{ callSid: string }> {
     try {
       const client = await this.getClient();
       const call = await client.calls.create({
@@ -110,26 +141,41 @@ export class ConferenceService {
       });
       return { callSid: call.sid };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create call';
+      const message =
+        err instanceof Error ? err.message : 'Failed to create call';
       throw new Error(message);
     }
   }
 
   /** Hold or unhold a participant */
-  async holdParticipant(conferenceSid: string, callSid: string, hold: boolean): Promise<void> {
+  async holdParticipant(
+    conferenceSid: string,
+    callSid: string,
+    hold: boolean,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.conferences(conferenceSid).participants(callSid).update({ hold });
+      await client
+        .conferences(conferenceSid)
+        .participants(callSid)
+        .update({ hold });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Hold toggle failed';
       throw new Error(message);
     }
   }
 
-  async muteParticipant(conferenceSid: string, callSid: string, muted: boolean): Promise<void> {
+  async muteParticipant(
+    conferenceSid: string,
+    callSid: string,
+    muted: boolean,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.conferences(conferenceSid).participants(callSid).update({ muted });
+      await client
+        .conferences(conferenceSid)
+        .participants(callSid)
+        .update({ muted });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Mute toggle failed';
       throw new Error(message);
@@ -147,37 +193,56 @@ export class ConferenceService {
       });
       return conferences.length ? conferences[0].sid : null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Conference lookup failed';
+      const message =
+        err instanceof Error ? err.message : 'Conference lookup failed';
       throw new Error(message);
     }
   }
 
   /** Remove a participant from the conference */
-  async removeParticipant(conferenceSid: string, callSid: string): Promise<void> {
+  async removeParticipant(
+    conferenceSid: string,
+    callSid: string,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       await client.conferences(conferenceSid).participants(callSid).remove();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Remove participant failed';
+      const message =
+        err instanceof Error ? err.message : 'Remove participant failed';
       throw new Error(message);
     }
   }
 
   /** List participants in a conference */
-  async listParticipants(conferenceSid: string): Promise<ConferenceParticipant[]> {
+  async listParticipants(
+    conferenceSid: string,
+  ): Promise<ConferenceParticipant[]> {
     try {
       const client = await this.getClient();
-      const participants = await client.conferences(conferenceSid).participants.list();
-      return participants.map((p: { callSid: string; conferenceSid: string; label?: string; hold: boolean; muted: boolean; status: string }) => ({
-        callSid: p.callSid,
-        conferenceSid: p.conferenceSid,
-        label: p.label ?? '',
-        hold: p.hold,
-        muted: p.muted,
-        status: p.status,
-      }));
+      const participants = await client
+        .conferences(conferenceSid)
+        .participants.list();
+      return participants.map(
+        (p: {
+          callSid: string;
+          conferenceSid: string;
+          label?: string;
+          hold: boolean;
+          muted: boolean;
+          status: string;
+        }) => ({
+          callSid: p.callSid,
+          conferenceSid: p.conferenceSid,
+          label: p.label ?? '',
+          hold: p.hold,
+          muted: p.muted,
+          status: p.status,
+        }),
+      );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'List participants failed';
+      const message =
+        err instanceof Error ? err.message : 'List participants failed';
       throw new Error(message);
     }
   }
@@ -196,27 +261,35 @@ export class ConferenceService {
   }
 
   /** Cold transfer: add target, remove agent */
-  private async coldTransfer(options: TransferOptions): Promise<TransferResult> {
+  private async coldTransfer(
+    options: TransferOptions,
+  ): Promise<TransferResult> {
     try {
-      const { callSid: transferCallSid, conferenceSid } = await this.addParticipant(
-        options.conferenceName,
-        options.to,
-        options.from,
-        { label: 'transfer-target', endConferenceOnExit: true },
-      );
+      const { callSid: transferCallSid, conferenceSid } =
+        await this.addParticipant(
+          options.conferenceName,
+          options.to,
+          options.from,
+          { label: 'transfer-target', endConferenceOnExit: true },
+        );
 
       await this.removeParticipant(conferenceSid, options.callSid);
       return { success: true, transferCallSid, conferenceSid };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Cold transfer failed';
+      const message =
+        err instanceof Error ? err.message : 'Cold transfer failed';
       return { success: false, error: message };
     }
   }
 
   /** Warm transfer: hold customer, add target for consult */
-  private async warmTransfer(options: TransferOptions): Promise<TransferResult> {
+  private async warmTransfer(
+    options: TransferOptions,
+  ): Promise<TransferResult> {
     try {
-      const conferenceSid = await this.findConferenceSid(options.conferenceName);
+      const conferenceSid = await this.findConferenceSid(
+        options.conferenceName,
+      );
       if (!conferenceSid) {
         return { success: false, error: 'Conference not found' };
       }
@@ -230,22 +303,32 @@ export class ConferenceService {
 
       // add the transfer target
       const client = await this.getClient();
-      const participant = await client.conferences(conferenceSid).participants.create({
-        to: options.to,
-        from: options.from,
-        endConferenceOnExit: false,
-        label: 'transfer-target',
-      });
+      const participant = await client
+        .conferences(conferenceSid)
+        .participants.create({
+          to: options.to,
+          from: options.from,
+          endConferenceOnExit: false,
+          label: 'transfer-target',
+        });
 
-      return { success: true, transferCallSid: participant.callSid, conferenceSid };
+      return {
+        success: true,
+        transferCallSid: participant.callSid,
+        conferenceSid,
+      };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Warm transfer failed';
+      const message =
+        err instanceof Error ? err.message : 'Warm transfer failed';
       return { success: false, error: message };
     }
   }
 
   /** Complete a warm transfer: unhold customer, remove original agent */
-  async completeTransfer(conferenceSid: string, agentCallSid: string): Promise<TransferResult> {
+  async completeTransfer(
+    conferenceSid: string,
+    agentCallSid: string,
+  ): Promise<TransferResult> {
     try {
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
@@ -256,21 +339,28 @@ export class ConferenceService {
       const target = participants.find((p) => p.label === 'transfer-target');
       if (target) {
         const client = await this.getClient();
-        await client.conferences(conferenceSid).participants(target.callSid).update({
-          endConferenceOnExit: true,
-        });
+        await client
+          .conferences(conferenceSid)
+          .participants(target.callSid)
+          .update({
+            endConferenceOnExit: true,
+          });
       }
 
       await this.removeParticipant(conferenceSid, agentCallSid);
       return { success: true, conferenceSid };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Complete transfer failed';
+      const message =
+        err instanceof Error ? err.message : 'Complete transfer failed';
       return { success: false, error: message };
     }
   }
 
   /** Cancel a warm transfer: remove transfer target, unhold customer */
-  async cancelTransfer(conferenceSid: string, transferCallSid: string): Promise<TransferResult> {
+  async cancelTransfer(
+    conferenceSid: string,
+    transferCallSid: string,
+  ): Promise<TransferResult> {
     try {
       await this.removeParticipant(conferenceSid, transferCallSid);
 
@@ -282,8 +372,23 @@ export class ConferenceService {
 
       return { success: true, conferenceSid };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Cancel transfer failed';
+      const message =
+        err instanceof Error ? err.message : 'Cancel transfer failed';
       return { success: false, error: message };
     }
+  }
+
+  /** Get a recording by SID */
+  async getRecording(
+    recordingSid: string,
+  ): Promise<{ url: string; duration: number }> {
+    throw new Error('NOT_IMPLEMENTED: getRecording not yet implemented');
+  }
+
+  /** List recordings for a conference */
+  async listRecordings(
+    conferenceName: string,
+  ): Promise<Array<{ url: string; duration: number }>> {
+    throw new Error('NOT_IMPLEMENTED: listRecordings not yet implemented');
   }
 }

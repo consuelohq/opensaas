@@ -13,10 +13,16 @@ import type {
   ParallelStore,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
-import { LocalPresenceService, type NumberPool } from './services/local-presence.js';
+import {
+  LocalPresenceService,
+  type NumberPool,
+} from './services/local-presence.js';
 import type { CallerIdLockService } from './services/caller-id.js';
 import { ConferenceService } from './services/conference.js';
-import { ParallelDialerService, InMemoryParallelStore } from './services/parallel-dialer.js';
+import {
+  ParallelDialerService,
+  InMemoryParallelStore,
+} from './services/parallel-dialer.js';
 
 /**
  * Main Dialer class — the public API for @consuelo/dialer.
@@ -45,7 +51,10 @@ export class Dialer {
     this.provider = new TwilioProvider(config.credentials);
     this.localPresence = new LocalPresenceService();
     this.conference = new ConferenceService(config.credentials);
-    this.parallel = new ParallelDialerService(config.credentials, parallelStore ?? new InMemoryParallelStore());
+    this.parallel = new ParallelDialerService(
+      config.credentials,
+      parallelStore ?? new InMemoryParallelStore(),
+    );
   }
 
   /** Attach a caller ID lock service (optional, for concurrent call protection) */
@@ -63,13 +72,19 @@ export class Dialer {
    *  3. config.defaultNumber
    *  4. options.from (agent's personal number)
    */
-  async dial(options: DialOptions, numberPool?: NumberPool): Promise<DialResult> {
+  async dial(
+    options: DialOptions,
+    numberPool?: NumberPool,
+  ): Promise<DialResult> {
     let callerIdNumber = options.callerIdNumber;
     let selectionMethod: DialResult['selectionMethod'] = 'manual';
 
     // auto-select via local presence if no manual override
     if (!callerIdNumber && options.localPresence !== false && numberPool) {
-      const selection = await this.localPresence.selectNumber(numberPool, options.to);
+      const selection = await this.localPresence.selectNumber(
+        numberPool,
+        options.to,
+      );
       if (selection) {
         callerIdNumber = selection.phoneNumber;
         selectionMethod = selection.localMatch
@@ -91,9 +106,16 @@ export class Dialer {
 
     // acquire caller ID lock if service is configured
     if (callerIdNumber && this.callerIdLock) {
-      const locked = await this.callerIdLock.acquireLock(callerIdNumber, options.userId, '');
+      const locked = await this.callerIdLock.acquireLock(
+        callerIdNumber,
+        options.userId,
+        '',
+      );
       if (!locked) {
-        return { success: false, error: 'Caller ID number is currently in use by another call' };
+        return {
+          success: false,
+          error: 'Caller ID number is currently in use by another call',
+        };
       }
     }
 
@@ -104,9 +126,18 @@ export class Dialer {
     });
 
     // update lock with actual call SID
-    if (result.success && result.callSid && callerIdNumber && this.callerIdLock) {
+    if (
+      result.success &&
+      result.callSid &&
+      callerIdNumber &&
+      this.callerIdLock
+    ) {
       await this.callerIdLock.releaseLock('');
-      await this.callerIdLock.acquireLock(callerIdNumber, options.userId, result.callSid);
+      await this.callerIdLock.acquireLock(
+        callerIdNumber,
+        options.userId,
+        result.callSid,
+      );
     }
 
     return { ...result, selectionMethod };
@@ -127,7 +158,9 @@ export class Dialer {
   }
 
   /** Provision a new phone number */
-  async provisionNumber(options: ProvisionNumberOptions): Promise<ProvisionResult> {
+  async provisionNumber(
+    options: ProvisionNumberOptions,
+  ): Promise<ProvisionResult> {
     return this.provider.provisionNumber(options);
   }
 
@@ -137,19 +170,31 @@ export class Dialer {
   }
 
   /** Create an outbound call with a TwiML URL or inline TwiML */
-  async createCall(to: string, from: string, opts: { url?: string; twiml?: string; statusCallback?: string }): Promise<{ callSid: string }> {
+  async createCall(
+    to: string,
+    from: string,
+    opts: { url?: string; twiml?: string; statusCallback?: string },
+  ): Promise<{ callSid: string }> {
     return this.conference.createCall(to, from, opts);
   }
 
   /** Generate conference TwiML for the browser's incoming webhook */
-  generateConferenceTwiml(conferenceName: string, participantLabel?: string): string {
+  generateConferenceTwiml(
+    conferenceName: string,
+    participantLabel?: string,
+  ): string {
     return this.conference.generateConferenceTwiml(conferenceName, {
       participantLabel,
     });
   }
 
   /** Dial the customer into the agent's conference */
-  async addCustomerToConference(conferenceName: string, to: string, from: string, statusCallback?: string): Promise<{ callSid: string; conferenceSid: string }> {
+  async addCustomerToConference(
+    conferenceName: string,
+    to: string,
+    from: string,
+    statusCallback?: string,
+  ): Promise<{ callSid: string; conferenceSid: string }> {
     return this.conference.addParticipant(conferenceName, to, from, {
       label: 'customer',
       endConferenceOnExit: true,
@@ -163,32 +208,55 @@ export class Dialer {
   }
 
   /** Complete a warm transfer — unhold customer, remove agent */
-  async completeTransfer(conferenceSid: string, agentCallSid: string): Promise<TransferResult> {
+  async completeTransfer(
+    conferenceSid: string,
+    agentCallSid: string,
+  ): Promise<TransferResult> {
     return this.conference.completeTransfer(conferenceSid, agentCallSid);
   }
 
   /** Cancel a warm transfer — remove target, unhold customer */
-  async cancelTransfer(conferenceSid: string, transferCallSid: string): Promise<TransferResult> {
+  async cancelTransfer(
+    conferenceSid: string,
+    transferCallSid: string,
+  ): Promise<TransferResult> {
     return this.conference.cancelTransfer(conferenceSid, transferCallSid);
   }
 
   /** Hold or unhold a participant in a conference */
-  async holdParticipant(conferenceSid: string, callSid: string, hold: boolean): Promise<void> {
+  async holdParticipant(
+    conferenceSid: string,
+    callSid: string,
+    hold: boolean,
+  ): Promise<void> {
     return this.conference.holdParticipant(conferenceSid, callSid, hold);
   }
 
   /** Mute or unmute a participant in a conference */
-  async muteParticipant(conferenceSid: string, callSid: string, muted: boolean): Promise<void> {
+  async muteParticipant(
+    conferenceSid: string,
+    callSid: string,
+    muted: boolean,
+  ): Promise<void> {
     return this.conference.muteParticipant(conferenceSid, callSid, muted);
   }
 
   /** List participants in a conference */
-  async listParticipants(conferenceSid: string): Promise<ConferenceParticipant[]> {
+  async listParticipants(
+    conferenceSid: string,
+  ): Promise<ConferenceParticipant[]> {
     return this.conference.listParticipants(conferenceSid);
   }
 
   /** List all incoming phone numbers on the account */
   async listNumbers(): Promise<import('./types.js').PhoneNumber[]> {
     return this.provider.listNumbers();
+  }
+
+  /** Get a recording by SID */
+  async getRecording(
+    recordingSid: string,
+  ): Promise<{ url: string; duration: number }> {
+    return this.conference.getRecording(recordingSid);
   }
 }
