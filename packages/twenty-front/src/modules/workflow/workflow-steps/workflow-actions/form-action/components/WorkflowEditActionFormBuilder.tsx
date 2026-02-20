@@ -230,7 +230,7 @@ export const WorkflowEditActionFormBuilder = ({
               label: t`Learn more`,
               onClick: () =>
                 window.open(
-                  'https://docs.twenty.com/user-guide/workflows/capabilities/workflow-actions#form',
+                  'https://docs.consuelohq.com/user-guide/workflows/capabilities/workflow-actions#form',
                   '_blank',
                   'noopener,noreferrer',
                 ),
