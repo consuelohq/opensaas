@@ -7,20 +7,7 @@ import {
   type YogaDriverServerContext,
 } from '@graphql-yoga/nestjs';
 import * as Sentry from '@sentry/node';
-import {
-  GraphQLError,
-  GraphQLSchema,
-  GraphQLObjectType,
-  GraphQLInterfaceType,
-  GraphQLInputObjectType,
-  GraphQLEnumType,
-  buildSchema,
-  isObjectType,
-  isInterfaceType,
-  isInputObjectType,
-  isEnumType,
-  printSchema,
-} from 'graphql';
+import { GraphQLError, GraphQLSchema } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import {
   type GraphQLSchemaWithContext,
@@ -111,74 +98,8 @@ export class GraphQLConfigService
             application?.id,
           );
 
-          // DEBUG: find which types have null fields
-          const typeMap = schema.getTypeMap();
-          const broken: string[] = [];
-
-          for (const typeName in typeMap) {
-            if (typeName.startsWith('__')) continue;
-            const type = typeMap[typeName];
-
-            if (
-              isObjectType(type) ||
-              isInterfaceType(type) ||
-              isInputObjectType(type)
-            ) {
-              try {
-                const fields = type.getFields();
-
-                if (fields == null) {
-                  broken.push(`${typeName}:null-fields`);
-                  continue;
-                }
-                Object.values(fields);
-              } catch {
-                broken.push(`${typeName}:getFields-throws`);
-              }
-            }
-
-            if (isObjectType(type) || isInterfaceType(type)) {
-              try {
-                const ifaces = (type as GraphQLObjectType).getInterfaces?.();
-
-                if (ifaces == null) {
-                  broken.push(`${typeName}:null-interfaces`);
-                }
-              } catch {
-                broken.push(`${typeName}:getInterfaces-throws`);
-              }
-            }
-
-            if (isEnumType(type)) {
-              try {
-                const vals = type.getValues();
-
-                if (vals == null) {
-                  broken.push(`${typeName}:null-values`);
-                }
-              } catch {
-                broken.push(`${typeName}:getValues-throws`);
-              }
-            }
-          }
-
-          if (broken.length > 0) {
-            throw new GraphQLError(
-              `[DEBUG] broken types: ${broken.join(', ')}`,
-            );
-          }
-
           return schema;
         } catch (error) {
-          // Expose stack trace for debugging the mergeSchemas crash
-          if (
-            error instanceof TypeError &&
-            error.message.includes('Cannot convert')
-          ) {
-            throw new GraphQLError(
-              `[DEBUG] ${error.message} | stack: ${error.stack?.split('\n').slice(0, 5).join(' <- ')}`,
-            );
-          }
 
           if (error instanceof UnauthorizedException) {
             throw new GraphQLError('Unauthenticated', {
