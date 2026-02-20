@@ -10,6 +10,7 @@ import {
   assistantLoadingState,
   assistantSidebarOpenState,
 } from '@/assistant/states/assistantState';
+import { PAGE_BAR_MIN_HEIGHT } from '@/ui/layout/page/constants/PageBarMinHeight';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 
 const SIDEBAR_WIDTH = 380;
@@ -40,6 +41,7 @@ const StyledHeader = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   display: flex;
   justify-content: space-between;
+  min-height: ${PAGE_BAR_MIN_HEIGHT}px;
   padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
 `;
 
