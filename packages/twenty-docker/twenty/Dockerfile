@@ -49,6 +49,8 @@ COPY ./packages/logger /app/packages/logger
 
 RUN npx nx run twenty-server:build
 RUN cd /app/packages/logger && npx tsc
+RUN cd /app/packages/coaching && npx tsc --declaration
+RUN cd /app/packages/contacts && npx tsc
 RUN cd /app/packages/dialer && npx tsc --declaration
 RUN cd /app/packages/api && npx tsc
 
