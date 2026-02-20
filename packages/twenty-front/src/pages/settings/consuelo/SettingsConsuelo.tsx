@@ -22,6 +22,7 @@ import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings
 import { PreferencesSettings } from '~/pages/settings/consuelo/PreferencesSettings';
 import { WorkspaceSettings } from '~/pages/settings/consuelo/WorkspaceSettings';
 import { PhoneNumberSettings } from '~/pages/settings/consuelo/PhoneNumberSettings';
+import { CallingPresenceSettings } from '~/pages/settings/consuelo/CallingPresenceSettings';
 
 type ConsuelloSection = {
   id: string;
@@ -135,6 +136,8 @@ export const SettingsConsuelo = () => {
               <AIProviderSettings />
             ) : activeSection === 'phone-numbers' ? (
               <PhoneNumberSettings />
+            ) : activeSection === 'calling' ? (
+              <CallingPresenceSettings />
             ) : activeSection === 'notifications' ? (
               <PreferencesSettings />
             ) : activeSection === 'workspace' ? (
