@@ -13,7 +13,7 @@ import {
   IconSearch,
 } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
-import { Button, TextInput } from 'twenty-ui/input';
+import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
 type PreviewResult = {
@@ -31,6 +31,20 @@ const StyledPreviewRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)}`};
+`;
+
+const StyledInput = styled.input`
+  background: ${({ theme }) => theme.background.transparent.lighter};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ theme }) => theme.font.color.primary};
+  flex: 1;
+  font-size: ${({ theme }) => theme.font.size.md};
+  padding: ${({ theme }) => `${theme.spacing(1.5)} ${theme.spacing(2)}`};
+  outline: none;
+  &::placeholder {
+    color: ${({ theme }) => theme.font.color.tertiary};
+  }
 `;
 
 const StyledPreviewResult = styled.div`
@@ -165,11 +179,10 @@ export const CallingPresenceSettings = () => {
           />
           <Card rounded>
             <StyledPreviewRow>
-              <TextInput
+              <StyledInput
                 placeholder="+15551234567"
                 value={previewPhone}
-                onChange={setPreviewPhone}
-                fullWidth
+                onChange={(e) => setPreviewPhone(e.target.value)}
               />
               <Button
                 title={previewLoading ? 'Checking...' : 'Preview'}
