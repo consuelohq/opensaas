@@ -10,7 +10,15 @@ import * as Sentry from '@sentry/node';
 import {
   GraphQLError,
   GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLInterfaceType,
+  GraphQLInputObjectType,
+  GraphQLEnumType,
   buildSchema,
+  isObjectType,
+  isInterfaceType,
+  isInputObjectType,
+  isEnumType,
   printSchema,
 } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
@@ -103,10 +111,64 @@ export class GraphQLConfigService
             application?.id,
           );
 
-          // DEBUG: return null to test if the crash is in core schema or workspace schema
-          // If this fixes the crash, the issue is in the workspace schema
-          // If it still crashes, the issue is in the core schema
-          return null as unknown as GraphQLSchema;
+          // DEBUG: find which types have null fields
+          const typeMap = schema.getTypeMap();
+          const broken: string[] = [];
+
+          for (const typeName in typeMap) {
+            if (typeName.startsWith('__')) continue;
+            const type = typeMap[typeName];
+
+            if (
+              isObjectType(type) ||
+              isInterfaceType(type) ||
+              isInputObjectType(type)
+            ) {
+              try {
+                const fields = type.getFields();
+
+                if (fields == null) {
+                  broken.push(`${typeName}:null-fields`);
+                  continue;
+                }
+                Object.values(fields);
+              } catch {
+                broken.push(`${typeName}:getFields-throws`);
+              }
+            }
+
+            if (isObjectType(type) || isInterfaceType(type)) {
+              try {
+                const ifaces = (type as GraphQLObjectType).getInterfaces?.();
+
+                if (ifaces == null) {
+                  broken.push(`${typeName}:null-interfaces`);
+                }
+              } catch {
+                broken.push(`${typeName}:getInterfaces-throws`);
+              }
+            }
+
+            if (isEnumType(type)) {
+              try {
+                const vals = type.getValues();
+
+                if (vals == null) {
+                  broken.push(`${typeName}:null-values`);
+                }
+              } catch {
+                broken.push(`${typeName}:getValues-throws`);
+              }
+            }
+          }
+
+          if (broken.length > 0) {
+            throw new GraphQLError(
+              `[DEBUG] broken types: ${broken.join(', ')}`,
+            );
+          }
+
+          return schema;
         } catch (error) {
           // Expose stack trace for debugging the mergeSchemas crash
           if (
