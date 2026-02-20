@@ -11,6 +11,8 @@ export type NotificationPreferences = {
   quietHoursEnd: string; // "08:00"
 };
 
+export type CallingMode = 'single' | 'parallel';
+
 export type DialerPreferences = {
   autoAnswer: boolean;
   autoAnswerDelay: number; // seconds
@@ -19,6 +21,9 @@ export type DialerPreferences = {
   showCallTimer: boolean;
   recordByDefault: boolean;
   transcribeByDefault: boolean;
+  callingMode: CallingMode;
+  maxParallelLines: number; // 2-5, only used when callingMode === 'parallel'
+  localPresenceEnabled: boolean;
 };
 
 export type DisplayPreferences = {
@@ -82,6 +87,9 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
     recordByDefault: false,
     transcribeByDefault: false,
     defaultCallDuration: 30,
+    callingMode: 'single',
+    maxParallelLines: 3,
+    localPresenceEnabled: false,
   },
   display: {
     theme: 'system',
