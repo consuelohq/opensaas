@@ -23,6 +23,7 @@ import { PreferencesSettings } from '~/pages/settings/consuelo/PreferencesSettin
 import { WorkspaceSettings } from '~/pages/settings/consuelo/WorkspaceSettings';
 import { PhoneNumberSettings } from '~/pages/settings/consuelo/PhoneNumberSettings';
 import { CallingPresenceSettings } from '~/pages/settings/consuelo/CallingPresenceSettings';
+import { SubscriptionSettings } from '~/pages/settings/consuelo/SubscriptionSettings';
 
 type ConsuelloSection = {
   id: string;
@@ -138,6 +139,8 @@ export const SettingsConsuelo = () => {
               <PhoneNumberSettings />
             ) : activeSection === 'calling' ? (
               <CallingPresenceSettings />
+            ) : activeSection === 'subscription' ? (
+              <SubscriptionSettings />
             ) : activeSection === 'notifications' ? (
               <PreferencesSettings />
             ) : activeSection === 'workspace' ? (
