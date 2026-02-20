@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Server as HttpServer } from 'http';
 import { trackLLMUsage } from '../services/posthog.js';
+import type { Message } from '@consuelo/coaching';
 
 // B4/W12: lazy import for peer dependencies — Coach uses openai (peer dep)
 let CoachModule: typeof import('@consuelo/coaching') | null = null;
@@ -232,8 +233,12 @@ export const coachingRoutes = (): RouteDefinition[] => {
         try {
           const { Coach } = await getCoachModule();
           const coach = await getCoach();
+          const messages: Message[] = body.messages.map((m) => ({
+            role: m.role === 'customer' ? 'customer' : 'sales_rep',
+            content: m.content,
+          }));
           const result = await withTimeout(
-            coach.coach(body.messages, { contextChunks: body.contextChunks }),
+            coach.coach(messages, { contextChunks: body.contextChunks }),
             LLM_TIMEOUT_MS,
           );
           const latencyMs = Date.now() - startTime;
@@ -281,7 +286,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const coachMessages = body.messages.map((m) => ({
+        const coachMessages: Message[] = body.messages.map((m) => ({
           role: m.role === 'customer' ? 'customer' : 'sales_rep',
           content: m.content,
         }));
@@ -344,8 +349,12 @@ export const coachingRoutes = (): RouteDefinition[] => {
         try {
           const { Coach } = await getCoachModule();
           const coach = await getCoach();
+          const messages: Message[] = body.messages.map((m) => ({
+            role: m.role === 'customer' ? 'customer' : 'sales_rep',
+            content: m.content,
+          }));
           const result = await withTimeout(
-            coach.analyzeCall(body.messages, {
+            coach.analyzeCall(messages, {
               callSid: body.callSid,
               userId: auth.userId,
             }),

@@ -139,7 +139,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const numbers = await dialer.listNumbers();
 
         const phoneNumbers = numbers.map(
-          (num: { phoneNumber: string; friendlyName: string }) => {
+          (num: { phoneNumber: string; friendlyName?: string }) => {
             const phoneNumber = num.phoneNumber ?? '';
             const areaCode =
               phoneNumber.startsWith('+1') && phoneNumber.length >= 5
