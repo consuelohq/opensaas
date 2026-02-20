@@ -15,17 +15,23 @@ export async function callCommand(number: string): Promise<void> {
   const to = normalizePhone(number);
 
   if (!E164_RE.test(to)) {
-    error(`invalid phone number: ${number} — expected US format like +15551234567`);
+    error(
+      `invalid phone number: ${number} — expected US format like +15551234567`,
+    );
     process.exit(1);
   }
 
   const config = loadConfig();
   if (!config.twilioAccountSid || !config.twilioAuthToken) {
-    error('not configured — run `consuelo init` to set your Twilio credentials');
+    error(
+      'not configured — run `consuelo init` to set your Twilio credentials',
+    );
     process.exit(1);
   }
   if (!config.twilioPhoneNumber) {
-    error('no phone number configured — run `consuelo init` to set your Twilio number');
+    error(
+      'no phone number configured — run `consuelo init` to set your Twilio number',
+    );
     process.exit(1);
   }
 
@@ -52,7 +58,12 @@ export async function callCommand(number: string): Promise<void> {
     }
 
     if (isJson()) {
-      json({ callSid: result.callSid, to, from: result.fromNumber, status: 'initiated' });
+      json({
+        callSid: result.callSid,
+        to,
+        from: result.fromNumber,
+        status: 'initiated',
+      });
     } else {
       log(`call initiated — sid: ${result.callSid}`);
       log(`from: ${result.fromNumber ?? config.twilioPhoneNumber}`);
@@ -60,7 +71,12 @@ export async function callCommand(number: string): Promise<void> {
     }
   } catch (err: unknown) {
     captureError(err, { command: 'call' });
-    error(err instanceof Error ? err.message : 'call failed');
+    const raw = err instanceof Error ? err.message : 'unknown error';
+    if (isJson()) {
+      json({ error: { code: 'CALL_FAILED', message: raw } });
+    } else {
+      error('call failed — check your credentials and try again');
+    }
     process.exit(1);
   }
 }
