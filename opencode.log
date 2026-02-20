@@ -1,0 +1,123 @@
+Performing one time database migration, may take a few minutes...
+sqlite-migration:done
+Database migration complete.
+
+> build · minimax-m2.5-free
+[0m
+[0m[0m→ [0mRead packages/cli/src/index.ts[90m [limit=60, offset=18][0m
+Let me read more of the file to find all console.error calls:
+[0m✱ [0mGrep "console\.(error|log|warn)"[90m in packages/cli/src · 7 matches[0m
+[0m✱ [0mGrep "console\."[90m in packages/cli/src · 11 matches[0m
+[0m
+
+[0m$ [0mrg "console\." packages/cli/src/index.ts[0m→ [0mRead packages/cli/src/index.ts
+[0m→ [0mRead packages/cli/src/output.ts
+[0m→ [0mRead packages/cli/src/utils/ui.ts
+[0m
+import { statusCommand, registerStatus } from './commands/status.js';
+import { loadConfig } from './config.js';
+import { initSentry, captureError } from './sentry.js';
+import { extractCatalog, catalogToTools } from './catalog.js';
+import { json } from './output.js';
+import './output.js';
+
+const logger = createLogger('CLI');
+const program = new Command();
+
+await initSentry();
+
+program
+  .name('consuelo')
+  .description('AI-powered sales toolkit')
+  .version('0.0.1')
+  .option('--json', 'machine-readable output')
+  .option('--quiet', 'suppress output')
+  .option('--no-telemetry', 'disable error reporting')
+  .option('--workspace <name>', 'use a specific workspace configuration')
+  .hook('preAction', async (_thisCommand, actionCommand) => {
+    const opts = actionCommand.optsWithGlobals();
+    if (opts.json) globalThis.__consuelo_json = true;
+    if (opts.quiet) globalThis.__consuelo_quiet = true;
+
+    // twenty-sdk workspace resolution
+    try {
+      // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
+      const { ConfigService } = await import('twenty-sdk/cli');
+      let workspace = opts.workspace as string | undefined;
+      if (!workspace) {
+        const configService = new ConfigService();
+        workspace = await configService.getDefaultWorkspace();
+      }
+      ConfigService.setActiveWorkspace(workspace);
+    } catch (_err: unknown) {
+      // twenty-sdk not available — skip workspace resolution — intentional: optional dep
+    }
+  })
+  .action(async () => {
+    const config = loadConfig();
+    const isConfigured = config.twilioAccountSid || config.managed;
+    if (isConfigured) {
+      await statusCommand();
+    } else {
+      await initCommand({});
+    }
+  });
+
+program
+  .command('init')
+  .description('interactive setup wizard')
+  .option('--managed', 'use hosted infrastructure')
+  .option('--yes', 'non-interactive mode with sensible defaults')
+  .option('--template <type>', 'project template (full, minimal, api-only)')
+  .action(async (opts) => {
+    await initCommand({
+      managed: opts.managed,
+      yes: opts.yes,
+      template: opts.template,
+
+[0m[0m$ [0mcat packages/cli/src/index.ts | head -80 | tail -60
+[0m$ [0mrg "console\.error" packages/cli/src/ --glob "*.ts"
+There are no `console.error` calls in the file, but there's error output via `logger.error` at line 134 which doesn't respect --json mode. Let me fix this by importing `error` and `isJson` from output.js and using them in the catch block:
+[0m[0m
+
+[0m← [0mEdit packages/cli/src/index.tsIndex: /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
+===================================================================
+--- /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
++++ /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
+@@ -21,9 +21,9 @@
+ import { statusCommand, registerStatus } from './commands/status.js';
+ import { loadConfig } from './config.js';
+ import { initSentry, captureError } from './sentry.js';
+ import { extractCatalog, catalogToTools } from './catalog.js';
+-import { json } from './output.js';
++import { error, isJson, json } from './output.js';
+ import './output.js';
+ 
+ const logger = createLogger('CLI');
+ const program = new Command();
+
+
+Now fix the catch block to respect --json mode:
+[0m← [0mEdit packages/cli/src/index.ts[0m
+
+
+Index: /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
+===================================================================
+--- /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
++++ /private/tmp/opensaas-dev-634/packages/cli/src/index.ts
+@@ -130,7 +130,12 @@
+   });
+ 
+ program.parseAsync().catch((err: unknown) => {
+   captureError(err, { command: process.argv[2] ?? 'unknown' });
+-  logger.error(err instanceof Error ? err.message : 'unexpected error');
++  const message = err instanceof Error ? err.message : 'unexpected error';
++  if (isJson()) {
++    json({ error: { code: 'CLI_ERROR', message } });
++  } else {
++    error(message);
++  }
+   process.exit(1);
+ });
+[0m$ [0mrg "console\." packages/cli/src/index.ts
+[0m→ [0mRead packages/cli/src/index.ts[90m [limit=30, offset=125][0m
