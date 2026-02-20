@@ -4088,6 +4088,7 @@ __metadata:
     "@types/pg": "npm:^8.0.0"
     "@types/ws": "npm:^8.0.0"
     ioredis: "npm:^5.6.0"
+    zod: "npm:^4.1.11"
   peerDependencies:
     "@aws-sdk/client-s3": ">=3.0.0"
     "@aws-sdk/s3-request-presigner": ">=3.0.0"
@@ -6210,43 +6211,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:8.3.1":
-  version: 8.3.1
-  resolution: "@graphql-tools/merge@npm:8.3.1"
-  dependencies:
-    "@graphql-tools/utils": "npm:8.9.0"
-    tslib: "npm:^2.4.0"
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/dce29916fa6bd134947f584080ab18908b23537ec8dff74d838bf6c7be34b3e14c527d4ffd18b8f91efe6bb967f170f7393a2383035ed952f88010b60536a106
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/merge@npm:9.0.1":
-  version: 9.0.1
-  resolution: "@graphql-tools/merge@npm:9.0.1"
-  dependencies:
-    "@graphql-tools/utils": "npm:^10.0.10"
-    tslib: "npm:^2.4.0"
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/cbfcb2c10490a11417991e8b61b8df2eba73a2c576e57cbf2d928902030d4391122536b9442bf042609ec24376b79b8bc6d9117e137dd8db2255ed90613acbc7
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/merge@npm:^8.2.6, @graphql-tools/merge@npm:^8.4.1":
-  version: 8.4.2
-  resolution: "@graphql-tools/merge@npm:8.4.2"
-  dependencies:
-    "@graphql-tools/utils": "npm:^9.2.1"
-    tslib: "npm:^2.4.0"
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/2df55222b48e010e683572f456cf265aabae5748c59f7c1260c66dec9794b7a076d3706f04da969b77f0a32c7ccb4551fee30125931d3fe9c98a8806aae9a3f4
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/merge@npm:^9.0.1, @graphql-tools/merge@npm:^9.0.3, @graphql-tools/merge@npm:^9.1.7":
+"@graphql-tools/merge@npm:9.1.7":
   version: 9.1.7
   resolution: "@graphql-tools/merge@npm:9.1.7"
   dependencies:
@@ -6255,6 +6220,18 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10c0/b1dbebb12419e9d1d2f2ae6a92bbbe67dca4def052b6225259c3fee5d98a178668614f7faf68cfb2097e6598a7ef69309e1e9e93db6a5e219731b7613ab9805a
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/merge@patch:@graphql-tools/merge@9.1.7#./packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch::locator=consuelo%40workspace%3A.":
+  version: 9.1.7
+  resolution: "@graphql-tools/merge@patch:@graphql-tools/merge@npm%3A9.1.7#./packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch::version=9.1.7&hash=8ffd0a&locator=consuelo%40workspace%3A."
+  dependencies:
+    "@graphql-tools/utils": "npm:^11.0.0"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/995b7c91f7f8759c693b036736ec1f8bbe41ae711b6863e58cc6c6595f060f6cc9795c47b070fa2f1848f61d3854402d21853caa0ad66e4953c3d30d7cfe0caa
   languageName: node
   linkType: hard
 
