@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 import { useCallback, useEffect, useRef } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { DIAL_PAD_KEYS } from '@/dialer/constants/dialerConstants';
 import { activeCallState } from '@/dialer/states/activeCallState';
@@ -126,6 +126,7 @@ const StyledActionRow = styled.div`
 
 export const DialPad = ({ onCall }: DialPadProps) => {
   const [rawNumber, setRawNumber] = useRecoilState(phoneNumberState);
+  const setPhoneNumber = useSetRecoilState(phoneNumberState);
   const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -227,6 +228,31 @@ export const DialPad = ({ onCall }: DialPadProps) => {
     rawNumber,
     onCall,
   ]);
+
+  // document-level keyboard input for global digit entry
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (/^[0-9*#\+]$/.test(e.key)) {
+        e.preventDefault();
+        setPhoneNumber((prev) => prev + e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        setPhoneNumber((prev) => prev.slice(0, -1));
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [setPhoneNumber]);
 
   // auto-focus container for keyboard capture
   useEffect(() => {
