@@ -48,7 +48,8 @@ COPY ./packages/dialer /app/packages/dialer
 COPY ./packages/logger /app/packages/logger
 
 RUN npx nx run twenty-server:build
-RUN cd /app/packages/api && npx tsc; exitcode=$?; echo "TSC_EXIT=$exitcode"; if [ -f dist/routes/index.js ]; then ls -la dist/routes/index.js; else echo "dist/routes/index.js NOT FOUND"; fi
+RUN cd /app/packages/dialer && npx tsc --declaration
+RUN cd /app/packages/api && npx tsc || true
 
 RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
 

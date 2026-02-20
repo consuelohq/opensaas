@@ -80,17 +80,7 @@ const bootstrap = async () => {
 
   // Mount @consuelo/api routes on the Express instance (optional — server works without them)
   // HACK: dynamic path prevents nx from detecting this as a build dependency (DEV-878)
-  // Path: /app/packages/twenty-server -> /app/packages/api/dist/routes/index.js
-  const apiRoutesPath = [
-    '..',
-    '..',
-    '..',
-    'packages',
-    'api',
-    'dist',
-    'routes',
-    'index.js',
-  ].join('/');
+  const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join('/');
   try {
     const routesModule = await import(apiRoutesPath);
     const expressApp = app.getHttpAdapter().getInstance();
