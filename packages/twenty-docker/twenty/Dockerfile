@@ -48,8 +48,9 @@ COPY ./packages/dialer /app/packages/dialer
 COPY ./packages/logger /app/packages/logger
 
 RUN npx nx run twenty-server:build
+RUN cd /app/packages/logger && npx tsc
 RUN cd /app/packages/dialer && npx tsc --declaration
-RUN cd /app/packages/api && npx tsc || true
+RUN cd /app/packages/api && npx tsc
 
 RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
 
