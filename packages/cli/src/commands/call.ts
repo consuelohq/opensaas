@@ -8,24 +8,40 @@ const E164_RE = /^\+1\d{10}$/;
 
 export async function callCommand(number: string): Promise<void> {
   if (!number) {
-    error('provide a number: consuelo call <number>');
+    if (isJson()) {
+      json({ error: { code: 'VALIDATION_ERROR', message: 'provide a number: consuelo call <number>' } });
+    } else {
+      error('provide a number: consuelo call <number>');
+    }
     process.exit(1);
   }
 
   const to = normalizePhone(number);
 
   if (!E164_RE.test(to)) {
-    error(`invalid phone number: ${number} — expected US format like +15551234567`);
+    if (isJson()) {
+      json({ error: { code: 'VALIDATION_ERROR', message: `invalid phone number: ${number} — expected US format like +15551234567` } });
+    } else {
+      error(`invalid phone number: ${number} — expected US format like +15551234567`);
+    }
     process.exit(1);
   }
 
   const config = loadConfig();
   if (!config.twilioAccountSid || !config.twilioAuthToken) {
-    error('not configured — run `consuelo init` to set your Twilio credentials');
+    if (isJson()) {
+      json({ error: { code: 'VALIDATION_ERROR', message: 'not configured — run `consuelo init` to set your Twilio credentials' } });
+    } else {
+      error('not configured — run `consuelo init` to set your Twilio credentials');
+    }
     process.exit(1);
   }
   if (!config.twilioPhoneNumber) {
-    error('no phone number configured — run `consuelo init` to set your Twilio number');
+    if (isJson()) {
+      json({ error: { code: 'VALIDATION_ERROR', message: 'no phone number configured — run `consuelo init` to set your Twilio number' } });
+    } else {
+      error('no phone number configured — run `consuelo init` to set your Twilio number');
+    }
     process.exit(1);
   }
 
