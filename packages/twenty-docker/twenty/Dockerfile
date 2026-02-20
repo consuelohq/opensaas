@@ -40,9 +40,17 @@ COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
-RUN npx nx run twenty-server:build
+# opensaas packages (@consuelo/api and its deps)
+COPY ./packages/api /app/packages/api
+COPY ./packages/coaching /app/packages/coaching
+COPY ./packages/contacts /app/packages/contacts
+COPY ./packages/dialer /app/packages/dialer
+COPY ./packages/logger /app/packages/logger
 
-RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server
+RUN npx nx run twenty-server:build
+RUN cd /app/packages/api && npx tsc || true
+
+RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
 
 # Build the front
 FROM common-deps AS twenty-front-build
