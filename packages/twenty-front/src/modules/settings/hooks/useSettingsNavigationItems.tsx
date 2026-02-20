@@ -197,10 +197,10 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
       ],
     },
     {
-      label: t`Mercury`,
+      label: 'Mercury',
       items: [
         {
-          label: t`Mercury`,
+          label: 'Mercury',
           path: SettingsPath.Mercury,
           Icon: IconPhone,
           matchSubPages: true,

@@ -104,13 +104,13 @@ export const SettingsConsuelo = () => {
 
   return (
     <SubMenuTopBarContainer
-      title={t`Mercury`}
+      title="Mercury"
       links={[
         {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        { children: <Trans>Mercury</Trans> },
+        { children: 'Mercury' },
       ]}
     >
       <SettingsPageContainer>

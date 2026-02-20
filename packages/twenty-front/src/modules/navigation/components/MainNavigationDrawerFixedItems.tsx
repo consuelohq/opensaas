@@ -69,7 +69,7 @@ export const MainNavigationDrawerFixedItems = () => {
           />
         )}
         <NavigationDrawerItem
-          label={t`Mercury`}
+          label="Mercury"
           Icon={IconPhone}
           onClick={() => setIsDialerOpen(!isDialerOpen)}
           active={isDialerOpen}
