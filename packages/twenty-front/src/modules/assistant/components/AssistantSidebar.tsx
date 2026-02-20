@@ -1,6 +1,4 @@
 import styled from '@emotion/styled';
-import { AnimatePresence, motion } from 'framer-motion';
-import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 import { useEffect, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { IconTrash } from 'twenty-ui/display';
@@ -12,41 +10,43 @@ import {
   assistantLoadingState,
   assistantSidebarOpenState,
 } from '@/assistant/states/assistantState';
+import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 
 const SIDEBAR_WIDTH = 380;
 
-const StyledSidebar = styled(motion.div)`
-  width: ${SIDEBAR_WIDTH}px;
-  min-width: ${SIDEBAR_WIDTH}px;
+const StyledSidePanelWrapper = styled.div<{ isOpen: boolean }>`
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+  width: ${({ isOpen }) => (isOpen ? `${SIDEBAR_WIDTH}px` : '0px')};
+  transition: width ${({ theme }) => theme.animation.duration.normal}s;
+`;
+
+const StyledSidebar = styled.div`
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: ${({ theme }) => theme.background.primary};
   border-left: 1px solid ${({ theme }) => theme.border.color.medium};
   overflow: hidden;
-  position: fixed;
-  right: 0;
-  top: 0;
+  position: relative;
+  box-sizing: border-box;
   z-index: ${RootStackingContextZIndices.CommandMenu - 2};
 `;
 
-const ASSISTANT_SIDEBAR_VARIANTS = {
-  open: { x: '0%' },
-  closed: { x: '100%' },
-};
-
 const StyledHeader = styled.div`
-  display: flex;
   align-items: center;
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
   justify-content: space-between;
   padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledClearButton = styled.button`
@@ -120,8 +120,8 @@ const StyledTypingIndicator = styled.div`
 `;
 
 export const AssistantSidebar = () => {
-  const isOpen = useRecoilValue(assistantSidebarOpenState);
-  const isLoading = useRecoilValue(assistantLoadingState);
+  const assistantSidebarOpen = useRecoilValue(assistantSidebarOpenState);
+  const assistantLoading = useRecoilValue(assistantLoadingState);
   const { messages, sendMessage, clearConversation } = useAssistant();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -130,50 +130,43 @@ export const AssistantSidebar = () => {
   }, [messages]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <StyledSidebar
-          initial="closed"
-          animate="open"
-          exit="closed"
-          variants={ASSISTANT_SIDEBAR_VARIANTS}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-        >
-          <StyledHeader>
-            <StyledTitle>Assistant</StyledTitle>
-            {messages.length > 0 && (
-              <StyledClearButton
-                onClick={clearConversation}
-                title="Clear conversation"
-              >
-                <IconTrash size={16} />
-              </StyledClearButton>
-            )}
-          </StyledHeader>
+    <StyledSidePanelWrapper isOpen={assistantSidebarOpen}>
+      <StyledSidebar>
+        <StyledHeader>
+          <StyledTitle>Assistant</StyledTitle>
+          {messages.length > 0 && (
+            <StyledClearButton
+              onClick={clearConversation}
+              title="Clear conversation"
+            >
+              <IconTrash size={16} />
+            </StyledClearButton>
+          )}
+        </StyledHeader>
 
-          <StyledMessages>
-            {messages.length === 0 ? (
-              <StyledEmptyState>
-                Ask me anything about your data
-              </StyledEmptyState>
-            ) : (
-              messages.map((msg) => (
-                <AssistantMessage key={msg.id} message={msg} />
-              ))
-            )}
-            {isLoading && (
-              <StyledTypingIndicator>
-                <span />
-                <span />
-                <span />
-              </StyledTypingIndicator>
-            )}
-            <div ref={messagesEndRef} />
-          </StyledMessages>
+        <StyledMessages>
+          {messages.length === 0 ? (
+            <StyledEmptyState>Ask me anything about your data</StyledEmptyState>
+          ) : (
+            messages.map((msg) => (
+              <AssistantMessage key={msg.id} message={msg} />
+            ))
+          )}
+          {assistantLoading && (
+            <StyledTypingIndicator>
+              <span />
+              <span />
+              <span />
+            </StyledTypingIndicator>
+          )}
+          <div ref={messagesEndRef} />
+        </StyledMessages>
 
-          <AssistantMessageInput onSend={sendMessage} disabled={isLoading} />
-        </StyledSidebar>
-      )}
-    </AnimatePresence>
+        <AssistantMessageInput
+          onSend={sendMessage}
+          disabled={assistantLoading}
+        />
+      </StyledSidebar>
+    </StyledSidePanelWrapper>
   );
 };

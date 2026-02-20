@@ -18,32 +18,32 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
-import { AnimatePresence, motion } from 'framer-motion';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 import styled from '@emotion/styled';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 const SIDEBAR_WIDTH = 380;
 
-const StyledSidebar = styled(motion.div)`
-  width: ${SIDEBAR_WIDTH}px;
-  min-width: ${SIDEBAR_WIDTH}px;
+const StyledSidePanelWrapper = styled.div<{ isOpen: boolean }>`
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+  width: ${({ isOpen }) => (isOpen ? `${SIDEBAR_WIDTH}px` : '0px')};
+  transition: width ${({ theme }) => theme.animation.duration.normal}s;
+`;
+
+const StyledSidebar = styled.div`
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: ${({ theme }) => theme.background.primary};
   border-left: 1px solid ${({ theme }) => theme.border.color.medium};
   overflow-y: auto;
-  position: fixed;
-  right: 0;
-  top: 0;
+  position: relative;
+  box-sizing: border-box;
   z-index: ${RootStackingContextZIndices.CommandMenu - 1};
 `;
-
-const DIALER_SIDEBAR_VARIANTS = {
-  open: { x: '0%' },
-  closed: { x: '100%' },
-};
 
 const StyledHeader = styled.div`
   align-items: center;
@@ -127,7 +127,7 @@ const StyledReconnectSecondary = styled(StyledReconnectButton)`
 export const DialerSidebar = () => {
   useAvailableCallerIds();
   useCallPersistence();
-  const isOpen = useRecoilValue(dialerSidebarOpenState);
+  const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
   const setReconnectPrompt = useSetRecoilState(reconnectPromptState);
@@ -158,67 +158,56 @@ export const DialerSidebar = () => {
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <StyledSidebar
-          initial="closed"
-          animate="open"
-          exit="closed"
-          variants={DIALER_SIDEBAR_VARIANTS}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-        >
-          <StyledHeader>
-            <StyledTitle>Mercury</StyledTitle>
-          </StyledHeader>
+    <StyledSidePanelWrapper isOpen={dialerSidebarOpen}>
+      <StyledSidebar>
+        <StyledHeader>
+          <StyledTitle>Mercury</StyledTitle>
+        </StyledHeader>
 
-          <StyledBody>
-            {reconnectPrompt?.visible && (
-              <StyledReconnectBanner>
-                <StyledReconnectText>
-                  Active call detected. Reconnect?
-                </StyledReconnectText>
-                <StyledReconnectButtons>
-                  <StyledReconnectPrimary onClick={handleReconnect}>
-                    Reconnect
-                  </StyledReconnectPrimary>
-                  <StyledReconnectSecondary onClick={handleDismiss}>
-                    Dismiss
-                  </StyledReconnectSecondary>
-                </StyledReconnectButtons>
-              </StyledReconnectBanner>
-            )}
-            <ContactHeader />
-            <LocalPresenceIndicator />
-            <DialPad />
-            <CallButton />
-            {isInCall && <InCallControls />}
-            {isInCall && <QuickActions />}
-            <CoachingPanel
-              isLoading={isLoading}
-              talkingPoints={talkingPoints}
-              callStatus={callState.status}
-              error={coachingError}
-              onRetry={retryCoaching}
-            />
-            {transcript.length > 0 && (
-              <LiveTranscript
-                transcript={transcript}
-                isConnected={isConnected}
-              />
-            )}
-            <PostCallSummary
-              analysis={analysis}
-              isAnalyzing={isAnalyzing}
-              error={analysisError}
-              onRetry={retryAnalysis}
-            />
-          </StyledBody>
+        <StyledBody>
+          {reconnectPrompt?.visible && (
+            <StyledReconnectBanner>
+              <StyledReconnectText>
+                Active call detected. Reconnect?
+              </StyledReconnectText>
+              <StyledReconnectButtons>
+                <StyledReconnectPrimary onClick={handleReconnect}>
+                  Reconnect
+                </StyledReconnectPrimary>
+                <StyledReconnectSecondary onClick={handleDismiss}>
+                  Dismiss
+                </StyledReconnectSecondary>
+              </StyledReconnectButtons>
+            </StyledReconnectBanner>
+          )}
+          <ContactHeader />
+          <LocalPresenceIndicator />
+          <DialPad />
+          <CallButton />
+          {isInCall && <InCallControls />}
+          {isInCall && <QuickActions />}
+          <CoachingPanel
+            isLoading={isLoading}
+            talkingPoints={talkingPoints}
+            callStatus={callState.status}
+            error={coachingError}
+            onRetry={retryCoaching}
+          />
+          {transcript.length > 0 && (
+            <LiveTranscript transcript={transcript} isConnected={isConnected} />
+          )}
+          <PostCallSummary
+            analysis={analysis}
+            isAnalyzing={isAnalyzing}
+            error={analysisError}
+            onRetry={retryAnalysis}
+          />
+        </StyledBody>
 
-          <StyledFooter>
-            <AudioDeviceSelector compact />
-          </StyledFooter>
-        </StyledSidebar>
-      )}
-    </AnimatePresence>
+        <StyledFooter>
+          <AudioDeviceSelector compact />
+        </StyledFooter>
+      </StyledSidebar>
+    </StyledSidePanelWrapper>
   );
 };
