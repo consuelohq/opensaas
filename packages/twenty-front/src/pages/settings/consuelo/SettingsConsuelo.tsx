@@ -21,6 +21,7 @@ import { AudioDeviceSettings } from '~/pages/settings/consuelo/AudioDeviceSettin
 import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings';
 import { PreferencesSettings } from '~/pages/settings/consuelo/PreferencesSettings';
 import { WorkspaceSettings } from '~/pages/settings/consuelo/WorkspaceSettings';
+import { PhoneNumberSettings } from '~/pages/settings/consuelo/PhoneNumberSettings';
 
 type ConsuelloSection = {
   id: string;
@@ -132,6 +133,8 @@ export const SettingsConsuelo = () => {
               <AudioDeviceSettings />
             ) : activeSection === 'ai' ? (
               <AIProviderSettings />
+            ) : activeSection === 'phone-numbers' ? (
+              <PhoneNumberSettings />
             ) : activeSection === 'notifications' ? (
               <PreferencesSettings />
             ) : activeSection === 'workspace' ? (
