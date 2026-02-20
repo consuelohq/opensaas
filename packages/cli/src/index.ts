@@ -22,7 +22,7 @@ import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
 import { extractCatalog, catalogToTools } from './catalog.js';
-import { json } from './output.js';
+import { json, isJson } from './output.js';
 import './output.js';
 
 const logger = createLogger('CLI');
@@ -130,7 +130,17 @@ program
   });
 
 program.parseAsync().catch((err: unknown) => {
-  captureError(err, { command: process.argv[2] ?? 'unknown' });
-  logger.error(err instanceof Error ? err.message : 'unexpected error');
+  const command = process.argv[2] ?? 'unknown';
+  const args = process.argv.slice(3);
+  const message = err instanceof Error ? err.message : 'unexpected error';
+  captureError(err, { command, args });
+
+  if (isJson()) {
+    json({
+      error: { code: 'CLI_ERROR', message: `${command} failed: ${message}` },
+    });
+  } else {
+    logger.error(`${command} ${args.join(' ')} failed: ${message}`);
+  }
   process.exit(1);
 });
