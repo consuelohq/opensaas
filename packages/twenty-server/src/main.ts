@@ -78,13 +78,25 @@ const bootstrap = async () => {
   // Inject the server url in the frontend page
   generateFrontConfig();
 
+  // HACK: temporary crash diagnostics for route loading (DEV-878)
+  process.on('uncaughtException', (err) => {
+    console.log('[consuelo] UNCAUGHT EXCEPTION:', err.stack ?? err.message);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.log('[consuelo] UNHANDLED REJECTION:', reason);
+  });
+
   // Mount @consuelo/api routes on the Express instance (optional — server works without them)
   // HACK: dynamic path prevents nx from detecting this as a build dependency (DEV-878)
-  const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'DISABLED-index.js'].join('/');
+  const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join('/');
   try {
+    console.log('[consuelo] importing routes from:', apiRoutesPath); // HACK: startup diagnostic
     const routesModule = await import(apiRoutesPath);
+    console.log('[consuelo] import succeeded, calling allRoutes()'); // HACK: startup diagnostic
+    const routes = routesModule.allRoutes();
+    console.log(`[consuelo] allRoutes() returned ${routes.length} routes, mounting...`); // HACK: startup diagnostic
     const expressApp = app.getHttpAdapter().getInstance();
-    for (const route of routesModule.allRoutes()) {
+    for (const route of routes) {
       const method = route.method.toLowerCase() as
         | 'get'
         | 'post'
@@ -105,11 +117,9 @@ const bootstrap = async () => {
         }
       });
     }
-    console.log(
-      `Mounted ${routesModule.allRoutes().length} @consuelo/api routes`,
-    ); // HACK: one-time startup log is acceptable
-  } catch {
-    console.log('@consuelo/api routes not available, skipping'); // HACK: one-time startup log is acceptable
+    console.log(`[consuelo] mounted ${routes.length} routes OK`); // HACK: startup diagnostic
+  } catch (err: unknown) {
+    console.log('[consuelo] route loading failed:', err instanceof Error ? err.stack ?? err.message : String(err)); // HACK: startup diagnostic
   }
 
   await app.listen(twentyConfigService.get('NODE_PORT'));
