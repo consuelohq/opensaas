@@ -18,6 +18,7 @@ import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
+import { PAGE_BAR_MIN_HEIGHT } from '@/ui/layout/page/constants/PageBarMinHeight';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
 import styled from '@emotion/styled';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -50,6 +51,7 @@ const StyledHeader = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   display: flex;
   justify-content: space-between;
+  min-height: ${PAGE_BAR_MIN_HEIGHT}px;
   padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
 `;
 
