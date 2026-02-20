@@ -2,10 +2,10 @@ import type { ParallelGroup, NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import {
-  sharedDialer as dialer,
-  sharedCallerIdLockService as lockService,
-} from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+
+const getDialer = sharedDialer;
+const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -60,7 +60,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const accountNumbers = await dialer.listNumbers();
+        const accountNumbers = await getDialer().listNumbers();
         const pool: NumberPool = {
           numbers: accountNumbers,
           primaryNumber: accountNumbers[0],
@@ -68,7 +68,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         const fromNumbers: string[] = [];
         for (const customerNumber of body.customerNumbers) {
-          const selection = await dialer.localPresence.selectNumber(
+          const selection = await getDialer().localPresence.selectNumber(
             pool,
             customerNumber,
           );
@@ -79,14 +79,14 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         for (let i = 0; i < fromNumbers.length; i++) {
           if (fromNumbers[i]) {
-            const locked = await lockService.acquireLock(
+            const locked = await getLockService().acquireLock(
               fromNumbers[i],
               userId,
               `parallel-${i}`,
             );
             if (!locked) {
               for (let j = 0; j < i; j++) {
-                await lockService.releaseLockByNumber(fromNumbers[j]);
+                await getLockService().releaseLockByNumber(fromNumbers[j]);
               }
               res.status(409).json({
                 error: {
@@ -100,7 +100,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         }
 
         const baseUrl = process.env.API_BASE_URL ?? '';
-        const result = await dialer.parallel.initiateGroup({
+        const result = await getDialer().parallel.initiateGroup({
           customerNumbers: body.customerNumbers,
           queueId: body.queueId,
           contactIds: body.contactIds,
@@ -140,8 +140,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const numbers = await dialer.listNumbers();
-        const result = dialer.parallel.validateRequirements(numbers.length);
+        const numbers = await getDialer().listNumbers();
+        const result = getDialer().parallel.validateRequirements(
+          numbers.length,
+        );
         res.status(200).json(result);
       } catch (err: unknown) {
         Sentry.captureException(
@@ -177,22 +179,22 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        await dialer.parallel.handleStatusCallback(
+        await getDialer().parallel.handleStatusCallback(
           callSid,
           callStatus,
           answeredBy,
         );
 
-        const groupId = await dialer.parallel.getGroupIdForCall(callSid);
+        const groupId = await getDialer().parallel.getGroupIdForCall(callSid);
         if (groupId) {
-          const group = await dialer.parallel.getGroup(groupId);
+          const group = await getDialer().parallel.getGroup(groupId);
           if (
             group &&
             (group.status === 'connected' || group.status === 'completed')
           ) {
-            const releasable = dialer.parallel.getReleasableNumbers(group);
+            const releasable = getDialer().parallel.getReleasableNumbers(group);
             for (const num of releasable) {
-              await lockService.releaseLockByNumber(num);
+              await getLockService().releaseLockByNumber(num);
             }
           }
         }
@@ -227,7 +229,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const twiml = await dialer.parallel.generateCustomerTwiml(callSid);
+        const twiml = await getDialer().parallel.generateCustomerTwiml(callSid);
         if (!twiml) {
           res.status(404).json({
             error: {
@@ -280,7 +282,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
       try {
         const group: ParallelGroup | null =
-          await dialer.parallel.getGroup(groupId);
+          await getDialer().parallel.getGroup(groupId);
         if (!group) {
           res.status(404).json({
             error: {
@@ -350,7 +352,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const group = await dialer.parallel.getGroup(groupId);
+        const group = await getDialer().parallel.getGroup(groupId);
         if (!group) {
           res.status(404).json({
             error: {
@@ -363,11 +365,11 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         for (const call of group.calls) {
           if (call.fromNumber) {
-            await lockService.releaseLockByNumber(call.fromNumber);
+            await getLockService().releaseLockByNumber(call.fromNumber);
           }
         }
 
-        await dialer.parallel.terminateGroup(groupId);
+        await getDialer().parallel.terminateGroup(groupId);
         res.status(200).json({ groupId, status: 'completed' });
       } catch (err: unknown) {
         Sentry.captureException(

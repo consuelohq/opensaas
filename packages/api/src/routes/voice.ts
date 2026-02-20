@@ -5,10 +5,10 @@ import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
-import {
-  sharedDialer as dialer,
-  sharedCallerIdLockService,
-} from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+
+const getDialer = sharedDialer;
+const getCallerIdLockService = sharedCallerIdLockService;
 
 /**
  * Validate Twilio signature on webhook requests.
@@ -136,7 +136,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const numbers = await dialer.listNumbers();
+        const numbers = await getDialer().listNumbers();
 
         const phoneNumbers = numbers.map(
           (num: { phoneNumber: string; friendlyName?: string }) => {
@@ -180,7 +180,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await dialer.getToken(userId);
+        const result = await getDialer().getToken(userId);
         res.json(result);
       } catch (err: unknown) {
         Sentry.captureException(
@@ -220,7 +220,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const acquired = await sharedCallerIdLockService.acquireLock(
+        const acquired = await getCallerIdLockService().acquireLock(
           callerId,
           userId,
           callSid ?? `preflight-${randomUUID()}`,
@@ -287,7 +287,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
-      const twiml = dialer.generateConferenceTwiml(conferenceName, 'agent');
+      const twiml = getDialer().generateConferenceTwiml(
+        conferenceName,
+        'agent',
+      );
 
       // dial the customer into the conference (fire-and-forget)
       if (to && !to.startsWith('client:')) {
@@ -296,7 +299,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           : undefined;
 
         try {
-          const customerResult = await dialer.addCustomerToConference(
+          const customerResult = await getDialer().addCustomerToConference(
             conferenceName,
             to,
             from,
@@ -373,7 +376,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const logger = createLogger('voice:active-call');
 
         const conferenceSid =
-          await dialer.conference.findConferenceSid(conferenceName);
+          await getDialer().conference.findConferenceSid(conferenceName);
 
         if (conferenceSid) {
           logger.info('Active conference found', {
@@ -532,7 +535,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
       try {
         const conferenceSid =
           record.conferenceSid ??
-          (await dialer.conference.findConferenceSid(record.conferenceName));
+          (await getDialer().conference.findConferenceSid(
+            record.conferenceName,
+          ));
         if (!conferenceSid) {
           res.status(404).json({
             error: {
@@ -543,7 +548,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const participants = await dialer.listParticipants(conferenceSid);
+        const participants = await getDialer().listParticipants(conferenceSid);
         const customer = participants.find(
           (p: { label: string }) => p.label === 'customer',
         );
@@ -557,7 +562,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        await dialer.muteParticipant(
+        await getDialer().muteParticipant(
           conferenceSid,
           customer.callSid,
           body.muted,
@@ -725,7 +730,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await dialer.initiateTransfer({
+        const result = await getDialer().initiateTransfer({
           callSid,
           conferenceName,
           to: body.to,
@@ -826,7 +831,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await dialer.completeTransfer(
+        const result = await getDialer().completeTransfer(
           body.conferenceSid,
           body.agentCallSid,
         );
@@ -904,7 +909,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await dialer.cancelTransfer(
+        const result = await getDialer().cancelTransfer(
           body.conferenceSid,
           body.transferCallSid,
         );
@@ -986,7 +991,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const conferenceSid =
-          await dialer.conference.findConferenceSid(conferenceName);
+          await getDialer().conference.findConferenceSid(conferenceName);
         if (!conferenceSid) {
           res.status(404).json({
             error: {
@@ -998,19 +1003,20 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         if (body.participantCallSid) {
-          await dialer.holdParticipant(
+          await getDialer().holdParticipant(
             conferenceSid,
             body.participantCallSid,
             body.hold,
           );
         } else {
           // default: hold the customer
-          const participants = await dialer.listParticipants(conferenceSid);
+          const participants =
+            await getDialer().listParticipants(conferenceSid);
           const customer = participants.find(
             (p: { label: string }) => p.label === 'customer',
           );
           if (customer) {
-            await dialer.holdParticipant(
+            await getDialer().holdParticipant(
               conferenceSid,
               customer.callSid,
               body.hold,
@@ -1095,7 +1101,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const callerId = callerIdMap.get(callSid);
       if (callerId && FAILURE_STATUSES.has(callStatus)) {
         try {
-          await sharedCallerIdLockService.releaseLockByNumber(callerId);
+          await getCallerIdLockService().releaseLockByNumber(callerId);
           callerIdMap.delete(callSid);
         } catch (err: unknown) {
           const message =

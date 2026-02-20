@@ -7,10 +7,10 @@ import {
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import {
-  sharedDialer as dialer,
-  sharedCallerIdLockService as lockService,
-} from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+
+const getDialer = sharedDialer;
+const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -185,7 +185,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const locks = await lockService.getUserLocks(userId);
+        const locks = await getLockService().getUserLocks(userId);
         res.status(200).json({
           locks: locks.map(
             (l: {
@@ -231,14 +231,14 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const locks = await lockService.getUserLocks(userId);
+        const locks = await getLockService().getUserLocks(userId);
         let cleaned = 0;
 
         for (const lock of locks) {
           try {
-            const completed = await dialer.isCallCompleted(lock.callSid);
+            const completed = await getDialer().isCallCompleted(lock.callSid);
             if (completed) {
-              await lockService.releaseLock(lock.callSid);
+              await getLockService().releaseLock(lock.callSid);
               cleaned++;
             }
           } catch (_err: unknown) {
@@ -251,7 +251,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
                 },
               },
             );
-            await lockService.releaseLock(lock.callSid);
+            await getLockService().releaseLock(lock.callSid);
             cleaned++;
           }
         }
