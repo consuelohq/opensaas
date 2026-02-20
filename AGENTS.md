@@ -391,17 +391,115 @@ dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules
 
 **full shortcut reference + planned shortcuts for all phases:** `.kiro/docs/KEYBOARD-SHORTCUTS.md`
 
+## deployment — railway
+
+production is deployed on railway at `consuelo.consuelohq.com`. four services:
+
+| service | what it does | Dockerfile |
+|---------|-------------|------------|
+| `opensaas` | twenty-server (NestJS API + frontend) | `packages/twenty-docker/twenty/Dockerfile` |
+| `twenty-worker` | BullMQ background job processor | same Dockerfile, custom start command |
+| `postgres` | PostgreSQL database | railway managed |
+| `redis` | Redis cache + sessions + BullMQ | railway managed |
+
+### railway Dockerfile configuration
+
+railway has TWO env vars for Dockerfile path — you need BOTH:
+
+```
+RAILWAY_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
+NIXPACKS_DOCKERFILE_PATH=packages/twenty-docker/twenty/Dockerfile
+```
+
+**`RAILWAY_DOCKERFILE_PATH` is the one that actually matters.** without it, railway falls back to the root `Dockerfile` (opensaas API, uses `npm ci`) which fails because there's no `package-lock.json` — the monorepo uses yarn.
+
+### twenty-worker service
+
+the worker uses the same Dockerfile as the main server but with a custom start command override in railway dashboard settings:
+
+```
+/bin/sh -c "node dist/queue-worker/queue-worker"
+```
+
+the `/bin/sh -c` wrapper is required because the Dockerfile uses an ENTRYPOINT (`/app/entrypoint.sh`), and railway treats the start command as an ENTRYPOINT override — without the shell wrapper, env vars won't expand.
+
+### railway CLI cheat sheet
+
+```bash
+railway logs --service opensaas          # runtime logs
+railway logs --service opensaas --build  # build logs
+railway variables --service opensaas     # list env vars
+railway variables --set "KEY=value" --service opensaas  # set env var
+railway redeploy --service opensaas      # trigger redeploy
+```
+
+note: the railway CLI cannot delete env vars or set start commands. use the dashboard for those.
+
+## patches & workarounds
+
+### @graphql-tools/merge — null fields in applyExtensions (feb 2026)
+
+**patch file:** `packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch`
+
+`mergeSchemas()` crashes with `Cannot convert undefined or null to object` when `Object.entries()` is called on `data.fields`, `data.values`, or `fieldData.arguments` that are null/undefined in the `applyExtensions()` function. this only surfaces with large workspace schemas (551+ types).
+
+**fix:** yarn resolution in root `package.json` forces a single patched copy across the entire monorepo:
+
+```json
+"resolutions": {
+  "@graphql-tools/merge": "patch:@graphql-tools/merge@9.1.7#./packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch"
+}
+```
+
+**critical:** the resolution MUST be in root `package.json`, not in `packages/twenty-server/package.json`. yarn can create nested copies of transitive deps (e.g. `node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/`). a direct dep only patches the top-level copy. a root resolution forces deduplication to a single patched copy.
+
+### patching transitive dependencies — the pattern
+
+when you need to patch a transitive dep in this monorepo:
+
+1. create the patch file in `packages/twenty-server/patches/`
+2. add a `resolutions` entry in ROOT `package.json` (not the package's `package.json`)
+3. use the `patch:` protocol: `"pkg": "patch:pkg@version#./packages/twenty-server/patches/file.patch"`
+4. run `yarn install` and verify with `grep` that the fix is in `node_modules/`
+5. verify there are NO nested copies: `ls node_modules/<parent>/node_modules/<pkg>/ 2>/dev/null` should return nothing
+
+**DO NOT use `sed` on patch files** — it corrupts diff hunk headers. edit patch files with a proper editor or regenerate with `diff -u`.
+
+### yoga driver patch (DO NOT MODIFY)
+
+`packages/twenty-server/patches/@graphql-yoga+nestjs+2.1.0.patch` — patches the yoga NestJS driver to support conditional schema merging (workspace + core schemas). this is the code path that calls `mergeSchemas()`. do not touch this file.
+
+## graphql schema architecture
+
+twenty's graphql has two schema scopes:
+
+- **core** — always available, no auth needed. metadata operations, auth mutations.
+- **workspace** — requires auth token. all business data (companies, people, opportunities, etc.). 551+ types, built dynamically per workspace from metadata.
+
+the yoga driver patch merges these at request time:
+1. core schema is always loaded
+2. if request has a valid auth token, workspace schema is fetched (cached in redis)
+3. `mergeSchemas({ schemas: [coreSchema, workspaceSchema] })` produces the final schema
+
+key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts`
+
+- `resolverSchemaScope: 'core'` — for the main graphql config (core schema)
+- `resolverSchemaScope: 'metadata'` — for the metadata graphql config
+- workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
+
 ## key files
 
 - `AUTH.md` — full JWT auth system documentation
 - `CODING-STANDARDS.md` — all 13 mandatory code review rules
 - `packages/api/src/middleware/auth.ts` — JWT validation middleware using twenty's derived-secret scheme
+- `packages/twenty-server/patches/` — yarn patches for transitive deps (see patches section above)
+- `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts` — graphql schema merging config
 - `.husky/pre-commit` — lint + typecheck staged opensaas .ts files
 - `.husky/pre-push` — runs `scripts/code-review.sh`
 - `yarn.config.cjs` — yarn constraints (`MONOREPO_ROOT_WORKSPACE` must match root `package.json` name)
 - `nx.json` — Nx workspace configuration with task definitions
 - `tsconfig.base.json` — base TypeScript configuration
-- `package.json` — root package with workspace definitions
+- `package.json` — root package with workspace definitions and resolutions (including patches)
 
 ## package manager
 
@@ -603,40 +701,3 @@ private async getClient() {
 - commit format: `type(scope): description`
 - one PR per feature
 
-### shared branch etiquette (multiple agents on one branch)
-
-multiple agents work concurrently. **use feature branches** to avoid stepping on each other.
-
-#### workflow: feature branches → merge to target
-
-1. **create a feature branch** from the target branch before starting work:
-   ```bash
-   git checkout twenty-fork
-   git pull origin twenty-fork
-   git checkout -b twenty-fork-dev-846   # naming: {target}-{task-id}
-   ```
-2. **do all work on your feature branch.** commit freely — this branch is yours alone.
-3. **when done, merge back to the target branch:**
-   ```bash
-   git checkout twenty-fork
-   git pull origin twenty-fork
-   git merge twenty-fork-dev-846 --no-edit
-   git push origin twenty-fork
-   ```
-4. **if the merge has conflicts**, resolve them, then push. never force push the target branch.
-5. **delete your feature branch** after merging:
-   ```bash
-   git branch -d twenty-fork-dev-846
-   git push origin --delete twenty-fork-dev-846
-   ```
-
-all work still flows into the same PR (e.g. PR #1 on `twenty-fork`). feature branches are just scratch space.
-
-#### hard rules (no exceptions)
-
-- **never `git reset HEAD~N`** on a shared branch. if you committed wrong files, fix forward with a new commit or use `git revert`.
-- **never `git add .` or `git add -A`** — always `git add <specific files>` to avoid staging another agent's work.
-- **never force push** (`git push --force` / `git push -f`) a shared branch.
-- **one commit = one task.** never include another agent's files in your commit.
-- **don't touch files outside your task scope.** if you see untracked/modified files that aren't yours, leave them alone.
-- **if push to the target branch fails**, pull --rebase and retry. if conflicts, resolve explicitly.
