@@ -16,9 +16,7 @@ export async function callCommand(number: string): Promise<void> {
   const to = normalizePhone(number);
 
   if (!E164_RE.test(to)) {
-    error(
-      `invalid phone number: ${number} — expected US format like +15551234567`,
-    );
+    error('invalid phone number — expected US format like +15551234567');
     process.exit(1);
   }
 
@@ -47,27 +45,27 @@ export async function callCommand(number: string): Promise<void> {
       defaultNumber: config.twilioPhoneNumber,
     });
 
-    const result = await dialer.dial({
+    const dialOutcome = await dialer.dial({
       to,
       from: config.twilioPhoneNumber,
       userId: 'cli',
     });
 
-    if (!result.success) {
-      error(result.error ?? 'call failed');
+    if (!dialOutcome.success) {
+      error(dialOutcome.error ?? 'call failed');
       process.exit(1);
     }
 
     if (isJson()) {
       json({
-        callSid: result.callSid,
+        callSid: dialOutcome.callSid,
         to,
-        from: result.fromNumber,
+        from: dialOutcome.fromNumber,
         status: 'initiated',
       });
     } else {
-      log(`call initiated — sid: ${result.callSid}`);
-      log(`from: ${result.fromNumber ?? config.twilioPhoneNumber}`);
+      log(`call initiated — sid: ${dialOutcome.callSid}`);
+      log(`from: ${dialOutcome.fromNumber ?? config.twilioPhoneNumber}`);
       log(`to: ${to}`);
     }
 
@@ -76,8 +74,8 @@ export async function callCommand(number: string): Promise<void> {
       logger.info('call initiated', {
         action: 'call.initiated',
         to: `***${to.slice(-4)}`,
-        from: result.fromNumber ?? config.twilioPhoneNumber,
-        callSid: result.callSid,
+        from: dialOutcome.fromNumber ?? config.twilioPhoneNumber,
+        callSid: dialOutcome.callSid,
       });
     } catch {
       // fall silent if logger unavailable
