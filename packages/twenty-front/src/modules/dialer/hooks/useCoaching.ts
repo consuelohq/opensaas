@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   coachingErrorState,
@@ -87,20 +88,22 @@ export const useCoaching = (): UseCoachingReturn => {
       setError(null);
 
       try {
-        const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/coaching`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          signal: abortControllerRef.current.signal,
-          body: JSON.stringify({
-            messages: [
-              {
-                role: 'system',
-                content: `CONTEXT: ${buildContactContext(contact)}`,
-              },
-            ],
-          }),
-        });
+        const res = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/coaching`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: abortControllerRef.current.signal,
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: 'system',
+                  content: `CONTEXT: ${buildContactContext(contact)}`,
+                },
+              ],
+            }),
+          },
+        );
 
         if (!res.ok) {
           throw new Error(`Coaching API error: ${res.status}`);
@@ -151,11 +154,10 @@ export const useCoaching = (): UseCoachingReturn => {
       }));
 
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/coaching/realtime`,
           {
             method: 'POST',
-            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages }),
           },

@@ -10,6 +10,7 @@ import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { userCallbackPhoneState } from '@/dialer/states/userCallbackPhoneState';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
 type ClickToCallButtonProps = {
   phone: string;
@@ -72,9 +73,8 @@ export const ClickToCallButton = ({
 
       // phone callback mode — call user's phone first, then bridge
       if (callingMode === 'phone' && userCallbackPhone) {
-        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/callback`, {
+        authenticatedFetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/callback`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             agentPhone: userCallbackPhone,

@@ -3,6 +3,7 @@ import { captureException } from '@sentry/react';
 import { useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   clearPersistedCallState,
   getPersistedCallState,
@@ -25,9 +26,8 @@ export const useCallPersistence = () => {
     if (!persisted) return;
 
     try {
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/voice/active-call?conferenceName=${encodeURIComponent(persisted.conferenceName)}`,
-        { credentials: 'include' },
       );
 
       if (!res.ok) {
@@ -86,9 +86,8 @@ export const useCallPersistence = () => {
   const getConferenceNameByCallSid = useCallback(
     async (callSid: string): Promise<string | null> => {
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/voice/conference-by-call/${encodeURIComponent(callSid)}`,
-          { credentials: 'include' },
         );
 
         if (!res.ok) {

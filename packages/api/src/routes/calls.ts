@@ -173,6 +173,7 @@ export const callRoutes = (): RouteDefinition[] => {
     {
       method: 'POST',
       path: '/v1/calls/callback/twiml',
+      auth: false,
       handler: errorHandler(async (req, res) => {
         const customer = req.query?.customer ?? '';
         const conf = req.query?.conf ?? '';

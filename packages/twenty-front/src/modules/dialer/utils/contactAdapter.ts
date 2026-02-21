@@ -2,6 +2,7 @@ import { type Person } from '@/people/types/Person';
 import { type DialerContact } from '@/dialer/types/dialer';
 import { normalizePhone, isValidPhone } from '@consuelo/contacts';
 import { captureException } from '@sentry/react';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
 // map a twenty Person to a DialerContact
 export const personToDialerContact = (person: Person): DialerContact | null => {
@@ -49,9 +50,8 @@ export const personsToDialerContacts = (persons: Person[]): DialerContact[] =>
 export const checkDncStatus = async (phone: string): Promise<boolean> => {
   try {
     const normalized = normalizePhone(phone);
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `/api/dnc/check?phone=${encodeURIComponent(normalized)}`,
-      { credentials: 'include' },
     );
     const { isDnc } = await response.json();
     return isDnc === true;
@@ -68,11 +68,10 @@ export const filterDncContacts = async (
 ): Promise<{ filtered: DialerContact[]; dncCount: number }> => {
   try {
     const phones = contacts.map((contact) => contact.phone);
-    const response = await fetch('/api/dnc/batch-check', {
+    const response = await authenticatedFetch('/api/dnc/batch-check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phones }),
-      credentials: 'include',
     });
     const { dncPhones } = await response.json();
     const dncSet = new Set<string>(dncPhones);

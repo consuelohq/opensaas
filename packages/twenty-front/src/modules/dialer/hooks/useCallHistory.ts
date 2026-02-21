@@ -3,6 +3,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   callHistoryState,
   historyErrorState,
@@ -51,8 +52,7 @@ export const useCallHistory = (): UseCallHistoryReturn => {
         const query = params.toString();
         const url = `${REACT_APP_SERVER_BASE_URL}/v1/calls/history${query.length > 0 ? `?${query}` : ''}`;
 
-        const res = await fetch(url, {
-          credentials: 'include',
+        const res = await authenticatedFetch(url, {
           headers: { 'Content-Type': 'application/json' },
         });
 

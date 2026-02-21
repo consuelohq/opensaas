@@ -4,6 +4,7 @@ import { captureException } from '@sentry/react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { useCallPersistence } from '@/dialer/hooks/useCallPersistence';
 import { deviceReadyState } from '@/dialer/states/deviceReadyState';
 import { deviceErrorState } from '@/dialer/states/deviceErrorState';
@@ -38,9 +39,9 @@ interface UseTwilioDeviceReturn {
 
 async function fetchVoiceToken(): Promise<string> {
   try {
-    const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/voice/token`, {
-      credentials: 'include',
-    });
+    const res = await authenticatedFetch(
+      `${REACT_APP_SERVER_BASE_URL}/v1/voice/token`,
+    );
     if (!res.ok) {
       throw new Error(`Token fetch failed: ${res.status}`);
     }
@@ -112,9 +113,8 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
 
       statusPollRef.current = setInterval(async () => {
         try {
-          const res = await fetch(
+          const res = await authenticatedFetch(
             `${REACT_APP_SERVER_BASE_URL}/v1/calls/status/${callSid}`,
-            { credentials: 'include' },
           );
           if (!res.ok) return;
 

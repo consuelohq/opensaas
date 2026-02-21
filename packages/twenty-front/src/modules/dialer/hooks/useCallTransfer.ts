@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { activeTransferState } from '@/dialer/states/activeTransferState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
@@ -30,12 +31,14 @@ async function postJson(
   body: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   try {
-    const res = await fetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    const res = await authenticatedFetch(
+      `${REACT_APP_SERVER_BASE_URL}${path}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
     const data = (await res.json()) as Record<string, unknown>;
     if (!res.ok) {
       const err = data.error as { message?: string } | undefined;

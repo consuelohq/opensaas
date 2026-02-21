@@ -162,6 +162,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/calls/parallel/status-callback',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
@@ -217,6 +218,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/calls/parallel/customer-twiml',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;

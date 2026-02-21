@@ -5,6 +5,7 @@ import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { activePlaybackIdState } from '@/dialer/states/historyState';
 
 // region styled
@@ -104,9 +105,8 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/recording`,
-        { credentials: 'include' },
       );
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();

@@ -3,6 +3,7 @@ import { useRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   callMetricsState,
   metricsLoadingState,
@@ -19,9 +20,8 @@ export const useCallAnalytics = () => {
     async (period: AnalyticsPeriod) => {
       setLoading(true);
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/analytics/metrics?period=${period}`,
-          { credentials: 'include' },
         );
         if (!res.ok) throw new Error('fetch failed');
         const data = (await res.json()) as { metrics: CallMetrics };

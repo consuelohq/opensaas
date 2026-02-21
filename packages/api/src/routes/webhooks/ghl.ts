@@ -57,6 +57,7 @@ export const ghlWebhookRoutes = (): RouteDefinition[] => {
     {
       method: 'POST',
       path: '/v1/webhooks/ghl',
+      auth: false,
       handler: errorHandler(async (req, res) => {
         const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
         if (webhookSecret) {
