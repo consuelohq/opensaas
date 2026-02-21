@@ -7,10 +7,14 @@ import { v4 } from 'uuid';
 import { IconSearch } from 'twenty-ui/display';
 
 export const useOpenRecordsSearchPageInCommandMenu = () => {
-  const { navigateCommandMenu } = useCommandMenu();
+  const { navigateCommandMenu, closeCommandMenu } = useCommandMenu();
   const isCommandMenuOpened = useRecoilValue(isCommandMenuOpenedState);
 
   const openRecordsSearchPage = () => {
+    if (isCommandMenuOpened) {
+      closeCommandMenu();
+      return;
+    }
     navigateCommandMenu({
       page: CommandMenuPages.SearchRecords,
       pageTitle: t`Search`,
