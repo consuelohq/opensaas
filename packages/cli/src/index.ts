@@ -3,8 +3,6 @@
 globalThis.__consuelo_cli_mode = true;
 
 import { Command } from 'commander';
-// eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
-import { createLogger } from '@consuelo/logger';
 import { initCommand } from './commands/init.js';
 import { coachCommand } from './commands/coach.js';
 import { registerContacts } from './commands/contacts.js';
@@ -22,7 +20,6 @@ import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
 import { extractCatalog, catalogToTools } from './catalog.js';
-import { json, isJson, error } from './output.js';
 import { json } from './output.js';
 import { handleCommandError } from './errors.js';
 import './output.js';
@@ -30,7 +27,6 @@ import './output.js';
 let lastCommandName = 'unknown';
 let lastCommandArgs: string[] = [];
 
-const logger = createLogger('CLI');
 const program = new Command();
 
 await initSentry();
@@ -137,20 +133,7 @@ program
   });
 
 program.parseAsync().catch((err: unknown) => {
-const command = process.argv[2] ?? 'unknown';
-  const args = process.argv.slice(3);
-  const message = err instanceof Error ? err.message : 'unexpected error';
-  captureError(err, { command, args: args.join(' ') });
-
-  if (isJson()) {
-    json({
-      error: { code: 'CLI_ERROR', message: `${command} failed: ${message}` },
-    });
-  } else {
-    logger.error(`${command} ${args.join(' ')} failed: ${message}`);
-  }
-  process.exit(1);
-const command = lastCommandName;
+  const command = lastCommandName;
   const args = lastCommandArgs;
   const safeArgs = args.map((a) =>
     /password|token|secret|key|phone|email/i.test(a) ? '***' : a,
