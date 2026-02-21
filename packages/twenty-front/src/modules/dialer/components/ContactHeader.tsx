@@ -119,7 +119,6 @@ export const ContactHeader = () => {
   if (!contact) {
     return (
       <StyledContainer aria-label="No contact selected">
-        <StyledAvatar bgColor="#374151">📞</StyledAvatar>
         <StyledInfo>
           <StyledName>Enter a number to call</StyledName>
         </StyledInfo>

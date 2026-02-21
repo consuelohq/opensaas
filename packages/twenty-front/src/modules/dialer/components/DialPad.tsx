@@ -116,14 +116,6 @@ const StyledLetters = styled.span`
   margin-top: 2px;
 `;
 
-const StyledActionRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  justify-items: center;
-  gap: clamp(6px, 1.5vh, 20px);
-  padding: 0 ${({ theme }) => theme.spacing(2)};
-`;
-
 export const DialPad = ({ onCall }: DialPadProps) => {
   const [rawNumber, setRawNumber] = useRecoilState(phoneNumberState);
   const setPhoneNumber = useSetRecoilState(phoneNumberState);
@@ -296,11 +288,6 @@ export const DialPad = ({ onCall }: DialPadProps) => {
             <StyledLetters>{key.letters}</StyledLetters>
           </StyledKey>
         ))}
-      </StyledGrid>
-
-      <StyledActionRow>
-        <div />
-        <div />
         <StyledBackspace
           visible={hasDigits && !isCallActive && !isDialDisabled}
           onClick={handleBackspace}
@@ -309,7 +296,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
         >
           ⌫
         </StyledBackspace>
-      </StyledActionRow>
+      </StyledGrid>
     </StyledContainer>
   );
 };
