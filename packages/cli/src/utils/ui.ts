@@ -1,24 +1,27 @@
 import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
-import { intro, outro, log as clackLog } from '@clack/prompts';
-import { log } from '../output.js';
+import { intro, outro, log as clackPrompts } from '@clack/prompts';
 
 export function printBanner(steps?: string[]): void {
-  log('');
+  clackPrompts.message('');
   intro(chalk.bold.white('C O N S U E L O'));
-  log(`${chalk.dim('│')}`);
-  log(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
+  clackPrompts.message(`${chalk.dim('│')}`);
+  clackPrompts.message(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
   if (steps?.length) {
-    log(`${chalk.dim('│')}`);
+    clackPrompts.message(`${chalk.dim('│')}`);
     for (const step of steps) {
-      log(`${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`);
+      clackPrompts.message(
+        `${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`,
+      );
     }
   }
-  log(`${chalk.dim('│')}`);
+  clackPrompts.message(`${chalk.dim('│')}`);
 }
 
 export function stepComplete(label: string): void {
-  log(`${chalk.dim('│')}  ${chalk.white('●')}  ${chalk.white(label)}`);
+  clackPrompts.message(
+    `${chalk.dim('│')}  ${chalk.white('●')}  ${chalk.white(label)}`,
+  );
 }
 
 export function printEnd(): void {
@@ -30,9 +33,9 @@ export function spinner(text: string): Ora {
 }
 
 export function success(msg: string): void {
-  clackLog.success(msg);
+  clackPrompts.success(msg);
 }
 
 export function info(msg: string): void {
-  clackLog.info(msg);
+  clackPrompts.info(msg);
 }
