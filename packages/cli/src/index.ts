@@ -23,7 +23,12 @@ import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
 import { extractCatalog, catalogToTools } from './catalog.js';
 import { json, isJson, error } from './output.js';
+import { json } from './output.js';
+import { handleCommandError } from './errors.js';
 import './output.js';
+
+let lastCommandName = 'unknown';
+let lastCommandArgs: string[] = [];
 
 const logger = createLogger('CLI');
 const program = new Command();
@@ -39,6 +44,8 @@ program
   .option('--no-telemetry', 'disable error reporting')
   .option('--workspace <name>', 'use a specific workspace configuration')
   .hook('preAction', async (_thisCommand, actionCommand) => {
+    lastCommandName = actionCommand.name();
+    lastCommandArgs = actionCommand.args;
     const opts = actionCommand.optsWithGlobals();
     if (opts.json) globalThis.__consuelo_json = true;
     if (opts.quiet) globalThis.__consuelo_quiet = true;
@@ -130,7 +137,7 @@ program
   });
 
 program.parseAsync().catch((err: unknown) => {
-  const command = process.argv[2] ?? 'unknown';
+const command = process.argv[2] ?? 'unknown';
   const args = process.argv.slice(3);
   const message = err instanceof Error ? err.message : 'unexpected error';
   captureError(err, { command, args: args.join(' ') });
@@ -143,4 +150,15 @@ program.parseAsync().catch((err: unknown) => {
     logger.error(`${command} ${args.join(' ')} failed: ${message}`);
   }
   process.exit(1);
+const command = lastCommandName;
+  const args = lastCommandArgs;
+  const safeArgs = args.map((a) =>
+    /password|token|secret|key|phone|email/i.test(a) ? '***' : a,
+  );
+  captureError(err, { command, args: safeArgs.join(' ') });
+  handleCommandError(err, {
+    code: 'CLI_ERROR',
+    friendlyMessage: `${command} failed — check your credentials and try again`,
+    command,
+  });
 });

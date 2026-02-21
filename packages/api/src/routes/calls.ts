@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/node';
 import { sharedDialer } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
+import { validateTwilioSignature } from './voice.js';
 
 const getDialer = sharedDialer;
 import { getSharedPool } from '../shared/db.js';
@@ -184,6 +185,7 @@ export const callRoutes = (): RouteDefinition[] => {
       method: 'POST',
       path: '/v1/calls/callback/twiml',
       handler: errorHandler(async (req, res) => {
+        if (!(await validateTwilioSignature(req, res))) return;
         const customer = req.query?.customer ?? '';
         const conf = req.query?.conf ?? '';
         const from = req.query?.from ?? '';

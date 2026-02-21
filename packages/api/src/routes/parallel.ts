@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
+import { validateTwilioSignature } from './voice.js';
 
 const getDialer = sharedDialer;
 const getLockService = sharedCallerIdLockService;
@@ -169,6 +170,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
     method: 'POST',
     path: '/v1/calls/parallel/status-callback',
     handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
       const callStatus = body?.CallStatus;
@@ -224,6 +226,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
     method: 'POST',
     path: '/v1/calls/parallel/customer-twiml',
     handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
 
