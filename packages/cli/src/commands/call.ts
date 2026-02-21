@@ -1,5 +1,6 @@
 import { Dialer } from '@consuelo/dialer';
 import { normalizePhone } from '@consuelo/contacts';
+import { createLogger } from '@consuelo/logger';
 import { loadConfig } from '../config.js';
 import { log, error, json, isJson } from '../output.js';
 import { captureError } from '../sentry.js';
@@ -15,17 +16,23 @@ export async function callCommand(number: string): Promise<void> {
   const to = normalizePhone(number);
 
   if (!E164_RE.test(to)) {
-    error(`invalid phone number: ${number} — expected US format like +15551234567`);
+    error(
+      `invalid phone number: ${number} — expected US format like +15551234567`,
+    );
     process.exit(1);
   }
 
   const config = loadConfig();
   if (!config.twilioAccountSid || !config.twilioAuthToken) {
-    error('not configured — run `consuelo init` to set your Twilio credentials');
+    error(
+      'not configured — run `consuelo init` to set your Twilio credentials',
+    );
     process.exit(1);
   }
   if (!config.twilioPhoneNumber) {
-    error('no phone number configured — run `consuelo init` to set your Twilio number');
+    error(
+      'no phone number configured — run `consuelo init` to set your Twilio number',
+    );
     process.exit(1);
   }
 
@@ -52,14 +59,43 @@ export async function callCommand(number: string): Promise<void> {
     }
 
     if (isJson()) {
-      json({ callSid: result.callSid, to, from: result.fromNumber, status: 'initiated' });
+      json({
+        callSid: result.callSid,
+        to,
+        from: result.fromNumber,
+        status: 'initiated',
+      });
     } else {
       log(`call initiated — sid: ${result.callSid}`);
       log(`from: ${result.fromNumber ?? config.twilioPhoneNumber}`);
       log(`to: ${to}`);
     }
+
+    try {
+      const logger = createLogger('cli:call');
+      logger.info('call initiated', {
+        action: 'call.initiated',
+        to: `***${to.slice(-4)}`,
+        from: result.fromNumber ?? config.twilioPhoneNumber,
+        callSid: result.callSid,
+      });
+    } catch {
+      // fall silent if logger unavailable
+    }
   } catch (err: unknown) {
     captureError(err, { command: 'call' });
+
+    try {
+      const logger = createLogger('cli:call');
+      logger.error('call failed', {
+        action: 'call.failed',
+        to: `***${to.slice(-4)}`,
+        reason: err instanceof Error ? err.message : 'unknown error',
+      });
+    } catch {
+      // fall silent if logger unavailable
+    }
+
     error(err instanceof Error ? err.message : 'call failed');
     process.exit(1);
   }
