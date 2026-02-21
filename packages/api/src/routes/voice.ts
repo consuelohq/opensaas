@@ -16,7 +16,7 @@ const getCallerIdLockService = sharedCallerIdLockService;
  * Validate Twilio signature on webhook requests.
  * Twilio sends a signature in the X-Twilio-Signature header.
  */
-async function validateTwilioSignature(
+export async function validateTwilioSignature(
   req: ApiRequest,
   res: ApiResponse,
 ): Promise<boolean> {
@@ -261,6 +261,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
     method: 'POST',
     path: '/v1/voice/twiml',
     handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
       const to = body?.To ?? '';
       const from = body?.From ?? '';
@@ -1054,6 +1055,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
     method: 'POST',
     path: '/v1/webhooks/status',
     handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
       const callStatus = body?.CallStatus;
