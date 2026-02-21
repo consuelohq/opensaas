@@ -1,30 +1,24 @@
 import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
-import { intro, outro, log } from '@clack/prompts';
+import { intro, outro, log as clackLog } from '@clack/prompts';
+import { log } from '../output.js';
 
 export function printBanner(steps?: string[]): void {
-  // eslint-disable-next-line no-console -- clean UI output
-  console.log();
+  log('');
   intro(chalk.bold.white('C O N S U E L O'));
-  // eslint-disable-next-line no-console
-  console.log(`${chalk.dim('│')}`);
-  // eslint-disable-next-line no-console
-  console.log(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
+  log(`${chalk.dim('│')}`);
+  log(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
   if (steps?.length) {
-    // eslint-disable-next-line no-console
-    console.log(`${chalk.dim('│')}`);
+    log(`${chalk.dim('│')}`);
     for (const step of steps) {
-      // eslint-disable-next-line no-console
-      console.log(`${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`);
+      log(`${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`);
     }
   }
-  // eslint-disable-next-line no-console
-  console.log(`${chalk.dim('│')}`);
+  log(`${chalk.dim('│')}`);
 }
 
 export function stepComplete(label: string): void {
-  // eslint-disable-next-line no-console
-  console.log(`${chalk.dim('│')}  ${chalk.white('●')}  ${chalk.white(label)}`);
+  log(`${chalk.dim('│')}  ${chalk.white('●')}  ${chalk.white(label)}`);
 }
 
 export function printEnd(): void {
@@ -36,9 +30,9 @@ export function spinner(text: string): Ora {
 }
 
 export function success(msg: string): void {
-  log.success(msg);
+  clackLog.success(msg);
 }
 
 export function info(msg: string): void {
-  log.info(msg);
+  clackLog.info(msg);
 }
