@@ -240,8 +240,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         res.status(200).json({ success: true, callerId });
         logger.info('voice.preflight', {
-          action: 'caller_id.locked',
+          action: 'voice.preflight',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       } catch (err: unknown) {
         const message =
@@ -387,12 +388,14 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         if (conferenceSid) {
           logger.info('Active conference found', {
+            action: 'voice.active_conference_found',
             conferenceName,
             conferenceSid,
+            outcome: 'success',
           });
           res.json({ active: true, conferenceSid });
         } else {
-          logger.info('No active conference', { conferenceName });
+          logger.info('No active conference', { action: 'voice.no_active_conference', conferenceName, outcome: 'success' });
           res.json({ active: false });
         }
       } catch (err: unknown) {
@@ -599,8 +602,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         res.status(200).json({ transferId, customerMuted: body.muted });
         logger.info('transfer.mute', {
-          action: 'customer.muted',
+          action: 'transfer.mute',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -801,8 +805,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         res.status(200).json({ ...result, transferId });
         logger.info('transfer.initiated', {
-          action: 'call.transferred',
+          action: 'transfer.initiated',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -886,7 +891,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.completed', { action: 'transfer.completed', userId: req.auth?.userId ?? 'anonymous' });
+        logger.info('transfer.completed', { action: 'transfer.completed', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -898,11 +903,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
           err instanceof Error ? err.message : 'Complete transfer failed';
         res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
       }
-    },
+    }),
+  },
 
-    {
-      method: 'POST',
-      path: '/v1/calls/:callSid/transfer/cancel',
+  {
+    method: 'POST',
+    path: '/v1/calls/:callSid/transfer/cancel',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
       if (!userId) {
@@ -939,7 +945,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.cancelled', { action: 'transfer.cancelled', userId: req.auth?.userId ?? 'anonymous' });
+        logger.info('transfer.cancelled', { action: 'transfer.cancelled', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -951,11 +957,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
           err instanceof Error ? err.message : 'Cancel transfer failed';
         res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
       }
-    },
+    }),
+  },
 
-    {
-      method: 'POST',
-      path: '/v1/calls/:callSid/hold',
+  {
+    method: 'POST',
+    path: '/v1/calls/:callSid/hold',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
       if (!userId) {
@@ -1040,7 +1047,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, hold: body.hold });
-        logger.info('call.hold', { action: 'hold.toggled', userId: req.auth?.userId ?? 'anonymous' });
+        logger.info('call.hold', { action: 'call.hold', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Hold toggle failed';
