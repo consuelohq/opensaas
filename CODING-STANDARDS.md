@@ -388,7 +388,7 @@ private async getClient() {
 
 ### commit format
 
-```
+```text
 type(scope): description
 
 - detail 1

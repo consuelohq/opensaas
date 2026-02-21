@@ -34,6 +34,17 @@ export class OpenAIProvider implements CoachingProvider {
     }
   }
 
+  private safeParseJSON<T>(raw: string | null, label: string): T {
+    if (!raw || raw.trim() === '') {
+      throw new Error(`${label}: model returned empty response`);
+    }
+    try {
+      return JSON.parse(raw) as T;
+    } catch {
+      throw new Error(`${label}: model returned invalid JSON`);
+    }
+  }
+
   async coach(prompt: string): Promise<SalesCoaching> {
     try {
       const client = await this.getClient();
@@ -44,7 +55,7 @@ export class OpenAIProvider implements CoachingProvider {
         max_tokens: this.config.maxTokens,
         response_format: { type: 'json_object' },
       });
-      return JSON.parse(res.choices[0].message.content ?? '{}') as SalesCoaching;
+      return this.safeParseJSON<SalesCoaching>(res.choices[0].message.content, 'coaching');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'coaching failed';
       throw new Error(`OpenAI coaching error: ${msg}`, { cause: err });
@@ -62,7 +73,7 @@ export class OpenAIProvider implements CoachingProvider {
         max_tokens: 1500,
         response_format: { type: 'json_object' },
       });
-      const data = JSON.parse(res.choices[0].message.content ?? '{}');
+      const data = this.safeParseJSON<Record<string, unknown>>(res.choices[0].message.content, 'analysis');
       delete data.__proto__; delete data.constructor; delete data.prototype;
       return { ...data, call_sid: meta.callSid, user_id: meta.userId, phone_number: meta.phoneNumber, generated_at: new Date().toISOString() };
     } catch (err: unknown) {

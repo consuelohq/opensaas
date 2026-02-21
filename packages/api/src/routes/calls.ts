@@ -4,6 +4,8 @@ import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { sharedDialer } from '../shared/dialer.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const getDialer = sharedDialer;
 import { getSharedPool } from '../shared/db.js';
@@ -89,6 +91,10 @@ export const callRoutes = (): RouteDefinition[] => {
           res
             .status(201)
             .json({ callSid: result.callSid, status: 'initiated' });
+          logger.info('call.initiated', {
+            action: 'call.initiated',
+            userId: req.auth?.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
@@ -153,6 +159,10 @@ export const callRoutes = (): RouteDefinition[] => {
           res
             .status(201)
             .json({ callSid, conferenceName, status: 'calling-agent' });
+          logger.info('call.callback', {
+            action: 'callback.initiated',
+            userId: req.auth?.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
@@ -173,7 +183,6 @@ export const callRoutes = (): RouteDefinition[] => {
     {
       method: 'POST',
       path: '/v1/calls/callback/twiml',
-      auth: false,
       handler: errorHandler(async (req, res) => {
         const customer = req.query?.customer ?? '';
         const conf = req.query?.conf ?? '';
@@ -369,6 +378,10 @@ export const callRoutes = (): RouteDefinition[] => {
           }
 
           res.status(200).json({ callSid, status: 'completed' });
+          logger.info('call.hangup', {
+            action: 'call.ended',
+            userId: req.auth?.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(
             err instanceof Error ? err : new Error(String(err)),
@@ -421,6 +434,10 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         res.status(201).json({ callId, persisted: true });
+        logger.info('call.analysis', {
+          action: 'analysis.persisted',
+          userId: auth?.userId ?? 'anonymous',
+        });
       }),
     },
     {

@@ -3,6 +3,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import { getSharedPool } from '../shared/db.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -158,6 +160,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         ]);
 
         res.status(200).json(rows[0]);
+        logger.info('workspace.updated', {
+          action: 'workspace.updated',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -178,6 +184,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         ]);
 
         res.status(200).json(rows[0].branding);
+        logger.info('workspace.branding_updated', {
+          action: 'branding.updated',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -243,6 +253,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         ]);
 
         res.status(201).json(rows[0]);
+        logger.info('workspace.invite_created', {
+          action: 'invite.created',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -290,6 +304,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json(rows[0]);
+        logger.info('workspace.role_updated', {
+          action: 'member.role_updated',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -344,6 +362,10 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         }
 
         res.status(204).send('');
+        logger.info('workspace.member_removed', {
+          action: 'member.removed',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 

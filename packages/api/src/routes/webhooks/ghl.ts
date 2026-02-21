@@ -8,6 +8,8 @@ import {
   type GHLWebhookPayload,
   type GHLSyncServiceInterface,
 } from '../../services/ghl-webhook.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -57,7 +59,6 @@ export const ghlWebhookRoutes = (): RouteDefinition[] => {
     {
       method: 'POST',
       path: '/v1/webhooks/ghl',
-      auth: false,
       handler: errorHandler(async (req, res) => {
         const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
         if (webhookSecret) {
@@ -93,6 +94,10 @@ export const ghlWebhookRoutes = (): RouteDefinition[] => {
         const handler = await getWebhookHandler();
         await handler.handleWebhook(payload);
         res.status(200).json({ received: true });
+        logger.info('webhook.ghl_received', {
+          action: 'webhook.ghl_received',
+          userId: 'anonymous',
+        });
       }),
     },
   ];
