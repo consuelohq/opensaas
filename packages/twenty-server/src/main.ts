@@ -88,14 +88,30 @@ const bootstrap = async () => {
 
   // Mount @consuelo/api routes on the Express instance (optional — server works without them)
   // HACK: dynamic path prevents nx from detecting this as a build dependency (DEV-878)
-  const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join('/');
+  const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join(
+    '/',
+  );
   try {
     console.log('[consuelo] importing routes from:', apiRoutesPath); // HACK: startup diagnostic
     const routesModule = await import(apiRoutesPath);
     console.log('[consuelo] import succeeded, calling allRoutes()'); // HACK: startup diagnostic
     const routes = routesModule.allRoutes();
-    console.log(`[consuelo] allRoutes() returned ${routes.length} routes, mounting...`); // HACK: startup diagnostic
+    console.log(
+      `[consuelo] allRoutes() returned ${routes.length} routes, mounting...`,
+    ); // HACK: startup diagnostic
     const expressApp = app.getHttpAdapter().getInstance();
+
+    const apiMiddlewarePath = [
+      '..',
+      '..',
+      'api',
+      'dist',
+      'middleware',
+      'index.js',
+    ].join('/');
+    const { authMiddleware } = await import(apiMiddlewarePath);
+    const auth = authMiddleware();
+
     for (const route of routes) {
       const method = route.method.toLowerCase() as
         | 'get'
@@ -103,7 +119,13 @@ const bootstrap = async () => {
         | 'put'
         | 'patch'
         | 'delete';
-      expressApp[method](route.path, async (req: any, res: any) => {
+      const handlers: any[] = [];
+
+      if (route.auth !== false) {
+        handlers.push(auth);
+      }
+
+      handlers.push(async (req: any, res: any) => {
         // HACK: Express types are compatible with ApiRequest/ApiResponse but TypeScript cannot verify across packages
         try {
           await route.handler(req, res);
@@ -116,10 +138,15 @@ const bootstrap = async () => {
           }
         }
       });
+
+      expressApp[method](route.path, ...handlers);
     }
     console.log(`[consuelo] mounted ${routes.length} routes OK`); // HACK: startup diagnostic
   } catch (err: unknown) {
-    console.log('[consuelo] route loading failed:', err instanceof Error ? err.stack ?? err.message : String(err)); // HACK: startup diagnostic
+    console.log(
+      '[consuelo] route loading failed:',
+      err instanceof Error ? (err.stack ?? err.message) : String(err),
+    ); // HACK: startup diagnostic
   }
 
   await app.listen(twentyConfigService.get('NODE_PORT'));

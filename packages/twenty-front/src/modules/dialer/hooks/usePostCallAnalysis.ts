@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   analysisErrorState,
@@ -70,11 +71,10 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
           content: e.text,
         }));
 
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/coaching/analyze`,
           {
             method: 'POST',
-            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             signal: abortControllerRef.current.signal,
             body: JSON.stringify({ messages, callSid: callId }),
@@ -94,12 +94,14 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
 
         setAnalysis(data);
 
-        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }).catch((err: unknown) => {
+        authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          },
+        ).catch((err: unknown) => {
           captureException(err, {
             extra: { context: 'persistAnalysis', callId },
           });

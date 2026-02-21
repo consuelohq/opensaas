@@ -3,6 +3,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   activeQueueState,
   currentQueueIndexState,
@@ -93,11 +94,10 @@ export const useParallelDialer = () => {
     (groupId: string) => {
       pollRef.current = setInterval(async () => {
         try {
-          const res = await fetch(
+          const res = await authenticatedFetch(
             `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}`,
             {
               headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
             },
           );
           const data = await res.json();
@@ -158,12 +158,11 @@ export const useParallelDialer = () => {
     );
 
     try {
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             queueId: queue.id,
             contacts: batchItems.map((item) => ({
@@ -221,12 +220,11 @@ export const useParallelDialer = () => {
     const groupId = queue?.parallelGroupId;
     if (groupId) {
       try {
-        await fetch(
+        await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
           },
         );
       } catch (err: unknown) {

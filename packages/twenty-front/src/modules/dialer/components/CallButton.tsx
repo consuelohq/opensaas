@@ -5,6 +5,7 @@ import { IconLoader2, IconPhone, IconPhoneOff } from '@tabler/icons-react';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
@@ -107,11 +108,10 @@ export const CallButton = () => {
 
     try {
       // Preflight check: acquire caller ID lock before initiating call
-      const preflightRes = await fetch(
+      const preflightRes = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
         {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ callerId: fromNumber }),
         },

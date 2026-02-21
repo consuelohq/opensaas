@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { type CallerIdOption } from '@/dialer/types/dialer';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 
@@ -15,11 +16,8 @@ export const useAvailableCallerIds = () => {
 
     const fetchPhoneNumbers = async () => {
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/phone-numbers`,
-          {
-            credentials: 'include',
-          },
         );
 
         if (!res.ok) {

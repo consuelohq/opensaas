@@ -254,6 +254,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/voice/twiml',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const to = body?.To ?? '';
@@ -1038,6 +1039,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/webhooks/status',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;

@@ -6,6 +6,7 @@ export interface RouteDefinition {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   handler: (req: ApiRequest, res: ApiResponse) => Promise<void>;
+  auth?: boolean;
 }
 
 // Import + re-export route modules
@@ -50,16 +51,15 @@ export const webhookRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/webhooks/transcription',
+    auth: false,
     handler: errorHandler(async (_req, res) => {
       // STUB: implement with processTranscriptionEvent() (DEV-698)
-      res
-        .status(501)
-        .json({
-          error: {
-            code: 'NOT_IMPLEMENTED',
-            message: 'Transcription webhook not yet implemented (DEV-698)',
-          },
-        });
+      res.status(501).json({
+        error: {
+          code: 'NOT_IMPLEMENTED',
+          message: 'Transcription webhook not yet implemented (DEV-698)',
+        },
+      });
     }),
   },
   // status webhook moved to voiceRoutes (DEV-816)
@@ -70,6 +70,7 @@ export const healthRoutes = (): RouteDefinition[] => [
   {
     method: 'GET' as const,
     path: '/health',
+    auth: false,
     handler: async (_req, res) => {
       res
         .status(200)

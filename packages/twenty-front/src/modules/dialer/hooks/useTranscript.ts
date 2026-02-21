@@ -4,6 +4,7 @@ import { captureException } from '@sentry/react';
 
 import { cookieStorage } from '~/utils/cookie-storage';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   talkingPointsState,
@@ -128,11 +129,10 @@ export const useTranscript = (): UseTranscriptReturn => {
       }));
 
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/coaching/realtime`,
           {
             method: 'POST',
-            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ messages }),
           },

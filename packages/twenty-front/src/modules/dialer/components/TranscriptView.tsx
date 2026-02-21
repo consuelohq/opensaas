@@ -5,6 +5,7 @@ import { IconChevronDown, IconChevronUp, IconCopy } from '@tabler/icons-react';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { type TranscriptEntry } from '@/dialer/types/coaching';
 
 // region styled
@@ -120,9 +121,8 @@ export const TranscriptView = ({
     if (entries) return;
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/transcript`,
-        { credentials: 'include' },
       );
       if (!res.ok) throw new Error('fetch failed');
       const data = (await res.json()) as { entries: TranscriptEntry[] };
