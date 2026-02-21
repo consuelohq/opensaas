@@ -13,6 +13,8 @@ import {
   GHLPipelineSync,
   type PipelineMappingInput,
 } from '../../services/ghl-pipeline.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -180,6 +182,10 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
           extra: { workspaceId: auth.workspaceId },
         });
         res.status(200).json({ disconnected: true });
+        logger.info('ghl.disconnected', {
+          action: 'ghl.disconnected',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -275,6 +281,10 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         await pipelineSync.updateMappings(auth.workspaceId, mappings);
 
         res.status(200).json({ updated: true, count: mappings.length });
+        logger.info('ghl.mappings_updated', {
+          action: 'mappings.updated',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -319,6 +329,10 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         res.status(200).json({
           ...result,
           conflicts,
+        });
+        logger.info('ghl.pipelines_synced', {
+          action: 'pipelines.synced',
+          userId: auth.userId ?? 'anonymous',
         });
       }),
     },

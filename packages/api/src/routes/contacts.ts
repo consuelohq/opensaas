@@ -4,6 +4,8 @@ import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { getSharedPool } from '../shared/db.js';
 import { z } from 'zod';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const CreateContactSchema = z.object({
   name: z.string().min(1),
@@ -68,6 +70,10 @@ export const contactRoutes = (): RouteDefinition[] => {
           userId: req.auth?.userId,
         });
         res.status(201).json({ contact });
+        logger.info('contact.created', {
+          action: 'contact.created',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       }),
     },
     {
@@ -114,6 +120,11 @@ export const contactRoutes = (): RouteDefinition[] => {
           req.auth?.userId,
         );
         res.status(200).json({ imported: created.length, contacts: created });
+        logger.info('contact.imported', {
+          action: 'contact.imported',
+          userId: req.auth?.userId ?? 'anonymous',
+          count: created.length,
+        });
       }),
     },
     {
@@ -171,6 +182,10 @@ export const contactRoutes = (): RouteDefinition[] => {
           return;
         }
         res.status(200).json({ contact });
+        logger.info('contact.updated', {
+          action: 'contact.updated',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       }),
     },
     {
@@ -193,6 +208,10 @@ export const contactRoutes = (): RouteDefinition[] => {
           return;
         }
         res.status(200).json({ deleted: true });
+        logger.info('contact.deleted', {
+          action: 'contact.deleted',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       }),
     },
     {
@@ -237,6 +256,10 @@ export const contactRoutes = (): RouteDefinition[] => {
           req.auth?.workspaceId ?? '',
         ]);
         res.status(201).json(rows[0]);
+        logger.info('contact.note_created', {
+          action: 'note.created',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       }),
     },
     {
@@ -282,6 +305,10 @@ export const contactRoutes = (): RouteDefinition[] => {
           req.auth?.workspaceId ?? '',
         ]);
         res.status(201).json(rows[0]);
+        logger.info('contact.follow_up_created', {
+          action: 'follow_up.created',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       }),
     },
   ];

@@ -2,6 +2,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import { getSharedPool } from '../shared/db.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -124,6 +126,10 @@ export const queueRoutes = (): RouteDefinition[] => {
         await db.query(SQL_INSERT_ITEMS + placeholders.join(', '), values);
 
         res.status(201).json(queue);
+        logger.info('queue.created', {
+          action: 'queue.created',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -182,6 +188,10 @@ export const queueRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
+        logger.info('queue.started', {
+          action: 'queue.started',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -254,6 +264,10 @@ export const queueRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ skipped: true, nextItem: next.rows[0] ?? null });
+        logger.info('queue.skipped', {
+          action: 'queue.skipped',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -302,6 +316,10 @@ export const queueRoutes = (): RouteDefinition[] => {
           ]);
           res.status(200).json({ nextItem: null, queueCompleted: true });
         }
+        logger.info('queue.next', {
+          action: 'queue.next',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -332,6 +350,10 @@ export const queueRoutes = (): RouteDefinition[] => {
         );
 
         res.status(200).json({ restarted: true });
+        logger.info('queue.restarted', {
+          action: 'queue.restarted',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 

@@ -27,6 +27,8 @@ import {
   type SyncOptions,
   type ConflictResolution,
 } from '../services/ghl-sync.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -236,6 +238,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
           extra: { workspaceId: auth.workspaceId },
         });
         res.status(200).json({ disconnected: true });
+        logger.info('ghl.disconnected', {
+          action: 'ghl.disconnected',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -304,6 +310,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ pushed });
+        logger.info('ghl.pushed', {
+          action: 'ghl.pushed',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -398,6 +408,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
         );
 
         res.status(200).json({ mapped: true, count: stageMappings.length });
+        logger.info('ghl.pipelines_mapped', {
+          action: 'pipelines.mapped',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -430,6 +444,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const result = await pipelineSync.syncOpportunities(auth.workspaceId);
 
         res.status(200).json(result);
+        logger.info('ghl.pipelines_synced', {
+          action: 'pipelines.synced',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -504,6 +522,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
             success: true,
             logId,
             ...result,
+          });
+          logger.info('ghl.imported', {
+            action: 'ghl.imported',
+            userId: auth.userId ?? 'anonymous',
           });
         } catch (err: unknown) {
           const errorMessage =
@@ -587,6 +609,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
             success: true,
             logId,
             ...result,
+          });
+          logger.info('ghl.synced', {
+            action: 'ghl.synced',
+            userId: auth.userId ?? 'anonymous',
           });
         } catch (err: unknown) {
           const errorMessage =
