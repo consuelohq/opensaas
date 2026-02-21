@@ -67,5 +67,12 @@ export enum SettingsPath {
 
   // mercury settings
   Mercury = 'mercury',
-  MercurySection = 'mercury/:section',
+  MercuryProfile = 'mercury/profile',
+  MercuryPhoneNumbers = 'mercury/phone-numbers',
+  MercuryCalling = 'mercury/calling',
+  MercuryAudio = 'mercury/audio',
+  MercuryAI = 'mercury/ai',
+  MercurySubscription = 'mercury/subscription',
+  MercuryNotifications = 'mercury/notifications',
+  MercuryWorkspace = 'mercury/workspace',
 }

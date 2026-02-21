@@ -407,6 +407,62 @@ const SettingsConsuelo = lazy(() =>
   })),
 );
 
+const SettingsMercuryProfile = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryProfile').then((module) => ({
+    default: module.SettingsMercuryProfile,
+  })),
+);
+
+const SettingsMercuryPhoneNumbers = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryPhoneNumbers').then(
+    (module) => ({
+      default: module.SettingsMercuryPhoneNumbers,
+    }),
+  ),
+);
+
+const SettingsMercuryCalling = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryCalling').then((module) => ({
+    default: module.SettingsMercuryCalling,
+  })),
+);
+
+const SettingsMercuryAudio = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryAudio').then((module) => ({
+    default: module.SettingsMercuryAudio,
+  })),
+);
+
+const SettingsMercuryAI = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryAI').then((module) => ({
+    default: module.SettingsMercuryAI,
+  })),
+);
+
+const SettingsMercurySubscription = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercurySubscription').then(
+    (module) => ({
+      default: module.SettingsMercurySubscription,
+    }),
+  ),
+);
+
+const SettingsMercuryNotifications = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryNotifications').then(
+    (module) => ({
+      default: module.SettingsMercuryNotifications,
+    }),
+  ),
+);
+
+const SettingsMercuryWorkspace = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryWorkspace').then(
+    (module) => ({
+      default: module.SettingsMercuryWorkspace,
+    }),
+  ),
+);
+
 type SettingsRoutesProps = {
   isFunctionSettingsEnabled?: boolean;
   isAdminPageEnabled?: boolean;
@@ -644,8 +700,33 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
 
       <Route path={SettingsPath.Mercury} element={<SettingsConsuelo />} />
       <Route
-        path={SettingsPath.MercurySection}
-        element={<SettingsConsuelo />}
+        path={SettingsPath.MercuryProfile}
+        element={<SettingsMercuryProfile />}
+      />
+      <Route
+        path={SettingsPath.MercuryPhoneNumbers}
+        element={<SettingsMercuryPhoneNumbers />}
+      />
+      <Route
+        path={SettingsPath.MercuryCalling}
+        element={<SettingsMercuryCalling />}
+      />
+      <Route
+        path={SettingsPath.MercuryAudio}
+        element={<SettingsMercuryAudio />}
+      />
+      <Route path={SettingsPath.MercuryAI} element={<SettingsMercuryAI />} />
+      <Route
+        path={SettingsPath.MercurySubscription}
+        element={<SettingsMercurySubscription />}
+      />
+      <Route
+        path={SettingsPath.MercuryNotifications}
+        element={<SettingsMercuryNotifications />}
+      />
+      <Route
+        path={SettingsPath.MercuryWorkspace}
+        element={<SettingsMercuryWorkspace />}
       />
 
       {isAdminPageEnabled && (
