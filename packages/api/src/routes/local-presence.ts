@@ -8,6 +8,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const getDialer = sharedDialer;
 const getLockService = sharedCallerIdLockService;
@@ -47,6 +49,10 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
 
         localPresenceEnabled.set(userId, body.enabled);
         res.status(200).json({ enabled: body.enabled, userId });
+        logger.info('local_presence.toggled', {
+          action: 'local_presence.toggled',
+          userId,
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -258,6 +264,11 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
 
         const remaining = locks.length - cleaned;
         res.status(200).json({ cleaned, remaining });
+        logger.info('caller_id.cleaned', {
+          action: 'locks.cleaned',
+          userId: req.auth?.userId ?? 'anonymous',
+          cleaned,
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),

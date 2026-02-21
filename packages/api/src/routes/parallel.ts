@@ -3,6 +3,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const getDialer = sharedDialer;
 const getLockService = sharedCallerIdLockService;
@@ -111,6 +113,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
         });
 
         res.status(201).json(result);
+        logger.info('parallel.dial', {
+          action: 'parallel.dial_initiated',
+          userId,
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -162,7 +168,6 @@ export const parallelRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/calls/parallel/status-callback',
-    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
@@ -218,7 +223,6 @@ export const parallelRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/calls/parallel/customer-twiml',
-    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
@@ -373,6 +377,10 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         await getDialer().parallel.terminateGroup(groupId);
         res.status(200).json({ groupId, status: 'completed' });
+        logger.info('parallel.terminated', {
+          action: 'parallel.terminated',
+          userId,
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),

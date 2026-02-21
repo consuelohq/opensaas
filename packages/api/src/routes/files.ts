@@ -6,6 +6,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Pool } from 'pg';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 // Allowed MIME types (from Python's allowed_file())
 // NOTE: Keep in sync with packages/twenty-front/src/modules/files/types/FileUpload.ts
@@ -189,6 +191,10 @@ export const fileRoutes = (): RouteDefinition[] => {
             auth.userId ?? null,
           ]);
           res.status(201).json({ file: result.rows[0] });
+          logger.info('file.created', {
+            action: 'file.created',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(err);
           const message =
@@ -365,6 +371,10 @@ export const fileRoutes = (): RouteDefinition[] => {
           res
             .status(201)
             .json({ success: true, created: true, attachment: result.rows[0] });
+          logger.info('file.attached', {
+            action: 'file.attached',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(err);
           const message =
@@ -396,6 +406,10 @@ export const fileRoutes = (): RouteDefinition[] => {
           // workspace scoped via subquery on files table
           await db.query(SQL_DETACH_FILE, [attachmentId, auth.workspaceId]);
           res.status(200).json({ success: true });
+          logger.info('file.detached', {
+            action: 'file.detached',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(err);
           const message =
@@ -435,6 +449,10 @@ export const fileRoutes = (): RouteDefinition[] => {
           const storageKey = result.rows[0].storage_key as string;
           await storage.deleteObject(storageKey);
           res.status(200).json({ success: true });
+          logger.info('file.deleted', {
+            action: 'file.deleted',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(err);
           const message =

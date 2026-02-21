@@ -6,6 +6,8 @@ import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const getDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
@@ -237,6 +239,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, callerId });
+        logger.info('voice.preflight', {
+          action: 'caller_id.locked',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Lock acquisition failed';
@@ -254,7 +260,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/voice/twiml',
-    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const to = body?.To ?? '';
@@ -592,6 +597,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ transferId, customerMuted: body.muted });
+        logger.info('transfer.mute', {
+          action: 'customer.muted',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -790,6 +799,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ ...result, transferId });
+        logger.info('transfer.initiated', {
+          action: 'call.transferred',
+          userId: req.auth?.userId ?? 'anonymous',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -872,6 +885,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
+        logger.info('transfer.completed', { action: 'transfer.completed', userId: req.auth?.userId ?? 'anonymous' });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -883,12 +897,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
           err instanceof Error ? err.message : 'Complete transfer failed';
         res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
       }
-    }),
-  },
+    },
 
-  {
-    method: 'POST',
-    path: '/v1/calls/:callSid/transfer/cancel',
+    {
+      method: 'POST',
+      path: '/v1/calls/:callSid/transfer/cancel',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
       if (!userId) {
@@ -925,6 +938,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
+        logger.info('transfer.cancelled', { action: 'transfer.cancelled', userId: req.auth?.userId ?? 'anonymous' });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -936,12 +950,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
           err instanceof Error ? err.message : 'Cancel transfer failed';
         res.status(500).json({ error: { code: 'TRANSFER_FAILED', message } });
       }
-    }),
-  },
+    },
 
-  {
-    method: 'POST',
-    path: '/v1/calls/:callSid/hold',
+    {
+      method: 'POST',
+      path: '/v1/calls/:callSid/hold',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
       if (!userId) {
@@ -1026,6 +1039,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, hold: body.hold });
+        logger.info('call.hold', { action: 'hold.toggled', userId: req.auth?.userId ?? 'anonymous' });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Hold toggle failed';
@@ -1039,7 +1053,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/webhooks/status',
-    auth: false,
     handler: errorHandler(async (req, res) => {
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;

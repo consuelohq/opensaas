@@ -9,6 +9,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import type { Pool } from 'pg';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 const SQL_GET_FILE =
   'SELECT id, name, mime_type, storage_key FROM files WHERE id = $1 AND workspace_id = $2';
@@ -65,6 +67,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
             body.description,
           );
           res.status(201).json(collection);
+          logger.info('knowledge.collection_created', {
+            action: 'collection.created',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           if (
             err instanceof KnowledgeError &&
@@ -173,6 +179,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
 
         await knowledge.deleteCollection(collectionId, auth.workspaceId);
         res.status(204).json({});
+        logger.info('knowledge.collection_deleted', {
+          action: 'collection.deleted',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
 
@@ -260,6 +270,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           res
             .status(200)
             .json({ indexed: true, chunkCount: result.chunkCount });
+          logger.info('knowledge.file_indexed', {
+            action: 'file.indexed',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           if (err instanceof KnowledgeError) {
             Sentry.captureException(err);
@@ -289,6 +303,10 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
 
         await knowledge.deindexFile(fileId, auth.workspaceId);
         res.status(204).json({});
+        logger.info('knowledge.file_deindexed', {
+          action: 'file.deindexed',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
   ];
