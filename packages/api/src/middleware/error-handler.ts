@@ -12,34 +12,41 @@ export function errorHandler(
         e: unknown,
       ): e is { message?: string; code?: string; status?: number } =>
         typeof e === 'object' && e !== null;
-      const message =
-        isErrorLike(err) && err.message ? err.message : 'Internal server error';
-      const code = isErrorLike(err) && err.code ? err.code : 'internal_error';
-      const status = isErrorLike(err) && err.status ? err.status : 500;
+      const statusCode = isErrorLike(err) && err.status ? err.status : 500;
+
+      const isServerError = statusCode >= 500;
+      const safeMessage = isServerError
+        ? 'An unexpected error occurred'
+        : isErrorLike(err) && err.message
+          ? err.message
+          : 'Request failed';
+
+      const code = isErrorLike(err) && err.code ? err.code : 'INTERNAL_ERROR';
 
       try {
         const { createLogger } = await import('@consuelo/logger');
-        createLogger('api:error-handler').error(message, {
+        createLogger('api:error-handler').error(safeMessage, {
           code,
-          status,
+          status: statusCode,
           path: req.path,
+          originalError: err instanceof Error ? err.message : String(err),
         });
       } catch (_err: unknown) {
         /* logger optional — intentional: errors in error logging should not crash the handler */
       }
 
-      if (status >= 500) {
+      if (isServerError) {
         try {
           const Sentry = await import('@sentry/node');
           Sentry.captureException(
-            err instanceof Error ? err : new Error(message),
+            err instanceof Error ? err : new Error(String(err)),
           );
         } catch (_err: unknown) {
           /* sentry optional — intentional: errors in sentry init should not crash the handler */
         }
       }
 
-      res.status(status).json({ error: { code, message } });
+      res.status(statusCode).json({ error: { code, message: safeMessage } });
     }
   };
 }

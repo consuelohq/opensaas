@@ -5,6 +5,8 @@ import { AssistantConversationService } from '../services/assistant-conversation
 import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import type OpenAI from 'openai';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 // -- types --
 
@@ -553,6 +555,10 @@ export const assistantRoutes = (): RouteDefinition[] => {
                 conversationId,
               };
               res.status(200).json(response);
+              logger.info('assistant.completed', {
+                action: 'assistant.completed',
+                userId: req.auth?.userId ?? 'anonymous',
+              });
               return;
             }
 
@@ -613,6 +619,10 @@ export const assistantRoutes = (): RouteDefinition[] => {
             conversationId,
           };
           res.status(200).json(response);
+          logger.info('assistant.max_iterations', {
+            action: 'assistant.max_iterations',
+            userId: req.auth?.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(
             err instanceof Error ? err : new Error('assistant error'),
@@ -663,6 +673,10 @@ export const assistantRoutes = (): RouteDefinition[] => {
             return;
           }
           res.status(200).json({ deleted: true });
+          logger.info('assistant.conversation_deleted', {
+            action: 'conversation.deleted',
+            userId: req.auth?.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           Sentry.captureException(
             err instanceof Error

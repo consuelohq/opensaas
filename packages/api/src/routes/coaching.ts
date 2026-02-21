@@ -6,6 +6,8 @@ import type { RouteDefinition } from './index.js';
 import type { Server as HttpServer } from 'http';
 import { trackLLMUsage } from '../services/posthog.js';
 import type { Message } from '@consuelo/coaching';
+import { createLogger } from '@consuelo/logger';
+const auditLogger = createLogger('api:audit');
 
 // B4/W12: lazy import for peer dependencies — Coach uses openai (peer dep)
 let CoachModule: typeof import('@consuelo/coaching') | null = null;
@@ -256,6 +258,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
 
           // W10: wrap in { data }
           res.status(200).json({ data: result });
+          auditLogger.info('coaching.completed', {
+            action: 'coaching.completed',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err); // W1
@@ -313,6 +319,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
           });
 
           res.status(200).json({ data: result });
+          auditLogger.info('coaching.realtime_completed', {
+            action: 'coaching.realtime_completed',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
@@ -365,6 +375,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
             body.callSid,
           );
           res.status(200).json({ data: transformed });
+          auditLogger.info('coaching.analyzed', {
+            action: 'coaching.analyzed',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);
@@ -413,6 +427,10 @@ export const coachingRoutes = (): RouteDefinition[] => {
             userId: auth.userId,
           });
           res.status(200).json({ data: { callId, persisted: true } });
+          auditLogger.info('coaching.analysis_persisted', {
+            action: 'analysis.persisted',
+            userId: auth.userId ?? 'anonymous',
+          });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
           Sentry.captureException(err);

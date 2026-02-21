@@ -3,6 +3,8 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import { getSharedPool } from '../shared/db.js';
+import { createLogger } from '@consuelo/logger';
+const logger = createLogger('api:audit');
 
 type Pool = {
   query(
@@ -73,6 +75,10 @@ export const preferencesRoutes = (): RouteDefinition[] => {
         ]);
 
         res.status(200).json(rows[0].preferences);
+        logger.info('preferences.updated', {
+          action: 'preferences.updated',
+          userId: auth.userId ?? 'anonymous',
+        });
       }),
     },
   ];
