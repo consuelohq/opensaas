@@ -39,6 +39,10 @@ program
   .option('--no-telemetry', 'disable error reporting')
   .option('--workspace <name>', 'use a specific workspace configuration')
   .hook('preAction', async (_thisCommand, actionCommand) => {
+    logger.info('command invoked', {
+      command: actionCommand.name(),
+      args: actionCommand.args,
+    });
     const opts = actionCommand.optsWithGlobals();
     if (opts.json) globalThis.__consuelo_json = true;
     if (opts.quiet) globalThis.__consuelo_quiet = true;
