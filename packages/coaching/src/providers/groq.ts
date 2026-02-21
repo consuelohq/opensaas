@@ -77,8 +77,7 @@ export class GroqProvider implements CoachingProvider {
         response_format: { type: 'json_object' },
       });
       const data = this.safeParseJSON<Record<string, unknown>>(res.choices[0].message.content, 'analysis');
-      delete data.__proto__; delete data.constructor; delete data.prototype;
-      return { ...data, call_sid: meta.callSid, user_id: meta.userId, phone_number: meta.phoneNumber, generated_at: new Date().toISOString() };
+      return { ...data, call_sid: meta.callSid, user_id: meta.userId, phone_number: meta.phoneNumber, generated_at: new Date().toISOString() } as CallAnalytics;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'analysis failed';
       throw new Error(`Groq analysis error: ${msg}`, { cause: err });
