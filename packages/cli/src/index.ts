@@ -23,6 +23,7 @@ import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
 import { extractCatalog, catalogToTools } from './catalog.js';
 import { json } from './output.js';
+import { sanitizeInput, validateTranscriptFile } from './utils/sanitize.js';
 import './output.js';
 
 const logger = createLogger('CLI');
@@ -39,10 +40,6 @@ program
   .option('--no-telemetry', 'disable error reporting')
   .option('--workspace <name>', 'use a specific workspace configuration')
   .hook('preAction', async (_thisCommand, actionCommand) => {
-    logger.info('command invoked', {
-      command: actionCommand.name(),
-      args: actionCommand.args,
-    });
     const opts = actionCommand.optsWithGlobals();
     if (opts.json) globalThis.__consuelo_json = true;
     if (opts.quiet) globalThis.__consuelo_quiet = true;
@@ -52,7 +49,9 @@ program
       // eslint-disable-next-line @nx/enforce-module-boundaries -- DEV-788: nx tags not configured for cli
       const { ConfigService } = await import('twenty-sdk/cli');
       let workspace = opts.workspace as string | undefined;
-      if (!workspace) {
+      if (workspace) {
+        workspace = sanitizeInput(workspace);
+      } else {
         const configService = new ConfigService();
         workspace = await configService.getDefaultWorkspace();
       }
@@ -90,7 +89,10 @@ program
   .description('analyze a call transcript')
   .option('--transcript <file>', 'path to transcript file')
   .action(async (opts) => {
-    await coachCommand({ transcript: opts.transcript });
+    const transcript = opts.transcript
+      ? validateTranscriptFile(opts.transcript)
+      : undefined;
+    await coachCommand({ transcript });
   });
 
 // phase 8 command groups
@@ -121,7 +123,11 @@ program
   .argument('[callSid]', 'call SID to tag results with', '')
   .option('--transcript <file>', 'path to transcript file')
   .action(async (callSid, opts) => {
-    await analyticsCommand(callSid, { transcript: opts.transcript });
+    const sanitizedCallSid = callSid ? sanitizeInput(callSid) : '';
+    const transcript = opts.transcript
+      ? validateTranscriptFile(opts.transcript)
+      : undefined;
+    await analyticsCommand(sanitizedCallSid, { transcript });
   });
 
 program
