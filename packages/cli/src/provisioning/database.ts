@@ -18,28 +18,54 @@ export async function provisionDockerPostgres(): Promise<string> {
     throw new Error('Docker not available');
   }
 
-  spin.start('Pulling postgres:15...');
-  execSync(`docker pull ${POSTGRES_IMAGE}`, { stdio: 'ignore' });
-  spin.succeed('Image ready');
+  // reuse existing container if running (volume keeps the original password)
+  try {
+    const running = execSync(`docker inspect --format='{{.State.Running}}' ${CONTAINER_NAME} 2>/dev/null`, { encoding: 'utf-8' }).trim();
+    if (running === 'true') {
+      const env = execSync(`docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' ${CONTAINER_NAME}`, { encoding: 'utf-8' });
+      const pwMatch = env.match(/POSTGRES_PASSWORD=(.+)/);
+      if (pwMatch) {
+        spin.succeed('Existing database container is running');
+        await waitForPostgres();
+        return `postgres://consuelo:${pwMatch[1].trim()}@localhost:${POSTGRES_PORT}/consuelo`;
+      }
+    }
+  } catch (_err: unknown) {
+    // container doesn't exist — will create below
+  }
 
   const password = randomBytes(16).toString('hex');
 
-  spin.start('Starting database container...');
   try {
-    execSync(`docker inspect ${CONTAINER_NAME}`, { stdio: 'ignore' });
-    spin.warn(`Removing existing container '${CONTAINER_NAME}'`);
-    execSync(`docker rm -f ${CONTAINER_NAME}`, { stdio: 'ignore' });
-    spin.start('Starting database container...');
-  } catch (_err: unknown) {
-    // container doesn't exist, that's fine — intentional: cleanup best-effort
+    spin.start('Pulling postgres:15...');
+    execSync(`docker pull ${POSTGRES_IMAGE}`, { stdio: 'ignore' });
+    spin.succeed('Image ready');
+  } catch (err: unknown) {
+    spin.fail('Failed to pull postgres:15');
+    throw err;
   }
-  execSync(
-    `docker run -d --name ${CONTAINER_NAME} ` +
-      `-e POSTGRES_USER=consuelo -e POSTGRES_PASSWORD -e POSTGRES_DB=consuelo ` +
-      `-p ${POSTGRES_PORT}:5432 -v consuelo-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
-    { stdio: 'ignore', env: { ...process.env, POSTGRES_PASSWORD: password } },
-  );
-  spin.succeed(`Container ${CONTAINER_NAME} running`);
+
+  try {
+    spin.start('Starting database container...');
+    try {
+      execSync(`docker inspect ${CONTAINER_NAME}`, { stdio: 'ignore' });
+      spin.warn(`Removing existing container '${CONTAINER_NAME}'`);
+      execSync(`docker rm -f ${CONTAINER_NAME}`, { stdio: 'ignore' });
+      spin.start('Starting database container...');
+    } catch (_err: unknown) {
+      // container doesn't exist, that's fine — intentional: cleanup best-effort
+    }
+    execSync(
+      `docker run -d --name ${CONTAINER_NAME} ` +
+        `-e POSTGRES_USER=consuelo -e POSTGRES_PASSWORD -e POSTGRES_DB=consuelo ` +
+        `-p ${POSTGRES_PORT}:5432 -v consuelo-postgres-data:/var/lib/postgresql/data ${POSTGRES_IMAGE}`,
+      { stdio: 'ignore', env: { ...process.env, POSTGRES_PASSWORD: password } },
+    );
+    spin.succeed(`Container ${CONTAINER_NAME} running`);
+  } catch (err: unknown) {
+    spin.fail('Failed to start database container');
+    throw err;
+  }
 
   spin.start('Waiting for database to be ready...');
   await waitForPostgres();

@@ -2,6 +2,7 @@ import type { VectorStore, EmbedFn, ReadFileFn, PlaybookUploadOptions } from '..
 
 /** Split text into word-based chunks (default 500 words, matching monolith). */
 export function chunkText(text: string, chunkSize = 500): string[] {
+  if (chunkSize < 1) chunkSize = 500;
   const words = text.split(/\s+/);
   const chunks: string[] = [];
   for (let i = 0; i < words.length; i += chunkSize) {
