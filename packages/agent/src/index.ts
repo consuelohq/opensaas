@@ -34,7 +34,17 @@ export type {
   IntegrationCapability,
   OAuthConfig,
   ApiKeyConfig,
+  ConnectionStatus,
+  IntegrationConnection,
+  ConnectRequest,
+  OAuthCallbackRequest,
+  IntegrationStore,
+  EncryptFn,
+  DecryptFn,
+  IntegrationServiceOptions,
 } from './integrations/index.js';
+
+export { IntegrationConnectionService } from './integrations/index.js';
 
 // context
 export type { ContextLoader } from './context/index.js';
