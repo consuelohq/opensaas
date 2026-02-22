@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AutomationController } from 'src/engine/core-modules/agent/controllers/automation.controller';
 import { ChatController } from 'src/engine/core-modules/agent/controllers/chat.controller';
 import { AgentMemoryController } from 'src/engine/core-modules/agent/controllers/memory.controller';
 import { AgentMethodologyController } from 'src/engine/core-modules/agent/controllers/methodology.controller';
@@ -37,7 +38,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
       'core',
     ),
   ],
-  controllers: [AgentMemoryController, AgentMethodologyController, ChatController, SkillController],
+  controllers: [AgentMemoryController, AgentMethodologyController, AutomationController, ChatController, SkillController],
   providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
   exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
 })
