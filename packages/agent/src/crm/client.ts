@@ -153,17 +153,19 @@ export class CrmClient {
           authorization: `Bearer ${this.token}`,
         },
         body: options?.body ? JSON.stringify(options.body) : undefined,
+        signal: AbortSignal.timeout(10_000),
       });
 
       if (!response.ok) {
         const text = await response.text().catch(() => 'unknown error');
-        // Sentry.captureException — handled by consuming app
+        // Sentry.captureMessage — handled by consuming app
         throw new Error(`CRM API ${response.status}: ${text}`);
       }
 
       return response.json() as Promise<TResult>;
     } catch (err: unknown) {
       // Sentry.captureException — handled by consuming app
+      if (err instanceof Error && err.message.startsWith('CRM API')) throw err;
       const message = err instanceof Error ? err.message : 'unknown CRM error';
       throw new Error(`CRM request failed: ${message}`, { cause: err });
     }

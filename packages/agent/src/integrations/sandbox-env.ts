@@ -14,8 +14,7 @@ export const buildSandboxEnv = async (
   userId: string,
   requiredIntegrations?: string[],
 ): Promise<SandboxEnvResult> => {
-  try {
-    const connections = await store.findByUser(workspaceId, userId);
+  const connections = await store.findByUser(workspaceId, userId);
 
     // filter to healthy connections only
     const healthy = connections.filter((conn) => conn.status === 'connected');
@@ -35,7 +34,13 @@ export const buildSandboxEnv = async (
       const encrypted = conn.metadata?.encryptedCredentials;
       if (typeof encrypted !== 'string') continue;
 
-      const credentials = JSON.parse(await decrypt(encrypted)) as Record<string, string>;
+      let credentials: Record<string, string>;
+      try {
+        credentials = JSON.parse(await decrypt(encrypted)) as Record<string, string>;
+      } catch {
+        // skip connections with corrupted credentials
+        continue;
+      }
       const prefix = def.envVarPrefix;
 
       // map credentials to env vars: {PREFIX}_{FIELD_NAME_SCREAMING_CASE}
@@ -60,11 +65,7 @@ export const buildSandboxEnv = async (
       }
     }
 
-    return { envVars, sdkPackages };
-  } catch (err: unknown) {
-    // Sentry.captureException(err) — handled by consuming app
-    throw err;
-  }
+  return { envVars, sdkPackages };
 };
 
 const toScreamingSnake = (str: string): string =>

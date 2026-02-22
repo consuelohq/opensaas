@@ -85,7 +85,7 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
       name: 'log_call',
       description: 'log a call outcome for a contact',
       parameters: z.object({
-        contactId: z.string(),
+        contactId: z.string().describe('contact ID to log the call for'),
         outcome: z.string().describe('call outcome: answered, voicemail, no_answer, busy'),
         notes: z.string().describe('call notes'),
         nextStep: z.string().optional().describe('next action to take'),
@@ -102,8 +102,8 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
       description: 'update a deal stage, amount, or notes',
       parameters: z.object({
         id: z.string().describe('deal ID'),
-        stage: z.string().optional(),
-        amount: z.number().optional(),
+        stage: z.string().optional().describe('pipeline stage'),
+        amount: z.number().optional().describe('deal amount'),
         notes: z.string().optional(),
       }),
       execute: async (args: {
@@ -120,7 +120,7 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
       name: 'create_note',
       description: 'create a note on a contact record',
       parameters: z.object({
-        contactId: z.string(),
+        contactId: z.string().describe('contact ID'),
         content: z.string().describe('note content'),
       }),
       execute: async (args: { contactId: string; content: string }) =>
@@ -140,9 +140,9 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
       name: 'create_task',
       description: 'create a follow-up task',
       parameters: z.object({
-        title: z.string(),
+        title: z.string().describe('task title'),
         dueDate: z.string().describe('ISO date string'),
-        contactId: z.string().optional(),
+        contactId: z.string().optional().describe('associated contact ID'),
       }),
       execute: async (args: {
         title: string;

@@ -9,7 +9,7 @@ export type AgentToolDefinition<TParams extends ZodTypeAny = ZodTypeAny> = {
 };
 
 export type ToolRegistry = {
-  tools: Map<string, AgentToolDefinition>;
+  tools: ReadonlyMap<string, AgentToolDefinition>;
   register: (tool: AgentToolDefinition) => void;
   get: (name: string) => AgentToolDefinition | undefined;
   toToolSet: () => Record<string, AgentToolDefinition>;
