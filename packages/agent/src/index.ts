@@ -47,6 +47,14 @@ export type {
 
 export { IntegrationConnectionService, buildSandboxEnv } from './integrations/index.js';
 
+// tracing (DEV-1019)
+export { TracingService } from './tracing/index.js';
+export type { LangfuseConfig, ExecutionStore, CreateExecutionInput } from './tracing/index.js';
+
+// artifacts (DEV-1020)
+export { sandboxToArtifacts } from './artifacts/index.js';
+export type { ArtifactStore, CreateArtifactInput } from './artifacts/index.js';
+
 // context
 export type { ContextLoader } from './context/index.js';
 
@@ -68,4 +76,9 @@ export type {
   ChatAttachment,
   StreamChunk,
   ConversationStore,
+  ExecutionType,
+  ExecutionStatus,
+  AgentExecution,
+  ArtifactType,
+  AgentArtifact,
 } from './types.js';

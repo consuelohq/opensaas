@@ -118,3 +118,60 @@ export type ConversationStore = {
   create: (userId: string, workspaceId: string) => Promise<ConversationState>;
   save: (state: ConversationState) => Promise<void>;
 };
+
+// --- execution history types (DEV-1019) ---
+
+export type ExecutionType = 'tool_call' | 'llm_response' | 'sandbox_run' | 'integration_call';
+export type ExecutionStatus = 'running' | 'completed' | 'failed';
+
+export type AgentExecution = {
+  id: string;
+  conversationId: string;
+  type: ExecutionType;
+  status: ExecutionStatus;
+  toolName?: string;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: string;
+  durationMs?: number;
+  createdAt: Date;
+  completedAt?: Date;
+};
+
+export type CreateExecutionInput = Omit<AgentExecution, 'id' | 'createdAt' | 'completedAt'>;
+
+export type ExecutionStore = {
+  create: (input: CreateExecutionInput) => Promise<AgentExecution>;
+  complete: (id: string, result: { output?: Record<string, unknown>; error?: string; durationMs: number }) => Promise<void>;
+  list: (conversationId: string) => Promise<AgentExecution[]>;
+  get: (id: string) => Promise<AgentExecution | null>;
+};
+
+// --- artifact types (DEV-1020) ---
+
+export type ArtifactType = 'chart' | 'table' | 'report' | 'csv' | 'image' | 'code' | 'file';
+
+export type AgentArtifact = {
+  id: string;
+  conversationId: string;
+  executionId: string;
+  type: ArtifactType;
+  title: string;
+  description?: string;
+  content?: Record<string, unknown>;
+  fileUrl?: string;
+  mimeType?: string;
+  sizeBytes?: number;
+  workspaceId: string;
+  userId: string;
+  createdAt: Date;
+};
+
+export type CreateArtifactInput = Omit<AgentArtifact, 'id' | 'createdAt'>;
+
+export type ArtifactStore = {
+  create: (input: CreateArtifactInput) => Promise<AgentArtifact>;
+  list: (userId: string, options?: { conversationId?: string; type?: ArtifactType; limit?: number; offset?: number }) => Promise<AgentArtifact[]>;
+  get: (id: string) => Promise<AgentArtifact | null>;
+  getDownloadUrl: (id: string) => Promise<string | null>;
+};

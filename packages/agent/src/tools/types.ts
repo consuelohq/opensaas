@@ -4,7 +4,8 @@ export type AgentToolDefinition<TParams extends ZodTypeAny = ZodTypeAny> = {
   name: string;
   description: string;
   parameters: TParams;
-  execute: (args: z.infer<TParams>) => Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  execute: (args: any) => Promise<unknown>; // HACK: erased to unknown in Map<string, AgentToolDefinition>
 };
 
 export type ToolRegistry = {
