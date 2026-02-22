@@ -75,7 +75,7 @@ export const callRoutes = (): RouteDefinition[] => {
           const result = await getDialer().dial({
             to: body.to,
             from: body.from ?? '',
-            userId: body.userId ?? req.auth?.userId ?? '',
+            userId: req.auth?.userId ?? '',
             statusCallbackUrl: body.statusCallbackUrl,
           });
 
@@ -95,6 +95,7 @@ export const callRoutes = (): RouteDefinition[] => {
           logger.info('call.initiated', {
             action: 'call.initiated',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -161,8 +162,9 @@ export const callRoutes = (): RouteDefinition[] => {
             .status(201)
             .json({ callSid, conferenceName, status: 'calling-agent' });
           logger.info('call.callback', {
-            action: 'callback.initiated',
+            action: 'call.callback',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -381,8 +383,9 @@ export const callRoutes = (): RouteDefinition[] => {
 
           res.status(200).json({ callSid, status: 'completed' });
           logger.info('call.hangup', {
-            action: 'call.ended',
+            action: 'call.hangup',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -437,8 +440,9 @@ export const callRoutes = (): RouteDefinition[] => {
 
         res.status(201).json({ callId, persisted: true });
         logger.info('call.analysis', {
-          action: 'analysis.persisted',
+          action: 'call.analysis',
           userId: auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

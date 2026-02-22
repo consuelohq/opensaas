@@ -25,7 +25,8 @@ export class Coach {
   /** Get real-time coaching suggestions for an active conversation */
   async coach(conversation: Message[], options: CoachOptions = {}): Promise<SalesCoaching> {
     const dynamics = analyzeConversationDynamics(conversation);
-    const recent = conversation.slice(-(options.maxRecentMessages ?? 15));
+    const maxRecent = options.maxRecentMessages ?? 15;
+    const recent = maxRecent === 0 ? [] : conversation.slice(-maxRecent);
     const convText = recent.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
 
     const lastCustomerMsg = dynamics.customer_messages.at(-1) ?? '';

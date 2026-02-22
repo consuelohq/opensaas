@@ -57,8 +57,8 @@ export const loadConfig = (): CliConfig => {
 };
 
 export const saveConfig = (config: CliConfig): void => {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2));
+  fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), { mode: 0o600 });
 };
 
 // new config system
@@ -75,8 +75,8 @@ export const loadFullConfig = (scope: ConfigScope): Partial<ConsuloConfig> => {
 
 export const saveFullConfig = (scope: ConfigScope, config: Partial<ConsuloConfig>): void => {
   const filePath = configPath(scope);
-  if (scope === 'global') fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(config, null, 2));
+  if (scope === 'global') fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  fs.writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
 };
 
 export const getDefaultConfig = (): ConsuloConfig => structuredClone(DEFAULT_CONFIG);

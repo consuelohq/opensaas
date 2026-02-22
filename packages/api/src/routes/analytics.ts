@@ -172,14 +172,15 @@ export const analyticsRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const result = await coach.analyzeCall(body.messages, {
+          const analysis = await coach.analyzeCall(body.messages, {
             callSid: body.callSid,
             userId: auth.userId,
           });
-          res.status(200).json(result);
+          res.status(200).json(analysis);
           logger.info('analytics.analyzed', {
             action: 'analytics.analyzed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);

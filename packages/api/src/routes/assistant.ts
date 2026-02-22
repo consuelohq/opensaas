@@ -558,6 +558,7 @@ export const assistantRoutes = (): RouteDefinition[] => {
               logger.info('assistant.completed', {
                 action: 'assistant.completed',
                 userId: req.auth?.userId ?? 'anonymous',
+                outcome: 'success',
               });
               return;
             }
@@ -622,6 +623,7 @@ export const assistantRoutes = (): RouteDefinition[] => {
           logger.info('assistant.max_iterations', {
             action: 'assistant.max_iterations',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -674,8 +676,9 @@ export const assistantRoutes = (): RouteDefinition[] => {
           }
           res.status(200).json({ deleted: true });
           logger.info('assistant.conversation_deleted', {
-            action: 'conversation.deleted',
+            action: 'assistant.conversation_deleted',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(

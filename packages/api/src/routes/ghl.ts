@@ -241,6 +241,7 @@ export const ghlRoutes = (): RouteDefinition[] => {
         logger.info('ghl.disconnected', {
           action: 'ghl.disconnected',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -313,6 +314,7 @@ export const ghlRoutes = (): RouteDefinition[] => {
         logger.info('ghl.pushed', {
           action: 'ghl.pushed',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -409,8 +411,9 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
         res.status(200).json({ mapped: true, count: stageMappings.length });
         logger.info('ghl.pipelines_mapped', {
-          action: 'pipelines.mapped',
+          action: 'ghl.pipelines_mapped',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -445,8 +448,9 @@ export const ghlRoutes = (): RouteDefinition[] => {
 
         res.status(200).json(result);
         logger.info('ghl.pipelines_synced', {
-          action: 'pipelines.synced',
+          action: 'ghl.pipelines_synced',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -526,6 +530,7 @@ export const ghlRoutes = (): RouteDefinition[] => {
           logger.info('ghl.imported', {
             action: 'ghl.imported',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const errorMessage =
@@ -613,6 +618,7 @@ export const ghlRoutes = (): RouteDefinition[] => {
           logger.info('ghl.synced', {
             action: 'ghl.synced',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const errorMessage =

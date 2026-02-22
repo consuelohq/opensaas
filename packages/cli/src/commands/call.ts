@@ -8,8 +8,17 @@ import { handleCommandError } from '../errors.js';
 const E164_RE = /^\+1\d{10}$/;
 
 function maskPhone(phone: string): string {
-  return phone.length > 4 ? '***' + phone.slice(-4) : phone;
+  return phone.length > 4 ? '***' + phone.slice(-4) : '****';
 }
+
+const auditLog = {
+  info: (msg: string, data: Record<string, unknown>) => {
+    try { createLogger('cli:call').info(msg, data); } catch { /* logger unavailable */ }
+  },
+  error: (msg: string, data: Record<string, unknown>) => {
+    try { createLogger('cli:call').error(msg, data); } catch { /* logger unavailable */ }
+  },
+};
 
 export async function callCommand(number: string): Promise<void> {
   if (!number) {
@@ -68,7 +77,12 @@ export async function callCommand(number: string): Promise<void> {
     });
 
     if (!dialOutcome.success) {
-      error(dialOutcome.error ?? 'call failed');
+      const message = dialOutcome.error ?? 'call failed';
+      if (isJson()) {
+        json({ error: { code: 'DIAL_FAILED', message } });
+      } else {
+        error(message);
+      }
       process.exit(1);
     }
 

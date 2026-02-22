@@ -97,6 +97,7 @@ export const ghlWebhookRoutes = (): RouteDefinition[] => {
         logger.info('webhook.ghl_received', {
           action: 'webhook.ghl_received',
           userId: 'anonymous',
+          outcome: 'success',
         });
       }),
     },

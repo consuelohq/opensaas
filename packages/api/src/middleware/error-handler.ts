@@ -21,7 +21,7 @@ export function errorHandler(
           ? err.message
           : 'Request failed';
 
-      const code = isErrorLike(err) && err.code ? err.code : 'INTERNAL_ERROR';
+      const code = isErrorLike(err) && err.code ? err.code : 'internal_error';
 
       try {
         const { createLogger } = await import('@consuelo/logger');

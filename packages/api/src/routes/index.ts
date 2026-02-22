@@ -6,6 +6,7 @@ export interface RouteDefinition {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
   handler: (req: ApiRequest, res: ApiResponse) => Promise<void>;
+  auth?: boolean;
 }
 
 // Import + re-export route modules
