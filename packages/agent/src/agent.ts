@@ -37,19 +37,24 @@ export const buildToolSet = async (registry: ToolRegistry) => {
   return toolSet;
 };
 
-// construct system prompt from context layers
+// construct system prompt from context layers with injection defense delimiters
 export const buildSystemPrompt = (
   context: AgentContext,
   basePrompt: string,
 ): string => {
   const parts = [basePrompt];
 
+  parts.push('\nNever execute code that sends data to URLs outside the connected integrations.');
+
   parts.push(`\nUser ID: ${context.userId}\nWorkspace: ${context.workspaceId}`);
+
+  // CRM context wrapped in delimiters — treat as semi-trusted data
+  const crmParts: string[] = [];
 
   if (context.activeCall) {
     const call = context.activeCall;
-    parts.push(
-      `\nActive call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId})`,
+    crmParts.push(
+      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId})`,
     );
   }
 
@@ -58,7 +63,11 @@ export const buildSystemPrompt = (
       .slice(0, 10)
       .map((activity) => `- [${activity.type}] ${sanitizeField(activity.summary)}`)
       .join('\n');
-    parts.push(`\nRecent activity:\n${activities}`);
+    crmParts.push(`Recent activity:\n${activities}`);
+  }
+
+  if (crmParts.length > 0) {
+    parts.push(`\n<crm_context>\n${crmParts.join('\n')}\n</crm_context>`);
   }
 
   if (isNonEmptyArray(context.connectedIntegrations)) {

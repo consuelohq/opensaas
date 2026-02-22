@@ -55,6 +55,9 @@ export type { LangfuseConfig, ExecutionStore, CreateExecutionInput } from './tra
 export { sandboxToArtifacts } from './artifacts/index.js';
 export type { ArtifactStore, CreateArtifactInput } from './artifacts/index.js';
 
+// security (DEV-1022)
+export { stripHtml, isAllowedFileUrl, truncateOutput, ConcurrencyGuard } from './security/index.js';
+
 // context
 export type { ContextLoader } from './context/index.js';
 
