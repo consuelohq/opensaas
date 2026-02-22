@@ -52,6 +52,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
         logger.info('local_presence.toggled', {
           action: 'local_presence.toggled',
           userId,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -268,6 +269,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
           action: 'locks.cleaned',
           userId: req.auth?.userId ?? 'anonymous',
           cleaned,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(

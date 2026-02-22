@@ -180,6 +180,7 @@ export const analyticsRoutes = (): RouteDefinition[] => {
           logger.info('analytics.analyzed', {
             action: 'analytics.analyzed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);

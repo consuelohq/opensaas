@@ -185,6 +185,7 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         logger.info('ghl.disconnected', {
           action: 'ghl.disconnected',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -284,6 +285,7 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         logger.info('ghl.mappings_updated', {
           action: 'mappings.updated',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -333,6 +335,7 @@ export const ghlIntegrationRoutes = (): RouteDefinition[] => {
         logger.info('ghl.pipelines_synced', {
           action: 'pipelines.synced',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

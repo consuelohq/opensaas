@@ -117,6 +117,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         logger.info('parallel.dial', {
           action: 'parallel.dial_initiated',
           userId,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -383,6 +384,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         logger.info('parallel.terminated', {
           action: 'parallel.terminated',
           userId,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(

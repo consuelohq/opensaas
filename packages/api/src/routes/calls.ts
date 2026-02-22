@@ -95,6 +95,7 @@ export const callRoutes = (): RouteDefinition[] => {
           logger.info('call.initiated', {
             action: 'call.initiated',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -163,6 +164,7 @@ export const callRoutes = (): RouteDefinition[] => {
           logger.info('call.callback', {
             action: 'callback.initiated',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -383,6 +385,7 @@ export const callRoutes = (): RouteDefinition[] => {
           logger.info('call.hangup', {
             action: 'call.ended',
             userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(
@@ -439,6 +442,7 @@ export const callRoutes = (): RouteDefinition[] => {
         logger.info('call.analysis', {
           action: 'analysis.persisted',
           userId: auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
