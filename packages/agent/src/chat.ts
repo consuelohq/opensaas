@@ -1,6 +1,5 @@
 import type {
   ChatRequest,
-  StreamChunk,
   ConversationStore,
   ConversationState,
   AgentConfig,
@@ -20,11 +19,8 @@ export type ChatHandlerOptions = {
 
 export type ChatResult = {
   conversationId: string;
-  stream: ReadableStream<string>;
+  response: Response;
 };
-
-const sseEncode = (chunk: StreamChunk): string =>
-  `data: ${JSON.stringify(chunk)}\n\n`;
 
 export const handleChat = async (
   request: ChatRequest,
@@ -59,13 +55,15 @@ export const handleChat = async (
     ? await options.tracing.startTrace({ userId, conversationId: conv.id, skillId: request.skillId })
     : null;
 
-  const stream = new ReadableStream<string>({
-    async start(controller) {
+  const ai = await import('ai');
+
+  // AI SDK UI message stream — text, tool calls, tool results all handled by protocol
+  const stream = ai.createUIMessageStream({
+    execute: async ({ writer }) => {
       try {
         const result = await agent.chat({
           messages: conv.messages,
           onStepFinish: (step) => {
-            // log to langfuse + execution store (fire-and-forget)
             if (options.tracing) {
               options.tracing.logStep({
                 trace,
@@ -74,36 +72,17 @@ export const handleChat = async (
                 step: step as Parameters<TracingService['logStep']>[0]['step'],
               }).catch(() => {});
             }
-            // emit tool chunks for each step
-            const calls = step.toolCalls as Array<{
-              toolName: string;
-              args: Record<string, unknown>;
-            }>;
-            if (calls) {
-              for (const call of calls) {
-                controller.enqueue(
-                  sseEncode({
-                    type: 'tool_start',
-                    tool: call.toolName,
-                    input: call.args,
-                  }),
-                );
-              }
-            }
           },
         });
 
-        // stream text chunks
-        for await (const textPart of result.textStream) {
-          controller.enqueue(sseEncode({ type: 'text', content: textPart }));
-        }
+        // merge streamText output into UI message stream
+        writer.merge(result.toUIMessageStream());
 
-        // persist assistant response
+        // persist after stream completes
         const finalText = await result.text;
         conv.messages.push({ role: 'assistant', content: finalText });
         conv.updatedAt = new Date();
 
-        // persist token usage
         const usage = await result.usage;
         if (usage) {
           conv.tokenUsage.push({
@@ -115,29 +94,17 @@ export const handleChat = async (
         }
 
         await store.save(conv);
-
-        // flush tracing at end of request
         if (options.tracing) await options.tracing.flush();
-
-        controller.enqueue(sseEncode({ type: 'done' }));
-        controller.close();
       } catch (err: unknown) {
-        controller.enqueue(
-          sseEncode({
-            type: 'text',
-            content: 'Something went wrong. Please try again.',
-          }),
-        );
-        controller.enqueue(sseEncode({ type: 'done' }));
-
-        // persist conversation so the user message isn't lost
         conv.updatedAt = new Date();
         await store.save(conv).catch(() => {});
-
-        controller.close();
+        throw err;
       }
     },
+    onError: () => 'Something went wrong. Please try again.',
   });
 
-  return { conversationId, stream };
+  const response = ai.createUIMessageStreamResponse({ stream });
+
+  return { conversationId, response };
 };

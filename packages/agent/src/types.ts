@@ -103,16 +103,6 @@ export type ChatAttachment = {
   url: string;
 };
 
-export type StreamChunk =
-  | { type: 'text'; content: string }
-  | { type: 'tool_start'; tool: string; input: Record<string, unknown> }
-  | { type: 'tool_result'; tool: string; result: unknown }
-  | { type: 'chart'; data: Record<string, unknown>; chartType: string }
-  | { type: 'table'; columns: string[]; rows: unknown[][] }
-  | { type: 'action_card'; action: string; params: Record<string, unknown>; label: string }
-  | { type: 'file'; url: string; filename: string }
-  | { type: 'done' };
-
 export type ConversationStore = {
   load: (conversationId: string) => Promise<ConversationState | null>;
   create: (userId: string, workspaceId: string) => Promise<ConversationState>;
