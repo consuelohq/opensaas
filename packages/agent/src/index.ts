@@ -58,6 +58,9 @@ export type { ArtifactStore, CreateArtifactInput } from './artifacts/index.js';
 // security (DEV-1022)
 export { stripHtml, isAllowedFileUrl, truncateOutput, ConcurrencyGuard } from './security/index.js';
 
+// executor (DEV-1026)
+export { AgentExecutor } from './executor/index.js';
+
 // context
 export type { ContextLoader } from './context/index.js';
 
