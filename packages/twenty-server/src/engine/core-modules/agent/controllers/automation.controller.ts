@@ -13,7 +13,15 @@ import {
 } from '@nestjs/common';
 
 import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
+import {
+  AgentAutomationExecuteJob,
+  type AgentAutomationExecuteJobData,
+} from 'src/engine/core-modules/agent/jobs/agent-automation-execute.job';
+import { AutomationRunService } from 'src/engine/core-modules/agent/services/automation-run.service';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
+import { InjectMessageQueue } from 'src/engine/core-modules/message-queue/decorators/message-queue.decorator';
+import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
@@ -38,7 +46,12 @@ type UpdateAutomationBody = Partial<CreateAutomationBody>;
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 @UseFilters(RestApiExceptionFilter)
 export class AutomationController {
-  constructor(private readonly automationService: AutomationService) {}
+  constructor(
+    private readonly automationService: AutomationService,
+    private readonly automationRunService: AutomationRunService,
+    @InjectMessageQueue(MessageQueue.workflowQueue)
+    private readonly messageQueueService: MessageQueueService,
+  ) {}
 
   // literal routes before param routes
 
@@ -160,16 +173,32 @@ export class AutomationController {
   }
 
   @Post(':id/run')
-  async manualRun(@Param('id') _id: string) {
-    // STUB: DEV-964 — manual run not yet implemented
-    throw new HttpException(
-      {
-        error: {
-          code: 'NOT_IMPLEMENTED',
-          message: 'Manual run not yet implemented — waiting on DEV-964',
-        },
-      },
-      HttpStatus.NOT_IMPLEMENTED,
-    );
+  async manualRun(@Param('id') id: string) {
+    try {
+      const automation = await this.automationService.findById(id);
+
+      if (!automation) {
+        throw new HttpException(
+          { error: { code: 'NOT_FOUND', message: `Automation ${id} not found` } },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const run = await this.automationRunService.create(id);
+
+      await this.messageQueueService.add<AgentAutomationExecuteJobData>(
+        AgentAutomationExecuteJob.name,
+        { runId: run.id, automationId: id },
+        { retryLimit: 3 },
+      );
+
+      return run;
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        { error: { code: 'RUN_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

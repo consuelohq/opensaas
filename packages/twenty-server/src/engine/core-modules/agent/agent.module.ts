@@ -7,6 +7,7 @@ import { ConversationController } from 'src/engine/core-modules/agent/controller
 import { AgentMemoryController } from 'src/engine/core-modules/agent/controllers/memory.controller';
 import { AgentMethodologyController } from 'src/engine/core-modules/agent/controllers/methodology.controller';
 import { SkillController } from 'src/engine/core-modules/agent/controllers/skill.controller';
+import { AgentAutomationRunEntity } from 'src/engine/core-modules/agent/entities/agent-automation-run.entity';
 import { AgentConversationEntity } from 'src/engine/core-modules/agent/entities/agent-conversation.entity';
 import { AgentMessageEntity } from 'src/engine/core-modules/agent/entities/agent-message.entity';
 import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
@@ -17,6 +18,8 @@ import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/a
 import { AgentSkillUsageLogEntity } from 'src/engine/core-modules/agent/entities/agent-skill-usage-log.entity';
 import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entities/agent-workspace-config.entity';
 import { AgentConversationSummaryEntity } from 'src/engine/core-modules/agent/entities/agent-conversation-summary.entity';
+import { AgentAutomationExecuteJob } from 'src/engine/core-modules/agent/jobs/agent-automation-execute.job';
+import { AutomationRunService } from 'src/engine/core-modules/agent/services/automation-run.service';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
 import { AgentContextEngineService } from 'src/engine/core-modules/agent/services/context-engine.service';
 import { ConversationService } from 'src/engine/core-modules/agent/services/conversation.service';
@@ -31,6 +34,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
     TypeOrmModule.forFeature(
       [
         AgentAutomationEntity,
+        AgentAutomationRunEntity,
         AgentConversationEntity,
         AgentMemoryEntity,
         AgentMessageEntity,
@@ -45,7 +49,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
     ),
   ],
   controllers: [AgentMemoryController, AgentMethodologyController, AutomationController, ChatController, ConversationController, SkillController],
-  providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
-  exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
+  providers: [AgentAutomationExecuteJob, AgentMemoryService, AutomationRunService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
+  exports: [AgentMemoryService, AutomationRunService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
 })
 export class AgentModule {}
