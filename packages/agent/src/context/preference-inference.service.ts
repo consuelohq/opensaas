@@ -221,13 +221,19 @@ export const persistSignals = async (
   workspaceId: string,
   upsert: MemoryStore['upsert'],
 ): Promise<void> => {
-  for (const signal of signals) {
-    await upsert(userId, workspaceId, {
-      type: 'preference',
-      key: signal.key,
-      value: signal.value,
-      confidence: signal.confidence,
-      source: signal.signalType === 'explicit' ? 'explicit' : 'inferred',
-    });
+  try {
+    for (const signal of signals) {
+      await upsert(userId, workspaceId, {
+        type: 'preference',
+        key: signal.key,
+        value: signal.value,
+        confidence: signal.confidence,
+        source: signal.signalType === 'explicit' ? 'explicit' : 'inferred',
+      });
+    }
+  } catch (err: unknown) {
+    // fire-and-forget — log but don't throw
+    const message = err instanceof Error ? err.message : 'unknown error';
+    void message;
   }
 };
