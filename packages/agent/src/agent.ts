@@ -1,4 +1,7 @@
 import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
+
+const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
+  Array.isArray(value) && value.length > 0;
 import type { ToolRegistry } from './tools/types.js';
 
 export type AgentOptions = {
@@ -50,7 +53,7 @@ export const buildSystemPrompt = (
     );
   }
 
-  if (context.recentActivity.length > 0) {
+  if (isNonEmptyArray(context.recentActivity)) {
     const activities = context.recentActivity
       .slice(0, 10)
       .map((activity) => `- [${activity.type}] ${sanitizeField(activity.summary)}`)
@@ -58,13 +61,13 @@ export const buildSystemPrompt = (
     parts.push(`\nRecent activity:\n${activities}`);
   }
 
-  if (context.connectedIntegrations.length > 0) {
+  if (isNonEmptyArray(context.connectedIntegrations)) {
     parts.push(
       `\nConnected integrations: ${context.connectedIntegrations.join(', ')}`,
     );
   }
 
-  if (context.memories.length > 0) {
+  if (isNonEmptyArray(context.memories)) {
     const memories = context.memories
       .slice(0, 5)
       .map((memory) => `- ${sanitizeField(memory.content)}`)

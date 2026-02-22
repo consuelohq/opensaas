@@ -24,12 +24,12 @@ export type ChatResult = {
 const sseEncode = (chunk: StreamChunk): string =>
   `data: ${JSON.stringify(chunk)}\n\n`;
 
-export async function handleChat(
+export const handleChat = async (
   request: ChatRequest,
   userId: string,
   workspaceId: string,
   options: ChatHandlerOptions,
-): Promise<ChatResult> {
+): Promise<ChatResult> => {
   const { config, store, contextLoader, tools } = options;
 
   // load or create conversation
@@ -105,17 +105,23 @@ export async function handleChat(
         controller.enqueue(sseEncode({ type: 'done' }));
         controller.close();
       } catch (err: unknown) {
+        // TODO (DEV-1019): emit to langfuse / structured logger
         controller.enqueue(
           sseEncode({
             type: 'text',
-            content: `error: ${err instanceof Error ? err.message : 'unknown error'}`,
+            content: 'Something went wrong. Please try again.',
           }),
         );
         controller.enqueue(sseEncode({ type: 'done' }));
+
+        // persist conversation so the user message isn't lost
+        conv.updatedAt = new Date();
+        await store.save(conv).catch(() => {});
+
         controller.close();
       }
     },
   });
 
   return { conversationId, stream };
-}
+};

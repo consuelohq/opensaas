@@ -14,6 +14,7 @@ type PoolEntry = {
   sandbox: Awaited<ReturnType<typeof createSandbox>>;
   userId: string;
   lastUsed: number;
+  envsHash: string;
 };
 
 // lazy sandbox creation helper for type inference
@@ -25,6 +26,7 @@ const createSandbox = async (template: string, envs: Record<string, string>, tim
 export class SandboxService {
   private template: string;
   private pool: Map<string, PoolEntry> = new Map();
+  private pending: Map<string, Promise<PoolEntry['sandbox']>> = new Map();
   private cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(template = DEFAULT_TEMPLATE) {
@@ -52,6 +54,7 @@ export class SandboxService {
           : `node -e ${shellEscape(options.code)}`;
 
       const process = await sandbox.commands.run(command, {
+        timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
         onStdout: options.onStdout,
         onStderr: options.onStderr,
       });
@@ -71,11 +74,11 @@ export class SandboxService {
         artifacts,
       };
     } catch (err: unknown) {
-      // on error, evict from pool and kill
+      // on error, evict pooled sandbox and kill (non-pooled killed in finally)
       if (options.userId) {
         this.pool.delete(options.userId);
+        await sandbox.kill();
       }
-      await sandbox.kill();
       throw err;
     } finally {
       // kill non-pooled sandboxes immediately
@@ -90,16 +93,36 @@ export class SandboxService {
     envs: Record<string, string>,
     timeoutMs: number,
   ) {
+    const hash = JSON.stringify(Object.entries(envs).sort());
+
+    // reuse existing if envs match
     const existing = this.pool.get(userId);
-    if (existing) {
+    if (existing && existing.envsHash === hash) {
       existing.lastUsed = Date.now();
       return existing.sandbox;
     }
 
-    const sandbox = await createSandbox(this.template, envs, timeoutMs);
-    this.pool.set(userId, { sandbox, userId, lastUsed: Date.now() });
-    this.startCleanup();
-    return sandbox;
+    // stale env — dispose old sandbox
+    if (existing) {
+      this.pool.delete(userId);
+      existing.sandbox.kill().catch(() => {});
+    }
+
+    // serialize concurrent creation per user
+    const inflight = this.pending.get(userId);
+    if (inflight) return inflight;
+
+    const promise = createSandbox(this.template, envs, timeoutMs);
+    this.pending.set(userId, promise);
+
+    try {
+      const sandbox = await promise;
+      this.pool.set(userId, { sandbox, userId, lastUsed: Date.now(), envsHash: hash });
+      this.startCleanup();
+      return sandbox;
+    } finally {
+      this.pending.delete(userId);
+    }
   }
 
   private startCleanup() {
