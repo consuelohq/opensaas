@@ -73,6 +73,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.created', {
           action: 'contact.created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -124,6 +125,7 @@ export const contactRoutes = (): RouteDefinition[] => {
           action: 'contact.imported',
           userId: req.auth?.userId ?? 'anonymous',
           count: created.length,
+          outcome: 'success',
         });
       }),
     },
@@ -140,7 +142,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         }
 
         const contact = await contacts.get(id);
-        if (!contact) {
+        if (!contact || contact.userId !== req.auth?.userId) {
           res.status(404).json({
             error: { code: 'NOT_FOUND', message: 'Contact not found' },
           });
@@ -157,6 +159,14 @@ export const contactRoutes = (): RouteDefinition[] => {
         if (!id) {
           res.status(400).json({
             error: { code: 'INVALID_REQUEST', message: 'Missing contact ID' },
+          });
+          return;
+        }
+
+        const existing = await contacts.get(id);
+        if (!existing || existing.userId !== req.auth?.userId) {
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Contact not found' },
           });
           return;
         }
@@ -185,6 +195,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.updated', {
           action: 'contact.updated',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -200,6 +211,14 @@ export const contactRoutes = (): RouteDefinition[] => {
           return;
         }
 
+        const existing = await contacts.get(id);
+        if (!existing || existing.userId !== req.auth?.userId) {
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Contact not found' },
+          });
+          return;
+        }
+
         const deleted = await contacts.delete(id);
         if (!deleted) {
           res.status(404).json({
@@ -211,6 +230,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.deleted', {
           action: 'contact.deleted',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -257,8 +277,9 @@ export const contactRoutes = (): RouteDefinition[] => {
         ]);
         res.status(201).json(rows[0]);
         logger.info('contact.note_created', {
-          action: 'note.created',
+          action: 'contact.note_created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -306,8 +327,9 @@ export const contactRoutes = (): RouteDefinition[] => {
         ]);
         res.status(201).json(rows[0]);
         logger.info('contact.follow_up_created', {
-          action: 'follow_up.created',
+          action: 'contact.follow_up_created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

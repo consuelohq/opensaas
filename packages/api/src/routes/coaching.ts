@@ -261,6 +261,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           auditLogger.info('coaching.completed', {
             action: 'coaching.completed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
@@ -322,6 +323,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           auditLogger.info('coaching.realtime_completed', {
             action: 'coaching.realtime_completed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
@@ -378,6 +380,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           auditLogger.info('coaching.analyzed', {
             action: 'coaching.analyzed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';
@@ -428,8 +431,9 @@ export const coachingRoutes = (): RouteDefinition[] => {
           });
           res.status(200).json({ data: { callId, persisted: true } });
           auditLogger.info('coaching.analysis_persisted', {
-            action: 'analysis.persisted',
+            action: 'coaching.analysis_persisted',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Unknown error';

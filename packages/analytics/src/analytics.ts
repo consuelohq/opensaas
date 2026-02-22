@@ -91,7 +91,7 @@ export class Analytics {
     const rawRatio = metrics.talk_ratio;
     if (typeof rawRatio === 'number') talkRatio = rawRatio;
     else if (typeof rawRatio === 'string') {
-      const m = rawRatio.match(/(\d+)%?/);
+      const m = rawRatio.match(/([\d.]+)%?/);
       if (m) talkRatio = parseFloat(m[1]) > 1 ? parseFloat(m[1]) / 100 : parseFloat(m[1]);
     }
 
@@ -121,7 +121,7 @@ export class Analytics {
         talk_ratio: talkRatio,
         questions_asked: Number(metrics.questions_asked) || 0,
         objections_handled: Number(metrics.objections_handled) || 0,
-        next_steps_established: Boolean(metrics.next_steps_established),
+        next_steps_established: typeof metrics.next_steps_established === 'string' ? metrics.next_steps_established.toLowerCase() === 'true' : Boolean(metrics.next_steps_established),
         call_duration_minutes: conversation.length * 0.5,
       } as PerformanceMetrics,
       overall_score: Number(data.overall_score) || 0,

@@ -52,6 +52,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
         logger.info('local_presence.toggled', {
           action: 'local_presence.toggled',
           userId,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -265,9 +266,10 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
         const remaining = locks.length - cleaned;
         res.status(200).json({ cleaned, remaining });
         logger.info('caller_id.cleaned', {
-          action: 'locks.cleaned',
+          action: 'caller_id.cleaned',
           userId: req.auth?.userId ?? 'anonymous',
           cleaned,
+          outcome: 'success',
         });
       } catch (err: unknown) {
         Sentry.captureException(
