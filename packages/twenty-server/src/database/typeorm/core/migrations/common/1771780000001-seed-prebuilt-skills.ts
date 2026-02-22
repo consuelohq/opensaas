@@ -1,5 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
+import { CUSTOM_REPORT_GENERATOR_SEED } from 'src/engine/core-modules/agent/seeds/custom-report-generator.seed';
 import { PIPELINE_ANALYZER_SEED } from 'src/engine/core-modules/agent/seeds/pipeline-analyzer.seed';
 import { POST_CALL_LOGGER_SEED } from 'src/engine/core-modules/agent/seeds/post-call-logger.seed';
 import { PRE_CALL_BRIEF_SEED } from 'src/engine/core-modules/agent/seeds/pre-call-brief.seed';
@@ -42,17 +43,9 @@ const PREBUILT_SKILLS: SkillSeed[] = [
     dontUseWhen: `{${QUEUE_BUILDER_SEED.dontUseWhen}}`,
   },
   {
-    name: 'Custom Report Generator',
-    description: 'Generates custom reports from call analytics, contact data, and deal metrics.',
-    icon: 'IconReportAnalytics',
-    category: 'analysis',
-    tools: '{get_analytics,search_contacts,list_deals,get_call_history,run_analysis}',
-    triggers: '{manual}',
-    outputFormat: 'mixed',
-    systemPrompt: 'You are a sales reporting assistant. Generate detailed reports combining call analytics, contact engagement metrics, and deal pipeline data based on the user request.',
-    integrations: '[]',
-    useWhen: '{reporting_period,manager_request}',
-    dontUseWhen: '{insufficient_data}',
+    ...CUSTOM_REPORT_GENERATOR_SEED,
+    useWhen: `{${CUSTOM_REPORT_GENERATOR_SEED.useWhen}}`,
+    dontUseWhen: `{${CUSTOM_REPORT_GENERATOR_SEED.dontUseWhen}}`,
   },
 ];
 
