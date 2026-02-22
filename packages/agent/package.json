@@ -13,7 +13,9 @@
   },
   "license": "AGPL-3.0",
   "dependencies": {
-    "@consuelo/logger": "workspace:*"
+    "@cloudflare/codemode": "^0.1.0",
+    "@consuelo/logger": "workspace:*",
+    "isolated-vm": "^6.0.0"
   },
   "peerDependencies": {
     "@ai-sdk/openai-compatible": ">=1.0.0",

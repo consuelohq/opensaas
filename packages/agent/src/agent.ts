@@ -21,10 +21,10 @@ const sanitizeField = (value: string): string =>
   value.replace(/[\n\r]/g, ' ').replace(/```/g, '');
 
 // convert our tool registry to AI SDK ToolSet format
+// HACK: ToolSet generic variance makes direct typing impossible — cast at boundaries
 export const buildToolSet = async (registry: ToolRegistry) => {
   const { tool } = await import('ai');
-  // HACK: AI SDK ToolSet type is complex — build dynamically and let streamText infer
-  const toolSet: Record<string, unknown> = {};
+  const toolSet: Record<string, unknown> = {}; // HACK: ToolSet variance requires cast at call sites
 
   for (const [name, def] of registry.tools) {
     toolSet[name] = tool({
@@ -121,11 +121,25 @@ export class AgentService {
   private config: AgentConfig;
   private context: AgentContext;
   private tools?: ToolRegistry;
+  private executor?: InstanceType<typeof import('./executor/index.js').AgentExecutor>;
 
   constructor(options: AgentOptions) {
     this.config = options.config;
     this.context = options.context;
     this.tools = options.tools;
+  }
+
+  private async getExecutor() {
+    try {
+      if (!this.executor) {
+        const { AgentExecutor } = await import('./executor/index.js');
+        this.executor = new AgentExecutor({ timeout: 30_000, memoryLimit: 128 });
+      }
+      return this.executor;
+    } catch (err: unknown) {
+      this.executor = undefined;
+      throw err;
+    }
   }
 
   async chat(options: ChatOptions) {
@@ -138,7 +152,25 @@ export class AgentService {
         this.config.systemPrompt,
       );
 
-      const toolSet = this.tools ? await buildToolSet(this.tools) : undefined;
+      const individualTools = this.tools ? await buildToolSet(this.tools) : undefined;
+
+      // wrap tools in code mode — LLM writes JS to orchestrate multiple tool calls
+      // HACK: createCodeTool returns Tool but streamText expects ToolSet values
+      let tools = individualTools as Parameters<typeof ai.streamText>[0]['tools'];
+      if (individualTools) {
+        try {
+          const { createCodeTool } = await import('@cloudflare/codemode/ai');
+          const executor = await this.getExecutor();
+          // HACK: ToolSet variance — individualTools is Record<string, unknown> from buildToolSet
+          const codemode = createCodeTool({
+            tools: individualTools as Parameters<typeof createCodeTool>[0]['tools'],
+            executor,
+          });
+          tools = { codemode, ...individualTools } as Parameters<typeof ai.streamText>[0]['tools'];
+        } catch {
+          // code mode unavailable — fall back to individual tools only
+        }
+      }
 
       // HACK: model type mismatch between LanguageModelV2 (provider) and LanguageModel (streamText)
       // due to moduleResolution:"node" in tsconfig.base.json — safe at runtime
@@ -146,7 +178,7 @@ export class AgentService {
         model: model as unknown as Parameters<typeof ai.streamText>[0]['model'],
         system: systemPrompt,
         messages: options.messages,
-        tools: toolSet as Parameters<typeof ai.streamText>[0]['tools'],
+        tools,
         stopWhen: ai.stepCountIs(this.config.maxSteps ?? 5),
         temperature: this.config.temperature,
         maxOutputTokens: this.config.maxTokens,
