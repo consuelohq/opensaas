@@ -88,6 +88,8 @@ export {
   generateInsights,
   buildPipelineContext,
 } from './context/index.js';
+export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './context/index.js';
+export { loadCallContext, buildCallContextBlock, suggestSkills } from './context/index.js';
 
 // types
 export type {
@@ -111,4 +113,5 @@ export type {
   AgentExecution,
   ArtifactType,
   AgentArtifact,
+  SkillSuggestion,
 } from './types.js';

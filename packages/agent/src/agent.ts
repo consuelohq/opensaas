@@ -54,9 +54,33 @@ export const buildSystemPrompt = (
 
   if (context.activeCall) {
     const call = context.activeCall;
+    const duration = call.durationSeconds != null && call.durationSeconds > 0
+      ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s`
+      : 'just started';
+
     crmParts.push(
-      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId})`,
+      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId}) — ${duration}`,
     );
+
+    if (call.participants && call.participants.length > 0) {
+      const labels = call.participants.map((p) => p.label).join(', ');
+      crmParts.push(`Participants: ${labels}`);
+    }
+
+    if (call.dealContext) {
+      const deal = call.dealContext;
+      crmParts.push(
+        `Deal: ${sanitizeField(deal.dealName)} — ${sanitizeField(deal.stage)}, $${deal.value.toLocaleString()}, ${deal.daysInStage}d in stage`,
+      );
+    }
+
+    if (call.recentNotes && call.recentNotes.length > 0) {
+      const notes = call.recentNotes
+        .slice(0, 3)
+        .map((n) => `- ${sanitizeField(n)}`)
+        .join('\n');
+      crmParts.push(`Recent notes:\n${notes}`);
+    }
   }
 
   if (isNonEmptyArray(context.recentActivity)) {

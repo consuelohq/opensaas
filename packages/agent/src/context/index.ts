@@ -24,3 +24,5 @@ export {
   generateInsights,
   buildPipelineContext,
 } from './pipeline-intelligence.service.js';
+export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './call-context.types.js';
+export { loadCallContext, buildCallContextBlock, suggestSkills } from './call-context.service.js';
