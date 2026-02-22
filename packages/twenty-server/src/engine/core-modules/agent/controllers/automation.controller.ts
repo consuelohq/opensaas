@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -197,6 +198,52 @@ export class AutomationController {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
         { error: { code: 'RUN_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id/runs')
+  async listRuns(
+    @Param('id') id: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    try {
+      const runs = await this.automationRunService.findByAutomation(id, {
+        limit: limit ? parseInt(limit, 10) : undefined,
+        offset: offset ? parseInt(offset, 10) : undefined,
+      });
+
+      return { runs };
+    } catch (err: unknown) {
+      throw new HttpException(
+        { error: { code: 'LIST_RUNS_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id/runs/:runId')
+  async getRun(
+    @Param('id') _id: string,
+    @Param('runId') runId: string,
+  ) {
+    try {
+      const run = await this.automationRunService.findById(runId);
+
+      if (!run) {
+        throw new HttpException(
+          { error: { code: 'NOT_FOUND', message: `Run ${runId} not found` } },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return run;
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        { error: { code: 'GET_RUN_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
