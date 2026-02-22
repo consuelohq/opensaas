@@ -1,4 +1,5 @@
 import { existsSync, statSync } from 'node:fs';
+import { basename } from 'node:path';
 import { error, isJson, json } from '../output.js';
 
 const MAX_INPUT_LENGTH = 4096;
@@ -42,11 +43,11 @@ export const validateTranscriptFile = (filePath: string): string => {
       json({
         error: {
           code: 'FILE_NOT_FOUND',
-          message: `transcript file not found: ${sanitized}`,
+          message: `transcript file not found: ${basename(sanitized)}`,
         },
       });
     } else {
-      error(`error: transcript file not found: ${sanitized}`);
+      error(`error: transcript file not found: ${basename(sanitized)}`);
     }
     process.exit(1);
   }
@@ -57,11 +58,11 @@ export const validateTranscriptFile = (filePath: string): string => {
       json({
         error: {
           code: 'NOT_A_FILE',
-          message: `transcript path is not a file: ${sanitized}`,
+          message: `transcript path is not a file: ${basename(sanitized)}`,
         },
       });
     } else {
-      error(`error: transcript path is not a file: ${sanitized}`);
+      error(`error: transcript path is not a file: ${basename(sanitized)}`);
     }
     process.exit(1);
   }
