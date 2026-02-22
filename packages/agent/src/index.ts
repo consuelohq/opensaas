@@ -25,6 +25,17 @@ export type {
   IntegrationInfo,
 } from './crm/index.js';
 
+// integrations
+export { INTEGRATION_REGISTRY, formatIntegrationContext } from './integrations/index.js';
+export type {
+  IntegrationCategory,
+  AuthMethod,
+  IntegrationDefinition,
+  IntegrationCapability,
+  OAuthConfig,
+  ApiKeyConfig,
+} from './integrations/index.js';
+
 // context
 export type { ContextLoader } from './context/index.js';
 
