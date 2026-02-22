@@ -3,6 +3,7 @@ import { type MigrationInterface, type QueryRunner } from 'typeorm';
 import { PIPELINE_ANALYZER_SEED } from 'src/engine/core-modules/agent/seeds/pipeline-analyzer.seed';
 import { POST_CALL_LOGGER_SEED } from 'src/engine/core-modules/agent/seeds/post-call-logger.seed';
 import { PRE_CALL_BRIEF_SEED } from 'src/engine/core-modules/agent/seeds/pre-call-brief.seed';
+import { QUEUE_BUILDER_SEED } from 'src/engine/core-modules/agent/seeds/queue-builder.seed';
 
 type SkillSeed = {
   name: string;
@@ -36,17 +37,9 @@ const PREBUILT_SKILLS: SkillSeed[] = [
     dontUseWhen: `{${PIPELINE_ANALYZER_SEED.dontUseWhen}}`,
   },
   {
-    name: 'Queue Builder',
-    description: 'Builds optimized call queues based on contact priority, time zones, and deal urgency.',
-    icon: 'IconListNumbers',
-    category: 'automation',
-    tools: '{search_contacts,get_call_history,list_deals,add_to_queue,run_analysis}',
-    triggers: '{manual,scheduled}',
-    outputFormat: 'action',
-    systemPrompt: 'You are a call queue optimization assistant. Build a prioritized call queue considering contact time zones, deal urgency, last contact date, and likelihood to convert.',
-    integrations: '[]',
-    useWhen: '{start_of_day,queue_empty}',
-    dontUseWhen: '{no_contacts_available}',
+    ...QUEUE_BUILDER_SEED,
+    useWhen: `{${QUEUE_BUILDER_SEED.useWhen}}`,
+    dontUseWhen: `{${QUEUE_BUILDER_SEED.dontUseWhen}}`,
   },
   {
     name: 'Custom Report Generator',
