@@ -10,7 +10,9 @@ import { AgentSkillEntity } from 'src/engine/core-modules/agent/entities/agent-s
 import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/agent-skill-folder.entity';
 import { AgentSkillUsageLogEntity } from 'src/engine/core-modules/agent/entities/agent-skill-usage-log.entity';
 import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entities/agent-workspace-config.entity';
+import { AgentConversationSummaryEntity } from 'src/engine/core-modules/agent/entities/agent-conversation-summary.entity';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
+import { AgentContextEngineService } from 'src/engine/core-modules/agent/services/context-engine.service';
 import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memory.service';
 import { CallContextService } from 'src/engine/core-modules/agent/services/call-context.service';
 import { PipelineIntelligenceService } from 'src/engine/core-modules/agent/services/pipeline-intelligence.service';
@@ -27,12 +29,13 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
         AgentSkillFolderEntity,
         AgentSkillUsageLogEntity,
         AgentWorkspaceConfigEntity,
+        AgentConversationSummaryEntity,
       ],
       'core',
     ),
   ],
   controllers: [AgentMemoryController, AgentMethodologyController],
-  providers: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService],
-  exports: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, TypeOrmModule],
+  providers: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
+  exports: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
 })
 export class AgentModule {}

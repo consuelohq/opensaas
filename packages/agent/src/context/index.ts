@@ -26,3 +26,12 @@ export {
 } from './pipeline-intelligence.service.js';
 export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './call-context.types.js';
 export { loadCallContext, buildCallContextBlock, suggestSkills } from './call-context.service.js';
+export type { ContextLayer, ContextBudget, SkillOutput, SkillOutputCacheKey } from './types.js';
+export { DEFAULT_CONTEXT_BUDGET } from './types.js';
+export {
+  estimateTokens,
+  shouldSummarize,
+  buildContextLayers,
+  renderContextBlock,
+  summarizeMessages,
+} from './context-engine.service.js';

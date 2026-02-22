@@ -90,6 +90,15 @@ export {
 } from './context/index.js';
 export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './context/index.js';
 export { loadCallContext, buildCallContextBlock, suggestSkills } from './context/index.js';
+export type { ContextLayer, ContextBudget, SkillOutput, SkillOutputCacheKey } from './context/index.js';
+export { DEFAULT_CONTEXT_BUDGET } from './context/index.js';
+export {
+  estimateTokens,
+  shouldSummarize,
+  buildContextLayers,
+  renderContextBlock,
+  summarizeMessages,
+} from './context/index.js';
 
 // automation (DEV-962)
 export type {
