@@ -82,6 +82,40 @@ export const buildSystemPrompt = (
     parts.push(`\n<methodology name="${sanitizeField(m.name)}">\n${m.systemPrompt}\n</methodology>`);
   }
 
+  if (context.pipelineContext) {
+    const pc = context.pipelineContext;
+    const pipelineParts: string[] = [
+      `Pipeline health: ${pc.health.score}/100 (${pc.health.label})`,
+      `Forecasted revenue: $${pc.health.forecastedRevenue.toLocaleString()}`,
+    ];
+
+    if (pc.topRisks.length > 0) {
+      pipelineParts.push('Top risks:');
+
+      for (const risk of pc.topRisks.slice(0, 5)) {
+        const topFactor = risk.factors.reduce((max, f) =>
+          f.score * f.weight > max.score * max.weight ? f : max,
+        );
+
+        pipelineParts.push(
+          `- ${sanitizeField(risk.dealName)} (${sanitizeField(risk.stage)}): risk ${risk.riskScore}/100 — ${topFactor.label}`,
+        );
+      }
+    }
+
+    if (pc.recentChanges.length > 0) {
+      pipelineParts.push('Recent changes (7d):');
+
+      for (const change of pc.recentChanges.slice(0, 5)) {
+        pipelineParts.push(
+          `- ${sanitizeField(change.dealName)}: ${change.changeType} — ${sanitizeField(change.detail)}`,
+        );
+      }
+    }
+
+    parts.push(`\n<pipeline_context>\n${pipelineParts.join('\n')}\n</pipeline_context>`);
+  }
+
   if (isNonEmptyArray(context.memories)) {
     const grouped: Record<string, AgentMemoryFull[]> = {};
 

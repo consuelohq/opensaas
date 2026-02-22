@@ -68,6 +68,26 @@ export type { MemoryStore } from './context/index.js';
 export type { QualificationCriterion, SalesMethodology, WorkspaceMethodologyConfig } from './context/index.js';
 export { inferPreferences, persistSignals } from './context/index.js';
 export type { PreferenceSignalType, PreferenceSignal, InferenceInput } from './context/index.js';
+export type {
+  RiskFactorId,
+  RiskFactor,
+  DealRiskScore,
+  DealVelocity,
+  HealthLabel,
+  PipelineHealth,
+  DealChangeType,
+  DealChange,
+  PipelineContext,
+  DealInput,
+  StageAverage,
+} from './context/index.js';
+export {
+  scoreDeal,
+  scorePipeline,
+  computeHealth,
+  generateInsights,
+  buildPipelineContext,
+} from './context/index.js';
 
 // types
 export type {

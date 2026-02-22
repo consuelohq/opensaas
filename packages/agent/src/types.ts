@@ -2,6 +2,7 @@ import type { CoreMessage } from 'ai';
 
 import type { MemoryType, MemorySource, AgentMemoryFull } from './context/memory.types.js';
 import type { SalesMethodology } from './context/methodology.types.js';
+import type { PipelineContext } from './context/pipeline.types.js';
 
 // re-export memory types
 export type { MemoryType, MemorySource, AgentMemoryFull };
@@ -37,6 +38,7 @@ export type AgentContext = {
   connectedIntegrations: string[];
   memories: AgentMemoryFull[];
   activeMethodology?: SalesMethodology;
+  pipelineContext?: PipelineContext;
 };
 
 export type SandboxArtifact = {
