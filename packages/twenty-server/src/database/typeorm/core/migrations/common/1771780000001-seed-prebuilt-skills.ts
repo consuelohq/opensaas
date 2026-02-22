@@ -1,5 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
+import { PIPELINE_ANALYZER_SEED } from 'src/engine/core-modules/agent/seeds/pipeline-analyzer.seed';
 import { POST_CALL_LOGGER_SEED } from 'src/engine/core-modules/agent/seeds/post-call-logger.seed';
 import { PRE_CALL_BRIEF_SEED } from 'src/engine/core-modules/agent/seeds/pre-call-brief.seed';
 
@@ -30,17 +31,9 @@ const PREBUILT_SKILLS: SkillSeed[] = [
     dontUseWhen: `{${POST_CALL_LOGGER_SEED.dontUseWhen}}`,
   },
   {
-    name: 'Pipeline Analyzer',
-    description: 'Analyzes deal pipeline health, identifies at-risk deals, and suggests next actions.',
-    icon: 'IconChartBar',
-    category: 'analysis',
-    tools: '{list_deals,get_analytics,run_analysis}',
-    triggers: '{manual,scheduled}',
-    outputFormat: 'mixed',
-    systemPrompt: 'You are a pipeline analysis assistant. Analyze the current deal pipeline, identify deals at risk of stalling, and recommend specific next actions for each.',
-    integrations: '[]',
-    useWhen: '{weekly_review,pipeline_has_deals}',
-    dontUseWhen: '{empty_pipeline}',
+    ...PIPELINE_ANALYZER_SEED,
+    useWhen: `{${PIPELINE_ANALYZER_SEED.useWhen}}`,
+    dontUseWhen: `{${PIPELINE_ANALYZER_SEED.dontUseWhen}}`,
   },
   {
     name: 'Queue Builder',
