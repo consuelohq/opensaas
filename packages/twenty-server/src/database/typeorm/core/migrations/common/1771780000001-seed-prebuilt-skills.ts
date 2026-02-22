@@ -1,18 +1,27 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-const PREBUILT_SKILLS = [
+import { PRE_CALL_BRIEF_SEED } from 'src/engine/core-modules/agent/seeds/pre-call-brief.seed';
+
+type SkillSeed = {
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  tools: string;
+  triggers: string;
+  outputFormat: string;
+  systemPrompt: string;
+  integrations: string;
+  useWhen: string;
+  dontUseWhen: string;
+  inputSchema?: string;
+};
+
+const PREBUILT_SKILLS: SkillSeed[] = [
   {
-    name: 'Pre-call Brief',
-    description: 'Generates a research brief before a call with contact history, deal context, and talking points.',
-    icon: 'IconFileDescription',
-    category: 'preparation',
-    tools: '{search_contacts,get_contact,get_call_history,search_kb}',
-    triggers: '{manual,on_call_start}',
-    outputFormat: 'report',
-    systemPrompt: 'You are a sales preparation assistant. Research the contact and generate a concise pre-call brief with key talking points, recent interactions, and deal context.',
-    integrations: '[]',
-    useWhen: '{before_outbound_call,when_contact_has_history}',
-    dontUseWhen: '{cold_call_no_data}',
+    ...PRE_CALL_BRIEF_SEED,
+    useWhen: `{${PRE_CALL_BRIEF_SEED.useWhen}}`,
+    dontUseWhen: `{${PRE_CALL_BRIEF_SEED.dontUseWhen}}`,
   },
   {
     name: 'Post-call Logger',
@@ -77,11 +86,13 @@ export class SeedPrebuiltSkills1771780000001 implements MigrationInterface {
         `INSERT INTO "core"."agentSkill" (
           "name", "description", "icon", "category", "type", "tools",
           "systemPrompt", "triggers", "outputFormat", "integrations",
-          "useWhen", "dontUseWhen", "createdBy", "workspaceId", "isPublic"
+          "useWhen", "dontUseWhen", "inputSchema",
+          "createdBy", "workspaceId", "isPublic"
         ) SELECT
           $1, $2, $3, $4, 'pre-built', $5::text[],
           $6, $7::text[], $8, $9::jsonb,
-          $10::text[], $11::text[], 'system', w."id", true
+          $10::text[], $11::text[], $12::jsonb,
+          'system', w."id", true
         FROM "core"."workspace" w
         WHERE NOT EXISTS (
           SELECT 1 FROM "core"."agentSkill" s
@@ -101,6 +112,7 @@ export class SeedPrebuiltSkills1771780000001 implements MigrationInterface {
           skill.integrations,
           skill.useWhen,
           skill.dontUseWhen,
+          skill.inputSchema ?? null,
         ],
       );
     }
