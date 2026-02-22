@@ -17,3 +17,6 @@ export type {
 export { INTEGRATION_REGISTRY, formatIntegrationContext } from './registry.js';
 export { IntegrationConnectionService } from './service.js';
 export type { IntegrationServiceOptions } from './service.js';
+
+export { buildSandboxEnv } from './sandbox-env.js';
+export type { SandboxEnvResult } from './sandbox-env.js';

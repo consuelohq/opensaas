@@ -42,9 +42,10 @@ export type {
   EncryptFn,
   DecryptFn,
   IntegrationServiceOptions,
+  SandboxEnvResult,
 } from './integrations/index.js';
 
-export { IntegrationConnectionService } from './integrations/index.js';
+export { IntegrationConnectionService, buildSandboxEnv } from './integrations/index.js';
 
 // context
 export type { ContextLoader } from './context/index.js';
