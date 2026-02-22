@@ -107,6 +107,19 @@ export type {
   TriggerConfig,
   ConditionGroup,
   Condition,
+  CrmEventType,
+  CrmEvent,
+  TriggerEvalResult,
+} from './automation/index.js';
+
+export {
+  evaluateCondition,
+  evaluateConditionGroup,
+  matchEventTrigger,
+  matchConditionalTrigger,
+  findMatchingAutomations,
+  buildDebounceKey,
+  parseCron,
 } from './automation/index.js';
 
 // types

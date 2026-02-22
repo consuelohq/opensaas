@@ -13,6 +13,7 @@ import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entiti
 import { AgentConversationSummaryEntity } from 'src/engine/core-modules/agent/entities/agent-conversation-summary.entity';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
 import { AgentContextEngineService } from 'src/engine/core-modules/agent/services/context-engine.service';
+import { AgentTriggerService } from 'src/engine/core-modules/agent/services/trigger.service';
 import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memory.service';
 import { CallContextService } from 'src/engine/core-modules/agent/services/call-context.service';
 import { PipelineIntelligenceService } from 'src/engine/core-modules/agent/services/pipeline-intelligence.service';
@@ -35,7 +36,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
     ),
   ],
   controllers: [AgentMemoryController, AgentMethodologyController],
-  providers: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
-  exports: [AgentMemoryService, AutomationService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
+  providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
+  exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
 })
 export class AgentModule {}
