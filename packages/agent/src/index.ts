@@ -69,6 +69,15 @@ export type { QualificationCriterion, SalesMethodology, WorkspaceMethodologyConf
 export { inferPreferences, persistSignals } from './context/index.js';
 export type { PreferenceSignalType, PreferenceSignal, InferenceInput } from './context/index.js';
 
+// automation (DEV-962)
+export type {
+  Automation,
+  CreateAutomationInput,
+  TriggerConfig,
+  ConditionGroup,
+  Condition,
+} from './automation/index.js';
+
 // types
 export type {
   AgentMessage,

@@ -3,12 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentMemoryController } from 'src/engine/core-modules/agent/controllers/memory.controller';
 import { AgentMethodologyController } from 'src/engine/core-modules/agent/controllers/methodology.controller';
+import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
 import { AgentMemoryEntity } from 'src/engine/core-modules/agent/entities/agent-memory.entity';
 import { AgentMethodologyEntity } from 'src/engine/core-modules/agent/entities/agent-methodology.entity';
 import { AgentSkillEntity } from 'src/engine/core-modules/agent/entities/agent-skill.entity';
 import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/agent-skill-folder.entity';
 import { AgentSkillUsageLogEntity } from 'src/engine/core-modules/agent/entities/agent-skill-usage-log.entity';
 import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entities/agent-workspace-config.entity';
+import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
 import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memory.service';
 import { PreferenceInferenceService } from 'src/engine/core-modules/agent/services/preference-inference.service';
 
@@ -16,6 +18,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
   imports: [
     TypeOrmModule.forFeature(
       [
+        AgentAutomationEntity,
         AgentMemoryEntity,
         AgentMethodologyEntity,
         AgentSkillEntity,
@@ -27,7 +30,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
     ),
   ],
   controllers: [AgentMemoryController, AgentMethodologyController],
-  providers: [AgentMemoryService, PreferenceInferenceService],
-  exports: [AgentMemoryService, PreferenceInferenceService, TypeOrmModule],
+  providers: [AgentMemoryService, AutomationService, PreferenceInferenceService],
+  exports: [AgentMemoryService, AutomationService, PreferenceInferenceService, TypeOrmModule],
 })
 export class AgentModule {}
