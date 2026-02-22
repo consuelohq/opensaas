@@ -7,6 +7,7 @@ import { ConversationController } from 'src/engine/core-modules/agent/controller
 import { AgentMemoryController } from 'src/engine/core-modules/agent/controllers/memory.controller';
 import { AgentMethodologyController } from 'src/engine/core-modules/agent/controllers/methodology.controller';
 import { SkillController } from 'src/engine/core-modules/agent/controllers/skill.controller';
+import { SkillVersionController } from 'src/engine/core-modules/agent/controllers/skill-version.controller';
 import { AgentConversationEntity } from 'src/engine/core-modules/agent/entities/agent-conversation.entity';
 import { AgentMessageEntity } from 'src/engine/core-modules/agent/entities/agent-message.entity';
 import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
@@ -15,6 +16,7 @@ import { AgentMethodologyEntity } from 'src/engine/core-modules/agent/entities/a
 import { AgentSkillEntity } from 'src/engine/core-modules/agent/entities/agent-skill.entity';
 import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/agent-skill-folder.entity';
 import { AgentSkillUsageLogEntity } from 'src/engine/core-modules/agent/entities/agent-skill-usage-log.entity';
+import { AgentSkillVersionEntity } from 'src/engine/core-modules/agent/entities/agent-skill-version.entity';
 import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entities/agent-workspace-config.entity';
 import { AgentConversationSummaryEntity } from 'src/engine/core-modules/agent/entities/agent-conversation-summary.entity';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
@@ -25,6 +27,7 @@ import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memor
 import { CallContextService } from 'src/engine/core-modules/agent/services/call-context.service';
 import { PipelineIntelligenceService } from 'src/engine/core-modules/agent/services/pipeline-intelligence.service';
 import { PreferenceInferenceService } from 'src/engine/core-modules/agent/services/preference-inference.service';
+import { SkillVersionService } from 'src/engine/core-modules/agent/services/skill-version.service';
 
 @Module({
   imports: [
@@ -38,14 +41,15 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
         AgentSkillEntity,
         AgentSkillFolderEntity,
         AgentSkillUsageLogEntity,
+        AgentSkillVersionEntity,
         AgentWorkspaceConfigEntity,
         AgentConversationSummaryEntity,
       ],
       'core',
     ),
   ],
-  controllers: [AgentMemoryController, AgentMethodologyController, AutomationController, ChatController, ConversationController, SkillController],
-  providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
-  exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
+  controllers: [AgentMemoryController, AgentMethodologyController, AutomationController, ChatController, ConversationController, SkillController, SkillVersionController],
+  providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, SkillVersionService],
+  exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, SkillVersionService, TypeOrmModule],
 })
 export class AgentModule {}
