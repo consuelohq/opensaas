@@ -74,7 +74,6 @@ export type {
   TokenUsageEntry,
   ChatRequest,
   ChatAttachment,
-  StreamChunk,
   ConversationStore,
   ExecutionType,
   ExecutionStatus,
