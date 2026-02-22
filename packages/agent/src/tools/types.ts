@@ -1,6 +1,6 @@
-import type { z } from 'zod';
+import type { z, ZodTypeAny } from 'zod';
 
-export type AgentToolDefinition<TParams extends z.ZodSchema = z.ZodSchema> = {
+export type AgentToolDefinition<TParams extends ZodTypeAny = ZodTypeAny> = {
   name: string;
   description: string;
   parameters: TParams;

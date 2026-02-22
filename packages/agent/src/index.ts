@@ -1,6 +1,10 @@
 // core
-export { AgentService } from './agent.js';
-export type { AgentOptions } from './agent.js';
+export { AgentService, buildToolSet, buildSystemPrompt, resolveModel } from './agent.js';
+export type { AgentOptions, ChatOptions } from './agent.js';
+
+// chat
+export { handleChat } from './chat.js';
+export type { ChatHandlerOptions, ChatResult } from './chat.js';
 
 // sandbox
 export { SandboxService } from './sandbox.js';
@@ -8,6 +12,18 @@ export { SandboxService } from './sandbox.js';
 // tools
 export { createToolRegistry } from './tools/index.js';
 export type { AgentToolDefinition, ToolRegistry } from './tools/index.js';
+
+// crm
+export { CrmClient, createCrmTools } from './crm/index.js';
+export type {
+  CrmClientOptions,
+  SearchFilters,
+  PaginationOptions,
+  ContactSearchResult,
+  DealResult,
+  CallRecord,
+  IntegrationInfo,
+} from './crm/index.js';
 
 // context
 export type { ContextLoader } from './context/index.js';
@@ -26,4 +42,8 @@ export type {
   SandboxLanguage,
   ConversationState,
   TokenUsageEntry,
+  ChatRequest,
+  ChatAttachment,
+  StreamChunk,
+  ConversationStore,
 } from './types.js';
