@@ -36,37 +36,37 @@ export async function coachCommand(opts: { transcript?: string }): Promise<void>
   });
 
   try {
-    const result = await coach.analyzeCall(messages);
+    const analysis = await coach.analyzeCall(messages);
 
     if (isJson()) {
-      json(result);
+      json(analysis);
       return;
     }
 
     log('');
-    log(`score: ${result.overall_score}/100`);
+    log(`score: ${analysis.overall_score}/100`);
     log('');
-    if (result.strengths.length) {
+    if (analysis.strengths.length) {
       log('strengths:');
-      result.strengths.forEach((s: string) => log(`  ✓ ${s}`));
+      analysis.strengths.forEach((s: string) => log(`  ✓ ${s}`));
       log('');
     }
-    if (result.improvement_areas.length) {
+    if (analysis.improvement_areas.length) {
       log('areas to improve:');
-      result.improvement_areas.forEach((a: string) => log(`  → ${a}`));
+      analysis.improvement_areas.forEach((a: string) => log(`  → ${a}`));
       log('');
     }
-    if (result.action_items.length) {
+    if (analysis.action_items.length) {
       log('action items:');
-      result.action_items.forEach((a: string) => log(`  • ${a}`));
+      analysis.action_items.forEach((a: string) => log(`  • ${a}`));
       log('');
     }
-    if (result.sentiment_analysis) {
-      const s = result.sentiment_analysis;
+    if (analysis.sentiment_analysis) {
+      const s = analysis.sentiment_analysis;
       log(`sentiment: ${s.customer_sentiment} | engagement: ${s.engagement_level}`);
     }
-    if (result.performance_metrics) {
-      const m = result.performance_metrics;
+    if (analysis.performance_metrics) {
+      const m = analysis.performance_metrics;
       log(`talk ratio: ${Math.round(m.talk_ratio * 100)}% | questions: ${m.questions_asked} | objections handled: ${m.objections_handled}`);
     }
   } catch (err: unknown) {

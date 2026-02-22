@@ -12,10 +12,6 @@ Parameters:
   DatabaseUsername:
     Type: String
     Default: admin
-  DatabasePassword:
-    Type: String
-    NoEcho: true
-    MinLength: 8
   TwilioAccountSid:
     Type: String
     NoEcho: true
@@ -173,6 +169,16 @@ Resources:
         - !Ref PrivateSubnet1
         - !Ref PrivateSubnet2
 
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "consuelo/db-secret/${AWS::StackName}"
+      GenerateSecretString:
+        SecretStringTemplate: !Sub '{"username": "${DatabaseUsername}"}'
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\\'
+
   Database:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -184,8 +190,8 @@ Resources:
       AllocatedStorage: 20
       StorageType: gp3
       StorageEncrypted: true
-      MasterUsername: !Ref DatabaseUsername
-      MasterUserPassword: !Ref DatabasePassword
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DatabaseSecret, ':SecretString:username}}']]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DatabaseSecret, ':SecretString:password}}']]
       DBSubnetGroupName: !Ref DBSubnetGroup
       VPCSecurityGroups:
         - !Ref RDSSecurityGroup
@@ -202,6 +208,10 @@ Resources:
       CodeUri: .
       Policies:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecret
       VpcConfig:
         SubnetIds:
           - !Ref PrivateSubnet1
@@ -211,7 +221,10 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: production
-          DATABASE_URL: !Sub "postgresql://${DatabaseUsername}:${DatabasePassword}@${Database.Endpoint.Address}:${Database.Endpoint.Port}/${DatabaseName}"
+          DB_SECRET_ARN: !Ref DatabaseSecret
+          DB_HOST: !GetAtt Database.Endpoint.Address
+          DB_PORT: !GetAtt Database.Endpoint.Port
+          DB_NAME: !Ref DatabaseName
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           GROQ_API_KEY: !Ref GroqApiKey
