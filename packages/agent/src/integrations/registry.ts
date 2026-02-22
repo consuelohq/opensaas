@@ -185,10 +185,10 @@ export const formatIntegrationContext = (
 ): string => {
   const lines = connectedIds
     .map((id) => INTEGRATION_REGISTRY.get(id))
-    .filter((def): def is IntegrationDefinition => def !== undefined)
-    .map((def) => {
-      const caps = def.capabilities.map((c) => c.name.replace(/_/g, ' ')).join(', ');
-      return `- ${def.name} (${def.category}): ${caps}`;
+    .filter((definition): definition is IntegrationDefinition => definition !== undefined)
+    .map((definition) => {
+      const capabilityNames = definition.capabilities.map((capability) => capability.name.replace(/_/g, ' ')).join(', ');
+      return `- ${definition.name} (${definition.category}): ${capabilityNames}`;
     });
 
   return lines.length > 0

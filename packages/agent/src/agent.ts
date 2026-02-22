@@ -1,8 +1,8 @@
 import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
+import type { ToolRegistry } from './tools/types.js';
 
 const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
   Array.isArray(value) && value.length > 0;
-import type { ToolRegistry } from './tools/types.js';
 
 export type AgentOptions = {
   config: AgentConfig;
