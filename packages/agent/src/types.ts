@@ -91,6 +91,7 @@ export type AgentConfig = {
   temperature?: number;
   maxTokens?: number;
   onMemoriesInjected?: (memoryIds: string[]) => Promise<void>;
+  onTurnComplete?: (messages: AgentMessage[], injectedMemoryIds: string[]) => void;
 };
 
 // --- chat endpoint types (DEV-944) ---
