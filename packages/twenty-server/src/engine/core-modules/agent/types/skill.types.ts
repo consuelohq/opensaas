@@ -95,6 +95,7 @@ export type SkillExecutionContext = {
   conversationId: string;
   triggeredBy: 'manual' | 'trigger';
   activeCallId?: string;
+  connectedIntegrations?: string[];
 };
 
 export type SkillOutput =
@@ -144,6 +145,7 @@ export type SkillExecutionResult = {
   sandboxUsed: boolean;
   durationMs: number;
   toolCalls: ToolCallRecord[];
+  notes?: string[];
 };
 
 export type SkillExecutionError =

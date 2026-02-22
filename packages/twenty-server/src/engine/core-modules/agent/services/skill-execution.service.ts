@@ -10,6 +10,7 @@ import {
   SkillExecutionException,
   SkillExecutionExceptionCode,
 } from 'src/engine/core-modules/agent/skill-execution.exception';
+import { validateIntegrationRequirements } from 'src/engine/core-modules/agent/services/integration-validator';
 import {
   type Skill,
   type SkillExecutionContext,
@@ -39,6 +40,26 @@ export class SkillExecutionService {
 
     this.validatePermission(skill, context);
     this.validateInput(skill, context);
+
+    // integration gate — block on missing required, collect notes for missing optional
+    const integrationResult = validateIntegrationRequirements(
+      skill,
+      context.connectedIntegrations ?? [],
+    );
+
+    if (!integrationResult.valid) {
+      const first = integrationResult.missingRequired[0];
+
+      throw new SkillExecutionException(
+        `Connect ${first.integrationId} to use this skill: ${first.reason}`,
+        SkillExecutionExceptionCode.INTEGRATION_MISSING,
+      );
+    }
+
+    const notes: string[] = integrationResult.missingOptional.map(
+      (i) =>
+        `Note: Connect ${i.integrationId} for enhanced results (${i.reason})`,
+    );
 
     // scope tools to only those declared in skill.tools[]
     const tools = await this.buildScopedTools(skill, context);
@@ -85,6 +106,7 @@ export class SkillExecutionService {
         sandboxUsed: false,
         durationMs: Date.now() - startTime,
         toolCalls,
+        ...(notes.length > 0 ? { notes } : {}),
       };
     } catch (error: unknown) {
       if (error instanceof SkillExecutionException) {
