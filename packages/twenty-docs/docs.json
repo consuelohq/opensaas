@@ -385,6 +385,16 @@
                 ]
               },
               {
+                "group": "Agent",
+                "icon": "robot",
+                "pages": [
+                  "developers/agent/overview",
+                  "developers/agent/crm-tools",
+                  "developers/agent/tool-system",
+                  "developers/agent/integrations"
+                ]
+              },
+              {
                 "group": "Architecture",
                 "icon": "server",
                 "pages": [
