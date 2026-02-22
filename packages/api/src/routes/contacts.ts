@@ -142,7 +142,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         }
 
         const contact = await contacts.get(id);
-        if (!contact) {
+        if (!contact || contact.userId !== req.auth?.userId) {
           res.status(404).json({
             error: { code: 'NOT_FOUND', message: 'Contact not found' },
           });
@@ -159,6 +159,14 @@ export const contactRoutes = (): RouteDefinition[] => {
         if (!id) {
           res.status(400).json({
             error: { code: 'INVALID_REQUEST', message: 'Missing contact ID' },
+          });
+          return;
+        }
+
+        const existing = await contacts.get(id);
+        if (!existing || existing.userId !== req.auth?.userId) {
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Contact not found' },
           });
           return;
         }
@@ -199,6 +207,14 @@ export const contactRoutes = (): RouteDefinition[] => {
         if (!id) {
           res.status(400).json({
             error: { code: 'INVALID_REQUEST', message: 'Missing contact ID' },
+          });
+          return;
+        }
+
+        const existing = await contacts.get(id);
+        if (!existing || existing.userId !== req.auth?.userId) {
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Contact not found' },
           });
           return;
         }

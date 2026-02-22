@@ -46,7 +46,7 @@ export async function parseDocument(
         { role: 'user', content },
       ],
       response_format: { type: 'json_object' },
-    });
+    }, { signal: AbortSignal.timeout(30_000) });
 
     const text = response.choices[0]?.message?.content;
     if (!text) {

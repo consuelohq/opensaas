@@ -75,7 +75,7 @@ export const callRoutes = (): RouteDefinition[] => {
           const result = await getDialer().dial({
             to: body.to,
             from: body.from ?? '',
-            userId: body.userId ?? req.auth?.userId ?? '',
+            userId: req.auth?.userId ?? '',
             statusCallbackUrl: body.statusCallbackUrl,
           });
 

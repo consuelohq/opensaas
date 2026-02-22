@@ -6,6 +6,7 @@ import { MemoryProvider } from './providers/memory.js';
  */
 export class Queues {
   readonly store: StorageProvider;
+  private locks = new Map<string, Promise<void>>();
 
   constructor(store?: StorageProvider) {
     this.store = store ?? new MemoryProvider();
@@ -15,17 +16,39 @@ export class Queues {
     return this.store.createQueue({ name, contactIds, ordering, currentIndex: 0, status: 'idle', results: [] });
   }
 
-  /** Get the next contact ID in the queue, advancing the pointer */
+  /** Get the next contact ID in the queue, advancing the pointer (serialized per queue) */
   async getNext(queueId: string): Promise<string | null> {
-    const queue = await this.store.getQueue(queueId);
-    if (!queue || queue.status === 'completed' || queue.status === 'paused' || queue.currentIndex >= queue.contactIds.length) return null;
+    // serialize concurrent calls per queue
+    while (this.locks.has(queueId)) await this.locks.get(queueId);
+    let unlock: () => void;
+    this.locks.set(queueId, new Promise<void>((r) => { unlock = r; }));
 
-    const contactId = queue.contactIds[queue.currentIndex];
-    await this.store.updateQueue(queueId, {
-      currentIndex: queue.currentIndex + 1,
-      status: queue.currentIndex + 1 >= queue.contactIds.length ? 'completed' : 'active',
-    });
-    return contactId;
+    try {
+      const queue = await this.store.getQueue(queueId);
+      if (!queue || queue.status === 'completed' || queue.status === 'paused') return null;
+      if (queue.currentIndex >= queue.contactIds.length) {
+        if (queue.ordering === 'round-robin') {
+          await this.store.updateQueue(queueId, { currentIndex: 0, status: 'active' });
+          const q2 = await this.store.getQueue(queueId);
+          if (!q2 || q2.contactIds.length === 0) return null;
+          await this.store.updateQueue(queueId, { currentIndex: 1 });
+          return q2.contactIds[0];
+        }
+        return null;
+      }
+
+      const contactId = queue.contactIds[queue.currentIndex];
+      const nextIndex = queue.currentIndex + 1;
+      const done = nextIndex >= queue.contactIds.length && queue.ordering !== 'round-robin';
+      await this.store.updateQueue(queueId, {
+        currentIndex: nextIndex,
+        status: done ? 'completed' : 'active',
+      });
+      return contactId;
+    } finally {
+      this.locks.delete(queueId);
+      unlock!();
+    }
   }
 
   /** Record a call attempt result */

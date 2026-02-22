@@ -119,11 +119,19 @@ export class Dialer {
       }
     }
 
-    const result = await this.provider.dial({
-      ...options,
-      callerIdNumber,
-      statusCallbackUrl: options.statusCallbackUrl ?? this.config.baseUrl,
-    });
+    let result: DialResult;
+    try {
+      result = await this.provider.dial({
+        ...options,
+        callerIdNumber,
+        statusCallbackUrl: options.statusCallbackUrl ?? this.config.baseUrl,
+      });
+    } catch (err: unknown) {
+      if (callerIdNumber && this.callerIdLock) {
+        await this.callerIdLock.releaseLock('');
+      }
+      throw err;
+    }
 
     // update lock with actual call SID
     if (
