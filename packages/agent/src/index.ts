@@ -66,6 +66,8 @@ export type { ContextLoader } from './context/index.js';
 export type { MemoryType, MemorySource, AgentMemoryFull } from './context/index.js';
 export type { MemoryStore } from './context/index.js';
 export type { QualificationCriterion, SalesMethodology, WorkspaceMethodologyConfig } from './context/index.js';
+export { inferPreferences, persistSignals } from './context/index.js';
+export type { PreferenceSignalType, PreferenceSignal, InferenceInput } from './context/index.js';
 
 // types
 export type {

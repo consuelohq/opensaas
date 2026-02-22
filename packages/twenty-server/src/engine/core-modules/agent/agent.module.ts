@@ -10,6 +10,7 @@ import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/a
 import { AgentSkillUsageLogEntity } from 'src/engine/core-modules/agent/entities/agent-skill-usage-log.entity';
 import { AgentWorkspaceConfigEntity } from 'src/engine/core-modules/agent/entities/agent-workspace-config.entity';
 import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memory.service';
+import { PreferenceInferenceService } from 'src/engine/core-modules/agent/services/preference-inference.service';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { AgentMemoryService } from 'src/engine/core-modules/agent/services/memor
     ),
   ],
   controllers: [AgentMemoryController, AgentMethodologyController],
-  providers: [AgentMemoryService],
-  exports: [AgentMemoryService, TypeOrmModule],
+  providers: [AgentMemoryService, PreferenceInferenceService],
+  exports: [AgentMemoryService, PreferenceInferenceService, TypeOrmModule],
 })
 export class AgentModule {}

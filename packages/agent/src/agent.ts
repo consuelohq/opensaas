@@ -214,7 +214,7 @@ export class AgentService {
 
       // HACK: model type mismatch between LanguageModelV2 (provider) and LanguageModel (streamText)
       // due to moduleResolution:"node" in tsconfig.base.json — safe at runtime
-      return ai.streamText({
+      const stream = ai.streamText({
         model: model as unknown as Parameters<typeof ai.streamText>[0]['model'],
         system: systemPrompt,
         messages: options.messages,
@@ -225,6 +225,25 @@ export class AgentService {
         abortSignal: options.abortSignal,
         onStepFinish: options.onStepFinish,
       });
+
+      // fire-and-forget: run preference inference after stream completes
+      if (this.config.onTurnComplete) {
+        const onComplete = this.config.onTurnComplete;
+        const inputMessages = options.messages;
+
+        stream.text
+          .then((assistantText) => {
+            onComplete(
+              [...inputMessages, { role: 'assistant' as const, content: assistantText }],
+              injectedMemoryIds,
+            );
+          })
+          .catch(() => {
+            // best-effort — don't block chat on inference failures
+          });
+      }
+
+      return stream;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
