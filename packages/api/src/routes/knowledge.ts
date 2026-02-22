@@ -68,7 +68,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           );
           res.status(201).json(collection);
           logger.info('knowledge.collection_created', {
-            action: 'collection.created',
+            action: 'knowledge.collection_created',
             userId: auth.userId ?? 'anonymous',
             outcome: 'success',
           });
@@ -181,7 +181,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         await knowledge.deleteCollection(collectionId, auth.workspaceId);
         res.status(204).json({});
         logger.info('knowledge.collection_deleted', {
-          action: 'collection.deleted',
+          action: 'knowledge.collection_deleted',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });
@@ -273,7 +273,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
             .status(200)
             .json({ indexed: true, chunkCount: result.chunkCount });
           logger.info('knowledge.file_indexed', {
-            action: 'file.indexed',
+            action: 'knowledge.file_indexed',
             userId: auth.userId ?? 'anonymous',
             outcome: 'success',
           });
@@ -307,7 +307,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         await knowledge.deindexFile(fileId, auth.workspaceId);
         res.status(204).json({});
         logger.info('knowledge.file_deindexed', {
-          action: 'file.deindexed',
+          action: 'knowledge.file_deindexed',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });

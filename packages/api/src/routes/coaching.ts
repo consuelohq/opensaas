@@ -431,7 +431,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           });
           res.status(200).json({ data: { callId, persisted: true } });
           auditLogger.info('coaching.analysis_persisted', {
-            action: 'analysis.persisted',
+            action: 'coaching.analysis_persisted',
             userId: auth.userId ?? 'anonymous',
             outcome: 'success',
           });

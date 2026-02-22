@@ -261,7 +261,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         ]);
         res.status(201).json(rows[0]);
         logger.info('contact.note_created', {
-          action: 'note.created',
+          action: 'contact.note_created',
           userId: req.auth?.userId ?? 'anonymous',
           outcome: 'success',
         });
@@ -311,7 +311,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         ]);
         res.status(201).json(rows[0]);
         logger.info('contact.follow_up_created', {
-          action: 'follow_up.created',
+          action: 'contact.follow_up_created',
           userId: req.auth?.userId ?? 'anonymous',
           outcome: 'success',
         });

@@ -115,7 +115,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         res.status(201).json(result);
         logger.info('parallel.dial', {
-          action: 'parallel.dial_initiated',
+          action: 'parallel.dial',
           userId,
           outcome: 'success',
         });

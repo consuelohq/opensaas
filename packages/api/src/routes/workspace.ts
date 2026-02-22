@@ -186,7 +186,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         res.status(200).json(rows[0].branding);
         logger.info('workspace.branding_updated', {
-          action: 'branding.updated',
+          action: 'workspace.branding_updated',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });
@@ -256,7 +256,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         res.status(201).json(rows[0]);
         logger.info('workspace.invite_created', {
-          action: 'invite.created',
+          action: 'workspace.invite_created',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });
@@ -308,7 +308,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         res.status(200).json(rows[0]);
         logger.info('workspace.role_updated', {
-          action: 'member.role_updated',
+          action: 'workspace.role_updated',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });
@@ -367,7 +367,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
 
         res.status(204).send('');
         logger.info('workspace.member_removed', {
-          action: 'member.removed',
+          action: 'workspace.member_removed',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });

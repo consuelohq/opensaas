@@ -388,7 +388,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         if (conferenceSid) {
           logger.info('Active conference found', {
-            action: 'voice.active_conference_found',
+            action: 'Active conference found',
             conferenceName,
             conferenceSid,
             outcome: 'success',

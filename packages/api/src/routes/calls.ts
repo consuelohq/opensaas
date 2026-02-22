@@ -162,7 +162,7 @@ export const callRoutes = (): RouteDefinition[] => {
             .status(201)
             .json({ callSid, conferenceName, status: 'calling-agent' });
           logger.info('call.callback', {
-            action: 'callback.initiated',
+            action: 'call.callback',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
           });
@@ -383,7 +383,7 @@ export const callRoutes = (): RouteDefinition[] => {
 
           res.status(200).json({ callSid, status: 'completed' });
           logger.info('call.hangup', {
-            action: 'call.ended',
+            action: 'call.hangup',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
           });
@@ -440,7 +440,7 @@ export const callRoutes = (): RouteDefinition[] => {
 
         res.status(201).json({ callId, persisted: true });
         logger.info('call.analysis', {
-          action: 'analysis.persisted',
+          action: 'call.analysis',
           userId: auth?.userId ?? 'anonymous',
           outcome: 'success',
         });

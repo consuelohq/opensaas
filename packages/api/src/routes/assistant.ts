@@ -676,7 +676,7 @@ export const assistantRoutes = (): RouteDefinition[] => {
           }
           res.status(200).json({ deleted: true });
           logger.info('assistant.conversation_deleted', {
-            action: 'conversation.deleted',
+            action: 'assistant.conversation_deleted',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
           });
