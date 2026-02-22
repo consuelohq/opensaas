@@ -63,6 +63,8 @@ export { AgentExecutor } from './executor/index.js';
 
 // context
 export type { ContextLoader } from './context/index.js';
+export type { MemoryType, MemorySource, AgentMemoryFull } from './context/index.js';
+export type { MemoryStore } from './context/index.js';
 
 // types
 export type {

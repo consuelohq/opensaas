@@ -1,4 +1,4 @@
-import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
+import type { AgentConfig, AgentContext, AgentMemoryFull, AgentMessage } from './types.js';
 import type { ToolRegistry } from './tools/types.js';
 
 const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
@@ -77,11 +77,37 @@ export const buildSystemPrompt = (
   }
 
   if (isNonEmptyArray(context.memories)) {
-    const memories = context.memories
-      .slice(0, 5)
-      .map((memory) => `- ${sanitizeField(memory.content)}`)
-      .join('\n');
-    parts.push(`\nMemories:\n${memories}`);
+    const grouped: Record<string, AgentMemoryFull[]> = {};
+
+    for (const memory of context.memories) {
+      if (memory.confidence < 0.3) continue;
+      const group = grouped[memory.type] ?? [];
+      group.push(memory);
+      grouped[memory.type] = group;
+    }
+
+    const sections: string[] = [];
+    const typeLabels: Record<string, string> = {
+      preference: 'Preferences',
+      fact: 'Facts',
+      pattern: 'Patterns',
+    };
+
+    for (const [type, label] of Object.entries(typeLabels)) {
+      const items = grouped[type];
+
+      if (isNonEmptyArray(items)) {
+        const lines = items
+          .slice(0, 20)
+          .map((m) => `- ${sanitizeField(m.value)}`)
+          .join('\n');
+        sections.push(`${label}:\n${lines}`);
+      }
+    }
+
+    if (sections.length > 0) {
+      parts.push(`\n<user_context>\n${sections.join('\n')}\n</user_context>`);
+    }
   }
 
   return parts.join('\n');
