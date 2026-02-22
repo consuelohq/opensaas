@@ -1,5 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
+import { POST_CALL_LOGGER_SEED } from 'src/engine/core-modules/agent/seeds/post-call-logger.seed';
 import { PRE_CALL_BRIEF_SEED } from 'src/engine/core-modules/agent/seeds/pre-call-brief.seed';
 
 type SkillSeed = {
@@ -24,17 +25,9 @@ const PREBUILT_SKILLS: SkillSeed[] = [
     dontUseWhen: `{${PRE_CALL_BRIEF_SEED.dontUseWhen}}`,
   },
   {
-    name: 'Post-call Logger',
-    description: 'Automatically logs call outcomes, creates follow-up tasks, and updates deal stages after a call.',
-    icon: 'IconClipboardCheck',
-    category: 'logging',
-    tools: '{log_call,update_deal,create_note,create_task}',
-    triggers: '{manual,on_call_end}',
-    outputFormat: 'action',
-    systemPrompt: 'You are a post-call logging assistant. Summarize the call outcome, create follow-up tasks, and update the deal stage based on the conversation.',
-    integrations: '[]',
-    useWhen: '{after_any_call,when_deal_exists}',
-    dontUseWhen: '{voicemail_only}',
+    ...POST_CALL_LOGGER_SEED,
+    useWhen: `{${POST_CALL_LOGGER_SEED.useWhen}}`,
+    dontUseWhen: `{${POST_CALL_LOGGER_SEED.dontUseWhen}}`,
   },
   {
     name: 'Pipeline Analyzer',
