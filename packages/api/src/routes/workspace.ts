@@ -163,6 +163,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         logger.info('workspace.updated', {
           action: 'workspace.updated',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -187,6 +188,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         logger.info('workspace.branding_updated', {
           action: 'branding.updated',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -256,6 +258,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         logger.info('workspace.invite_created', {
           action: 'invite.created',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -307,6 +310,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         logger.info('workspace.role_updated', {
           action: 'member.role_updated',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -365,6 +369,7 @@ export const workspaceRoutes = (): RouteDefinition[] => {
         logger.info('workspace.member_removed', {
           action: 'member.removed',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

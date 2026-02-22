@@ -73,6 +73,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.created', {
           action: 'contact.created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -124,6 +125,7 @@ export const contactRoutes = (): RouteDefinition[] => {
           action: 'contact.imported',
           userId: req.auth?.userId ?? 'anonymous',
           count: created.length,
+          outcome: 'success',
         });
       }),
     },
@@ -185,6 +187,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.updated', {
           action: 'contact.updated',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -211,6 +214,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.deleted', {
           action: 'contact.deleted',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -259,6 +263,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.note_created', {
           action: 'note.created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -308,6 +313,7 @@ export const contactRoutes = (): RouteDefinition[] => {
         logger.info('contact.follow_up_created', {
           action: 'follow_up.created',
           userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

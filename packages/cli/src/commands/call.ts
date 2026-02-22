@@ -8,7 +8,7 @@ import { handleCommandError } from '../errors.js';
 const E164_RE = /^\+1\d{10}$/;
 
 function maskPhone(phone: string): string {
-  return phone.length > 4 ? '***' + phone.slice(-4) : phone;
+  return phone.length > 4 ? '***' + phone.slice(-4) : '****';
 }
 
 export async function callCommand(number: string): Promise<void> {
@@ -68,7 +68,12 @@ export async function callCommand(number: string): Promise<void> {
     });
 
     if (!dialOutcome.success) {
-      error(dialOutcome.error ?? 'call failed');
+      const message = dialOutcome.error ?? 'call failed';
+      if (isJson()) {
+        json({ error: { code: 'DIAL_FAILED', message } });
+      } else {
+        error(message);
+      }
       process.exit(1);
     }
 

@@ -78,6 +78,7 @@ export const preferencesRoutes = (): RouteDefinition[] => {
         logger.info('preferences.updated', {
           action: 'preferences.updated',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

@@ -70,6 +70,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           logger.info('knowledge.collection_created', {
             action: 'collection.created',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           if (
@@ -182,6 +183,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         logger.info('knowledge.collection_deleted', {
           action: 'collection.deleted',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -273,6 +275,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
           logger.info('knowledge.file_indexed', {
             action: 'file.indexed',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           if (err instanceof KnowledgeError) {
@@ -306,6 +309,7 @@ export const knowledgeRoutes = (): RouteDefinition[] => {
         logger.info('knowledge.file_deindexed', {
           action: 'file.deindexed',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },

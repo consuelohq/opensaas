@@ -194,6 +194,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           logger.info('file.created', {
             action: 'file.created',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);
@@ -374,6 +375,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           logger.info('file.attached', {
             action: 'file.attached',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);
@@ -409,6 +411,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           logger.info('file.detached', {
             action: 'file.detached',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);
@@ -452,6 +455,7 @@ export const fileRoutes = (): RouteDefinition[] => {
           logger.info('file.deleted', {
             action: 'file.deleted',
             userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
           });
         } catch (err: unknown) {
           Sentry.captureException(err);

@@ -129,6 +129,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         logger.info('queue.created', {
           action: 'queue.created',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -191,6 +192,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         logger.info('queue.started', {
           action: 'queue.started',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -267,6 +269,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         logger.info('queue.skipped', {
           action: 'queue.skipped',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -319,6 +322,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         logger.info('queue.next', {
           action: 'queue.next',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
@@ -353,6 +357,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         logger.info('queue.restarted', {
           action: 'queue.restarted',
           userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
         });
       }),
     },
