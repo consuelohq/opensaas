@@ -3,7 +3,7 @@ import { normalizePhone } from '@consuelo/contacts';
 import { createLogger } from '@consuelo/logger';
 import { loadConfig } from '../config.js';
 import { log, error, json, isJson } from '../output.js';
-import { captureError } from '../sentry.js';
+import { handleCommandError } from '../errors.js';
 
 const E164_RE = /^\+1\d{10}$/;
 
@@ -90,32 +90,29 @@ export async function callCommand(number: string): Promise<void> {
       logger.info('call initiated', {
         action: 'call.initiated',
         to: `***${to.slice(-4)}`,
-        from: dialOutcome.fromNumber ?? config.twilioPhoneNumber,
+        from: maskPhone(dialOutcome.fromNumber ?? config.twilioPhoneNumber),
         callSid: dialOutcome.callSid,
       });
     } catch {
       // fall silent if logger unavailable
     }
   } catch (err: unknown) {
-    captureError(err, { command: 'call' });
-
     try {
       const logger = createLogger('cli:call');
       logger.error('call failed', {
         action: 'call.failed',
         to: `***${to.slice(-4)}`,
+        from: maskPhone(config.twilioPhoneNumber),
         reason: err instanceof Error ? err.message : 'unknown error',
       });
     } catch {
       // fall silent if logger unavailable
     }
 
-    const raw = err instanceof Error ? err.message : 'unknown error';
-    if (isJson()) {
-      json({ error: { code: 'CALL_FAILED', message: raw } });
-    } else {
-      error('call failed — check your credentials and try again');
-    }
-    process.exit(1);
+    handleCommandError(err, {
+      code: 'CALL_FAILED',
+      friendlyMessage: 'call failed — check your credentials and try again',
+      command: 'call',
+    });
   }
 }
