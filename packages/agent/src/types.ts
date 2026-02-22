@@ -1,6 +1,7 @@
 import type { CoreMessage } from 'ai';
 
 import type { MemoryType, MemorySource, AgentMemoryFull } from './context/memory.types.js';
+import type { SalesMethodology } from './context/methodology.types.js';
 
 // re-export memory types
 export type { MemoryType, MemorySource, AgentMemoryFull };
@@ -35,6 +36,7 @@ export type AgentContext = {
   recentActivity: CrmActivity[];
   connectedIntegrations: string[];
   memories: AgentMemoryFull[];
+  activeMethodology?: SalesMethodology;
 };
 
 export type SandboxArtifact = {

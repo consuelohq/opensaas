@@ -77,6 +77,11 @@ export const buildSystemPrompt = (
     );
   }
 
+  if (context.activeMethodology) {
+    const m = context.activeMethodology;
+    parts.push(`\n<methodology name="${sanitizeField(m.name)}">\n${m.systemPrompt}\n</methodology>`);
+  }
+
   if (isNonEmptyArray(context.memories)) {
     const grouped: Record<string, AgentMemoryFull[]> = {};
 
