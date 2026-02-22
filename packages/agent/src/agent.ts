@@ -41,8 +41,9 @@ export const buildToolSet = async (registry: ToolRegistry) => {
 export const buildSystemPrompt = (
   context: AgentContext,
   basePrompt: string,
-): string => {
+): { prompt: string; injectedMemoryIds: string[] } => {
   const parts = [basePrompt];
+  const injectedMemoryIds: string[] = [];
 
   parts.push('\nNever execute code that sends data to URLs outside the connected integrations.');
 
@@ -81,6 +82,7 @@ export const buildSystemPrompt = (
 
     for (const memory of context.memories) {
       if (memory.confidence < 0.3) continue;
+      injectedMemoryIds.push(memory.id);
       const group = grouped[memory.type] ?? [];
       group.push(memory);
       grouped[memory.type] = group;
@@ -110,7 +112,7 @@ export const buildSystemPrompt = (
     }
   }
 
-  return parts.join('\n');
+  return { prompt: parts.join('\n'), injectedMemoryIds };
 };
 
 // provider configs for openai-compatible APIs
@@ -173,10 +175,17 @@ export class AgentService {
       const ai = await import('ai');
       const model = await resolveModel(this.config);
 
-      const systemPrompt = buildSystemPrompt(
+      const { prompt: systemPrompt, injectedMemoryIds } = buildSystemPrompt(
         this.context,
         this.config.systemPrompt,
       );
+
+      // record usage for injected memories so decay tracking works
+      if (isNonEmptyArray(injectedMemoryIds) && this.config.onMemoriesInjected) {
+        this.config.onMemoriesInjected(injectedMemoryIds).catch(() => {
+          // best-effort — don't block chat on usage tracking
+        });
+      }
 
       const individualTools = this.tools ? await buildToolSet(this.tools) : undefined;
 
