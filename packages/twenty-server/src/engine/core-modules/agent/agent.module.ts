@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentMemoryController } from 'src/engine/core-modules/agent/controllers/memory.controller';
 import { AgentMethodologyController } from 'src/engine/core-modules/agent/controllers/methodology.controller';
+import { SkillController } from 'src/engine/core-modules/agent/controllers/skill.controller';
 import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
 import { AgentMemoryEntity } from 'src/engine/core-modules/agent/entities/agent-memory.entity';
 import { AgentMethodologyEntity } from 'src/engine/core-modules/agent/entities/agent-methodology.entity';
@@ -35,7 +36,7 @@ import { PreferenceInferenceService } from 'src/engine/core-modules/agent/servic
       'core',
     ),
   ],
-  controllers: [AgentMemoryController, AgentMethodologyController],
+  controllers: [AgentMemoryController, AgentMethodologyController, SkillController],
   providers: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService],
   exports: [AgentMemoryService, AutomationService, AgentTriggerService, CallContextService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, TypeOrmModule],
 })
