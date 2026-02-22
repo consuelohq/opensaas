@@ -59,7 +59,7 @@ export class CrmClient {
     if (contactId) params.set('contactId', contactId);
     if (since) params.set('since', since);
     params.set('limit', String(limit));
-    if (pagination?.offset) params.set('offset', String(pagination.offset));
+    if (pagination?.offset != null) params.set('offset', String(pagination.offset));
     return this.request(`/api/calls?${params.toString()}`);
   }
 
@@ -118,35 +118,25 @@ export class CrmClient {
     });
   }
 
-  async addToQueue(
+  addToQueue(
     contactIds: string[],
     priority?: number,
   ): Promise<unknown> {
-    try {
-      return await this.request('/api/queue', {
-        method: 'POST',
-        body: { contactIds, priority },
-      });
-    } catch (err: unknown) {
-      // Sentry.captureException(err) — handled by consuming app
-      throw err;
-    }
+    return this.request('/api/queue', {
+      method: 'POST',
+      body: { contactIds, priority },
+    });
   }
 
-  async createTask(
+  createTask(
     title: string,
     dueDate: string,
     contactId?: string,
   ): Promise<unknown> {
-    try {
-      return await this.request('/api/tasks', {
-        method: 'POST',
-        body: { title, dueDate, contactId },
-      });
-    } catch (err: unknown) {
-      // Sentry.captureException(err) — handled by consuming app
-      throw err;
-    }
+    return this.request('/api/tasks', {
+      method: 'POST',
+      body: { title, dueDate, contactId },
+    });
   }
 
   // internal
@@ -167,15 +157,15 @@ export class CrmClient {
 
       if (!response.ok) {
         const text = await response.text().catch(() => 'unknown error');
-        const error = new Error(`CRM API ${response.status}: ${text}`);
-        // Sentry.captureException(error) — handled by consuming app
-        throw error;
+        // Sentry.captureException — handled by consuming app
+        throw new Error(`CRM API ${response.status}: ${text}`);
       }
 
       return response.json() as Promise<TResult>;
     } catch (err: unknown) {
-      // Sentry.captureException(err) — handled by consuming app
-      throw err;
+      // Sentry.captureException — handled by consuming app
+      const message = err instanceof Error ? err.message : 'unknown CRM error';
+      throw new Error(`CRM request failed: ${message}`, { cause: err });
     }
   }
 }

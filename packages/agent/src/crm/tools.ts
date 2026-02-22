@@ -6,7 +6,7 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
   try {
     const { z } = await import('zod');
 
-  return [
+    return [
     // read tools
     {
       name: 'search_contacts',
@@ -152,8 +152,9 @@ export const createCrmTools = async (client: CrmClient): Promise<AgentToolDefini
     },
     ];
   } catch (err: unknown) {
-    // Sentry.captureException(err) — handled by consuming app
-    throw err;
+    // Sentry.captureException — handled by consuming app
+    const message = err instanceof Error ? err.message : 'failed to create CRM tools';
+    throw new Error(`CRM tools init failed: ${message}`, { cause: err });
   }
 };
 
