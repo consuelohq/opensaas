@@ -1,4 +1,4 @@
-import type { CoreMessage, LanguageModelUsage } from 'ai';
+import type { CoreMessage } from 'ai';
 
 // re-export AI SDK message type as our canonical format
 export type AgentMessage = CoreMessage;
@@ -71,7 +71,7 @@ export type ConversationState = {
   workspaceId: string;
   messages: AgentMessage[];
   compactedSummary?: string;
-  compactedAt?: number;
+  compactedAt?: Date;
   activeSkillId?: string;
   context: AgentContext;
   tokenUsage: TokenUsageEntry[];
@@ -86,4 +86,35 @@ export type AgentConfig = {
   maxSteps?: number;
   temperature?: number;
   maxTokens?: number;
+};
+
+// --- chat endpoint types (DEV-944) ---
+
+export type ChatRequest = {
+  message: string;
+  conversationId?: string;
+  skillId?: string;
+  attachments?: ChatAttachment[];
+};
+
+export type ChatAttachment = {
+  filename: string;
+  mimeType: string;
+  url: string;
+};
+
+export type StreamChunk =
+  | { type: 'text'; content: string }
+  | { type: 'tool_start'; tool: string; input: Record<string, unknown> }
+  | { type: 'tool_result'; tool: string; result: unknown }
+  | { type: 'chart'; data: Record<string, unknown>; chartType: string }
+  | { type: 'table'; columns: string[]; rows: unknown[][] }
+  | { type: 'action_card'; action: string; params: Record<string, unknown>; label: string }
+  | { type: 'file'; url: string; filename: string }
+  | { type: 'done' };
+
+export type ConversationStore = {
+  load: (conversationId: string) => Promise<ConversationState | null>;
+  create: (userId: string, workspaceId: string) => Promise<ConversationState>;
+  save: (state: ConversationState) => Promise<void>;
 };

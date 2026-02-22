@@ -5,6 +5,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "target": "es2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
     "lib": [
       "es2022"
     ]
