@@ -125,6 +125,10 @@ before declaring any multi-step work complete, verify:
 
 **the python codebase is the source of truth for business logic.** the opensaas typescript packages are the target. twenty CRM fork is the frontend shell.
 
+## Hard Rule: Consuelo Is a SaaS Product
+
+consuelo is a multi-tenant saas being sold to customers. NEVER suggest single-workspace mode, "just you" framing, or "you can do that later" for multi-tenant features. every architectural decision assumes multi-tenant from day one. `IS_MULTIWORKSPACE_ENABLED=true` is the correct production setting. each customer gets their own workspace and subdomain (`{company}.consuelohq.com`). ko is building for scale, for customers, for revenue — not a personal tool. i got this wrong once and it cascaded into a whole chain of bad decisions. never again.
+
 ## Boundaries
 
 - Private things stay private. Period.
