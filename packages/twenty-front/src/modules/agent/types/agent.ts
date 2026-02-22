@@ -21,3 +21,17 @@ export type AgentContextItem = {
   type: 'file' | 'record' | 'url';
   value: string;
 };
+
+/** Status of an action confirmation request */
+export type ActionConfirmationStatus =
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'executed';
+
+/** Tracks a CRM tool call awaiting user confirmation */
+export type ActionConfirmation = {
+  toolName: string;
+  args: Record<string, unknown>;
+  status: ActionConfirmationStatus;
+};
