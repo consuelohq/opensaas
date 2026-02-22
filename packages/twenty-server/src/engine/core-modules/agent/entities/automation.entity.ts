@@ -55,6 +55,15 @@ export class AgentAutomationEntity extends WorkspaceRelatedEntity {
   @Column({ type: 'varchar', length: 20, nullable: true })
   lastRunStatus: string | null;
 
+  @Column({ type: 'integer', default: 0 })
+  consecutiveFailures: number;
+
+  @Column({ type: 'integer', default: 5 })
+  maxConsecutiveFailures: number;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  disabledReason: string | null;
+
   @Column({ type: 'uuid' })
   userId: string;
 

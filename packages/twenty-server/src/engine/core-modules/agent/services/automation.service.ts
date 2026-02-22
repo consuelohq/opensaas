@@ -13,7 +13,7 @@ export class AutomationService {
   ) {}
 
   async create(
-    input: Omit<AgentAutomationEntity, 'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace' | 'lastRunAt' | 'lastRunStatus'>,
+    input: Omit<AgentAutomationEntity, 'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace' | 'lastRunAt' | 'lastRunStatus' | 'consecutiveFailures' | 'maxConsecutiveFailures' | 'disabledReason'>,
   ): Promise<AgentAutomationEntity> {
     const entity = this.automationRepository.create(input);
 
@@ -67,5 +67,76 @@ export class AutomationService {
       lastRunAt: new Date(),
       lastRunStatus: status,
     });
+  }
+
+  async recordSuccess(id: string): Promise<void> {
+    await this.automationRepository.update(id, {
+      consecutiveFailures: 0,
+    });
+  }
+
+  async recordFailure(id: string): Promise<void> {
+    const automation = await this.automationRepository.findOne({
+      where: { id },
+    });
+
+    if (!automation) {
+      throw new Error(`Automation ${id} not found`);
+    }
+
+    const newCount = automation.consecutiveFailures + 1;
+    const tripped = newCount >= automation.maxConsecutiveFailures;
+
+    await this.automationRepository.update(id, {
+      consecutiveFailures: newCount,
+      ...(tripped && {
+        enabled: false,
+        disabledReason: `Circuit breaker: ${newCount} consecutive failures`,
+      }),
+    });
+  }
+
+  async isCircuitOpen(id: string): Promise<boolean> {
+    const automation = await this.automationRepository.findOne({
+      where: { id },
+    });
+
+    if (!automation) {
+      return false;
+    }
+
+    return automation.consecutiveFailures >= automation.maxConsecutiveFailures;
+  }
+
+  async resetCircuitBreaker(id: string): Promise<void> {
+    await this.automationRepository.update(id, {
+      consecutiveFailures: 0,
+      disabledReason: null,
+      enabled: true,
+    });
+  }
+
+  async getHealthStats(
+    workspaceId: string,
+  ): Promise<{
+    total: number;
+    enabled: number;
+    disabled: number;
+    circuitBroken: number;
+  }> {
+    const automations = await this.automationRepository.find({
+      where: { workspaceId },
+    });
+
+    const total = automations.length;
+    const enabled = automations.filter((a) => a.enabled).length;
+    const disabled = total - enabled;
+    const circuitBroken = automations.filter(
+      (a) =>
+        a.disabledReason !== null &&
+        a.disabledReason.startsWith('Circuit breaker'),
+    ).length;
+
+    return { total, enabled, disabled, circuitBroken };
   }
 }

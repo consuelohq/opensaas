@@ -56,6 +56,18 @@ export class AutomationController {
 
   // literal routes before param routes
 
+  @Get('health')
+  async getHealth(@AuthWorkspace() workspace: WorkspaceEntity) {
+    try {
+      return await this.automationService.getHealthStats(workspace.id);
+    } catch (err: unknown) {
+      throw new HttpException(
+        { error: { code: 'HEALTH_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get()
   async listAutomations(
     @AuthUser() user: UserEntity,
