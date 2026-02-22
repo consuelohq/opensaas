@@ -10,7 +10,13 @@ export const PIPELINE_ANALYZER_SEED = {
     '{list_deals,get_analytics,run_analysis}',
   triggers: '{manual,scheduled}',
   outputFormat: 'mixed',
-  integrations: '[]',
+  integrations: JSON.stringify([
+    {
+      integrationId: 'stripe',
+      required: false,
+      reason: 'Correlate deal stages with subscription revenue',
+    },
+  ]),
   inputSchema: JSON.stringify({
     type: 'object',
     properties: {
