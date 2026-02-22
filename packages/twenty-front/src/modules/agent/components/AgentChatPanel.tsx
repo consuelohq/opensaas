@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import { useAgentChat } from '@/agent/hooks/useAgentChat';
 
+import { toolRendererRegistry } from './renderers';
+
 const StyledContainer = styled.div`
   flex: 1;
   display: flex;
@@ -33,6 +35,11 @@ const StyledMessage = styled.div<{ isUser: boolean }>`
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+`;
+
+const StyledToolPartWrapper = styled.div`
+  max-width: 80%;
+  align-self: flex-start;
 `;
 
 const StyledInputArea = styled.form`
@@ -121,28 +128,46 @@ export const AgentChatPanel = () => {
     <StyledContainer>
       {hasMessages ? (
         <StyledMessageList>
-          {messages.map((message) => {
-            const text = message.parts
-              ?.filter(
-                (part): part is { type: 'text'; text: string } =>
-                  part.type === 'text',
-              )
-              .map((part) => part.text)
-              .join('');
+          {messages.map((message) =>
+            message.parts?.map((part, partIndex) => {
+              if (part.type === 'text' && part.text) {
+                return (
+                  <StyledMessage
+                    key={`${message.id}-${partIndex}`}
+                    isUser={message.role === 'user'}
+                  >
+                    {part.text}
+                  </StyledMessage>
+                );
+              }
 
-            if (!text) {
+              if (part.type === 'dynamic-tool') {
+                const toolPart = part as {
+                  type: 'dynamic-tool';
+                  toolName: string;
+                  state: string;
+                  input: unknown;
+                };
+                const Renderer = toolRendererRegistry[toolPart.toolName];
+
+                if (
+                  Renderer &&
+                  toolPart.input &&
+                  toolPart.state !== 'input-streaming'
+                ) {
+                  return (
+                    <StyledToolPartWrapper
+                      key={`${message.id}-${partIndex}`}
+                    >
+                      <Renderer input={toolPart.input} />
+                    </StyledToolPartWrapper>
+                  );
+                }
+              }
+
               return null;
-            }
-
-            return (
-              <StyledMessage
-                key={message.id}
-                isUser={message.role === 'user'}
-              >
-                {text}
-              </StyledMessage>
-            );
-          })}
+            }),
+          )}
           {isLoading && <StyledLoadingDots>…</StyledLoadingDots>}
           <div ref={bottomRef} />
         </StyledMessageList>
