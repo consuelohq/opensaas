@@ -29,7 +29,7 @@ export const buildToolSet = async (registry: ToolRegistry) => {
   for (const [name, def] of registry.tools) {
     toolSet[name] = tool({
       description: def.description,
-      parameters: def.parameters,
+      inputSchema: def.parameters,
       execute: def.execute,
     });
   }
@@ -138,9 +138,9 @@ export class AgentService {
         system: systemPrompt,
         messages: options.messages,
         tools: toolSet as Parameters<typeof ai.streamText>[0]['tools'],
-        maxSteps: this.config.maxSteps ?? 5,
+        stopWhen: ai.stepCountIs(this.config.maxSteps ?? 5),
         temperature: this.config.temperature,
-        maxTokens: this.config.maxTokens,
+        maxOutputTokens: this.config.maxTokens,
         abortSignal: options.abortSignal,
         onStepFinish: options.onStepFinish,
       });

@@ -8,12 +8,14 @@ import type {
 } from './types.js';
 import type { ContextLoader } from './context/index.js';
 import type { ToolRegistry } from './tools/types.js';
+import type { TracingService } from './tracing/index.js';
 
 export type ChatHandlerOptions = {
   config: AgentConfig;
   store: ConversationStore;
   contextLoader: ContextLoader;
   tools?: ToolRegistry;
+  tracing?: TracingService;
 };
 
 export type ChatResult = {
@@ -53,6 +55,9 @@ export const handleChat = async (
 
   const conversationId = conversation.id;
   const conv = conversation;
+  const trace = options.tracing
+    ? await options.tracing.startTrace({ userId, conversationId: conv.id, skillId: request.skillId })
+    : null;
 
   const stream = new ReadableStream<string>({
     async start(controller) {
@@ -60,6 +65,15 @@ export const handleChat = async (
         const result = await agent.chat({
           messages: conv.messages,
           onStepFinish: (step) => {
+            // log to langfuse + execution store (fire-and-forget)
+            if (options.tracing) {
+              options.tracing.logStep({
+                trace,
+                conversationId: conv.id,
+                model: config.model,
+                step: step as Parameters<TracingService['logStep']>[0]['step'],
+              }).catch(() => {});
+            }
             // emit tool chunks for each step
             const calls = step.toolCalls as Array<{
               toolName: string;
@@ -93,19 +107,21 @@ export const handleChat = async (
         const usage = await result.usage;
         if (usage) {
           conv.tokenUsage.push({
-            input: usage.promptTokens,
+            input: usage.inputTokens ?? 0,
             cached: 0,
-            output: usage.completionTokens,
+            output: usage.outputTokens ?? 0,
             provider: config.provider,
           });
         }
 
         await store.save(conv);
 
+        // flush tracing at end of request
+        if (options.tracing) await options.tracing.flush();
+
         controller.enqueue(sseEncode({ type: 'done' }));
         controller.close();
       } catch (err: unknown) {
-        // TODO (DEV-1019): emit to langfuse / structured logger
         controller.enqueue(
           sseEncode({
             type: 'text',
