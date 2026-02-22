@@ -11,6 +11,15 @@ function maskPhone(phone: string): string {
   return phone.length > 4 ? '***' + phone.slice(-4) : '****';
 }
 
+const auditLog = {
+  info: (msg: string, data: Record<string, unknown>) => {
+    try { createLogger('cli:call').info(msg, data); } catch { /* logger unavailable */ }
+  },
+  error: (msg: string, data: Record<string, unknown>) => {
+    try { createLogger('cli:call').error(msg, data); } catch { /* logger unavailable */ }
+  },
+};
+
 export async function callCommand(number: string): Promise<void> {
   if (!number) {
     if (isJson()) {
@@ -90,29 +99,19 @@ export async function callCommand(number: string): Promise<void> {
       log(`to: ${maskPhone(to)}`);
     }
 
-    try {
-      const logger = createLogger('cli:call');
-      logger.info('call initiated', {
-        action: 'call.initiated',
-        to: `***${to.slice(-4)}`,
-        from: maskPhone(dialOutcome.fromNumber ?? config.twilioPhoneNumber),
-        callSid: dialOutcome.callSid,
-      });
-    } catch {
-      // fall silent if logger unavailable
-    }
+    auditLog.info('call.initiated', {
+      action: 'call.initiated',
+      to: `***${to.slice(-4)}`,
+      from: maskPhone(dialOutcome.fromNumber ?? config.twilioPhoneNumber),
+      callSid: dialOutcome.callSid,
+    });
   } catch (err: unknown) {
-    try {
-      const logger = createLogger('cli:call');
-      logger.error('call failed', {
-        action: 'call.failed',
-        to: `***${to.slice(-4)}`,
-        from: maskPhone(config.twilioPhoneNumber),
-        reason: err instanceof Error ? err.message : 'unknown error',
-      });
-    } catch {
-      // fall silent if logger unavailable
-    }
+    auditLog.error('call.failed', {
+      action: 'call.failed',
+      to: `***${to.slice(-4)}`,
+      from: maskPhone(config.twilioPhoneNumber),
+      reason: err instanceof Error ? err.message : 'unknown error',
+    });
 
     handleCommandError(err, {
       code: 'CALL_FAILED',

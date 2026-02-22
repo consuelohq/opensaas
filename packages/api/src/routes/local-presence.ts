@@ -266,7 +266,7 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
         const remaining = locks.length - cleaned;
         res.status(200).json({ cleaned, remaining });
         logger.info('caller_id.cleaned', {
-          action: 'locks.cleaned',
+          action: 'caller_id.cleaned',
           userId: req.auth?.userId ?? 'anonymous',
           cleaned,
           outcome: 'success',
