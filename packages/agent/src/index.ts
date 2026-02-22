@@ -91,6 +91,15 @@ export {
 export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './context/index.js';
 export { loadCallContext, buildCallContextBlock, suggestSkills } from './context/index.js';
 
+// automation (DEV-962)
+export type {
+  Automation,
+  CreateAutomationInput,
+  TriggerConfig,
+  ConditionGroup,
+  Condition,
+} from './automation/index.js';
+
 // types
 export type {
   AgentMessage,
