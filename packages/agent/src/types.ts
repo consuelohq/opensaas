@@ -1,5 +1,11 @@
 import type { CoreMessage } from 'ai';
 
+import type { MemoryType, MemorySource, AgentMemoryFull } from './context/memory.types.js';
+import type { SalesMethodology } from './context/methodology.types.js';
+
+// re-export memory types
+export type { MemoryType, MemorySource, AgentMemoryFull };
+
 // re-export AI SDK message type as our canonical format
 export type AgentMessage = CoreMessage;
 
@@ -20,11 +26,8 @@ export type CrmActivity = {
   timestamp: Date;
 };
 
-export type AgentMemory = {
-  id: string;
-  content: string;
-  createdAt: Date;
-};
+// legacy alias — use AgentMemoryFull for new code
+export type AgentMemory = AgentMemoryFull;
 
 export type AgentContext = {
   userId: string;
@@ -32,7 +35,8 @@ export type AgentContext = {
   activeCall?: ActiveCallState;
   recentActivity: CrmActivity[];
   connectedIntegrations: string[];
-  memories: AgentMemory[];
+  memories: AgentMemoryFull[];
+  activeMethodology?: SalesMethodology;
 };
 
 export type SandboxArtifact = {
@@ -86,6 +90,7 @@ export type AgentConfig = {
   maxSteps?: number;
   temperature?: number;
   maxTokens?: number;
+  onMemoriesInjected?: (memoryIds: string[]) => Promise<void>;
 };
 
 // --- chat endpoint types (DEV-944) ---
