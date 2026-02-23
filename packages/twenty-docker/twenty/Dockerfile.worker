@@ -18,6 +18,7 @@ COPY ./packages/twenty-shared/package.json /app/packages/twenty-shared/
 COPY ./packages/twenty-front/package.json /app/packages/twenty-front/
 COPY ./packages/twenty-sdk/package.json /app/packages/twenty-sdk/
 
+COPY ./packages/agent/package.json /app/packages/agent/
 COPY ./packages/analytics/package.json /app/packages/analytics/
 COPY ./packages/api/package.json /app/packages/api/
 COPY ./packages/cli/package.json /app/packages/cli/
@@ -38,9 +39,23 @@ COPY ./packages/twenty-emails /app/packages/twenty-emails
 COPY ./packages/twenty-shared /app/packages/twenty-shared
 COPY ./packages/twenty-server /app/packages/twenty-server
 
-RUN npx nx run twenty-server:build
+# opensaas packages (runtime deps for agent services)
+COPY ./packages/agent /app/packages/agent
+COPY ./packages/api /app/packages/api
+COPY ./packages/coaching /app/packages/coaching
+COPY ./packages/contacts /app/packages/contacts
+COPY ./packages/dialer /app/packages/dialer
+COPY ./packages/logger /app/packages/logger
 
-RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server
+RUN npx nx reset && npx nx run twenty-server:build
+RUN cd /app/packages/agent && npx tsc
+RUN cd /app/packages/logger && npx tsc
+RUN cd /app/packages/coaching && npx tsc --declaration
+RUN cd /app/packages/contacts && npx tsc
+RUN cd /app/packages/dialer && npx tsc --declaration
+RUN cd /app/packages/api && npx tsc
+
+RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
 
 
 # Worker only needs the server build, no frontend
