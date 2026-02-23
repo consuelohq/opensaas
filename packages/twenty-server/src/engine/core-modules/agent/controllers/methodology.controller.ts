@@ -45,9 +45,9 @@ type UpdateConfigBody = {
 @UseFilters(RestApiExceptionFilter)
 export class AgentMethodologyController {
   constructor(
-    @InjectRepository(AgentMethodologyEntity, 'core')
+    @InjectRepository(AgentMethodologyEntity)
     private readonly methodologyRepo: Repository<AgentMethodologyEntity>,
-    @InjectRepository(AgentWorkspaceConfigEntity, 'core')
+    @InjectRepository(AgentWorkspaceConfigEntity)
     private readonly configRepo: Repository<AgentWorkspaceConfigEntity>,
   ) {}
 

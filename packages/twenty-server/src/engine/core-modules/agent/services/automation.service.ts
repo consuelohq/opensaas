@@ -8,7 +8,7 @@ import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/au
 @Injectable()
 export class AutomationService {
   constructor(
-    @InjectRepository(AgentAutomationEntity, 'core')
+    @InjectRepository(AgentAutomationEntity)
     private readonly automationRepository: Repository<AgentAutomationEntity>,
   ) {}
 

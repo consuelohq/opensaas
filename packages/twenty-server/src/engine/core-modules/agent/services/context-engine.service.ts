@@ -49,7 +49,7 @@ export class AgentContextEngineService {
     private readonly callContextService: CallContextService,
     private readonly pipelineService: PipelineIntelligenceService,
     private readonly preferenceService: PreferenceInferenceService,
-    @InjectRepository(AgentConversationSummaryEntity, 'core')
+    @InjectRepository(AgentConversationSummaryEntity)
     private readonly summaryRepository: Repository<AgentConversationSummaryEntity>,
     @InjectCacheStorage(CacheStorageNamespace.EngineWorkspace)
     private readonly cacheStorage: CacheStorageService,

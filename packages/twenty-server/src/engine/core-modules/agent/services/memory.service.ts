@@ -10,7 +10,7 @@ export class AgentMemoryService {
   private readonly logger = new Logger(AgentMemoryService.name);
 
   constructor(
-    @InjectRepository(AgentMemoryEntity, 'core')
+    @InjectRepository(AgentMemoryEntity)
     private readonly memoryRepository: Repository<AgentMemoryEntity>,
   ) {}
 

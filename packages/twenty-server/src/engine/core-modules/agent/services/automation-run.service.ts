@@ -10,7 +10,7 @@ export class AutomationRunService {
   private readonly logger = new Logger(AutomationRunService.name);
 
   constructor(
-    @InjectRepository(AgentAutomationRunEntity, 'core')
+    @InjectRepository(AgentAutomationRunEntity)
     private readonly runRepository: Repository<AgentAutomationRunEntity>,
   ) {}
 

@@ -20,9 +20,9 @@ export class ConversationService {
   private readonly logger = new Logger(ConversationService.name);
 
   constructor(
-    @InjectRepository(AgentConversationEntity, 'core')
+    @InjectRepository(AgentConversationEntity)
     private readonly conversationRepo: Repository<AgentConversationEntity>,
-    @InjectRepository(AgentMessageEntity, 'core')
+    @InjectRepository(AgentMessageEntity)
     private readonly messageRepo: Repository<AgentMessageEntity>,
   ) {}
 
