@@ -8,7 +8,7 @@ import { AgentSkillVersionEntity } from 'src/engine/core-modules/agent/entities/
 @Injectable()
 export class SkillVersionService {
   constructor(
-    @InjectRepository(AgentSkillVersionEntity, 'core')
+    @InjectRepository(AgentSkillVersionEntity)
     private readonly versionRepository: Repository<AgentSkillVersionEntity>,
   ) {}
 

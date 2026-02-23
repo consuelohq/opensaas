@@ -25,7 +25,7 @@ const DEFAULT_DEBOUNCE_TTL_MS = 60_000;
 @Injectable()
 export class AgentTriggerService {
   constructor(
-    @InjectRepository(AgentAutomationEntity, 'core')
+    @InjectRepository(AgentAutomationEntity)
     private readonly automationRepository: Repository<AgentAutomationEntity>,
     @Inject(CACHE_MANAGER)
     private readonly cache: Cache,
