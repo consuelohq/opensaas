@@ -63,6 +63,64 @@ export { AgentExecutor } from './executor/index.js';
 
 // context
 export type { ContextLoader } from './context/index.js';
+export type { MemoryType, MemorySource, AgentMemoryFull } from './context/index.js';
+export type { MemoryStore } from './context/index.js';
+export type { QualificationCriterion, SalesMethodology, WorkspaceMethodologyConfig } from './context/index.js';
+export { inferPreferences, persistSignals } from './context/index.js';
+export type { PreferenceSignalType, PreferenceSignal, InferenceInput } from './context/index.js';
+export type {
+  RiskFactorId,
+  RiskFactor,
+  DealRiskScore,
+  DealVelocity,
+  HealthLabel,
+  PipelineHealth,
+  DealChangeType,
+  DealChange,
+  PipelineContext,
+  DealInput,
+  StageAverage,
+} from './context/index.js';
+export {
+  scoreDeal,
+  scorePipeline,
+  computeHealth,
+  generateInsights,
+  buildPipelineContext,
+} from './context/index.js';
+export type { CallParticipant, ActiveDealContext, ExpandedCallContext } from './context/index.js';
+export { loadCallContext, buildCallContextBlock, suggestSkills } from './context/index.js';
+export type { ContextLayer, ContextBudget, SkillOutput, SkillOutputCacheKey } from './context/index.js';
+export { DEFAULT_CONTEXT_BUDGET } from './context/index.js';
+export {
+  estimateTokens,
+  shouldSummarize,
+  buildContextLayers,
+  renderContextBlock,
+  summarizeMessages,
+} from './context/index.js';
+
+// automation (DEV-962)
+export type {
+  Automation,
+  CreateAutomationInput,
+  TriggerConfig,
+  ConditionGroup,
+  Condition,
+  CrmEventType,
+  CrmEvent,
+  TriggerEvalResult,
+} from './automation/index.js';
+
+export {
+  evaluateCondition,
+  evaluateConditionGroup,
+  matchEventTrigger,
+  matchConditionalTrigger,
+  findMatchingAutomations,
+  buildDebounceKey,
+  parseCron,
+} from './automation/index.js';
 
 // types
 export type {
@@ -86,4 +144,5 @@ export type {
   AgentExecution,
   ArtifactType,
   AgentArtifact,
+  SkillSuggestion,
 } from './types.js';

@@ -1,0 +1,364 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
+
+import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
+import {
+  AgentAutomationExecuteJob,
+  type AgentAutomationExecuteJobData,
+} from 'src/engine/core-modules/agent/jobs/agent-automation-execute.job';
+import { AutomationRunService } from 'src/engine/core-modules/agent/services/automation-run.service';
+import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
+import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usage-metering.service';
+import { InjectMessageQueue } from 'src/engine/core-modules/message-queue/decorators/message-queue.decorator';
+import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
+import { UserEntity } from 'src/engine/core-modules/user/user.entity';
+import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
+import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
+import { JwtAuthGuard } from 'src/engine/guards/jwt-auth.guard';
+import { WorkspaceAuthGuard } from 'src/engine/guards/workspace-auth.guard';
+
+type CreateAutomationBody = {
+  name: string;
+  description?: string;
+  enabled?: boolean;
+  skillId: string;
+  triggerConfig: Record<string, unknown>;
+  inputOverrides?: Record<string, unknown>;
+  notifyOn?: string;
+  maxRunsPerDay?: number | null;
+};
+
+type UpdateAutomationBody = Partial<CreateAutomationBody>;
+
+@Controller('v1/agent/automations')
+@UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
+@UseFilters(RestApiExceptionFilter)
+export class AutomationController {
+  constructor(
+    private readonly automationService: AutomationService,
+    private readonly automationRunService: AutomationRunService,
+    private readonly usageMeteringService: UsageMeteringService,
+    @InjectMessageQueue(MessageQueue.workflowQueue)
+    private readonly messageQueueService: MessageQueueService,
+  ) {}
+
+  // literal routes before param routes
+
+  @Get('health')
+  async getHealth(@AuthWorkspace() workspace: WorkspaceEntity) {
+    try {
+      return await this.automationService.getHealthStats(workspace.id);
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'HEALTH_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get()
+  async listAutomations(
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.automationService.findByUser(user.id, workspace.id);
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'LIST_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post()
+  async createAutomation(
+    @Body() body: CreateAutomationBody,
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.automationService.create({
+        ...body,
+        description: body.description ?? null,
+        enabled: body.enabled ?? true,
+        inputOverrides: body.inputOverrides ?? {},
+        notifyOn: body.notifyOn ?? 'failure',
+        maxRunsPerDay: body.maxRunsPerDay ?? null,
+        userId: user.id,
+        workspaceId: workspace.id,
+      });
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'CREATE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // param routes
+
+  @Get('usage')
+  async getUsageSummary(
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.usageMeteringService.getUsageSummary(
+        user.id,
+        workspace.id,
+      );
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'USAGE_SUMMARY_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('usage/breakdown')
+  async getUsageBreakdown(
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.usageMeteringService.getUsageBreakdown(
+        user.id,
+        workspace.id,
+      );
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'USAGE_BREAKDOWN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id')
+  async getAutomation(@Param('id') id: string) {
+    try {
+      const automation = await this.automationService.findById(id);
+
+      if (!automation) {
+        throw new HttpException(
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return automation;
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        {
+          error: {
+            code: 'GET_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Patch(':id')
+  async updateAutomation(
+    @Param('id') id: string,
+    @Body() body: UpdateAutomationBody,
+  ) {
+    try {
+      return await this.automationService.update(id, body);
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'UPDATE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Delete(':id')
+  async deleteAutomation(@Param('id') id: string) {
+    try {
+      await this.automationService.delete(id);
+
+      return { success: true };
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'DELETE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post(':id/toggle')
+  async toggleAutomation(@Param('id') id: string) {
+    try {
+      const automation = await this.automationService.findById(id);
+
+      if (!automation) {
+        throw new HttpException(
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return await this.automationService.update(id, {
+        enabled: !automation.enabled,
+      });
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        {
+          error: {
+            code: 'TOGGLE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post(':id/run')
+  async manualRun(@Param('id') id: string) {
+    try {
+      const automation = await this.automationService.findById(id);
+
+      if (!automation) {
+        throw new HttpException(
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const run = await this.automationRunService.create(id);
+
+      await this.messageQueueService.add<AgentAutomationExecuteJobData>(
+        AgentAutomationExecuteJob.name,
+        { runId: run.id, automationId: id },
+        { retryLimit: 3 },
+      );
+
+      return run;
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        {
+          error: {
+            code: 'RUN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id/runs')
+  async listRuns(
+    @Param('id') id: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    try {
+      const runs = await this.automationRunService.findByAutomation(id, {
+        limit: limit ? parseInt(limit, 10) : undefined,
+        offset: offset ? parseInt(offset, 10) : undefined,
+      });
+
+      return { runs };
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'LIST_RUNS_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':id/runs/:runId')
+  async getRun(@Param('id') _id: string, @Param('runId') runId: string) {
+    try {
+      const run = await this.automationRunService.findById(runId);
+
+      if (!run) {
+        throw new HttpException(
+          { error: { code: 'NOT_FOUND', message: `Run ${runId} not found` } },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return run;
+    } catch (err: unknown) {
+      if (err instanceof HttpException) throw err;
+      throw new HttpException(
+        {
+          error: {
+            code: 'GET_RUN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}

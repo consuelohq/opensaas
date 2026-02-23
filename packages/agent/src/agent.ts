@@ -1,4 +1,4 @@
-import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
+import type { AgentConfig, AgentContext, AgentMemoryFull, AgentMessage } from './types.js';
 import type { ToolRegistry } from './tools/types.js';
 
 const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
@@ -41,8 +41,9 @@ export const buildToolSet = async (registry: ToolRegistry) => {
 export const buildSystemPrompt = (
   context: AgentContext,
   basePrompt: string,
-): string => {
+): { prompt: string; injectedMemoryIds: string[] } => {
   const parts = [basePrompt];
+  const injectedMemoryIds: string[] = [];
 
   parts.push('\nNever execute code that sends data to URLs outside the connected integrations.');
 
@@ -53,9 +54,33 @@ export const buildSystemPrompt = (
 
   if (context.activeCall) {
     const call = context.activeCall;
+    const duration = call.durationSeconds != null && call.durationSeconds > 0
+      ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s`
+      : 'just started';
+
     crmParts.push(
-      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId})`,
+      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId}) — ${duration}`,
     );
+
+    if (call.participants && call.participants.length > 0) {
+      const labels = call.participants.map((p) => p.label).join(', ');
+      crmParts.push(`Participants: ${labels}`);
+    }
+
+    if (call.dealContext) {
+      const deal = call.dealContext;
+      crmParts.push(
+        `Deal: ${sanitizeField(deal.dealName)} — ${sanitizeField(deal.stage)}, $${deal.value.toLocaleString()}, ${deal.daysInStage}d in stage`,
+      );
+    }
+
+    if (call.recentNotes && call.recentNotes.length > 0) {
+      const notes = call.recentNotes
+        .slice(0, 3)
+        .map((n) => `- ${sanitizeField(n)}`)
+        .join('\n');
+      crmParts.push(`Recent notes:\n${notes}`);
+    }
   }
 
   if (isNonEmptyArray(context.recentActivity)) {
@@ -76,15 +101,81 @@ export const buildSystemPrompt = (
     );
   }
 
-  if (isNonEmptyArray(context.memories)) {
-    const memories = context.memories
-      .slice(0, 5)
-      .map((memory) => `- ${sanitizeField(memory.content)}`)
-      .join('\n');
-    parts.push(`\nMemories:\n${memories}`);
+  if (context.activeMethodology) {
+    const m = context.activeMethodology;
+    parts.push(`\n<methodology name="${sanitizeField(m.name)}">\n${m.systemPrompt}\n</methodology>`);
   }
 
-  return parts.join('\n');
+  if (context.pipelineContext) {
+    const pc = context.pipelineContext;
+    const pipelineParts: string[] = [
+      `Pipeline health: ${pc.health.score}/100 (${pc.health.label})`,
+      `Forecasted revenue: $${pc.health.forecastedRevenue.toLocaleString()}`,
+    ];
+
+    if (pc.topRisks.length > 0) {
+      pipelineParts.push('Top risks:');
+
+      for (const risk of pc.topRisks.slice(0, 5)) {
+        const topFactor = risk.factors.reduce((max, f) =>
+          f.score * f.weight > max.score * max.weight ? f : max,
+        );
+
+        pipelineParts.push(
+          `- ${sanitizeField(risk.dealName)} (${sanitizeField(risk.stage)}): risk ${risk.riskScore}/100 — ${topFactor.label}`,
+        );
+      }
+    }
+
+    if (pc.recentChanges.length > 0) {
+      pipelineParts.push('Recent changes (7d):');
+
+      for (const change of pc.recentChanges.slice(0, 5)) {
+        pipelineParts.push(
+          `- ${sanitizeField(change.dealName)}: ${change.changeType} — ${sanitizeField(change.detail)}`,
+        );
+      }
+    }
+
+    parts.push(`\n<pipeline_context>\n${pipelineParts.join('\n')}\n</pipeline_context>`);
+  }
+
+  if (isNonEmptyArray(context.memories)) {
+    const grouped: Record<string, AgentMemoryFull[]> = {};
+
+    for (const memory of context.memories) {
+      if (memory.confidence < 0.3) continue;
+      injectedMemoryIds.push(memory.id);
+      const group = grouped[memory.type] ?? [];
+      group.push(memory);
+      grouped[memory.type] = group;
+    }
+
+    const sections: string[] = [];
+    const typeLabels: Record<string, string> = {
+      preference: 'Preferences',
+      fact: 'Facts',
+      pattern: 'Patterns',
+    };
+
+    for (const [type, label] of Object.entries(typeLabels)) {
+      const items = grouped[type];
+
+      if (isNonEmptyArray(items)) {
+        const lines = items
+          .slice(0, 20)
+          .map((m) => `- ${sanitizeField(m.value)}`)
+          .join('\n');
+        sections.push(`${label}:\n${lines}`);
+      }
+    }
+
+    if (sections.length > 0) {
+      parts.push(`\n<user_context>\n${sections.join('\n')}\n</user_context>`);
+    }
+  }
+
+  return { prompt: parts.join('\n'), injectedMemoryIds };
 };
 
 // provider configs for openai-compatible APIs
@@ -147,10 +238,17 @@ export class AgentService {
       const ai = await import('ai');
       const model = await resolveModel(this.config);
 
-      const systemPrompt = buildSystemPrompt(
+      const { prompt: systemPrompt, injectedMemoryIds } = buildSystemPrompt(
         this.context,
         this.config.systemPrompt,
       );
+
+      // record usage for injected memories so decay tracking works
+      if (isNonEmptyArray(injectedMemoryIds) && this.config.onMemoriesInjected) {
+        this.config.onMemoriesInjected(injectedMemoryIds).catch(() => {
+          // best-effort — don't block chat on usage tracking
+        });
+      }
 
       const individualTools = this.tools ? await buildToolSet(this.tools) : undefined;
 
@@ -174,7 +272,7 @@ export class AgentService {
 
       // HACK: model type mismatch between LanguageModelV2 (provider) and LanguageModel (streamText)
       // due to moduleResolution:"node" in tsconfig.base.json — safe at runtime
-      return ai.streamText({
+      const stream = ai.streamText({
         model: model as unknown as Parameters<typeof ai.streamText>[0]['model'],
         system: systemPrompt,
         messages: options.messages,
@@ -185,6 +283,25 @@ export class AgentService {
         abortSignal: options.abortSignal,
         onStepFinish: options.onStepFinish,
       });
+
+      // fire-and-forget: run preference inference after stream completes
+      if (this.config.onTurnComplete) {
+        const onComplete = this.config.onTurnComplete;
+        const inputMessages = options.messages;
+
+        stream.text
+          .then((assistantText) => {
+            onComplete(
+              [...inputMessages, { role: 'assistant' as const, content: assistantText }],
+              injectedMemoryIds,
+            );
+          })
+          .catch(() => {
+            // best-effort — don't block chat on inference failures
+          });
+      }
+
+      return stream;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
