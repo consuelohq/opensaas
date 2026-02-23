@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AuthModule } from 'src/engine/core-modules/auth/auth.module';
+import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 import { AutomationController } from 'src/engine/core-modules/agent/controllers/automation.controller';
 import { ChatController } from 'src/engine/core-modules/agent/controllers/chat.controller';
 import { ConversationController } from 'src/engine/core-modules/agent/controllers/conversation.controller';
@@ -35,6 +37,8 @@ import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usa
 
 @Module({
   imports: [
+    AuthModule,
+    WorkspaceCacheStorageModule,
     TypeOrmModule.forFeature([
       AgentAutomationEntity,
       AgentAutomationRunEntity,
