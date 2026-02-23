@@ -1,6 +1,29 @@
 // code mode executor — runs LLM-generated JS in isolated-vm (DEV-1026)
+// types-only import — erased at compile time, won't trigger cloudflare:workers
 import type { Executor, ExecuteResult } from '@cloudflare/codemode';
-import { sanitizeToolName } from '@cloudflare/codemode';
+
+// inlined from @cloudflare/codemode to avoid importing dist/index.js which
+// has a top-level `import from "cloudflare:workers"` that crashes Node.js
+const JS_RESERVED = new Set([
+  'abstract','arguments','await','boolean','break','byte','case','catch','char',
+  'class','const','continue','debugger','default','delete','do','double','else',
+  'enum','eval','export','extends','false','final','finally','float','for',
+  'function','goto','if','implements','import','in','instanceof','int','interface',
+  'let','long','native','new','null','package','private','protected','public',
+  'return','short','static','super','switch','synchronized','this','throw','throws',
+  'transient','true','try','typeof','undefined','var','void','volatile','while',
+  'with','yield',
+]);
+
+function sanitizeToolName(name: string): string {
+  if (!name) return '_';
+  let sanitized = name.replace(/[-.\s]/g, '_');
+  sanitized = sanitized.replace(/[^a-zA-Z0-9_$]/g, '');
+  if (!sanitized) return '_';
+  if (/^[0-9]/.test(sanitized)) sanitized = '_' + sanitized;
+  if (JS_RESERVED.has(sanitized)) sanitized = sanitized + '_';
+  return sanitized;
+}
 
 export class AgentExecutor implements Executor {
   private timeout: number;
