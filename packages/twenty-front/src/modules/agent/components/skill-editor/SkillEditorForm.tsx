@@ -135,10 +135,7 @@ const INITIAL_FORM_DATA: SkillFormData = {
   sandboxLanguage: 'python',
 };
 
-export const SkillEditorForm = ({
-  onSave,
-  onCancel,
-}: SkillEditorFormProps) => {
+export const SkillEditorForm = ({ onSave, onCancel }: SkillEditorFormProps) => {
   const [formData, setFormData] = useState<SkillFormData>(INITIAL_FORM_DATA);
 
   const updateField = useCallback(

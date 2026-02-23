@@ -29,15 +29,15 @@ const StyledCard = styled.a`
 `;
 
 const StyledIcon = styled.div`
-  display: flex;
   align-items: center;
+  background: ${({ theme }) => theme.background.transparent.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ theme }) => theme.font.color.secondary};
+  display: flex;
+  flex-shrink: 0;
+  height: 36px;
   justify-content: center;
   width: 36px;
-  height: 36px;
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: ${({ theme }) => theme.background.transparent.light};
-  color: ${({ theme }) => theme.font.color.secondary};
-  flex-shrink: 0;
 `;
 
 const StyledInfo = styled.div`
@@ -55,8 +55,8 @@ const StyledFileName = styled.div`
 `;
 
 const StyledMeta = styled.div`
-  font-size: ${({ theme }) => theme.font.size.xs};
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
 `;
 
 const StyledDownload = styled.div`

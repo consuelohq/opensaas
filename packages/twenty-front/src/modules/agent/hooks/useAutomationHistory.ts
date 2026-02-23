@@ -58,9 +58,7 @@ export const useAutomationHistory = (automationId: string | null) => {
 
   const selectRun = useCallback(
     (runId: string | null) => {
-      setSelectedRun(
-        runId ? (runs.find((r) => r.id === runId) ?? null) : null,
-      );
+      setSelectedRun(runId ? (runs.find((r) => r.id === runId) ?? null) : null);
     },
     [runs],
   );

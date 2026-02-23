@@ -61,10 +61,7 @@ export class ConversationController {
   }
 
   @Get(':id')
-  async findById(
-    @Param('id') id: string,
-    @AuthUser() user: UserEntity,
-  ) {
+  async findById(@Param('id') id: string, @AuthUser() user: UserEntity) {
     try {
       const conversation = await this.conversationService.findById(id, user.id);
 
@@ -92,10 +89,7 @@ export class ConversationController {
   }
 
   @Patch(':id/title')
-  async updateTitle(
-    @Param('id') id: string,
-    @AuthUser() user: UserEntity,
-  ) {
+  async updateTitle(@Param('id') id: string, @AuthUser() user: UserEntity) {
     try {
       // title auto-generation will be handled by the chat flow
       await this.conversationService.updateTitle(id, user.id, 'Updated');
@@ -113,10 +107,7 @@ export class ConversationController {
   }
 
   @Post(':id/pin')
-  async togglePin(
-    @Param('id') id: string,
-    @AuthUser() user: UserEntity,
-  ) {
+  async togglePin(@Param('id') id: string, @AuthUser() user: UserEntity) {
     try {
       const pinned = await this.conversationService.togglePin(id, user.id);
 
@@ -133,10 +124,7 @@ export class ConversationController {
   }
 
   @Delete(':id')
-  async delete(
-    @Param('id') id: string,
-    @AuthUser() user: UserEntity,
-  ) {
+  async delete(@Param('id') id: string, @AuthUser() user: UserEntity) {
     try {
       await this.conversationService.delete(id, user.id);
 

@@ -19,19 +19,24 @@ export class AgentMemoryService {
     limit = 20,
     minConfidence = 0.3,
   ): Promise<AgentMemoryEntity[]> {
-    return this.memoryRepository.find({
-      where: {
-        userId,
-      },
-      order: { confidence: 'DESC', useCount: 'DESC' },
-      take: limit,
-    }).then((rows) => rows.filter((r) => r.confidence >= minConfidence));
+    return this.memoryRepository
+      .find({
+        where: {
+          userId,
+        },
+        order: { confidence: 'DESC', useCount: 'DESC' },
+        take: limit,
+      })
+      .then((rows) => rows.filter((r) => r.confidence >= minConfidence));
   }
 
   async upsert(
     userId: string,
     workspaceId: string,
-    memory: Pick<AgentMemoryEntity, 'type' | 'key' | 'value' | 'confidence' | 'source'>,
+    memory: Pick<
+      AgentMemoryEntity,
+      'type' | 'key' | 'value' | 'confidence' | 'source'
+    >,
   ): Promise<AgentMemoryEntity> {
     const existing = await this.memoryRepository.findOne({
       where: { userId, key: memory.key },
@@ -69,6 +74,7 @@ export class AgentMemoryService {
 
   async decayUnused(): Promise<number> {
     const cutoff = new Date();
+
     cutoff.setDate(cutoff.getDate() - 90);
 
     const result = await this.memoryRepository

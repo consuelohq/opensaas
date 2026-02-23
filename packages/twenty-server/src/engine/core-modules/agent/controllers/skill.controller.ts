@@ -17,7 +17,6 @@ import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.f
 import type {
   Skill,
   SkillCategory,
-  SkillFolder,
   SkillIntegrationRequirement,
   SkillOutputFormat,
   SkillTriggerType,
@@ -92,9 +91,7 @@ export class SkillController {
   // literal routes before param routes
 
   @Get('folders')
-  listFolders(
-    @AuthWorkspace() _workspace: WorkspaceEntity,
-  ): never {
+  listFolders(@AuthWorkspace() _workspace: WorkspaceEntity): never {
     return notImplemented('GET /v1/agent/skills/folders');
   }
 

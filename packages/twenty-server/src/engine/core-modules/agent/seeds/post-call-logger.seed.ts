@@ -6,8 +6,7 @@ export const POST_CALL_LOGGER_SEED = {
     'Automatically logs call outcomes, creates follow-up tasks, and updates deal stages after a call.',
   icon: 'IconClipboardCheck',
   category: 'logging',
-  tools:
-    '{log_call,update_deal,create_note,create_task}',
+  tools: '{log_call,update_deal,create_note,create_task}',
   triggers: '{manual,on_call_end}',
   outputFormat: 'action',
   integrations: '[]',
@@ -20,13 +19,11 @@ export const POST_CALL_LOGGER_SEED = {
       },
       contactId: {
         type: 'string',
-        description:
-          'CRM contact ID (auto-populated if triggered on_call_end)',
+        description: 'CRM contact ID (auto-populated if triggered on_call_end)',
       },
       callId: {
         type: 'string',
-        description:
-          'Call record ID (auto-populated if triggered on_call_end)',
+        description: 'Call record ID (auto-populated if triggered on_call_end)',
       },
     },
     required: ['callSummary'],

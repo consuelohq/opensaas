@@ -1,8 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class CreateAgentMethodologies1771780100000
-  implements MigrationInterface
-{
+export class CreateAgentMethodologies1771780100000 implements MigrationInterface {
   name = 'CreateAgentMethodologies1771780100000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -59,8 +57,6 @@ export class CreateAgentMethodologies1771780100000
       `DROP INDEX IF EXISTS "core"."IDX_AGENT_METHODOLOGY_WORKSPACE"`,
     );
 
-    await queryRunner.query(
-      `DROP TABLE IF EXISTS "core"."agentMethodology"`,
-    );
+    await queryRunner.query(`DROP TABLE IF EXISTS "core"."agentMethodology"`);
   }
 }

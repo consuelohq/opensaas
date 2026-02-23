@@ -31,15 +31,9 @@ export class AddAgentAutomation1759617160275 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "core"."agentAutomation" DROP CONSTRAINT "FK_agentAutomation_skillId"`,
     );
-    await queryRunner.query(
-      `DROP INDEX "core"."IDX_AGENT_AUTOMATION_ENABLED"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "core"."IDX_AGENT_AUTOMATION_SKILL"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX "core"."IDX_AGENT_AUTOMATION_USER"`,
-    );
+    await queryRunner.query(`DROP INDEX "core"."IDX_AGENT_AUTOMATION_ENABLED"`);
+    await queryRunner.query(`DROP INDEX "core"."IDX_AGENT_AUTOMATION_SKILL"`);
+    await queryRunner.query(`DROP INDEX "core"."IDX_AGENT_AUTOMATION_USER"`);
     await queryRunner.query(`DROP TABLE "core"."agentAutomation"`);
   }
 }

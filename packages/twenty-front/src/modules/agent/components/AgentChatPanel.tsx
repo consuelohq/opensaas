@@ -14,12 +14,12 @@ const StyledContainer = styled.div`
 `;
 
 const StyledMessageList = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: ${({ theme }) => theme.spacing(4)};
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
+  overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing(4)};
 `;
 
 const StyledMessage = styled.div<{ isUser: boolean }>`
@@ -38,16 +38,16 @@ const StyledMessage = styled.div<{ isUser: boolean }>`
 `;
 
 const StyledToolPartWrapper = styled.div`
-  max-width: 80%;
   align-self: flex-start;
+  max-width: 80%;
 `;
 
 const StyledInputArea = styled.form`
-  display: flex;
   align-items: center;
+  border-top: 1px solid ${({ theme }) => theme.border.color.medium};
+  display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(4)};
-  border-top: 1px solid ${({ theme }) => theme.border.color.medium};
 `;
 
 const StyledInput = styled.input`
@@ -71,27 +71,27 @@ const StyledInput = styled.input`
 `;
 
 const StyledSendButton = styled.button<{ disabled: boolean }>`
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme, disabled }) =>
     disabled ? theme.background.transparent.light : theme.color.blue};
+  border: none;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme, disabled }) =>
     disabled ? theme.font.color.tertiary : theme.font.color.inverted};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
 `;
 
 const StyledEmpty = styled.div`
-  flex: 1;
-  display: flex;
   align-items: center;
-  justify-content: center;
   color: ${({ theme }) => theme.font.color.tertiary};
+  display: flex;
+  flex: 1;
   font-size: ${({ theme }) => theme.font.size.md};
+  justify-content: center;
 `;
 
 const StyledLoadingDots = styled.div`
@@ -102,14 +102,8 @@ const StyledLoadingDots = styled.div`
 `;
 
 export const AgentChatPanel = () => {
-  const {
-    messages,
-    input,
-    setInput,
-    handleSubmit,
-    handleStop,
-    isLoading,
-  } = useAgentChat();
+  const { messages, input, setInput, handleSubmit, handleStop, isLoading } =
+    useAgentChat();
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -156,9 +150,7 @@ export const AgentChatPanel = () => {
                   toolPart.state !== 'input-streaming'
                 ) {
                   return (
-                    <StyledToolPartWrapper
-                      key={`${message.id}-${partIndex}`}
-                    >
+                    <StyledToolPartWrapper key={`${message.id}-${partIndex}`}>
                       <Renderer input={toolPart.input} />
                     </StyledToolPartWrapper>
                   );
@@ -182,18 +174,11 @@ export const AgentChatPanel = () => {
           autoFocus
         />
         {isLoading ? (
-          <StyledSendButton
-            type="button"
-            disabled={false}
-            onClick={handleStop}
-          >
+          <StyledSendButton type="button" disabled={false} onClick={handleStop}>
             <IconPlayerStop size={16} />
           </StyledSendButton>
         ) : (
-          <StyledSendButton
-            type="submit"
-            disabled={input.trim() === ''}
-          >
+          <StyledSendButton type="submit" disabled={input.trim() === ''}>
             <IconArrowUp size={16} />
           </StyledSendButton>
         )}

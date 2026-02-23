@@ -31,9 +31,7 @@ type ChatBody = {
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 @UseFilters(RestApiExceptionFilter)
 export class ChatController {
-  constructor(
-    private readonly aiModelRegistry: AiModelRegistryService,
-  ) {}
+  constructor(private readonly aiModelRegistry: AiModelRegistryService) {}
 
   @Post()
   async chat(
@@ -66,8 +64,7 @@ export class ChatController {
 
           writer.merge(result.toUIMessageStream());
         } catch (err: unknown) {
-          const message =
-            err instanceof Error ? err.message : 'unknown error';
+          const message = err instanceof Error ? err.message : 'unknown error';
 
           writer.write({
             type: 'error',

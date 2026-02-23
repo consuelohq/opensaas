@@ -5,7 +5,6 @@ import { streamText, type ToolSet } from 'ai';
 import { ToolRegistryService } from 'src/engine/core-modules/tool-provider/services/tool-registry.service';
 import { AI_TELEMETRY_CONFIG } from 'src/engine/metadata-modules/ai/ai-models/constants/ai-telemetry.const';
 import { AiModelRegistryService } from 'src/engine/metadata-modules/ai/ai-models/services/ai-model-registry.service';
-
 import {
   SkillExecutionException,
   SkillExecutionExceptionCode,
@@ -136,10 +135,7 @@ export class SkillExecutionService {
     );
   }
 
-  private validateInput(
-    skill: Skill,
-    context: SkillExecutionContext,
-  ): void {
+  private validateInput(skill: Skill, context: SkillExecutionContext): void {
     if (!skill.inputSchema) {
       return;
     }

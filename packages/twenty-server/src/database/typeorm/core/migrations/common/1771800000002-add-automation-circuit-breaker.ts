@@ -1,8 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class AddAutomationCircuitBreaker1771800000002
-  implements MigrationInterface
-{
+export class AddAutomationCircuitBreaker1771800000002 implements MigrationInterface {
   name = 'AddAutomationCircuitBreaker1771800000002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -20,6 +20,7 @@ import {
 } from 'src/engine/core-modules/agent/jobs/agent-automation-execute.job';
 import { AutomationRunService } from 'src/engine/core-modules/agent/services/automation-run.service';
 import { AutomationService } from 'src/engine/core-modules/agent/services/automation.service';
+import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usage-metering.service';
 import { InjectMessageQueue } from 'src/engine/core-modules/message-queue/decorators/message-queue.decorator';
 import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
 import { MessageQueueService } from 'src/engine/core-modules/message-queue/services/message-queue.service';
@@ -50,6 +51,7 @@ export class AutomationController {
   constructor(
     private readonly automationService: AutomationService,
     private readonly automationRunService: AutomationRunService,
+    private readonly usageMeteringService: UsageMeteringService,
     @InjectMessageQueue(MessageQueue.workflowQueue)
     private readonly messageQueueService: MessageQueueService,
   ) {}
@@ -62,7 +64,12 @@ export class AutomationController {
       return await this.automationService.getHealthStats(workspace.id);
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'HEALTH_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'HEALTH_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -77,7 +84,12 @@ export class AutomationController {
       return await this.automationService.findByUser(user.id, workspace.id);
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'LIST_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'LIST_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -102,13 +114,64 @@ export class AutomationController {
       });
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'CREATE_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'CREATE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   // param routes
+
+  @Get('usage')
+  async getUsageSummary(
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.usageMeteringService.getUsageSummary(
+        user.id,
+        workspace.id,
+      );
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'USAGE_SUMMARY_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('usage/breakdown')
+  async getUsageBreakdown(
+    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+  ) {
+    try {
+      return await this.usageMeteringService.getUsageBreakdown(
+        user.id,
+        workspace.id,
+      );
+    } catch (err: unknown) {
+      throw new HttpException(
+        {
+          error: {
+            code: 'USAGE_BREAKDOWN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Get(':id')
   async getAutomation(@Param('id') id: string) {
@@ -117,7 +180,9 @@ export class AutomationController {
 
       if (!automation) {
         throw new HttpException(
-          { error: { code: 'NOT_FOUND', message: `Automation ${id} not found` } },
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
           HttpStatus.NOT_FOUND,
         );
       }
@@ -126,7 +191,12 @@ export class AutomationController {
     } catch (err: unknown) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
-        { error: { code: 'GET_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'GET_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -141,7 +211,12 @@ export class AutomationController {
       return await this.automationService.update(id, body);
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'UPDATE_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'UPDATE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -155,7 +230,12 @@ export class AutomationController {
       return { success: true };
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'DELETE_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'DELETE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -168,7 +248,9 @@ export class AutomationController {
 
       if (!automation) {
         throw new HttpException(
-          { error: { code: 'NOT_FOUND', message: `Automation ${id} not found` } },
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
           HttpStatus.NOT_FOUND,
         );
       }
@@ -179,7 +261,12 @@ export class AutomationController {
     } catch (err: unknown) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
-        { error: { code: 'TOGGLE_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'TOGGLE_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -192,7 +279,9 @@ export class AutomationController {
 
       if (!automation) {
         throw new HttpException(
-          { error: { code: 'NOT_FOUND', message: `Automation ${id} not found` } },
+          {
+            error: { code: 'NOT_FOUND', message: `Automation ${id} not found` },
+          },
           HttpStatus.NOT_FOUND,
         );
       }
@@ -209,7 +298,12 @@ export class AutomationController {
     } catch (err: unknown) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
-        { error: { code: 'RUN_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'RUN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -230,17 +324,19 @@ export class AutomationController {
       return { runs };
     } catch (err: unknown) {
       throw new HttpException(
-        { error: { code: 'LIST_RUNS_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'LIST_RUNS_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get(':id/runs/:runId')
-  async getRun(
-    @Param('id') _id: string,
-    @Param('runId') runId: string,
-  ) {
+  async getRun(@Param('id') _id: string, @Param('runId') runId: string) {
     try {
       const run = await this.automationRunService.findById(runId);
 
@@ -255,7 +351,12 @@ export class AutomationController {
     } catch (err: unknown) {
       if (err instanceof HttpException) throw err;
       throw new HttpException(
-        { error: { code: 'GET_RUN_FAILED', message: err instanceof Error ? err.message : 'unknown error' } },
+        {
+          error: {
+            code: 'GET_RUN_FAILED',
+            message: err instanceof Error ? err.message : 'unknown error',
+          },
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

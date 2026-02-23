@@ -37,23 +37,28 @@ const StyledCard = styled.div`
 `;
 
 const StyledHeader = styled.div`
-  display: flex;
   align-items: center;
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
+  display: flex;
   justify-content: space-between;
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
 `;
 
 const StyledTitle = styled.div`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
-const StyledStatusBadge = styled.span<{ variant: 'pending' | 'approved' | 'rejected' }>`
-  font-size: ${({ theme }) => theme.font.size.xs};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  padding: 2px ${({ theme }) => theme.spacing(1.5)};
+const StyledStatusBadge = styled.span<{
+  variant: 'pending' | 'approved' | 'rejected';
+}>`
+  background: ${({ theme, variant }) => {
+    if (variant === 'approved') return theme.background.transparent.success;
+    if (variant === 'rejected') return theme.background.transparent.danger;
+
+    return theme.background.transparent.light;
+  }};
   border-radius: ${({ theme }) => theme.border.radius.pill};
   color: ${({ theme, variant }) => {
     if (variant === 'approved') return theme.color.turquoise;
@@ -61,19 +66,16 @@ const StyledStatusBadge = styled.span<{ variant: 'pending' | 'approved' | 'rejec
 
     return theme.font.color.tertiary;
   }};
-  background: ${({ theme, variant }) => {
-    if (variant === 'approved') return theme.background.transparent.success;
-    if (variant === 'rejected') return theme.background.transparent.danger;
-
-    return theme.background.transparent.light;
-  }};
+  font-size: ${({ theme }) => theme.font.size.xs};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  padding: 2px ${({ theme }) => theme.spacing(1.5)};
 `;
 
 const StyledBody = styled.div`
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledArgRow = styled.div`
@@ -114,9 +116,7 @@ const StyledButton = styled.button<{ variant: 'approve' | 'skip' }>`
         : theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme, variant }) =>
-    variant === 'approve'
-      ? theme.color.turquoise
-      : theme.background.primary};
+    variant === 'approve' ? theme.color.turquoise : theme.background.primary};
   color: ${({ theme, variant }) =>
     variant === 'approve'
       ? theme.font.color.inverted
@@ -164,7 +164,9 @@ export const AgentActionCard = ({
     <StyledCard>
       <StyledHeader>
         <StyledTitle>{label}</StyledTitle>
-        <StyledStatusBadge variant={badgeVariant}>{badgeText}</StyledStatusBadge>
+        <StyledStatusBadge variant={badgeVariant}>
+          {badgeText}
+        </StyledStatusBadge>
       </StyledHeader>
       {argEntries.length > 0 && (
         <StyledBody>

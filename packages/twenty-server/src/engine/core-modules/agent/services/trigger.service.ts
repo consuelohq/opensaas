@@ -1,21 +1,21 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import type { Cache } from '@nestjs/cache-manager';
-import type { Repository } from 'typeorm';
 
-import type {
-  Automation,
-  CrmEvent,
-  TriggerConfig,
-  TriggerEvalResult,
-} from '@consuelo/agent';
 import {
   buildDebounceKey,
   findMatchingAutomations,
   matchConditionalTrigger,
   matchEventTrigger,
+} from '@consuelo/agent';
+
+import type { Repository } from 'typeorm';
+import type {
+  Automation,
+  CrmEvent,
+  TriggerConfig,
+  TriggerEvalResult,
 } from '@consuelo/agent';
 
 import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/automation.entity';
@@ -37,14 +37,13 @@ export class AgentTriggerService {
         where: { workspaceId: event.workspaceId, enabled: true },
       });
 
-      const automations = entities.map(
-        (e) => this.entityToAutomation(e),
-      );
+      const automations = entities.map((e) => this.entityToAutomation(e));
 
       const matched = findMatchingAutomations(automations, event);
 
       // NOTE: filter out debounced automations
-      const results: Array<{ automationId: string; automationName: string }> = [];
+      const results: Array<{ automationId: string; automationName: string }> =
+        [];
 
       for (const automation of matched) {
         const debounced = await this.isDebounced(automation.id, event.type);
@@ -67,8 +66,7 @@ export class AgentTriggerService {
         matchedAutomations: results,
       };
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'unknown error';
+      const message = err instanceof Error ? err.message : 'unknown error';
 
       return {
         shouldFire: false,
@@ -78,10 +76,7 @@ export class AgentTriggerService {
     }
   }
 
-  async isDebounced(
-    automationId: string,
-    eventType: string,
-  ): Promise<boolean> {
+  async isDebounced(automationId: string, eventType: string): Promise<boolean> {
     try {
       const key = buildDebounceKey(automationId, eventType);
       const value = await this.cache.get(key);
@@ -140,8 +135,7 @@ export class AgentTriggerService {
           : [],
       };
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'unknown error';
+      const message = err instanceof Error ? err.message : 'unknown error';
 
       return {
         shouldFire: false,

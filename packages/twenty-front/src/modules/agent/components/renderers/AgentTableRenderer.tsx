@@ -21,22 +21,23 @@ const StyledWrapper = styled.div`
 `;
 
 const StyledTitle = styled.div`
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  color: ${({ theme }) => theme.font.color.primary};
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
 `;
 
 const StyledTable = styled.table`
-  width: 100%;
   border-collapse: collapse;
   font-size: ${({ theme }) => theme.font.size.sm};
+  width: 100%;
 `;
 
 const StyledTh = styled.th`
   text-align: left;
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
   color: ${({ theme }) => theme.font.color.secondary};
   font-weight: ${({ theme }) => theme.font.weight.medium};
@@ -49,25 +50,28 @@ const StyledTh = styled.th`
 `;
 
 const StyledTd = styled.td`
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   color: ${({ theme }) => theme.font.color.primary};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledPagination = styled.div`
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
   color: ${({ theme }) => theme.font.color.tertiary};
+  display: flex;
   font-size: ${({ theme }) => theme.font.size.sm};
+  justify-content: space-between;
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledPageButton = styled.button<{ disabled: boolean }>`
   background: none;
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  padding: ${({ theme }) => theme.spacing(0.5)} ${({ theme }) => theme.spacing(1.5)};
+  padding: ${({ theme }) => theme.spacing(0.5)}
+    ${({ theme }) => theme.spacing(1.5)};
   color: ${({ theme, disabled }) =>
     disabled ? theme.font.color.tertiary : theme.font.color.primary};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
@@ -138,8 +142,7 @@ export const AgentTableRenderer = ({ input }: AgentTableRendererProps) => {
         <StyledPagination>
           <span>
             {page * PAGE_SIZE + 1}–
-            {Math.min((page + 1) * PAGE_SIZE, sorted.length)} of{' '}
-            {sorted.length}
+            {Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}
           </span>
           <div style={{ display: 'flex', gap: 4 }}>
             <StyledPageButton

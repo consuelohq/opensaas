@@ -8,17 +8,17 @@ type BatchConfirmationBarProps = {
 };
 
 const StyledBar = styled.div`
-  display: flex;
   align-items: center;
+  background: ${({ theme }) => theme.background.secondary};
+  border-top: 1px solid ${({ theme }) => theme.border.color.medium};
+  display: flex;
   justify-content: space-between;
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(4)};
-  border-top: 1px solid ${({ theme }) => theme.border.color.medium};
-  background: ${({ theme }) => theme.background.secondary};
 `;
 
 const StyledLabel = styled.span`
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.secondary};
+  font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
 const StyledButtonGroup = styled.div`
@@ -38,9 +38,7 @@ const StyledButton = styled.button<{ variant: 'approve' | 'cancel' }>`
         : theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme, variant }) =>
-    variant === 'approve'
-      ? theme.color.turquoise
-      : theme.background.primary};
+    variant === 'approve' ? theme.color.turquoise : theme.background.primary};
   color: ${({ theme, variant }) =>
     variant === 'approve'
       ? theme.font.color.inverted

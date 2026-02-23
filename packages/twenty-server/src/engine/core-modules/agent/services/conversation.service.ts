@@ -42,7 +42,9 @@ export class ConversationService {
   async findById(
     id: string,
     userId: string,
-  ): Promise<(AgentConversationEntity & { messages: AgentMessageEntity[] }) | null> {
+  ): Promise<
+    (AgentConversationEntity & { messages: AgentMessageEntity[] }) | null
+  > {
     const conversation = await this.conversationRepo.findOne({
       where: { id, userId },
     });
@@ -99,11 +101,7 @@ export class ConversationService {
     return saved;
   }
 
-  async updateTitle(
-    id: string,
-    userId: string,
-    title: string,
-  ): Promise<void> {
+  async updateTitle(id: string, userId: string, title: string): Promise<void> {
     await this.conversationRepo.update({ id, userId }, { title });
   }
 

@@ -1,8 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class CreateAgentAutomations1771790000001
-  implements MigrationInterface
-{
+export class CreateAgentAutomations1771790000001 implements MigrationInterface {
   name = 'CreateAgentAutomations1771790000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -49,8 +47,6 @@ export class CreateAgentAutomations1771790000001
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP TABLE IF EXISTS "core"."agentAutomation"`,
-    );
+    await queryRunner.query(`DROP TABLE IF EXISTS "core"."agentAutomation"`);
   }
 }

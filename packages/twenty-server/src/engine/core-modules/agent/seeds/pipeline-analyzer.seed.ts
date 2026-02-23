@@ -6,8 +6,7 @@ export const PIPELINE_ANALYZER_SEED = {
     'Analyzes deal pipeline health, identifies at-risk deals, and suggests next actions with funnel charts and risk heatmaps.',
   icon: 'IconChartBar',
   category: 'analysis',
-  tools:
-    '{list_deals,get_analytics,run_analysis}',
+  tools: '{list_deals,get_analytics,run_analysis}',
   triggers: '{manual,scheduled}',
   outputFormat: 'mixed',
   integrations: JSON.stringify([

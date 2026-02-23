@@ -25,7 +25,11 @@ const getTextContent = (message: ChatMessage): string | null => {
 };
 
 const normalizeText = (text: string): string =>
-  text.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+  text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 const toKey = (prefix: string, text: string): string => {
   const slug = normalizeText(text).slice(0, 80).replace(/\s/g, '-');
@@ -71,8 +75,11 @@ export class PreferenceInferenceService {
     try {
       if (messages.length === 0) return;
 
-      const existingMemories =
-        await this.memoryService.getTopMemories(userId, 50, 0);
+      const existingMemories = await this.memoryService.getTopMemories(
+        userId,
+        50,
+        0,
+      );
 
       const signals = [
         ...this.detectExplicit(messages),
@@ -90,7 +97,10 @@ export class PreferenceInferenceService {
           value: signal.value,
           confidence: signal.confidence,
           source: signal.signalType === 'explicit' ? 'explicit' : 'inferred',
-        } as Pick<AgentMemoryEntity, 'type' | 'key' | 'value' | 'confidence' | 'source'>);
+        } as Pick<
+          AgentMemoryEntity,
+          'type' | 'key' | 'value' | 'confidence' | 'source'
+        >);
       }
 
       this.logger.log(
@@ -98,8 +108,7 @@ export class PreferenceInferenceService {
       );
     } catch (err: unknown) {
       // fire-and-forget — log but don't throw
-      const message =
-        err instanceof Error ? err.message : 'unknown error';
+      const message = err instanceof Error ? err.message : 'unknown error';
 
       this.logger.error(
         `preference inference failed for user ${userId}: ${message}`,
@@ -113,6 +122,7 @@ export class PreferenceInferenceService {
     for (const message of messages) {
       if (message.role !== 'user') continue;
       const text = getTextContent(message);
+
       if (!text) continue;
 
       for (const pattern of EXPLICIT_PATTERNS) {
@@ -146,9 +156,11 @@ export class PreferenceInferenceService {
       if (messages[i - 1].role !== 'assistant') continue;
 
       const text = getTextContent(current);
+
       if (!text || !isCorrection(text)) continue;
 
       const normalized = normalizeText(text);
+
       corrections.set(normalized, (corrections.get(normalized) ?? 0) + 1);
     }
 
@@ -174,6 +186,7 @@ export class PreferenceInferenceService {
     for (const message of messages) {
       if (message.role !== 'user') continue;
       const text = getTextContent(message);
+
       if (!text) continue;
 
       const normalized = normalizeText(text);
@@ -209,10 +222,14 @@ export class PreferenceInferenceService {
   ): PreferenceSignal[] {
     if (injectedMemoryIds.length === 0) return [];
 
-    const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+    const lastUserMessage = [...messages]
+      .reverse()
+      .find((m) => m.role === 'user');
+
     if (!lastUserMessage) return [];
 
     const text = getTextContent(lastUserMessage);
+
     if (!text || isCorrection(text)) return [];
 
     const signals: PreferenceSignal[] = [];
@@ -220,6 +237,7 @@ export class PreferenceInferenceService {
 
     for (const memoryId of injectedMemoryIds) {
       const memory = memoryById.get(memoryId);
+
       if (!memory) continue;
 
       signals.push({

@@ -16,7 +16,9 @@ import { WorkspaceRelatedEntity } from 'src/engine/workspace-manager/types/works
 @Entity({ name: 'agentAutomation', schema: 'core' })
 @Index('IDX_AGENT_AUTOMATION_USER', ['userId', 'workspaceId'])
 @Index('IDX_AGENT_AUTOMATION_SKILL', ['skillId'])
-@Index('IDX_AGENT_AUTOMATION_ENABLED', ['enabled'], { where: '"enabled" = true' })
+@Index('IDX_AGENT_AUTOMATION_ENABLED', ['enabled'], {
+  where: '"enabled" = true',
+})
 export class AgentAutomationEntity extends WorkspaceRelatedEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

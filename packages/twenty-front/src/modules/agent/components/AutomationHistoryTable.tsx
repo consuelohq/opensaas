@@ -46,7 +46,8 @@ const StyledRowContent = styled.div`
   align-items: center;
   display: flex;
   gap: ${({ theme }) => theme.spacing(3)};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledBadge = styled.span<{ color: string }>`
@@ -122,9 +123,7 @@ const formatTime = (dateString: string | null): string => {
   return new Date(dateString).toLocaleString();
 };
 
-const triggerSummary = (
-  payload: Record<string, unknown> | null,
-): string => {
+const triggerSummary = (payload: Record<string, unknown> | null): string => {
   if (!payload) return '—';
   const type = payload.type;
 
@@ -183,9 +182,7 @@ export const AutomationHistoryTable = ({
                 {run.result && (
                   <>
                     <StyledLabel>Result</StyledLabel>
-                    <StyledPre>
-                      {JSON.stringify(run.result, null, 2)}
-                    </StyledPre>
+                    <StyledPre>{JSON.stringify(run.result, null, 2)}</StyledPre>
                   </>
                 )}
                 {!run.error && !run.result && (

@@ -29,8 +29,7 @@ export const PRE_CALL_BRIEF_SEED = {
         properties: {
           companyName: {
             type: 'string',
-            description:
-              'Company name to look up and prepare a brief for',
+            description: 'Company name to look up and prepare a brief for',
           },
         },
       },

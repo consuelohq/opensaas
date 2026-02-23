@@ -25,9 +25,9 @@ const StyledWrapper = styled.div`
 `;
 
 const StyledTitle = styled.div`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.lg};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledHeading = styled.div`

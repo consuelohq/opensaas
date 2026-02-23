@@ -50,8 +50,6 @@ export class CreateAgentMemories1771780000000 implements MigrationInterface {
       `DROP INDEX IF EXISTS "core"."IDX_AGENT_MEMORY_USER_CONFIDENCE"`,
     );
 
-    await queryRunner.query(
-      `DROP TABLE IF EXISTS "core"."agentMemory"`,
-    );
+    await queryRunner.query(`DROP TABLE IF EXISTS "core"."agentMemory"`);
   }
 }

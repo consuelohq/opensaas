@@ -13,10 +13,7 @@ import { AgentAutomationEntity } from 'src/engine/core-modules/agent/entities/au
 
 @Entity({ name: 'agentAutomationRun', schema: 'core' })
 @Index('IDX_AGENT_AUTOMATION_RUN_AUTOMATION', ['automationId'])
-@Index('IDX_AGENT_AUTOMATION_RUN_AUTOMATION_STATUS', [
-  'automationId',
-  'status',
-])
+@Index('IDX_AGENT_AUTOMATION_RUN_AUTOMATION_STATUS', ['automationId', 'status'])
 export class AgentAutomationRunEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

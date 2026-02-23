@@ -62,13 +62,14 @@ export class AgentContextEngineService {
   ): Promise<ContextLayer[]> {
     try {
       // load all context layers in parallel — each wrapped in try/catch for graceful degradation
-      const [memories, callContext, pipeline, skillOutputs] =
-        await Promise.all([
+      const [memories, callContext, pipeline, skillOutputs] = await Promise.all(
+        [
           this.loadMemories(userId),
           this.loadCallContext(workspaceId, options?.activeCallSid),
           this.loadPipeline(userId, workspaceId),
           this.loadSkillOutputs(userId, workspaceId, options?.skillId),
-        ]);
+        ],
+      );
 
       const layers: ContextLayer[] = [
         memories,
@@ -129,7 +130,7 @@ export class AgentContextEngineService {
 
   async getSkillOutput(key: string): Promise<SkillOutput | null> {
     try {
-      return await this.cacheStorage.get<SkillOutput>(key) ?? null;
+      return (await this.cacheStorage.get<SkillOutput>(key)) ?? null;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
 
@@ -293,7 +294,7 @@ export class AgentContextEngineService {
       // load recent skill outputs from cache
       const cacheKey = `skill:outputs:${userId}:${workspaceId}:recent`;
       const recentKeys =
-        await this.cacheStorage.get<string[]>(cacheKey) ?? [];
+        (await this.cacheStorage.get<string[]>(cacheKey)) ?? [];
 
       if (recentKeys.length === 0) return null;
 

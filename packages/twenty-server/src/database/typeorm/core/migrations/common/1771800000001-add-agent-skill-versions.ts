@@ -1,8 +1,6 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class AddAgentSkillVersions1771800000001
-  implements MigrationInterface
-{
+export class AddAgentSkillVersions1771800000001 implements MigrationInterface {
   name = 'AddAgentSkillVersions1771800000001';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

@@ -52,8 +52,7 @@ export class SkillVersionController {
 
       return { version: newVersion };
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Rollback failed';
+      const message = err instanceof Error ? err.message : 'Rollback failed';
 
       throw new HttpException(
         { error: { code: 'ROLLBACK_FAILED', message } },

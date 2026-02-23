@@ -33,7 +33,11 @@ type StageAverage = {
 type DealChange = {
   dealId: string;
   dealName: string;
-  changeType: 'stage_change' | 'amount_change' | 'close_date_change' | 'new_deal';
+  changeType:
+    | 'stage_change'
+    | 'amount_change'
+    | 'close_date_change'
+    | 'new_deal';
   detail: string;
   changedAt: Date;
 };
@@ -51,7 +55,12 @@ type PipelineContextResult = {
     dealName: string;
     stage: string;
     riskScore: number;
-    factors: Array<{ id: string; label: string; score: number; weight: number }>;
+    factors: Array<{
+      id: string;
+      label: string;
+      score: number;
+      weight: number;
+    }>;
     value: number;
   }>;
   recentChanges: DealChange[];
@@ -61,12 +70,12 @@ const CACHE_TTL_MS = 15 * 60 * 1000;
 
 // default stage probabilities when no historical data exists
 const DEFAULT_STAGE_PROBABILITIES: Record<string, number> = {
-  'QUALIFICATION': 0.1,
-  'MEETING': 0.2,
-  'PROPOSAL': 0.4,
-  'NEGOTIATION': 0.6,
-  'CLOSED_WON': 1.0,
-  'CLOSED_LOST': 0,
+  QUALIFICATION: 0.1,
+  MEETING: 0.2,
+  PROPOSAL: 0.4,
+  NEGOTIATION: 0.6,
+  CLOSED_WON: 1.0,
+  CLOSED_LOST: 0,
 };
 
 const daysBetween = (a: Date, b: Date): number =>
@@ -88,7 +97,8 @@ export class PipelineIntelligenceService {
   ): Promise<PipelineContextResult | null> {
     try {
       const cacheKey = `pipeline:context:${userId}:${workspaceId}`;
-      const cached = await this.cacheStorage.get<PipelineContextResult>(cacheKey);
+      const cached =
+        await this.cacheStorage.get<PipelineContextResult>(cacheKey);
 
       if (cached) return cached;
 
@@ -100,9 +110,8 @@ export class PipelineIntelligenceService {
       const recentChanges = await this.getRecentChanges(workspaceId);
 
       // use the pure functions from the agent package
-      const { buildPipelineContext } = await import(
-        '@consuelo/agent/context/pipeline-intelligence.service.js'
-      );
+      const { buildPipelineContext } =
+        await import('@consuelo/agent/context/pipeline-intelligence.service.js');
 
       const result = buildPipelineContext(
         deals,
@@ -137,7 +146,9 @@ export class PipelineIntelligenceService {
     const now = new Date();
 
     return opportunities
-      .filter((opp) => opp.stage !== 'CLOSED_WON' && opp.stage !== 'CLOSED_LOST')
+      .filter(
+        (opp) => opp.stage !== 'CLOSED_WON' && opp.stage !== 'CLOSED_LOST',
+      )
       .map((opp) => ({
         id: opp.id,
         name: opp.name || 'Unnamed deal',
@@ -213,7 +224,9 @@ export class PipelineIntelligenceService {
         return {
           dealId: opp.id,
           dealName: opp.name || 'Unnamed deal',
-          changeType: isNew ? 'stage_change' as const : 'stage_change' as const,
+          changeType: isNew
+            ? ('stage_change' as const)
+            : ('stage_change' as const),
           detail: isNew
             ? `New deal created in ${opp.stage || 'QUALIFICATION'}`
             : `Updated in ${opp.stage || 'QUALIFICATION'}`,

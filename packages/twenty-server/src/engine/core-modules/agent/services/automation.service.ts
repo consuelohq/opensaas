@@ -13,7 +13,19 @@ export class AutomationService {
   ) {}
 
   async create(
-    input: Omit<AgentAutomationEntity, 'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace' | 'lastRunAt' | 'lastRunStatus' | 'consecutiveFailures' | 'maxConsecutiveFailures' | 'disabledReason'>,
+    input: Omit<
+      AgentAutomationEntity,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'skill'
+      | 'workspace'
+      | 'lastRunAt'
+      | 'lastRunStatus'
+      | 'consecutiveFailures'
+      | 'maxConsecutiveFailures'
+      | 'disabledReason'
+    >,
   ): Promise<AgentAutomationEntity> {
     const entity = this.automationRepository.create(input);
 
@@ -42,7 +54,12 @@ export class AutomationService {
 
   async update(
     id: string,
-    input: Partial<Omit<AgentAutomationEntity, 'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace'>>,
+    input: Partial<
+      Omit<
+        AgentAutomationEntity,
+        'id' | 'createdAt' | 'updatedAt' | 'skill' | 'workspace'
+      >
+    >,
   ): Promise<AgentAutomationEntity> {
     await this.automationRepository.update(id, input);
 
@@ -116,9 +133,7 @@ export class AutomationService {
     });
   }
 
-  async getHealthStats(
-    workspaceId: string,
-  ): Promise<{
+  async getHealthStats(workspaceId: string): Promise<{
     total: number;
     enabled: number;
     disabled: number;

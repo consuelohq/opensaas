@@ -80,7 +80,10 @@ export class AgentSkillEntity extends WorkspaceRelatedEntity {
   @Column({ type: 'uuid', nullable: true })
   folderId: string | null;
 
-  @ManyToOne(() => AgentSkillFolderEntity, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => AgentSkillFolderEntity, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'folderId' })
   folder: Relation<AgentSkillFolderEntity> | null;
 

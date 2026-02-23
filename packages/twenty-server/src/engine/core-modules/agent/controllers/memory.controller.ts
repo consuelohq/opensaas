@@ -83,10 +83,7 @@ export class AgentMemoryController {
   }
 
   @Delete(':id')
-  async deleteMemory(
-    @Param('id') id: string,
-    @AuthUser() user: UserEntity,
-  ) {
+  async deleteMemory(@Param('id') id: string, @AuthUser() user: UserEntity) {
     try {
       await this.memoryService.delete(id, user.id);
 

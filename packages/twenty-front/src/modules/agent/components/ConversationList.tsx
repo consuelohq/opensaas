@@ -59,7 +59,8 @@ const StyledItem = styled.div<{ isSelected: boolean }>`
   cursor: pointer;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(3)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(3)};
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.lighter};

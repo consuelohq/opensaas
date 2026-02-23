@@ -31,6 +31,7 @@ import { CallContextService } from 'src/engine/core-modules/agent/services/call-
 import { PipelineIntelligenceService } from 'src/engine/core-modules/agent/services/pipeline-intelligence.service';
 import { PreferenceInferenceService } from 'src/engine/core-modules/agent/services/preference-inference.service';
 import { SkillVersionService } from 'src/engine/core-modules/agent/services/skill-version.service';
+import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usage-metering.service';
 
 @Module({
   imports: [
@@ -52,8 +53,42 @@ import { SkillVersionService } from 'src/engine/core-modules/agent/services/skil
       'core',
     ),
   ],
-  controllers: [AgentMemoryController, AgentMethodologyController, AutomationController, ChatController, ConversationController, SkillController, SkillVersionController],
-  providers: [AgentAutomationExecuteJob, AgentMemoryService, AutomationRunService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, SkillVersionService],
-  exports: [AgentMemoryService, AutomationRunService, AutomationService, AgentTriggerService, CallContextService, ConversationService, PipelineIntelligenceService, PreferenceInferenceService, AgentContextEngineService, SkillVersionService, TypeOrmModule],
+  controllers: [
+    AgentMemoryController,
+    AgentMethodologyController,
+    AutomationController,
+    ChatController,
+    ConversationController,
+    SkillController,
+    SkillVersionController,
+  ],
+  providers: [
+    AgentAutomationExecuteJob,
+    AgentMemoryService,
+    AutomationRunService,
+    AutomationService,
+    AgentTriggerService,
+    CallContextService,
+    ConversationService,
+    PipelineIntelligenceService,
+    PreferenceInferenceService,
+    AgentContextEngineService,
+    SkillVersionService,
+    UsageMeteringService,
+  ],
+  exports: [
+    AgentMemoryService,
+    AutomationRunService,
+    AutomationService,
+    AgentTriggerService,
+    CallContextService,
+    ConversationService,
+    PipelineIntelligenceService,
+    PreferenceInferenceService,
+    AgentContextEngineService,
+    SkillVersionService,
+    UsageMeteringService,
+    TypeOrmModule,
+  ],
 })
 export class AgentModule {}

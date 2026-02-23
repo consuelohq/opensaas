@@ -85,7 +85,12 @@ export class AgentMethodologyController {
     try {
       if (!body.name || !body.systemPrompt) {
         throw new HttpException(
-          { error: { code: 'INVALID_REQUEST', message: 'name and systemPrompt are required' } },
+          {
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'name and systemPrompt are required',
+            },
+          },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -164,23 +169,37 @@ export class AgentMethodologyController {
 
       if (!methodology) {
         throw new HttpException(
-          { error: { code: 'NOT_FOUND', message: 'custom methodology not found' } },
+          {
+            error: {
+              code: 'NOT_FOUND',
+              message: 'custom methodology not found',
+            },
+          },
           HttpStatus.NOT_FOUND,
         );
       }
 
       if (methodology.type === 'built-in') {
         throw new HttpException(
-          { error: { code: 'FORBIDDEN', message: 'cannot modify built-in methodologies' } },
+          {
+            error: {
+              code: 'FORBIDDEN',
+              message: 'cannot modify built-in methodologies',
+            },
+          },
           HttpStatus.FORBIDDEN,
         );
       }
 
       if (body.name !== undefined) methodology.name = body.name;
-      if (body.description !== undefined) methodology.description = body.description;
-      if (body.systemPrompt !== undefined) methodology.systemPrompt = body.systemPrompt;
-      if (body.qualificationCriteria !== undefined) methodology.qualificationCriteria = body.qualificationCriteria;
-      if (body.scoringWeights !== undefined) methodology.scoringWeights = body.scoringWeights ?? null;
+      if (body.description !== undefined)
+        methodology.description = body.description;
+      if (body.systemPrompt !== undefined)
+        methodology.systemPrompt = body.systemPrompt;
+      if (body.qualificationCriteria !== undefined)
+        methodology.qualificationCriteria = body.qualificationCriteria;
+      if (body.scoringWeights !== undefined)
+        methodology.scoringWeights = body.scoringWeights ?? null;
 
       const saved = await this.methodologyRepo.save(methodology);
 
@@ -210,14 +229,24 @@ export class AgentMethodologyController {
 
       if (!methodology) {
         throw new HttpException(
-          { error: { code: 'NOT_FOUND', message: 'custom methodology not found' } },
+          {
+            error: {
+              code: 'NOT_FOUND',
+              message: 'custom methodology not found',
+            },
+          },
           HttpStatus.NOT_FOUND,
         );
       }
 
       if (methodology.type === 'built-in') {
         throw new HttpException(
-          { error: { code: 'FORBIDDEN', message: 'cannot delete built-in methodologies' } },
+          {
+            error: {
+              code: 'FORBIDDEN',
+              message: 'cannot delete built-in methodologies',
+            },
+          },
           HttpStatus.FORBIDDEN,
         );
       }

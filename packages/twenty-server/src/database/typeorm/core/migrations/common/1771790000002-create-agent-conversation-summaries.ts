@@ -1,8 +1,6 @@
 import { type MigrationInterface, type QueryRunner } from 'typeorm';
 
-export class CreateAgentConversationSummaries1771790000002
-  implements MigrationInterface
-{
+export class CreateAgentConversationSummaries1771790000002 implements MigrationInterface {
   name = 'CreateAgentConversationSummaries1771790000002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
