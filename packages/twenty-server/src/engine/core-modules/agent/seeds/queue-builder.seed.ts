@@ -79,8 +79,8 @@ When activated, follow these steps in order:
 
    📞 Call Queue: {count} contacts matching "{original criteria}"
 
-   1. {Name} @ {Company} — ${amount} deal, last call {days} days ago [✓] [✗]
-   2. {Name} @ {Company} — ${amount} deal, last call {days} days ago [✓] [✗]
+   1. {Name} @ {Company} — \${amount} deal, last call {days} days ago [✓] [✗]
+   2. {Name} @ {Company} — \${amount} deal, last call {days} days ago [✓] [✗]
    ...
 
    [Add All to Queue] [Add Selected] [Cancel]
