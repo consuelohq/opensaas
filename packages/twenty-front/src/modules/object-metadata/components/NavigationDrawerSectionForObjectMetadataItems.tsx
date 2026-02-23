@@ -14,12 +14,13 @@ const ORDERED_FIRST_STANDARD_OBJECTS: string[] = [
   CoreObjectNameSingular.Person,
   CoreObjectNameSingular.Company,
   CoreObjectNameSingular.Opportunity,
+  CoreObjectNameSingular.Dashboard,
   CoreObjectNameSingular.Task,
   CoreObjectNameSingular.Note,
 ];
 
 const ORDERED_LAST_STANDARD_OBJECTS: string[] = [
-  CoreObjectNameSingular.Dashboard,
+  CoreObjectNameSingular.Workflow,
 ];
 
 type NavigationDrawerSectionForObjectMetadataItemsProps = {

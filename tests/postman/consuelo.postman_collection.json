@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Consuelo API",
-    "description": "Postman collection for Consuelo (Twenty CRM fork) API testing. Includes Auth, Voice/Dialer, Contacts, GraphQL Core, Calls+History, and Queue+Analytics endpoints.",
+    "description": "API test suite for Consuelo — opensaas sales infrastructure platform",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [
@@ -47,145 +47,151 @@
       "name": "Auth",
       "item": [
         {
-          "name": "signUp",
+          "name": "getLoginTokenFromCredentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation GetLoginToken($email: String!, $password: String!, $origin: String!) { getLoginTokenFromCredentials(email: $email, password: $password, origin: $origin) { loginToken { token expiresAt } } }",
+                "variables": "{\"email\":\"{{test_email}}\",\"password\":\"{{test_password}}\",\"origin\":\"{{base_url}}\"}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/metadata",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "metadata"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 201 on successful signup', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
+                  "pm.test('Should return 200', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
                   "});",
-                  "pm.test('Should contain loginToken in response', function() {",
+                  "pm.test('Should contain loginToken', function() {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.loginToken).to.exist;",
-                  "  pm.environment.set('login_token', json.loginToken);",
+                  "  const token = json.data?.getLoginTokenFromCredentials?.loginToken?.token;",
+                  "  pm.expect(token).to.be.a('string');",
+                  "  pm.environment.set('login_token', token);",
                   "});"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "getAuthTokensFromLoginToken",
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json"
-            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation SignUp($email: String!, $password: String!) { signUp(email: $email, password: $password) { loginToken } }",
-                "variables": "{\"email\": \"{{test_email}}\", \"password\": \"{{test_password}}\"}"
+                "query": "mutation GetAuthTokens($loginToken: String!, $origin: String!) { getAuthTokensFromLoginToken(loginToken: $loginToken, origin: $origin) { tokens { accessOrWorkspaceAgnosticToken { token expiresAt } refreshToken { token expiresAt } } } }",
+                "variables": "{\"loginToken\":\"{{login_token}}\",\"origin\":\"{{base_url}}\"}"
               }
+            },
+            "url": {
+              "raw": "{{base_url}}/metadata",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "metadata"
+              ]
             }
-          }
-        },
-        {
-          "name": "signIn Challenge",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on signin challenge', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
+                  "pm.test('Should return 200', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
                   "});",
-                  "pm.test('Should contain loginToken in response', function() {",
+                  "pm.test('Should contain access and refresh tokens', function() {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.loginToken).to.exist;",
-                  "  pm.environment.set('login_token', json.loginToken);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation SignIn($email: String!) { signIn(email: $email) { loginToken } }",
-                "variables": "{\"email\": \"{{test_email}}\"}"
-              }
-            }
-          }
-        },
-        {
-          "name": "verify",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200 on verify', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should contain accessToken and refreshToken', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.accessToken).to.exist;",
-                  "  pm.expect(json.refreshToken).to.exist;",
-                  "  pm.environment.set('access_token', json.accessToken);",
-                  "  pm.environment.set('refresh_token', json.refreshToken);",
-                  "  // Set expiry 30 minutes from now",
+                  "  const tokens = json.data?.getAuthTokensFromLoginToken?.tokens;",
+                  "  pm.expect(tokens?.accessOrWorkspaceAgnosticToken?.token).to.be.a('string');",
+                  "  pm.expect(tokens?.refreshToken?.token).to.be.a('string');",
+                  "  pm.environment.set('access_token', tokens.accessOrWorkspaceAgnosticToken.token);",
+                  "  pm.environment.set('refresh_token', tokens.refreshToken.token);",
                   "  pm.environment.set('token_expiry', Date.now() + 30 * 60 * 1000);",
                   "});"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "renewToken",
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json"
-            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation Verify($loginToken: String!) { verify(loginToken: $loginToken) { accessToken refreshToken } }",
-                "variables": "{\"loginToken\": \"{{login_token}}\"}"
+                "query": "mutation RenewToken($appToken: String!) { renewToken(appToken: $appToken) { tokens { accessOrWorkspaceAgnosticToken { token expiresAt } refreshToken { token expiresAt } } } }",
+                "variables": "{\"appToken\":\"{{refresh_token}}\"}"
               }
+            },
+            "url": {
+              "raw": "{{base_url}}/metadata",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "metadata"
+              ]
             }
-          }
-        },
-        {
-          "name": "Token Refresh",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on token refresh', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
+                  "pm.test('Should return 200', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
                   "});",
-                  "pm.test('Should contain new accessToken and refreshToken', function() {",
+                  "pm.test('Should contain new tokens', function() {",
                   "  const json = pm.response.json();",
-                  "  pm.expect(json.accessToken).to.exist;",
-                  "  pm.expect(json.refreshToken).to.exist;",
-                  "  pm.environment.set('access_token', json.accessToken);",
-                  "  pm.environment.set('refresh_token', json.refreshToken);",
+                  "  const tokens = json.data?.renewToken?.tokens;",
+                  "  pm.expect(tokens?.accessOrWorkspaceAgnosticToken?.token).to.be.a('string');",
+                  "  pm.expect(tokens?.refreshToken?.token).to.be.a('string');",
+                  "  pm.environment.set('access_token', tokens.accessOrWorkspaceAgnosticToken.token);",
+                  "  pm.environment.set('refresh_token', tokens.refreshToken.token);",
                   "  pm.environment.set('token_expiry', Date.now() + 30 * 60 * 1000);",
                   "});"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/auth/refresh",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{refresh_token}}"
-            }
-          }
+          ]
         }
       ]
     },
@@ -194,62 +200,70 @@
       "item": [
         {
           "name": "Get Twilio Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/voice/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "voice",
+                "token"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should contain token in response', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.token).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should contain token', function() { const json = pm.response.json(); pm.expect(json.token).to.be.a('string'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/voice/token",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "TwiML Webhook",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return TwiML response', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should contain Conference TwiML', function() {",
-                  "  const text = pm.response.text();",
-                  "  pm.expect(text).to.include('Conference');",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/v1/voice/twiml",
-            "header": {
-              "Content-Type": "application/x-www-form-urlencoded"
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/voice/twiml",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "voice",
+                "twiml"
+              ]
             },
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
                 {
+                  "key": "AccountSid",
+                  "value": "ACtest"
+                },
+                {
                   "key": "CallSid",
-                  "value": "CA{{call_sid}}"
+                  "value": "CAtest"
                 },
                 {
                   "key": "From",
@@ -261,332 +275,407 @@
                 }
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should contain Conference TwiML', function() { pm.expect(pm.response.text()).to.include('Conference'); });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Initiate Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"to\":\"+15559876543\",\"from\":\"+15551234567\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on call initiation', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should contain callSid in response', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.callSid).to.exist;",
-                  "  pm.environment.set('call_sid', json.callSid);",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should contain callSid', function() { const json = pm.response.json(); pm.expect(json.callSid).to.exist; pm.environment.set('call_sid', json.callSid); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"to\": \"+15559876543\", \"from\": \"+15551234567\", \"contactId\": \"{{contact_id}}\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Hold Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/hold",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "hold"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"hold\":true}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on hold toggle', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return hold status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.held).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return hold status', function() { const json = pm.response.json(); pm.expect(json.held).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/hold",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"hold\": true}"
-            }
-          }
+          ]
         },
         {
           "name": "Transfer Initiate (Cold)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/transfer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "transfer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"cold\",\"target\":\"+15559999999\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on transfer initiate', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return transfer status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.status).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return transfer status', function() { const json = pm.response.json(); pm.expect(json.status).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/transfer",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"type\": \"cold\", \"target\": \"+15559999999\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Transfer Initiate (Warm)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/transfer",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "transfer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"warm\",\"target\":\"+15559999999\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on warm transfer initiate', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return transfer status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.status).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return transfer status', function() { const json = pm.response.json(); pm.expect(json.status).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/transfer",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"type\": \"warm\", \"target\": \"+15559999999\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Transfer Complete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/transfer/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "transfer",
+                "complete"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on transfer complete', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return completion status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.status).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return completion status', function() { const json = pm.response.json(); pm.expect(json.status).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/transfer/complete",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Transfer Cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/transfer/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "transfer",
+                "cancel"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on transfer cancel', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return cancellation status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.status).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return cancellation status', function() { const json = pm.response.json(); pm.expect(json.status).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/transfer/cancel",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Parallel Dial Start",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200 on parallel dial start', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return dial session info', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.sessionId).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/v1/dialer/parallel",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/parallel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "parallel"
+              ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"contactIds\": [\"{{contact_id}}\"], \"maxConcurrent\": 3}"
+              "raw": "{\"contactIds\":[\"{{contact_id}}\"],\"maxConcurrent\":3}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return dial session info', function() { const json = pm.response.json(); pm.expect(json.groupId || json.sessionId).to.exist; });"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Parallel Dial Stop",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200 on parallel dial stop', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return stop confirmation', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.status).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "DELETE",
-            "url": "{{base_url}}/v1/dialer/parallel/{{dial_session_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/parallel/{{dial_session_id}}/terminate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "parallel",
+                "{{dial_session_id}}",
+                "terminate"
+              ]
             }
-          }
-        },
-        {
-          "name": "Get Caller ID Lock",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return caller ID lock status', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.locked).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return stop confirmation', function() { const json = pm.response.json(); pm.expect(json.status).to.exist; });"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Get Caller ID Locks",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/v1/dialer/caller-id/lock/{{caller_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/caller-id/locks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "caller-id",
+                "locks"
+              ]
             }
-          }
-        },
-        {
-          "name": "Set Caller ID Lock",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on lock set', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return lock confirmation', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.locked).to.be.true;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return locks data', function() { const json = pm.response.json(); pm.expect(json).to.be.an('object'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/dialer/caller-id/lock/{{caller_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
-          "name": "Release Caller ID Lock",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200 on lock release', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return release confirmation', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.locked).to.be.false;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "url": "{{base_url}}/v1/dialer/caller-id/lock/{{caller_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         }
       ]
     },
@@ -595,269 +684,306 @@
       "item": [
         {
           "name": "List Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return array of contacts', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return array of contacts', function() { const json = pm.response.json(); pm.expect(json).to.be.an('array'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/contacts",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\":\"Test\",\"lastName\":\"User\",\"phone\":\"+15551234567\",\"email\":\"test@example.com\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 201 on contact creation', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([201]);",
-                  "});",
-                  "pm.test('Should contain contactId in response', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.id).to.exist;",
-                  "  pm.environment.set('contact_id', json.id);",
-                  "});"
+                  "pm.test('Should return 201', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should contain id', function() { const json = pm.response.json(); pm.expect(json.id).to.exist; pm.environment.set('contact_id', json.id); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/contacts",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"firstName\": \"Test\", \"lastName\": \"User\", \"phone\": \"+15551234567\", \"email\": \"test@example.com\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Get Contact",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "{{contact_id}}"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return contact details', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.id).to.equal(pm.environment.get('contact_id'));",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return contact details', function() { const json = pm.response.json(); pm.expect(json.id).to.equal(pm.environment.get('contact_id')); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/contacts/{{contact_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Update Contact",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "{{contact_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\":\"Updated\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on contact update', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return updated contact', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.firstName).to.equal('Updated');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return updated contact', function() { const json = pm.response.json(); pm.expect(json.firstName).to.equal('Updated'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "PATCH",
-            "url": "{{base_url}}/v1/contacts/{{contact_id}}",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"firstName\": \"Updated\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Delete Contact",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/{{contact_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "{{contact_id}}"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 204 on contact deletion', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([204]);",
-                  "});"
+                  "pm.test('Should return 204', function() { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "DELETE",
-            "url": "{{base_url}}/v1/contacts/{{contact_id}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Search Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/search?q=test",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "search?q=test"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return search results', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return search results', function() { const json = pm.response.json(); pm.expect(json).to.be.an('array'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/contacts/search?q=test",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Import Contacts (CSV)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200 on import', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return import job info', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.jobId).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/v1/contacts/import",
-            "header": {
-              "Content-Type": "multipart/form-data",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": ""
-                }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/import",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "import"
               ]
             }
-          }
-        },
-        {
-          "name": "Normalize Phone Number",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return normalized phone', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.normalized).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should return import info', function() { const json = pm.response.json(); pm.expect(json).to.be.an('object'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/v1/contacts/normalize",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\"phone\": \"(555) 123-4567\"}"
-            }
-          }
+          ]
         },
         {
           "name": "Get Contact Queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/contacts/queue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "contacts",
+                "queue"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return queue contacts', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return queue contacts', function() { const json = pm.response.json(); pm.expect(json).to.be.an('array'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/contacts/queue",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         }
       ]
     },
@@ -866,248 +992,223 @@
       "item": [
         {
           "name": "List People",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { people(first: 10) { edges { node { id name { firstName lastName } emails { primaryEmail } } } } }",
+                "variables": "{}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return people connection', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.people.edges).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return people connection', function() { const json = pm.response.json(); pm.expect(json.data?.people?.edges).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "query { people(first: 10) { edges { node { id name email } } } }",
-                "variables": "{}"
-              }
-            }
-          }
+          ]
         },
         {
           "name": "List Companies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query { companies(first: 10) { edges { node { id name domainName { primaryLinkUrl } } } } }",
+                "variables": "{}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return companies connection', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.companies.edges).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return companies connection', function() { const json = pm.response.json(); pm.expect(json.data?.companies?.edges).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "query { companies(first: 10) { edges { node { id name domainName } } } }",
-                "variables": "{}"
-              }
-            }
-          }
+          ]
         },
         {
           "name": "Create Person",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreatePerson($input: PersonCreateInput!) { createPerson(data: $input) { id name { firstName lastName } } }",
+                "variables": "{\"input\":{\"name\":{\"firstName\":\"Test\",\"lastName\":\"Person\"},\"emails\":{\"primaryEmail\":\"testperson@example.com\"}}}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on person creation', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return created person', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.createPerson.person).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return created person', function() { const json = pm.response.json(); pm.expect(json.data?.createPerson?.id).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation CreatePerson($data: CreatePersonInput!) { createPerson(data: $data) { id } }",
-                "variables": "{\"data\": {\"firstName\": \"Test\", \"lastName\": \"Person\", \"email\": \"testperson@example.com\"}}"
-              }
-            }
-          }
+          ]
         },
         {
           "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateCompany($input: CompanyCreateInput!) { createCompany(data: $input) { id name } }",
+                "variables": "{\"input\":{\"name\":\"Test Company\"}}"
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200 on company creation', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return created company', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.createCompany.company).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return created company', function() { const json = pm.response.json(); pm.expect(json.data?.createCompany?.id).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation CreateCompany($data: CreateCompanyInput!) { createCompany(data: $data) { id } }",
-                "variables": "{\"data\": {\"name\": \"Test Company\", \"domainName\": \"testcompany.com\"}}"
-              }
-            }
-          }
-        },
-        {
-          "name": "Search Objects",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return search results', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.search).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "query Search($query: String!) { search(query: $query, limit: 10) { edges { node { id __typename } } } }",
-                "variables": "{\"query\": \"test\"}"
-              }
-            }
-          }
-        },
-        {
-          "name": "Get Field Metadata",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return field metadata', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.fields).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
-            "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "query { fields(objectName: \"Person\") { id name type isNullable } }",
-                "variables": "{}"
-              }
-            }
-          }
+          ]
         },
         {
           "name": "Get Workspace Info",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return workspace info', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.data.currentWorkspace).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/graphql",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
-            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
             "body": {
               "mode": "graphql",
               "graphql": {
                 "query": "query { currentWorkspace { id displayName } }",
                 "variables": "{}"
               }
+            },
+            "url": {
+              "raw": "{{base_url}}/graphql",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "graphql"
+              ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return workspace info', function() { const json = pm.response.json(); pm.expect(json.data?.currentWorkspace).to.exist; });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1115,166 +1216,179 @@
       "name": "Calls+History",
       "item": [
         {
-          "name": "Get Call Log",
+          "name": "Get Call History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "history"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return call log entries', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return call history', function() { const json = pm.response.json(); pm.expect(json).to.be.an('object'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/calls/logs",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Get Call Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return call details', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.id).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return call details', function() { const json = pm.response.json(); pm.expect(json.id || json.sid).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
-          "name": "Get Call Stats",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return call statistics', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.totalCalls).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/calls/stats",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
-          "name": "Get Recent Calls",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return recent calls', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/calls/recent?limit=10",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
           "name": "Get Call Recording",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/recording",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "recording"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return recording URL or info', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.recordingUrl).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/recording",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
-          "name": "Get/Update Call Notes",
+          "name": "Get Call Transcript",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/transcript",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "transcript"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return notes', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.notes).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "Get Call Analysis",
           "request": {
             "method": "GET",
-            "url": "{{base_url}}/v1/calls/{{call_sid}}/notes",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/calls/{{call_sid}}/analysis",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "calls",
+                "{{call_sid}}",
+                "analysis"
+              ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.be.oneOf([200, 404]); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -1282,226 +1396,157 @@
       "name": "Queue+Analytics",
       "item": [
         {
-          "name": "List Queues",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return array of queues', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/queues",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
           "name": "Create Queue",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 201 on queue creation', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([201]);",
-                  "});",
-                  "pm.test('Should contain queueId in response', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.id).to.exist;",
-                  "  pm.environment.set('queue_id', json.id);",
-                  "});"
-                ]
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "url": "{{base_url}}/v1/queues",
-            "header": {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer {{access_token}}"
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/queues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "queues"
+              ]
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"name\": \"Test Queue\", \"category\": \"outbound\", \"maxConcurrent\": 3}"
+              "raw": "{\"name\":\"Test Queue\",\"contactIds\":[\"{{contact_id}}\"]}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        },
-        {
-          "name": "Get Queue Stats",
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return queue statistics', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.pending).to.exist;",
-                  "});"
+                  "pm.test('Should return 201', function() { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+                  "pm.test('Should contain queue id', function() { const json = pm.response.json(); pm.expect(json.id).to.exist; pm.environment.set('queue_id', json.id); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/queues/{{queue_id}}/stats",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
-          "name": "Get Analytics Summary",
+          "name": "Get Queue Detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/queues/{{queue_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "queues",
+                "{{queue_id}}"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return analytics summary', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.totalCalls).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return queue details', function() { const json = pm.response.json(); pm.expect(json.id).to.exist; });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/analytics/summary",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
-          "name": "Get Agent Stats",
+          "name": "Get Queue Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/queues/{{queue_id}}/analytics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "queues",
+                "{{queue_id}}",
+                "analytics"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return agent statistics', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json).to.be.an('array');",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return analytics', function() { const json = pm.response.json(); pm.expect(json).to.be.an('object'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/analytics/agents",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         },
         {
-          "name": "Get Call Volume",
+          "name": "Get Analytics Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/v1/analytics/metrics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "analytics",
+                "metrics"
+              ]
+            }
+          },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "javascript",
+                "type": "text/javascript",
                 "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return call volume data', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.volume).to.exist;",
-                  "});"
+                  "pm.test('Should return 200', function() { pm.expect(pm.response.code).to.equal(200); });",
+                  "pm.test('Should return metrics', function() { const json = pm.response.json(); pm.expect(json).to.be.an('object'); });"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/analytics/calls/volume?period=day",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
-          "name": "Get Answer Rate",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return answer rate', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.answerRate).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/analytics/calls/answer-rate",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
-        },
-        {
-          "name": "Get Duration Stats",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "javascript",
-                "exec": [
-                  "pm.test('Should return 200', function() {",
-                  "  pm.expect(pm.response.status).to.be.oneOf([200, 201]);",
-                  "});",
-                  "pm.test('Should return duration statistics', function() {",
-                  "  const json = pm.response.json();",
-                  "  pm.expect(json.avgDuration).to.exist;",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/v1/analytics/calls/duration",
-            "header": {
-              "Authorization": "Bearer {{access_token}}"
-            }
-          }
+          ]
         }
       ]
     }

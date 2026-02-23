@@ -16,6 +16,7 @@ import {
 import { Authorize } from '~/pages/auth/Authorize';
 import { PasswordReset } from '~/pages/auth/PasswordReset';
 import { SignInUp } from '~/pages/auth/SignInUp';
+import { AgentPage } from '~/pages/agent/AgentPage';
 import { NotFound } from '~/pages/not-found/NotFound';
 import { RecordIndexPage } from '~/pages/object-record/RecordIndexPage';
 import { RecordShowPage } from '~/pages/object-record/RecordShowPage';
@@ -61,6 +62,7 @@ export const useCreateAppRouter = (
           />
           <Route path={AppPath.BookCall} element={<BookCall />} />
           <Route path={indexAppPath.getIndexAppPath()} element={<></>} />
+          <Route path={AppPath.Agent} element={<AgentPage />} />
           <Route path={AppPath.RecordIndexPage} element={<RecordIndexPage />} />
           <Route path={AppPath.RecordShowPage} element={<RecordShowPage />} />
           <Route
