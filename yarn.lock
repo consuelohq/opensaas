@@ -4220,7 +4220,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@consuelo/agent@workspace:packages/agent":
+"@consuelo/agent@workspace:*, @consuelo/agent@workspace:packages/agent":
   version: 0.0.0-use.local
   resolution: "@consuelo/agent@workspace:packages/agent"
   dependencies:
@@ -57195,6 +57195,7 @@ __metadata:
     "@babel/preset-env": "npm:7.26.9"
     "@blocknote/server-util": "npm:^0.31.1"
     "@clickhouse/client": "npm:^1.11.0"
+    "@consuelo/agent": "workspace:*"
     "@dagrejs/dagre": "npm:^1.1.2"
     "@e2b/code-interpreter": "npm:^1.0.4"
     "@envelop/core": "npm:4.0.3"
