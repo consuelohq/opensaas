@@ -35,23 +35,20 @@ import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usa
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature(
-      [
-        AgentAutomationEntity,
-        AgentAutomationRunEntity,
-        AgentConversationEntity,
-        AgentMemoryEntity,
-        AgentMessageEntity,
-        AgentMethodologyEntity,
-        AgentSkillEntity,
-        AgentSkillFolderEntity,
-        AgentSkillUsageLogEntity,
-        AgentSkillVersionEntity,
-        AgentWorkspaceConfigEntity,
-        AgentConversationSummaryEntity,
-      ],
-      'core',
-    ),
+    TypeOrmModule.forFeature([
+      AgentAutomationEntity,
+      AgentAutomationRunEntity,
+      AgentConversationEntity,
+      AgentMemoryEntity,
+      AgentMessageEntity,
+      AgentMethodologyEntity,
+      AgentSkillEntity,
+      AgentSkillFolderEntity,
+      AgentSkillUsageLogEntity,
+      AgentSkillVersionEntity,
+      AgentWorkspaceConfigEntity,
+      AgentConversationSummaryEntity,
+    ]),
   ],
   controllers: [
     AgentMemoryController,
