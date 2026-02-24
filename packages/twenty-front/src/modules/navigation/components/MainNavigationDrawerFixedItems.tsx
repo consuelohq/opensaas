@@ -6,7 +6,6 @@ import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/componen
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
 import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMemorizedUrlState';
-import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 import { useLingui } from '@lingui/react/macro';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useSetRecoilState } from 'recoil';
@@ -21,7 +20,6 @@ import {
   IconSparkles,
 } from 'twenty-ui/display';
 import { useIsMobile } from 'twenty-ui/utilities';
-import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 export const MainNavigationDrawerFixedItems = () => {
   const isMobile = useIsMobile();
@@ -42,7 +40,6 @@ export const MainNavigationDrawerFixedItems = () => {
 
   const { openRecordsSearchPage } = useOpenRecordsSearchPageInCommandMenu();
   const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
-  const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
   const [dialerSidebarOpen, setDialerSidebarOpen] = useRecoilState(
     dialerSidebarOpenState,
   );
@@ -60,24 +57,20 @@ export const MainNavigationDrawerFixedItems = () => {
           keyboard={['/']}
           mouseUpNavigation={true}
         />
-        {isAiEnabled && (
-          <NavigationDrawerItem
-            label={t`Ask AI`}
-            Icon={IconSparkles}
-            onClick={() => openAskAIPage({ resetNavigationStack: true })}
-            keyboard={['@']}
-            mouseUpNavigation={true}
-          />
-        )}
-        {isAiEnabled && (
-          <NavigationDrawerItem
-            label="Consuelo"
-            Icon={IconRobot}
-            to={AppPath.Agent}
-            active={location.pathname.startsWith('/agent')}
-            keyboard={['a']}
-          />
-        )}
+        <NavigationDrawerItem
+          label={t`Ask AI`}
+          Icon={IconSparkles}
+          onClick={() => openAskAIPage({ resetNavigationStack: true })}
+          keyboard={['@']}
+          mouseUpNavigation={true}
+        />
+        <NavigationDrawerItem
+          label="Consuelo"
+          Icon={IconRobot}
+          to={AppPath.Agent}
+          active={location.pathname.startsWith('/agent')}
+          keyboard={['a']}
+        />
         <NavigationDrawerItem
           label="Mercury"
           Icon={IconPhone}
