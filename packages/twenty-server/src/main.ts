@@ -78,27 +78,34 @@ const bootstrap = async () => {
   // Inject the server url in the frontend page
   generateFrontConfig();
 
-  // HACK: temporary crash diagnostics for route loading (DEV-878)
+  // Log uncaught errors but avoid flooding logs on repeated connection resets
+  let uncaughtCount = 0;
+
   process.on('uncaughtException', (err) => {
-    console.log('[consuelo] UNCAUGHT EXCEPTION:', err.stack ?? err.message);
+    uncaughtCount++;
+    if (uncaughtCount <= 5) {
+      console.error('UNCAUGHT EXCEPTION:', err.stack ?? err.message);
+    } else if (uncaughtCount === 6) {
+      console.error(
+        'UNCAUGHT EXCEPTION: suppressing further logs (too many errors)',
+      );
+    }
   });
   process.on('unhandledRejection', (reason) => {
-    console.log('[consuelo] UNHANDLED REJECTION:', reason);
+    console.error('UNHANDLED REJECTION:', reason);
   });
 
-  // Mount @consuelo/api routes on the Express instance (optional — server works without them)
-  // HACK: dynamic path prevents nx from detecting this as a build dependency (DEV-878)
+  // Mount API routes on the Express instance (optional — server works without them)
+  // Dynamic path prevents nx from detecting this as a build dependency
   const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join(
     '/',
   );
   try {
-    console.log('[consuelo] importing routes from:', apiRoutesPath); // HACK: startup diagnostic
+    console.log('Importing API routes from:', apiRoutesPath);
     const routesModule = await import(apiRoutesPath);
-    console.log('[consuelo] import succeeded, calling allRoutes()'); // HACK: startup diagnostic
+    console.log('Import succeeded, calling allRoutes()');
     const routes = routesModule.allRoutes();
-    console.log(
-      `[consuelo] allRoutes() returned ${routes.length} routes, mounting...`,
-    ); // HACK: startup diagnostic
+    console.log(`allRoutes() returned ${routes.length} routes, mounting...`);
     const expressApp = app.getHttpAdapter().getInstance();
 
     const apiMiddlewarePath = [
@@ -141,12 +148,12 @@ const bootstrap = async () => {
 
       expressApp[method](route.path, ...handlers);
     }
-    console.log(`[consuelo] mounted ${routes.length} routes OK`); // HACK: startup diagnostic
+    console.log(`Mounted ${routes.length} API routes OK`);
   } catch (err: unknown) {
     console.log(
-      '[consuelo] route loading failed:',
+      'API route loading failed:',
       err instanceof Error ? (err.stack ?? err.message) : String(err),
-    ); // HACK: startup diagnostic
+    );
   }
 
   await app.listen(twentyConfigService.get('NODE_PORT'));
