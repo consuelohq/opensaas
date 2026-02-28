@@ -126,6 +126,12 @@ export class BullMQDriver
       workerOptions,
     );
 
+    this.workerMap[queueName].on('error', (error) => {
+      this.logger.error(
+        `Worker error on queue ${queueName}: ${error.message}`,
+      );
+    });
+
     this.workerMap[queueName].on('completed', (job) => {
       this.metricsService.incrementCounter({
         key: MetricsKeys.JobCompleted,
