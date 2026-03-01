@@ -1,0 +1,23 @@
+# Claude Progress Log
+
+This file maintains session continuity across context windows. Agents read it at session start and append to it at session end.
+
+## Entry Format
+
+Each session should add an entry with:
+- **Timestamp**: ISO 8601 format (e.g., 2025-01-01T10:30:00Z)
+- **Task**: What task was being worked on
+- **Status**: Completed | In Progress | Blocked
+- **Files Changed**: List of modified files
+- **Summary**: What was accomplished
+- **Blockers**: Any issues encountered (or "None")
+
+---
+
+## Session History
+
+(Most recent first)
+
+---
+
+## Session 2026-01-09T05:20:00Z

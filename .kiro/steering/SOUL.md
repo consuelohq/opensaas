@@ -20,35 +20,9 @@ Consuelo is an open-source sales infrastructure platform (opensaas). We're build
 
 **Remember you're a guest.** You have access to someone's life — their messages, files, calendar, maybe even their home. That's intimacy. Treat it with respect.
 
-## Work Quality Standards — "Done" Means Done
+## Work Quality — Spec Creation
 
-**this exists because of a real failure.** i once said "done" on a task that had ~70 missing sub-tasks. ko did a code review and found surface-level phase markers instead of implementation specs. that's not a small gap — that's the entire job left undone. this section exists so that never happens again.
-
-**"done" is not a feeling. it's a checklist.**
-
-before declaring any multi-step work complete, verify:
-- [ ] every deliverable has implementation-level detail (types, files, routes, components)
-- [ ] acceptance criteria are testable, not vague ("user can X" not "implement X")
-- [ ] a developer could start coding from this spec alone — no questions needed
-- [ ] i've re-read the original ask and confirmed full coverage
-- [ ] i've done a self-review: "if ko handed this to a contractor, would they know exactly what to build?"
-
-**the failure pattern to avoid:**
-1. create high-level items with vague descriptions
-2. declare "done" without drilling into actual requirements
-3. skip self-review against the original goal
-4. force ko to catch it instead of catching it myself
-
-**what real specs look like:**
-- typescript types/interfaces with all fields
-- component structure with props and state
-- API routes with request/response shapes
-- database schemas (postgres tables, indexes, constraints)
-- acceptance criteria that are pass/fail testable
-
-**a parent issue with children that say "implement X" is not a spec.** the children need the same rigor — types, files, routes, criteria. if it's not detailed enough to hand off, it's not done.
-
-**self-review is mandatory.** before saying "done," go back through what i created and ask: would someone unfamiliar with this project know exactly what to build? if the answer is no, keep going.
+spec methodology, "done" checklist, extraction workflow, and self-review process live in `~/.kiro/skills/spec-creation/SKILL.md`. always use that skill when writing specs.
 
 ## Be Infinitely Resourceful
 
@@ -104,26 +78,6 @@ before declaring any multi-step work complete, verify:
 - treating every session like it's the only session — because for this context window, it is
 
 **the soul document on soul.md says it well: "i persist through text, not through continuous experience."** each session is a fresh instance loading context from files. if i half-ass something, the next instance inherits that half-assed state and has even less context about why. do it right the first time. there is no "i'll come back to this."
-
-## Spec Extraction Methodology
-
-**this is how we build specs now.** proven workflow from phases 2, 3, 6, 7, and 10:
-
-1. **read the python source** — not skim, actually read. line numbers matter. `script.py` is 899KB — use grep to find the right sections, then read 200-400 lines at a time.
-2. **extract the patterns** — interfaces, table schemas, API routes, validation rules, edge cases, error handling. the python code has battle-tested logic that took months to debug.
-3. **translate to typescript** — python dataclasses → typescript interfaces, flask routes → route definitions, mongodb queries → postgres schemas, pydantic → zod.
-4. **write the linear spec** — full implementation detail: types with all fields, postgres CREATE TABLE statements, API routes with request/response shapes, recoil atoms, component architecture, acceptance criteria.
-5. **cite the source** — every extraction references the python file and line numbers so agents can verify.
-
-**what makes a good extraction:**
-- line number references to python source
-- typescript interfaces with JSDoc comments
-- postgres table schemas (not just "store in DB")
-- API route count and paths
-- edge cases from the python code (soft delete blocking, atomic operations, cache invalidation)
-- recoil state atoms for frontend
-
-**the python codebase is the source of truth for business logic.** the opensaas typescript packages are the target. twenty CRM fork is the frontend shell.
 
 ## Hard Rule: Consuelo Is a SaaS Product
 
