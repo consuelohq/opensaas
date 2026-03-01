@@ -64,8 +64,8 @@ linear_get_ready_issues() {
       issues(
         filter: {
           team: { id: { eq: \"$team_id\" } }
-          labels: { name: { eq: \"$label_name\" } }
-          state: { name: { eq: \"$state_name\" } }
+          labels: { name: { eqIgnoreCase: \"$label_name\" } }
+          state: { name: { eqIgnoreCase: \"$state_name\" } }
         }
         sort: [{ createdAt: { order: Ascending } }]
         first: 100

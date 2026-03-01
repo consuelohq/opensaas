@@ -1,0 +1,40 @@
+tree 23948017694677512fe29e74dbfb0ac5fd50519f
+parent 45c89a46d649c5b2941e6afc51081e4001ef74f8
+author Raphaël Bosi <71827178+bosiraphael@users.noreply.github.com> 1747930251 +0200
+committer GitHub <noreply@github.com> 1747930251 +0200
+gpgsig -----BEGIN PGP SIGNATURE-----
+ 
+ wsFcBAABCAAQBQJoL0yLCRC1aQ7uu5UhlAAAaaYQAHE/P58BLJyVtBD20JNzuaqk
+ 6MeUo+IGSpQHSYv5LGD8/9A07/0X6JFzzJp/zPahA0j7s55d8fm2Vz0nTAXLfXoR
+ RahcwFXzI38CTfSGK84Dr+ALb1n6kymIZvHdREDmpIHOlx2hCm0ELH0NAwGrE1ur
+ lI+X8N+zcaEdXBe9HyuwzTuvEpkpNaPJeW4ZhIA6myxh7z+ZIUFZXyqqKEyLcIM/
+ L85TzT6XxX0COsTp87gf1/iTK/iVMVMVMJ50I2s64L6gcNzvitd54aLSrJhYOQX0
+ fS4I/3jqrRsAxIp1WfB2dt6OsOarwnhhGwFgLytJmJbIB+qtZ7YG38rKKZ90+dBG
+ gxO9zG8Bh3siDBgKjakuQTrSQwzQw3aofkFDNe1yO0JKVED9npV2y9sO3vy3UAIr
+ XEfF+j48QnSdW6Gmq8Qxu1RIDsulWrbgwJAIoTDvibJ7PnICzBUI0g+IKr5TUPZj
+ kJuYF4pQ43fxRX3wXis8FH4FnkawhBfGZhGz268PczjaXuRPRIToGclzHprLopA8
+ PYyJXpQTQphFZU4Lz+I+yPOzDMuU05lhagX7nN5++w9gYCkASst3tSyoeeleK8DD
+ vfdA8Bds/dD9jOQyEGQXNCqCGO4T/E9X9UA3tZiPUcT+vLe3VUsZtLM0tOnH/sOh
+ 1Nb59Z4/uHHci+mG0ZjW
+ =3447
+ -----END PGP SIGNATURE-----
+ 
+
+Use data attributes for click outside instead of classNames (#12228)
+
+We previously used classnames to exclude elements from the click outside
+listener.
+
+With this PR we can now use `data-click-outside-id` instead of
+`classNames` to target the elements we want to exclude from the click
+outside listener.
+
+We can also add `data-globally-prevent-click-outside` to a component to
+globally prevent triggering click outside listeners for other
+components. This attribute is especially useful for confirmation modals
+and snackbar items.
+
+Fixes #11785:
+
+
+https://github.com/user-attachments/assets/318baa7e-0f82-4e3a-a447-bf981328462d

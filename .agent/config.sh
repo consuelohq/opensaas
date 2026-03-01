@@ -46,11 +46,22 @@ RUN_TESTS_AFTER_TASK=true
 TEST_COMMAND="npx nx test twenty-server"
 
 # =============================================================================
+# GITHUB REPO (explicit — prevents gh from resolving to upstream twentyhq/twenty)
+# =============================================================================
+GITHUB_REPO="consuelohq/opensaas"
+
+# =============================================================================
 # GIT SETTINGS
 # =============================================================================
 
 # Base branch for agent work (PRs target this branch)
 BASE_BRANCH="staging"
+
+# Branch to create run branches FROM (pull fresh code)
+SOURCE_BRANCH="staging"
+
+# Branch to create PRs TO
+PR_TARGET_BRANCH="staging"
 
 # Branch prefix for agent-created branches
 BRANCH_PREFIX="agent"
@@ -104,8 +115,8 @@ LINEAR_TEAM_ID="29f5c661-da6c-4bfb-bd48-815a006ccaac"
 # Label name to filter issues (issues must have this label to be picked up)
 LINEAR_LABEL_NAME="kiro"
 
-# Workflow State Names
-LINEAR_STATE_OPEN="Open"
+# Workflow State Names (must match Linear exactly — case-sensitive)
+LINEAR_STATE_OPEN="open"
 LINEAR_STATE_IN_PROGRESS="In Progress"
 LINEAR_STATE_IN_REVIEW="In Review"
 LINEAR_STATE_DONE="Done"
