@@ -782,16 +782,25 @@ update_task_status() {
 setup_worktree() {
   local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
 
+  # Validate SOURCE_BRANCH is set
+  if [ -z "$SOURCE_BRANCH" ]; then
+    log_error "SOURCE_BRANCH is not set. Add it to .agent/config.sh"
+    exit 1
+  fi
+
   if [ -d "$wt_path/.git" ] || [ -f "$wt_path/.git" ]; then
     log_info "Reusing existing worktree at $wt_path"
-    cd "$wt_path"
+    cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
     git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
   else
     log_info "Creating persistent worktree at $wt_path"
     cd "$PROJECT_ROOT"
     git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
-    git worktree add "$wt_path" "origin/$SOURCE_BRANCH" --detach
-    cd "$wt_path"
+    if ! git worktree add "$wt_path" "origin/$SOURCE_BRANCH" --detach; then
+      log_error "Failed to create worktree. Does 'origin/$SOURCE_BRANCH' exist? Run: git fetch origin"
+      exit 1
+    fi
+    cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
   fi
 
   # Clean up any leftover opencode caches from previous runs
@@ -2222,11 +2231,20 @@ create_run_branch() {
 
   log_info "Creating run branch: $RUN_BRANCH (from $SOURCE_BRANCH, PR will target $PR_TARGET_BRANCH)"
 
+  # Validate PR_TARGET_BRANCH is set
+  if [ -z "$PR_TARGET_BRANCH" ]; then
+    log_error "PR_TARGET_BRANCH is not set. Add it to .agent/config.sh"
+    exit 1
+  fi
+
   # Setup persistent worktree and cd into it
   setup_worktree
 
   # Create the run branch from latest source inside the worktree
-  git checkout -B "$RUN_BRANCH" "origin/$SOURCE_BRANCH"
+  if ! git checkout -B "$RUN_BRANCH" "origin/$SOURCE_BRANCH"; then
+    log_error "Failed to create run branch from origin/$SOURCE_BRANCH"
+    exit 1
+  fi
 
   log_success "Run branch created: $RUN_BRANCH (based on $SOURCE_BRANCH, in worktree)"
 }

@@ -109,6 +109,12 @@
         "command": "cd /Users/kokayi/Dev/opensaas && git log --oneline -5 && echo '---' && git status --short",
         "description": "show recent commits and working tree status"
       }
+    ],
+    "preToolUse": [
+      {
+        "command": "bash ~/.kiro/hooks/nag.sh",
+        "description": "periodic reminder to re-read requirements and check todo list"
+      }
     ]
   },
   "mcpServers": {

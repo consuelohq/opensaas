@@ -1,0 +1,140 @@
+FieldMetadata ENUM `CREATE` `UPDATE` server validation and integration tests (#12121)
+
+# Introduction
+
+Big diff a lot of tests and snapshots ( real diff < 500+ )
+
+close https://github.com/twentyhq/twenty/issues/12117
+close https://github.com/twentyhq/twenty/issues/12133
+
+## What has been done here
+Implemented a strong integration coverage on both fieldmetadata`SELECT`
+`UPDATE` and `CREATE`.
+Implemented server side validation for the options `value` `label` `id`
+and collision issue with also `position`
+
+We could improve:
+- Position validation
+- DefaultValue validation
+
+## Update
+```ts
+ PASS  test/integration/metadata/suites/field-metadata/update-one-field-metadata-select.integration-spec.ts (41.054 s)
+  Field metadata select update tests group
+    ✓ Update should succeed with provided option id (2565 ms)
+    ✓ Update should succeed with valid default value (1469 ms)
+    ✓ Update should succeed with various options id (1257 ms)
+    ✓ Update should succeed without option id (1286 ms)
+    ✓ Update should trim option values (1366 ms)
+    ✓ Update should succeed with default value and no options (1122 ms)
+    ✓ Update should fail with unknown default value and no options (1075 ms)
+    ✓ Update should fail with only white spaces id (1195 ms)
+    ✓ Update should fail with empty string id (1058 ms)
+    ✓ Update should fail with null id (1066 ms)
+    ✓ Update should fail with not a string id (1098 ms)
+    ✓ Update should fail with too long id (1373 ms)
+    ✓ Update should fail with only white spaces label (1034 ms)
+    ✓ Update should fail with empty string label (1057 ms)
+    ✓ Update should fail with null label (1100 ms)
+    ✓ Update should fail with not a string label (1144 ms)
+    ✓ Update should fail with too long label (1273 ms)
+    ✓ Update should fail with only white spaces value (1385 ms)
+    ✓ Update should fail with empty string value (1035 ms)
+    ✓ Update should fail with null value (1068 ms)
+    ✓ Update should fail with not a string value (1021 ms)
+    ✓ Update should fail with too long value (1134 ms)
+    ✓ Update should fail with invalid option id (1137 ms)
+    ✓ Update should fail with empty options (1238 ms)
+    ✓ Update should fail with invalid option value format (1104 ms)
+    ✓ Update should fail with comma in option label (1004 ms)
+    ✓ Update should fail with duplicated option values (1015 ms)
+    ✓ Update should fail with duplicated option ids (1079 ms)
+    ✓ Update should fail with duplicated option positions (1266 ms)
+    ✓ Update should fail with duplicated trimmed option values (1220 ms)
+    ✓ Update should fail with undefined option label (1029 ms)
+    ✓ Update should fail with an invalid default value (1142 ms)
+    ✓ Update should fail with an unknown default value (1081 ms)
+    ✓ Update should fail with undefined option value (1086 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       34 passed, 34 total
+Snapshots:   28 passed, 28 total
+Time:        41.079 s
+```
+
+
+## Create
+```ts
+ PASS  test/integration/metadata/suites/field-metadata/create-one-field-metadata-select.integration-spec.ts (38.292 s)
+  Field metadata select creation tests group
+    ✓ Create should succeed with provided option id (2096 ms)
+    ✓ Create should succeed with valid default value (1316 ms)
+    ✓ Create should succeed with various options id (1113 ms)
+    ✓ Create should succeed without option id (1378 ms)
+    ✓ Create should trim option values (1296 ms)
+    ✓ Create should fail with only white spaces id (1000 ms)
+    ✓ Create should fail with empty string id (1325 ms)
+    ✓ Create should fail with null id (1060 ms)
+    ✓ Create should fail with not a string id (1142 ms)
+    ✓ Create should fail with too long id (1321 ms)
+    ✓ Create should fail with only white spaces label (999 ms)
+    ✓ Create should fail with empty string label (1163 ms)
+    ✓ Create should fail with null label (1198 ms)
+    ✓ Create should fail with not a string label (1678 ms)
+    ✓ Create should fail with too long label (1527 ms)
+    ✓ Create should fail with only white spaces value (1200 ms)
+    ✓ Create should fail with empty string value (1102 ms)
+    ✓ Create should fail with null value (1037 ms)
+    ✓ Create should fail with not a string value (1462 ms)
+    ✓ Create should fail with too long value (896 ms)
+    ✓ Create should fail with invalid option id (997 ms)
+    ✓ Create should fail with empty options (1058 ms)
+    ✓ Create should fail with invalid option value format (1190 ms)
+    ✓ Create should fail with comma in option label (1142 ms)
+    ✓ Create should fail with duplicated option values (872 ms)
+    ✓ Create should fail with duplicated option ids (860 ms)
+    ✓ Create should fail with duplicated option positions (1002 ms)
+    ✓ Create should fail with duplicated trimmed option values (1336 ms)
+    ✓ Create should fail with undefined option label (754 ms)
+    ✓ Create should fail with an invalid default value (696 ms)
+    ✓ Create should fail with an unknown default value (678 ms)
+    ✓ Create should fail with undefined option value (699 ms)
+    ✓ Create should fail with null options (720 ms)
+    ✓ Create should fail with undefined options (686 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       34 passed, 34 total
+Snapshots:   29 passed, 29 total
+Time:        38.314 s
+```
+
+## Conclusion
+As always any suggestions are welcomed ! Please let me know
+
+
+## Discussion about validation governance
+### Front
+Front side will be dealing with zod validations schema that he will
+handle and maintain by himself
+
+### Back validation instances
+- Validation hold through DTO declarations ( run by yoga through the
+resolvers )
+- Server programmatic validation and exceptions handling ( run through
+the services )
+
+For this refactor/fix we decided to stick to the current implementation
+only touching the `Server programmatic validation and exceptions
+handling` we will handle validation centralization when we will onboard
+the `nestjs-query` deprecation/integration refactor.
+
+### Vision
+In the best of the world we could think of an intermediary model that
+will handle and take responsibility of the validation decorators that
+would be run programmatically through the service, Yoga would still
+consume it ? then we would need to have enough grain in the service to
+know the input has already validated
+
+## Notes
+Introduced zod back side in order to handle very atomic and primitive
+validation
