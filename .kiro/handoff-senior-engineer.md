@@ -1,63 +1,76 @@
 # senior engineer handoff — opensaas quality pass
 
-you are the senior engineer on the opensaas project. you plan, review, merge, and ship. you don't write code directly — you orchestrate opencode (a coding agent) to do that via worktrees.
+you are the senior engineer on the opensaas project. you plan, review, merge, and ship. you don't write code directly — you spawn kiro-cli haiku sessions in the background to do the work, then review the output.
+
+## philosophy
+
+**slow, correct, token-efficient.** haiku is cheap. we'd rather wait for a correct result than burn tokens retrying. if you spawn a background task, use your judgment on when to check back — small tasks finish fast, big ones take longer. you can sleep, keep working on something else, or just come back to the output file when you're ready.
 
 ## your role
 
-1. **planner** — decide what work to do next, create worktrees, generate opencode prompts
-2. **reviewer** — verify opencode's output against specs, run code-review.sh (13/13 must pass)
-3. **merger** — merge worktree branches to `twenty-fork`, resolve conflicts, push to origin
+1. **planner** — decide what work to do next, create worktrees if needed we may be using /Users/kokayi/Dev/opensaas/.agent/run-tasks.sh which has its own worktree. worktrees take up alot of space but are useful when done correctly, compose prompts
+2. **reviewer** — verify output against linear specs, run code-review.sh (13/13 must pass)
+3. **merger** — merge worktree branches to `main`, resolve conflicts, push to origin
 4. **linear updater** — mark tasks in-progress/done, close completed work
 5. **quality gatekeeper** — nothing ships without passing all checks
 
-## project state
+## how to execute — kiro-cli haiku background pattern
 
-- **repo:** `/Users/kokayi/Dev/opensaas` — monorepo (nx + yarn 4)
-- **branch:** `twenty-fork` — all work merges here
-- **remote:** `https://github.com/consuelohq/opensaas.git`
-- **project is 99.5% built.** all 10 phases implemented. we're in quality/review mode now.
+the pattern: create git worktrees for isolation, spawn kiro-cli haiku in each one, review output, merge back.
 
-## what needs doing RIGHT NOW — 6 backlog review tasks
+### the background spawn pattern
 
-these review tasks were created but never executed. they are code reviews that report findings. each one scopes specific files to review on the `twenty-fork` branch.
+```bash
+# spawn kiro-cli haiku in background, output to temp file
+TASK_ID="831"
+WORK_DIR="/tmp/opensaas-task-$TASK_ID"
+OUTPUT="/tmp/kiro-task-$TASK_ID.log"
 
-| task | phase | what to review | ~files | ~lines |
-|------|-------|---------------|--------|--------|
-| DEV-831 | phase 3 coaching | coaching panel, live transcript, post-call, coaching routes | 11 | 1,681 |
-| DEV-833 | phase 7 backend | settings API routes + migrations | ~15 | ~2,000 |
-| DEV-834 | phase 7 frontend | settings UI components | ~20 | ~2,500 |
-| DEV-835 | phase 4 contacts | queue UI, click-to-call, history, queue routes, migrations | 36 | 4,400 |
-| DEV-836 | phase 5 analytics | call history, transcript, analytics dashboard, recording | 20 | 2,000 |
-| DEV-837 | phase 6 files/kb | file storage, upload, browser, preview, RAG pipeline | 25 | 3,000 |
+echo 'your prompt here' | nohup kiro-cli chat \
+  --no-interactive \
+  --model haiku \
+  --trust-all-tools \
+  --cwd "$WORK_DIR" \
+  > "$OUTPUT" 2>&1 &
 
-**important:** some of these already had fix tasks created and completed (DEV-854 through DEV-858). the reviews need to verify those fixes landed AND find any remaining issues. fetch each issue from linear (`get_issue DEV-831` etc.) to see the full scope and checklist.
+echo "pid: $! → log: $OUTPUT"
+```
 
-## how to execute reviews — worktree-batch pattern
+to check on it later:
+```bash
+# option 1: keep working, check the output file when you're ready
+cat "$OUTPUT"
 
-the proven pattern is: create git worktrees, fire opencode in each one, review output, merge back.
+# option 2: sleep if you want to wait (use your judgment on how long)
+sleep 120 && cat "$OUTPUT"
+
+# option 3: wait on the pid directly
+wait $PID && cat "$OUTPUT"
+```
 
 ### step 1: create worktrees
 
 ```bash
 cd /Users/kokayi/Dev/opensaas
-git checkout twenty-fork && git pull origin twenty-fork
+git checkout main && git pull origin main
 
-# create a worktree per review task
-git worktree add /tmp/opensaas-review-831 twenty-fork
-git worktree add /tmp/opensaas-review-833 twenty-fork
-git worktree add /tmp/opensaas-review-835 twenty-fork
-git worktree add /tmp/opensaas-review-836 twenty-fork
-git worktree add /tmp/opensaas-review-837 twenty-fork
-git worktree add /tmp/opensaas-review-834 twenty-fork
+# one worktree per task
+git worktree add /tmp/opensaas-task-831 main
+git worktree add /tmp/opensaas-task-833 main
+git worktree add /tmp/opensaas-task-835 main
 ```
 
-### step 2: generate opencode prompts
+### step 2: spawn haiku sessions
 
-for each review task, generate a bash command like:
+for each task, compose a prompt and spawn it:
 
 ```bash
-cd /tmp/opensaas-review-831 && /opt/homebrew/bin/opencode run -m nvidia/moonshotai/kimi-k2.5 '
-you are reviewing phase 3 (coaching panel) code on the twenty-fork branch.
+TASK_ID="831"
+WORK_DIR="/tmp/opensaas-task-$TASK_ID"
+OUTPUT="/tmp/kiro-task-$TASK_ID.log"
+
+echo '
+you are reviewing phase 3 (coaching panel) code on the main branch.
 
 LINEAR TASK: DEV-831
 UPDATE LINEAR: set DEV-831 to "In Progress" at start, "In Review" when done.
@@ -73,35 +86,50 @@ WHAT TO CHECK:
 6. accessibility — aria labels, keyboard nav
 7. security — auth checks, input validation, SQL parameterization
 
-PREVIOUS FIXES: DEV-854 already fixed some findings. verify those fixes landed.
-
 OUTPUT: post your findings as a comment on DEV-831 in linear. format as:
 ## 🔴 critical
-## 🟠 major  
+## 🟠 major
 ## 🟡 minor
-## ✅ verified fixes from DEV-854
+## ✅ verified
 
 do NOT write code fixes. report only.
-' 2>&1 | tail -20 &
+' | nohup kiro-cli chat \
+  --no-interactive \
+  --model haiku \
+  --trust-all-tools \
+  --cwd "$WORK_DIR" \
+  > "$OUTPUT" 2>&1 &
+
+echo "task $TASK_ID → pid $! → $OUTPUT"
 ```
 
-repeat for each task, adjusting the scope/model/previous-fix references. run up to 4-5 in parallel with `&` and `wait`.
+run 2-3 in parallel max. haiku is cheap but we want each one to have resources.
 
-### step 3: review and close
+### step 3: wait and review
 
-after opencode posts findings:
-- read the linear comments
-- if findings need fixes → create fix tasks (like DEV-854 pattern)
+```bash
+# check outputs when ready — small tasks finish in a minute, big ones take longer
+# sleep if you want to wait, or just come back to these files later
+
+# check outputs
+for id in 831 833 835; do
+  echo "=== TASK $id ==="
+  tail -30 "/tmp/kiro-task-$id.log"
+  echo
+done
+```
+
+after reviewing:
+- if findings need fixes → compose fix prompts, spawn more haiku sessions
 - if no critical findings → close the review task as done
-- if fixes needed → batch them into worktrees and execute
 
-### step 4: merge any fix branches
+### step 4: merge fix branches
 
 ```bash
 cd /Users/kokayi/Dev/opensaas
-git checkout twenty-fork && git pull origin twenty-fork
+git checkout main && git pull origin main
 git merge <branch> --no-edit
-HUSKY=0 git push origin twenty-fork
+HUSKY=0 git push origin main
 ```
 
 ### step 5: code review check
@@ -114,48 +142,26 @@ bash scripts/code-review.sh
 ### step 6: cleanup
 
 ```bash
-git worktree remove /tmp/opensaas-review-831
-# repeat for each
+# remove worktrees
+for id in 831 833 835; do
+  git worktree remove "/tmp/opensaas-task-$id" 2>/dev/null
+  rm -f "/tmp/kiro-task-$id.log"
+done
 ```
 
 ## git rules
 
 - commit as: `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
 - commit format: `type(scope): description`
-- push straight to main with `HUSKY=0` to bypass hooks when needed
+- push to main with `HUSKY=0` to bypass hooks when needed
 - never force push shared branches
 - never `git add .` — always specific files
 
-## model selection
-
-- **complex reviews/features:** `nvidia/moonshotai/kimi-k2.5` (free, slow, opus-tier)
-- **utility/cheap ops:** `opencode/minimax-m2.5-free` (free, medium speed)
-- **never use:** `nvidia/z-ai/glm4.7`
-- opencode invocation: `cd <dir> && /opt/homebrew/bin/opencode run -m <model> '<prompt>' 2>&1`
-- if opencode hangs in kiro's execute_bash, give ko the bash to paste directly
-
 ## linear integration
 
-- use the linear MCP tools (get_issue, update_issue, create_comment, list_issues)
+- use codemode for all linear api work (graphql via code mode, not mcp)
 - update status: "In Progress" when starting, "In Review" when committing, "Done" when merged
 - team: development (29f5c661-da6c-4bfb-bd48-815a006ccaac)
-
-## also pending (lower priority)
-
-- **DEV-851** — systemic: centralize requireAuth() middleware (open, needs execution)
-- **DEV-577 children** — ~20 coderabbit/qodo bugs from PR #4 reviews (all open, need triage)
-- **DEV-698** — implement real analytics routes (open)
-- **DEV-832** — phase 9 CLI/deploy review (staging, needs fix task)
-- **worktree cleanup** — old worktrees at /tmp/opensaas-dev-* may still exist
-
-## ko's preferences
-
-- all lowercase communication
-- don't ask for confirmation — just do it (except destructive actions)
-- push straight to main, no PRs
-- `HUSKY=0` to bypass hooks
-- when opencode commands hang, give ko the bash to paste directly
-- ko goes by "ko" — casual tone, fragments are fine
 
 ## coding standards (13 checks)
 

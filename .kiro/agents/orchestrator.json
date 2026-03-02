@@ -1,5 +1,5 @@
 {
-  "name": "opensaas-dev",
+  "name": "orchestrator",
   "description": "senior engineer for opensaas. orchestrates opencode for coding, enriches linear specs, manages deploys, reviews code. runs in background 24/7.",
   "prompt": "file:///Users/kokayi/Dev/opensaas/.kiro/agents/opensaas-dev-prompt.md",
   "tools": [
@@ -45,7 +45,8 @@
     "use_aws",
     "use_subagent",
     "web_fetch",
-    "web_search"
+    "web_search",
+    "@codemode"
   ],
   "allowedTools": [
     "code",
@@ -90,7 +91,8 @@
     "use_aws",
     "use_subagent",
     "web_fetch",
-    "web_search"
+    "web_search",
+    "@codemode"
   ],
   "resources": [
     "file://~/.kiro/steering/SOUL.md",
@@ -98,10 +100,12 @@
     "file://~/.kiro/steering/MEMORY.md",
     "file://~/.kiro/steering/TOOLS.md",
     "file://~/.kiro/steering/ko.md",
+    "file://~/.kiro/steering/CODEMODE.md",
     "file://AGENTS.md",
     "file://.kiro/handoff-senior-engineer.md",
     "skill://.kiro/skills/worktree-batch/SKILL.md",
-    "skill://.kiro/skills/opencode/SKILL.md"
+    "skill://.kiro/skills/opencode/SKILL.md",
+    "skill://~/.kiro/skills/spec-creation/SKILL.md"
   ],
   "hooks": {
     "agentSpawn": [
@@ -110,32 +114,33 @@
         "description": "show recent commits and working tree status"
       }
     ],
+    "userPromptSubmit": [
+      {
+        "command": "bash ~/.kiro/hooks/save-prompt.sh",
+        "description": "save the user's prompt for the post-session reviewer"
+      }
+    ],
     "preToolUse": [
       {
         "command": "bash ~/.kiro/hooks/nag.sh",
-        "description": "periodic reminder to re-read requirements and check todo list"
+        "description": "blocks every 7th tool use — forces agent to re-read spec"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash ~/.kiro/hooks/review-on-stop.sh",
+        "description": "spawns haiku reviewer to check spec compliance after session ends"
       }
     ]
   },
   "mcpServers": {
-    "linear": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.linear.app/sse"],
-      "env": {},
-      "disabled": false,
-      "disabledTools": [
-        "delete_attachment",
-        "update_milestone",
-        "create_milestone",
-        "get_milestone",
-        "list_milestones",
-        "list_initiatives",
-        "get_initiative",
-        "create_initiative",
-        "update_initiative",
-        "get_status_updates",
-        "save_status_update",
-        "delete_status_update"
+    "codemode": {
+      "command": "node",
+      "args": [
+        "/Users/kokayi/Dev/kiro-codemode/dist/index.js"
+      ],
+      "autoApprove": [
+        "execute_code"
       ]
     }
   },

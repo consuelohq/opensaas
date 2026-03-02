@@ -1780,7 +1780,7 @@ main() {
   log_info "Found $issue_count task(s) to process"
 
   # Preview tasks (use appropriate format for Linear vs GitHub)
-  echo "$issues" | while read -r issue_json; do
+  echo "$issues" | while read -r issue_json <\&3; do
     [ -z "$issue_json" ] && continue
     local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
     local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
@@ -1848,7 +1848,7 @@ main() {
     save_run_state "$processed"
 
     echo ""
-  done < "$issues_file"
+  done 3< "$issues_file"
 
   rm -f "$issues_file"
 
@@ -3172,7 +3172,7 @@ main() {
   log_info "Found $issue_count task(s) to process"
 
   # Preview tasks (use appropriate format for Linear vs GitHub)
-  echo "$issues" | while read -r issue_json; do
+  echo "$issues" | while read -r issue_json <\&3; do
     [ -z "$issue_json" ] && continue
     local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
     local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
@@ -3240,7 +3240,7 @@ main() {
     save_run_state "$processed"
 
     echo ""
-  done < "$issues_file"
+  done 3< "$issues_file"
 
   rm -f "$issues_file"
 
