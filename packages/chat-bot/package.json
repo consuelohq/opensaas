@@ -26,7 +26,8 @@
   "peerDependencies": {
     "chat": ">=4.0.0",
     "@chat-adapter/discord": ">=4.0.0",
-    "@chat-adapter/state-redis": ">=4.0.0"
+    "@chat-adapter/state-redis": ">=4.0.0",
+    "ioredis": ">=5.0.0"
   },
   "peerDependenciesMeta": {
     "chat": {
@@ -36,6 +37,9 @@
       "optional": true
     },
     "@chat-adapter/state-redis": {
+      "optional": true
+    },
+    "ioredis": {
       "optional": true
     }
   },
