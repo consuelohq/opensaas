@@ -1,6 +1,8 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { Hero } from "../components/Hero";
+import { ProblemSection } from "../components/ProblemSection";
+import { SolutionSection } from "../components/SolutionSection";
 
 const features = [
   {
@@ -45,6 +47,10 @@ const features = [
 <SiteLayout>
   <!-- hero -->
   <Hero client:load />
+
+  <!-- problem + solution — emotional bridge between hero and features -->
+  <ProblemSection client:visible />
+  <SolutionSection client:visible />
 
   <!-- features grid — one section per category, alternating -->
   {features.map((group, i) => (
