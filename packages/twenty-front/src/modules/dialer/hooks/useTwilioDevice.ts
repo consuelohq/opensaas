@@ -240,9 +240,6 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     try {
       setError(null);
 
-      const micOk = await requestMicPermission();
-      if (!micOk) return;
-
       const token = await fetchVoiceToken();
 
       const dev = new Device(token, {
@@ -269,10 +266,14 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
           deviceRef.current = null;
         }
 
-        // retry after delay
-        retryTimerRef.current = setTimeout(() => {
-          initDevice();
-        }, DEVICE_RETRY_DELAY);
+        // only retry on transient errors, not permission/auth failures
+        const isTransient =
+          deviceError.code !== 31401 && deviceError.code !== 31000;
+        if (isTransient) {
+          retryTimerRef.current = setTimeout(() => {
+            initDevice();
+          }, DEVICE_RETRY_DELAY);
+        }
       });
 
       dev.on('incoming', (call: Call) => {
@@ -301,15 +302,18 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         deviceRef.current = null;
       }
 
-      // retry
-      retryTimerRef.current = setTimeout(() => {
-        initDevice();
-      }, DEVICE_RETRY_DELAY);
+      // only retry on transient errors, not permission/auth failures
+      const isPermissionError =
+        err instanceof Error && err.name === 'NotAllowedError';
+      if (!isPermissionError) {
+        retryTimerRef.current = setTimeout(() => {
+          initDevice();
+        }, DEVICE_RETRY_DELAY);
+      }
     }
   }, [
     setError,
     setIsReady,
-    requestMicPermission,
     bindCallEvents,
     updateCallStatus,
     refreshToken,
@@ -323,6 +327,14 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       }
       if (deviceRef.current.state !== Device.State.Registered) {
         throw new Error(`Device not ready (state: ${deviceRef.current.state})`);
+      }
+
+      // request mic permission just before connecting
+      const micOk = await requestMicPermission();
+      if (!micOk) {
+        updateCallStatus('failed');
+        setError('Microphone permission required to make calls');
+        throw new Error('Microphone permission denied');
       }
 
       try {
@@ -342,7 +354,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         throw err;
       }
     },
-    [updateCallStatus, bindCallEvents],
+    [updateCallStatus, bindCallEvents, requestMicPermission, setError],
   );
 
   // disconnect active call

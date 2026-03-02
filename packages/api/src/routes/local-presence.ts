@@ -7,11 +7,11 @@ import {
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
 
-const getDialer = sharedDialer;
+const getLegacyDialer = sharedDialer;
 const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -240,10 +240,11 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
 
         const locks = await getLockService().getUserLocks(userId);
         let cleaned = 0;
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
 
         for (const lock of locks) {
           try {
-            const completed = await getDialer().isCallCompleted(lock.callSid);
+            const completed = await dialer.isCallCompleted(lock.callSid);
             if (completed) {
               await getLockService().releaseLock(lock.callSid);
               cleaned++;
