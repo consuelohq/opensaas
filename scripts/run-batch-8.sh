@@ -272,8 +272,7 @@ git add \
   packages/twenty-front/src/modules/agent/hooks/useSkillVersions.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): skill versioning + version history UI (DEV-1023)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): skill versioning + version history UI (DEV-1023)" --no-verify
 
 cd "$REPO/../agent-execution-engine"
 git add \
@@ -285,8 +284,7 @@ git add \
   packages/twenty-server/src/database/typeorm/core/migrations/common/ \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): automation execution engine (DEV-964)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): automation execution engine (DEV-964)" --no-verify
 
 # ─── Merge worktrees into main ───
 cd "$REPO"
@@ -362,8 +360,7 @@ git add \
   packages/twenty-front/src/modules/agent/hooks/useAutomationHistory.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): automation execution history UI (DEV-965)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): automation execution history UI (DEV-965)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-965 committed + pushed"
 
@@ -441,8 +438,7 @@ git add \
   packages/twenty-server/src/database/typeorm/core/migrations/common/ \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): automation monitoring + circuit breaker (DEV-966)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): automation monitoring + circuit breaker (DEV-966)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-966 committed + pushed"
 

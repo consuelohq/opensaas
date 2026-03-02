@@ -115,7 +115,7 @@ echo "DEV-971 kiro exit: $?"
 # Commit DEV-971
 cd "$REPO"
 git add packages/agent/ packages/twenty-server/src/engine/core-modules/agent/ packages/twenty-server/src/database/typeorm/core/migrations/
-git diff --cached --quiet || git commit -m "feat(agent): cross-skill context sharing + memory (DEV-971)" --author="$AUTHOR"
+git diff --cached --quiet || GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "feat(agent): cross-skill context sharing + memory (DEV-971)"
 echo "DEV-971 committed"
 
 echo ""
@@ -204,7 +204,7 @@ echo "DEV-961 kiro exit: $?"
 # Commit DEV-961
 cd "$REPO"
 git add packages/agent/ packages/twenty-server/src/engine/core-modules/agent/
-git diff --cached --quiet || git commit -m "feat(agent): trigger system for automations (DEV-961)" --author="$AUTHOR"
+git diff --cached --quiet || GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "feat(agent): trigger system for automations (DEV-961)"
 echo "DEV-961 committed"
 
 # Push main branch work
@@ -416,13 +416,13 @@ echo "=== Committing worktree changes ==="
 # Commit WT1 (DEV-954)
 cd "$WT1"
 git add packages/twenty-front/src/modules/agent/ packages/twenty-front/src/pages/agent/ packages/twenty-front/src/modules/app/ packages/twenty-shared/
-git diff --cached --quiet || git commit -m "feat(agent): agent page layout + routing (DEV-954)" --author="$AUTHOR"
+git diff --cached --quiet || GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "feat(agent): agent page layout + routing (DEV-954)"
 echo "WT1 committed"
 
 # Commit WT2 (DEV-960)
 cd "$WT2"
 git add packages/twenty-front/src/modules/agent/ packages/twenty-front/package.json
-git diff --cached --quiet || git commit -m "feat(agent): skill editor with Monaco (DEV-960)" --author="$AUTHOR"
+git diff --cached --quiet || GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "feat(agent): skill editor with Monaco (DEV-960)"
 echo "WT2 committed"
 
 echo ""
