@@ -1,5 +1,7 @@
 import { createState } from '@/ui/utilities/state/utils/createState';
 
+import type { CommandResult } from '@/assistant/commands/types';
+
 export type ExecutedCommand = {
   name: string;
   args: Record<string, unknown>;
@@ -11,6 +13,7 @@ export type AssistantMessage = {
   role: 'user' | 'assistant';
   content: string;
   commandsExecuted?: ExecutedCommand[];
+  commandResult?: CommandResult;
   timestamp: string;
 };
 
