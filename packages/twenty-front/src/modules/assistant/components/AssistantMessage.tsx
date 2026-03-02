@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 
 import { AssistantCommandResult } from '@/assistant/components/AssistantCommandResult';
+import { CommandCard } from '@/assistant/components/CommandCard';
 import { type AssistantMessage as AssistantMessageType } from '@/assistant/states/assistantState';
 
 const StyledMessageRow = styled.div<{ isUser: boolean }>`
@@ -36,6 +37,11 @@ type AssistantMessageProps = {
 
 export const AssistantMessage = ({ message }: AssistantMessageProps) => {
   const isUser = message.role === 'user';
+
+  // render slash command result card
+  if (message.commandResult) {
+    return <CommandCard result={message.commandResult} />;
+  }
 
   return (
     <>

@@ -75,4 +75,5 @@ export enum SettingsPath {
   MercurySubscription = 'mercury/subscription',
   MercuryNotifications = 'mercury/notifications',
   MercuryWorkspace = 'mercury/workspace',
+  MercuryTwilio = 'mercury/twilio',
 }

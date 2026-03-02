@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pre-push code review — enforces 13 mandatory rules from CODING-STANDARDS.md
+# pre-push code review — enforces 14 mandatory rules from CODING-STANDARDS.md
 # runs on changed files vs main. exit 1 = block push.
 set -euo pipefail
 
@@ -285,9 +285,36 @@ if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
 else echo -e "${RED}FAIL${NC}"; fi
 STUB_FAIL=$FAIL
 
+
+# 14. SPEC_COMPLIANCE — verify work matches original prompt/spec
+echo -n "  SPEC_COMPLIANCE . "
+FAIL=0
+PROMPT_FILE="/tmp/kiro-last-prompt.txt"
+CONFIRM_FILE="/tmp/kiro-spec-confirmed"
+if [ -f "$PROMPT_FILE" ] && [ -n "$CHANGED_FILES" ]; then
+  # confirmation file must exist AND be newer than the prompt file
+  if [ -f "$CONFIRM_FILE" ] && [ "$CONFIRM_FILE" -nt "$PROMPT_FILE" ]; then
+    echo -e "${GREEN}PASS${NC} (confirmed)"
+  else
+    echo -e "${RED}FAIL${NC}"
+    echo ""
+    echo -e "  ${BOLD}original prompt:${NC}"
+    cat "$PROMPT_FILE"
+    echo ""
+    echo -e "  ${RED}→ re-read the prompt above. verify your changes match.${NC}"
+    echo -e "  ${RED}→ then run: echo 'confirmed' > /tmp/kiro-spec-confirmed${NC}"
+    echo -e "  ${RED}→ then re-run this script.${NC}"
+    FAIL=1
+  fi
+else
+  echo -e "${GREEN}PASS${NC} (no saved prompt)"
+fi
+SPEC_FAIL=$FAIL
+
+
 # summary
-TOTAL_CHECKS=13
-TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL))
+TOTAL_CHECKS=14
+TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL + SPEC_FAIL))
 echo ""
 if [ $TOTAL_FAIL -gt 0 ]; then
   echo -e "${BOLD}violations:${NC}"

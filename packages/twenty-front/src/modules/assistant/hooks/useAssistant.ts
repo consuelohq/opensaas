@@ -3,6 +3,10 @@ import { useRecoilState, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import {
+  executeSlashCommand,
+  parseSlashCommand,
+} from '@/assistant/commands/handlers';
+import {
   type AssistantMessage,
   assistantConversationIdState,
   assistantLoadingState,
@@ -34,6 +38,21 @@ export const useAssistant = () => {
       setLoading(true);
 
       try {
+        // check for slash command before sending to LLM
+        const parsed = parseSlashCommand(text);
+        if (parsed) {
+          const result = await executeSlashCommand(parsed);
+          const resultMsg: AssistantMessage = {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: '',
+            commandResult: result,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, resultMsg]);
+          return;
+        }
+
         const res = await fetch(`${REACT_APP_SERVER_BASE_URL}/v1/assistant`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

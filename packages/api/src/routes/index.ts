@@ -26,12 +26,15 @@ import { workspaceRoutes } from './workspace.js';
 import { ghlRoutes } from './ghl.js';
 import { ghlIntegrationRoutes } from './integrations/ghl.js';
 import { ghlWebhookRoutes } from './webhooks/ghl.js';
+import { twilioSettingsRoutes } from './twilio-settings.js';
+import { discordAuthRoutes } from './discord-auth.js';
 export {
   analyticsRoutes,
   assistantRoutes,
   callRoutes,
   coachingRoutes,
   contactRoutes,
+  discordAuthRoutes,
   fileRoutes,
   knowledgeRoutes,
   localPresenceRoutes,
@@ -43,6 +46,7 @@ export {
   ghlRoutes,
   ghlIntegrationRoutes,
   ghlWebhookRoutes,
+  twilioSettingsRoutes,
 };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
@@ -82,6 +86,7 @@ export const healthRoutes = (): RouteDefinition[] => [
 /** All v1 routes combined */
 export const allRoutes = (): RouteDefinition[] => [
   ...healthRoutes(),
+  ...discordAuthRoutes(),
   ...assistantRoutes(),
   ...callRoutes(),
   ...coachingRoutes(),
@@ -99,5 +104,6 @@ export const allRoutes = (): RouteDefinition[] => [
   ...ghlRoutes(),
   ...ghlIntegrationRoutes(),
   ...ghlWebhookRoutes(),
+  ...twilioSettingsRoutes(),
   ...webhookRoutes(),
 ];

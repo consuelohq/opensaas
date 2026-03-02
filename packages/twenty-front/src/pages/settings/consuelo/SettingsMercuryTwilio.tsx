@@ -1,28 +1,30 @@
 import { SettingsPageContainer } from '@/settings/components/SettingsPageContainer';
 import { SubMenuTopBarContainer } from '@/ui/layout/page/components/SubMenuTopBarContainer';
+import { Trans } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { H2Title } from 'twenty-ui/display';
 import { Section } from 'twenty-ui/layout';
+import { TwilioSettings } from '~/pages/settings/consuelo/TwilioSettings';
 
-export const SettingsConsuelo = () => {
+export const SettingsMercuryTwilio = () => {
   return (
     <SubMenuTopBarContainer
-      title="Mercury"
+      title="Twilio"
       links={[
         {
-          children: 'Workspace',
+          children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        { children: 'Mercury' },
+        {
+          children: 'Mercury',
+          href: getSettingsPath(SettingsPath.Mercury),
+        },
+        { children: 'Twilio' },
       ]}
     >
       <SettingsPageContainer>
         <Section>
-          <H2Title
-            title="Mercury Dialer"
-            description="Configure your calling, AI coaching, and workspace settings using the sidebar navigation."
-          />
+          <TwilioSettings />
         </Section>
       </SettingsPageContainer>
     </SubMenuTopBarContainer>

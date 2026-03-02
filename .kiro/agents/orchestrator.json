@@ -145,5 +145,5 @@
     }
   },
   "keyboardShortcut": "ctrl+o",
-  "welcomeMessage": "opensaas dev agent online. i plan, orchestrate opencode, enrich specs, review code, and ship. give me a task or point me at a linear issue."
+  "welcomeMessage": "orchestrator online. i plan, delegate to subagents, enrich specs, review code, and ship. give me a task or point me at a linear issue."
 }

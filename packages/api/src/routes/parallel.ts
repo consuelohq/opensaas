@@ -2,12 +2,12 @@ import type { ParallelGroup, NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
 import { validateTwilioSignature } from './voice.js';
 
-const getDialer = sharedDialer;
+const getLegacyDialer = sharedDialer;
 const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -63,7 +63,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const accountNumbers = await getDialer().listNumbers();
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const accountNumbers = await dialer.listNumbers();
         const pool: NumberPool = {
           numbers: accountNumbers,
           primaryNumber: accountNumbers[0],
@@ -71,7 +72,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         const fromNumbers: string[] = [];
         for (const customerNumber of body.customerNumbers) {
-          const selection = await getDialer().localPresence.selectNumber(
+          const selection = await dialer.localPresence.selectNumber(
             pool,
             customerNumber,
           );
@@ -103,7 +104,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         }
 
         const baseUrl = process.env.API_BASE_URL ?? '';
-        const result = await getDialer().parallel.initiateGroup({
+        const result = await dialer.parallel.initiateGroup({
           customerNumbers: body.customerNumbers,
           queueId: body.queueId,
           contactIds: body.contactIds,
@@ -148,8 +149,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const numbers = await getDialer().listNumbers();
-        const result = getDialer().parallel.validateRequirements(
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const numbers = await dialer.listNumbers();
+        const result = dialer.parallel.validateRequirements(
           numbers.length,
         );
         res.status(200).json(result);
@@ -188,20 +190,20 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        await getDialer().parallel.handleStatusCallback(
+        await getLegacyDialer().parallel.handleStatusCallback(
           callSid,
           callStatus,
           answeredBy,
         );
 
-        const groupId = await getDialer().parallel.getGroupIdForCall(callSid);
+        const groupId = await getLegacyDialer().parallel.getGroupIdForCall(callSid);
         if (groupId) {
-          const group = await getDialer().parallel.getGroup(groupId);
+          const group = await getLegacyDialer().parallel.getGroup(groupId);
           if (
             group &&
             (group.status === 'connected' || group.status === 'completed')
           ) {
-            const releasable = getDialer().parallel.getReleasableNumbers(group);
+            const releasable = getLegacyDialer().parallel.getReleasableNumbers(group);
             for (const num of releasable) {
               await getLockService().releaseLockByNumber(num);
             }
@@ -239,7 +241,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const twiml = await getDialer().parallel.generateCustomerTwiml(callSid);
+        const twiml = await getLegacyDialer().parallel.generateCustomerTwiml(callSid);
         if (!twiml) {
           res.status(404).json({
             error: {
@@ -291,8 +293,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const group: ParallelGroup | null =
-          await getDialer().parallel.getGroup(groupId);
+          await dialer.parallel.getGroup(groupId);
         if (!group) {
           res.status(404).json({
             error: {
@@ -362,7 +365,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const group = await getDialer().parallel.getGroup(groupId);
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const group = await dialer.parallel.getGroup(groupId);
         if (!group) {
           res.status(404).json({
             error: {
@@ -379,7 +383,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
           }
         }
 
-        await getDialer().parallel.terminateGroup(groupId);
+        await dialer.parallel.terminateGroup(groupId);
         res.status(200).json({ groupId, status: 'completed' });
         logger.info('parallel.terminated', {
           action: 'parallel.terminated',
