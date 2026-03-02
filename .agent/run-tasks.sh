@@ -782,31 +782,34 @@ update_task_status() {
 setup_worktree() {
   local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
 
-  # Validate SOURCE_BRANCH is set
-  if [ -z "$SOURCE_BRANCH" ]; then
-    log_error "SOURCE_BRANCH is not set. Add it to .agent/config.sh"
-    exit 1
-  fi
-
   if [ -d "$wt_path/.git" ] || [ -f "$wt_path/.git" ]; then
     log_info "Reusing existing worktree at $wt_path"
     cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
-    git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
   else
-    log_info "Creating persistent worktree at $wt_path"
+    log_info "Creating persistent worktree at $wt_path on staging branch"
     cd "$PROJECT_ROOT"
-    git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
-    if ! git worktree add "$wt_path" "origin/$SOURCE_BRANCH" --detach; then
-      log_error "Failed to create worktree. Does 'origin/$SOURCE_BRANCH' exist? Run: git fetch origin"
+    git fetch origin 2>/dev/null || true
+    # Create local staging branch if it doesn't exist
+    git branch staging "origin/staging" 2>/dev/null || git branch staging "origin/$SOURCE_BRANCH" 2>/dev/null || true
+    if ! git worktree add "$wt_path" staging; then
+      log_error "Failed to create worktree on staging branch"
       exit 1
     fi
     cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
   fi
 
+  # Bring staging up to date from main
+  git fetch origin 2>/dev/null || true
+  git rebase "origin/$SOURCE_BRANCH" || {
+    log_warning "Rebase had conflicts — aborting rebase and resetting staging to origin/main"
+    git rebase --abort 2>/dev/null
+    git reset --hard "origin/$SOURCE_BRANCH"
+  }
+
   # Clean up any leftover opencode caches from previous runs
   rm -rf /tmp/oc-review-* 2>/dev/null || true
 
-  log_success "Worktree ready at $wt_path"
+  log_success "Worktree ready at $wt_path (staging, up to date with $SOURCE_BRANCH)"
 }
 
 # =============================================================================
@@ -2227,26 +2230,14 @@ REVIEW_EOF
 
 create_run_branch() {
   RUN_ID=$(generate_run_id)
-  RUN_BRANCH="${BRANCH_PREFIX}/run-${RUN_ID}"
+  RUN_BRANCH="staging"
 
-  log_info "Creating run branch: $RUN_BRANCH (from $SOURCE_BRANCH, PR will target $PR_TARGET_BRANCH)"
+  log_info "Using staging branch (run $RUN_ID, up to date from $SOURCE_BRANCH)"
 
-  # Validate PR_TARGET_BRANCH is set
-  if [ -z "$PR_TARGET_BRANCH" ]; then
-    log_error "PR_TARGET_BRANCH is not set. Add it to .agent/config.sh"
-    exit 1
-  fi
-
-  # Setup persistent worktree and cd into it
+  # Setup persistent worktree on staging and rebase on main
   setup_worktree
 
-  # Create the run branch from latest source inside the worktree
-  if ! git checkout -B "$RUN_BRANCH" "origin/$SOURCE_BRANCH"; then
-    log_error "Failed to create run branch from origin/$SOURCE_BRANCH"
-    exit 1
-  fi
-
-  log_success "Run branch created: $RUN_BRANCH (based on $SOURCE_BRANCH, in worktree)"
+  log_success "Staging branch ready (run $RUN_ID)"
 }
 
 # Global variable to store PR URL once created
