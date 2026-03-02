@@ -13,6 +13,7 @@ import {
   IconBell,
   IconBuildingSkyscraper,
   IconUserCircle,
+  IconBrandTwilio,
 } from '@tabler/icons-react';
 import { Section } from 'twenty-ui/layout';
 import { UndecoratedLink } from 'twenty-ui/navigation';
@@ -55,6 +56,11 @@ const MERCURY_SECTIONS: MercurySection[] = [
     path: SettingsPath.MercuryWorkspace,
     label: 'Workspace',
     Icon: IconBuildingSkyscraper,
+  },
+  {
+    path: SettingsPath.MercuryTwilio,
+    label: 'Twilio',
+    Icon: IconBrandTwilio,
   },
 ];
 

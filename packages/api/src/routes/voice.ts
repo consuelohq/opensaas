@@ -5,11 +5,12 @@ import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService } from '../shared/dialer.js';
+import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
 
-const getDialer = sharedDialer;
+// legacy singleton for webhook routes (no auth context)
+const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
 
 /**
@@ -138,7 +139,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const numbers = await getDialer().listNumbers();
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const numbers = await dialer.listNumbers();
 
         const phoneNumbers = numbers.map(
           (num: { phoneNumber: string; friendlyName?: string }) => {
@@ -182,7 +184,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await getDialer().getToken(userId);
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const result = await dialer.getToken(userId);
         res.json(result);
       } catch (err: unknown) {
         Sentry.captureException(
@@ -295,7 +298,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
-      const twiml = getDialer().generateConferenceTwiml(
+      const twiml = getLegacyDialer().generateConferenceTwiml(
         conferenceName,
         'agent',
       );
@@ -307,7 +310,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           : undefined;
 
         try {
-          const customerResult = await getDialer().addCustomerToConference(
+          const customerResult = await getLegacyDialer().addCustomerToConference(
             conferenceName,
             to,
             from,
@@ -384,7 +387,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const logger = createLogger('voice:active-call');
 
         const conferenceSid =
-          await getDialer().conference.findConferenceSid(conferenceName);
+          await getLegacyDialer().conference.findConferenceSid(conferenceName);
 
         if (conferenceSid) {
           logger.info('Active conference found', {
@@ -543,9 +546,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const conferenceSid =
           record.conferenceSid ??
-          (await getDialer().conference.findConferenceSid(
+          (await dialer.conference.findConferenceSid(
             record.conferenceName,
           ));
         if (!conferenceSid) {
@@ -558,7 +562,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const participants = await getDialer().listParticipants(conferenceSid);
+        const participants = await dialer.listParticipants(conferenceSid);
         const customer = participants.find(
           (p: { label: string }) => p.label === 'customer',
         );
@@ -572,7 +576,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        await getDialer().muteParticipant(
+        await dialer.muteParticipant(
           conferenceSid,
           customer.callSid,
           body.muted,
@@ -745,7 +749,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await getDialer().initiateTransfer({
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const result = await dialer.initiateTransfer({
           callSid,
           conferenceName,
           to: body.to,
@@ -851,7 +856,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await getDialer().completeTransfer(
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const result = await dialer.completeTransfer(
           body.conferenceSid,
           body.agentCallSid,
         );
@@ -930,7 +936,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const result = await getDialer().cancelTransfer(
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const result = await dialer.cancelTransfer(
           body.conferenceSid,
           body.transferCallSid,
         );
@@ -1012,8 +1019,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const conferenceSid =
-          await getDialer().conference.findConferenceSid(conferenceName);
+          await dialer.conference.findConferenceSid(conferenceName);
         if (!conferenceSid) {
           res.status(404).json({
             error: {
@@ -1025,7 +1033,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         if (body.participantCallSid) {
-          await getDialer().holdParticipant(
+          await dialer.holdParticipant(
             conferenceSid,
             body.participantCallSid,
             body.hold,
@@ -1033,12 +1041,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
         } else {
           // default: hold the customer
           const participants =
-            await getDialer().listParticipants(conferenceSid);
+            await dialer.listParticipants(conferenceSid);
           const customer = participants.find(
             (p: { label: string }) => p.label === 'customer',
           );
           if (customer) {
-            await getDialer().holdParticipant(
+            await dialer.holdParticipant(
               conferenceSid,
               customer.callSid,
               body.hold,
