@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Phone, BrainCircuit, Zap } from "lucide-react";
-import { DialerDemo } from "./DialerDemo";
+import { DashboardDemo } from "./DashboardDemo";
 
 const pillars = [
   {
@@ -75,7 +75,7 @@ export function SolutionSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-12"
         >
-          <DialerDemo />
+          <DashboardDemo />
         </motion.div>
 
         <div className="mt-16 grid gap-10 sm:grid-cols-3">

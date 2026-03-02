@@ -3,14 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
   Mic,
-  MicOff,
   Pause,
   PhoneOff,
   Hash,
   ArrowRightLeft,
   Sparkles,
   MapPin,
-  Delete,
 } from "lucide-react";
 
 // --- data ---
