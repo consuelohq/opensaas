@@ -28,6 +28,7 @@ COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
 COPY ./packages/workspace/package.json /app/packages/workspace/
+COPY ./packages/chat-bot/package.json /app/packages/chat-bot/
 
 # Install all dependencies
 RUN yarn && yarn cache clean && npx nx reset
@@ -48,6 +49,7 @@ COPY ./packages/coaching /app/packages/coaching
 COPY ./packages/contacts /app/packages/contacts
 COPY ./packages/dialer /app/packages/dialer
 COPY ./packages/logger /app/packages/logger
+COPY ./packages/chat-bot /app/packages/chat-bot
 
 RUN npx nx reset && npx nx run twenty-server:build
 RUN cd /app/packages/agent && npx tsc
@@ -56,8 +58,9 @@ RUN cd /app/packages/coaching && npx tsc --declaration
 RUN cd /app/packages/contacts && npx tsc
 RUN cd /app/packages/dialer && npx tsc --declaration
 RUN cd /app/packages/api && npx tsc
+RUN cd /app/packages/chat-bot && npx tsc
 
-RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger
+RUN yarn workspaces focus --production twenty-emails twenty-shared twenty-server @consuelo/agent @consuelo/api @consuelo/dialer @consuelo/coaching @consuelo/contacts @consuelo/logger @consuelo/chat-bot
 
 # Build the front
 FROM common-deps AS twenty-front-build
@@ -81,6 +84,7 @@ COPY ./packages/logger /app/packages/logger
 COPY ./packages/metering /app/packages/metering
 COPY ./packages/sdk /app/packages/sdk
 COPY ./packages/workspace /app/packages/workspace
+COPY ./packages/chat-bot /app/packages/chat-bot
 RUN NODE_OPTIONS="--max-old-space-size=4096" npx nx build twenty-front
 
 
