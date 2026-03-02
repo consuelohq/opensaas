@@ -697,7 +697,11 @@ private async getClient() {
 
 ## git
 
-- commit as `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
+- suelo-kiro[bot] is the **committer**, not the author. ko (kokayicobb) must remain the author for github credit:
+  ```bash
+  GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "message"
+  ```
+- **never** use `--author="suelo-kiro[bot] ..."` — that steals ko's commit credit
 - commit format: `type(scope): description`
 - one PR per feature
 
