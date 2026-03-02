@@ -783,33 +783,21 @@ setup_worktree() {
   local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
 
   if [ -d "$wt_path/.git" ] || [ -f "$wt_path/.git" ]; then
-    log_info "Reusing existing worktree at $wt_path"
     cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
   else
-    log_info "Creating persistent worktree at $wt_path on staging branch"
-    cd "$PROJECT_ROOT"
-    git fetch origin 2>/dev/null || true
-    # Create local staging branch if it doesn't exist
-    git branch staging "origin/staging" 2>/dev/null || git branch staging "origin/$SOURCE_BRANCH" 2>/dev/null || true
-    if ! git worktree add "$wt_path" staging; then
-      log_error "Failed to create worktree on staging branch"
-      exit 1
-    fi
-    cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
+    log_error "Worktree not found at $wt_path — create it first: git worktree add $wt_path staging"
+    exit 1
   fi
 
-  # Bring staging up to date from main
+  # Pull in any new commits from main (no-op if staging is already ahead)
   git fetch origin 2>/dev/null || true
-  git rebase "origin/$SOURCE_BRANCH" || {
-    log_warning "Rebase had conflicts — aborting rebase and resetting staging to origin/main"
+  git rebase "origin/$SOURCE_BRANCH" 2>/dev/null || {
     git rebase --abort 2>/dev/null
-    git reset --hard "origin/$SOURCE_BRANCH"
+    log_warning "Rebase conflict — continuing with current staging state"
   }
 
-  # Clean up any leftover opencode caches from previous runs
   rm -rf /tmp/oc-review-* 2>/dev/null || true
-
-  log_success "Worktree ready at $wt_path (staging, up to date with $SOURCE_BRANCH)"
+  log_info "Worktree ready at $wt_path (staging)"
 }
 
 # =============================================================================
