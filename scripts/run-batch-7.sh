@@ -188,8 +188,7 @@ git add \
   packages/twenty-front/src/modules/agent/types/agent.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): action confirmation flow (DEV-958)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): action confirmation flow (DEV-958)" --no-verify
 
 cd "$REPO/../agent-automation-api"
 git add \
@@ -197,8 +196,7 @@ git add \
   packages/twenty-server/src/engine/core-modules/agent/agent.module.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): automation CRUD API (DEV-963)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): automation CRUD API (DEV-963)" --no-verify
 
 # ─── Merge worktrees into main ───
 cd "$REPO"
@@ -321,8 +319,7 @@ git add \
   packages/twenty-front/src/modules/agent/hooks/useAgentConversations.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): conversation history + persistence (DEV-959)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): conversation history + persistence (DEV-959)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-959 committed + pushed"
 
