@@ -126,7 +126,7 @@ you are expensive. opencode is free. act accordingly.
 - **deploy**: railway — `opensaas` service, auto-deploys on push
 - **domain**: crm.consuelohq.com (being set up)
 - **linear epic**: DEV-878 (stabilization sprint) — parent of all current work
-- **commit as**: `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
+- **commit**: `GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "msg"` — NEVER use `--author`, that steals ko's github credit
 - **bypass hooks**: `HUSKY=0` prefix on git commands
 - **coding standards**: 13 checks in `scripts/code-review.sh` — all must pass
 
