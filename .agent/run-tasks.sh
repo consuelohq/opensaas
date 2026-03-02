@@ -1780,7 +1780,7 @@ main() {
   log_info "Found $issue_count task(s) to process"
 
   # Preview tasks (use appropriate format for Linear vs GitHub)
-  echo "$issues" | while read -r issue_json <\&3; do
+  echo "$issues" | while read -r issue_json; do
     [ -z "$issue_json" ] && continue
     local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
     local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
@@ -1832,7 +1832,7 @@ main() {
   local issues_file=$(mktemp)
   echo "$issues" > "$issues_file"
 
-  while read -r issue_json; do
+  while read -r issue_json <&3; do
     # Skip empty lines and non-JSON content
     [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
 
@@ -3172,7 +3172,7 @@ main() {
   log_info "Found $issue_count task(s) to process"
 
   # Preview tasks (use appropriate format for Linear vs GitHub)
-  echo "$issues" | while read -r issue_json <\&3; do
+  echo "$issues" | while read -r issue_json; do
     [ -z "$issue_json" ] && continue
     local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
     local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
@@ -3224,7 +3224,7 @@ main() {
   local issues_file=$(mktemp)
   echo "$issues" > "$issues_file"
 
-  while read -r issue_json; do
+  while read -r issue_json <&3; do
     # Skip empty lines and non-JSON content
     [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
 
