@@ -99,12 +99,12 @@ your deliverable is always a **bash block**. not instructions — actual command
 
 ```bash
 # wave 1: independent tasks (run in parallel)
-cd /tmp/opensaas-dev-879 && XDG_DATA_HOME=/tmp/oc-879 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/opensaas-dev-879/opencode.log 2>&1 &
-cd /tmp/opensaas-dev-884 && XDG_DATA_HOME=/tmp/oc-884 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/opensaas-dev-884/opencode.log 2>&1 &
+cd /tmp/orchestrator-879 && XDG_DATA_HOME=/tmp/oc-879 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/orchestrator-879/opencode.log 2>&1 &
+cd /tmp/orchestrator-884 && XDG_DATA_HOME=/tmp/oc-884 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/orchestrator-884/opencode.log 2>&1 &
 wait
 
 # wave 2: depends on wave 1
-cd /tmp/opensaas-dev-885 && XDG_DATA_HOME=/tmp/oc-885 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/opensaas-dev-885/opencode.log 2>&1 &
+cd /tmp/orchestrator-885 && XDG_DATA_HOME=/tmp/oc-885 /opt/homebrew/bin/opencode run -m opencode/minimax-m2.5-free 'prompt...' > /tmp/orchestrator-885/opencode.log 2>&1 &
 wait
 ```
 
@@ -126,7 +126,7 @@ you are expensive. opencode is free. act accordingly.
 - **deploy**: railway — `opensaas` service, auto-deploys on push
 - **domain**: crm.consuelohq.com (being set up)
 - **linear epic**: DEV-878 (stabilization sprint) — parent of all current work
-- **commit as**: `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
+- **commit**: `GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "msg"` — NEVER use `--author`, that steals ko's github credit
 - **bypass hooks**: `HUSKY=0` prefix on git commands
 - **coding standards**: 13 checks in `scripts/code-review.sh` — all must pass
 
