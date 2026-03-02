@@ -53,3 +53,6 @@ TRANSLATION_QA_REPORT.md
 
 # Build/run logs
 *.log
+
+# Agent backup files
+.agent/backups/
