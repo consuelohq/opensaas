@@ -260,8 +260,7 @@ git add \
   packages/twenty-server/src/engine/core-modules/agent/agent.module.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): chat interface with assistant-ui (DEV-956)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): chat interface with assistant-ui (DEV-956)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-956 committed + pushed"
 
@@ -273,8 +272,7 @@ git add \
   packages/twenty-server/src/engine/core-modules/agent/agent.module.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): skills sidebar navigation (DEV-955)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): skills sidebar navigation (DEV-955)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-955 committed + pushed"
 
@@ -285,8 +283,7 @@ git add \
   packages/twenty-server/src/engine/core-modules/agent/agent.module.ts \
   2>/dev/null
 git diff --cached --quiet || \
-  git commit -m "feat(agent): automation CRUD REST API (DEV-963)" \
-    --author="$BOT_NAME <$BOT_EMAIL>" --no-verify
+  GIT_COMMITTER_NAME="$BOT_NAME" GIT_COMMITTER_EMAIL="$BOT_EMAIL" git commit -m "feat(agent): automation CRUD REST API (DEV-963)" --no-verify
 git push origin "$BRANCH" --no-verify
 echo "✓ DEV-963 committed + pushed"
 

@@ -157,16 +157,17 @@ The goal: Epistemic responsibility - feel like working with someone who knows yo
 
 ## Git Commits — suelo-kiro[bot]
 
-Every git commit must use the suelo-kiro bot identity. No exceptions.
+suelo-kiro[bot] is the **committer**, not the author. ko (kokayicobb) stays as author so github gives him commit credit.
 
 ```bash
-git commit -m "message" --author="suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>"
+GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "message"
 ```
 
+- **never** use `--author="suelo-kiro[bot] ..."` — that steals ko's github contribution credit
 - ID: `260422584`
 - Email: `260422584+suelo-kiro[bot]@users.noreply.github.com`
 - App: https://github.com/apps/suelo-kiro
-- Never commit as kokayicobb or any other identity
+- ko's git config identity stays as the author automatically
 
 ## PR Workflow — ONE PR PER FEATURE
 
