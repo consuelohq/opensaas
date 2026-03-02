@@ -686,6 +686,9 @@ update_linear_task_status() {
     "review"|"in_review"|"In Review")
       state_id="$LINEAR_STATE_IN_REVIEW_ID"
       ;;
+    "staging"|"Staging")
+      state_id="$LINEAR_STATE_STAGING_ID"
+      ;;
     "completed"|"done"|"Done")
       state_id="$LINEAR_STATE_DONE_ID"
       ;;
