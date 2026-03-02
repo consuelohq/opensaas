@@ -37,7 +37,7 @@ const icons: Record<string, string> = {
 function ItemIcon({ name }: { name: string }) {
   const d = icons[name] || icons["help"];
   return (
-    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-400">
+    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-(--color-border) bg-(--color-surface-1) text-(--color-muted)">
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d={d} />
       </svg>
@@ -152,13 +152,14 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav ref={ref} className="sticky top-0 z-50 border-b border-neutral-100 bg-white">
+    <nav ref={ref} className="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-bg)">
       <div className="flex h-[64px] items-center px-6">
         {/* left group: logo + mascot + nav links */}
         <div className="flex items-center gap-6">
           <a href="/" className="flex items-center gap-2.5">
-            <img src="/images/logo/logo.svg" alt="Consuelo mascot" className="h-9 w-9" />
-            <span className="text-[22px] font-bold tracking-tight text-neutral-900">Consuelo</span>
+            <img src="/images/logo/logo.svg" alt="Consuelo mascot" className="h-9 w-9 dark:hidden" />
+            <img src="/images/logo/logo-white.svg" alt="Consuelo mascot" className="hidden h-9 w-9 dark:block" />
+            <span className="text-[22px] font-bold tracking-tight text-(--color-fg)">Consuelo</span>
           </a>
 
           <div className="relative hidden items-center gap-0.5 md:flex" onMouseLeave={close}>
@@ -169,7 +170,7 @@ export default function Navbar() {
 
             {/* mega menu — drops right below triggers, same hover zone */}
             {active && (
-              <div className="absolute left-0 top-full z-50 rounded-b-xl border border-neutral-100 bg-white pt-2 shadow-lg">
+              <div className="absolute left-0 top-full z-50 rounded-b-xl border border-(--color-border) bg-(--color-bg) pt-2 shadow-lg">
                 {active === "platform" && <PlatformPanel />}
                 {active === "resources" && <ResourcesPanel />}
               </div>
@@ -179,8 +180,8 @@ export default function Navbar() {
 
         {/* right group: auth buttons */}
         <div className="ml-auto hidden items-center gap-3 md:flex">
-          <a href="/signin" className="rounded-lg border border-neutral-200 px-4 py-[7px] text-[14px] font-medium text-neutral-900 transition-colors hover:bg-neutral-50">Sign in</a>
-          <a href="/signup" className="rounded-lg bg-neutral-900 px-4 py-[7px] text-[14px] font-medium text-white transition-colors hover:bg-neutral-800">Start for free</a>
+          <a href="/signin" className="rounded-lg border border-(--color-border) px-4 py-[7px] text-[14px] font-medium text-(--color-fg) transition-colors hover:bg-(--color-surface-1)">Sign in</a>
+          <a href="/signup" className="rounded-lg bg-(--color-fg) px-4 py-[7px] text-[14px] font-medium text-(--color-bg) transition-colors hover:opacity-80">Start for free</a>
         </div>
 
         <button onClick={() => setMobile(!mobile)} className="ml-auto p-2 md:hidden" aria-label="Toggle menu">
@@ -194,14 +195,14 @@ export default function Navbar() {
 
       {/* mobile drawer */}
       {mobile && (
-        <div className="border-t border-neutral-100 px-6 py-4 md:hidden">
+        <div className="border-t border-(--color-border) px-6 py-4 md:hidden">
           <MobileSection title="Platform" sections={platform.sections} />
           <MobileSection title="Resources" sections={resources.sections} />
           <a href="/customers" className="block py-2.5 text-[15px] font-medium">Customers</a>
           <a href="/pricing" className="block py-2.5 text-[15px] font-medium">Pricing</a>
           <div className="mt-3 flex flex-col gap-2">
-            <a href="/signin" className="rounded-lg border border-neutral-200 py-2.5 text-center text-[14px] font-medium">Sign in</a>
-            <a href="/signup" className="rounded-lg bg-neutral-900 py-2.5 text-center text-[14px] font-medium text-white">Start for free</a>
+            <a href="/signin" className="rounded-lg border border-(--color-border) py-2.5 text-center text-[14px] font-medium">Sign in</a>
+            <a href="/signup" className="rounded-lg bg-(--color-fg) py-2.5 text-center text-[14px] font-medium text-(--color-bg)">Start for free</a>
           </div>
         </div>
       )}
@@ -217,7 +218,7 @@ function Trigger({ label, isOpen, onEnter, onLeave, onClick }: { label: string; 
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       onClick={onClick}
-      className={`flex items-center gap-1 px-3 py-2 text-[15px] transition-colors ${isOpen ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-900"}`}
+      className={`flex items-center gap-1 px-3 py-2 text-[15px] transition-colors ${isOpen ? "text-(--color-fg)" : "text-(--color-muted) hover:text-(--color-fg)"}`}
     >
       {label}
       <svg className={`h-[14px] w-[14px] transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -228,7 +229,7 @@ function Trigger({ label, isOpen, onEnter, onLeave, onClick }: { label: string; 
 }
 
 function NavLink({ href, children }: { href: string; children: ReactNode }) {
-  return <a href={href} className="px-3 py-2 text-[15px] text-neutral-500 transition-colors hover:text-neutral-900">{children}</a>;
+  return <a href={href} className="px-3 py-2 text-[15px] text-(--color-muted) transition-colors hover:text-(--color-fg)">{children}</a>;
 }
 
 function PlatformPanel() {
@@ -237,14 +238,14 @@ function PlatformPanel() {
       <div className="grid flex-1 grid-cols-2 gap-x-12 gap-y-6">
         {platform.sections.map((s) => (
           <div key={s.label}>
-            <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-neutral-400">{s.label}</p>
+            <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-(--color-muted)">{s.label}</p>
             <div className="space-y-1">
               {s.items.map((item) => (
-                <a key={item.href} href={item.href} className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-neutral-50">
+                <a key={item.href} href={item.href} className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-(--color-surface-1)">
                   <ItemIcon name={item.icon} />
                   <div className="pt-0.5">
-                    <p className="text-[14px] font-medium leading-tight text-neutral-900">{item.title}</p>
-                    <p className="mt-0.5 text-[13px] leading-snug text-neutral-500">{item.desc}</p>
+                    <p className="text-[14px] font-medium leading-tight text-(--color-fg)">{item.title}</p>
+                    <p className="mt-0.5 text-[13px] leading-snug text-(--color-muted)">{item.desc}</p>
                   </div>
                 </a>
               ))}
@@ -252,11 +253,11 @@ function PlatformPanel() {
           </div>
         ))}
       </div>
-      <div className="ml-8 w-[160px] shrink-0 border-l border-neutral-100 pl-8">
-        <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-neutral-400">{platform.cta.label}</p>
+      <div className="ml-8 w-[160px] shrink-0 border-l border-(--color-border) pl-8">
+        <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-(--color-muted)">{platform.cta.label}</p>
         <div className="space-y-3">
           {platform.cta.links.map((l) => (
-            <a key={l.href} href={l.href} className="block text-[14px] text-neutral-600 transition-colors hover:text-neutral-900">{l.title}</a>
+            <a key={l.href} href={l.href} className="block text-[14px] text-(--color-muted) transition-colors hover:text-(--color-fg)">{l.title}</a>
           ))}
         </div>
       </div>
@@ -272,14 +273,14 @@ function ResourcesPanel() {
       <div className="flex-1 space-y-4">
         {left.map((s) => (
           <div key={s.label}>
-            <p className="mb-2 text-[11px] font-medium tracking-[0.08em] text-neutral-400">{s.label}</p>
+            <p className="mb-2 text-[11px] font-medium tracking-[0.08em] text-(--color-muted)">{s.label}</p>
             <div className="space-y-1">
               {s.items.map((item) => (
-                <a key={item.href} href={item.href} className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-neutral-50">
+                <a key={item.href} href={item.href} className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-(--color-surface-1)">
                   <ItemIcon name={item.icon} />
                   <div className="pt-0.5">
-                    <p className="text-[14px] font-medium leading-tight text-neutral-900">{item.title}</p>
-                    {item.desc && <p className="mt-0.5 text-[13px] leading-snug text-neutral-500">{item.desc}</p>}
+                    <p className="text-[14px] font-medium leading-tight text-(--color-fg)">{item.title}</p>
+                    {item.desc && <p className="mt-0.5 text-[13px] leading-snug text-(--color-muted)">{item.desc}</p>}
                   </div>
                 </a>
               ))}
@@ -288,11 +289,11 @@ function ResourcesPanel() {
         ))}
       </div>
       {right && (
-        <div className="ml-8 w-[160px] shrink-0 border-l border-neutral-100 pl-8">
-          <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-neutral-400">{right.label}</p>
+        <div className="ml-8 w-[160px] shrink-0 border-l border-(--color-border) pl-8">
+          <p className="mb-3 text-[11px] font-medium tracking-[0.08em] text-(--color-muted)">{right.label}</p>
           <div className="space-y-3">
             {right.items.map((item) => (
-              <a key={item.href} href={item.href} className="block text-[14px] text-neutral-600 transition-colors hover:text-neutral-900">{item.title}</a>
+              <a key={item.href} href={item.href} className="block text-[14px] text-(--color-muted) transition-colors hover:text-(--color-fg)">{item.title}</a>
             ))}
           </div>
         </div>
@@ -306,16 +307,16 @@ function MobileSection({ title, sections }: { title: string; sections: Section[]
     <details className="group">
       <summary className="flex cursor-pointer items-center justify-between py-2.5 text-[15px] font-medium">
         {title}
-        <svg className="h-4 w-4 text-neutral-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="h-4 w-4 text-(--color-muted) transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </summary>
       <div className="pb-2 pl-2">
         {sections.map((s) => (
           <div key={s.label} className="mb-2">
-            <p className="px-2 py-1 text-[11px] font-medium tracking-[0.08em] text-neutral-400">{s.label}</p>
+            <p className="px-2 py-1 text-[11px] font-medium tracking-[0.08em] text-(--color-muted)">{s.label}</p>
             {s.items.map((item) => (
-              <a key={item.href} href={item.href} className="block rounded-lg px-2 py-1.5 text-[14px] text-neutral-700 hover:bg-neutral-50">{item.title}</a>
+              <a key={item.href} href={item.href} className="block rounded-lg px-2 py-1.5 text-[14px] text-(--color-fg) hover:bg-(--color-surface-1)">{item.title}</a>
             ))}
           </div>
         ))}
