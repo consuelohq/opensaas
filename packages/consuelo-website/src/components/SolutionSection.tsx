@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Phone, BrainCircuit, Zap } from "lucide-react";
+import { DialerDemo } from "./DialerDemo";
 
 const pillars = [
   {
@@ -68,7 +69,16 @@ export function SolutionSection() {
           </span>
         </motion.div>
 
-        <div className="mt-12 grid gap-10 sm:grid-cols-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-12"
+        >
+          <DialerDemo />
+        </motion.div>
+
+        <div className="mt-16 grid gap-10 sm:grid-cols-3">
           {pillars.map((p, i) => (
             <motion.div
               key={p.name}
