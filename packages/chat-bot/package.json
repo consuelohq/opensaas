@@ -1,0 +1,47 @@
+{
+  "name": "@consuelo/chat-bot",
+  "version": "0.0.1",
+  "description": "discord bot for consuelo using chat SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "npx tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@consuelo/logger": "workspace:*"
+  },
+  "peerDependencies": {
+    "chat": ">=4.0.0",
+    "@chat-adapter/discord": ">=4.0.0",
+    "@chat-adapter/state-redis": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "chat": {
+      "optional": true
+    },
+    "@chat-adapter/discord": {
+      "optional": true
+    },
+    "@chat-adapter/state-redis": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "chat": "^4.15.0",
+    "@chat-adapter/discord": "^4.15.0",
+    "@chat-adapter/state-redis": "^4.15.0"
+  }
+}
