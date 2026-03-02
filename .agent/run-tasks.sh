@@ -271,8 +271,9 @@ PROMPT_EOF
   log_info "Starting $AGENT_CLI subprocess for $issue_ref..."
 
   local agent_cmd=$(get_agent_cmd)
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null
-  local exit_code=$?
+  local task_log="$LOG_DIR/task-${issue_number}.log"
+  $agent_cmd "$(cat "$prompt_file")" < /dev/null 2>&1 | tee "$task_log"
+  local exit_code=${PIPESTATUS[0]}
 
   rm -f "$prompt_file"
 
@@ -2775,6 +2776,16 @@ process_issue() {
   # Spawn fresh $AGENT_CLI subprocess (isolated context)
   spawn_task_subprocess "$issue_number" "$issue_title" "$issue_body"
   local subprocess_exit=$?
+
+  # Post output summary to Linear
+  if [ "$TASK_SOURCE" = "linear" ] && [ -n "$linear_id" ]; then
+    local task_log="$LOG_DIR/task-${issue_number}.log"
+    if [ -f "$task_log" ]; then
+      local summary
+      summary=$(tail -50 "$task_log" | head -c 4000)
+      add_linear_comment "$linear_id" "$(printf '**kiro output (last 50 lines):**\n```\n%s\n```' "$summary")"
+    fi
+  fi
 
   # Capture HEAD after subprocess
   local head_after=$(git rev-parse HEAD)
