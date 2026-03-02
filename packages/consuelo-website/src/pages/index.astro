@@ -3,6 +3,8 @@ import SiteLayout from "../layouts/SiteLayout.astro";
 import { Hero } from "../components/Hero";
 import { ProblemSection } from "../components/ProblemSection";
 import { SolutionSection } from "../components/SolutionSection";
+import { ProofSection } from "../components/ProofSection";
+import { PricingPreview } from "../components/PricingPreview";
 
 const features = [
   {
@@ -76,6 +78,10 @@ const features = [
   ))}
 
   <!-- open source callout — surface-1 -->
+  <ProofSection client:visible />
+  <PricingPreview client:load />
+
+  <!-- open source callout -->
   <section class=" py-20 sm:py-24">
     <div class="mx-auto max-w-[600px] px-6 text-center">
       <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Open source, from day one.</h2>
