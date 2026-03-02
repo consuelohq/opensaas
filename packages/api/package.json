@@ -32,10 +32,14 @@
     "pdf-parse": ">=1.1.1",
     "pg": ">=8.0.0",
     "posthog-node": ">=4.0.0",
-    "ws": ">=8.0.0"
+    "ws": ">=8.0.0",
+    "stripe": ">=17.0.0"
   },
   "peerDependenciesMeta": {
     "posthog-node": {
+      "optional": true
+    },
+    "stripe": {
       "optional": true
     }
   },

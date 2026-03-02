@@ -149,3 +149,47 @@ export class Metering {
 }
 
 export { MemoryMeteringStore } from './memory-store.js';
+
+// workspace-level usage tracking for stripe metered billing
+
+export type WorkspaceUsageMetric = 'call_minutes' | 'ai_tokens';
+
+export interface WorkspaceUsageRecord {
+  workspaceId: string;
+  metric: WorkspaceUsageMetric;
+  amount: number;
+  timestamp: string;
+}
+
+export interface WorkspaceUsageQuery {
+  workspaceId: string;
+  metric?: WorkspaceUsageMetric;
+  periodStart?: string;
+  periodEnd?: string;
+}
+
+export interface WorkspaceUsageSummary {
+  metric: WorkspaceUsageMetric;
+  total: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
+// stripe usage reporting via billing meter events — lazy import, stripe is optional
+export async function reportUsageToStripe(
+  meterEventName: string,
+  stripeCustomerId: string,
+  value: number,
+): Promise<void> {
+  const { default: Stripe } = await import('stripe');
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+  const stripe = new Stripe(key);
+  await stripe.billing.meterEvents.create({
+    event_name: meterEventName,
+    payload: {
+      stripe_customer_id: stripeCustomerId,
+      value: String(value),
+    },
+  });
+}
