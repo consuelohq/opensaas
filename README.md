@@ -113,7 +113,7 @@ type(scope): description
 Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
 Scopes: `cli`, `api`, `dialer`, `coaching`, `contacts`, `analytics`, `sdk`, `metering`, `logger`
 
-Bot commits use: `suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>`
+Bot commits set suelo-kiro[bot] as committer (not author): `GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com"`
 
 ## Contributing
 
