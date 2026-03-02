@@ -26,6 +26,7 @@ import { workspaceRoutes } from './workspace.js';
 import { ghlRoutes } from './ghl.js';
 import { ghlIntegrationRoutes } from './integrations/ghl.js';
 import { ghlWebhookRoutes } from './webhooks/ghl.js';
+import { twilioSettingsRoutes } from './twilio-settings.js';
 export {
   analyticsRoutes,
   assistantRoutes,
@@ -43,6 +44,7 @@ export {
   ghlRoutes,
   ghlIntegrationRoutes,
   ghlWebhookRoutes,
+  twilioSettingsRoutes,
 };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
@@ -99,5 +101,6 @@ export const allRoutes = (): RouteDefinition[] => [
   ...ghlRoutes(),
   ...ghlIntegrationRoutes(),
   ...ghlWebhookRoutes(),
+  ...twilioSettingsRoutes(),
   ...webhookRoutes(),
 ];

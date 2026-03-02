@@ -3,12 +3,12 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer } from '../shared/dialer.js';
+import { sharedDialer, getDialerForWorkspace } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
 import { validateTwilioSignature } from './voice.js';
 
-const getDialer = sharedDialer;
+const getLegacyDialer = sharedDialer;
 import { getSharedPool } from '../shared/db.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
@@ -72,7 +72,8 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const result = await getDialer().dial({
+          const dialer = await getDialerForWorkspace(req.auth?.workspaceId ?? '');
+          const result = await dialer.dial({
             to: body.to,
             from: body.from ?? '',
             userId: req.auth?.userId ?? '',
@@ -153,7 +154,8 @@ export const callRoutes = (): RouteDefinition[] => {
         const twimlUrl = `${baseUrl}/v1/calls/callback/twiml?customer=${encodeURIComponent(body.customerPhone)}&conf=${encodeURIComponent(conferenceName)}&from=${encodeURIComponent(callerId)}`;
 
         try {
-          const { callSid } = await getDialer().createCall(
+          const dialer = await getDialerForWorkspace(req.auth?.workspaceId ?? '');
+          const { callSid } = await dialer.createCall(
             body.agentPhone,
             callerId,
             { url: twimlUrl },
@@ -216,7 +218,7 @@ export const callRoutes = (): RouteDefinition[] => {
 
         res.type('text/xml').status(200).send(agentTwiml);
 
-        const customerTwiml = getDialer().conference.generateConferenceTwiml(
+        const customerTwiml = getLegacyDialer().conference.generateConferenceTwiml(
           conf,
           {
             startOnEnter: false,
@@ -224,7 +226,7 @@ export const callRoutes = (): RouteDefinition[] => {
             participantLabel: 'customer',
           },
         );
-        getDialer()
+        getLegacyDialer()
           .createCall(customer, from, { twiml: customerTwiml })
           .catch((err: unknown) => {
             Sentry.captureException(
@@ -370,7 +372,7 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const result = await getDialer().hangup(callSid);
+          const result = await getLegacyDialer().hangup(callSid);
           if (!result.success) {
             res.status(500).json({
               error: {
@@ -472,7 +474,7 @@ export const callRoutes = (): RouteDefinition[] => {
         const apiBaseUrl = process.env.API_BASE_URL ?? '';
         if (recordingSid) {
           try {
-            const recording = await getDialer().getRecording(recordingSid);
+            const recording = await getLegacyDialer().getRecording(recordingSid);
             res
               .status(200)
               .json({ url: recording.url, duration: recording.duration });
@@ -490,7 +492,7 @@ export const callRoutes = (): RouteDefinition[] => {
         if (conferenceName) {
           try {
             const recordings =
-              await getDialer().conference.listRecordings(conferenceName);
+              await getLegacyDialer().conference.listRecordings(conferenceName);
             if (recordings.length > 0) {
               res.status(200).json({
                 url: recordings[0].url,
