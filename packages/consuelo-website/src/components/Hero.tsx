@@ -8,12 +8,14 @@ const tabs = [
   { label: "Analytics", image: "/previews/analytics.webp" },
 ] as const;
 
+const LOBEHUB = "https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons";
+
 const logos = [
-  { src: "https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/openclaw-color.svg", alt: "OpenClaw" },
-  { src: "https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/perplexity-color.svg", alt: "Perplexity" },
-  { src: "https://cdn.simpleicons.org/notion/000000", alt: "Notion" },
-  { src: "https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/openhands-color.svg", alt: "OpenHands" },
-  { src: "https://cdn.simpleicons.org/railway/000000", alt: "Railway" },
+  { src: `${LOBEHUB}/openclaw-color.svg`, alt: "OpenClaw" },
+  { src: `${LOBEHUB}/perplexity-color.svg`, alt: "Perplexity" },
+  { src: `${LOBEHUB}/notion.svg`, alt: "Notion" },
+  { src: `${LOBEHUB}/openhands-color.svg`, alt: "OpenHands" },
+  { src: `${LOBEHUB}/railway.svg`, alt: "Railway" },
 ];
 
 const fade = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } };
@@ -59,7 +61,7 @@ export function Hero() {
           Power dialer, AI coaching, and CRM — unified in one platform your team actually wants to use.
         </motion.p>
 
-        {/* ctas */}
+        {/* ctas — square-ish buttons */}
         <motion.div
           variants={fade}
           initial="hidden"
@@ -69,25 +71,38 @@ export function Hero() {
         >
           <a
             href="/signup"
-            className="rounded-md bg-(--color-fg) px-5 py-2.5 text-sm font-medium text-(--color-bg) transition-opacity hover:opacity-80"
+            className="bg-(--color-fg) px-6 py-3 text-sm font-medium text-(--color-bg) transition-opacity hover:opacity-80"
           >
             Start for free
           </a>
           <a
             href="/demo"
-            className="rounded-md border border-(--color-border) px-5 py-2.5 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-fg)"
+            className="border border-(--color-border) px-6 py-3 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-fg)"
           >
             Talk to sales
           </a>
         </motion.div>
+
+        {/* social proof strip — between CTAs and preview */}
+        <motion.div
+          variants={fade}
+          initial="hidden"
+          animate="visible"
+          transition={{ duration: 0.4, delay: 0.32 }}
+          className="mx-auto mt-12 flex max-w-2xl items-center justify-between px-6"
+        >
+          {logos.map((l) => (
+            <img key={l.alt} src={l.src} alt={l.alt} className="h-8 sm:h-10" />
+          ))}
+        </motion.div>
       </div>
 
-      {/* tabbed product preview — full width */}
+      {/* tabbed product preview */}
       <motion.div
         variants={fade}
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.4, delay: 0.32 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
         className="mx-auto mt-16 max-w-7xl px-6"
       >
         <div className="flex border-b border-(--color-border)">
@@ -124,19 +139,6 @@ export function Hero() {
             />
           </AnimatePresence>
         </div>
-      </motion.div>
-
-      {/* social proof — below preview */}
-      <motion.div
-        variants={fade}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.4, delay: 0.4 }}
-        className="mx-auto mt-16 flex max-w-3xl items-center justify-between px-6 opacity-40"
-      >
-        {logos.map((l) => (
-          <img key={l.alt} src={l.src} alt={l.alt} className="h-10" />
-        ))}
       </motion.div>
     </section>
   );
