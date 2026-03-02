@@ -271,8 +271,9 @@ PROMPT_EOF
   log_info "Starting $AGENT_CLI subprocess for $issue_ref..."
 
   local agent_cmd=$(get_agent_cmd)
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null
-  local exit_code=$?
+  local task_log="$LOG_DIR/task-${issue_number}.log"
+  $agent_cmd "$(cat "$prompt_file")" < /dev/null 2>&1 | tee "$task_log"
+  local exit_code=${PIPESTATUS[0]}
 
   rm -f "$prompt_file"
 
@@ -686,6 +687,9 @@ update_linear_task_status() {
     "review"|"in_review"|"In Review")
       state_id="$LINEAR_STATE_IN_REVIEW_ID"
       ;;
+    "staging"|"Staging")
+      state_id="$LINEAR_STATE_STAGING_ID"
+      ;;
     "completed"|"done"|"Done")
       state_id="$LINEAR_STATE_DONE_ID"
       ;;
@@ -783,21 +787,21 @@ setup_worktree() {
   local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
 
   if [ -d "$wt_path/.git" ] || [ -f "$wt_path/.git" ]; then
-    log_info "Reusing existing worktree at $wt_path"
-    cd "$wt_path"
-    git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
+    cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
   else
-    log_info "Creating persistent worktree at $wt_path"
-    cd "$PROJECT_ROOT"
-    git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
-    git worktree add "$wt_path" "origin/$SOURCE_BRANCH" --detach
-    cd "$wt_path"
+    log_error "Worktree not found at $wt_path — create it first: git worktree add $wt_path staging"
+    exit 1
   fi
 
-  # Clean up any leftover opencode caches from previous runs
-  rm -rf /tmp/oc-review-* 2>/dev/null || true
+  # Pull in any new commits from main (no-op if staging is already ahead)
+  git fetch origin 2>/dev/null || true
+  git rebase "origin/$SOURCE_BRANCH" 2>/dev/null || {
+    git rebase --abort 2>/dev/null
+    log_warning "Rebase conflict — continuing with current staging state"
+  }
 
-  log_success "Worktree ready at $wt_path"
+  rm -rf /tmp/oc-review-* 2>/dev/null || true
+  log_info "Worktree ready at $wt_path (staging)"
 }
 
 # =============================================================================
@@ -1823,7 +1827,7 @@ main() {
   local issues_file=$(mktemp)
   echo "$issues" > "$issues_file"
 
-  while read -r issue_json; do
+  while read -r issue_json <&3; do
     # Skip empty lines and non-JSON content
     [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
 
@@ -1839,7 +1843,7 @@ main() {
     save_run_state "$processed"
 
     echo ""
-  done < "$issues_file"
+  done 3< "$issues_file"
 
   rm -f "$issues_file"
 
@@ -2218,75 +2222,58 @@ REVIEW_EOF
 
 create_run_branch() {
   RUN_ID=$(generate_run_id)
-  RUN_BRANCH="${BRANCH_PREFIX}/run-${RUN_ID}"
+  RUN_BRANCH="staging"
 
-  log_info "Creating run branch: $RUN_BRANCH (from $SOURCE_BRANCH, PR will target $PR_TARGET_BRANCH)"
+  log_info "Using staging branch (run $RUN_ID, up to date from $SOURCE_BRANCH)"
 
-  # Setup persistent worktree and cd into it
+  # Setup persistent worktree on staging and rebase on main
   setup_worktree
 
-  # Create the run branch from latest source inside the worktree
-  git checkout -B "$RUN_BRANCH" "origin/$SOURCE_BRANCH"
-
-  log_success "Run branch created: $RUN_BRANCH (based on $SOURCE_BRANCH, in worktree)"
+  log_success "Staging branch ready (run $RUN_ID)"
 }
 
 # Global variable to store PR URL once created
 PR_URL=""
-
-# Create a draft PR at the start of the run (so pushes go to an existing PR)
+# Reuse existing staging→main PR or create one
 create_draft_pr() {
   local issue_count="$1"
   local issue_list="$2"
 
-  log_info "Creating draft PR for run..."
+  git push -u origin staging 2>/dev/null || true
 
-  # Need at least one commit to create a PR - create an empty commit
-  # Use here-document with git commit -F to reliably handle multi-line messages
-  cat > .agent/commit_msg.txt << EOF
-chore: Start agent run $RUN_ID
+  # Check for existing open PR from staging → main
+  PR_URL=$(gh pr list --base "$PR_TARGET_BRANCH" --head staging --state open --json url --jq '.[0].url' 2>/dev/null)
+
+  if [ -n "$PR_URL" ]; then
+    log_success "Reusing existing staging PR: $PR_URL"
+    gh pr comment "$PR_URL" --body "## Run $RUN_ID started
 
 Processing $issue_count issue(s):
-$issue_list
+$issue_list" 2>/dev/null || true
+    return
+  fi
 
-Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>
-EOF
-  git commit --allow-empty -F .agent/commit_msg.txt
-  rm -f .agent/commit_msg.txt
+  log_info "Creating staging → $PR_TARGET_BRANCH PR..."
+  git commit --allow-empty -m "chore: Start agent run $RUN_ID
 
-  # Push the branch with the initial commit
-  log_info "Pushing branch to GitHub..."
-  git push -u origin "$RUN_BRANCH"
-
-  # Create draft PR
-  local pr_body="## Agent Run In Progress
-
-**Run ID:** \`$RUN_ID\`
-**Branch:** \`$RUN_BRANCH\`
-**Status:** 🔄 Running...
-
----
-
-### Issues to Process
-
-$issue_list
-
----
-
-*This PR will be updated as tasks complete.*"
+Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>"
+  git push origin staging
 
   PR_URL=$(gh pr create \
     --base "$PR_TARGET_BRANCH" \
-    --head "$RUN_BRANCH" \
-    --title "[WIP] Agent Run: $issue_count issue(s)" \
-    --body "$pr_body" \
-    --draft \
-    --json url 2>&1 | jq -r '.url // empty')
+    --head staging \
+    --title "staging" \
+    --body "Persistent PR for agent work. Merges staging → $PR_TARGET_BRANCH.
 
-  if [ $? -eq 0 ]; then
-    log_success "Draft PR created: $PR_URL"
+### Current Run: $RUN_ID ($issue_count issues)
+
+$issue_list" \
+    --draft 2>&1)
+
+  if [ $? -eq 0 ] && [ -n "$PR_URL" ]; then
+    log_success "Staging PR created: $PR_URL"
   else
-    log_warning "Failed to create draft PR: $PR_URL"
+    log_warning "Failed to create staging PR (non-fatal)"
     PR_URL=""
   fi
 }
@@ -2790,6 +2777,16 @@ process_issue() {
   spawn_task_subprocess "$issue_number" "$issue_title" "$issue_body"
   local subprocess_exit=$?
 
+  # Post output summary to Linear
+  if [ "$TASK_SOURCE" = "linear" ] && [ -n "$linear_id" ]; then
+    local task_log="$LOG_DIR/task-${issue_number}.log"
+    if [ -f "$task_log" ]; then
+      local summary
+      summary=$(tail -50 "$task_log" | head -c 4000)
+      add_linear_comment "$linear_id" "$(printf '**kiro output (last 50 lines):**\n```\n%s\n```' "$summary")"
+    fi
+  fi
+
   # Capture HEAD after subprocess
   local head_after=$(git rev-parse HEAD)
   local has_new_commits=false
@@ -3206,7 +3203,7 @@ main() {
   local issues_file=$(mktemp)
   echo "$issues" > "$issues_file"
 
-  while read -r issue_json; do
+  while read -r issue_json <&3; do
     # Skip empty lines and non-JSON content
     [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
 
@@ -3222,7 +3219,7 @@ main() {
     save_run_state "$processed"
 
     echo ""
-  done < "$issues_file"
+  done 3< "$issues_file"
 
   rm -f "$issues_file"
 

@@ -1,5 +1,6 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
+import { Hero } from "../components/Hero";
 
 const features = [
   {
@@ -42,35 +43,8 @@ const features = [
 ---
 
 <SiteLayout>
-  <!-- hero — surface-0 -->
-  <section class=" py-28 sm:py-36">
-    <div class="mx-auto max-w-[800px] px-6 text-center">
-      <p class="mb-4 text-sm font-medium tracking-wide text-(--color-muted) uppercase">open-source sales infrastructure</p>
-      <h1 class="text-4xl font-bold tracking-tight sm:text-6xl">Voice AI that shortens ramp time on sales teams.</h1>
-      <p class="mx-auto mt-6 max-w-lg text-lg text-(--color-muted)">
-        Shorten the ramp time of newly onboarded sales agents and help your top performers pivot to new products.
-      </p>
-      <div class="mt-10 flex justify-center gap-4">
-        <a href="/demo" class="rounded-full bg-(--color-fg) px-7 py-3 text-sm font-medium text-(--color-bg) transition-opacity hover:opacity-80">
-          Book a demo
-        </a>
-        <a href="/docs" class="rounded-full border border-(--color-border) px-7 py-3 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-fg)">
-          For developers
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- social proof -->
-  <section class="py-12">
-    <div class="mx-auto flex max-w-[900px] items-center justify-center gap-12 px-6">
-      <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/openclaw-color.svg" alt="" class="h-10" />
-      <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/perplexity-color.svg" alt="" class="h-10" />
-      <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/notion-color.svg" alt="" class="h-10" />
-      <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/openhands-color.svg" alt="" class="h-10" />
-      <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons/railway-color.svg" alt="" class="h-10" />
-    </div>
-  </section>
+  <!-- hero -->
+  <Hero client:load />
 
   <!-- features grid — one section per category, alternating -->
   {features.map((group, i) => (

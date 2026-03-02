@@ -1,6 +1,6 @@
 {
   "name": "orchestrator",
-  "description": "senior engineer for opensaas. orchestrates subagents for coding, enriches linear specs, manages deploys, reviews code.",
+  "description": "senior engineer for opensaas. orchestrates opencode for coding, enriches linear specs, manages deploys, reviews code. runs in background 24/7.",
   "prompt": "file:///Users/kokayi/Dev/opensaas/.kiro/agents/orchestrator-prompt.md",
   "tools": [
     "code",

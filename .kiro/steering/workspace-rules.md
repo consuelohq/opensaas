@@ -52,7 +52,7 @@ flat config with `typescript-eslint`. key rules:
 - normalize phone numbers before comparison or storage
 - annotate any `any` type with `// HACK:` explaining why
 - run `./scripts/code-review.sh` before pushing if unsure
-- commit with: `--author="suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>"`
+- commit with suelo-kiro as committer: `GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "msg"`
 
 ## commit format
 
