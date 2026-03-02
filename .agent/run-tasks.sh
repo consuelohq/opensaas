@@ -2230,60 +2230,46 @@ create_run_branch() {
 
 # Global variable to store PR URL once created
 PR_URL=""
-
-# Create a draft PR at the start of the run (so pushes go to an existing PR)
+# Reuse existing staging→main PR or create one
 create_draft_pr() {
   local issue_count="$1"
   local issue_list="$2"
 
-  log_info "Creating draft PR for run..."
+  git push -u origin staging 2>/dev/null || true
 
-  # Need at least one commit to create a PR - create an empty commit
-  # Use here-document with git commit -F to reliably handle multi-line messages
-  cat > .agent/commit_msg.txt << EOF
-chore: Start agent run $RUN_ID
+  # Check for existing open PR from staging → main
+  PR_URL=$(gh pr list --base "$PR_TARGET_BRANCH" --head staging --state open --json url --jq '.[0].url' 2>/dev/null)
+
+  if [ -n "$PR_URL" ]; then
+    log_success "Reusing existing staging PR: $PR_URL"
+    gh pr comment "$PR_URL" --body "## Run $RUN_ID started
 
 Processing $issue_count issue(s):
-$issue_list
+$issue_list" 2>/dev/null || true
+    return
+  fi
 
-Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>
-EOF
-  git commit --allow-empty -F .agent/commit_msg.txt
-  rm -f .agent/commit_msg.txt
+  log_info "Creating staging → $PR_TARGET_BRANCH PR..."
+  git commit --allow-empty -m "chore: Start agent run $RUN_ID
 
-  # Push the branch with the initial commit
-  log_info "Pushing branch to GitHub..."
-  git push -u origin "$RUN_BRANCH"
-
-  # Create draft PR
-  local pr_body="## Agent Run In Progress
-
-**Run ID:** \`$RUN_ID\`
-**Branch:** \`$RUN_BRANCH\`
-**Status:** 🔄 Running...
-
----
-
-### Issues to Process
-
-$issue_list
-
----
-
-*This PR will be updated as tasks complete.*"
+Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>"
+  git push origin staging
 
   PR_URL=$(gh pr create \
     --base "$PR_TARGET_BRANCH" \
-    --head "$RUN_BRANCH" \
-    --title "[WIP] Agent Run: $issue_count issue(s)" \
-    --body "$pr_body" \
-    --draft \
-    --json url 2>&1 | jq -r '.url // empty')
+    --head staging \
+    --title "staging" \
+    --body "Persistent PR for agent work. Merges staging → $PR_TARGET_BRANCH.
 
-  if [ $? -eq 0 ]; then
-    log_success "Draft PR created: $PR_URL"
+### Current Run: $RUN_ID ($issue_count issues)
+
+$issue_list" \
+    --draft 2>&1)
+
+  if [ $? -eq 0 ] && [ -n "$PR_URL" ]; then
+    log_success "Staging PR created: $PR_URL"
   else
-    log_warning "Failed to create draft PR: $PR_URL"
+    log_warning "Failed to create staging PR (non-fatal)"
     PR_URL=""
   fi
 }
