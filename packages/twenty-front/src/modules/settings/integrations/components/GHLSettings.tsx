@@ -12,13 +12,14 @@ import * as Sentry from '@sentry/react';
 import {
   IconAlertCircle,
   IconCheck,
+  IconDownload,
   IconExternalLink,
   IconPlugConnected,
   IconPlugX,
   IconRefresh,
-  IconSettings,
   IconSync,
   IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import { H1Title } from 'twenty-ui/display';
 import { Button, Checkbox, Toggle } from 'twenty-ui/input';
@@ -30,10 +31,9 @@ import { ghlSyncConfigState } from '@/settings/integrations/states/ghlSyncConfig
 import { ghlSyncHistoryState } from '@/settings/integrations/states/ghlSyncHistoryState';
 import { ghlPushSettingsState } from '@/settings/integrations/states/ghlPushSettingsState';
 import { ghlManualSyncProgressState } from '@/settings/integrations/states/ghlManualSyncProgressState';
+import { ghlImportProgressState } from '@/settings/integrations/states/ghlImportProgressState';
 import { ghlLoadingState } from '@/settings/integrations/states/ghlLoadingState';
 import { ghlErrorState } from '@/settings/integrations/states/ghlErrorState';
-import { ghlFieldMappingsState } from '@/settings/integrations/states/ghlFieldMappingsState';
-import { ghlPipelineMappingsState } from '@/settings/integrations/states/ghlPipelineMappingsState';
 import { GHLFieldMapping } from '@/settings/integrations/components/GHLFieldMapping';
 import { GHLPipelineMapping } from '@/settings/integrations/components/GHLPipelineMapping';
 import { useGHLSettings } from '@/settings/integrations/hooks/useGHLSettings';
@@ -245,23 +245,34 @@ const StyledPushSettingItem = styled.div`
   gap: ${({ theme }) => theme.spacing(2)};
 `;
 
+const StyledTagInput = styled.input`
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(3)}`};
+  width: 100%;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.color.blue};
+    outline: none;
+  }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.font.color.tertiary};
+  }
+`;
+
+const StyledTagHint = styled.div`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
+`;
+
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return 'Never';
   const date = new Date(dateString);
   return date.toLocaleString();
-};
-
-const formatDirection = (direction: GHLSyncDirection): string => {
-  switch (direction) {
-    case 'ghl-to-twenty':
-      return 'Import from GHL';
-    case 'twenty-to-ghl':
-      return 'Export to GHL';
-    case 'bidirectional':
-      return 'Bidirectional';
-    default:
-      return direction;
-  }
 };
 
 export const GHLSettings = () => {
@@ -271,10 +282,9 @@ export const GHLSettings = () => {
   const syncHistory = useRecoilValue(ghlSyncHistoryState);
   const pushSettings = useRecoilValue(ghlPushSettingsState);
   const syncProgress = useRecoilValue(ghlManualSyncProgressState);
+  const importProgress = useRecoilValue(ghlImportProgressState);
   const loading = useRecoilValue(ghlLoadingState);
   const error = useRecoilValue(ghlErrorState);
-  const fieldMappings = useRecoilValue(ghlFieldMappingsState);
-  const pipelineMappings = useRecoilValue(ghlPipelineMappingsState);
 
   const {
     fetchConnectionStatus,
@@ -289,10 +299,12 @@ export const GHLSettings = () => {
     fetchPushSettings,
     savePushSettings,
     triggerManualSync,
+    triggerImport,
     clearError,
   } = useGHLSettings();
 
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
+  const [tagInput, setTagInput] = useState('');
 
   // Load initial data
   useEffect(() => {
@@ -338,12 +350,28 @@ export const GHLSettings = () => {
   }, [disconnect, showDisconnectConfirm]);
 
   const handleSyncNow = useCallback(async () => {
+    const tags = tagInput
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
     try {
-      await triggerManualSync();
+      await triggerManualSync(tags.length > 0 ? tags : undefined);
     } catch (err: unknown) {
-      // Error handled by hook with Sentry
+      // error handled by hook with Sentry
     }
-  }, [triggerManualSync]);
+  }, [triggerManualSync, tagInput]);
+
+  const handleImportAll = useCallback(async () => {
+    const tags = tagInput
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+    try {
+      await triggerImport(tags.length > 0 ? tags : undefined);
+    } catch (err: unknown) {
+      // error handled by hook with Sentry
+    }
+  }, [triggerImport, tagInput]);
 
   const handleDirectionChange = useCallback(
     async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -432,6 +460,7 @@ export const GHLSettings = () => {
 
   const isLoading = loading !== 'idle';
   const isSyncing = loading === 'syncing' || syncProgress.status === 'running';
+  const isImporting = loading === 'importing' || importProgress.status === 'running';
 
   return (
     <SettingsPageContainer>
@@ -576,18 +605,58 @@ export const GHLSettings = () => {
                     <span>Enable automatic sync</span>
                   </StyledPushSettingItem>
                 </StyledConfigItem>
+              </StyledCardContent>
+            </StyledCard>
+          </StyledSection>
+
+          {/* Push Settings */}
+          <StyledSection>
+            <h2>Import & Sync Controls</h2>
+            <StyledCard rounded>
+              <StyledCardContent>
+                <StyledConfigItem>
+                  <StyledConfigLabel>Tag Filter</StyledConfigLabel>
+                  <StyledTagInput
+                    type="text"
+                    placeholder="Filter by tags (comma-separated, e.g. vip, sales)"
+                    value={tagInput}
+                    onChange={(event) => setTagInput(event.target.value)}
+                    disabled={isLoading}
+                  />
+                  <StyledTagHint>
+                    Only import/sync contacts with these GHL tags. Leave empty for all contacts.
+                  </StyledTagHint>
+                </StyledConfigItem>
 
                 <StyledButtonGroup>
+                  <Button
+                    title={isImporting ? 'Importing...' : 'Import All Contacts'}
+                    Icon={isImporting ? IconRefresh : IconDownload}
+                    variant="primary"
+                    onClick={handleImportAll}
+                    disabled={isImporting || isSyncing || isLoading}
+                  />
                   <Button
                     title={isSyncing ? 'Syncing...' : 'Sync Now'}
                     Icon={isSyncing ? IconRefresh : IconSync}
                     variant="secondary"
                     onClick={handleSyncNow}
-                    disabled={isSyncing || isLoading}
+                    disabled={isSyncing || isImporting || isLoading}
                   />
                 </StyledButtonGroup>
 
-                {(isSyncing || syncProgress.status !== 'idle') && (
+                {(isImporting || importProgress.status !== 'idle') && (
+                  <>
+                    <StyledProgressBar>
+                      <StyledProgressFill progress={importProgress.progress} />
+                    </StyledProgressBar>
+                    <StyledProgressText>
+                      {importProgress.message}
+                    </StyledProgressText>
+                  </>
+                )}
+
+                {(isSyncing || syncProgress.status !== 'idle') && !isImporting && (
                   <>
                     <StyledProgressBar>
                       <StyledProgressFill progress={syncProgress.progress} />
@@ -669,7 +738,7 @@ export const GHLSettings = () => {
 
           {/* Sync History */}
           <StyledSection>
-            <h2>Sync History</h2>
+            <h2>Sync Log</h2>
             <StyledCard rounded>
               <StyledTableContainer>
                 {syncHistory.length === 0 ? (
@@ -681,11 +750,12 @@ export const GHLSettings = () => {
                     <thead>
                       <tr>
                         <StyledTh>Date</StyledTh>
-                        <StyledTh>Direction</StyledTh>
+                        <StyledTh>Type</StyledTh>
                         <StyledTh>Status</StyledTh>
-                        <StyledTh>Records</StyledTh>
-                        <StyledTh>Created</StyledTh>
+                        <StyledTh>Total</StyledTh>
+                        <StyledTh>Imported</StyledTh>
                         <StyledTh>Updated</StyledTh>
+                        <StyledTh>Skipped</StyledTh>
                         <StyledTh>Errors</StyledTh>
                       </tr>
                     </thead>
@@ -694,27 +764,26 @@ export const GHLSettings = () => {
                         .slice()
                         .sort(
                           (a, b) =>
-                            new Date(b.timestamp).getTime() -
-                            new Date(a.timestamp).getTime(),
+                            new Date(b.startedAt).getTime() -
+                            new Date(a.startedAt).getTime(),
                         )
                         .map((entry: GHLSyncLogEntry) => (
                           <StyledRow key={entry.id}>
-                            <StyledTd>{formatDate(entry.timestamp)}</StyledTd>
-                            <StyledTd>
-                              {formatDirection(entry.direction)}
-                            </StyledTd>
+                            <StyledTd>{formatDate(entry.startedAt)}</StyledTd>
+                            <StyledTd>{entry.syncType}</StyledTd>
                             <StyledTd>
                               <StyledStatusBadge status={entry.status}>
                                 {entry.status}
                               </StyledStatusBadge>
                             </StyledTd>
-                            <StyledTd>{entry.recordsSynced}</StyledTd>
-                            <StyledTd>{entry.recordsCreated}</StyledTd>
-                            <StyledTd>{entry.recordsUpdated}</StyledTd>
+                            <StyledTd>{entry.totalContacts}</StyledTd>
+                            <StyledTd>{entry.importedCount}</StyledTd>
+                            <StyledTd>{entry.updatedCount}</StyledTd>
+                            <StyledTd>{entry.skippedCount}</StyledTd>
                             <StyledTd>
-                              {entry.recordsFailed > 0 ? (
+                              {entry.errorMessage ? (
                                 <span style={{ color: theme.color.red }}>
-                                  {entry.recordsFailed}
+                                  {entry.errorMessage}
                                 </span>
                               ) : (
                                 <IconCheck
