@@ -20,15 +20,18 @@ import {
 } from '../services/ghl-webhook.js';
 import {
   GHLPipelineSync,
-  type StageMapping,
+  type PipelineMappingInput,
 } from '../services/ghl-pipeline.js';
 import {
   GHLSyncService,
   type SyncOptions,
   type ConflictResolution,
 } from '../services/ghl-sync.js';
+import { redisService } from '../services/redis.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
+
+const useRedis = !!process.env.REDIS_URL;
 
 type Pool = {
   query(
@@ -39,14 +42,13 @@ type Pool = {
 
 const getPool = getSharedPool;
 
-// in-memory PKCE verifier store (keyed by state param)
-// in production, use redis with short TTL — DEV-779
+// in-memory PKCE verifier fallback for local dev (no redis)
 const pendingVerifiers = new Map<
   string,
   { codeVerifier: string; workspaceId: string; createdAt: number }
 >();
 
-// clean up stale verifiers older than 10 minutes
+// clean up stale verifiers older than 10 minutes (fallback only)
 const cleanStaleVerifiers = (): void => {
   const cutoff = Date.now() - 10 * 60 * 1000;
   for (const [key, val] of pendingVerifiers) {
@@ -148,11 +150,18 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const { url, codeVerifier } = service.getAuthUrl(state);
 
         cleanStaleVerifiers();
-        pendingVerifiers.set(state, {
-          codeVerifier,
-          workspaceId: auth.workspaceId,
-          createdAt: Date.now(),
-        });
+        if (useRedis) {
+          await redisService.setPkceVerifier(state, {
+            codeVerifier,
+            workspaceId: auth.workspaceId,
+          });
+        } else {
+          pendingVerifiers.set(state, {
+            codeVerifier,
+            workspaceId: auth.workspaceId,
+            createdAt: Date.now(),
+          });
+        }
 
         res.status(200).json({ url, state });
       }),
@@ -187,7 +196,13 @@ export const ghlRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const pending = pendingVerifiers.get(state);
+        let pending: { codeVerifier: string; workspaceId: string } | null = null;
+        if (useRedis) {
+          pending = await redisService.getPkceVerifier(state as string);
+        } else {
+          const entry = pendingVerifiers.get(state as string);
+          if (entry) pending = { codeVerifier: entry.codeVerifier, workspaceId: entry.workspaceId };
+        }
         if (!pending) {
           res.status(400).json({
             error: {
@@ -198,7 +213,11 @@ export const ghlRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        pendingVerifiers.delete(state);
+        if (useRedis) {
+          await redisService.deletePkceVerifier(state as string);
+        } else {
+          pendingVerifiers.delete(state as string);
+        }
 
         const service = await getAuthService();
         const tokens = await service.handleCallback(code, pending.codeVerifier);
@@ -346,45 +365,50 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const db = await getPool();
         const pipelineSync = new GHLPipelineSync(client, db);
 
-        const pipelines = await client.getPipelines();
-        const mappings = await pipelineSync.getMappedPipelines(
-          auth.workspaceId,
-        );
+        const pipelines = await pipelineSync.getPipelines(auth.workspaceId);
+        const mappings = await pipelineSync.getMappings(auth.workspaceId);
 
         res.status(200).json({ pipelines, mappings });
       }),
     },
 
-    // POST /v1/integrations/ghl/pipelines/map — save stage mappings
+    // PUT /v1/integrations/ghl/pipelines/mappings — update stage mappings
     {
-      method: 'POST',
-      path: '/v1/integrations/ghl/pipelines/map',
+      method: 'PUT',
+      path: '/v1/integrations/ghl/pipelines/mappings',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
 
-        const { ghlPipelineId, twentyPipelineId, stageMappings } = req.body as {
-          ghlPipelineId: string;
-          twentyPipelineId: string;
-          stageMappings: StageMapping[];
-        };
-
-        if (
-          !ghlPipelineId ||
-          !twentyPipelineId ||
-          !Array.isArray(stageMappings)
-        ) {
+        const { mappings } = req.body as { mappings: PipelineMappingInput[] };
+        if (!Array.isArray(mappings)) {
           res.status(400).json({
             error: {
               code: 'INVALID_PAYLOAD',
-              message:
-                'missing ghlPipelineId, twentyPipelineId, or stageMappings',
+              message: 'mappings must be an array',
             },
           });
           return;
         }
 
-        const db = await getPool();
+        for (const mapping of mappings) {
+          if (
+            !mapping.ghlPipelineId ||
+            !mapping.ghlStageId ||
+            !mapping.twentyPipelineId ||
+            !mapping.twentyStageId
+          ) {
+            res.status(400).json({
+              error: {
+                code: 'INVALID_PAYLOAD',
+                message:
+                  'each mapping must have ghlPipelineId, ghlStageId, twentyPipelineId, and twentyStageId',
+              },
+            });
+            return;
+          }
+        }
+
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
@@ -401,24 +425,20 @@ export const ghlRoutes = (): RouteDefinition[] => {
           () => authSvc.getValidToken(auth.workspaceId),
           status.locationId,
         );
+        const db = await getPool();
         const pipelineSync = new GHLPipelineSync(client, db);
-        await pipelineSync.mapPipelineStages(
-          auth.workspaceId,
-          ghlPipelineId,
-          twentyPipelineId,
-          stageMappings,
-        );
+        await pipelineSync.updateMappings(auth.workspaceId, mappings);
 
-        res.status(200).json({ mapped: true, count: stageMappings.length });
-        logger.info('ghl.pipelines_mapped', {
-          action: 'ghl.pipelines_mapped',
+        res.status(200).json({ updated: true, count: mappings.length });
+        logger.info('ghl.mappings_updated', {
+          action: 'ghl.mappings_updated',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
         });
       }),
     },
 
-    // POST /v1/integrations/ghl/pipelines/sync — sync opportunities for mapped pipelines
+    // POST /v1/integrations/ghl/pipelines/sync — sync opportunities with conflict detection
     {
       method: 'POST',
       path: '/v1/integrations/ghl/pipelines/sync',
@@ -426,6 +446,8 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const auth = requireAuth(req, res);
         if (!auth) return;
 
+        const { checkConflicts } = req.body as { checkConflicts?: boolean };
+
         const authSvc = await getAuthService();
         const status = await authSvc.getStatus(auth.workspaceId);
         if (!status.connected || !status.locationId) {
@@ -444,9 +466,15 @@ export const ghlRoutes = (): RouteDefinition[] => {
         );
         const db = await getPool();
         const pipelineSync = new GHLPipelineSync(client, db);
+
+        let conflicts = null;
+        if (checkConflicts) {
+          conflicts = await pipelineSync.detectConflicts(auth.workspaceId);
+        }
+
         const result = await pipelineSync.syncOpportunities(auth.workspaceId);
 
-        res.status(200).json(result);
+        res.status(200).json({ ...result, conflicts });
         logger.info('ghl.pipelines_synced', {
           action: 'ghl.pipelines_synced',
           userId: auth.userId ?? 'anonymous',
@@ -662,6 +690,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
           const rawBody =
             typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
           if (!verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+            Sentry.captureMessage(
+              'GHL webhook signature verification failed',
+              'warning',
+            );
             res.status(401).json({
               error: {
                 code: 'INVALID_SIGNATURE',
@@ -686,6 +718,11 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const handler = await getWebhookHandler();
         await handler.handleWebhook(payload);
         res.status(200).json({ received: true });
+        logger.info('webhook.ghl_received', {
+          action: 'webhook.ghl_received',
+          userId: 'anonymous',
+          outcome: 'success',
+        });
       }),
     },
   ];

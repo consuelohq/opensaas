@@ -76,6 +76,13 @@ linear_get_ready_issues() {
           title
           description
           createdAt
+          comments {
+            nodes {
+              body
+              user { name }
+              createdAt
+            }
+          }
         }
       }
     }

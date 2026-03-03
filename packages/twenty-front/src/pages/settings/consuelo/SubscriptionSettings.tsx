@@ -1,18 +1,44 @@
+import { useCallback, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
-import { IconClock, IconRocket, IconSparkles } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconClock,
+  IconKey,
+  IconRocket,
+  IconSparkles,
+  IconX,
+} from '@tabler/icons-react';
+import { captureException } from '@sentry/react';
 import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
-const TRIAL_LIMIT_MINUTES = 60;
-const SUBSCRIBED_DAILY_LIMIT_MINUTES = 120;
+type BillingMode = 'hosted' | 'byok';
+type PlanStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'none';
+type AddOnKey = 'dialer-coach' | 'ai-assistant';
 
-// hardcoded trial state — replace with API data when subscription routes exist
-const MOCK_PLAN = {
-  name: 'Free Trial',
-  status: 'trialing' as const,
-  minutesUsed: 0,
-  isSubscribed: false,
+type SubscriptionStatusResponse = {
+  workspaceId: string;
+  mode: BillingMode;
+  plan: {
+    name: string;
+    status: PlanStatus;
+    interval: 'month' | 'year' | null;
+    currentPeriodEnd: string | null;
+  };
+  addOns: AddOnKey[];
+  usage: {
+    callMinutes: { used: number; limit: number | null };
+    aiTokens: { used: number; limit: number | null };
+  };
+  byokKeys: {
+    twilio: boolean;
+    groq: boolean;
+    openai: boolean;
+  } | null;
+  stripeCustomerId: string | null;
 };
 
 const StyledCardContent = styled.div`
@@ -33,12 +59,20 @@ const StyledPlanName = styled.span`
   font-weight: ${({ theme }) => theme.font.weight.medium};
 `;
 
-const StyledBadge = styled.span<{ variant: 'trial' | 'active' }>`
+const StyledBadge = styled.span<{ variant: 'trial' | 'active' | 'error' }>`
   background: ${({ variant, theme }) =>
-    variant === 'active' ? theme.color.green + '20' : theme.color.blue + '20'};
+    variant === 'active'
+      ? theme.color.green + '20'
+      : variant === 'error'
+        ? theme.color.red + '20'
+        : theme.color.blue + '20'};
   border-radius: 12px;
   color: ${({ variant, theme }) =>
-    variant === 'active' ? theme.color.green : theme.color.blue};
+    variant === 'active'
+      ? theme.color.green
+      : variant === 'error'
+        ? theme.color.red
+        : theme.color.blue};
   font-size: ${({ theme }) => theme.font.size.sm};
   padding: 2px 10px;
 `;
@@ -84,65 +118,263 @@ const StyledButtonRow = styled.div`
   gap: ${({ theme }) => theme.spacing(2)};
 `;
 
+const StyledKeyRow = styled.div`
+  align-items: center;
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  gap: ${({ theme }) => theme.spacing(1)};
+`;
+
+function badgeVariant(
+  status: PlanStatus,
+): 'trial' | 'active' | 'error' {
+  if (status === 'active') return 'active';
+  if (status === 'past_due' || status === 'canceled') return 'error';
+  return 'trial';
+}
+
 export const SubscriptionSettings = () => {
-  const { name, status, minutesUsed, isSubscribed } = MOCK_PLAN;
-  const limit = isSubscribed
-    ? SUBSCRIBED_DAILY_LIMIT_MINUTES
-    : TRIAL_LIMIT_MINUTES;
-  const percent = limit > 0 ? (minutesUsed / limit) * 100 : 0;
-  const limitLabel = isSubscribed ? `${limit} min / day` : `${limit} min total`;
+  const [data, setData] = useState<SubscriptionStatusResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/subscription/status`,
+      );
+      if (res.ok) {
+        setData((await res.json()) as SubscriptionStatusResponse);
+      }
+    } catch (err: unknown) {
+      captureException(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchStatus();
+  }, [fetchStatus]);
+
+  const handleCheckout = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      const res = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/subscription/checkout`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            successUrl: `${window.location.origin}/settings/mercury/subscription?success=true`,
+            cancelUrl: `${window.location.origin}/settings/mercury/subscription`,
+          }),
+        },
+      );
+      const result = (await res.json()) as { url?: string };
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (err: unknown) {
+      captureException(err);
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
+  const handlePortal = useCallback(async () => {
+    setActionLoading(true);
+    try {
+      const res = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/subscription/portal`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            returnUrl: `${window.location.origin}/settings/mercury/subscription`,
+          }),
+        },
+      );
+      const result = (await res.json()) as { url?: string };
+      if (result.url) {
+        window.location.href = result.url;
+      }
+    } catch (err: unknown) {
+      captureException(err);
+    } finally {
+      setActionLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <Section>
+        <StyledHint>Loading subscription...</StyledHint>
+      </Section>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Section>
+        <StyledHint>Unable to load subscription status</StyledHint>
+      </Section>
+    );
+  }
+
+  const { plan, mode, addOns, usage, byokKeys } = data;
+  const isSubscribed = plan.status === 'active' || plan.status === 'trialing';
 
   return (
     <>
       <Section>
-        <H2Title title="Current Plan" description="Your dialer subscription" />
+        <H2Title title="Current Plan" description="Your subscription" />
         <Card rounded>
           <StyledCardContent>
             <StyledPlanRow>
-              <StyledPlanName>{name}</StyledPlanName>
-              <StyledBadge
-                variant={status === 'trialing' ? 'trial' : 'active'}
-              >
-                {status === 'trialing' ? 'trial' : 'active'}
-              </StyledBadge>
+              <StyledPlanName>
+                {plan.name === 'none' ? 'No Plan' : plan.name}
+                {addOns.length > 0 && ` + ${addOns.join(', ')}`}
+              </StyledPlanName>
+              {plan.status !== 'none' && (
+                <StyledBadge variant={badgeVariant(plan.status)}>
+                  {plan.status}
+                </StyledBadge>
+              )}
             </StyledPlanRow>
-            <div>
-              <StyledMeterLabel>
-                <span>
-                  <IconClock size={14} style={{ marginRight: 4 }} />
-                  Minutes used
-                </span>
-                <span>
-                  {minutesUsed} / {limitLabel}
-                </span>
-              </StyledMeterLabel>
-              <StyledMeterTrack>
-                <StyledMeterFill percent={percent} warn={percent > 90} />
-              </StyledMeterTrack>
-            </div>
-            {!isSubscribed && (
+
+            {mode === 'byok' && (
               <StyledHint>
-                Trial includes {TRIAL_LIMIT_MINUTES} minutes of total calling
-                time. Upgrade for {SUBSCRIBED_DAILY_LIMIT_MINUTES} min/day.
+                Mode: Bring Your Own Keys — no usage limits
+              </StyledHint>
+            )}
+
+            {mode === 'hosted' && (
+              <>
+                <div>
+                  <StyledMeterLabel>
+                    <span>
+                      <IconClock size={14} style={{ marginRight: 4 }} />
+                      Call minutes
+                    </span>
+                    <span>
+                      {usage.callMinutes.used}
+                      {usage.callMinutes.limit
+                        ? ` / ${usage.callMinutes.limit}`
+                        : ''}
+                    </span>
+                  </StyledMeterLabel>
+                  {usage.callMinutes.limit && (
+                    <StyledMeterTrack>
+                      <StyledMeterFill
+                        percent={
+                          (usage.callMinutes.used / usage.callMinutes.limit) *
+                          100
+                        }
+                        warn={
+                          usage.callMinutes.used / usage.callMinutes.limit > 0.9
+                        }
+                      />
+                    </StyledMeterTrack>
+                  )}
+                </div>
+                <div>
+                  <StyledMeterLabel>
+                    <span>
+                      <IconSparkles size={14} style={{ marginRight: 4 }} />
+                      AI tokens
+                    </span>
+                    <span>
+                      {usage.aiTokens.used.toLocaleString()}
+                      {usage.aiTokens.limit
+                        ? ` / ${usage.aiTokens.limit.toLocaleString()}`
+                        : ''}
+                    </span>
+                  </StyledMeterLabel>
+                  {usage.aiTokens.limit && (
+                    <StyledMeterTrack>
+                      <StyledMeterFill
+                        percent={
+                          (usage.aiTokens.used / usage.aiTokens.limit) * 100
+                        }
+                        warn={
+                          usage.aiTokens.used / usage.aiTokens.limit > 0.9
+                        }
+                      />
+                    </StyledMeterTrack>
+                  )}
+                </div>
+              </>
+            )}
+
+            {plan.currentPeriodEnd && (
+              <StyledHint>
+                {plan.interval === 'year' ? 'Annual' : 'Monthly'} — renews{' '}
+                {new Date(plan.currentPeriodEnd).toLocaleDateString()}
               </StyledHint>
             )}
           </StyledCardContent>
         </Card>
       </Section>
 
+      {byokKeys && (
+        <Section>
+          <H2Title
+            title="Your Keys"
+            description="API keys configured for BYOK"
+          />
+          <Card rounded>
+            <StyledCardContent>
+              <StyledKeyRow>
+                <IconKey size={14} />
+                Twilio{' '}
+                {byokKeys.twilio ? (
+                  <IconCheck size={14} color="green" />
+                ) : (
+                  <IconX size={14} color="red" />
+                )}
+              </StyledKeyRow>
+              <StyledKeyRow>
+                <IconKey size={14} />
+                Groq{' '}
+                {byokKeys.groq ? (
+                  <IconCheck size={14} color="green" />
+                ) : (
+                  <IconX size={14} color="red" />
+                )}
+              </StyledKeyRow>
+              <StyledKeyRow>
+                <IconKey size={14} />
+                OpenAI{' '}
+                {byokKeys.openai ? (
+                  <IconCheck size={14} color="green" />
+                ) : (
+                  <IconX size={14} color="red" />
+                )}
+              </StyledKeyRow>
+            </StyledCardContent>
+          </Card>
+        </Section>
+      )}
+
       <Section>
-        <H2Title title="Add-ons" description="Available add-ons for your plan" />
+        <H2Title title="Add-ons" description="Available add-ons" />
         <Card rounded>
           <StyledCardContent>
             <StyledAddonRow>
               <IconSparkles size={16} />
-              AI Coaching — real-time call coaching and post-call analysis
+              Dialer + AI Coach
+              {addOns.includes('dialer-coach') && (
+                <StyledBadge variant="active">active</StyledBadge>
+              )}
             </StyledAddonRow>
             <StyledAddonRow>
               <IconRocket size={16} />
-              Parallel Dialing — dial up to 3 numbers simultaneously
+              AI Assistant
+              {addOns.includes('ai-assistant') && (
+                <StyledBadge variant="active">active</StyledBadge>
+              )}
             </StyledAddonRow>
-            <StyledHint>Add-on management coming soon</StyledHint>
           </StyledCardContent>
         </Card>
       </Section>
@@ -154,24 +386,19 @@ export const SubscriptionSettings = () => {
             <Button
               title="Upgrade Plan"
               variant="primary"
-              disabled
-              onClick={() => {
-                // TODO: DEV-750 — open stripe checkout when subscription routes exist
-              }}
+              disabled={actionLoading}
+              onClick={() => void handleCheckout()}
             />
           )}
-          <Button
-            title="Manage Billing"
-            variant="secondary"
-            disabled
-            onClick={() => {
-              // TODO: DEV-750 — open stripe customer portal when subscription routes exist
-            }}
-          />
+          {data.stripeCustomerId && (
+            <Button
+              title="Manage Billing"
+              variant="secondary"
+              disabled={actionLoading}
+              onClick={() => void handlePortal()}
+            />
+          )}
         </StyledButtonRow>
-        <StyledHint style={{ marginTop: 8 }}>
-          Subscription management coming soon
-        </StyledHint>
       </Section>
     </>
   );

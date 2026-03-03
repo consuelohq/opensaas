@@ -1,75 +1,41 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { Hero } from "../components/Hero";
-
-const features = [
-  {
-    label: "SALES TOOLS",
-    items: [
-      { title: "Power Dialer", desc: "Multi-line dials, increased contact rate and volume", icon: "/icons/power-dialer.li" },
-      { title: "Local Presence", desc: "Call from local numbers everywhere", icon: "/icons/local-presence.li" },
-      { title: "Call Transfer", desc: "Warm and cold transfers without dropping", icon: "/icons/call-transfer.li" },
-      { title: "Spam Shield", desc: "Protect your numbers and reputation", icon: "/icons/spam-shield.li" },
-    ],
-  },
-  {
-    label: "AI",
-    items: [
-      { title: "AI CRM", desc: "Talk to your CRM — tell it what to do", icon: "/icons/ai-crm.li" },
-      { title: "On-Call Coaching", desc: "Real-time whispers that increase time on call", icon: "/icons/on-call-coaching.li" },
-      { title: "AI Queue", desc: "Automatically create and manage your call queue", icon: "/icons/ai-queue.li" },
-      { title: "Script Mode", desc: "Upload scripts for whisper training", icon: "/icons/script-mode.li" },
-    ],
-  },
-  {
-    label: "AUTOMATION",
-    items: [
-      { title: "Lead Disbursement", desc: "Distribute leads across your team instantly", icon: "/icons/lead-disbursement.li" },
-      { title: "Post-Sale Sequences", desc: "Auto follow-up at one week, one month, three months", icon: "/icons/post-sale-sequences.li" },
-      { title: "Re-engagement Queues", desc: "Auto-queue old leads that didn't answer", icon: "/icons/re-engagement-queues.li" },
-      { title: "Pipeline Nourishment", desc: "Reduce chargebacks with automated nurture", icon: "/icons/pipeline-nourishment.li" },
-    ],
-  },
-  {
-    label: "INTEGRATIONS",
-    items: [
-      { title: "GoHighLevel", desc: "Embedded GHL in your workflow", icon: "/icons/gohighlevel.li" },
-      { title: "Google Extension", desc: "Consuelo everywhere you work in Chrome", icon: "/icons/google-extension.li" },
-      { title: "Ads to CRM", desc: "Connect your ads platform straight to your CRM", icon: "/icons/ads-to-crm.li" },
-      { title: "Chat SDK", desc: "Extends to Discord, Slack, and Teams", icon: "/icons/chat-sdk.li" },
-    ],
-  },
-];
+import { DashboardDemo } from "../components/DashboardDemo";
+import { ProblemSection } from "../components/ProblemSection";
+import { SolutionSection } from "../components/SolutionSection";
+import { DialerDemo } from "../components/DialerDemo";
+import { ProofSection } from "../components/ProofSection";
+import { PricingPreview } from "../components/PricingPreview";
 ---
 
 <SiteLayout>
   <!-- hero -->
   <Hero client:load />
 
-  <!-- features grid — one section per category, alternating -->
-  {features.map((group, i) => (
-    <section class="py-20 sm:py-24">
-      <div class="mx-auto max-w-[1000px] px-6">
-        <p class="mb-3 text-xs font-medium tracking-[0.1em] text-(--color-muted)">{group.label}</p>
-        <div class="grid gap-6 sm:grid-cols-2">
-          {group.items.map((item) => (
-            <div class="flex gap-4 rounded-xl border border-(--color-border) p-5 transition-colors hover:border-(--color-muted)">
-              <span class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-(--color-border)">
-                {/* @ts-expect-error lord-icon is a web component */}
-                <lord-icon src={item.icon} trigger="hover" class="current-color" style="width:22px;height:22px" />
-              </span>
-              <div>
-                <p class="text-[15px] font-medium">{item.title}</p>
-                <p class="mt-1 text-sm text-(--color-muted)">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  ))}
+  <!-- full CRM dashboard demo — 4 clickable tabs -->
+  <section class="py-20 sm:py-24">
+    <div class="mx-auto w-full max-w-7xl px-6">
+      <DashboardDemo client:visible />
+    </div>
+  </section>
 
-  <!-- open source callout — surface-1 -->
+  <!-- problem + solution — emotional bridge -->
+  <ProblemSection client:visible />
+  <SolutionSection client:visible />
+
+  <!-- standalone dialer demo -->
+  <section class="py-20 sm:py-24">
+    <div class="mx-auto max-w-[480px] px-6">
+      <DialerDemo client:visible />
+    </div>
+  </section>
+
+  <!-- proof + pricing -->
+  <ProofSection client:visible />
+  <PricingPreview client:load />
+
+  <!-- open source callout -->
   <section class=" py-20 sm:py-24">
     <div class="mx-auto max-w-[600px] px-6 text-center">
       <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Open source, from day one.</h2>
@@ -83,7 +49,7 @@ const features = [
     </div>
   </section>
 
-  <!-- final cta — surface-0 -->
+  <!-- final cta -->
   <section class=" py-20 sm:py-28">
     <div class="mx-auto max-w-[600px] px-6 text-center">
       <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Ready to shorten ramp time?</h2>
