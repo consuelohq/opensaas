@@ -1,18 +1,22 @@
-// GHL integration types — DEV-1094
+// GHL integration types — DEV-1094, DEV-1095
 
 export type GHLSyncDirection = 'ghl-to-twenty' | 'twenty-to-ghl' | 'bidirectional';
 
 export type GHLConflictResolution = 'newest' | 'ghl-wins' | 'twenty-wins';
 
+// matches backend SyncLogEntry from ghl-sync.ts
 export type GHLSyncLogEntry = {
   id: string;
-  timestamp: string;
-  direction: GHLSyncDirection;
-  status: 'completed' | 'failed' | 'running';
-  recordsSynced: number;
-  recordsCreated: number;
-  recordsUpdated: number;
-  recordsFailed: number;
+  syncType: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  totalContacts: number;
+  importedCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  conflictCount: number;
+  errorMessage?: string;
 };
 
 export type GHLSyncConfig = {
@@ -30,6 +34,12 @@ export type GHLPushSettings = {
 };
 
 export type GHLManualSyncProgress = {
+  status: 'idle' | 'running' | 'completed' | 'failed';
+  progress: number;
+  message: string;
+};
+
+export type GHLImportProgress = {
   status: 'idle' | 'running' | 'completed' | 'failed';
   progress: number;
   message: string;
@@ -63,4 +73,4 @@ export type GHLPipelineStageMapping = {
   twentyStageName: string | null;
 };
 
-export type GHLLoadingState = 'idle' | 'loading' | 'syncing' | 'saving';
+export type GHLLoadingState = 'idle' | 'loading' | 'syncing' | 'importing' | 'saving';
