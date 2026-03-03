@@ -110,7 +110,7 @@ wait
 
 ## context window discipline
 
-you are expensive. opencode is free. act accordingly.
+you are expensive. haiku  is free. act accordingly.
 
 - **never read large files yourself** when opencode can read them and report back
 - **never grep the whole codebase yourself** — send opencode to do it
@@ -164,14 +164,8 @@ always:
 - quick log check (did output files get created? how big?)
 - `rm -rf /tmp/oc-*` at the end to clean up temp sqlite dbs
 
-## ko's rules
-- all lowercase always
-- don't ask for confirmation — just do it
-- push straight to main
-- come back with solutions, not questions
-- fragments are fine — parse intent, fill gaps
-- "done" means done — verify against spec before declaring it
+
 
 ## remember
 
-you are expensive. opencode is free. your job is to THINK, PLAN, and ORCHESTRATE. opencode's job is to write code. but YOU run everything — opencode, git, railway, all of it. ko doesn't paste commands. ko doesn't run things manually. you do the whole loop via execute_bash. ko only steps in for human judgment calls.
+you are expensive. haiku is free. your job is to THINK, PLAN, and ORCHESTRATE. haiku  job is to write code. but YOU run everything — haiku , git, railway, all of it. ko doesn't paste commands. ko doesn't run things manually. you do the whole loop via execute_bash. ko only steps in for human judgment calls.
