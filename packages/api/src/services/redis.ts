@@ -2,6 +2,7 @@ import IORedis from 'ioredis';
 import * as Sentry from '@sentry/node';
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
+const PKCE_TTL_SECONDS = 600; // 10 minutes
 
 class RedisService {
   private client: IORedis | null = null;
@@ -144,6 +145,38 @@ class RedisService {
       await client.del(`transfer:${transferId}`);
     } catch (err: unknown) {
       Sentry.captureException(err, { extra: { context: 'deleteTransfer', transferId } });
+      throw err;
+    }
+  }
+
+  async setPkceVerifier(state: string, data: { codeVerifier: string; workspaceId: string }): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(`ghl:pkce:${state}`, PKCE_TTL_SECONDS, JSON.stringify(data));
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setPkceVerifier', state } });
+      throw err;
+    }
+  }
+
+  async getPkceVerifier(state: string): Promise<{ codeVerifier: string; workspaceId: string } | null> {
+    try {
+      const client = await this.getClient();
+      const result = await client.get(`ghl:pkce:${state}`);
+      if (!result) return null;
+      return JSON.parse(result) as { codeVerifier: string; workspaceId: string };
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getPkceVerifier', state } });
+      throw err;
+    }
+  }
+
+  async deletePkceVerifier(state: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.del(`ghl:pkce:${state}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'deletePkceVerifier', state } });
       throw err;
     }
   }
