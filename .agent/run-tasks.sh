@@ -662,10 +662,24 @@ get_linear_tasks() {
 
   # Transform Linear format to match GitHub Issues format
   # For Linear: number = identifier (e.g., "CON-123"), use id for API calls
+  # Merge description + comments so the agent sees full context
   echo "$linear_issues" | jq -c '{
     number: .identifier,
     title: .title,
-    body: (.description // ""),
+    body: ((.description // "") + (
+      if (.comments.nodes | length) > 0 then
+        "
+
+---
+## Comments
+
+" + ([.comments.nodes[] | "**" + .user.name + "** (" + .createdAt + "):
+" + .body + "
+"] | join("
+---
+"))
+      else "" end
+    )),
     linear_id: .id
   }' 2>/dev/null
 }
