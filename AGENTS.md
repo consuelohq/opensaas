@@ -99,7 +99,14 @@ npx nx build twenty-server
 
 ### database operations
 
+> **IMPORTANT:** always run `bash scripts/db-backup.sh` before any migration, reset, or schema change. backups are saved to `.agent/backups/` and the last 5 are kept automatically.
+
 ```bash
+# backup/restore (run backup BEFORE any db work)
+bash scripts/db-backup.sh                    # snapshot current database
+bash scripts/db-restore.sh                   # list available backups
+bash scripts/db-restore.sh <backup-file>     # restore from backup
+
 # database management
 npx nx database:reset twenty-server         # reset database
 npx nx run twenty-server:database:init:prod # initialize database

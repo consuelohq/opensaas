@@ -471,6 +471,13 @@ const SettingsMercuryTwilio = lazy(() =>
   ),
 );
 
+const SettingsMercuryGHL = lazy(() =>
+  import('~/pages/settings/consuelo/SettingsMercuryGHL').then((module) => ({
+    default: module.SettingsMercuryGHL,
+  })),
+);
+
+
 type SettingsRoutesProps = {
   isFunctionSettingsEnabled?: boolean;
   isAdminPageEnabled?: boolean;
@@ -739,6 +746,10 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
       <Route
         path={SettingsPath.MercuryTwilio}
         element={<SettingsMercuryTwilio />}
+      />
+      <Route
+        path={SettingsPath.MercuryGHL}
+        element={<SettingsMercuryGHL />}
       />
 
       {isAdminPageEnabled && (

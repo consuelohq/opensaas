@@ -1,13 +1,16 @@
 import styled from '@emotion/styled';
+import { IconRobot } from 'twenty-ui/display';
 
 import { AgentChatPanel } from '@/agent/components/AgentChatPanel';
 import { AgentContextPanel } from '@/agent/components/AgentContextPanel';
-import { AgentSkillsSidebar } from '@/agent/components/AgentSkillsSidebar';
 import { useAgentHotkeys } from '@/agent/hooks/useAgentHotkeys';
+import { PageContainer } from '@/ui/layout/page/components/PageContainer';
+import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 
-const StyledContainer = styled.div`
+const StyledContent = styled.div`
   display: flex;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 `;
 
@@ -15,10 +18,12 @@ export const AgentPage = () => {
   useAgentHotkeys();
 
   return (
-    <StyledContainer>
-      <AgentSkillsSidebar />
-      <AgentChatPanel />
-      <AgentContextPanel />
-    </StyledContainer>
+    <PageContainer>
+      <PageHeader title="Agent" Icon={IconRobot} />
+      <StyledContent>
+        <AgentChatPanel />
+        <AgentContextPanel />
+      </StyledContent>
+    </PageContainer>
   );
 };

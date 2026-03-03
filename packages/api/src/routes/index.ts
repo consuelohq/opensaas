@@ -24,10 +24,10 @@ import { queueRoutes } from './queues.js';
 import { voiceRoutes } from './voice.js';
 import { workspaceRoutes } from './workspace.js';
 import { ghlRoutes } from './ghl.js';
-import { ghlIntegrationRoutes } from './integrations/ghl.js';
-import { ghlWebhookRoutes } from './webhooks/ghl.js';
 import { twilioSettingsRoutes } from './twilio-settings.js';
 import { discordAuthRoutes } from './discord-auth.js';
+import { subscriptionRoutes } from './subscription.js';
+import { stripeWebhookRoutes } from './webhooks/stripe.js';
 export {
   analyticsRoutes,
   assistantRoutes,
@@ -44,9 +44,9 @@ export {
   voiceRoutes,
   workspaceRoutes,
   ghlRoutes,
-  ghlIntegrationRoutes,
-  ghlWebhookRoutes,
   twilioSettingsRoutes,
+  subscriptionRoutes,
+  stripeWebhookRoutes,
 };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
@@ -102,8 +102,8 @@ export const allRoutes = (): RouteDefinition[] => [
   ...analyticsRoutes(),
   ...workspaceRoutes(),
   ...ghlRoutes(),
-  ...ghlIntegrationRoutes(),
-  ...ghlWebhookRoutes(),
   ...twilioSettingsRoutes(),
+  ...subscriptionRoutes(),
+  ...stripeWebhookRoutes(),
   ...webhookRoutes(),
 ];
