@@ -70,6 +70,57 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
   },
 
   {
+    method: 'POST',
+    path: '/v1/settings/twilio/test',
+    handler: errorHandler(async (req, res) => {
+      const workspaceId = req.auth?.workspaceId;
+      if (!workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const body = req.body as ByokBody | undefined;
+      if (!body?.accountSid || !body?.authToken) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing accountSid or authToken',
+          },
+        });
+        return;
+      }
+
+      try {
+        const twilio = await import('twilio');
+        const createClient =
+          twilio.default ??
+          (twilio as unknown as { default: typeof twilio.default }).default;
+        const testClient = createClient(body.accountSid, body.authToken);
+        await testClient.api.accounts(body.accountSid).fetch();
+        res.status(200).json({ valid: true });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message =
+          err instanceof Error ? err.message : 'Connection test failed';
+        const isAuthError =
+          err instanceof Error &&
+          (err.message.includes('authenticate') ||
+            err.message.includes('401') ||
+            err.message.includes('20003'));
+        res.status(isAuthError ? 400 : 500).json({
+          valid: false,
+          error: {
+            code: isAuthError ? 'INVALID_CREDENTIALS' : 'CONNECTION_ERROR',
+            message: isAuthError ? 'Invalid Twilio credentials' : message,
+          },
+        });
+      }
+    }),
+  },
+
+  {
     method: 'PUT',
     path: '/v1/settings/twilio',
     handler: errorHandler(async (req, res) => {
