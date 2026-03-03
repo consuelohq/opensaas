@@ -9,6 +9,7 @@ import { useAgentConversations } from '@/agent/hooks/useAgentConversations';
 import { agentContextPanelCollapsedState } from '@/agent/states/agentState';
 
 const StyledContainer = styled.div`
+  background: ${({ theme }) => theme.background.secondary};
   border-left: 1px solid ${({ theme }) => theme.border.color.medium};
   display: flex;
   flex-direction: column;
@@ -65,7 +66,7 @@ const StyledValue = styled.span`
 
 const StyledEmptyState = styled.div`
   align-items: center;
-  color: ${({ theme }) => theme.font.color.tertiary};
+  color: ${({ theme }) => theme.font.color.light};
   display: flex;
   flex: 1;
   font-size: ${({ theme }) => theme.font.size.sm};
