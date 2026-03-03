@@ -58,7 +58,7 @@ GITHUB_REPO="consuelohq/opensaas"
 BASE_BRANCH="staging"
 
 # Branch to create run branches FROM (pull fresh code)
-SOURCE_BRANCH="main"
+SOURCE_BRANCH="staging"
 
 # Branch to create PRs TO
 PR_TARGET_BRANCH="staging"
