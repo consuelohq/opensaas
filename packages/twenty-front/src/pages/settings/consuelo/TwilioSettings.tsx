@@ -8,7 +8,8 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
-import { Button, TextInput } from 'twenty-ui/input';
+import { Button } from 'twenty-ui/input';
+import { TextInput } from '@/ui/input/components/TextInput';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 

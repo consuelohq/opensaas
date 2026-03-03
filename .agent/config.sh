@@ -17,7 +17,7 @@ AGENT_CLI="kiro"
 # =============================================================================
 
 # Kiro CLI invocation (non-interactive, full tool access)
-KIRO_CMD="kiro-cli chat --trust-all-tools --no-interactive"
+KIRO_CMD="kiro-cli chat --trust-all-tools --no-interactive --agent worker"
 
 # =============================================================================
 # HELPER FUNCTIONS
