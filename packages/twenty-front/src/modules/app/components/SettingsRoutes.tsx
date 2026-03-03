@@ -477,6 +477,7 @@ const SettingsMercuryGHL = lazy(() =>
   })),
 );
 
+
 type SettingsRoutesProps = {
   isFunctionSettingsEnabled?: boolean;
   isAdminPageEnabled?: boolean;
