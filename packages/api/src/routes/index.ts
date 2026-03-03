@@ -75,6 +75,7 @@ export const healthRoutes = (): RouteDefinition[] => [
   {
     method: 'GET' as const,
     path: '/health',
+    auth: false,
     handler: async (_req, res) => {
       res
         .status(200)
