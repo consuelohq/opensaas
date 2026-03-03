@@ -3,6 +3,7 @@ import { CallButton } from '@/dialer/components/CallButton';
 import { CoachingPanel } from '@/dialer/components/CoachingPanel';
 import { ContactHeader } from '@/dialer/components/ContactHeader';
 import { DialPad } from '@/dialer/components/DialPad';
+import { FirstCallPrompt } from '@/dialer/components/FirstCallPrompt';
 import { InCallControls } from '@/dialer/components/InCallControls';
 import { LiveTranscript } from '@/dialer/components/LiveTranscript';
 import { LocalPresenceIndicator } from '@/dialer/components/LocalPresenceIndicator';
@@ -11,6 +12,7 @@ import { QuickActions } from '@/dialer/components/QuickActions';
 import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
 import { useCallPersistence } from '@/dialer/hooks/useCallPersistence';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
+import { useFirstCallFlow } from '@/dialer/hooks/useFirstCallFlow';
 import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
 import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
@@ -132,6 +134,7 @@ export const DialerSidebar = () => {
   const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
+  const { flowState } = useFirstCallFlow();
   const setReconnectPrompt = useSetRecoilState(reconnectPromptState);
   const isInCall = callState.status !== 'idle';
   const {
@@ -181,6 +184,11 @@ export const DialerSidebar = () => {
                 </StyledReconnectSecondary>
               </StyledReconnectButtons>
             </StyledReconnectBanner>
+          )}
+          {flowState !== 'hidden' && (
+            <FirstCallPrompt
+              variant={flowState === 'congrats' ? 'congrats' : 'prompt'}
+            />
           )}
           <ContactHeader />
           <LocalPresenceIndicator />
