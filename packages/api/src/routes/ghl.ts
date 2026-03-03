@@ -27,8 +27,11 @@ import {
   type SyncOptions,
   type ConflictResolution,
 } from '../services/ghl-sync.js';
+import { redisService } from '../services/redis.js';
 import { createLogger } from '@consuelo/logger';
 const logger = createLogger('api:audit');
+
+const useRedis = !!process.env.REDIS_URL;
 
 type Pool = {
   query(
@@ -39,14 +42,13 @@ type Pool = {
 
 const getPool = getSharedPool;
 
-// in-memory PKCE verifier store (keyed by state param)
-// in production, use redis with short TTL — DEV-779
+// in-memory PKCE verifier fallback for local dev (no redis)
 const pendingVerifiers = new Map<
   string,
   { codeVerifier: string; workspaceId: string; createdAt: number }
 >();
 
-// clean up stale verifiers older than 10 minutes
+// clean up stale verifiers older than 10 minutes (fallback only)
 const cleanStaleVerifiers = (): void => {
   const cutoff = Date.now() - 10 * 60 * 1000;
   for (const [key, val] of pendingVerifiers) {
@@ -148,11 +150,18 @@ export const ghlRoutes = (): RouteDefinition[] => {
         const { url, codeVerifier } = service.getAuthUrl(state);
 
         cleanStaleVerifiers();
-        pendingVerifiers.set(state, {
-          codeVerifier,
-          workspaceId: auth.workspaceId,
-          createdAt: Date.now(),
-        });
+        if (useRedis) {
+          await redisService.setPkceVerifier(state, {
+            codeVerifier,
+            workspaceId: auth.workspaceId,
+          });
+        } else {
+          pendingVerifiers.set(state, {
+            codeVerifier,
+            workspaceId: auth.workspaceId,
+            createdAt: Date.now(),
+          });
+        }
 
         res.status(200).json({ url, state });
       }),
@@ -187,7 +196,13 @@ export const ghlRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const pending = pendingVerifiers.get(state);
+        let pending: { codeVerifier: string; workspaceId: string } | null = null;
+        if (useRedis) {
+          pending = await redisService.getPkceVerifier(state as string);
+        } else {
+          const entry = pendingVerifiers.get(state as string);
+          if (entry) pending = { codeVerifier: entry.codeVerifier, workspaceId: entry.workspaceId };
+        }
         if (!pending) {
           res.status(400).json({
             error: {
@@ -198,7 +213,11 @@ export const ghlRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        pendingVerifiers.delete(state);
+        if (useRedis) {
+          await redisService.deletePkceVerifier(state as string);
+        } else {
+          pendingVerifiers.delete(state as string);
+        }
 
         const service = await getAuthService();
         const tokens = await service.handleCallback(code, pending.codeVerifier);
