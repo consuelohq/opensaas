@@ -10,12 +10,14 @@ import { ghlSyncConfigState } from '@/settings/integrations/states/ghlSyncConfig
 import { ghlSyncHistoryState } from '@/settings/integrations/states/ghlSyncHistoryState';
 import { ghlPushSettingsState } from '@/settings/integrations/states/ghlPushSettingsState';
 import { ghlManualSyncProgressState } from '@/settings/integrations/states/ghlManualSyncProgressState';
+import { ghlImportProgressState } from '@/settings/integrations/states/ghlImportProgressState';
 import { ghlLoadingState } from '@/settings/integrations/states/ghlLoadingState';
 import { ghlErrorState } from '@/settings/integrations/states/ghlErrorState';
 import type {
   GHLSyncDirection,
   GHLConflictResolution,
   GHLPushSettings,
+  GHLSyncLogEntry,
 } from '@/settings/integrations/types/ghl';
 
 const GHL_API_BASE = `${REST_API_BASE_URL}/v1/integrations/ghl`;
@@ -39,6 +41,7 @@ export const useGHLSettings = () => {
   const setSyncHistory = useSetRecoilState(ghlSyncHistoryState);
   const setPushSettings = useSetRecoilState(ghlPushSettingsState);
   const setSyncProgress = useSetRecoilState(ghlManualSyncProgressState);
+  const setImportProgress = useSetRecoilState(ghlImportProgressState);
   const setLoading = useSetRecoilState(ghlLoadingState);
   const setError = useSetRecoilState(ghlErrorState);
 
@@ -256,22 +259,23 @@ export const useGHLSettings = () => {
     [setSyncConfig],
   );
 
+  // fetch sync log from GET /sync/log (richer data than /sync/history)
   const fetchSyncHistory = useCallback(async () => {
     try {
-      const response = await fetch(`${GHL_API_BASE}/sync/history`, {
+      const response = await fetch(`${GHL_API_BASE}/sync/log?limit=50`, {
         headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch sync history');
+        throw new Error('Failed to fetch sync log');
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { logs: GHLSyncLogEntry[] };
 
-      setSyncHistory(data);
+      setSyncHistory(data.logs ?? []);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Failed to fetch sync history';
+        err instanceof Error ? err.message : 'Failed to fetch sync log';
 
       Sentry.captureException(err, {
         tags: { component: 'useGHLSettings', operation: 'fetchSyncHistory' },
@@ -328,38 +332,104 @@ export const useGHLSettings = () => {
     [setPushSettings],
   );
 
-  const triggerManualSync = useCallback(async () => {
-    try {
-      setLoading('syncing');
-      setSyncProgress({ status: 'running', progress: 0, message: 'Starting sync...' });
+  const triggerManualSync = useCallback(
+    async (tags?: string[]) => {
+      try {
+        setLoading('syncing');
+        setSyncProgress({ status: 'running', progress: 0, message: 'Starting sync...' });
 
-      const response = await fetch(`${GHL_API_BASE}/sync`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-      });
+        const body: Record<string, unknown> = {};
+        if (tags && tags.length > 0) {
+          body.tags = tags;
+        }
 
-      if (!response.ok) {
-        throw new Error('Failed to trigger sync');
+        const response = await fetch(`${GHL_API_BASE}/sync`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to trigger sync');
+        }
+
+        const data = await response.json();
+
+        setSyncProgress({
+          status: 'completed',
+          progress: 100,
+          message: `Sync completed — ${data.importedCount ?? 0} imported, ${data.updatedCount ?? 0} updated`,
+        });
+
+        // refresh sync log after sync completes
+        await fetchSyncHistory();
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to trigger sync';
+
+        Sentry.captureException(err, {
+          tags: { component: 'useGHLSettings', operation: 'triggerManualSync' },
+        });
+        setSyncProgress({ status: 'failed', progress: 0, message });
+        setError(message);
+      } finally {
+        setLoading('idle');
       }
+    },
+    [setLoading, setSyncProgress, setError, fetchSyncHistory],
+  );
 
-      setSyncProgress({
-        status: 'completed',
-        progress: 100,
-        message: 'Sync completed',
-      });
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to trigger sync';
+  // trigger full import from GHL with optional tag filtering
+  const triggerImport = useCallback(
+    async (tags?: string[]) => {
+      try {
+        setLoading('importing');
+        setImportProgress({
+          status: 'running',
+          progress: 10,
+          message: 'Importing contacts from GHL...',
+        });
 
-      Sentry.captureException(err, {
-        tags: { component: 'useGHLSettings', operation: 'triggerManualSync' },
-      });
-      setSyncProgress({ status: 'failed', progress: 0, message });
-      setError(message);
-    } finally {
-      setLoading('idle');
-    }
-  }, [setLoading, setSyncProgress, setError]);
+        const body: Record<string, unknown> = {};
+        if (tags && tags.length > 0) {
+          body.tags = tags;
+        }
+
+        const response = await fetch(`${GHL_API_BASE}/import`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to import contacts');
+        }
+
+        const data = await response.json();
+
+        setImportProgress({
+          status: 'completed',
+          progress: 100,
+          message: `Import completed — ${data.importedCount ?? 0} imported, ${data.updatedCount ?? 0} updated, ${data.skippedCount ?? 0} skipped`,
+        });
+
+        // refresh sync log after import completes
+        await fetchSyncHistory();
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to import contacts';
+
+        Sentry.captureException(err, {
+          tags: { component: 'useGHLSettings', operation: 'triggerImport' },
+        });
+        setImportProgress({ status: 'failed', progress: 0, message });
+        setError(message);
+      } finally {
+        setLoading('idle');
+      }
+    },
+    [setLoading, setImportProgress, setError, fetchSyncHistory],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -378,6 +448,7 @@ export const useGHLSettings = () => {
     fetchPushSettings,
     savePushSettings,
     triggerManualSync,
+    triggerImport,
     clearError,
   };
 };
