@@ -19,6 +19,7 @@ import {
   IconSettings,
   IconSync,
   IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import { H1Title } from 'twenty-ui/display';
 import { Button, Checkbox, Toggle } from 'twenty-ui/input';
