@@ -231,44 +231,64 @@ spawn_task_subprocess() {
   local issue_ref=""
   local commit_prefix=""
   if [ "$TASK_SOURCE" = "linear" ]; then
-    # Linear uses identifiers like CON-123 (no # prefix)
     issue_ref="Linear issue $issue_number"
-    commit_prefix="$issue_number"  # e.g., CON-123
+    commit_prefix="$issue_number"
   else
-    # GitHub uses #123 format
     issue_ref="GitHub issue #$issue_number"
     commit_prefix="#$issue_number"
   fi
 
-  # Write prompt to temp file (avoids escaping issues with multiline content)
+  # --- Workpad: per-task scratch file for acceptance criteria + agent notes ---
+  local workpad_dir="$SCRIPT_DIR/workpads"
+  mkdir -p "$workpad_dir"
+  local workpad_file="$workpad_dir/${issue_number}.md"
+
+  # Extract acceptance criteria from task body (looks for common header patterns)
+  local acceptance_criteria=""
+  acceptance_criteria=$(echo "$issue_body" | sed -n '/^##\? *[Aa]cceptance [Cc]riteria/,/^##\? /{ /^##\? *[Aa]cceptance/d; /^##\? /d; p; }' | sed '/^$/d')
+  if [ -z "$acceptance_criteria" ]; then
+    # Fallback: look for checkbox-style criteria anywhere
+    acceptance_criteria=$(echo "$issue_body" | grep -E '^\s*[-*] \[[ x]\]' || true)
+  fi
+
+  cat > "$workpad_file" << WORKPAD_EOF
+# workpad: $issue_number — $issue_title
+# created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+## acceptance criteria
+
+$( [ -n "$acceptance_criteria" ] && echo "$acceptance_criteria" || echo "_no acceptance criteria found in task body — read the full description carefully_" )
+
+## implementation notes
+
+_write your research findings, approach decisions, and anything useful here as you work_
+
+## improvements noticed
+
+_if you spot workflow issues, missing scripts, broken patterns — note them here. don't fix infrastructure during a feature task._
+
+WORKPAD_EOF
+  log_info "Workpad created: $workpad_file"
+
+  # --- Build the task prompt (agent personality loaded by kiro-cli --agent) ---
   local prompt_file=$(mktemp)
   cat > "$prompt_file" << PROMPT_EOF
-You are working on $issue_ref.
+you are working on $issue_ref.
 
-**Title:** $issue_title
+**title:** $issue_title
 
-**Description:**
+**workpad file:** $workpad_file
+read this file first. write your notes to it as you work. check every acceptance criterion before committing.
+
+**description:**
 $issue_body
 
-Instructions:
-1. Read AGENTS.md for project guidelines
-2. Research the codebase to understand relevant files
-3. Implement the changes following RPI (Research-Plan-Implement) workflow
-4. Commit with message: 'fix($commit_prefix): brief description'
-5. Do NOT push - we push all commits together at the end
-
-Important guidelines (from AGENTS.md):
-- Use structured logger, never console.log/error/warn
-- Parameterize all SQL queries
-- Test your changes before committing
-
-Begin by researching the codebase for: $issue_title
+commit with message: 'fix($commit_prefix): brief description'
+do NOT push — we push all commits together at the end of the run.
 PROMPT_EOF
 
-  # Spawn agent subprocess with --print (non-interactive, exits on completion)
-  # NOTE: Redirect stdin from /dev/null to prevent agent from consuming the while-read loop's input
-  # NOTE: --trust-all-tools allows kiro to execute tools without permission prompts
-  log_info "Starting $AGENT_CLI subprocess for $issue_ref..."
+  # Spawn agent subprocess
+  log_info "Starting $AGENT_CLI subprocess for $issue_ref (agent: $agent_type)..."
 
   local agent_cmd=$(get_agent_cmd)
   local task_log="$LOG_DIR/task-${issue_number}.log"
@@ -278,9 +298,9 @@ PROMPT_EOF
   rm -f "$prompt_file"
 
   if [ $exit_code -eq 0 ]; then
-    log_success "Subprocess completed for issue #$issue_number"
+    log_success "Subprocess completed for $issue_number"
   else
-    log_warning "Subprocess for issue #$issue_number exited with code $exit_code"
+    log_warning "Subprocess for $issue_number exited with code $exit_code"
   fi
 
   return $exit_code
