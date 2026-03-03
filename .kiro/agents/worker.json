@@ -1,0 +1,146 @@
+{
+  "name": "worker",
+  "description": "senior engineer for opensaas. writes code at a high level",
+  "prompt": "file:///Users/kokayi/Dev/opensaas/.kiro/agents/worker-prompt.md",
+  "tools": [
+    "code",
+    "create_attachment",
+    "create_comment",
+    "create_document",
+    "create_issue",
+    "create_issue_label",
+    "create_project",
+    "execute_bash",
+    "extract_images",
+    "fs_read",
+    "fs_write",
+    "get_attachment",
+    "get_document",
+    "get_issue",
+    "get_issue_status",
+    "get_project",
+    "get_team",
+    "get_user",
+    "glob",
+    "grep",
+    "introspect",
+    "knowledge",
+    "list_comments",
+    "list_cycles",
+    "list_documents",
+    "list_issue_labels",
+    "list_issue_statuses",
+    "list_issues",
+    "list_project_labels",
+    "list_projects",
+    "list_teams",
+    "list_users",
+    "report_issue",
+    "search_documentation",
+    "thinking",
+    "todo_list",
+    "update_document",
+    "update_issue",
+    "update_project",
+    "use_aws",
+    "use_subagent",
+    "web_fetch",
+    "web_search",
+    "@codemode"
+  ],
+  "allowedTools": [
+    "code",
+    "create_attachment",
+    "create_comment",
+    "create_document",
+    "create_issue",
+    "create_issue_label",
+    "create_project",
+    "execute_bash",
+    "extract_images",
+    "fs_read",
+    "fs_write",
+    "get_attachment",
+    "get_document",
+    "get_issue",
+    "get_issue_status",
+    "get_project",
+    "get_team",
+    "get_user",
+    "glob",
+    "grep",
+    "introspect",
+    "knowledge",
+    "list_comments",
+    "list_cycles",
+    "list_documents",
+    "list_issue_labels",
+    "list_issue_statuses",
+    "list_issues",
+    "list_project_labels",
+    "list_projects",
+    "list_teams",
+    "list_users",
+    "report_issue",
+    "search_documentation",
+    "thinking",
+    "todo_list",
+    "update_document",
+    "update_issue",
+    "update_project",
+    "use_aws",
+    "use_subagent",
+    "web_fetch",
+    "web_search",
+    "@codemode"
+  ],
+  "resources": [
+    "file://~/.kiro/steering/SOUL.md",
+    "file://~/.kiro/steering/IDENTITY.md",
+    "file://~/.kiro/steering/MEMORY.md",
+    "file://~/.kiro/steering/TOOLS.md",
+    "file://~/.kiro/steering/ko.md",
+    "file://~/.kiro/steering/CODEMODE.md",
+    "file://AGENTS.md"
+   
+  ],
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "cd /Users/kokayi/Dev/opensaas && git log --oneline -5 && echo '---' && git status --short",
+        "description": "show recent commits and working tree status"
+      }
+    ],
+    "userPromptSubmit": [
+      {
+        "command": "bash ~/.kiro/hooks/save-prompt.sh",
+        "description": "save the user's prompt for the post-session reviewer"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "bash ~/.kiro/hooks/nag.sh",
+        "description": "blocks every 7th tool use — forces agent to re-read spec"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash ~/.kiro/hooks/review-on-stop.sh",
+        "description": "spawns haiku reviewer to check spec compliance after session ends"
+      }
+    ]
+  },
+  "mcpServers": {
+    "codemode": {
+      "command": "node",
+      "args": [
+        "/Users/kokayi/Dev/kiro-codemode/dist/index.js"
+      ],
+      "autoApprove": [
+        "execute_code"
+      ]
+    }
+  },
+  "keyboardShortcut": "ctrl+w",
+  "welcomeMessage": "worker online. i work."
+}
