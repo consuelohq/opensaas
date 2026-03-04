@@ -1552,133 +1552,6 @@ Be thorough - the code review will run again after your fixes."
 
 # =============================================================================
 # QUALITY GATES - Code review and tests run after each subprocess
-# =============================================================================
-
-# Run quality gates (code review + tests) for an issue
-# This runs AFTER the subprocess completes and commits
-run_quality_gates() {
-  local issue_number="$1"
-  local issue_title="$2"
-  local linear_id="${3:-}"  # Optional: Linear UUID for status updates
-
-  # Determine display format based on task source
-  local issue_display=""
-  if [ "$TASK_SOURCE" = "linear" ]; then
-    issue_display="$issue_number"  # e.g., CON-123
-  else
-    issue_display="#$issue_number"
-  fi
-
-  local review_passed=false
-  local tests_passed=false
-
-  # Code review loop (with fix attempts)
-  local max_review_attempts=3
-  local review_attempt=0
-  local issues_file=$(mktemp)
-
-  while [ $review_attempt -lt $max_review_attempts ]; do
-    review_attempt=$((review_attempt + 1))
-    log_info "Code review attempt $review_attempt of $max_review_attempts..."
-
-    if run_code_review "$issue_number" "$issues_file"; then
-      review_passed=true
-      break
-    else
-      # Create GitHub issues for tracking
-      create_review_issues "$issues_file" "$issue_number"
-
-      if [ $review_attempt -lt $max_review_attempts ]; then
-        # Re-prompt agent to fix issues
-        fix_review_issues "$issue_number" "$issues_file"
-      else
-        log_error "Max review attempts reached ($max_review_attempts). Issues remain unfixed."
-      fi
-    fi
-  done
-
-  # Clean up issues file
-  rm -f "$issues_file" "${issues_file}.full"
-
-  # Run Playwright tests
-  log_info "Running tests..."
-  if npx nx test twenty-server 2>&1; then
-    log_success "Tests passed"
-    tests_passed=true
-  else
-    log_error "Tests failed for issue #$issue_number"
-
-    log_info "Check test output above for failure details."
-  fi
-
-  # Determine outcome and update issue labels
-  # Priority: agent-test (tests failed) > agent-review (code review failed) > agent-completed
-  local final_label=""
-  local task_status=""
-
-  if [ "$review_passed" = true ] && [ "$tests_passed" = true ]; then
-    # Always use agent-review so human can verify in GitHub/Linear
-    # Slack notifications show pass/fail details
-    final_label="${ISSUE_LABEL_REVIEW:-agent-review}"
-    task_status="completed"
-    COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    log_success "Issue $issue_display ready for review (all gates passed)"
-  elif [ "$tests_passed" = false ]; then
-    # Tests failed - always use agent-test label (even if code review also failed)
-    final_label="${ISSUE_LABEL_TEST:-agent-test}"
-    task_status="test_failed"
-    TEST_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    if [ "$review_passed" = false ]; then
-      REVIEW_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    fi
-    log_warning "Issue $issue_display tests failed"
-  else
-    # Only code review failed (tests passed)
-    final_label="${ISSUE_LABEL_REVIEW:-agent-review}"
-    task_status="review_failed"
-    REVIEW_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    log_warning "Issue $issue_display code review failed"
-  fi
-
-  # Update daily metrics (track completed vs needs_review)
-  if [ -f "$SCRIPT_DIR/notify.sh" ]; then
-    source "$SCRIPT_DIR/notify.sh"
-    if [ "$task_status" = "completed" ]; then
-      update_metrics "success"
-    else
-      update_metrics "needs_review"
-    fi
-  fi
-
-  # Update task final status
-  # NOTE: All tasks go to "in review" status - human must approve before marking "done"
-  if [ "$TASK_SOURCE" = "projects" ]; then
-    local project_status="${PROJECT_STATUS_REVIEW:-Review}"  # Always use review status
-    update_project_item_status "$issue_number" "$project_status"
-  elif [ "$TASK_SOURCE" = "linear" ]; then
-    # All Linear tasks go to "In Review" status - human must approve
-    update_linear_task_status "$issue_number" "$linear_id" "In Review"
-    # Add comment with PR link if available
-    if [ -n "$PR_URL" ] && [ -n "$linear_id" ]; then
-      local comment_body="Agent completed work. Review PR: $PR_URL
-
-**Quality Gates:**
-- Code Review: $([ "$review_passed" = true ] && echo "Passed" || echo "Failed")
-- Tests: $([ "$tests_passed" = true ] && echo "Passed" || echo "Failed")"
-      add_linear_comment "$linear_id" "$comment_body" || true
-    fi
-  else
-    # Remove all status labels before setting final label
-    gh issue edit "$issue_number" \
-      --remove-label "${ISSUE_LABEL_READY:-agent-ready}" \
-      --remove-label "${ISSUE_LABEL_WORKING:-agent-working}" \
-      --remove-label "${ISSUE_LABEL_REVIEW:-agent-review}" \
-      --remove-label "${ISSUE_LABEL_TEST:-agent-test}" \
-      --add-label "$final_label" 2>/dev/null || true
-  fi
-
-  return 0
-}
 
 # Process a single issue using fresh subprocess (commits to the shared run branch)
 process_issue() {
@@ -1789,8 +1662,11 @@ Automated commit by agent workflow.
 Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>" || true
   fi
 
-  # Run quality gates (code review + tests) - pass linear_id for status updates
-  run_quality_gates "$issue_number" "$issue_title" "$linear_id"
+  # Move to "In Review" — coderabbit reviews on PR, human approves
+  COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
+  if [ "$TASK_SOURCE" = "linear" ] && [ -n "$linear_id" ]; then
+    update_linear_task_status "$issue_number" "$linear_id" "In Review"
+  fi
 
   # Push commits immediately (so work is saved even if script crashes)
   push_task_commits "$issue_number"
