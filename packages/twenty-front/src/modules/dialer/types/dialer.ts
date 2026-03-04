@@ -88,6 +88,18 @@ export type CallerIdOption = {
   phoneNumber: string;
   friendlyName: string;
   areaCode: string;
+  sid: string;
+  isPrimary: boolean;
+};
+
+/** Available number from Twilio search */
+export type AvailableNumberOption = {
+  phoneNumber: string;
+  areaCode: string;
+  friendlyName: string;
+  city?: string;
+  state?: string;
+  region?: string;
 };
 
 /** Transfer types supported by the dialer */

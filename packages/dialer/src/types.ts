@@ -58,6 +58,29 @@ export interface VoiceToken {
   ttl: number;
 }
 
+/** Available phone number from Twilio search */
+export interface AvailableNumber {
+  phoneNumber: string;
+  areaCode: string;
+  friendlyName: string;
+  city?: string;
+  state?: string;
+  region?: string;
+}
+
+/** Options for searching available numbers */
+export interface SearchAvailableNumbersOptions {
+  areaCode: string;
+  country?: string;
+  limit?: number;
+}
+
+/** Result of releasing a number */
+export interface ReleaseResult {
+  success: boolean;
+  error?: string;
+}
+
 /** Options for provisioning a phone number */
 export interface ProvisionNumberOptions {
   /** Area code to search for (3-digit string, e.g. "415") */
