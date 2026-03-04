@@ -700,3 +700,4 @@ private async getClient() {
 - commit format: `type(scope): description`
 - one PR per feature
 
+ALl text must be localized with Lingui
