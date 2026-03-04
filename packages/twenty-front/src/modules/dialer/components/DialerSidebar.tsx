@@ -170,7 +170,7 @@ export const DialerSidebar = () => {
     <StyledSidePanelWrapper isOpen={dialerSidebarOpen}>
       <StyledSidebar>
         <StyledHeader>
-          <StyledTitle>Mercury</StyledTitle>
+          <StyledTitle>Dialer</StyledTitle>
         </StyledHeader>
 
         <StyledBody>
