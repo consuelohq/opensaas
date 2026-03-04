@@ -38,6 +38,8 @@ type NavigationDrawerSectionForWorkspaceItemsProps = {
   sectionTitle: string;
   items: FlatWorkspaceItem[];
   rightIcon?: React.ReactNode;
+  headerContent?: React.ReactNode;
+  footerContent?: React.ReactNode;
   onAddMenuItem?: () => void;
   isEditMode?: boolean;
   selectedNavigationMenuItemId?: string | null;
@@ -52,6 +54,8 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
   sectionTitle,
   items,
   rightIcon,
+  headerContent,
+  footerContent,
   onAddMenuItem,
   isEditMode = false,
   selectedNavigationMenuItemId = null,
@@ -140,7 +144,7 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
     };
   };
 
-  if (flatItems.length === 0) {
+  if (flatItems.length === 0 && !headerContent && !footerContent) {
     return null;
   }
 
@@ -155,7 +159,9 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
         />
       </NavigationDrawerAnimatedCollapseWrapper>
       {isNavigationSectionOpen && (
-        <Droppable
+        <>
+          {headerContent}
+          <Droppable
           droppableId={
             NavigationMenuItemDroppableIds.WORKSPACE_ORPHAN_NAVIGATION_MENU_ITEMS
           }
@@ -323,6 +329,8 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
             </div>
           )}
         </Droppable>
+          {footerContent}
+        </>
       )}
     </NavigationDrawerSection>
   );
