@@ -11,6 +11,7 @@ type SkillListItem = {
   description: string | null;
   icon: string | null;
   category: string;
+  enabled: boolean;
   folderId: string | null;
 };
 
