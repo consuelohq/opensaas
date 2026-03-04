@@ -10,7 +10,7 @@ import { agentContextPanelCollapsedState } from '@/agent/states/agentState';
 
 const StyledContainer = styled.div`
   background: ${({ theme }) => theme.background.secondary};
-  border-left: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-left: 1px solid ${({ theme }) => theme.border.color.light};
   display: flex;
   flex-direction: column;
   min-width: 280px;

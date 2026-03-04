@@ -21,6 +21,7 @@ export enum AppPath {
   Agent = '/agent',
   AgentSkills = '/agent/skills',
   Skills = '/skills',
+  SkillDetail = '/skills/:skillId',
   TasksPage = '/objects/tasks',
   OpportunitiesPage = '/objects/opportunities',
 
