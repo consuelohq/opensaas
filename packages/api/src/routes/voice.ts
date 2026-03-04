@@ -7,6 +7,11 @@ import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
+import {
+  getWorkspaceTwilioConfig,
+  getDecryptedCredentials,
+  isHostedInstance,
+} from '../services/twilio-config.js';
 const logger = createLogger('api:audit');
 
 // legacy singleton for webhook routes (no auth context)
@@ -413,6 +418,111 @@ export const voiceRoutes = (): RouteDefinition[] => [
           },
         );
         res.status(500).json({ error: { code: 'CHECK_FAILED', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'GET',
+    path: '/v1/voice/status',
+    handler: errorHandler(async (req, res) => {
+      const workspaceId = req.auth?.workspaceId;
+      if (!workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      try {
+        const config = await getWorkspaceTwilioConfig(workspaceId);
+        const hosted = isHostedInstance();
+
+        // no config at all
+        if (!config) {
+          if (hosted) {
+            // hosted instance — sub-account not yet provisioned
+            res.json({
+              mode: 'hosted',
+              configured: false,
+              twilioConnected: false,
+              hasPhoneNumbers: false,
+              twimlAppConfigured: false,
+              error: null,
+            });
+            return;
+          }
+          // self-hosted / BYOK — no credentials entered
+          res.json({
+            mode: 'byok',
+            configured: false,
+            twilioConnected: false,
+            hasPhoneNumbers: false,
+            twimlAppConfigured: false,
+            error: null,
+          });
+          return;
+        }
+
+        // config exists — validate credentials
+        let creds;
+        try {
+          creds = getDecryptedCredentials(config);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Credential decryption failed';
+          res.json({
+            mode: config.mode,
+            configured: false,
+            twilioConnected: false,
+            hasPhoneNumbers: false,
+            twimlAppConfigured: !!config.twimlAppSid,
+            error: message,
+          });
+          return;
+        }
+
+        // try to connect and list numbers
+        let twilioConnected = false;
+        let hasPhoneNumbers = false;
+        try {
+          const dialer = await getDialerForWorkspace(workspaceId);
+          const numbers = await dialer.listNumbers();
+          twilioConnected = true;
+          hasPhoneNumbers = numbers.length > 0;
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Connection failed';
+          res.json({
+            mode: config.mode,
+            configured: false,
+            twilioConnected: false,
+            hasPhoneNumbers: false,
+            twimlAppConfigured: !!config.twimlAppSid,
+            error: message,
+          });
+          return;
+        }
+
+        const twimlAppConfigured = !!creds.twimlAppSid;
+
+        res.json({
+          mode: config.mode,
+          configured: twilioConnected && twimlAppConfigured,
+          twilioConnected,
+          hasPhoneNumbers,
+          twimlAppConfigured,
+          error: null,
+        });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message = err instanceof Error ? err.message : 'Status check failed';
+        res.json({
+          mode: isHostedInstance() ? 'hosted' : 'byok',
+          configured: false,
+          twilioConnected: false,
+          hasPhoneNumbers: false,
+          twimlAppConfigured: false,
+          error: message,
+        });
       }
     }),
   },

@@ -1,3 +1,13 @@
+/** Twilio workspace configuration status from /v1/voice/status */
+export type TwilioConfigStatus = {
+  mode: 'hosted' | 'byok';
+  configured: boolean;
+  twilioConnected: boolean;
+  hasPhoneNumbers: boolean;
+  twimlAppConfigured: boolean;
+  error: string | null;
+};
+
 /** Contact info displayed in the dialer sidebar */
 export type DialerContact = {
   id: string;
