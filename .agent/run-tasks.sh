@@ -57,7 +57,7 @@ cleanup_and_push() {
 Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>" 2>/dev/null || true
       fi
       # Push any unpushed commits
-      git push origin "$RUN_BRANCH" 2>/dev/null || true
+      HUSKY=0 git push origin "$RUN_BRANCH" 2>/dev/null || true
     fi
   fi
   exit $exit_code
@@ -965,7 +965,7 @@ fix the issue. commit and push to the current branch. do NOT create a new branch
     echo "$fix_prompt" | $KIRO_CMD 2>&1 | tee "$LOG_DIR/deploy-fix-$attempt.log" || true
 
     # Push fixes
-    git push origin "$RUN_BRANCH" 2>/dev/null || true
+    HUSKY=0 git push origin "$RUN_BRANCH" 2>/dev/null || true
 
     # Wait for redeploy
     if wait_for_deploy; then
@@ -1200,7 +1200,7 @@ create_draft_pr() {
   local issue_count="$1"
   local issue_list="$2"
 
-  git push -u origin staging 2>/dev/null || true
+  HUSKY=0 git push -u origin staging 2>/dev/null || true
 
   # Check for existing open PR from staging → main
   PR_URL=$(gh pr list --base "$PR_TARGET_BRANCH" --head staging --state open --json url --jq '.[0].url' 2>/dev/null)
@@ -1218,7 +1218,7 @@ $issue_list" 2>/dev/null || true
   git commit --allow-empty -m "chore: Start agent run $RUN_ID
 
 Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>"
-  git push origin staging
+  HUSKY=0 git push origin staging
 
   PR_URL=$(gh pr create \
     --base "$PR_TARGET_BRANCH" \
@@ -1244,7 +1244,7 @@ push_task_commits() {
   local issue_number="$1"
 
   log_info "Pushing commits for issue #$issue_number..."
-  git push origin "$RUN_BRANCH"
+  HUSKY=0 git push origin "$RUN_BRANCH"
 
   if [ $? -eq 0 ]; then
     log_success "Pushed to PR"
@@ -1275,11 +1275,11 @@ Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.
   local unpushed=$(git rev-list --count "origin/$RUN_BRANCH".."$RUN_BRANCH" 2>/dev/null || echo "0")
   if [ "$unpushed" -gt 0 ]; then
     log_info "Pushing $unpushed unpushed commit(s)..."
-    git push origin "$RUN_BRANCH"
+    HUSKY=0 git push origin "$RUN_BRANCH"
     if [ $? -eq 0 ]; then
       log_success "All changes pushed to GitHub"
     else
-      log_error "Failed to push final changes! Manual push required: git push origin $RUN_BRANCH"
+      log_error "Failed to push final changes! Manual push required: HUSKY=0 git push origin $RUN_BRANCH"
     fi
   else
     log_info "All commits already pushed to GitHub"
@@ -1997,7 +1997,7 @@ finalize_pr() {
   else
     # Fallback: create PR if draft creation failed earlier
     log_info "Creating PR (draft creation may have failed earlier)..."
-    git push -u origin "$RUN_BRANCH" 2>/dev/null || true
+    HUSKY=0 git push -u origin "$RUN_BRANCH" 2>/dev/null || true
 
     PR_URL=$(gh pr create \
       --base "$PR_TARGET_BRANCH" \
