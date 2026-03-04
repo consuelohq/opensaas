@@ -11,6 +11,9 @@ import type {
   TransferResult,
   ConferenceParticipant,
   ParallelStore,
+  SearchAvailableNumbersOptions,
+  AvailableNumber,
+  ReleaseResult,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
 import {
@@ -259,6 +262,16 @@ export class Dialer {
   /** List all incoming phone numbers on the account */
   async listNumbers(): Promise<import('./types.js').PhoneNumber[]> {
     return this.provider.listNumbers();
+  }
+
+  /** Search available phone numbers by area code */
+  async searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]> {
+    return this.provider.searchAvailableNumbers(options);
+  }
+
+  /** Release (delete) a phone number by SID */
+  async releaseNumber(sid: string): Promise<ReleaseResult> {
+    return this.provider.releaseNumber(sid);
   }
 
   /** Get a recording by SID */

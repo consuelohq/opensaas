@@ -147,8 +147,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const numbers = await dialer.listNumbers();
 
+        let primarySid: string | null = null;
+        try {
+          primarySid = await redisService.getPrimaryNumber(req.auth!.workspaceId);
+        } catch (_err: unknown) {
+          // redis unavailable — continue without primary info
+        }
+
         const phoneNumbers = numbers.map(
-          (num: { phoneNumber: string; friendlyName?: string }) => {
+          (num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => {
             const phoneNumber = num.phoneNumber ?? '';
             const areaCode =
               phoneNumber.startsWith('+1') && phoneNumber.length >= 5
@@ -159,6 +166,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
               phoneNumber,
               friendlyName: num.friendlyName ?? '',
               areaCode,
+              sid: num.twilioSid ?? '',
+              isPrimary: primarySid !== null && num.twilioSid === primarySid,
             };
           },
         );
@@ -172,6 +181,180 @@ export const voiceRoutes = (): RouteDefinition[] => [
         res
           .status(500)
           .json({ error: { code: 'PHONE_NUMBERS_ERROR', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'GET',
+    path: '/v1/phone-numbers/available',
+    handler: errorHandler(async (req, res) => {
+      const userId = req.auth?.userId;
+      if (!userId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const areaCode = req.query?.areaCode as string | undefined;
+      if (!areaCode || !/^\d{3}$/.test(areaCode)) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'areaCode must be a 3-digit string' },
+        });
+        return;
+      }
+
+      const country = (req.query?.country as string) ?? 'US';
+      const limit = Math.min(Number(req.query?.limit) || 10, 20);
+
+      try {
+        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const available = await dialer.searchAvailableNumbers({ areaCode, country, limit });
+        res.json({ available });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message = err instanceof Error ? err.message : 'Search failed';
+        res.status(500).json({ error: { code: 'SEARCH_ERROR', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'POST',
+    path: '/v1/phone-numbers/provision',
+    handler: errorHandler(async (req, res) => {
+      const userId = req.auth?.userId;
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const body = req.body as { areaCode?: string; phoneNumber?: string; friendlyName?: string } | undefined;
+      if (!body?.areaCode && !body?.phoneNumber) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'areaCode or phoneNumber required' },
+        });
+        return;
+      }
+
+      try {
+        const dialer = await getDialerForWorkspace(workspaceId);
+        const voiceUrl = process.env.API_BASE_URL
+          ? `${process.env.API_BASE_URL}/v1/voice/twiml`
+          : undefined;
+
+        const result = await dialer.provisionNumber({
+          areaCode: body.areaCode ?? '',
+          phoneNumber: body.phoneNumber,
+          friendlyName: body.friendlyName,
+          voiceUrl,
+        });
+
+        if (!result.success) {
+          res.status(400).json({ error: { code: 'PROVISION_FAILED', message: result.error ?? 'Provision failed' } });
+          return;
+        }
+
+        // auto-set as primary if first number
+        try {
+          const numbers = await dialer.listNumbers();
+          if (numbers.length === 1 && result.sid) {
+            await redisService.setPrimaryNumber(workspaceId, result.sid);
+          }
+        } catch (err: unknown) {
+          Sentry.captureException(err, { extra: { context: 'auto_set_primary', workspaceId } });
+        }
+
+        res.json(result);
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message = err instanceof Error ? err.message : 'Provision failed';
+        res.status(500).json({ error: { code: 'PROVISION_ERROR', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'PUT',
+    path: '/v1/phone-numbers/:sid/primary',
+    handler: errorHandler(async (req, res) => {
+      const userId = req.auth?.userId;
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const sid = req.params?.sid;
+      if (!sid) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing sid' },
+        });
+        return;
+      }
+
+      try {
+        await redisService.setPrimaryNumber(workspaceId, sid);
+        res.json({ success: true, primarySid: sid });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message = err instanceof Error ? err.message : 'Set primary failed';
+        res.status(500).json({ error: { code: 'SET_PRIMARY_ERROR', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'DELETE',
+    path: '/v1/phone-numbers/:sid',
+    handler: errorHandler(async (req, res) => {
+      const userId = req.auth?.userId;
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const sid = req.params?.sid;
+      if (!sid) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing sid' },
+        });
+        return;
+      }
+
+      try {
+        const dialer = await getDialerForWorkspace(workspaceId);
+        const result = await dialer.releaseNumber(sid);
+
+        if (!result.success) {
+          res.status(400).json({ error: { code: 'RELEASE_FAILED', message: result.error ?? 'Release failed' } });
+          return;
+        }
+
+        // clear primary if this was the primary number
+        try {
+          const primarySid = await redisService.getPrimaryNumber(workspaceId);
+          if (primarySid === sid) {
+            await redisService.deletePrimaryNumber(workspaceId);
+          }
+        } catch (err: unknown) {
+          Sentry.captureException(err, { extra: { context: 'clear_primary_on_release', workspaceId } });
+        }
+
+        res.json({ success: true });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message = err instanceof Error ? err.message : 'Release failed';
+        res.status(500).json({ error: { code: 'RELEASE_ERROR', message } });
       }
     }),
   },
