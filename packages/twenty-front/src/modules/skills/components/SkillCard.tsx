@@ -1,5 +1,7 @@
 import styled from '@emotion/styled';
+import { useTheme } from '@emotion/react';
 import { IconBolt } from '@tabler/icons-react';
+import { useLingui } from '@lingui/react/macro';
 import { useNavigate } from 'react-router-dom';
 
 const StyledCard = styled.div`
@@ -40,10 +42,17 @@ const StyledDescription = styled.div`
   overflow: hidden;
 `;
 
-const StyledCategoryBadge = styled.span`
+const StyledFooter = styled.div`
+  align-items: center;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing(1)};
+  margin-top: auto;
+`;
+
+const StyledBadge = styled.span<{ color: string }>`
   background: ${({ theme }) => theme.background.transparent.light};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: ${({ theme }) => theme.font.color.secondary};
+  color: ${({ color }) => color};
   font-size: ${({ theme }) => theme.font.size.xs};
   padding: ${({ theme }) => theme.spacing(0.5)}
     ${({ theme }) => theme.spacing(1)};
@@ -54,6 +63,7 @@ type SkillCardProps = {
   name: string;
   description: string | null;
   category: string;
+  enabled: boolean;
 };
 
 const formatCategory = (category: string): string =>
@@ -64,8 +74,11 @@ export const SkillCard = ({
   name,
   description,
   category,
+  enabled,
 }: SkillCardProps) => {
+  const { t } = useLingui();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   return (
     <StyledCard onClick={() => navigate(`/skills/${id}`)}>
@@ -74,7 +87,18 @@ export const SkillCard = ({
         <StyledName>{name}</StyledName>
       </StyledHeader>
       {description && <StyledDescription>{description}</StyledDescription>}
-      <StyledCategoryBadge>{formatCategory(category)}</StyledCategoryBadge>
+      <StyledFooter>
+        <StyledBadge color={theme.font.color.secondary}>
+          {formatCategory(category)}
+        </StyledBadge>
+        <StyledBadge
+          color={
+            enabled ? theme.font.color.primary : theme.font.color.tertiary
+          }
+        >
+          {enabled ? t`Active` : t`Draft`}
+        </StyledBadge>
+      </StyledFooter>
     </StyledCard>
   );
 };
