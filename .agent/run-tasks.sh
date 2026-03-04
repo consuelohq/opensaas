@@ -1511,15 +1511,8 @@ Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.
   fi
 
   # Run quality gates (code review + tests) - pass linear_id for status updates
-  # Run local quality checks (coderabbit handles AI review on PR)
-  log_info "Running local quality checks..."
-  if bash scripts/code-review.sh 2>&1; then
-    log_success "All 13 coding standards passed"
-    COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-  else
-    log_warning "Code review checks failed — coderabbit will review on PR"
-    REVIEW_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-  fi
+  # Coderabbit reviews on PR — no local review gate needed
+  COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
 
   # Push commits immediately (so work is saved even if script crashes)
   push_task_commits "$issue_number"
