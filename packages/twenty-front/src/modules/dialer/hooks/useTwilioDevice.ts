@@ -12,6 +12,7 @@ import { activeCallState } from '@/dialer/states/activeCallState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { reconnectingState } from '@/dialer/states/reconnectingState';
 import { callErrorState } from '@/dialer/states/callErrorState';
+import { twilioConfigStatusState } from '@/dialer/states/twilioConfigStatusState';
 import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
 import { selectedMicState } from '@/dialer/states/selectedMicState';
 import { selectedSpeakerState } from '@/dialer/states/selectedSpeakerState';
@@ -63,6 +64,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const [reconnecting, setReconnecting] = useRecoilState(reconnectingState);
   const setCallState = useSetRecoilState(callStateAtom);
   const setCallError = useSetRecoilState(callErrorState);
+  const configStatus = useRecoilValue(twilioConfigStatusState);
 
   const { persistCurrentCall, clearPersistence, getConferenceNameByCallSid } =
     useCallPersistence();
@@ -387,8 +389,11 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
   }, [selectedSpeaker, isReady]);
 
-  // init on mount, cleanup on unmount
+  // init on mount, cleanup on unmount — only when configured
   useEffect(() => {
+    // skip device init until config status is loaded and shows configured
+    if (!configStatus?.configured) return;
+
     initDevice();
 
     return () => {
@@ -403,7 +408,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       setActiveCall(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [configStatus?.configured]);
 
   return {
     device: deviceRef.current,
