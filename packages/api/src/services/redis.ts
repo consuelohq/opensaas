@@ -180,6 +180,36 @@ class RedisService {
       throw err;
     }
   }
+
+  async getPrimaryNumber(workspaceId: string): Promise<string | null> {
+    try {
+      const client = await this.getClient();
+      return await client.get(`primary-number:${workspaceId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getPrimaryNumber', workspaceId } });
+      throw err;
+    }
+  }
+
+  async setPrimaryNumber(workspaceId: string, phoneNumberSid: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.set(`primary-number:${workspaceId}`, phoneNumberSid);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setPrimaryNumber', workspaceId } });
+      throw err;
+    }
+  }
+
+  async deletePrimaryNumber(workspaceId: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.del(`primary-number:${workspaceId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'deletePrimaryNumber', workspaceId } });
+      throw err;
+    }
+  }
 }
 
 export const redisService = new RedisService();

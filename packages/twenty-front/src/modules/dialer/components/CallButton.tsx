@@ -99,7 +99,7 @@ export const CallButton = () => {
         setCallError({
           reason: 'no_caller_id',
           message:
-            'No caller ID available. Add a phone number in Settings → Mercury.',
+            'No caller ID available. Add a phone number in Settings → Dialer.',
           occurredAt: new Date(),
         });
       }

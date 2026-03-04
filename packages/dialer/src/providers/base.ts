@@ -6,6 +6,9 @@ import type {
   ProvisionNumberOptions,
   ProvisionResult,
   PhoneNumber,
+  SearchAvailableNumbersOptions,
+  AvailableNumber,
+  ReleaseResult,
 } from '../types.js';
 
 /**
@@ -32,4 +35,10 @@ export interface DialerProvider {
 
   /** List all incoming phone numbers on the account */
   listNumbers(): Promise<PhoneNumber[]>;
+
+  /** Search available phone numbers by area code */
+  searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]>;
+
+  /** Release (delete) a phone number by SID */
+  releaseNumber(sid: string): Promise<ReleaseResult>;
 }
