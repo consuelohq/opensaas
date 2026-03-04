@@ -102,12 +102,12 @@
     "file://~/.kiro/steering/ko.md",
     "file://~/.kiro/steering/CODEMODE.md",
     "file://AGENTS.md"
-   
+
   ],
   "hooks": {
     "agentSpawn": [
       {
-        "command": "cd /Users/kokayi/Dev/opensaas && git log --oneline -5 && echo '---' && git status --short",
+        "command": "git log --oneline -5 && echo '---' && git status --short",
         "description": "show recent commits and working tree status"
       }
     ],
