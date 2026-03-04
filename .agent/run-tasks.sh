@@ -900,10 +900,16 @@ setup_workspace() {
     exit 1
   }
 
-  # Rebase on source to pick up any new commits
-  git rebase "origin/$SOURCE_BRANCH" 2>/dev/null || {
+  # Sync with remote staging first (avoids non-fast-forward on push later)
+  git pull --rebase origin staging 2>/dev/null || {
     git rebase --abort 2>/dev/null
-    log_warning "Rebase conflict — continuing with current staging state"
+    log_warning "Pull --rebase from origin/staging failed — continuing with current state"
+  }
+
+  # Merge main to pick up any new commits (preserves staging history)
+  git merge "origin/$SOURCE_BRANCH" --no-edit 2>/dev/null || {
+    git merge --abort 2>/dev/null
+    log_warning "Merge from origin/$SOURCE_BRANCH conflict — continuing with current staging state"
   }
 
   rm -rf /tmp/oc-review-* 2>/dev/null || true
@@ -1200,7 +1206,14 @@ create_draft_pr() {
   local issue_count="$1"
   local issue_list="$2"
 
-  HUSKY=0 git push -u origin staging 2>/dev/null || true
+  HUSKY=0 git push -u origin staging 2>/dev/null || {
+    log_warning "Initial push failed (non-fast-forward?) — pulling and retrying..."
+    git pull --rebase origin staging 2>/dev/null || {
+      git rebase --abort 2>/dev/null
+      log_warning "Pull --rebase failed — continuing anyway"
+    }
+    HUSKY=0 git push -u origin staging 2>/dev/null || log_warning "Push still failing — PR creation may fail"
+  }
 
   # Check for existing open PR from staging → main
   PR_URL=$(gh pr list --base "$PR_TARGET_BRANCH" --head staging --state open --json url --jq '.[0].url' 2>/dev/null)
@@ -1249,7 +1262,12 @@ push_task_commits() {
   if [ $? -eq 0 ]; then
     log_success "Pushed to PR"
   else
-    log_warning "Push failed for issue #$issue_number"
+    log_warning "Push failed for issue #$issue_number — pulling and retrying..."
+    git pull --rebase origin "$RUN_BRANCH" 2>/dev/null || {
+      git rebase --abort 2>/dev/null
+      log_warning "Pull --rebase failed"
+    }
+    HUSKY=0 git push origin "$RUN_BRANCH" || log_warning "Push still failing for #$issue_number"
   fi
 }
 
@@ -1720,7 +1738,12 @@ finalize_pr() {
       --title "$pr_title" \
       --body "$pr_body" 2>&1)
 
-    log_success "PR created: $PR_URL"
+    if [ $? -eq 0 ] && [ -n "$PR_URL" ]; then
+      log_success "PR created: $PR_URL"
+    else
+      log_warning "Failed to create PR: $PR_URL"
+      PR_URL=""
+    fi
   fi
 
   # Send Slack notification with session results
