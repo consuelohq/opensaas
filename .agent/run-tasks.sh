@@ -887,6 +887,13 @@ setup_workspace() {
 
   git fetch origin 2>/dev/null || true
 
+  # Remove any worktree holding staging so we can checkout here
+  local wt
+  wt=$(git worktree list --porcelain 2>/dev/null | grep -B1 'branch refs/heads/staging' | head -1 | sed 's/worktree //')
+  if [[ -n "$wt" && "$wt" != "$PROJECT_ROOT" ]]; then
+    git worktree remove "$wt" --force 2>/dev/null || true
+  fi
+
   # Checkout staging (create from origin if needed)
   git checkout staging 2>/dev/null || git checkout -b staging "origin/staging" || {
     log_error "Cannot checkout staging branch"
