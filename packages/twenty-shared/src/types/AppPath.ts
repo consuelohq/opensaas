@@ -19,6 +19,7 @@ export enum AppPath {
   // Onboarded
   Index = '/',
   Agent = '/agent',
+  AgentSkills = '/agent/skills',
   Skills = '/skills',
   TasksPage = '/objects/tasks',
   OpportunitiesPage = '/objects/opportunities',

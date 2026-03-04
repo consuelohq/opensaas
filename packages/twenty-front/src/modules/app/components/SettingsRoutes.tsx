@@ -401,79 +401,79 @@ const SettingsRoleAddObjectLevel = lazy(() =>
   ),
 );
 
-const SettingsConsuelo = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsConsuelo').then((module) => ({
-    default: module.SettingsConsuelo,
+const SettingsDialer = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialer').then((module) => ({
+    default: module.SettingsDialer,
   })),
 );
 
-const SettingsMercuryProfile = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryProfile').then((module) => ({
-    default: module.SettingsMercuryProfile,
+const SettingsDialerProfile = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerProfile').then((module) => ({
+    default: module.SettingsDialerProfile,
   })),
 );
 
-const SettingsMercuryPhoneNumbers = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryPhoneNumbers').then(
+const SettingsDialerPhoneNumbers = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerPhoneNumbers').then(
     (module) => ({
-      default: module.SettingsMercuryPhoneNumbers,
+      default: module.SettingsDialerPhoneNumbers,
     }),
   ),
 );
 
-const SettingsMercuryCalling = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryCalling').then((module) => ({
-    default: module.SettingsMercuryCalling,
+const SettingsDialerCalling = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerCalling').then((module) => ({
+    default: module.SettingsDialerCalling,
   })),
 );
 
-const SettingsMercuryAudio = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryAudio').then((module) => ({
-    default: module.SettingsMercuryAudio,
+const SettingsDialerAudio = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerAudio').then((module) => ({
+    default: module.SettingsDialerAudio,
   })),
 );
 
-const SettingsMercuryAI = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryAI').then((module) => ({
-    default: module.SettingsMercuryAI,
+const SettingsDialerAI = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerAI').then((module) => ({
+    default: module.SettingsDialerAI,
   })),
 );
 
-const SettingsMercurySubscription = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercurySubscription').then(
+const SettingsDialerSubscription = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerSubscription').then(
     (module) => ({
-      default: module.SettingsMercurySubscription,
+      default: module.SettingsDialerSubscription,
     }),
   ),
 );
 
-const SettingsMercuryNotifications = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryNotifications').then(
+const SettingsDialerNotifications = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerNotifications').then(
     (module) => ({
-      default: module.SettingsMercuryNotifications,
+      default: module.SettingsDialerNotifications,
     }),
   ),
 );
 
-const SettingsMercuryWorkspace = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryWorkspace').then(
+const SettingsDialerWorkspace = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerWorkspace').then(
     (module) => ({
-      default: module.SettingsMercuryWorkspace,
+      default: module.SettingsDialerWorkspace,
     }),
   ),
 );
 
-const SettingsMercuryTwilio = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryTwilio').then(
+const SettingsDialerTwilio = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerTwilio').then(
     (module) => ({
-      default: module.SettingsMercuryTwilio,
+      default: module.SettingsDialerTwilio,
     }),
   ),
 );
 
-const SettingsMercuryGHL = lazy(() =>
-  import('~/pages/settings/consuelo/SettingsMercuryGHL').then((module) => ({
-    default: module.SettingsMercuryGHL,
+const SettingsDialerGHL = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerGHL').then((module) => ({
+    default: module.SettingsDialerGHL,
   })),
 );
 
@@ -713,43 +713,43 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         <Route path={SettingsPath.EventLogs} element={<SettingsEventLogs />} />
       </Route>
 
-      <Route path={SettingsPath.Mercury} element={<SettingsConsuelo />} />
+      <Route path={SettingsPath.Dialer} element={<SettingsDialer />} />
       <Route
-        path={SettingsPath.MercuryProfile}
-        element={<SettingsMercuryProfile />}
+        path={SettingsPath.DialerProfile}
+        element={<SettingsDialerProfile />}
       />
       <Route
-        path={SettingsPath.MercuryPhoneNumbers}
-        element={<SettingsMercuryPhoneNumbers />}
+        path={SettingsPath.DialerPhoneNumbers}
+        element={<SettingsDialerPhoneNumbers />}
       />
       <Route
-        path={SettingsPath.MercuryCalling}
-        element={<SettingsMercuryCalling />}
+        path={SettingsPath.DialerCalling}
+        element={<SettingsDialerCalling />}
       />
       <Route
-        path={SettingsPath.MercuryAudio}
-        element={<SettingsMercuryAudio />}
+        path={SettingsPath.DialerAudio}
+        element={<SettingsDialerAudio />}
       />
-      <Route path={SettingsPath.MercuryAI} element={<SettingsMercuryAI />} />
+      <Route path={SettingsPath.DialerAI} element={<SettingsDialerAI />} />
       <Route
-        path={SettingsPath.MercurySubscription}
-        element={<SettingsMercurySubscription />}
-      />
-      <Route
-        path={SettingsPath.MercuryNotifications}
-        element={<SettingsMercuryNotifications />}
+        path={SettingsPath.DialerSubscription}
+        element={<SettingsDialerSubscription />}
       />
       <Route
-        path={SettingsPath.MercuryWorkspace}
-        element={<SettingsMercuryWorkspace />}
+        path={SettingsPath.DialerNotifications}
+        element={<SettingsDialerNotifications />}
       />
       <Route
-        path={SettingsPath.MercuryTwilio}
-        element={<SettingsMercuryTwilio />}
+        path={SettingsPath.DialerWorkspace}
+        element={<SettingsDialerWorkspace />}
       />
       <Route
-        path={SettingsPath.MercuryGHL}
-        element={<SettingsMercuryGHL />}
+        path={SettingsPath.DialerTwilio}
+        element={<SettingsDialerTwilio />}
+      />
+      <Route
+        path={SettingsPath.DialerGHL}
+        element={<SettingsDialerGHL />}
       />
 
       {isAdminPageEnabled && (
