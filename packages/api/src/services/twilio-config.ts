@@ -4,9 +4,15 @@ import {
   decryptCredential,
 } from './twilio-encryption.js';
 import { getSharedPool } from '../shared/db.js';
-import { createLogger } from '@consuelo/logger';
-
-const logger = createLogger('twilio-config');
+// lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
+let _logger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void; error: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
+const getLogger = async () => {
+  if (!_logger) {
+    const { createLogger } = await import('@consuelo/logger');
+    _logger = createLogger('twilio-config');
+  }
+  return _logger;
+};
 
 export type TwilioMode = 'hosted' | 'byok';
 
@@ -147,7 +153,7 @@ export const provisionSubAccount = async (
       [twimlApp.sid, workspaceId],
     );
 
-    logger.info('sub-account provisioned', {
+    (await getLogger()).info('sub-account provisioned', {
       workspaceId,
       subAccountSid: subAccount.sid,
       twimlAppSid: twimlApp.sid,
@@ -203,6 +209,98 @@ export const deleteWorkspaceTwilioConfig = async (
       'DELETE FROM workspace_twilio_config WHERE workspace_id = $1',
       [workspaceId],
     );
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
+  }
+};
+
+const TWIML_APP_NAME = 'Consuelo Dialer';
+
+// find or create a TwiML App named "Consuelo Dialer" on the given account
+// stores the SID in workspace_twilio_config if workspaceId is provided
+export const ensureOrCreateTwimlApp = async (
+  accountSid: string,
+  authToken: string,
+  workspaceId?: string,
+): Promise<string> => {
+  try {
+    const twilio = await import('twilio');
+    const createClient =
+      twilio.default ?? (twilio as unknown as { default: typeof twilio.default }).default;
+    const client = createClient(accountSid, authToken);
+
+    // check if app already exists
+    const apps = await client.applications.list({ friendlyName: TWIML_APP_NAME, limit: 1 });
+    if (apps.length > 0) {
+      const sid = apps[0].sid;
+      if (workspaceId) {
+        const pool = await getSharedPool();
+        await pool.query(
+          'UPDATE workspace_twilio_config SET twiml_app_sid = $1, updated_at = NOW() WHERE workspace_id = $2',
+          [sid, workspaceId],
+        );
+      }
+      (await getLogger()).info('existing TwiML App found', { twimlAppSid: sid, workspaceId });
+      return sid;
+    }
+
+    // create new app
+    const baseUrl = process.env.API_BASE_URL;
+    const app = await client.applications.create({
+      voiceUrl: baseUrl ? `${baseUrl}/v1/voice/twiml` : '',
+      voiceMethod: 'POST',
+      friendlyName: TWIML_APP_NAME,
+    });
+
+    if (workspaceId) {
+      const pool = await getSharedPool();
+      await pool.query(
+        'UPDATE workspace_twilio_config SET twiml_app_sid = $1, updated_at = NOW() WHERE workspace_id = $2',
+        [app.sid, workspaceId],
+      );
+    }
+
+    (await getLogger()).info('TwiML App created', { twimlAppSid: app.sid, workspaceId });
+    return app.sid;
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
+  }
+};
+
+// check if TwiML App voiceUrl matches current API_BASE_URL, update if not
+export const syncTwimlAppUrl = async (
+  accountSid: string,
+  authToken: string,
+  twimlAppSid: string,
+): Promise<{ updated: boolean; voiceUrl: string }> => {
+  const baseUrl = process.env.API_BASE_URL;
+  const expectedUrl = baseUrl ? `${baseUrl}/v1/voice/twiml` : '';
+
+  try {
+    const twilio = await import('twilio');
+    const createClient =
+      twilio.default ?? (twilio as unknown as { default: typeof twilio.default }).default;
+    const client = createClient(accountSid, authToken);
+
+    const app = await client.applications(twimlAppSid).fetch();
+
+    if (app.voiceUrl === expectedUrl) {
+      return { updated: false, voiceUrl: expectedUrl };
+    }
+
+    await client.applications(twimlAppSid).update({
+      voiceUrl: expectedUrl,
+      voiceMethod: 'POST',
+    });
+
+    (await getLogger()).info('TwiML App URL synced', {
+      twimlAppSid,
+      oldUrl: app.voiceUrl,
+      newUrl: expectedUrl,
+    });
+    return { updated: true, voiceUrl: expectedUrl };
   } catch (err: unknown) {
     Sentry.captureException(err);
     throw err;

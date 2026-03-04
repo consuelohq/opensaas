@@ -10,7 +10,18 @@ import {
   getDecryptedCredentials,
   provisionSubAccount,
   isHostedInstance,
+  ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
+
+// lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
+let _dialerLogger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
+const getLogger = async () => {
+  if (!_dialerLogger) {
+    const { createLogger } = await import('@consuelo/logger');
+    _dialerLogger = createLogger('dialer:self-hosted');
+  }
+  return _dialerLogger;
+};
 
 const baseUrl = process.env.API_BASE_URL;
 const redisUrl = process.env.REDIS_URL;
@@ -76,7 +87,20 @@ export async function getDialerForWorkspace(workspaceId: string): Promise<Dialer
 
     // self-hosted fallback: use legacy env vars
     if (legacyAccountSid && legacyAuthToken) {
-      const dialer = buildDialer(legacyAccountSid, legacyAuthToken);
+      let twimlAppSid = process.env.TWILIO_TWIML_APP_SID;
+
+      // auto-create TwiML App if not configured and API_BASE_URL is set
+      if (!twimlAppSid && baseUrl) {
+        try {
+          twimlAppSid = await ensureOrCreateTwimlApp(legacyAccountSid, legacyAuthToken);
+          (await getLogger()).info('TwiML App auto-created for self-hosted', { twimlAppSid });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'unknown error';
+          (await getLogger()).warn('TwiML App auto-creation failed — set TWILIO_TWIML_APP_SID manually', { error: message });
+        }
+      }
+
+      const dialer = buildDialer(legacyAccountSid, legacyAuthToken, twimlAppSid);
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
