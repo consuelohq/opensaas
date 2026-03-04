@@ -166,8 +166,8 @@ export const SubscriptionSettings = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            successUrl: `${window.location.origin}/settings/mercury/subscription?success=true`,
-            cancelUrl: `${window.location.origin}/settings/mercury/subscription`,
+            successUrl: `${window.location.origin}/settings/dialer/subscription?success=true`,
+            cancelUrl: `${window.location.origin}/settings/dialer/subscription`,
           }),
         },
       );
@@ -191,7 +191,7 @@ export const SubscriptionSettings = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            returnUrl: `${window.location.origin}/settings/mercury/subscription`,
+            returnUrl: `${window.location.origin}/settings/dialer/subscription`,
           }),
         },
       );

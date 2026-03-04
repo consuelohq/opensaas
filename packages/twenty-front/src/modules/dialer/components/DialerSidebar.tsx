@@ -9,6 +9,7 @@ import { LiveTranscript } from '@/dialer/components/LiveTranscript';
 import { LocalPresenceIndicator } from '@/dialer/components/LocalPresenceIndicator';
 import { PostCallSummary } from '@/dialer/components/PostCallSummary';
 import { QuickActions } from '@/dialer/components/QuickActions';
+import { TwilioConfigStatus } from '@/dialer/components/TwilioConfigStatus';
 import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
 import { useCallPersistence } from '@/dialer/hooks/useCallPersistence';
 import { useCoaching } from '@/dialer/hooks/useCoaching';
@@ -16,6 +17,7 @@ import { useFirstCallFlow } from '@/dialer/hooks/useFirstCallFlow';
 import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
 import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
+import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
@@ -131,12 +133,14 @@ const StyledReconnectSecondary = styled(StyledReconnectButton)`
 export const DialerSidebar = () => {
   useAvailableCallerIds();
   useCallPersistence();
+  const { status: configStatus } = useTwilioConfigStatus();
   const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
   const { flowState } = useFirstCallFlow();
   const setReconnectPrompt = useSetRecoilState(reconnectPromptState);
   const isInCall = callState.status !== 'idle';
+  const isConfigured = configStatus?.configured ?? false;
   const {
     isLoading,
     talkingPoints,
@@ -166,7 +170,7 @@ export const DialerSidebar = () => {
     <StyledSidePanelWrapper isOpen={dialerSidebarOpen}>
       <StyledSidebar>
         <StyledHeader>
-          <StyledTitle>Mercury</StyledTitle>
+          <StyledTitle>Dialer</StyledTitle>
         </StyledHeader>
 
         <StyledBody>
@@ -185,15 +189,20 @@ export const DialerSidebar = () => {
               </StyledReconnectButtons>
             </StyledReconnectBanner>
           )}
-          {flowState !== 'hidden' && (
+          <TwilioConfigStatus />
+          {isConfigured && flowState !== 'hidden' && (
             <FirstCallPrompt
               variant={flowState === 'congrats' ? 'congrats' : 'prompt'}
             />
           )}
-          <ContactHeader />
-          <LocalPresenceIndicator />
-          <DialPad />
-          <CallButton />
+          {isConfigured && (
+            <>
+              <ContactHeader />
+              <LocalPresenceIndicator />
+              <DialPad />
+              <CallButton />
+            </>
+          )}
           {isInCall && <InCallControls />}
           {isInCall && <QuickActions />}
           <CoachingPanel

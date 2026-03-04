@@ -171,13 +171,13 @@ export const AgentChatPanel = () => {
           <div ref={bottomRef} />
         </StyledMessageList>
       ) : (
-        <StyledEmpty>Ask Consuelo anything</StyledEmpty>
+        <StyledEmpty>Ask the Agent anything</StyledEmpty>
       )}
       <StyledInputArea onSubmit={onSubmit}>
         <StyledInput
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Message Consuelo…"
+          placeholder="Message the Agent…"
           autoFocus
         />
         {isLoading ? (

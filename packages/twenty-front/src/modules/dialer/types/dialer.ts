@@ -1,3 +1,13 @@
+/** Twilio workspace configuration status from /v1/voice/status */
+export type TwilioConfigStatus = {
+  mode: 'hosted' | 'byok';
+  configured: boolean;
+  twilioConnected: boolean;
+  hasPhoneNumbers: boolean;
+  twimlAppConfigured: boolean;
+  error: string | null;
+};
+
 /** Contact info displayed in the dialer sidebar */
 export type DialerContact = {
   id: string;
@@ -78,6 +88,18 @@ export type CallerIdOption = {
   phoneNumber: string;
   friendlyName: string;
   areaCode: string;
+  sid: string;
+  isPrimary: boolean;
+};
+
+/** Available number from Twilio search */
+export type AvailableNumberOption = {
+  phoneNumber: string;
+  areaCode: string;
+  friendlyName: string;
+  city?: string;
+  state?: string;
+  region?: string;
 };
 
 /** Transfer types supported by the dialer */

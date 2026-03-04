@@ -65,16 +65,16 @@ export enum SettingsPath {
   RoleObjectLevel = 'roles/:roleId/object/:objectMetadataId',
   RoleAddObjectLevel = 'roles/:roleId/add-object-permission',
 
-  // mercury settings
-  Mercury = 'mercury',
-  MercuryProfile = 'mercury/profile',
-  MercuryPhoneNumbers = 'mercury/phone-numbers',
-  MercuryCalling = 'mercury/calling',
-  MercuryAudio = 'mercury/audio',
-  MercuryAI = 'mercury/ai',
-  MercurySubscription = 'mercury/subscription',
-  MercuryNotifications = 'mercury/notifications',
-  MercuryWorkspace = 'mercury/workspace',
-  MercuryTwilio = 'mercury/twilio',
-  MercuryGHL = 'mercury/ghl',
+  // dialer settings
+  Dialer = 'dialer',
+  DialerProfile = 'dialer/profile',
+  DialerPhoneNumbers = 'dialer/phone-numbers',
+  DialerCalling = 'dialer/calling',
+  DialerAudio = 'dialer/audio',
+  DialerAI = 'dialer/ai',
+  DialerSubscription = 'dialer/subscription',
+  DialerNotifications = 'dialer/notifications',
+  DialerWorkspace = 'dialer/workspace',
+  DialerTwilio = 'dialer/twilio',
+  DialerGHL = 'dialer/ghl',
 }

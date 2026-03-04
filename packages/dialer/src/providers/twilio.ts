@@ -8,6 +8,9 @@ import type {
   ProvisionNumberOptions,
   ProvisionResult,
   PhoneNumber,
+  SearchAvailableNumbersOptions,
+  AvailableNumber,
+  ReleaseResult,
 } from '../types.js';
 import { extractAreaCode } from '../services/local-presence.js';
 import type TwilioClient from 'twilio';
@@ -219,6 +222,40 @@ export class TwilioProvider implements DialerProvider {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       throw new Error(`Failed to list numbers: ${message}`);
+    }
+  }
+
+  async searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]> {
+    try {
+      const client = await this.getClient();
+      const country = options.country ?? 'US';
+      const limit = options.limit ?? 10;
+      const available = await client.availablePhoneNumbers(country).local.list({
+        areaCode: Number(options.areaCode),
+        limit,
+      });
+      return available.map((n) => ({
+        phoneNumber: n.phoneNumber,
+        areaCode: options.areaCode,
+        friendlyName: n.friendlyName,
+        city: n.locality ?? undefined,
+        state: n.region ?? undefined,
+        region: n.rateCenter ?? undefined,
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Failed to search available numbers: ${message}`);
+    }
+  }
+
+  async releaseNumber(sid: string): Promise<ReleaseResult> {
+    try {
+      const client = await this.getClient();
+      await client.incomingPhoneNumbers(sid).remove();
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { success: false, error: message };
     }
   }
 }
