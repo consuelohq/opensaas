@@ -126,10 +126,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
   };
 
   return [
-    // GET /v1/integrations/ghl/auth — start OAuth flow
+    // POST /v1/integrations/ghl/oauth — start OAuth flow
     {
-      method: 'GET',
-      path: '/v1/integrations/ghl/auth',
+      method: 'POST',
+      path: '/v1/integrations/ghl/oauth',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -163,7 +163,7 @@ export const ghlRoutes = (): RouteDefinition[] => {
           });
         }
 
-        res.status(200).json({ url, state });
+        res.status(200).json({ redirectUrl: url, state });
       }),
     },
 

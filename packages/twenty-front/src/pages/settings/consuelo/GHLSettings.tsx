@@ -12,6 +12,7 @@ import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { getTokenPair } from '~/modules/apollo/utils/getTokenPair';
 import { ghlConnectionState } from '~/modules/settings/integrations/states/ghlConnectionState';
 
 // -- types --
@@ -65,9 +66,16 @@ const fetchJson = async <TData,>(
   path: string,
   options?: RequestInit,
 ): Promise<TData> => {
+  const tokenPair = getTokenPair();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(tokenPair
+      ? { Authorization: `Bearer ${tokenPair.accessOrWorkspaceAgnosticToken.token}` }
+      : {}),
+  };
   const res = await fetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
   const data = (await res.json()) as TData;
@@ -264,10 +272,11 @@ export const GHLSettings = () => {
     try {
       setConnecting(true);
       setError(null);
-      const data = await fetchJson<{ url: string }>(
-        '/v1/integrations/ghl/auth',
+      const data = await fetchJson<{ redirectUrl: string }>(
+        '/v1/integrations/ghl/oauth',
+        { method: 'POST' },
       );
-      window.location.href = data.url;
+      window.location.href = data.redirectUrl;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start OAuth');
       setConnecting(false);

@@ -4,6 +4,7 @@ import { Hero } from "../components/Hero";
 import { DashboardDemo } from "../components/DashboardDemo";
 import { ProblemSection } from "../components/ProblemSection";
 import { SolutionSection } from "../components/SolutionSection";
+import { HowItWorks } from "../components/HowItWorks";
 import { DialerDemo } from "../components/DialerDemo";
 import { ProofSection } from "../components/ProofSection";
 import { PricingPreview } from "../components/PricingPreview";
@@ -23,6 +24,9 @@ import { PricingPreview } from "../components/PricingPreview";
   <!-- problem + solution — emotional bridge -->
   <ProblemSection client:visible />
   <SolutionSection client:visible />
+
+  <!-- how it works — workflow visualization -->
+  <HowItWorks client:visible />
 
   <!-- standalone dialer demo -->
   <section class="py-20 sm:py-24">
