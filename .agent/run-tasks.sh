@@ -887,6 +887,13 @@ setup_workspace() {
 
   git fetch origin 2>/dev/null || true
 
+  # Remove any worktree holding staging so we can checkout here
+  local wt
+  wt=$(git worktree list --porcelain 2>/dev/null | grep -B1 'branch refs/heads/staging' | head -1 | sed 's/worktree //')
+  if [[ -n "$wt" && "$wt" != "$PROJECT_ROOT" ]]; then
+    git worktree remove "$wt" --force 2>/dev/null || true
+  fi
+
   # Checkout staging (create from origin if needed)
   git checkout staging 2>/dev/null || git checkout -b staging "origin/staging" || {
     log_error "Cannot checkout staging branch"
@@ -1295,132 +1302,6 @@ send_start_notification() {
 
 # Run code review on current changes
 # Returns 0 if passed, 1 if issues found (issues written to temp file)
-run_code_review() {
-  local issue_number="$1"
-  local issues_file="$2"
-
-  log_info "Running code review for issue #$issue_number..."
-
-  # Get the diff to review (compare to base branch)
-  local diff_content=$(git diff "$PR_TARGET_BRANCH"...HEAD 2>/dev/null)
-
-  if [ -z "$diff_content" ]; then
-    log_warning "No changes to review"
-    return 0
-  fi
-
-  # Truncate diff if too large (agent has context limits)
-  local diff_lines=$(echo "$diff_content" | wc -l | tr -d ' ')
-  diff_lines=${diff_lines:-0}
-  [[ "$diff_lines" =~ ^[0-9]+$ ]] || diff_lines=0
-
-  if [ "$diff_lines" -gt 500 ]; then
-    log_warning "Diff too large ($diff_lines lines), truncating to 500 lines"
-    diff_content=$(echo "$diff_content" | head -n 500)
-    diff_content="$diff_content
-
-... [TRUNCATED - $diff_lines total lines] ..."
-  fi
-
-  # Create review prompt with the skill invocation
-  local review_prompt="Invoke the code-review-excellence skill and review this code change.
-
-CRITICAL INSTRUCTION: Do NOT just pass to pass. If there are REAL blocking issues, you MUST report them. This is a quality gate.
-
-After reviewing, output your findings in this EXACT format (this format is parsed by automation):
-
-REVIEW_STATUS: PASS
-(or)
-REVIEW_STATUS: FAIL
-
-BLOCKING_ISSUES:
-- None
-(or list each issue on its own line with a leading dash)
-
-=== DIFF TO REVIEW ===
-\`\`\`diff
-$diff_content
-\`\`\`
-=== END DIFF ===
-
-WHAT TO FLAG (blocking):
-- Security vulnerabilities (SQL injection, XSS, hardcoded secrets)
-- Missing error handling for critical paths
-- Breaking API changes without migration
-- console.log/error/warn instead of structured logger (per AGENTS.md)
-- Missing error handling for critical paths (per AGENTS.md)
-- Obvious bugs or logic errors
-
-WHAT NOT TO FLAG:
-- Minor style preferences (linters handle this)
-- Nitpicks that don't affect functionality
-- Suggestions for improvement (save for PR comments)
-
-Remember: Output REVIEW_STATUS: PASS or REVIEW_STATUS: FAIL followed by BLOCKING_ISSUES section."
-
-  # Write prompt to temp file
-  local prompt_file=$(mktemp)
-  echo "$review_prompt" > "$prompt_file"
-
-  # Run agent with review prompt
-  log_info "Invoking $AGENT_CLI for code review..."
-
-  local review_output
-  local review_exit_code
-  local agent_cmd=$(get_agent_cmd)
-  review_output=$($agent_cmd "$(cat "$prompt_file")" 2>&1)
-  review_exit_code=$?
-
-  rm -f "$prompt_file"
-
-  if [ $review_exit_code -ne 0 ]; then
-    log_warning "Code review agent exited with code $review_exit_code"
-  fi
-
-  # Parse output for REVIEW_STATUS
-  if echo "$review_output" | grep -q "REVIEW_STATUS: PASS"; then
-    log_success "Code review passed"
-    return 0
-  else
-    log_warning "Code review found issues"
-
-    # Extract blocking issues section and write to file
-    echo "$review_output" | sed -n '/BLOCKING_ISSUES:/,/^$/p' > "$issues_file"
-
-    # Also save full output for debugging
-    echo "$review_output" > "${issues_file}.full"
-
-    return 1
-  fi
-}
-
-# Create GitHub issues from review findings
-create_review_issues() {
-  local issues_file="$1"
-  local parent_issue_number="$2"
-
-  log_info "Creating GitHub issues for review findings..."
-
-  # Read issues and create GitHub issues for each
-  while IFS= read -r line; do
-    # Skip empty lines, header, and "None"
-    if [[ -n "$line" && "$line" != "BLOCKING_ISSUES:" && "$line" != "- None" && "$line" != "None" ]]; then
-      # Remove leading "- " if present
-      local issue_text="${line#- }"
-      # Remove leading whitespace
-      issue_text="${issue_text#"${issue_text%%[![:space:]]*}"}"
-
-      if [ -n "$issue_text" ] && [ "$issue_text" != "None" ]; then
-        log_info "  Creating issue: $issue_text"
-        gh issue create \
-          --title "[REVIEW] $issue_text" \
-          --body "Found during code review of issue #$parent_issue_number" \
-          --label "agent-ready" \
-          2>/dev/null || true
-      fi
-    fi
-  done < "$issues_file"
-}
 
 # Import Sentry bot issues from GitHub PR comments as GitHub issues
 import_sentry_issues() {
@@ -1519,39 +1400,6 @@ $ai_prompt
 }
 
 # Re-prompt agent to fix review issues
-fix_review_issues() {
-  local issue_number="$1"
-  local issues_file="$2"
-
-  local issues_content=$(cat "$issues_file")
-
-  local fix_prompt="The automated code review for GitHub issue #$issue_number found BLOCKING issues that MUST be fixed before merge.
-
-ISSUES TO FIX:
-$issues_content
-
-Instructions:
-1. Fix ALL of these issues in the code
-2. Stage and commit your fixes with a message like 'fix(#$issue_number): address code review feedback'
-3. Do NOT push - the review will run again automatically
-
-Be thorough - the code review will run again after your fixes."
-
-  log_info "Re-prompting agent to fix review issues..."
-
-  local prompt_file=$(mktemp)
-  echo "$fix_prompt" > "$prompt_file"
-
-  local agent_cmd=$(get_agent_cmd)
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null
-  local exit_code=$?
-
-  rm -f "$prompt_file"
-  return $exit_code
-}
-
-# =============================================================================
-# QUALITY GATES - Code review and tests run after each subprocess
 
 # Process a single issue using fresh subprocess (commits to the shared run branch)
 process_issue() {
@@ -1662,11 +1510,9 @@ Automated commit by agent workflow.
 Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>" || true
   fi
 
-  # Move to "In Review" — coderabbit reviews on PR, human approves
+  # Run quality gates (code review + tests) - pass linear_id for status updates
+  # Coderabbit reviews on PR — no local review gate needed
   COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-  if [ "$TASK_SOURCE" = "linear" ] && [ -n "$linear_id" ]; then
-    update_linear_task_status "$issue_number" "$linear_id" "In Review"
-  fi
 
   # Push commits immediately (so work is saved even if script crashes)
   push_task_commits "$issue_number"
