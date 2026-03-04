@@ -4,12 +4,7 @@ import { Trans } from '@lingui/react/macro';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
 import { Section } from 'twenty-ui/layout';
-import styled from '@emotion/styled';
-
-const StyledPlaceholder = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.md};
-`;
+import { ProfileSettings } from '~/pages/settings/consuelo/ProfileSettings';
 
 export const SettingsMercuryProfile = () => {
   return (
@@ -29,7 +24,7 @@ export const SettingsMercuryProfile = () => {
     >
       <SettingsPageContainer>
         <Section>
-          <StyledPlaceholder>Profile settings — coming soon</StyledPlaceholder>
+          <ProfileSettings />
         </Section>
       </SettingsPageContainer>
     </SubMenuTopBarContainer>

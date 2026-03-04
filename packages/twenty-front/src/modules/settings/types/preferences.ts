@@ -48,7 +48,17 @@ export type KeyboardPreferences = {
   shortcuts: KeyboardShortcut[];
 };
 
+export type ProfilePreferences = {
+  displayName: string;
+  voicemailGreeting: string;
+  timezone: string;
+  workingHoursEnabled: boolean;
+  workingHoursStart: string; // "09:00"
+  workingHoursEnd: string; // "17:00"
+};
+
 export type UserPreferences = {
+  profile: ProfilePreferences;
   notifications: NotificationPreferences;
   dialer: DialerPreferences;
   display: DisplayPreferences;
@@ -67,6 +77,14 @@ export const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
 ];
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
+  profile: {
+    displayName: '',
+    voicemailGreeting: '',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    workingHoursEnabled: false,
+    workingHoursStart: '09:00',
+    workingHoursEnd: '17:00',
+  },
   notifications: {
     enableDesktop: false,
     enableSound: true,
