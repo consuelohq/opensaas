@@ -1,14 +1,21 @@
 import styled from '@emotion/styled';
 import { IconBolt, IconPlus } from '@tabler/icons-react';
+import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 
 import { useAgentSkills } from '@/agent/hooks/useAgentSkills';
 import { SkillCard } from '@/skills/components/SkillCard';
+import { PageBody } from '@/ui/layout/page/components/PageBody';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { Button } from 'twenty-ui/input';
 
-const StyledBody = styled.div`
+const StyledPageBody = styled(PageBody)`
+  flex: 1;
+  min-height: 0;
+`;
+
+const StyledContent = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -50,6 +57,7 @@ const StyledEmptyState = styled.div`
 `;
 
 export const SkillsIndexPage = () => {
+  const { t } = useLingui();
   const { skills, isLoading } = useAgentSkills();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -64,40 +72,45 @@ export const SkillsIndexPage = () => {
 
   return (
     <PageContainer>
-      <PageHeader title="Skills" Icon={IconBolt}>
+      <PageHeader title={t`Skills`} Icon={IconBolt}>
         <Button
           Icon={IconPlus}
-          title="Create Skill"
+          title={t`Create Skill`}
           size="small"
           variant="secondary"
         />
       </PageHeader>
-      <StyledBody>
-        <StyledSearchInput
-          placeholder="Search skills..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
-        {isLoading ? (
-          <StyledEmptyState>Loading skills...</StyledEmptyState>
-        ) : filteredSkills.length === 0 ? (
-          <StyledEmptyState>
-            {searchTerm ? 'No skills match your search' : 'No skills yet'}
-          </StyledEmptyState>
-        ) : (
-          <StyledGrid>
-            {filteredSkills.map((skill) => (
-              <SkillCard
-                key={skill.id}
-                id={skill.id}
-                name={skill.name}
-                description={skill.description}
-                category={skill.category}
-              />
-            ))}
-          </StyledGrid>
-        )}
-      </StyledBody>
+      <StyledPageBody>
+        <StyledContent>
+          <StyledSearchInput
+            placeholder={t`Search skills...`}
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+          {isLoading ? (
+            <StyledEmptyState>{t`Loading skills...`}</StyledEmptyState>
+          ) : filteredSkills.length === 0 ? (
+            <StyledEmptyState>
+              {searchTerm
+                ? t`No skills match your search`
+                : t`No skills yet`}
+            </StyledEmptyState>
+          ) : (
+            <StyledGrid>
+              {filteredSkills.map((skill) => (
+                <SkillCard
+                  key={skill.id}
+                  id={skill.id}
+                  name={skill.name}
+                  description={skill.description}
+                  category={skill.category}
+                  enabled={skill.enabled}
+                />
+              ))}
+            </StyledGrid>
+          )}
+        </StyledContent>
+      </StyledPageBody>
     </PageContainer>
   );
 };
