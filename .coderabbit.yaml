@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_instructions:
+    - path: "packages/**/*.ts"
+      instructions: |
+        - no console.log/error/warn — use structured logger
+        - catch blocks must use (err: unknown), never (err: any)
+        - no 'any' type without // HACK: comment
+        - async functions with await must have try/catch within 30 lines
+        - no SQL template literals in .query() calls
+        - no hardcoded secrets (skip process.env and type annotations)
+        - bare TODO/FIXME must have ticket ref like DEV-123
+        - no wildcard imports except builtins (fs, path, os) and Sentry
+        - param routes (:id) must come AFTER literal routes in same prefix
+        - peerDependencies must use lazy await import(), never top-level import
+        - stub handlers must return 501 or have // STUB: comment
+        - phone comparisons must use normalizePhone()
+    - path: "packages/twenty-front/**/*.tsx"
+      instructions: |
+        - functional components only, named exports only
+        - use Emotion styled-components for styling
+        - use createState from @/ui/utilities/state/utils/createState for atoms
+        - keyboard shortcuts must use useGlobalHotkeys, never raw addEventListener
+        - no abbreviations in variable names
+    - path: ".agent/**"
+      instructions: "infrastructure scripts — review for correctness but skip coding standards"
+
+knowledge_base:
+  linear:
+    usage: "enabled"
+    team_keys:
+      - "CON"
+
+chat:
+  integrations:
+    linear:
+      usage: "enabled"
