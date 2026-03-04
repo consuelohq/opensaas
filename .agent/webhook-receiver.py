@@ -48,7 +48,15 @@ TMUX = "/opt/homebrew/bin/tmux"
 TMUX_SESSION = "dev"
 TMUX_MENTION = "linear"
 MENTION_DIR = "/tmp/kiro-mentions"
+GITHUB_WEBHOOK_SECRET = _c("GITHUB_WEBHOOK_SECRET")
+LINEAR_API_KEY = _c("LINEAR_API_KEY")
+REVIEW_LABEL = "b89ec107-7019-4ce9-90cc-770067a892cd"   # [review]
+OPENSAAS_LABEL = "aed5a241-2c72-44ca-a56a-9e5eabb0644a" # opensaas
+TEAM_ID = "29f5c661-da6c-4bfb-bd48-815a006ccaac"
+TRIAGE_STATE = "113983ef-c9ed-483a-9c42-99286e6dc70b"
+REVIEW_BOTS = {"coderabbitai[bot]": "CodeRabbit", "qodo-code-review[bot]": "Qodo"}
 _running: dict = {}  # session_id -> {"pid": str, "output": path, "done": path}
+_pending_reviews: dict = {}  # (pr_number, bot_login) -> timestamp
 
 # ── linear API ───────────────────────────────────────────────────────────────
 
@@ -352,6 +360,138 @@ def verify_sig(body, sig):
     expected = hmac.new(WEBHOOK_SECRET.encode(), body, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, sig)
 
+def verify_github_sig(body, sig):
+    if not GITHUB_WEBHOOK_SECRET: return True
+    if not sig or not sig.startswith("sha256="): return False
+    expected = "sha256=" + hmac.new(GITHUB_WEBHOOK_SECRET.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, sig)
+
+# ── github PR review → linear triage ────────────────────────────────────────
+
+def _gh_api(path):
+    """call github REST API via gh cli."""
+    r = subprocess.run(
+        ["gh", "api", path, "--paginate"],
+        capture_output=True, text=True, cwd=REPO_DIR,
+    )
+    return json.loads(r.stdout) if r.returncode == 0 else []
+
+def _linear_api(query, variables=None):
+    """call linear graphql API."""
+    payload = json.dumps({"query": query, "variables": variables or {}}).encode()
+    req = urllib.request.Request(
+        "https://api.linear.app/graphql", data=payload,
+        headers={"Authorization": LINEAR_API_KEY, "Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read())
+
+def handle_pr_review(pr_number, repo_full, bot_login):
+    """fetch all reviews + comments from a bot on a PR, create/update a linear issue."""
+    key = (pr_number, bot_login)
+    if key in _pending_reviews:
+        print(f"[github] debounce — already waiting for {REVIEW_BOTS[bot_login]} on PR #{pr_number}", flush=True)
+        return
+    _pending_reviews[key] = time.time()
+
+    def _run():
+        # wait 5 min for bot to finish all review passes
+        bot_name = REVIEW_BOTS[bot_login]
+        print(f"[github] waiting 5m for {bot_name} to finish PR #{pr_number}...", flush=True)
+        time.sleep(300)
+
+        # poll up to 10 min total — check if new reviews appeared in last 2 min
+        start = _pending_reviews[key]
+        while time.time() - start < 600:
+            reviews = _gh_api(f"repos/{repo_full}/pulls/{pr_number}/reviews")
+            bot_reviews = [r for r in reviews if r.get("user", {}).get("login") == bot_login]
+            if not bot_reviews:
+                break
+            latest = max(r.get("submitted_at", "") for r in bot_reviews)
+            # if latest review is older than 2 min, bot is done
+            if latest:
+                from datetime import datetime, timezone
+                latest_dt = datetime.fromisoformat(latest.replace("Z", "+00:00"))
+                age = (datetime.now(timezone.utc) - latest_dt).total_seconds()
+                if age > 120:
+                    break
+            print(f"[github] {bot_name} still active on PR #{pr_number}, waiting 60s...", flush=True)
+            time.sleep(60)
+
+        try:
+            _collect_and_create(pr_number, repo_full, bot_login)
+        finally:
+            _pending_reviews.pop(key, None)
+
+    threading.Thread(target=_run, daemon=True).start()
+
+def _collect_and_create(pr_number, repo_full, bot_login):
+    """collect all bot findings and create/update linear issue."""
+    bot_name = REVIEW_BOTS[bot_login]
+    print(f"[github] collecting {bot_name} findings on PR #{pr_number}", flush=True)
+
+    reviews = _gh_api(f"repos/{repo_full}/pulls/{pr_number}/reviews")
+    comments = _gh_api(f"repos/{repo_full}/pulls/{pr_number}/comments")
+    pr_comments = _gh_api(f"repos/{repo_full}/issues/{pr_number}/comments")
+
+    bot_reviews = [r for r in reviews if r.get("user", {}).get("login") == bot_login]
+    bot_inline = [c for c in comments if c.get("user", {}).get("login") == bot_login]
+    bot_pr = [c for c in pr_comments if c.get("user", {}).get("login") == bot_login]
+
+    if not bot_reviews and not bot_inline and not bot_pr:
+        print(f"[github] no {bot_name} content found on PR #{pr_number}", flush=True)
+        return
+
+    desc = f"## {bot_name} Review — PR #{pr_number}\n\n"
+    desc += f"**Source:** [{repo_full}#{pr_number}](https://github.com/{repo_full}/pull/{pr_number})\n\n"
+
+    if bot_inline:
+        desc += f"### Inline Comments ({len(bot_inline)})\n\n"
+        for c in bot_inline:
+            desc += f"**`{c.get('path', '?')}`** line {c.get('line') or c.get('original_line', '?')}\n\n"
+            desc += f"{c.get('body', '')}\n\n---\n\n"
+
+    if bot_reviews:
+        bodies = [r["body"] for r in bot_reviews if r.get("body", "").strip()]
+        if bodies:
+            desc += f"### Review Summaries ({len(bodies)})\n\n"
+            for body in bodies:
+                desc += f"{body}\n\n---\n\n"
+
+    if bot_pr:
+        bodies = [c["body"] for c in bot_pr if c.get("body", "").strip()]
+        if bodies:
+            desc += f"### PR Comments ({len(bodies)})\n\n"
+            for body in bodies:
+                if len(body) > 4000:
+                    body = body[:4000] + "\n\n_(truncated — see PR for full content)_"
+                desc += f"{body}\n\n---\n\n"
+
+    title = f"[review] {bot_name}: PR #{pr_number}"
+    finding_count = len(bot_inline) + len([r for r in bot_reviews if r.get("body", "").strip()])
+
+    search_result = _linear_api(
+        '{ issueSearch(query: "' + title.replace('"', '\\"') + '", first: 1) { nodes { id identifier } } }'
+    )
+    existing = (search_result.get("data", {}).get("issueSearch", {}).get("nodes") or [None])[0]
+
+    if existing:
+        _linear_api(
+            'mutation($id: String!, $desc: String!) { issueUpdate(id: $id, input: { description: $desc }) { success } }',
+            {"id": existing["id"], "desc": desc},
+        )
+        print(f"[github] updated {existing['identifier']}: {title} ({finding_count} findings)", flush=True)
+    else:
+        result = _linear_api(
+            'mutation($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { identifier } } }',
+            {"input": {
+                "title": title, "description": desc, "teamId": TEAM_ID,
+                "stateId": TRIAGE_STATE, "labelIds": [REVIEW_LABEL, OPENSAAS_LABEL],
+            }},
+        )
+        ident = result.get("data", {}).get("issueCreate", {}).get("issue", {}).get("identifier", "?")
+        print(f"[github] created {ident}: {title} ({finding_count} findings)", flush=True)
+
 # ── HTTP handler ─────────────────────────────────────────────────────────────
 
 class Handler(BaseHTTPRequestHandler):
@@ -379,11 +519,32 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"error": "not found"})
 
     def do_POST(self):
+        body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+
+        if self.path == "/webhook/github":
+            if not verify_github_sig(body, self.headers.get("X-Hub-Signature-256", "")):
+                self._json(401, {"error": "bad signature"})
+                return
+            try:
+                payload = json.loads(body)
+            except json.JSONDecodeError:
+                self._json(400, {"error": "bad json"})
+                return
+            event = self.headers.get("X-GitHub-Event", "")
+            self._json(200, {"status": "accepted"})
+            if event == "pull_request_review":
+                action = payload.get("action", "")
+                reviewer = payload.get("review", {}).get("user", {}).get("login", "")
+                pr_number = payload.get("pull_request", {}).get("number")
+                repo_full = payload.get("repository", {}).get("full_name", "")
+                if action == "submitted" and reviewer in REVIEW_BOTS and pr_number:
+                    handle_pr_review(pr_number, repo_full, reviewer)
+            return
+
         if self.path != "/webhook/linear":
             self._json(404, {"error": "not found"})
             return
 
-        body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
         if not verify_sig(body, self.headers.get("Linear-Signature", "")):
             self._json(401, {"error": "bad signature"})
             return
@@ -483,6 +644,7 @@ def main():
     server = HTTPServer(("0.0.0.0", PORT), Handler)
     print(f"[webhook-receiver] listening on :{PORT}", flush=True)
     print(f"  POST /webhook/linear  — agent session events", flush=True)
+    print(f"  POST /webhook/github  — PR review → linear triage", flush=True)
     print(f"  GET  /oauth/callback  — oauth code exchange", flush=True)
     print(f"  GET  /health          — health check", flush=True)
     print(f"", flush=True)
