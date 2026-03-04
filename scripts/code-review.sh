@@ -15,7 +15,14 @@ WARNINGS=""
 
 # get changed .ts files vs main (only in packages/*/src, exclude deleted)
 # exclude twenty-front and twenty-server (upstream twenty code) but keep our dialer module
-_ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || git diff --name-only --diff-filter=ACMR HEAD~1 -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+# check committed diff first, then fall back to staged+unstaged (agent may not have committed yet)
+_ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+if [ -z "$_ALL_CHANGED" ]; then
+  _ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+fi
+if [ -z "$_ALL_CHANGED" ]; then
+  _ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR --staged -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+fi
 CHANGED_FILES=$(echo "$_ALL_CHANGED" | grep -v '^packages/twenty-front/' | grep -v '^packages/twenty-server/' || true)
 # re-add our dialer module inside twenty-front
 _DIALER_FILES=$(echo "$_ALL_CHANGED" | grep '^packages/twenty-front/src/modules/dialer/' || true)
