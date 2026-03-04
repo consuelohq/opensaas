@@ -56,3 +56,4 @@ TRANSLATION_QA_REPORT.md
 
 # Agent backup files
 .agent/backups/
+.agent/.oauth-token.json

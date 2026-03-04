@@ -44,28 +44,77 @@ OAUTH_CLIENT_SECRET = _c("LINEAR_OAUTH_CLIENT_SECRET")
 OAUTH_CALLBACK_URL = _c("LINEAR_OAUTH_CALLBACK_URL")
 TOKEN_FILE = os.path.join(SCRIPT_DIR, ".oauth-token.json")
 KIRO_CLI = "/Users/kokayi/.local/bin/kiro-cli"
+TMUX = "/opt/homebrew/bin/tmux"
 TMUX_SESSION = "dev"
-_running: dict = {}  # session_id -> subprocess.Popen
+TMUX_MENTION = "linear"
+MENTION_DIR = "/tmp/kiro-mentions"
+_running: dict = {}  # session_id -> {"pid": str, "output": path, "done": path}
 
 # ── linear API ───────────────────────────────────────────────────────────────
+
+def _refresh_oauth_token():
+    """refresh the oauth token using the refresh_token grant."""
+    if not os.path.exists(TOKEN_FILE):
+        return None
+    with open(TOKEN_FILE) as f:
+        old = json.load(f)
+    rt = old.get("refresh_token")
+    if not rt or not OAUTH_CLIENT_ID or not OAUTH_CLIENT_SECRET:
+        return None
+    try:
+        data = urllib.parse.urlencode({
+            "grant_type": "refresh_token",
+            "refresh_token": rt,
+            "client_id": OAUTH_CLIENT_ID,
+            "client_secret": OAUTH_CLIENT_SECRET,
+        }).encode()
+        req = urllib.request.Request(
+            "https://api.linear.app/oauth/token", data=data,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            new_token = json.loads(resp.read())
+        with open(TOKEN_FILE, "w") as f:
+            json.dump(new_token, f, indent=2)
+        print(f"[oauth] token refreshed", flush=True)
+        return new_token.get("access_token")
+    except Exception as e:
+        print(f"[oauth-refresh-err] {e}", flush=True)
+        return None
 
 def _get_token():
     if os.path.exists(TOKEN_FILE):
         with open(TOKEN_FILE) as f:
-            t = json.load(f).get("access_token")
-            if t: return t
+            data = json.load(f)
+        t = data.get("access_token")
+        if t:
+            age = time.time() - os.path.getmtime(TOKEN_FILE)
+            if age > 82800:  # refresh if older than 23 hours
+                refreshed = _refresh_oauth_token()
+                if refreshed:
+                    return refreshed
+            return t
     return _c("LINEAR_API_KEY")
 
 def _gql(query, variables=None):
     token = _get_token()
     if not token: raise RuntimeError("no linear token")
     payload = json.dumps({"query": query, "variables": variables or {}}).encode()
-    req = urllib.request.Request(
-        "https://api.linear.app/graphql", data=payload,
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-    )
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read())
+    def _do(t):
+        req = urllib.request.Request(
+            "https://api.linear.app/graphql", data=payload,
+            headers={"Authorization": f"Bearer {t}", "Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+    try:
+        return _do(token)
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            refreshed = _refresh_oauth_token()
+            if refreshed:
+                return _do(refreshed)
+        raise
 
 def send_thought(sid, body, ephemeral=False):
     _send_activity(sid, {"type": "thought", "body": body}, ephemeral)
@@ -123,17 +172,27 @@ def fetch_history(session_id):
         print(f"[history-err] {e}", flush=True)
         return ""
 
-# ── mention flow: kiro-cli per turn ─────────────────────────────────────────
+# ── mention flow: kiro-cli in tmux ──────────────────────────────────────────
 
 ANSI_RE = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]|\x1b\].*?\x07|\x1b\[\d*;?\d*m')
 
 def handle_mention(session_id, prompt_context, user_message=None, is_followup=False):
-    """run kiro-cli non-interactive for one turn, post output to linear."""
+    """run kiro-cli in tmux linear session, poll for output, post to linear."""
+    # send thought SYNCHRONOUSLY before thread — must hit linear within 10s
+    send_thought(session_id, "thinking...")
+
     def _run():
         try:
-            send_thought(session_id, "thinking...")
+            os.makedirs(MENTION_DIR, exist_ok=True)
+            sid = session_id[:8]
+            prompt_file = f"{MENTION_DIR}/{sid}.prompt"
+            output_file = f"{MENTION_DIR}/{sid}.output"
+            done_file = f"{MENTION_DIR}/{sid}.done"
 
-            # build the prompt
+            for f in (output_file, done_file):
+                if os.path.exists(f): os.remove(f)
+
+            # build prompt
             if is_followup:
                 history = fetch_history(session_id)
                 prompt = ""
@@ -143,34 +202,82 @@ def handle_mention(session_id, prompt_context, user_message=None, is_followup=Fa
             else:
                 prompt = prompt_context
 
-            # run kiro-cli non-interactive
-            proc = subprocess.Popen(
-                [KIRO_CLI, "chat", "--no-interactive", "--trust-all-tools", "--agent", "orchestrator"],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                cwd=REPO_DIR, text=True,
-                env={**os.environ, "NO_COLOR": "1"},
-            )
-            _running[session_id] = proc
+            with open(prompt_file, "w") as f:
+                f.write(prompt)
 
-            stdout, stderr = proc.communicate(input=prompt, timeout=600)
+            # check tmux session
+            check = subprocess.run([TMUX, "has-session", "-t", TMUX_MENTION], capture_output=True)
+            if check.returncode != 0:
+                send_error(session_id, f"tmux session '{TMUX_MENTION}' not found")
+                return
+
+            _running[session_id] = {"output": output_file, "done": done_file}
+
+            cmd = (
+                f"cat {prompt_file} | {KIRO_CLI} chat --no-interactive --trust-all-tools "
+                f"--agent orchestrator 2>&1 | tee {output_file}; "
+                f"echo $? > {done_file}"
+            )
+            subprocess.run([TMUX, "send-keys", "-t", TMUX_MENTION, cmd, "Enter"], capture_output=True)
+            print(f"[mention] sent kiro-cli to tmux:{TMUX_MENTION} for {sid}", flush=True)
+
+            # poll for completion (max 10 min)
+            # send periodic thoughts every ~30s to keep linear session alive (30-min window)
+            deadline = time.time() + 600
+            last_thought = time.time()
+            prev_size = 0
+            while time.time() < deadline:
+                if os.path.exists(done_file):
+                    break
+                # keep-alive: send thought every 30s so linear doesn't show stale
+                if time.time() - last_thought >= 30:
+                    cur_size = os.path.getsize(output_file) if os.path.exists(output_file) else 0
+                    if cur_size > prev_size:
+                        send_thought(session_id, f"working... ({cur_size} bytes of output so far)")
+                        prev_size = cur_size
+                    else:
+                        send_thought(session_id, "still working...")
+                    last_thought = time.time()
+                time.sleep(5)
+            else:
+                _running.pop(session_id, None)
+                send_error(session_id, "timed out after 10 minutes")
+                return
+
             _running.pop(session_id, None)
 
-            output = ANSI_RE.sub('', stdout).strip()
+            exit_code = open(done_file).read().strip() if os.path.exists(done_file) else "?"
+            raw = open(output_file).read() if os.path.exists(output_file) else ""
+            output = ANSI_RE.sub('', raw).strip()
+
+            print(f"[kiro] exit={exit_code} output={len(output)} chars", flush=True)
+
             if output:
+                print(f"[kiro] posting {len(output)} chars to linear", flush=True)
                 send_response(session_id, output)
             else:
-                err = stderr.strip()[:500] if stderr else "no output"
-                send_error(session_id, f"kiro returned empty. stderr: {err}")
+                send_error(session_id, f"kiro returned empty (exit={exit_code})")
 
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            _running.pop(session_id, None)
-            send_error(session_id, "timed out after 10 minutes")
         except Exception as e:
             _running.pop(session_id, None)
             print(f"[mention-err] {e}", flush=True)
             send_error(session_id, f"failed: {e}")
 
+    threading.Thread(target=_run, daemon=True).start()
+
+def handle_assign_direct(identifier):
+    """run run-tasks.sh for a single issue in tmux dev — no agent session needed."""
+    def _run():
+        try:
+            check = subprocess.run([TMUX, "has-session", "-t", TMUX_SESSION], capture_output=True)
+            if check.returncode != 0:
+                print(f"[assign-direct] tmux session '{TMUX_SESSION}' not found", flush=True)
+                return
+            cmd = f"bash {SCRIPT_DIR}/run-tasks.sh --linear --issue {identifier}"
+            subprocess.run([TMUX, "send-keys", "-t", TMUX_SESSION, cmd, "Enter"], capture_output=True)
+            print(f"[assign-direct] sent to tmux:{TMUX_SESSION}: {cmd}", flush=True)
+        except Exception as e:
+            print(f"[assign-direct-err] {e}", flush=True)
     threading.Thread(target=_run, daemon=True).start()
 
 # ── assign flow: run-tasks.sh in tmux ────────────────────────────────────────
@@ -183,7 +290,7 @@ def handle_assign(session_id, issue):
         try:
             # check tmux session exists
             check = subprocess.run(
-                ["tmux", "has-session", "-t", TMUX_SESSION],
+                [TMUX, "has-session", "-t", TMUX_SESSION],
                 capture_output=True,
             )
             if check.returncode != 0:
@@ -200,7 +307,7 @@ def handle_assign(session_id, issue):
             )
 
             subprocess.run(
-                ["tmux", "send-keys", "-t", TMUX_SESSION, cmd, "Enter"],
+                [TMUX, "send-keys", "-t", TMUX_SESSION, cmd, "Enter"],
                 capture_output=True,
             )
 
@@ -228,10 +335,14 @@ def handle_assign(session_id, issue):
 # ── stop handling ────────────────────────────────────────────────────────────
 
 def handle_stop(session_id):
-    proc = _running.pop(session_id, None)
-    if proc:
-        print(f"[stop] killing kiro process for {session_id[:8]}", flush=True)
-        proc.kill()
+    info = _running.pop(session_id, None)
+    if info:
+        print(f"[stop] sending C-c to tmux:{TMUX_MENTION} for {session_id[:8]}", flush=True)
+        subprocess.run([TMUX, "send-keys", "-t", TMUX_MENTION, "C-c", ""], capture_output=True)
+        # write done file so poll loop exits
+        done = info.get("done")
+        if done:
+            with open(done, "w") as f: f.write("130")
     send_response(session_id, "stopped.")
 
 # ── signature verification ───────────────────────────────────────────────────
@@ -289,6 +400,18 @@ class Handler(BaseHTTPRequestHandler):
 
         # respond fast — linear requires <5s
         self._json(200, {"status": "accepted"})
+
+        if ptype == "AppUserNotification" and action == "issueAssignedToYou":
+            issue = payload.get("issue") or payload.get("data", {}).get("issue") or {}
+            identifier = issue.get("identifier", "")
+            if not identifier:
+                # try to extract from notification
+                print(f"[assign-notify] payload keys: {list(payload.keys())}", flush=True)
+                print(f"[assign-notify] full payload: {json.dumps(payload)[:500]}", flush=True)
+            else:
+                print(f"[assign-notify] {identifier} assigned to kiro", flush=True)
+                handle_assign_direct(identifier)
+            return
 
         if ptype == "AgentSessionEvent":
             session = payload.get("agentSession") or {}
