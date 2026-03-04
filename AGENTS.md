@@ -4,9 +4,12 @@
 
 read `CODING-STANDARDS.md` before writing any code. every rule in that file is mandatory.
 
+
 ## project overview
 
 opensaas is an open-source sales infrastructure platform built on a [twenty CRM](https://github.com/twentyhq/twenty) fork. monorepo structured as an nx workspace managed with yarn 4.
+
+/Users/kokayi/Dev/opensaas/packages/consuelo-website OUR WEBSITE IS NOT TWENTY-WEBSITE IF YOURE READING TWENTY WEBSITE ITS INCORRECT WE HAVE AN ASTRO SITE NOT NEXT.JS
 
 ### opensaas packages (`@consuelo/*`)
 
@@ -528,21 +531,6 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 
 `scripts/code-review.sh` (also `npm run review`) runs on every push. all 13 must pass:
 
-| # | check | what it catches |
-|---|-------|-----------------|
-| 1 | **LOGGING** | `console.*` usage (except output.ts and logger) |
-| 2 | **SENTRY** | HTTP errors or caught exceptions missing sentry tracking |
-| 3 | **PHONE_NORM** | `.phone ===` or `.phoneNumber ===` without `normalizePhone()` |
-| 4 | **SQL_PARAM** | template literals in `.query()` calls |
-| 5 | **ERROR_HANDLING** | async functions with `await` but no `try/catch` within 30 lines |
-| 6 | **TYPE_SAFETY** | `: any`, `as any`, `<any>` without `// HACK:` comment |
-| 7 | **SECRETS** | hardcoded API keys, tokens, passwords (skips `process.env` and type annotations) |
-| 8 | **TODO_FIXME** | bare `TODO` or `FIXME` without a ticket reference like `DEV-123` |
-| 9 | **IMPORT_SAFETY** | wildcard `import *` (except builtins like fs, path, os and Sentry) |
-| 10 | **ROUTE_ORDER** | param routes (`:id`) registered before literal routes in the same prefix |
-| 11 | **CATCH_TYPING** | `catch (err)` without `: unknown` type annotation |
-| 12 | **OPTIONAL_IMPORT** | top-level `import` of `peerDependencies` (must use lazy `await import()`) |
-| 13 | **STUB_HANDLER** | route handlers returning hardcoded fake data without `// STUB:` comment |
 
 ## route ordering
 
@@ -712,3 +700,4 @@ private async getClient() {
 - commit format: `type(scope): description`
 - one PR per feature
 
+ALl text must be localized with Lingui
