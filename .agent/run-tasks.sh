@@ -126,6 +126,7 @@ DRY_RUN=false
 AGENT_OVERRIDE=""
 ISSUE_LABEL="${ISSUE_LABEL_READY:-agent-ready}"
 TASK_SOURCE_OVERRIDE=""
+SINGLE_ISSUE=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -143,6 +144,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --label)
       ISSUE_LABEL="$2"
+      shift 2
+      ;;
+    --issue)
+      SINGLE_ISSUE="$2"
+      TASK_SOURCE_OVERRIDE="linear"
       shift 2
       ;;
     --source)
@@ -172,6 +178,7 @@ while [[ $# -gt 0 ]]; do
       echo "  --mercury        Alias for --projects"
       echo "  --issues         Shorthand for --source issues (use GitHub Issues labels)"
       echo "  --linear         Shorthand for --source linear (use Linear.app)"
+      echo "  --issue ID       Process a single Linear issue by identifier (e.g., DEV-1076)"
       echo "  --label LABEL    Filter issues by label (when using --issues)"
       echo "  --dry-run        Preview tasks without processing"
       echo "  --help           Show this help message"
@@ -766,6 +773,64 @@ add_linear_comment() {
   fi
 }
 
+# Get a single Linear issue by identifier (e.g., "DEV-1076") with full comments
+get_single_linear_issue() {
+  local identifier="$1"
+  local team_id="${LINEAR_TEAM_ID:-}"
+
+  if [ -z "$LINEAR_API_KEY" ]; then
+    log_error "LINEAR_API_KEY environment variable not set"
+    return 1
+  fi
+
+  if [ -z "$team_id" ]; then
+    log_error "LINEAR_TEAM_ID not set in config.sh"
+    return 1
+  fi
+
+  # Extract number from identifier (e.g., "DEV-1076" -> 1076)
+  local issue_number="${identifier##*-}"
+
+  local query="
+    query {
+      issues(
+        filter: {
+          team: { id: { eq: \"$team_id\" } }
+          number: { eq: $issue_number }
+        }
+        first: 1
+      ) {
+        nodes {
+          id
+          identifier
+          title
+          description
+          createdAt
+          comments {
+            nodes {
+              body
+              user { name }
+              createdAt
+            }
+          }
+        }
+      }
+    }
+  "
+
+  # Fetch and transform to match get_linear_tasks format (merges comments into body)
+  linear_graphql "$query" | jq -c '.data.issues.nodes[0] // empty | {
+    number: .identifier,
+    title: .title,
+    body: ((.description // "") + (
+      if (.comments.nodes | length) > 0 then
+        "\n\n---\n## Comments\n\n" + ([.comments.nodes[] | "**" + .user.name + "** (" + .createdAt + "):\n" + .body + "\n"] | join("\n---\n"))
+      else "" end
+    )),
+    linear_id: .id
+  }' 2>/dev/null
+}
+
 # Update task status based on task source
 # For Linear: issue_number is the identifier (CON-123), issue_linear_id is the UUID
 update_task_status() {
@@ -817,1105 +882,25 @@ update_task_status() {
 # PERSISTENT WORKTREE — one worktree, stays alive across runs
 # =============================================================================
 
-setup_worktree() {
-  local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
+setup_workspace() {
+  cd "$PROJECT_ROOT" || { log_error "Cannot cd to $PROJECT_ROOT"; exit 1; }
 
-  if [ -d "$wt_path/.git" ] || [ -f "$wt_path/.git" ]; then
-    cd "$wt_path" || { log_error "Cannot cd to worktree $wt_path"; exit 1; }
-  else
-    log_error "Worktree not found at $wt_path — create it first: git worktree add $wt_path staging"
-    exit 1
-  fi
-
-  # Pull in any new commits from main (no-op if staging is already ahead)
   git fetch origin 2>/dev/null || true
+
+  # Checkout staging (create from origin if needed)
+  git checkout staging 2>/dev/null || git checkout -b staging "origin/staging" || {
+    log_error "Cannot checkout staging branch"
+    exit 1
+  }
+
+  # Rebase on source to pick up any new commits
   git rebase "origin/$SOURCE_BRANCH" 2>/dev/null || {
     git rebase --abort 2>/dev/null
     log_warning "Rebase conflict — continuing with current staging state"
   }
 
   rm -rf /tmp/oc-review-* 2>/dev/null || true
-  log_info "Worktree ready at $wt_path (staging)"
-}
-
-# =============================================================================
-# BACKGROUND REVIEW — opencode reviews each task without blocking the next
-# =============================================================================
-
-spawn_background_review() {
-  local task_id="$1"
-  local task_title="$2"
-  local head_before="$3"
-  local head_after="$4"
-  local pr_url="$5"
-  local linear_id="$6"
-
-  local review_model="${REVIEW_MODEL:-nvidia/moonshotai/kimi-k2.5}"
-  local oc_cmd="${OPENCODE_CMD:-/opt/homebrew/bin/opencode}"
-  local wt_path="${AGENT_WORKTREE:-${PROJECT_ROOT}/../opensaas-agent}"
-  local review_id="review-$(date +%s)-$-$RANDOM"
-  local oc_home="/tmp/oc-$review_id"
-  local review_timeout="${REVIEW_TIMEOUT:-600}"
-
-  # Isolate opencode sqlite db + symlink mcp-auth
-  mkdir -p "$oc_home/opencode"
-  ln -sf ~/.local/share/opencode/mcp-auth.json "$oc_home/opencode/mcp-auth.json" 2>/dev/null || true
-
-  # Extract PR number from URL
-  local pr_number=""
-  if [ -n "$pr_url" ]; then
-    pr_number=$(echo "$pr_url" | grep -oE '[0-9]+
-  RUN_ID=$(generate_run_id)
-  RUN_BRANCH="${BRANCH_PREFIX}/run-${RUN_ID}"
-
-  log_info "Creating run branch: $RUN_BRANCH (from $SOURCE_BRANCH, PR will target $PR_TARGET_BRANCH)"
-
-  # Fetch and checkout source branch (main - for fresh code)
-  git fetch origin "$SOURCE_BRANCH" 2>/dev/null || true
-  git checkout "$SOURCE_BRANCH" 2>/dev/null || git checkout -b "$SOURCE_BRANCH" "origin/$SOURCE_BRANCH"
-  git pull origin "$SOURCE_BRANCH" 2>/dev/null || true
-
-  # Create the run branch from source
-  git checkout -b "$RUN_BRANCH"
-
-  log_success "Run branch created: $RUN_BRANCH (based on $SOURCE_BRANCH)"
-}
-
-# Global variable to store PR URL once created
-PR_URL=""
-
-# Create a draft PR at the start of the run (so pushes go to an existing PR)
-create_draft_pr() {
-  local issue_count="$1"
-  local issue_list="$2"
-
-  log_info "Creating draft PR for run..."
-
-  # Need at least one commit to create a PR - create an empty commit
-  # Use here-document with git commit -F to reliably handle multi-line messages
-  cat > .agent/commit_msg.txt << EOF
-chore: Start agent run $RUN_ID
-
-Processing $issue_count issue(s):
-$issue_list
-
-Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>
-EOF
-  git commit --allow-empty -F .agent/commit_msg.txt
-  rm -f .agent/commit_msg.txt
-
-  # Push the branch with the initial commit
-  log_info "Pushing branch to GitHub..."
-  git push -u origin "$RUN_BRANCH"
-
-  # Create draft PR
-  local pr_body="## Agent Run In Progress
-
-**Run ID:** \`$RUN_ID\`
-**Branch:** \`$RUN_BRANCH\`
-**Status:** 🔄 Running...
-
----
-
-### Issues to Process
-
-$issue_list
-
----
-
-*This PR will be updated as tasks complete.*"
-
-  PR_URL=$(gh pr create \
-    --base "$PR_TARGET_BRANCH" \
-    --head "$RUN_BRANCH" \
-    --title "[WIP] Agent Run: $issue_count issue(s)" \
-    --body "$pr_body" \
-    --draft \
-    --json url 2>&1 | jq -r '.url // empty')
-
-  if [ $? -eq 0 ]; then
-    log_success "Draft PR created: $PR_URL"
-  else
-    log_warning "Failed to create draft PR: $PR_URL"
-    PR_URL=""
-  fi
-}
-
-# Push commits after each task completes
-push_task_commits() {
-  local issue_number="$1"
-
-  log_info "Pushing commits for issue #$issue_number..."
-  git push origin "$RUN_BRANCH"
-
-  if [ $? -eq 0 ]; then
-    log_success "Pushed to PR"
-  else
-    log_warning "Push failed for issue #$issue_number"
-  fi
-}
-
-# CRITICAL: Final push to ensure ALL changes are on GitHub
-# This catches uncommitted files (like metrics.json) and any commits not yet pushed
-final_push_all_changes() {
-  log_info "Final push: ensuring all changes are on GitHub..."
-
-  # Check for uncommitted changes
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    log_info "Found uncommitted changes, creating final commit..."
-    git add -A
-    git commit -m "chore: Update agent metrics and state
-
-Run ID: $RUN_ID
-Completed: ${#COMPLETED_ISSUES[@]}
-Needs Review: $((${#REVIEW_FAILED_ISSUES[@]} + ${#TEST_FAILED_ISSUES[@]}))
-
-Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>" || true
-  fi
-
-  # Check for unpushed commits
-  local unpushed=$(git rev-list --count "origin/$RUN_BRANCH".."$RUN_BRANCH" 2>/dev/null || echo "0")
-  if [ "$unpushed" -gt 0 ]; then
-    log_info "Pushing $unpushed unpushed commit(s)..."
-    git push origin "$RUN_BRANCH"
-    if [ $? -eq 0 ]; then
-      log_success "All changes pushed to GitHub"
-    else
-      log_error "Failed to push final changes! Manual push required: git push origin $RUN_BRANCH"
-    fi
-  else
-    log_info "All commits already pushed to GitHub"
-  fi
-}
-
-# Send notification at START of run
-send_start_notification() {
-  local issue_count="$1"
-  local issue_list="$2"
-
-  if [ -f "$SCRIPT_DIR/notify.sh" ]; then
-    source "$SCRIPT_DIR/notify.sh"
-    send_slack_notification \
-      "Agent Run Started" \
-      "*Run ID:* \`$RUN_ID\`\n*Issues:* $issue_count\n\n$issue_list" \
-      "info"
-  fi
-}
-
-# Run code review on current changes
-# Returns 0 if passed, 1 if issues found (issues written to temp file)
-run_code_review() {
-  local issue_number="$1"
-  local issues_file="$2"
-
-  log_info "Running code review for issue #$issue_number..."
-
-  # Get the diff to review (compare to base branch)
-  local diff_content=$(git diff "$PR_TARGET_BRANCH"...HEAD 2>/dev/null)
-
-  if [ -z "$diff_content" ]; then
-    log_warning "No changes to review"
-    return 0
-  fi
-
-  # Truncate diff if too large (agent has context limits)
-  local diff_lines=$(echo "$diff_content" | wc -l | tr -d ' ')
-  diff_lines=${diff_lines:-0}
-  [[ "$diff_lines" =~ ^[0-9]+$ ]] || diff_lines=0
-
-  if [ "$diff_lines" -gt 500 ]; then
-    log_warning "Diff too large ($diff_lines lines), truncating to 500 lines"
-    diff_content=$(echo "$diff_content" | head -n 500)
-    diff_content="$diff_content
-
-... [TRUNCATED - $diff_lines total lines] ..."
-  fi
-
-  # Create review prompt with the skill invocation
-  local review_prompt="Invoke the code-review-excellence skill and review this code change.
-
-CRITICAL INSTRUCTION: Do NOT just pass to pass. If there are REAL blocking issues, you MUST report them. This is a quality gate.
-
-After reviewing, output your findings in this EXACT format (this format is parsed by automation):
-
-REVIEW_STATUS: PASS
-(or)
-REVIEW_STATUS: FAIL
-
-BLOCKING_ISSUES:
-- None
-(or list each issue on its own line with a leading dash)
-
-=== DIFF TO REVIEW ===
-\`\`\`diff
-$diff_content
-\`\`\`
-=== END DIFF ===
-
-WHAT TO FLAG (blocking):
-- Security vulnerabilities (SQL injection, XSS, hardcoded secrets)
-- Missing error handling for critical paths
-- Breaking API changes without migration
-- console.log/error/warn instead of structured logger (per AGENTS.md)
-- Missing error handling for critical paths (per AGENTS.md)
-- Obvious bugs or logic errors
-
-WHAT NOT TO FLAG:
-- Minor style preferences (linters handle this)
-- Nitpicks that don't affect functionality
-- Suggestions for improvement (save for PR comments)
-
-Remember: Output REVIEW_STATUS: PASS or REVIEW_STATUS: FAIL followed by BLOCKING_ISSUES section."
-
-  # Write prompt to temp file
-  local prompt_file=$(mktemp)
-  echo "$review_prompt" > "$prompt_file"
-
-  # Run agent with review prompt
-  log_info "Invoking $AGENT_CLI for code review..."
-
-  local review_output
-  local review_exit_code
-  local agent_cmd=$(get_agent_cmd)
-  review_output=$($agent_cmd "$(cat "$prompt_file")" 2>&1)
-  review_exit_code=$?
-
-  rm -f "$prompt_file"
-
-  if [ $review_exit_code -ne 0 ]; then
-    log_warning "Code review agent exited with code $review_exit_code"
-  fi
-
-  # Parse output for REVIEW_STATUS
-  if echo "$review_output" | grep -q "REVIEW_STATUS: PASS"; then
-    log_success "Code review passed"
-    return 0
-  else
-    log_warning "Code review found issues"
-
-    # Extract blocking issues section and write to file
-    echo "$review_output" | sed -n '/BLOCKING_ISSUES:/,/^$/p' > "$issues_file"
-
-    # Also save full output for debugging
-    echo "$review_output" > "${issues_file}.full"
-
-    return 1
-  fi
-}
-
-# Create GitHub issues from review findings
-create_review_issues() {
-  local issues_file="$1"
-  local parent_issue_number="$2"
-
-  log_info "Creating GitHub issues for review findings..."
-
-  # Read issues and create GitHub issues for each
-  while IFS= read -r line; do
-    # Skip empty lines, header, and "None"
-    if [[ -n "$line" && "$line" != "BLOCKING_ISSUES:" && "$line" != "- None" && "$line" != "None" ]]; then
-      # Remove leading "- " if present
-      local issue_text="${line#- }"
-      # Remove leading whitespace
-      issue_text="${issue_text#"${issue_text%%[![:space:]]*}"}"
-
-      if [ -n "$issue_text" ] && [ "$issue_text" != "None" ]; then
-        log_info "  Creating issue: $issue_text"
-        gh issue create \
-          --title "[REVIEW] $issue_text" \
-          --body "Found during code review of issue #$parent_issue_number" \
-          --label "agent-ready" \
-          2>/dev/null || true
-      fi
-    fi
-  done < "$issues_file"
-}
-
-# Import Sentry bot issues from GitHub PR comments as GitHub issues
-import_sentry_issues() {
-  log_info "Checking for Sentry issues from GitHub PRs..."
-
-  # Track file for already-imported comment IDs (persist across runs)
-  local imported_file="$SCRIPT_DIR/.sentry-imported-ids"
-  touch "$imported_file"
-
-  local imported_count=0
-
-  # Check both merged and open PRs
-  for pr_state in merged open; do
-    local prs=$(gh pr list --state "$pr_state" --limit 20 --json number 2>/dev/null)
-
-    if [ -z "$prs" ] || [ "$prs" = "[]" ]; then
-      continue
-    fi
-
-    # Process each PR - use temp file to avoid subshell variable scope issues
-    local pr_numbers_file=$(mktemp)
-    printf '%s' "$prs" | jq -r '.[].number' > "$pr_numbers_file"
-
-    while read -r pr_number; do
-      # Get Sentry bot comments for this PR
-      local sentry_comments=$(gh api "repos/${GITHUB_REPO}/pulls/$pr_number/comments" \
-        --jq '.[] | select(.user.login == "sentry[bot]") | {id, path, body}' 2>/dev/null)
-
-      if [ -z "$sentry_comments" ]; then
-        continue
-      fi
-
-      # Process each Sentry comment - use temp file approach
-      local comments_file=$(mktemp)
-      printf '%s' "$sentry_comments" | jq -c '.' > "$comments_file"
-
-      while read -r comment; do
-        [ -z "$comment" ] && continue
-
-        local comment_id=$(printf '%s' "$comment" | jq -r '.id')
-        local file_path=$(printf '%s' "$comment" | jq -r '.path')
-        local body=$(printf '%s' "$comment" | jq -r '.body')
-
-        # Skip if already imported
-        if grep -q "^$comment_id$" "$imported_file" 2>/dev/null; then
-          continue
-        fi
-
-        # Extract bug description from body (macOS compatible)
-        local bug_desc=$(echo "$body" | grep -E '^Bug: ' | sed 's/^Bug: //' | head -1)
-        local severity=$(echo "$body" | grep -E '^Severity: ' | sed 's/^Severity: //' | cut -d'|' -f1 | tr -d ' ')
-
-        # Extract the AI prompt section for task description
-        local ai_prompt=$(echo "$body" | sed -n '/AI Agent/,/^$/p')
-
-        if [ -n "$bug_desc" ]; then
-          # Create GitHub issue with Sentry context and AI prompt
-          local issue_title="[SENTRY/$severity] $bug_desc"
-          local issue_body="**File:** \`$file_path\`
-
-$ai_prompt
-
----
-**Source:** PR #$pr_number ($pr_state)
-**Sentry Comment ID:** $comment_id"
-
-          log_info "  Creating GitHub issue: $issue_title"
-
-          if gh issue create \
-            --title "$issue_title" \
-            --body "$issue_body" \
-            --label "agent-ready" \
-            --label "bug" \
-            2>/dev/null; then
-            # Mark as imported
-            echo "$comment_id" >> "$imported_file"
-            imported_count=$((imported_count + 1))
-          fi
-        fi
-      done < "$comments_file"
-
-      rm -f "$comments_file"
-    done < "$pr_numbers_file"
-
-    rm -f "$pr_numbers_file"
-  done
-
-  imported_count=${imported_count:-0}
-  [[ "$imported_count" =~ ^[0-9]+$ ]] || imported_count=0
-
-  if [ "$imported_count" -gt 0 ]; then
-    log_success "Imported $imported_count Sentry issues as GitHub issues"
-  else
-    log_info "No new Sentry issues to import"
-  fi
-}
-
-# Re-prompt agent to fix review issues
-fix_review_issues() {
-  local issue_number="$1"
-  local issues_file="$2"
-
-  local issues_content=$(cat "$issues_file")
-
-  local fix_prompt="The automated code review for GitHub issue #$issue_number found BLOCKING issues that MUST be fixed before merge.
-
-ISSUES TO FIX:
-$issues_content
-
-Instructions:
-1. Fix ALL of these issues in the code
-2. Stage and commit your fixes with a message like 'fix(#$issue_number): address code review feedback'
-3. Do NOT push - the review will run again automatically
-
-Be thorough - the code review will run again after your fixes."
-
-  log_info "Re-prompting agent to fix review issues..."
-
-  local prompt_file=$(mktemp)
-  echo "$fix_prompt" > "$prompt_file"
-
-  local agent_cmd=$(get_agent_cmd)
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null
-  local exit_code=$?
-
-  rm -f "$prompt_file"
-  return $exit_code
-}
-
-# =============================================================================
-# QUALITY GATES - Code review and tests run after each subprocess
-# =============================================================================
-
-# Run quality gates (code review + tests) for an issue
-# This runs AFTER the subprocess completes and commits
-run_quality_gates() {
-  local issue_number="$1"
-  local issue_title="$2"
-  local linear_id="${3:-}"  # Optional: Linear UUID for status updates
-
-  # Determine display format based on task source
-  local issue_display=""
-  if [ "$TASK_SOURCE" = "linear" ]; then
-    issue_display="$issue_number"  # e.g., CON-123
-  else
-    issue_display="#$issue_number"
-  fi
-
-  local review_passed=false
-  local tests_passed=false
-
-  # Code review loop (with fix attempts)
-  local max_review_attempts=3
-  local review_attempt=0
-  local issues_file=$(mktemp)
-
-  while [ $review_attempt -lt $max_review_attempts ]; do
-    review_attempt=$((review_attempt + 1))
-    log_info "Code review attempt $review_attempt of $max_review_attempts..."
-
-    if run_code_review "$issue_number" "$issues_file"; then
-      review_passed=true
-      break
-    else
-      # Create GitHub issues for tracking
-      create_review_issues "$issues_file" "$issue_number"
-
-      if [ $review_attempt -lt $max_review_attempts ]; then
-        # Re-prompt agent to fix issues
-        fix_review_issues "$issue_number" "$issues_file"
-      else
-        log_error "Max review attempts reached ($max_review_attempts). Issues remain unfixed."
-      fi
-    fi
-  done
-
-  # Clean up issues file
-  rm -f "$issues_file" "${issues_file}.full"
-
-  # Run Playwright tests
-  log_info "Running tests..."
-  if npx nx test twenty-server 2>&1; then
-    log_success "Tests passed"
-    tests_passed=true
-  else
-    log_error "Tests failed for issue #$issue_number"
-
-    log_info "Check test output above for failure details."
-  fi
-
-  # Determine outcome and update issue labels
-  # Priority: agent-test (tests failed) > agent-review (code review failed) > agent-completed
-  local final_label=""
-  local task_status=""
-
-  if [ "$review_passed" = true ] && [ "$tests_passed" = true ]; then
-    # Always use agent-review so human can verify in GitHub/Linear
-    # Slack notifications show pass/fail details
-    final_label="${ISSUE_LABEL_REVIEW:-agent-review}"
-    task_status="completed"
-    COMPLETED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    log_success "Issue $issue_display ready for review (all gates passed)"
-  elif [ "$tests_passed" = false ]; then
-    # Tests failed - always use agent-test label (even if code review also failed)
-    final_label="${ISSUE_LABEL_TEST:-agent-test}"
-    task_status="test_failed"
-    TEST_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    if [ "$review_passed" = false ]; then
-      REVIEW_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    fi
-    log_warning "Issue $issue_display tests failed"
-  else
-    # Only code review failed (tests passed)
-    final_label="${ISSUE_LABEL_REVIEW:-agent-review}"
-    task_status="review_failed"
-    REVIEW_FAILED_ISSUES+=("$issue_number:$issue_title:$linear_id")
-    log_warning "Issue $issue_display code review failed"
-  fi
-
-  # Update daily metrics (track completed vs needs_review)
-  if [ -f "$SCRIPT_DIR/notify.sh" ]; then
-    source "$SCRIPT_DIR/notify.sh"
-    if [ "$task_status" = "completed" ]; then
-      update_metrics "success"
-    else
-      update_metrics "needs_review"
-    fi
-  fi
-
-  # Update task final status
-  # NOTE: All tasks go to "in review" status - human must approve before marking "done"
-  if [ "$TASK_SOURCE" = "projects" ]; then
-    local project_status="${PROJECT_STATUS_REVIEW:-Review}"  # Always use review status
-    update_project_item_status "$issue_number" "$project_status"
-  elif [ "$TASK_SOURCE" = "linear" ]; then
-    # All Linear tasks go to "In Review" status - human must approve
-    update_linear_task_status "$issue_number" "$linear_id" "In Review"
-    # Add comment with PR link if available
-    if [ -n "$PR_URL" ] && [ -n "$linear_id" ]; then
-      local comment_body="Agent completed work. Review PR: $PR_URL
-
-**Quality Gates:**
-- Code Review: $([ "$review_passed" = true ] && echo "Passed" || echo "Failed")
-- Tests: $([ "$tests_passed" = true ] && echo "Passed" || echo "Failed")"
-      add_linear_comment "$linear_id" "$comment_body" || true
-    fi
-  else
-    # Remove all status labels before setting final label
-    gh issue edit "$issue_number" \
-      --remove-label "${ISSUE_LABEL_READY:-agent-ready}" \
-      --remove-label "${ISSUE_LABEL_WORKING:-agent-working}" \
-      --remove-label "${ISSUE_LABEL_REVIEW:-agent-review}" \
-      --remove-label "${ISSUE_LABEL_TEST:-agent-test}" \
-      --add-label "$final_label" 2>/dev/null || true
-  fi
-
-  return 0
-}
-
-# Process a single issue using fresh subprocess (commits to the shared run branch)
-process_issue() {
-  local issue_json="$1"
-  local issue_number=$(parse_issue_number "$issue_json")
-  local issue_title=$(parse_issue_title "$issue_json")
-  local issue_body=$(parse_issue_body "$issue_json")
-  local linear_id=$(parse_linear_id "$issue_json")  # Only present for Linear tasks
-
-  # Determine display format based on task source
-  local issue_display=""
-  local commit_ref=""
-  if [ "$TASK_SOURCE" = "linear" ]; then
-    issue_display="$issue_number"  # e.g., CON-123
-    commit_ref="$issue_number"     # e.g., CON-123
-  else
-    issue_display="#$issue_number"
-    commit_ref="#$issue_number"
-  fi
-
-  log_info "=========================================="
-  log_info "Spawning fresh subprocess for issue $issue_display"
-  log_info "Title: $issue_title"
-  log_info "=========================================="
-
-  if [ "$DRY_RUN" = true ]; then
-    log_info "[DRY RUN] Would process issue $issue_display"
-    return 0
-  fi
-
-  # Update task status to working
-  log_info "Marking task as in-progress..."
-  if [ "$TASK_SOURCE" = "projects" ]; then
-    update_project_item_status "$issue_number" "${PROJECT_STATUS_WORKING:-In Progress}"
-  elif [ "$TASK_SOURCE" = "linear" ]; then
-    update_linear_task_status "$issue_number" "$linear_id" "In Progress"
-  else
-    # Remove all status labels before adding working label (issue may have ready, review, or test labels)
-    gh issue edit "$issue_number" \
-      --remove-label "${ISSUE_LABEL_READY:-agent-ready}" \
-      --remove-label "${ISSUE_LABEL_REVIEW:-agent-review}" \
-      --remove-label "${ISSUE_LABEL_TEST:-agent-test}" \
-      --add-label "${ISSUE_LABEL_WORKING:-agent-working}" 2>/dev/null || true
-  fi
-
-  # Capture HEAD before subprocess (to detect new commits)
-  local head_before=$(git rev-parse HEAD)
-
-  # Spawn fresh $AGENT_CLI subprocess (isolated context)
-  spawn_task_subprocess "$issue_number" "$issue_title" "$issue_body"
-  local subprocess_exit=$?
-
-  # Capture HEAD after subprocess
-  local head_after=$(git rev-parse HEAD)
-  local has_new_commits=false
-  local has_uncommitted_changes=false
-
-  # Check if $AGENT_CLI made new commits
-  if [ "$head_before" != "$head_after" ]; then
-    has_new_commits=true
-    local new_commit_count=$(git rev-list --count "$head_before".."$head_after")
-    log_info "$AGENT_CLI made $new_commit_count new commit(s)"
-  fi
-
-  # Check if there are uncommitted changes (agent started work but didn't commit)
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    has_uncommitted_changes=true
-  fi
-
-  # If no new commits AND no uncommitted changes, nothing happened
-  if [ "$has_new_commits" = false ] && [ "$has_uncommitted_changes" = false ]; then
-    log_warning "No changes made by subprocess for issue $issue_display"
-    # Reset status back to ready
-    if [ "$TASK_SOURCE" = "projects" ]; then
-      update_project_item_status "$issue_number" "${PROJECT_STATUS_READY:-Ready}"
-    elif [ "$TASK_SOURCE" = "linear" ]; then
-      update_linear_task_status "$issue_number" "$linear_id" "Open"
-    else
-      # Remove all status labels before resetting to ready
-      gh issue edit "$issue_number" \
-        --remove-label "${ISSUE_LABEL_WORKING:-agent-working}" \
-        --remove-label "${ISSUE_LABEL_REVIEW:-agent-review}" \
-        --remove-label "${ISSUE_LABEL_TEST:-agent-test}" \
-        --add-label "${ISSUE_LABEL_READY:-agent-ready}" 2>/dev/null || true
-    fi
-    FAILED_ISSUES+=("$issue_number:$issue_title:no_changes")
-    return 1
-  fi
-
-  # Ensure any uncommitted changes are committed (if agent didn't commit them)
-  if [ "$has_uncommitted_changes" = true ]; then
-    log_info "Found uncommitted changes, creating commit for issue $issue_display..."
-    git add -A
-    git commit -m "fix($commit_ref): ${issue_title}
-
-Automated commit by agent workflow.
-
-Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.com>" || true
-  fi
-
-  # Run quality gates (code review + tests) - pass linear_id for status updates
-  run_quality_gates "$issue_number" "$issue_title" "$linear_id"
-
-  # Push commits immediately (so work is saved even if script crashes)
-  push_task_commits "$issue_number"
-
-  # Spawn background opencode review (non-blocking — next task starts immediately)
-  if [ "$has_new_commits" = true ] && [ -n "$PR_URL" ]; then
-    spawn_background_review "$issue_number" "$issue_title" "$head_before" "$head_after" "$PR_URL" "$linear_id"
-  fi
-
-  return 0
-}
-
-# Finalize the PR (update description and mark ready for review)
-finalize_pr() {
-  local total_issues=${#COMPLETED_ISSUES[@]}
-  local review_issues=${#REVIEW_FAILED_ISSUES[@]}
-  local test_issues=${#TEST_FAILED_ISSUES[@]}
-  local failed_count=${#FAILED_ISSUES[@]}
-
-  # Get commit count
-  local commit_count=$(git rev-list --count "$PR_TARGET_BRANCH".."$RUN_BRANCH" 2>/dev/null || echo "0")
-
-  log_info "=========================================="
-  log_info "Finalizing PR with $commit_count commit(s)"
-  log_info "=========================================="
-
-  # Build PR title
-  local pr_title=""
-  local total_processed=$((total_issues + review_issues + test_issues))
-
-  if [ $review_issues -eq 0 ] && [ $test_issues -eq 0 ]; then
-    pr_title="Agent Run: $total_issues issue(s) completed"
-  else
-    pr_title="[REVIEW NEEDED] Agent Run: $total_processed issue(s) processed"
-  fi
-
-  # Build PR body
-  local pr_body="## Agent Run Summary
-
-**Run ID:** \`$RUN_ID\`
-**Branch:** \`$RUN_BRANCH\`
-**Commits:** $commit_count
-
----
-
-"
-
-  # Helper function to format issue reference based on task source
-  # Entry format: "number:title:linear_id" (linear_id is optional)
-  format_issue_ref() {
-    local num="$1"
-    if [ "$TASK_SOURCE" = "linear" ]; then
-      echo "$num"  # Linear: CON-123 (no #)
-    else
-      echo "#$num"  # GitHub: #123
-    fi
-  }
-
-  # Add completed issues section
-  # NOTE: Using "Related to" instead of "Closes" to avoid auto-closing issues on merge.
-  # Human review is required before closing issues.
-  if [ ${#COMPLETED_ISSUES[@]} -gt 0 ]; then
-    pr_body+="### ✅ Completed Issues (requires human approval to close)
-
-"
-    for entry in "${COMPLETED_ISSUES[@]}"; do
-      local num="${entry%%:*}"
-      local rest="${entry#*:}"
-      local title="${rest%%:*}"
-      local ref=$(format_issue_ref "$num")
-      if [ "$TASK_SOURCE" = "linear" ]; then
-        # Linear auto-links with identifier, no need for "Related to"
-        pr_body+="- $ref - $title
-"
-      else
-        pr_body+="- Related to $ref - $title
-"
-      fi
-    done
-    pr_body+="
-"
-  fi
-
-  # Add review-needed issues section
-  if [ ${#REVIEW_FAILED_ISSUES[@]} -gt 0 ]; then
-    pr_body+="### ⚠️ Code Review Failed (needs human review)
-
-"
-    for entry in "${REVIEW_FAILED_ISSUES[@]}"; do
-      local num="${entry%%:*}"
-      local rest="${entry#*:}"
-      local title="${rest%%:*}"
-      local ref=$(format_issue_ref "$num")
-      pr_body+="- $ref - $title
-"
-    done
-    pr_body+="
-"
-  fi
-
-  # Add test-failed issues section
-  if [ ${#TEST_FAILED_ISSUES[@]} -gt 0 ]; then
-    pr_body+="### ⚠️ Tests Failed (needs human review)
-
-"
-    for entry in "${TEST_FAILED_ISSUES[@]}"; do
-      local num="${entry%%:*}"
-      local rest="${entry#*:}"
-      local title="${rest%%:*}"
-      local ref=$(format_issue_ref "$num")
-      pr_body+="- $ref - $title
-"
-    done
-    pr_body+="
-"
-  fi
-
-  # Add no-changes issues section
-  if [ ${#FAILED_ISSUES[@]} -gt 0 ]; then
-    pr_body+="### ❌ No Changes Made
-
-"
-    for entry in "${FAILED_ISSUES[@]}"; do
-      local num="${entry%%:*}"
-      local rest="${entry#*:}"
-      local title="${rest%%:*}"
-      local ref=$(format_issue_ref "$num")
-      pr_body+="- $ref - $title (agent made no changes)
-"
-    done
-    pr_body+="
-"
-  fi
-
-  # Add quality gates summary
-  pr_body+="---
-
-## Quality Gates
-
-| Issue | Code Review | Tests |
-|-------|-------------|-------|
-"
-
-  # Add rows for each processed issue
-  for entry in "${COMPLETED_ISSUES[@]}"; do
-    local num="${entry%%:*}"
-    local ref=$(format_issue_ref "$num")
-    pr_body+="| $ref | ✅ Passed | ✅ Passed |
-"
-  done
-
-  for entry in "${REVIEW_FAILED_ISSUES[@]}"; do
-    local num="${entry%%:*}"
-    local ref=$(format_issue_ref "$num")
-    local in_test_failed=false
-    for test_entry in "${TEST_FAILED_ISSUES[@]}"; do
-      if [[ "$test_entry" == "$num:"* ]]; then
-        in_test_failed=true
-        break
-      fi
-    done
-    if [ "$in_test_failed" = true ]; then
-      pr_body+="| $ref | ❌ Failed | ❌ Failed |
-"
-    else
-      pr_body+="| $ref | ❌ Failed | ✅ Passed |
-"
-    fi
-  done
-
-  for entry in "${TEST_FAILED_ISSUES[@]}"; do
-    local num="${entry%%:*}"
-    local ref=$(format_issue_ref "$num")
-    local in_review_failed=false
-    for review_entry in "${REVIEW_FAILED_ISSUES[@]}"; do
-      if [[ "$review_entry" == "$num:"* ]]; then
-        in_review_failed=true
-        break
-      fi
-    done
-    if [ "$in_review_failed" = false ]; then
-      pr_body+="| $ref | ✅ Passed | ❌ Failed |
-"
-    fi
-  done
-
-  pr_body+="
----
-*Created by autonomous agent workflow*
-*Task Source: $TASK_SOURCE*"
-
-  # Update PR title and body
-  if [ -n "$PR_URL" ]; then
-    log_info "Updating PR description..."
-    gh pr edit "$RUN_BRANCH" --title "$pr_title" --body "$pr_body" 2>/dev/null || true
-
-    # Mark PR as ready for review (remove draft status)
-    log_info "Marking PR as ready for review..."
-    gh pr ready "$RUN_BRANCH" 2>/dev/null || true
-
-    log_success "PR updated and ready for review: $PR_URL"
-  else
-    # Fallback: create PR if draft creation failed earlier
-    log_info "Creating PR (draft creation may have failed earlier)..."
-    git push -u origin "$RUN_BRANCH" 2>/dev/null || true
-
-    PR_URL=$(gh pr create \
-      --base "$PR_TARGET_BRANCH" \
-      --head "$RUN_BRANCH" \
-      --title "$pr_title" \
-      --body "$pr_body" 2>&1)
-
-    log_success "PR created: $PR_URL"
-  fi
-
-  # Send Slack notification with session results
-  if [ -f "$SCRIPT_DIR/notify.sh" ]; then
-    source "$SCRIPT_DIR/notify.sh"
-    local status_emoji="success"
-    local needs_review=$((review_issues + test_issues))
-    if [ $needs_review -gt 0 ]; then
-      status_emoji="warning"
-    fi
-
-    # Build session summary message
-    local session_msg="*This Session*\n"
-    session_msg+="• Run ID: \`$RUN_ID\`\n"
-    session_msg+="• Processed: $((total_issues + needs_review)) tasks\n"
-    session_msg+="• ✅ Completed: $total_issues\n"
-    session_msg+="• ⚠️ Needs Review: $needs_review\n"
-    session_msg+="• PR: $PR_URL"
-
-    send_slack_notification \
-      "Agent Run Complete" \
-      "$session_msg" \
-      "$status_emoji"
-  fi
-
-  echo ""
-  log_success "=========================================="
-  log_success "PR URL: $PR_URL"
-  log_success "=========================================="
-}
-
-# Main execution
-main() {
-  # Display task source info
-  if [ "$TASK_SOURCE" = "projects" ]; then
-    log_info "Autonomous Agent Task Runner (mercury Projects)"
-    log_info "Project: #${GITHUB_PROJECT_NUMBER} (owner: ${GITHUB_PROJECT_OWNER})"
-    log_info "Ready status: ${PROJECT_STATUS_READY}"
-  elif [ "$TASK_SOURCE" = "linear" ]; then
-    log_info "Autonomous Agent Task Runner (Linear)"
-    log_info "Team ID: ${LINEAR_TEAM_ID}"
-    log_info "Label: ${LINEAR_LABEL_NAME:-hero}"
-    log_info "Ready state: ${LINEAR_STATE_OPEN:-Open}"
-  else
-    log_info "Autonomous Agent Task Runner (GitHub Issues)"
-    log_info "Issue label: $ISSUE_LABEL"
-  fi
-  log_info "Using agent: $AGENT_CLI"
-  log_info "Max tasks: ${MAX_TASKS:-unlimited}"
-  log_info "Mode: Fresh subprocess per task (isolated sessions)"
-
-  # Check for previous interrupted run
-  if check_run_state; then
-    log_info "Continuing from previous run state..."
-  fi
-
-  check_prerequisites
-
-  # Only ensure GitHub labels when using GitHub Issues
-  if [ "$TASK_SOURCE" = "issues" ]; then
-    ensure_labels_exist
-  fi
-
-  cd "$PROJECT_ROOT"
-
-  # Import any new Sentry issues from GitHub PRs (only when using GitHub issues mode)
-  # Skip for Linear and Projects - Sentry import is GitHub-specific
-  if [ "$TASK_SOURCE" = "issues" ]; then
-    import_sentry_issues
-  fi
-
-  # Get open tasks
-  local issues=$(get_open_issues)
-
-  # Handle empty results properly
-  if [ -z "$issues" ] || [ "$issues" = "" ]; then
-    if [ "$TASK_SOURCE" = "projects" ]; then
-      log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
-    elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
-    else
-      log_success "No open issues with label '$ISSUE_LABEL' to process"
-    fi
-    exit 0
-  fi
-
-  # Count tasks (filter out empty lines that start with {)
-  local issue_count=0
-  while IFS= read -r line; do
-    [[ "$line" == "{"* ]] && ((issue_count++))
-  done <<< "$issues"
-
-  if [ "$issue_count" -eq 0 ]; then
-    if [ "$TASK_SOURCE" = "projects" ]; then
-      log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
-    elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
-    else
-      log_success "No open issues with label '$ISSUE_LABEL' to process"
-    fi
-    exit 0
-  fi
-
-  log_info "Found $issue_count task(s) to process"
-
-  # Preview tasks (use appropriate format for Linear vs GitHub)
-  echo "$issues" | while read -r issue_json; do
-    [ -z "$issue_json" ] && continue
-    local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
-    local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
-    if [ -n "$num" ] && [ "$num" != "null" ]; then
-      if [ "$TASK_SOURCE" = "linear" ]; then
-        echo "  - $num: $title"  # Linear: CON-123
-      else
-        echo "  - #$num: $title"  # GitHub: #123
-      fi
-    fi
-  done
-  echo ""
-
-  if [ "$DRY_RUN" = true ]; then
-    log_info "[DRY RUN] Would create a single branch and PR for all $issue_count tasks"
-    exit 0
-  fi
-
-  # Create the run branch (ONE branch for all tasks)
-  create_run_branch
-
-  # Build issue list for notification (use appropriate format)
-  local issue_list=""
-  while read -r issue_json; do
-    # Skip empty lines and non-JSON content
-    [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
-    local num=$(echo "$issue_json" | jq -r '.number' 2>/dev/null)
-    local title=$(echo "$issue_json" | jq -r '.title' 2>/dev/null)
-    if [[ -n "$num" && "$num" != "null" ]]; then
-      if [ "$TASK_SOURCE" = "linear" ]; then
-        issue_list+="• $num: $title\n"  # Linear: CON-123
-      else
-        issue_list+="• #$num: $title\n"  # GitHub: #123
-      fi
-    fi
-  done <<< "$issues"
-
-  # Send START notification
-  send_start_notification "$issue_count" "$issue_list"
-
-  # Create draft PR immediately (so commits are pushed to an existing PR)
-  create_draft_pr "$issue_count" "$issue_list"
-
-  # Process each issue in a fresh subprocess
-  local processed=0
-  local total_count=$issue_count
-
-  # Save issues to a temp file to avoid stdin interference from agent command
-  local issues_file=$(mktemp)
-  echo "$issues" > "$issues_file"
-
-  while read -r issue_json <&3; do
-    # Skip empty lines and non-JSON content
-    [[ -z "$issue_json" || "$issue_json" != "{"* ]] && continue
-
-    processed=$((processed + 1))
-
-    log_info "=========================================="
-    log_info "Task $processed of $total_count"
-    log_info "=========================================="
-
-    process_issue "$issue_json"
-
-    # Save state after each task (enables resume if interrupted)
-    save_run_state "$processed"
-
-    echo ""
-  done 3< "$issues_file"
-
-  rm -f "$issues_file"
-
-  # Clear run state on successful completion
-  clear_run_state
-
-  # Finalize the PR (update description and mark ready for review)
-  finalize_pr
-
-  # CRITICAL: Final push to ensure ALL changes are on GitHub
-  # This catches any uncommitted changes (like metrics.json) that weren't part of task commits
-  final_push_all_changes
-
-  # Wait for any background reviews to finish
-  if [ ${#REVIEW_PIDS[@]} -gt 0 ]; then
-    log_info "Waiting for ${#REVIEW_PIDS[@]} background review(s) to finish..."
-    for pid in "${REVIEW_PIDS[@]}"; do
-      wait "$pid" 2>/dev/null || true
-    done
-    log_success "All reviews complete (logs in $LOG_DIR/)"
-  fi
-
-  # Clean up any leftover opencode caches
-  rm -rf /tmp/oc-review-* 2>/dev/null || true
-
-  # Post-run: deploy to staging → health check → fix loop → scenario tests → linear task
-  if [ ${#COMPLETED_ISSUES[@]} -gt 0 ] && [ "$DRY_RUN" != "true" ]; then
-    post_run_deploy_and_test
-  fi
-
-  log_info "=========================================="
-  log_info "Run complete!"
-  log_info "Run ID: $RUN_ID"
-  log_info "Processed: $processed"
-  log_info "Completed: ${#COMPLETED_ISSUES[@]}"
-  log_info "Needs Review: $((${#REVIEW_FAILED_ISSUES[@]} + ${#TEST_FAILED_ISSUES[@]}))"
-  log_info "No Changes: ${#FAILED_ISSUES[@]}"
-  log_info "=========================================="
+  log_info "Workspace ready at $PROJECT_ROOT (staging)"
 }
 
 # =============================================================================
@@ -2189,79 +1174,14 @@ post_run_deploy_and_test() {
   fi
 }
 
-main "$@")
-  fi
-
-  local review_prompt_file=$(mktemp)
-  cat > "$review_prompt_file" << REVIEW_EOF
-you are a code reviewer. you do NOT write or modify code. your ONLY output is a GitHub PR comment.
-
-TASK: $task_id — $task_title
-
-STEPS:
-1. run: git diff $head_before..$head_after --stat
-2. run: git diff $head_before..$head_after (read the full diff)
-3. fetch the linear task spec using the LINEAR_API_KEY env var for $linear_id
-4. go through EVERY acceptance criterion in the spec. for each: search the diff, mark done, partial, or missing
-5. check code quality: console.log? untyped catch? as any? correct imports? parameterized SQL?
-
-OUTPUT: post a single gh pr comment:
-gh pr comment $pr_number --repo consuelohq/opensaas --body '<your review>'
-
-comment format:
-## Code Review: $task_id — $task_title
-### Acceptance Criteria
-- status for each criterion
-### Code Quality
-- findings or no issues
-### Summary
-- 1-2 sentence verdict
-
-DO NOT modify files. DO NOT write code. DO NOT commit. ONLY post the gh comment.
-REVIEW_EOF
-
-  log_info "Spawning background review for $task_id (model: $review_model)"
-
-  (
-    cd "$wt_path"
-    local log_file="$LOG_DIR/review-$task_id.log"
-    env XDG_DATA_HOME="$oc_home" "$oc_cmd" run \
-      -m "$review_model" \
-      "$(cat "$review_prompt_file")" \
-      > "$log_file" 2>&1 &
-    local oc_pid=$!
-
-    # Activity watchdog: kill only if no new output for REVIEW_TIMEOUT seconds
-    while kill -0 "$oc_pid" 2>/dev/null; do
-      local last_mod
-      last_mod=$(stat -f %m "$log_file" 2>/dev/null || echo 0)
-      local now
-      now=$(date +%s)
-      if (( now - last_mod > review_timeout )); then
-        echo "[watchdog] No output for ${review_timeout}s — killing review for $task_id" >> "$log_file"
-        kill "$oc_pid" 2>/dev/null || true
-        break
-      fi
-      sleep 30
-    done
-    wait "$oc_pid" 2>/dev/null || true
-
-    rm -f "$review_prompt_file" 2>/dev/null || true
-    rm -rf "$oc_home" 2>/dev/null || true
-  ) &
-
-  REVIEW_PIDS+=($!)
-  log_info "Review PID ${REVIEW_PIDS[-1]} launched for $task_id"
-}
-
 create_run_branch() {
   RUN_ID=$(generate_run_id)
   RUN_BRANCH="staging"
 
   log_info "Using staging branch (run $RUN_ID, up to date from $SOURCE_BRANCH)"
 
-  # Setup persistent worktree on staging and rebase on main
-  setup_worktree
+  # Work directly in main repo on staging (kiro-cli resolves project root from .kiro)
+  setup_workspace
 
   log_success "Staging branch ready (run $RUN_ID)"
 }
@@ -3151,11 +2071,19 @@ main() {
   fi
 
   # Get open tasks
-  local issues=$(get_open_issues)
+  local issues=""
+  if [ -n "$SINGLE_ISSUE" ]; then
+    log_info "Fetching single issue: $SINGLE_ISSUE"
+    issues=$(get_single_linear_issue "$SINGLE_ISSUE")
+  else
+    issues=$(get_open_issues)
+  fi
 
   # Handle empty results properly
   if [ -z "$issues" ] || [ "$issues" = "" ]; then
-    if [ "$TASK_SOURCE" = "projects" ]; then
+    if [ -n "$SINGLE_ISSUE" ]; then
+      log_error "Issue $SINGLE_ISSUE not found in Linear"
+    elif [ "$TASK_SOURCE" = "projects" ]; then
       log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
     elif [ "$TASK_SOURCE" = "linear" ]; then
       log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"

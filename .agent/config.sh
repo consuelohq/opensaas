@@ -61,7 +61,7 @@ BASE_BRANCH="staging"
 SOURCE_BRANCH="staging"
 
 # Branch to create PRs TO
-PR_TARGET_BRANCH="staging"
+PR_TARGET_BRANCH="main"
 
 # Branch prefix for agent-created branches
 BRANCH_PREFIX="agent"
@@ -141,3 +141,7 @@ AGENT_WORKTREE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/../opensaas-age
 REVIEW_MODEL="nvidia/moonshotai/kimi-k2.5"
 OPENCODE_CMD="/opt/homebrew/bin/opencode"
 REVIEW_TIMEOUT=600  # 10 min — reviews take 2-5 min, kill if hung
+
+# linear oauth (agent identity — for sending agent activities)
+LINEAR_OAUTH_CLIENT_ID="83e3d4cd417ac427494d5a811438c4cb"
+LINEAR_OAUTH_CLIENT_SECRET="efb3d3cd56358291c8ce1c0e5f2d1391"
