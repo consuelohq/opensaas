@@ -20,6 +20,11 @@ const jestConfig = {
   },
   moduleNameMapper: {
     '^src/(.*)': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@consuelo/logger$': '<rootDir>/../../packages/logger/src/index.ts',
+    '^@consuelo/dialer$': '<rootDir>/../../packages/dialer/src/index.ts',
+    '^@consuelo/contacts$': '<rootDir>/../../packages/contacts/src/index.ts',
+    '^@consuelo/coaching$': '<rootDir>/../../packages/coaching/src/index.ts',
   },
   moduleFileExtensions: ['js', 'json', 'ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist'],
