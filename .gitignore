@@ -1,4 +1,5 @@
 **/**/.env
+.agent/config.sh
 .DS_Store
 /.idea
 **/**/node_modules/
