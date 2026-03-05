@@ -20,6 +20,7 @@ const jestConfig = {
   },
   moduleNameMapper: {
     '^src/(.*)': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   moduleFileExtensions: ['js', 'json', 'ts'],
   modulePathIgnorePatterns: ['<rootDir>/dist'],
