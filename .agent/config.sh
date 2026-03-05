@@ -107,7 +107,6 @@ SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-}"
 # =============================================================================
 
 # Linear API key (set in environment variable, NOT here)
-# Add to ~/.zshrc: export LINEAR_API_KEY="lin_api_your_key_here"
 
 # Team ID (DEV team)
 LINEAR_TEAM_ID="29f5c661-da6c-4bfb-bd48-815a006ccaac"
