@@ -621,10 +621,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const config = await getWorkspaceTwilioConfig(workspaceId);
         const hosted = isHostedInstance();
 
-        // no config at all
+        // no config row — check hosted, then legacy env vars
         if (!config) {
           if (hosted) {
-            // hosted instance — sub-account not yet provisioned
             res.json({
               mode: 'hosted',
               configured: false,
@@ -635,7 +634,38 @@ export const voiceRoutes = (): RouteDefinition[] => [
             });
             return;
           }
-          // self-hosted / BYOK — no credentials entered
+
+          // legacy env var fallback (self-hosted single-tenant)
+          const legacySid = process.env.TWILIO_ACCOUNT_SID ?? '';
+          const legacyToken = process.env.TWILIO_AUTH_TOKEN ?? '';
+          if (legacySid && legacyToken) {
+            try {
+              const dialer = await getDialerForWorkspace(workspaceId);
+              const numbers = await dialer.listNumbers();
+              const hasTwiml = !!process.env.TWILIO_TWIML_APP_SID;
+              res.json({
+                mode: 'byok',
+                configured: numbers.length > 0 && hasTwiml,
+                twilioConnected: true,
+                hasPhoneNumbers: numbers.length > 0,
+                twimlAppConfigured: hasTwiml,
+                error: null,
+              });
+            } catch (err: unknown) {
+              const message = err instanceof Error ? err.message : 'Connection failed';
+              res.json({
+                mode: 'byok',
+                configured: false,
+                twilioConnected: false,
+                hasPhoneNumbers: false,
+                twimlAppConfigured: false,
+                error: message,
+              });
+            }
+            return;
+          }
+
+          // no credentials at all
           res.json({
             mode: 'byok',
             configured: false,
