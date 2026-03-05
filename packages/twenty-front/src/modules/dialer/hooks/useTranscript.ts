@@ -25,14 +25,9 @@ function getAuthToken(): string | null {
     const tokenPairStr = cookieStorage.getItem('tokenPair');
     if (!tokenPairStr) return null;
     const tokenPair = JSON.parse(tokenPairStr) as {
-      accessToken?: string;
       accessOrWorkspaceAgnosticToken?: { token: string };
     };
-    return (
-      tokenPair.accessToken ??
-      tokenPair.accessOrWorkspaceAgnosticToken?.token ??
-      null
-    );
+    return tokenPair.accessOrWorkspaceAgnosticToken?.token ?? null;
   } catch {
     return null;
   }
