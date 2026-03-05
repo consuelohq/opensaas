@@ -27,7 +27,7 @@ jest.mock('@twilio/voice-sdk', () => {
     state: 'registered',
   }));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (DeviceMock as any).State = { Registered: 'registered' };
+  (DeviceMock as any).State = { Registered: 'registered' }; // HACK: twilio Device mock needs State enum
   return { Device: DeviceMock, Call: jest.fn() };
 });
 
