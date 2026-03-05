@@ -91,13 +91,17 @@ jest.mock('node:crypto', () => ({
 import { voiceRoutes } from '../voice';
 import { redisService } from '../../services/redis';
 import { getDialerForWorkspace, sharedDialer, sharedCallerIdLockService } from '../../shared/dialer';
-import * as twilioConfig from '../../services/twilio-config';
+import { getWorkspaceTwilioConfig, getDecryptedCredentials, isHostedInstance } from '../../services/twilio-config';
 
 // typed references to mocked modules
 const mockRedis = redisService as unknown as Record<string, jest.Mock>;
 const mockDialer = mockDialerInstance;
 const mockLockService = mockLockServiceInstance;
-const mockTwilioConfig = twilioConfig as unknown as Record<string, jest.Mock>;
+const mockTwilioConfig = {
+  getWorkspaceTwilioConfig: getWorkspaceTwilioConfig as jest.Mock,
+  getDecryptedCredentials: getDecryptedCredentials as jest.Mock,
+  isHostedInstance: isHostedInstance as unknown as jest.Mock,
+};
 
 // wire up the dialer mocks
 (getDialerForWorkspace as jest.Mock).mockResolvedValue(mockDialer);
