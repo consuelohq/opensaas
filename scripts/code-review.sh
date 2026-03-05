@@ -111,6 +111,8 @@ FAIL=0
 # 5. ERROR_HANDLING — async functions should have try/catch
 echo -n "  ERROR_HANDLING ... "
 while IFS= read -r file; do
+  # skip test files — test functions intentionally let errors propagate to jest
+  echo "$file" | grep -qE '\.(spec|test)\.ts$' && continue
   # find async functions, check if they contain try
   while IFS=: read -r lineno line; do
     # skip if wrapped in errorHandler (which provides try/catch)
@@ -152,6 +154,8 @@ TYPE_FAIL=$FAIL
 echo -n "  SECRETS .......... "
 FAIL=0
 while IFS= read -r file; do
+  # skip test files — test fixtures use fake tokens/keys
+  echo "$file" | grep -qE '\.(spec|test)\.ts$' && continue
   while IFS=: read -r lineno line; do
     # skip env lookups and type annotations
     echo "$line" | grep -qE 'process\.env|getenv|\.env\b|: string|apiKey\?' && continue

@@ -74,3 +74,37 @@ export type GHLPipelineStageMapping = {
 };
 
 export type GHLLoadingState = 'idle' | 'loading' | 'syncing' | 'importing' | 'saving';
+
+// click-to-call postMessage protocol — DEV-1206
+export type GHLClickToCallContact = {
+  phone: string;
+  name: string | null;
+  contactId: string | null;
+};
+
+export type GHLClickToCallMessage = {
+  type: 'consuelo:click_to_call';
+  contact: GHLClickToCallContact;
+  autoDial: boolean;
+  timestamp: string;
+};
+
+export type GHLDialerReadyMessage = {
+  type: 'consuelo:dialer_ready';
+};
+
+export type GHLDialerBusyMessage = {
+  type: 'consuelo:dialer_busy';
+  callSid: string;
+};
+
+export type GHLBridgeMessage =
+  | GHLClickToCallMessage
+  | GHLDialerReadyMessage
+  | GHLDialerBusyMessage;
+
+export const GHL_MESSAGE_TYPES = {
+  CLICK_TO_CALL: 'consuelo:click_to_call',
+  DIALER_READY: 'consuelo:dialer_ready',
+  DIALER_BUSY: 'consuelo:dialer_busy',
+} as const;
