@@ -11,6 +11,7 @@ import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
   isHostedInstance,
+  ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
 const logger = createLogger('api:audit');
 
@@ -642,7 +643,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
             try {
               const dialer = await getDialerForWorkspace(workspaceId);
               const numbers = await dialer.listNumbers();
-              const hasTwiml = !!process.env.TWILIO_TWIML_APP_SID;
+              let hasTwiml = !!process.env.TWILIO_TWIML_APP_SID;
+              if (!hasTwiml && process.env.API_BASE_URL) {
+                try {
+                  await ensureOrCreateTwimlApp(legacySid, legacyToken);
+                  hasTwiml = true;
+                } catch (_: unknown) {
+                  // twiml app creation/lookup failed
+                }
+              }
               res.json({
                 mode: 'byok',
                 configured: numbers.length > 0 && hasTwiml,
@@ -653,6 +662,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
               });
             } catch (err: unknown) {
               const message = err instanceof Error ? err.message : 'Connection failed';
+              Sentry.captureException(err instanceof Error ? err : new Error(message));
               res.json({
                 mode: 'byok',
                 configured: false,
