@@ -10,11 +10,14 @@ import {
 
 // ---- module mocks (hoisted by jest) ----
 
+/* eslint-disable no-var */
+var mockQuery: jest.Mock;
+/* eslint-enable no-var */
+
 jest.mock('../../shared/db', () => {
-  const queryFn = jest.fn();
+  mockQuery = jest.fn();
   return {
-    getSharedPool: jest.fn().mockResolvedValue({ query: queryFn }),
-    __mockQuery: queryFn,
+    getSharedPool: jest.fn().mockResolvedValue({ query: mockQuery }),
   };
 });
 
@@ -36,9 +39,7 @@ jest.mock('@consuelo/logger', () => ({
 
 import { preferencesRoutes } from '../preferences';
 
-// get mock query from the db mock
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { __mockQuery: mockQuery } = require('../../shared/db') as { __mockQuery: jest.Mock };
+
 
 // ---- helpers ----
 

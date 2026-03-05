@@ -59,17 +59,26 @@ jest.mock('@consuelo/logger', () => ({
 // ---- import after mocks ----
 
 import { twilioSettingsRoutes } from '../twilio-settings';
-import * as twilioConfigModule from '../../services/twilio-config';
+import {
+  getWorkspaceTwilioConfig,
+  getDecryptedCredentials,
+  saveByokConfig,
+  deleteWorkspaceTwilioConfig,
+  isHostedInstance,
+  maskCredential,
+  ensureOrCreateTwimlApp,
+  syncTwimlAppUrl,
+} from '../../services/twilio-config';
 import { invalidateDialerCache } from '../../shared/dialer';
 
-const mockGetWorkspaceTwilioConfig = twilioConfigModule.getWorkspaceTwilioConfig as jest.Mock;
-const mockGetDecryptedCredentials = twilioConfigModule.getDecryptedCredentials as jest.Mock;
-const mockSaveByokConfig = twilioConfigModule.saveByokConfig as jest.Mock;
-const mockDeleteWorkspaceTwilioConfig = twilioConfigModule.deleteWorkspaceTwilioConfig as jest.Mock;
-const mockIsHostedInstance = twilioConfigModule.isHostedInstance as unknown as jest.Mock;
-const mockMaskCredential = twilioConfigModule.maskCredential as unknown as jest.Mock;
-const mockEnsureOrCreateTwimlApp = twilioConfigModule.ensureOrCreateTwimlApp as jest.Mock;
-const mockSyncTwimlAppUrl = twilioConfigModule.syncTwimlAppUrl as jest.Mock;
+const mockGetWorkspaceTwilioConfig = getWorkspaceTwilioConfig as jest.Mock;
+const mockGetDecryptedCredentials = getDecryptedCredentials as jest.Mock;
+const mockSaveByokConfig = saveByokConfig as jest.Mock;
+const mockDeleteWorkspaceTwilioConfig = deleteWorkspaceTwilioConfig as jest.Mock;
+const mockIsHostedInstance = isHostedInstance as unknown as jest.Mock;
+const mockMaskCredential = maskCredential as unknown as jest.Mock;
+const mockEnsureOrCreateTwimlApp = ensureOrCreateTwimlApp as jest.Mock;
+const mockSyncTwimlAppUrl = syncTwimlAppUrl as jest.Mock;
 const mockInvalidateDialerCache = invalidateDialerCache as jest.Mock;
 
 // access the mock fetch — twilio is mocked, so we get the mock client via the factory
