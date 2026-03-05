@@ -36,6 +36,7 @@ import { ghlLoadingState } from '@/settings/integrations/states/ghlLoadingState'
 import { ghlErrorState } from '@/settings/integrations/states/ghlErrorState';
 import { GHLFieldMapping } from '@/settings/integrations/components/GHLFieldMapping';
 import { GHLPipelineMapping } from '@/settings/integrations/components/GHLPipelineMapping';
+import { ClickToCallHandler } from '@/settings/integrations/components/ClickToCallHandler';
 import { useGHLSettings } from '@/settings/integrations/hooks/useGHLSettings';
 import type {
   GHLSyncDirection,
@@ -464,6 +465,7 @@ export const GHLSettings = () => {
 
   return (
     <SettingsPageContainer>
+      <ClickToCallHandler />
       <SettingsHeaderContainer>
         <H1Title title="GoHighLevel Integration" />
       </SettingsHeaderContainer>
