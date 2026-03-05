@@ -522,7 +522,9 @@ class Handler(BaseHTTPRequestHandler):
         body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
 
         if self.path == "/webhook/github":
-            if not verify_github_sig(body, self.headers.get("X-Hub-Signature-256", "")):
+            sig = self.headers.get("X-Hub-Signature-256", "")
+            if not verify_github_sig(body, sig):
+                print(f"[github] ✗ bad signature (sig={sig[:20]}...)", flush=True)
                 self._json(401, {"error": "bad signature"})
                 return
             try:
@@ -531,14 +533,18 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(400, {"error": "bad json"})
                 return
             event = self.headers.get("X-GitHub-Event", "")
+            action = payload.get("action", "")
+            print(f"[github] event={event} action={action}", flush=True)
             self._json(200, {"status": "accepted"})
             if event == "pull_request_review":
-                action = payload.get("action", "")
                 reviewer = payload.get("review", {}).get("user", {}).get("login", "")
                 pr_number = payload.get("pull_request", {}).get("number")
                 repo_full = payload.get("repository", {}).get("full_name", "")
+                print(f"[github] reviewer={reviewer} pr=#{pr_number} repo={repo_full}", flush=True)
                 if action == "submitted" and reviewer in REVIEW_BOTS and pr_number:
                     handle_pr_review(pr_number, repo_full, reviewer)
+                else:
+                    print(f"[github] skipped — action={action} reviewer_known={reviewer in REVIEW_BOTS}", flush=True)
             return
 
         if self.path != "/webhook/linear":

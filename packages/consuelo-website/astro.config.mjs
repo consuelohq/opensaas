@@ -9,7 +9,8 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://www.consuelohq.com',
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    server: { allowedHosts: true },
   },
   integrations: [react(), sitemap()]
 });
