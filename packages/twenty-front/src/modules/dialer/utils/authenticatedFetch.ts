@@ -6,8 +6,11 @@ export const authenticatedFetch = async (
 ): Promise<Response> => {
   const tokenPair = getTokenPair();
   const headers = new Headers(options.headers);
-  if (tokenPair?.accessToken?.token) {
-    headers.set('Authorization', `Bearer ${tokenPair.accessToken.token}`);
+  if (tokenPair?.accessOrWorkspaceAgnosticToken?.token) {
+    headers.set(
+      'Authorization',
+      `Bearer ${tokenPair.accessOrWorkspaceAgnosticToken.token}`,
+    );
   }
   return fetch(url, { ...options, credentials: 'include', headers });
 };
