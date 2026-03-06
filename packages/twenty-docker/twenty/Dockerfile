@@ -81,7 +81,7 @@ COPY ./packages/logger /app/packages/logger
 COPY ./packages/metering /app/packages/metering
 COPY ./packages/sdk /app/packages/sdk
 COPY ./packages/workspace /app/packages/workspace
-RUN cd packages/twenty-front && npx @lingui/cli compile
+RUN npx nx build twenty-shared && cd packages/twenty-front && npx @lingui/cli compile
 RUN NODE_OPTIONS="--max-old-space-size=4096" npx nx build twenty-front
 
 
