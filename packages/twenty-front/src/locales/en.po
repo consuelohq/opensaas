@@ -14358,3 +14358,11 @@ msgstr "Your workspace doesn't have an active subscription. Please contact your 
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "Your workspace will be disabled"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr "Dialer"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr "Chat"

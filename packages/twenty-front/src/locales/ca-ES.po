@@ -14361,3 +14361,11 @@ msgstr "El teu espai de treball no té una subscripció activa. Si us plau, cont
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "El vostre espai de treball serà desactivat"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""
