@@ -12,7 +12,7 @@ import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { getTokenPair } from '~/modules/apollo/utils/getTokenPair';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { ghlConnectionState } from '~/modules/settings/integrations/states/ghlConnectionState';
 
 // -- types --
@@ -66,16 +66,8 @@ const fetchJson = async <TData,>(
   path: string,
   options?: RequestInit,
 ): Promise<TData> => {
-  const tokenPair = getTokenPair();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(tokenPair
-      ? { Authorization: `Bearer ${tokenPair.accessOrWorkspaceAgnosticToken.token}` }
-      : {}),
-  };
-  const res = await fetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
-    credentials: 'include',
-    headers,
+  const res = await authenticatedFetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
     ...options,
   });
   const data = (await res.json()) as TData;
