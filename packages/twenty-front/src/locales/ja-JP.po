@@ -14361,3 +14361,11 @@ msgstr "お客様のワークスペースにはアクティブなサブスクリ
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "ワークスペースが無効になります"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""

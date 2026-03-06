@@ -14361,3 +14361,11 @@ msgstr "Çalışma alanınızın aktif bir aboneliği yok. Lütfen yöneticinizl
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "Çalışma alanınız devre dışı bırakılacak"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""

@@ -14361,3 +14361,11 @@ msgstr "Työtilallasi ei ole aktiivista tilausta. Ota yhteyttä järjestelmänva
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "Työtilasi poistetaan käytöstä"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""

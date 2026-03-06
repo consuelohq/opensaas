@@ -14361,3 +14361,11 @@ msgstr "Vaše pracovní plošina nemá aktivní předplatné. Prosím, kontaktuj
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "Váš pracovní prostor bude deaktivován"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""

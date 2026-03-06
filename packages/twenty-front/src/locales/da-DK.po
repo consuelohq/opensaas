@@ -14363,3 +14363,11 @@ msgstr "Dit arbejdsområde har ikke et aktivt abonnement. Kontakt venligst din a
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Your workspace will be disabled"
 msgstr "Dit arbejdsområde vil blive deaktiveret"
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Dialer"
+msgstr ""
+
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Chat"
+msgstr ""
