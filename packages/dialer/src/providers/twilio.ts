@@ -119,7 +119,7 @@ export class TwilioProvider implements DialerProvider {
       }
 
       const twilio = await import('twilio');
-      const { AccessToken } = twilio.jwt;
+      const { AccessToken } = twilio.default.jwt;
       const { VoiceGrant } = AccessToken;
 
       const identity = `user_${userId}`;
