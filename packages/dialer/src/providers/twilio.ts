@@ -125,7 +125,7 @@ export class TwilioProvider implements DialerProvider {
       const identity = `user_${userId}`;
       const ttl = 3600;
 
-      const token = new AccessToken(accountSid, apiKey, apiSecret, {
+      const token = new AccessToken(accountSid!, apiKey!, apiSecret!, {
         identity,
         ttl,
       });
