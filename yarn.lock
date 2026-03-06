@@ -4275,6 +4275,7 @@ __metadata:
     "@types/pg": "npm:^8.0.0"
     "@types/ws": "npm:^8.0.0"
     ioredis: "npm:^5.6.0"
+    twilio: "npm:^5.12.1"
     zod: "npm:^4.1.11"
   peerDependencies:
     "@aws-sdk/client-s3": ">=3.0.0"
@@ -4284,9 +4285,12 @@ __metadata:
     pdf-parse: ">=1.1.1"
     pg: ">=8.0.0"
     posthog-node: ">=4.0.0"
+    stripe: ">=17.0.0"
     ws: ">=8.0.0"
   peerDependenciesMeta:
     posthog-node:
+      optional: true
+    stripe:
       optional: true
   languageName: unknown
   linkType: soft
@@ -4372,6 +4376,11 @@ __metadata:
 "@consuelo/metering@workspace:packages/metering":
   version: 0.0.0-use.local
   resolution: "@consuelo/metering@workspace:packages/metering"
+  peerDependencies:
+    stripe: ">=17.0.0"
+  peerDependenciesMeta:
+    stripe:
+      optional: true
   languageName: unknown
   linkType: soft
 
