@@ -106,9 +106,15 @@ export class TwilioProvider implements DialerProvider {
   async getToken(userId: string): Promise<VoiceToken> {
     try {
       const { apiKey, apiSecret, twimlAppSid, accountSid } = this.credentials;
-      if (!apiKey || !apiSecret || !twimlAppSid) {
+
+      const missing: string[] = [];
+      if (!apiKey) missing.push('TWILIO_API_KEY');
+      if (!apiSecret) missing.push('TWILIO_API_SECRET');
+      if (!twimlAppSid) missing.push('TWILIO_TWIML_APP_SID');
+
+      if (missing.length > 0) {
         throw new Error(
-          'Twilio API key, secret, and TwiML app SID are required for voice tokens',
+          `Missing required Twilio credentials for voice tokens: ${missing.join(', ')}`,
         );
       }
 
@@ -131,7 +137,14 @@ export class TwilioProvider implements DialerProvider {
 
       return { token: token.toJwt(), identity, ttl };
     } catch (err: unknown) {
-      Sentry.captureException(err);
+      Sentry.captureException(err, {
+        extra: {
+          hasApiKey: !!this.credentials.apiKey,
+          hasApiSecret: !!this.credentials.apiSecret,
+          hasTwimlAppSid: !!this.credentials.twimlAppSid,
+          accountSidPrefix: this.credentials.accountSid?.slice(0, 2),
+        },
+      });
       throw err;
     }
   }
@@ -225,7 +238,9 @@ export class TwilioProvider implements DialerProvider {
     }
   }
 
-  async searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]> {
+  async searchAvailableNumbers(
+    options: SearchAvailableNumbersOptions,
+  ): Promise<AvailableNumber[]> {
     try {
       const client = await this.getClient();
       const country = options.country ?? 'US';
