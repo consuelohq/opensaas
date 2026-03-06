@@ -195,16 +195,16 @@ const getLogger = async () => {
 
 /** /v1/coaching routes wired to @consuelo/coaching */
 export const coachingRoutes = (): RouteDefinition[] => {
-  // W6: fail fast on missing API key
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('[Coaching] GROQ_API_KEY environment variable is required');
-  }
-
   const apiKey = process.env.GROQ_API_KEY;
   let coachInstance: InstanceType<
     Awaited<ReturnType<typeof getCoachModule>>['Coach']
   > | null = null;
   const getCoach = async () => {
+    if (!apiKey) {
+      throw new Error(
+        '[Coaching] GROQ_API_KEY environment variable is required',
+      );
+    }
     if (!coachInstance) {
       const mod = await getCoachModule();
       coachInstance = new mod.Coach({ apiKey });
@@ -231,9 +231,18 @@ export const coachingRoutes = (): RouteDefinition[] => {
           return;
         }
 
+        if (!process.env.GROQ_API_KEY) {
+          res.status(503).json({
+            error: {
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'Coaching service not configured — GROQ_API_KEY missing',
+            },
+          });
+          return;
+        }
+
         const startTime = Date.now();
         try {
-          const { Coach } = await getCoachModule();
           const coach = await getCoach();
           const messages: Message[] = body.messages.map((m) => ({
             role: m.role === 'customer' ? 'customer' : 'sales_rep',
@@ -288,6 +297,16 @@ export const coachingRoutes = (): RouteDefinition[] => {
             error: {
               code: 'INVALID_REQUEST',
               message: 'Missing "messages" array',
+            },
+          });
+          return;
+        }
+
+        if (!process.env.GROQ_API_KEY) {
+          res.status(503).json({
+            error: {
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'GROQ_API_KEY not configured',
             },
           });
           return;
@@ -352,6 +371,16 @@ export const coachingRoutes = (): RouteDefinition[] => {
             error: {
               code: 'INVALID_REQUEST',
               message: 'Missing "messages" array',
+            },
+          });
+          return;
+        }
+
+        if (!process.env.GROQ_API_KEY) {
+          res.status(503).json({
+            error: {
+              code: 'SERVICE_UNAVAILABLE',
+              message: 'GROQ_API_KEY not configured',
             },
           });
           return;
