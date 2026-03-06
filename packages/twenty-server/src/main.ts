@@ -142,6 +142,13 @@ const bootstrap = async () => {
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'unknown error';
           if (!res.headersSent) {
+            // ensure CORS headers are present on error responses
+            // (nestjs CORS middleware may not cover routes mounted directly on express)
+            const origin = req.headers.origin;
+            if (origin) {
+              res.setHeader('Access-Control-Allow-Origin', origin);
+              res.setHeader('Access-Control-Allow-Credentials', 'true');
+            }
             res
               .status(500)
               .json({ error: { code: 'INTERNAL_SERVER_ERROR', message } });
