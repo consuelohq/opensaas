@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
 import {
   DEFAULT_PREFERENCES,
@@ -39,9 +40,8 @@ export const useUserPreferences = () => {
     mountedRef.current = true;
     const fetchPrefs = async () => {
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/settings/preferences`,
-          { credentials: 'include' },
         );
         if (!res.ok) throw new Error(`${res.status}`);
         const data = (await res.json()) as UserPreferences;
@@ -67,12 +67,11 @@ export const useUserPreferences = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
+        const res = await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/settings/preferences`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify(prefs),
           },
         );

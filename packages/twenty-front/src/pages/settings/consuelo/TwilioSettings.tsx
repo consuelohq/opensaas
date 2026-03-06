@@ -12,6 +12,7 @@ import { Button } from 'twenty-ui/input';
 import { TextInput } from '@/ui/input/components/TextInput';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
 type TwilioConfig = {
   configured: boolean;
@@ -26,8 +27,7 @@ const fetchJson = async <TData,>(
   path: string,
   options?: RequestInit,
 ): Promise<TData> => {
-  const res = await fetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
-    credentials: 'include',
+  const res = await authenticatedFetch(`${REACT_APP_SERVER_BASE_URL}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
