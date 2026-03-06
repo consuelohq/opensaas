@@ -59,7 +59,7 @@ export async function validateTwilioSignature(
 
   try {
     const twilio = await import('twilio');
-    const isValid = twilio.validateRequest(
+    const isValid = twilio.default.validateRequest(
       authToken,
       signature,
       url,
