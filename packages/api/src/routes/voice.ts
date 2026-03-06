@@ -5,7 +5,11 @@ import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
+import {
+  sharedDialer,
+  sharedCallerIdLockService,
+  getDialerForWorkspace,
+} from '../shared/dialer.js';
 import { createLogger } from '@consuelo/logger';
 import {
   getWorkspaceTwilioConfig,
@@ -150,13 +154,19 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         let primarySid: string | null = null;
         try {
-          primarySid = await redisService.getPrimaryNumber(req.auth!.workspaceId);
+          primarySid = await redisService.getPrimaryNumber(
+            req.auth!.workspaceId,
+          );
         } catch (_err: unknown) {
           // redis unavailable — continue without primary info
         }
 
         const phoneNumbers = numbers.map(
-          (num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => {
+          (num: {
+            phoneNumber: string;
+            friendlyName?: string;
+            twilioSid?: string;
+          }) => {
             const phoneNumber = num.phoneNumber ?? '';
             const areaCode =
               phoneNumber.startsWith('+1') && phoneNumber.length >= 5
@@ -201,7 +211,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const areaCode = req.query?.areaCode as string | undefined;
       if (!areaCode || !/^\d{3}$/.test(areaCode)) {
         res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'areaCode must be a 3-digit string' },
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'areaCode must be a 3-digit string',
+          },
         });
         return;
       }
@@ -211,7 +224,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
-        const available = await dialer.searchAvailableNumbers({ areaCode, country, limit });
+        const available = await dialer.searchAvailableNumbers({
+          areaCode,
+          country,
+          limit,
+        });
         res.json({ available });
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -234,10 +251,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
-      const body = req.body as { areaCode?: string; phoneNumber?: string; friendlyName?: string } | undefined;
+      const body = req.body as
+        | { areaCode?: string; phoneNumber?: string; friendlyName?: string }
+        | undefined;
       if (!body?.areaCode && !body?.phoneNumber) {
         res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'areaCode or phoneNumber required' },
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'areaCode or phoneNumber required',
+          },
         });
         return;
       }
@@ -256,7 +278,14 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
 
         if (!result.success) {
-          res.status(400).json({ error: { code: 'PROVISION_FAILED', message: result.error ?? 'Provision failed' } });
+          res
+            .status(400)
+            .json({
+              error: {
+                code: 'PROVISION_FAILED',
+                message: result.error ?? 'Provision failed',
+              },
+            });
           return;
         }
 
@@ -267,7 +296,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
             await redisService.setPrimaryNumber(workspaceId, result.sid);
           }
         } catch (err: unknown) {
-          Sentry.captureException(err, { extra: { context: 'auto_set_primary', workspaceId } });
+          Sentry.captureException(err, {
+            extra: { context: 'auto_set_primary', workspaceId },
+          });
         }
 
         res.json(result);
@@ -305,7 +336,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         res.json({ success: true, primarySid: sid });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message = err instanceof Error ? err.message : 'Set primary failed';
+        const message =
+          err instanceof Error ? err.message : 'Set primary failed';
         res.status(500).json({ error: { code: 'SET_PRIMARY_ERROR', message } });
       }
     }),
@@ -337,7 +369,14 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const result = await dialer.releaseNumber(sid);
 
         if (!result.success) {
-          res.status(400).json({ error: { code: 'RELEASE_FAILED', message: result.error ?? 'Release failed' } });
+          res
+            .status(400)
+            .json({
+              error: {
+                code: 'RELEASE_FAILED',
+                message: result.error ?? 'Release failed',
+              },
+            });
           return;
         }
 
@@ -348,7 +387,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
             await redisService.deletePrimaryNumber(workspaceId);
           }
         } catch (err: unknown) {
-          Sentry.captureException(err, { extra: { context: 'clear_primary_on_release', workspaceId } });
+          Sentry.captureException(err, {
+            extra: { context: 'clear_primary_on_release', workspaceId },
+          });
         }
 
         res.json({ success: true });
@@ -365,24 +406,47 @@ export const voiceRoutes = (): RouteDefinition[] => [
     path: '/v1/voice/token',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
         return;
       }
 
+      const voiceLogger = createLogger('api:voice');
+
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        voiceLogger.debug('Token request received', { userId, workspaceId });
+        const dialer = await getDialerForWorkspace(workspaceId);
         const result = await dialer.getToken(userId);
+        voiceLogger.info('Token generated successfully', {
+          userId,
+          workspaceId,
+          identity: result.identity,
+        });
         res.json(result);
       } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Token generation failed';
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        voiceLogger.error('[voice/token] Token generation failed', {
+          userId,
+          workspaceId,
+          errorType: err?.constructor?.name ?? 'unknown',
+          errorMessage,
+          errorStack,
+        });
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
+          {
+            tags: { endpoint: '/v1/voice/token' },
+            extra: { userId, workspaceId, errorMessage },
+          },
         );
-        const message =
-          err instanceof Error ? err.message : 'Token generation failed';
-        res.status(500).json({ error: { code: 'TOKEN_ERROR', message } });
+        res
+          .status(500)
+          .json({ error: { code: 'TOKEN_ERROR', message: errorMessage } });
       }
     }),
   },
@@ -499,12 +563,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
           : undefined;
 
         try {
-          const customerResult = await getLegacyDialer().addCustomerToConference(
-            conferenceName,
-            to,
-            from,
-            statusCallback,
-          );
+          const customerResult =
+            await getLegacyDialer().addCustomerToConference(
+              conferenceName,
+              to,
+              from,
+              statusCallback,
+            );
           try {
             await redisService.setCustomerConferenceName(
               customerResult.callSid,
@@ -587,7 +652,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
           res.json({ active: true, conferenceSid });
         } else {
-          logger.info('No active conference', { action: 'voice.no_active_conference', conferenceName, outcome: 'success' });
+          logger.info('No active conference', {
+            action: 'voice.no_active_conference',
+            conferenceName,
+            outcome: 'success',
+          });
           res.json({ active: false });
         }
       } catch (err: unknown) {
@@ -661,8 +730,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 error: null,
               });
             } catch (err: unknown) {
-              const message = err instanceof Error ? err.message : 'Connection failed';
-              Sentry.captureException(err instanceof Error ? err : new Error(message));
+              const message =
+                err instanceof Error ? err.message : 'Connection failed';
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(message),
+              );
               res.json({
                 mode: 'byok',
                 configured: false,
@@ -692,7 +764,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         try {
           creds = getDecryptedCredentials(config);
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Credential decryption failed';
+          const message =
+            err instanceof Error ? err.message : 'Credential decryption failed';
           res.json({
             mode: config.mode,
             configured: false,
@@ -713,7 +786,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
           twilioConnected = true;
           hasPhoneNumbers = numbers.length > 0;
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Connection failed';
+          const message =
+            err instanceof Error ? err.message : 'Connection failed';
           res.json({
             mode: config.mode,
             configured: false,
@@ -737,7 +811,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message = err instanceof Error ? err.message : 'Status check failed';
+        const message =
+          err instanceof Error ? err.message : 'Status check failed';
         res.json({
           mode: isHostedInstance() ? 'hosted' : 'byok',
           configured: false,
@@ -882,9 +957,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const conferenceSid =
           record.conferenceSid ??
-          (await dialer.conference.findConferenceSid(
-            record.conferenceName,
-          ));
+          (await dialer.conference.findConferenceSid(record.conferenceName));
         if (!conferenceSid) {
           res.status(404).json({
             error: {
@@ -1230,7 +1303,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.completed', { action: 'transfer.completed', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        logger.info('transfer.completed', {
+          action: 'transfer.completed',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1285,7 +1362,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.cancelled', { action: 'transfer.cancelled', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        logger.info('transfer.cancelled', {
+          action: 'transfer.cancelled',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1373,8 +1454,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           );
         } else {
           // default: hold the customer
-          const participants =
-            await dialer.listParticipants(conferenceSid);
+          const participants = await dialer.listParticipants(conferenceSid);
           const customer = participants.find(
             (p: { label: string }) => p.label === 'customer',
           );
@@ -1388,7 +1468,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, hold: body.hold });
-        logger.info('call.hold', { action: 'call.hold', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        logger.info('call.hold', {
+          action: 'call.hold',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Hold toggle failed';
