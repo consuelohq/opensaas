@@ -26,6 +26,11 @@ export class ConferenceService {
 
   private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
     if (this.client) return this.client;
+    if (!this.credentials.accountSid || !this.credentials.authToken) {
+      throw new Error(
+        'Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.',
+      );
+    }
     try {
       const twilio = await import('twilio');
       this.client = twilio.default(
@@ -68,6 +73,39 @@ export class ConferenceService {
     ].join('');
   }
 
+  /** Wait for a conference to reach in-progress status with exponential backoff */
+  private async waitForConference(
+    client: Awaited<ReturnType<typeof this.getClient>>,
+    conferenceName: string,
+    timeoutMs: number = 10000,
+  ): Promise<{ sid: string }> {
+    const startTime = Date.now();
+    let delayMs = 200;
+    const maxDelayMs = 2000;
+
+    while (Date.now() - startTime < timeoutMs) {
+      const conferences = await client.conferences.list({
+        friendlyName: conferenceName,
+        status: 'in-progress',
+        limit: 1,
+      });
+
+      if (conferences.length) {
+        return { sid: conferences[0].sid };
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      delayMs = Math.min(delayMs * 2, maxDelayMs);
+    }
+
+    throw Object.assign(
+      new Error(
+        `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
+      ),
+      { status: 404 },
+    );
+  }
+
   /** Dial the customer into the conference via REST API */
   async addParticipant(
     conferenceName: string,
@@ -82,22 +120,8 @@ export class ConferenceService {
     try {
       const client = await this.getClient();
 
-      const conferences = await client.conferences.list({
-        friendlyName: conferenceName,
-        status: 'in-progress',
-        limit: 1,
-      });
+      const conf = await this.waitForConference(client, conferenceName);
 
-      if (!conferences.length) {
-        throw Object.assign(
-          new Error(
-            `Conference "${conferenceName}" not found or not in-progress`,
-          ),
-          { status: 404 },
-        );
-      }
-
-      const conf = conferences[0];
       const participant = await client
         .conferences(conf.sid)
         .participants.create({
