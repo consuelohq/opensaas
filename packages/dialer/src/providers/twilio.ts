@@ -52,6 +52,9 @@ export class TwilioProvider implements DialerProvider {
   private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
     try {
       if (this.client) return this.client;
+      if (!this.credentials.accountSid || !this.credentials.authToken) {
+        throw new Error('Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.');
+      }
       const twilio = await import('twilio');
       this.client = twilio.default(
         this.credentials.accountSid,
