@@ -542,9 +542,8 @@ export const setupCoachingWebSocket = async (
         mediaWss.handleUpgrade(request, socket, head, (ws) => {
           mediaWss.emit('connection', ws, request);
         });
-      } else {
-        socket.destroy();
       }
+      // else: not a coaching path — let other upgrade handlers (NestJS, etc.) handle it
     });
 
     streamWss.on('connection', (ws: unknown, req: { url?: string }) => {
