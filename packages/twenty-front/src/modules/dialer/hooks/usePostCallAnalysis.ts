@@ -119,6 +119,14 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     [setAnalysis, setIsAnalyzing, setError],
   );
 
+  // FIX: continuously capture transcript during active call to avoid race condition
+  useEffect(() => {
+    if (callState.status === 'active' && callState.callSid) {
+      lastCallSidRef.current = callState.callSid;
+      lastTranscriptRef.current = transcript;
+    }
+  }, [callState.status, callState.callSid, transcript]);
+
   // auto-trigger when call transitions from active → ended
   useEffect(() => {
     const prev = prevStatusRef.current;
@@ -129,11 +137,10 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
       callState.status === 'ended' &&
       callState.callSid
     ) {
-      lastCallSidRef.current = callState.callSid;
-      lastTranscriptRef.current = transcript;
-      void analyze(callState.callSid, transcript);
+      // use the ref-captured transcript instead of current state
+      void analyze(callState.callSid, lastTranscriptRef.current);
     }
-  }, [callState.status, callState.callSid, transcript, analyze]);
+  }, [callState.status, callState.callSid, analyze]);
 
   // clear analysis when a new call starts
   useEffect(() => {
