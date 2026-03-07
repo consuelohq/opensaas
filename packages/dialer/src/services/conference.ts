@@ -77,10 +77,10 @@ export class ConferenceService {
   private async waitForConference(
     client: Awaited<ReturnType<typeof this.getClient>>,
     conferenceName: string,
-    timeoutMs: number = 10000,
+    timeoutMs: number = 20000,
   ): Promise<{ sid: string }> {
     const startTime = Date.now();
-    let delayMs = 200;
+    let delayMs = 500;
     const maxDelayMs = 2000;
 
     while (Date.now() - startTime < timeoutMs) {
