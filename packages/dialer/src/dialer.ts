@@ -192,11 +192,12 @@ export class Dialer {
   /** Generate conference TwiML for the browser's incoming webhook */
   generateConferenceTwiml(
     conferenceName: string,
-    participantLabel?: string,
+    opts?: {
+      participantLabel?: string;
+      endOnExit?: boolean;
+    },
   ): string {
-    return this.conference.generateConferenceTwiml(conferenceName, {
-      participantLabel,
-    });
+    return this.conference.generateConferenceTwiml(conferenceName, opts);
   }
 
   /** Dial the customer into the agent's conference */
@@ -265,7 +266,9 @@ export class Dialer {
   }
 
   /** Search available phone numbers by area code */
-  async searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]> {
+  async searchAvailableNumbers(
+    options: SearchAvailableNumbersOptions,
+  ): Promise<AvailableNumber[]> {
     return this.provider.searchAvailableNumbers(options);
   }
 
