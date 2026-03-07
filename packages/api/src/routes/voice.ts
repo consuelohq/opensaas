@@ -278,14 +278,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
 
         if (!result.success) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'PROVISION_FAILED',
-                message: result.error ?? 'Provision failed',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'PROVISION_FAILED',
+              message: result.error ?? 'Provision failed',
+            },
+          });
           return;
         }
 
@@ -369,14 +367,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const result = await dialer.releaseNumber(sid);
 
         if (!result.success) {
-          res
-            .status(400)
-            .json({
-              error: {
-                code: 'RELEASE_FAILED',
-                message: result.error ?? 'Release failed',
-              },
-            });
+          res.status(400).json({
+            error: {
+              code: 'RELEASE_FAILED',
+              message: result.error ?? 'Release failed',
+            },
+          });
           return;
         }
 
@@ -552,10 +548,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
-      const twiml = getLegacyDialer().generateConferenceTwiml(
-        conferenceName,
-        'agent',
-      );
+      const twiml = getLegacyDialer().generateConferenceTwiml(conferenceName, {
+        participantLabel: 'agent',
+        endOnExit: true,
+      });
+
+      // store mapping for lock release on call end
+      if (from) {
+        callerIdMap.set(callSid, from);
+      }
 
       // send TwiML first so agent can connect and create the conference
       res.type('text/xml').status(200).send(twiml);
@@ -1552,8 +1553,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       // Check if this is an agent call ending (check callerIdMap)
+      // Release lock on both failure and normal completion
       const callerId = callerIdMap.get(callSid);
-      if (callerId && FAILURE_STATUSES.has(callStatus)) {
+      if (
+        callerId &&
+        (FAILURE_STATUSES.has(callStatus) || callStatus === 'completed')
+      ) {
         try {
           await getCallerIdLockService().releaseLockByNumber(callerId);
           callerIdMap.delete(callSid);
