@@ -43,6 +43,10 @@ OAUTH_CLIENT_ID = _c("LINEAR_OAUTH_CLIENT_ID")
 OAUTH_CLIENT_SECRET = _c("LINEAR_OAUTH_CLIENT_SECRET")
 OAUTH_CALLBACK_URL = _c("LINEAR_OAUTH_CALLBACK_URL")
 TOKEN_FILE = os.path.join(SCRIPT_DIR, ".oauth-token.json")
+OPENCODE_TOKEN_FILE = os.path.join(SCRIPT_DIR, ".opencode-token.json")
+OPENCODE_OAUTH_CLIENT_ID = "9b2b83a4ca6cebc0ce9df6a2ad4ed834"
+OPENCODE_OAUTH_CLIENT_SECRET = "8aeff8f8d4360b80bd8a8bff690fc45f"
+OPENCODE_OAUTH_REDIRECT = "https://linear.consuelohq.com/oauth/callback"
 KIRO_CLI = "/Users/kokayi/.local/bin/kiro-cli"
 TMUX = "/opt/homebrew/bin/tmux"
 TMUX_SESSION = "dev"
@@ -57,6 +61,121 @@ TRIAGE_STATE = "113983ef-c9ed-483a-9c42-99286e6dc70b"
 REVIEW_BOTS = {"coderabbitai[bot]": "CodeRabbit", "qodo-code-review[bot]": "Qodo"}
 _running: dict = {}  # session_id -> {"pid": str, "output": path, "done": path}
 _pending_reviews: dict = {}  # (pr_number, bot_login) -> timestamp
+
+# ── bot users & model labels ────────────────────────────────────────────────
+
+BOT_USERS = {
+    "791dcfe8-c038-4d08-9ca9-7507319ad79b": "kiro",
+    "8e949d62-13b9-48f5-8ce7-5664f81032fe": "opencode",
+}
+
+MODEL_LABELS = {
+    "73f52b60-2339-4a27-9de9-2c1d463004fc": "glm-5",
+    "fce845c0-81a4-4352-a4b9-2d194f2da6a9": "kimi-k2.5",
+    "9722f895-0b70-4061-8ab4-4866690776ed": "minimax",
+}
+
+OPENCODE_CMD = "/opt/homebrew/bin/opencode"
+STALE_HOURS = 12
+
+# ── per-issue tmux dispatch ──────────────────────────────────────────────────
+
+def _get_model(labels):
+    """pick opencode model from issue labels, default glm-5."""
+    for l in (labels or []):
+        lid = l.get("id", "") if isinstance(l, dict) else ""
+        if lid in MODEL_LABELS:
+            return MODEL_LABELS[lid]
+    return "glm-5"
+
+def dispatch_to_tmux(agent, issue, labels=None):
+    """spawn a per-issue tmux session and run the appropriate agent CLI."""
+    identifier = issue.get("identifier", "UNKNOWN")
+    title = issue.get("title", "").replace('"', '\\"')
+    session = identifier  # DEV-XXX as tmux session name
+
+    # check if session already exists
+    check = subprocess.run([TMUX, "has-session", "-t", session], capture_output=True)
+    if check.returncode == 0:
+        print(f"[dispatch] session {session} already exists, skipping", flush=True)
+        return
+
+    subprocess.run([TMUX, "new-session", "-d", "-s", session, "-c", REPO_DIR], capture_output=True)
+
+    if agent == "kiro":
+        cmd = (
+            f'{KIRO_CLI} chat --trust-all-tools --no-interactive '
+            f'"work on linear task {identifier}: {title}. '
+            f'read the task description for the full spec. '
+            f'post your findings as a comment when done."'
+        )
+    else:
+        model = _get_model(labels)
+        cmd = (
+            f'cd {REPO_DIR} && {OPENCODE_CMD} run -m opencode-go/{model} '
+            f'"work on linear task {identifier}: {title}. '
+            f'read the task description for the full spec. '
+            f'write your output to /tmp/opencode-{identifier}.md"'
+        )
+
+    subprocess.run([TMUX, "send-keys", "-t", session, cmd, "Enter"], capture_output=True)
+    print(f"[dispatch] {identifier} → tmux:{session} (agent={agent}, model={_get_model(labels) if agent != 'kiro' else 'n/a'})", flush=True)
+
+def handle_issue_update(payload):
+    """handle Issue update events — dispatch on assignment change to a bot user."""
+    updated_from = payload.get("updatedFrom") or {}
+    data = payload.get("data") or {}
+
+    # only care about assignee changes
+    if "assigneeId" not in updated_from:
+        return
+
+    assignee_id = data.get("assigneeId")
+    if not assignee_id:
+        return
+
+    agent = BOT_USERS.get(assignee_id)
+    if not agent:
+        return
+
+    identifier = data.get("identifier", "?")
+    labels = data.get("labels") or []
+    print(f"[issue-update] {identifier} assigned to {agent}", flush=True)
+    threading.Thread(
+        target=dispatch_to_tmux, args=(agent, data, labels), daemon=True
+    ).start()
+
+def cleanup_stale_sessions():
+    """kill DEV-* tmux sessions that have been idle for STALE_HOURS."""
+    try:
+        r = subprocess.run(
+            [TMUX, "ls", "-F", "#{session_name} #{session_activity}"],
+            capture_output=True, text=True,
+        )
+        if r.returncode != 0:
+            return
+        cutoff = int(time.time()) - (STALE_HOURS * 3600)
+        cleaned = 0
+        for line in r.stdout.strip().splitlines():
+            parts = line.split(" ", 1)
+            if len(parts) != 2:
+                continue
+            name, activity = parts[0], parts[1]
+            if not re.match(r"^DEV-", name):
+                continue
+            cmd_r = subprocess.run(
+                [TMUX, "list-panes", "-t", name, "-F", "#{pane_current_command}"],
+                capture_output=True, text=True,
+            )
+            pane_cmd = cmd_r.stdout.strip()
+            if pane_cmd in ("zsh", "bash", "sh", "fish") and int(activity) < cutoff:
+                subprocess.run([TMUX, "kill-session", "-t", name], capture_output=True)
+                print(f"[cleanup] killed stale session: {name}", flush=True)
+                cleaned += 1
+        if cleaned:
+            print(f"[cleanup] removed {cleaned} stale sessions", flush=True)
+    except Exception as e:
+        print(f"[cleanup-err] {e}", flush=True)
 
 # ── linear API ───────────────────────────────────────────────────────────────
 
@@ -184,8 +303,8 @@ def fetch_history(session_id):
 
 ANSI_RE = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]|\x1b\].*?\x07|\x1b\[\d*;?\d*m')
 
-def handle_mention(session_id, prompt_context, user_message=None, is_followup=False):
-    """run kiro-cli in tmux linear session, poll for output, post to linear."""
+def handle_mention(session_id, prompt_context, user_message=None, is_followup=False, issue_id=None):
+    """run kiro-cli in per-issue tmux session, poll for output, post to linear."""
     # send thought SYNCHRONOUSLY before thread — must hit linear within 10s
     send_thought(session_id, "thinking...")
 
@@ -193,6 +312,7 @@ def handle_mention(session_id, prompt_context, user_message=None, is_followup=Fa
         try:
             os.makedirs(MENTION_DIR, exist_ok=True)
             sid = session_id[:8]
+            tmux_target = issue_id or TMUX_MENTION  # per-issue session, fallback to shared
             prompt_file = f"{MENTION_DIR}/{sid}.prompt"
             output_file = f"{MENTION_DIR}/{sid}.output"
             done_file = f"{MENTION_DIR}/{sid}.done"
@@ -213,21 +333,20 @@ def handle_mention(session_id, prompt_context, user_message=None, is_followup=Fa
             with open(prompt_file, "w") as f:
                 f.write(prompt)
 
-            # check tmux session
-            check = subprocess.run([TMUX, "has-session", "-t", TMUX_MENTION], capture_output=True)
+            # create per-issue tmux session if it doesn't exist
+            check = subprocess.run([TMUX, "has-session", "-t", tmux_target], capture_output=True)
             if check.returncode != 0:
-                send_error(session_id, f"tmux session '{TMUX_MENTION}' not found")
-                return
+                subprocess.run([TMUX, "new-session", "-d", "-s", tmux_target, "-c", REPO_DIR], capture_output=True)
 
-            _running[session_id] = {"output": output_file, "done": done_file}
+            _running[session_id] = {"output": output_file, "done": done_file, "tmux": tmux_target}
 
             cmd = (
                 f"cat {prompt_file} | {KIRO_CLI} chat --no-interactive --trust-all-tools "
                 f"--agent orchestrator 2>&1 | tee {output_file}; "
                 f"echo $? > {done_file}"
             )
-            subprocess.run([TMUX, "send-keys", "-t", TMUX_MENTION, cmd, "Enter"], capture_output=True)
-            print(f"[mention] sent kiro-cli to tmux:{TMUX_MENTION} for {sid}", flush=True)
+            subprocess.run([TMUX, "send-keys", "-t", tmux_target, cmd, "Enter"], capture_output=True)
+            print(f"[mention] sent kiro-cli to tmux:{tmux_target} for {sid}", flush=True)
 
             # poll for completion (max 10 min)
             # send periodic thoughts every ~30s to keep linear session alive (30-min window)
@@ -345,8 +464,9 @@ def handle_assign(session_id, issue):
 def handle_stop(session_id):
     info = _running.pop(session_id, None)
     if info:
-        print(f"[stop] sending C-c to tmux:{TMUX_MENTION} for {session_id[:8]}", flush=True)
-        subprocess.run([TMUX, "send-keys", "-t", TMUX_MENTION, "C-c", ""], capture_output=True)
+        tmux_target = info.get("tmux", TMUX_MENTION)
+        print(f"[stop] sending C-c to tmux:{tmux_target} for {session_id[:8]}", flush=True)
+        subprocess.run([TMUX, "send-keys", "-t", tmux_target, "C-c", ""], capture_output=True)
         # write done file so poll loop exits
         done = info.get("done")
         if done:
@@ -503,16 +623,37 @@ class Handler(BaseHTTPRequestHandler):
             })
         elif self.path.startswith("/oauth/callback"):
             qs = urllib.parse.urlparse(self.path).query
-            code = urllib.parse.parse_qs(qs).get("code", [None])[0]
+            params = urllib.parse.parse_qs(qs)
+            code = params.get("code", [None])[0]
+            state = params.get("state", ["kiro"])[0]
             if not code:
                 self._json(400, {"error": "no code"})
                 return
             try:
-                token_data = self._exchange_code(code)
-                with open(TOKEN_FILE, "w") as f:
+                if state == "opencode":
+                    token_data = self._exchange_code(code, app="opencode")
+                    # fetch user info and enrich
+                    try:
+                        req = urllib.request.Request(
+                            "https://api.linear.app/graphql",
+                            data=json.dumps({"query": "{ viewer { id name } }"}).encode(),
+                            headers={"Authorization": f"Bearer {token_data['access_token']}", "Content-Type": "application/json"},
+                        )
+                        with urllib.request.urlopen(req) as resp:
+                            viewer = json.loads(resp.read()).get("data", {}).get("viewer", {})
+                            token_data["user_id"] = viewer.get("id", "")
+                            token_data["user_name"] = viewer.get("name", "")
+                    except Exception:
+                        pass
+                    token_data["note"] = "opencode bot token (oauth app)"
+                    dest = OPENCODE_TOKEN_FILE
+                else:
+                    token_data = self._exchange_code(code)
+                    dest = TOKEN_FILE
+                with open(dest, "w") as f:
                     json.dump(token_data, f, indent=2)
-                print(f"[oauth] token saved to {TOKEN_FILE}", flush=True)
-                self._json(200, {"status": "ok", "message": "token saved"})
+                print(f"[oauth] {state} token saved to {dest}", flush=True)
+                self._html(200, f"<h2>{state} authorized ✅</h2><p>token saved. you can close this tab.</p>")
             except Exception as e:
                 self._json(500, {"error": str(e)})
         else:
@@ -572,7 +713,6 @@ class Handler(BaseHTTPRequestHandler):
             issue = payload.get("issue") or payload.get("data", {}).get("issue") or {}
             identifier = issue.get("identifier", "")
             if not identifier:
-                # try to extract from notification
                 print(f"[assign-notify] payload keys: {list(payload.keys())}", flush=True)
                 print(f"[assign-notify] full payload: {json.dumps(payload)[:500]}", flush=True)
             else:
@@ -580,10 +720,15 @@ class Handler(BaseHTTPRequestHandler):
                 handle_assign_direct(identifier)
             return
 
+        if ptype == "Issue" and action == "update":
+            handle_issue_update(payload)
+            return
+
         if ptype == "AgentSessionEvent":
             session = payload.get("agentSession") or {}
             sid = session.get("id")
             issue = session.get("issue") or {}
+            issue_id = issue.get("identifier")
             comment = session.get("comment")
             prompt_context = payload.get("promptContext", "")
 
@@ -593,12 +738,12 @@ class Handler(BaseHTTPRequestHandler):
 
             if action == "created":
                 if comment:
-                    # @mention in a comment → chat mode
-                    print(f"[webhook] mention on {issue.get('identifier', '?')}", flush=True)
-                    handle_mention(sid, prompt_context)
+                    # @mention in a comment → chat mode (per-issue tmux)
+                    print(f"[webhook] mention on {issue_id or '?'}", flush=True)
+                    handle_mention(sid, prompt_context, issue_id=issue_id)
                 else:
                     # delegation/assignment → task mode
-                    print(f"[webhook] assign {issue.get('identifier', '?')}", flush=True)
+                    print(f"[webhook] assign {issue_id or '?'}", flush=True)
                     handle_assign(sid, issue)
 
             elif action == "prompted":
@@ -614,8 +759,8 @@ class Handler(BaseHTTPRequestHandler):
                 msg = activity.get("body", "")
                 if not msg:
                     msg = prompt_context
-                print(f"[webhook] follow-up on {issue.get('identifier', '?')}", flush=True)
-                handle_mention(sid, prompt_context, user_message=msg, is_followup=True)
+                print(f"[webhook] follow-up on {issue_id or '?'}", flush=True)
+                handle_mention(sid, prompt_context, user_message=msg, is_followup=True, issue_id=issue_id)
 
             elif action == "stopped":
                 handle_stop(sid)
@@ -628,13 +773,25 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _exchange_code(self, code):
+    def _html(self, code, html):
+        body = html.encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "text/html")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _exchange_code(self, code, app="kiro"):
+        if app == "opencode":
+            cid, secret, redir = OPENCODE_OAUTH_CLIENT_ID, OPENCODE_OAUTH_CLIENT_SECRET, OPENCODE_OAUTH_REDIRECT
+        else:
+            cid, secret, redir = OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_CALLBACK_URL
         data = urllib.parse.urlencode({
             "grant_type": "authorization_code",
             "code": code,
-            "redirect_uri": OAUTH_CALLBACK_URL,
-            "client_id": OAUTH_CLIENT_ID,
-            "client_secret": OAUTH_CLIENT_SECRET,
+            "redirect_uri": redir,
+            "client_id": cid,
+            "client_secret": secret,
         }).encode()
         req = urllib.request.Request(
             "https://api.linear.app/oauth/token", data=data,
@@ -649,13 +806,23 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     server = HTTPServer(("0.0.0.0", PORT), Handler)
     print(f"[webhook-receiver] listening on :{PORT}", flush=True)
-    print(f"  POST /webhook/linear  — agent session events", flush=True)
+    print(f"  POST /webhook/linear  — agent session events + issue updates", flush=True)
     print(f"  POST /webhook/github  — PR review → linear triage", flush=True)
     print(f"  GET  /oauth/callback  — oauth code exchange", flush=True)
     print(f"  GET  /health          — health check", flush=True)
     print(f"", flush=True)
-    print(f"  mention → kiro-cli chat (non-interactive, per turn)", flush=True)
-    print(f"  assign  → run-tasks.sh in tmux:{TMUX_SESSION}", flush=True)
+    print(f"  bot users: {', '.join(f'{v}={k[:8]}...' for k, v in BOT_USERS.items())}", flush=True)
+    print(f"  models: {', '.join(MODEL_LABELS.values())}", flush=True)
+    print(f"  dispatch: per-issue tmux sessions (DEV-XXX)", flush=True)
+
+    # periodic cleanup of stale DEV-* sessions
+    def _cleanup_loop():
+        while True:
+            time.sleep(3600)
+            cleanup_stale_sessions()
+    threading.Thread(target=_cleanup_loop, daemon=True).start()
+    cleanup_stale_sessions()
+
     server.serve_forever()
 
 if __name__ == "__main__":

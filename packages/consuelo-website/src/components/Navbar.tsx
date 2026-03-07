@@ -157,8 +157,7 @@ export default function Navbar() {
         {/* left group: logo + mascot + nav links */}
         <div className="flex items-center gap-6">
           <a href="/" className="flex items-center gap-2.5">
-            <img src="/images/logo/logo.svg" alt="Consuelo mascot" className="h-9 w-9 dark:hidden" />
-            <img src="/images/logo/logo-white.svg" alt="Consuelo mascot" className="hidden h-9 w-9 dark:block" />
+            <img src="/images/logo/logo.svg" alt="Consuelo mascot" className="h-9 w-9 transition-[filter] duration-200 dark:invert" />
             <span className="text-[22px] font-bold tracking-tight text-(--color-fg)">Consuelo</span>
           </a>
 
