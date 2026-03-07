@@ -557,67 +557,70 @@ export const voiceRoutes = (): RouteDefinition[] => [
         'agent',
       );
 
-      // dial the customer into the conference (fire-and-forget)
+      // send TwiML first so agent can connect and create the conference
+      res.type('text/xml').status(200).send(twiml);
+
+      // dial the customer into the conference (truly fire-and-forget)
       if (to && !to.startsWith('client:')) {
         const statusCallback = process.env.API_BASE_URL
           ? `${process.env.API_BASE_URL}/v1/webhooks/status`
           : undefined;
 
-        try {
-          const customerResult =
-            await getLegacyDialer().addCustomerToConference(
-              conferenceName,
-              to,
-              from,
-              statusCallback,
-            );
+        void (async () => {
           try {
-            await redisService.setCustomerConferenceName(
-              customerResult.callSid,
-              conferenceName,
-            );
+            const customerResult =
+              await getLegacyDialer().addCustomerToConference(
+                conferenceName,
+                to,
+                from,
+                statusCallback,
+              );
+            try {
+              await redisService.setCustomerConferenceName(
+                customerResult.callSid,
+                conferenceName,
+              );
+            } catch (err: unknown) {
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(String(err)),
+                {
+                  extra: {
+                    context: 'twiml_redis_setCustomerConferenceName',
+                    callSid: customerResult.callSid,
+                    conferenceName,
+                  },
+                },
+              );
+              const message =
+                err instanceof Error ? err.message : 'Redis operation failed';
+              const { createLogger } = await import('@consuelo/logger');
+              createLogger('voice:twiml').error(
+                'Failed to store customer mapping',
+                {
+                  callSid: customerResult.callSid,
+                  conferenceName,
+                  error: message,
+                },
+              );
+            }
           } catch (err: unknown) {
             Sentry.captureException(
               err instanceof Error ? err : new Error(String(err)),
               {
-                extra: {
-                  context: 'twiml_redis_setCustomerConferenceName',
-                  callSid: customerResult.callSid,
-                  conferenceName,
-                },
+                extra: { context: 'twiml_customer_dial', conferenceName, to },
               },
             );
             const message =
-              err instanceof Error ? err.message : 'Redis operation failed';
+              err instanceof Error ? err.message : 'Customer dial failed';
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:twiml').error(
-              'Failed to store customer mapping',
-              {
-                callSid: customerResult.callSid,
-                conferenceName,
-                error: message,
-              },
-            );
+            createLogger('voice:twiml').error('Customer dial failed', {
+              conferenceName,
+              to,
+              error: message,
+            });
           }
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'twiml_customer_dial', conferenceName, to },
-            },
-          );
-          const message =
-            err instanceof Error ? err.message : 'Customer dial failed';
-          const { createLogger } = await import('@consuelo/logger');
-          createLogger('voice:twiml').error('Customer dial failed', {
-            conferenceName,
-            to,
-            error: message,
-          });
-        }
+        })();
       }
-
-      res.type('text/xml').status(200).send(twiml);
     }),
   },
 
