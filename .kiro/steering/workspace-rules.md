@@ -1,9 +1,9 @@
 ---
-description: opensaas workspace rules — coding standards, git hooks, and quality enforcement. read before writing any code.
+description: opensaas by consuelo's workspace rules — coding standards, git hooks, and quality enforcement. read before writing any code.
 inclusion: auto
 ---
 
-# opensaas workspace rules
+# opensaas by consuelo's workspace rules
 
 ## repo structure
 

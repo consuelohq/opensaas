@@ -8,15 +8,18 @@ const { class: className = '', width = 120, height } = Astro.props;
 ---
 
 <span class:list={['logo', className]}>
-  <img src="/images/logo/logo.svg" alt="Consuelo" width={width} height={height} class="logo-light" />
-  <img src="/images/logo/logo-white.svg" alt="Consuelo" width={width} height={height} class="logo-dark" />
+  <img src="/images/logo/logo.svg" alt="Consuelo" width={width} height={height} class="logo-img" />
 </span>
 
 <style>
   .logo { display: inline-flex; }
-  .logo-dark { display: none; }
+  .logo-img {
+    filter: invert(0);
+    transition: filter 0.2s ease;
+  }
   @media (prefers-color-scheme: dark) {
-    .logo-light { display: none; }
-    .logo-dark { display: block; }
+    .logo-img {
+      filter: invert(1);
+    }
   }
 </style>
