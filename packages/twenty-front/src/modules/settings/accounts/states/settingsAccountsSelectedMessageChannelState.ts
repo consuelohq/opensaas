@@ -1,5 +1,3 @@
-import { createState } from '@/ui/utilities/state/utils/createState';
-
 import { type MessageChannel } from '@/accounts/types/MessageChannel';
 import { createState } from '@/ui/utilities/state/utils/createState';
 

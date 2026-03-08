@@ -707,6 +707,84 @@ export const STANDARD_OBJECTS = {
     },
     indexes: {},
   },
+  listMember: {
+    universalIdentifier: '56c654a3-9e30-4bfa-bddb-81922dfdc996',
+    fields: {
+      id: { universalIdentifier: '83a3b125-985b-4533-856a-397c95480274' },
+      createdAt: {
+        universalIdentifier: '3fc32a6c-6b37-40ee-8e4b-8ae35a9a6e38',
+      },
+      updatedAt: {
+        universalIdentifier: '238bcc61-aef1-4402-b95c-3a42571fbdb4',
+      },
+      deletedAt: {
+        universalIdentifier: 'f50795e6-91c9-40c4-b44b-0242f913c662',
+      },
+      position: {
+        universalIdentifier: 'ce0cb82d-7570-4286-a63e-d5008cbbe501',
+      },
+      phoneNumber: {
+        universalIdentifier: '475dd001-b04d-45b2-bcfb-dcf6f78c7764',
+      },
+      status: {
+        universalIdentifier: 'd903a122-cc90-41a9-bf51-ea4c2d301fcc',
+      },
+      disposition: {
+        universalIdentifier: '1dbf6314-63a3-4d25-acc2-3cee5e26124b',
+      },
+      callSid: {
+        universalIdentifier: '8a0db19d-2a41-4278-867a-bf1cf7056e34',
+      },
+      duration: {
+        universalIdentifier: '90da94ba-a35d-467d-89a7-7be25bf03adf',
+      },
+      attemptedAt: {
+        universalIdentifier: 'b09c1ee0-5ca7-49e1-8e95-3d721c069f10',
+      },
+      list: {
+        universalIdentifier: 'e255647e-6c52-40f7-ba89-eff6fffc2803',
+      },
+      person: {
+        universalIdentifier: '278f52a2-f045-4071-b0b6-cfc066168d22',
+      },
+    },
+    indexes: {
+      listIdIndex: {
+        universalIdentifier: 'dfa7f765-b65e-47de-9deb-64ea21db600b',
+      },
+      personIdIndex: {
+        universalIdentifier: '87ffcfa6-7aaa-4bf2-bb6b-c1890ab28e95',
+      },
+      statusIndex: {
+        universalIdentifier: '73fe1371-119a-43d3-a4c6-d95ba83be655',
+      },
+    },
+    views: {
+      allListMembers: {
+        universalIdentifier: '75de8b5f-5503-4bad-a60d-b68e63077668',
+        viewFields: {
+          position: {
+            universalIdentifier: '5b2806f4-93a2-4287-9f64-6caca4292637',
+          },
+          phoneNumber: {
+            universalIdentifier: 'fda1d32f-c871-45e0-a7a4-d38ac9220a29',
+          },
+          status: {
+            universalIdentifier: '99215056-c092-4a52-8c89-e83e2c3e2dc2',
+          },
+          disposition: {
+            universalIdentifier: '46ed5cb3-dd18-43e4-b7f6-3e793b8e240b',
+          },
+          list: {
+            universalIdentifier: '20cc7568-e082-4328-9150-cf5d985e7739',
+          },
+          person: {
+            universalIdentifier: '2e4df215-91ed-4cba-b0fb-181d5c43aa49',
+          },
+        },
+      },
+    },
+  },
   messageChannelMessageAssociation: {
     universalIdentifier: '20202020-ad1e-4127-bccb-d83ae04d2ccb',
     fields: {
@@ -1204,6 +1282,30 @@ export const STANDARD_OBJECTS = {
       searchVector: {
         universalIdentifier: '428a0da5-4b2e-4ce3-b695-89a8b384e6e3',
       },
+      listStatus: {
+        universalIdentifier: 'f01761a0-1da6-419a-964c-e9318f067ecd',
+      },
+      ordering: {
+        universalIdentifier: '576abaf1-d869-448e-a5f6-edb352cb98fc',
+      },
+      currentIndex: {
+        universalIdentifier: '3de2b3ad-cde6-4381-98d3-a06e8faf7494',
+      },
+      contactCount: {
+        universalIdentifier: '981e9a09-b382-4ff0-b7fa-eed7aaf98624',
+      },
+      sessionStartedAt: {
+        universalIdentifier: '8e225d1a-77aa-4dfb-9b6b-34fb2a96dce9',
+      },
+      sessionEndedAt: {
+        universalIdentifier: '344a2e6b-15dc-43e7-ba86-5b727191fbb2',
+      },
+      elapsedSeconds: {
+        universalIdentifier: 'bc3ed6d2-8dad-47a2-afa4-8025fec26bb7',
+      },
+      members: {
+        universalIdentifier: '1ab6094b-dfbd-4567-9ecd-227a8917a0bb',
+      },
     },
     indexes: {
       pointOfContactIdIndex: {
@@ -1217,6 +1319,9 @@ export const STANDARD_OBJECTS = {
       },
       searchVectorGinIndex: {
         universalIdentifier: '6961e6f0-7992-4d4a-6e3f-90c1d92c3c91',
+      },
+      listStatusIndex: {
+        universalIdentifier: '07961db5-f620-4896-8644-d46a619b1261',
       },
     },
     views: {
@@ -1387,6 +1492,9 @@ export const STANDARD_OBJECTS = {
       },
       searchVector: {
         universalIdentifier: '57d1d7ad-fa10-44fc-82f3-ad0959ec2534',
+      },
+      listMemberships: {
+        universalIdentifier: 'd2a499d0-34f1-498e-8ddb-bc187348883a',
       },
     },
     indexes: {
