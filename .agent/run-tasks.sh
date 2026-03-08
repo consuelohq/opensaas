@@ -1717,6 +1717,18 @@ finalize_pr() {
 *Created by autonomous agent workflow*
 *Task Source: $TASK_SOURCE*"
 
+  # Move completed Linear issues to "In Review"
+  if [ "$TASK_SOURCE" = "linear" ]; then
+    for entry in "${COMPLETED_ISSUES[@]}"; do
+      local num="${entry%%:*}"
+      local rest="${entry#*:}"
+      local lid="${rest##*:}"
+      if [ -n "$lid" ] && [ "$lid" != "$num" ]; then
+        update_linear_task_status "$num" "$lid" "In Review"
+      fi
+    done
+  fi
+
   # Update PR title and body
   if [ -n "$PR_URL" ]; then
     log_info "Updating PR description..."
