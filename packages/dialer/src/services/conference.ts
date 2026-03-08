@@ -6,6 +6,14 @@ import type {
 } from '../types.js';
 import type TwilioClient from 'twilio';
 
+const escapeXml = (str: string): string =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
 /**
  * Conference + transfer orchestration via Twilio REST API.
  *
@@ -56,9 +64,9 @@ export class ConferenceService {
   ): string {
     const startOnEnter = opts?.startOnEnter ?? true;
     const endOnExit = opts?.endOnExit ?? false;
-    const waitUrl = opts?.waitUrl ?? '';
+    const waitUrl = opts?.waitUrl ? escapeXml(opts.waitUrl) : '';
     const label = opts?.participantLabel
-      ? ` participantLabel="${opts.participantLabel}"`
+      ? ` participantLabel="${escapeXml(opts.participantLabel)}"`
       : '';
 
     return [
@@ -66,7 +74,7 @@ export class ConferenceService {
       '<Response>',
       `<Dial>`,
       `<Conference startConferenceOnEnter="${startOnEnter}" endConferenceOnExit="${endOnExit}" beep="false" waitUrl="${waitUrl}"${label}>`,
-      conferenceName,
+      escapeXml(conferenceName),
       '</Conference>',
       '</Dial>',
       '</Response>',
@@ -131,7 +139,12 @@ export class ConferenceService {
           endConferenceOnExit: opts?.endConferenceOnExit ?? true,
           label: opts?.label ?? 'customer',
           statusCallback: opts?.statusCallback,
-          statusCallbackEvent: ['ringing', 'answered', 'completed'],
+          statusCallbackEvent: [
+            'initiated',
+            'ringing',
+            'answered',
+            'completed',
+          ],
         });
 
       return { callSid: participant.callSid, conferenceSid: conf.sid };
@@ -321,9 +334,13 @@ export class ConferenceService {
       // hold the customer so agent can consult privately
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer) {
-        await this.holdParticipant(conferenceSid, customer.callSid, true);
+      if (!customer) {
+        return {
+          success: false,
+          error: 'CUSTOMER_NOT_FOUND: cannot hold customer for warm transfer',
+        };
       }
+      await this.holdParticipant(conferenceSid, customer.callSid, true);
 
       // add the transfer target
       const client = await this.getClient();
@@ -356,20 +373,30 @@ export class ConferenceService {
     try {
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer?.hold) {
+      if (!customer) {
+        return {
+          success: false,
+          error: 'CUSTOMER_NOT_FOUND: cannot complete transfer safely',
+        };
+      }
+      if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }
 
       const target = participants.find((p) => p.label === 'transfer-target');
-      if (target) {
-        const client = await this.getClient();
-        await client
-          .conferences(conferenceSid)
-          .participants(target.callSid)
-          .update({
-            endConferenceOnExit: true,
-          });
+      if (!target) {
+        return {
+          success: false,
+          error: 'TRANSFER_TARGET_NOT_FOUND: cannot complete transfer',
+        };
       }
+      const client = await this.getClient();
+      await client
+        .conferences(conferenceSid)
+        .participants(target.callSid)
+        .update({
+          endConferenceOnExit: true,
+        });
 
       await this.removeParticipant(conferenceSid, agentCallSid);
       return { success: true, conferenceSid };
@@ -390,7 +417,14 @@ export class ConferenceService {
 
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer?.hold) {
+      if (!customer) {
+        return {
+          success: false,
+          error:
+            'CUSTOMER_NOT_FOUND: transfer cancelled but customer not found to unhold',
+        };
+      }
+      if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }
 
