@@ -66,4 +66,16 @@ export const buildOpportunityStandardFlatIndexMetadatas = ({
     twentyStandardApplicationId,
     now,
   }),
+  listStatusIndex: createStandardIndexFlatMetadata({
+    objectName,
+    workspaceId,
+    context: {
+      indexName: 'listStatusIndex',
+      relatedFieldNames: ['listStatus'],
+    },
+    standardObjectMetadataRelatedEntityIds,
+    dependencyFlatEntityMaps,
+    twentyStandardApplicationId,
+    now,
+  }),
 });

@@ -10,6 +10,7 @@ import { type EntityRelation } from 'src/engine/workspace-manager/workspace-migr
 import { type AttachmentWorkspaceEntity } from 'src/modules/attachment/standard-objects/attachment.workspace-entity';
 import { type CompanyWorkspaceEntity } from 'src/modules/company/standard-objects/company.workspace-entity';
 import { type FavoriteWorkspaceEntity } from 'src/modules/favorite/standard-objects/favorite.workspace-entity';
+import { type ListMemberWorkspaceEntity } from 'src/modules/list-member/standard-objects/list-member.workspace-entity';
 import { type NoteTargetWorkspaceEntity } from 'src/modules/note/standard-objects/note-target.workspace-entity';
 import { type PersonWorkspaceEntity } from 'src/modules/person/standard-objects/person.workspace-entity';
 import { type TaskTargetWorkspaceEntity } from 'src/modules/task/standard-objects/task-target.workspace-entity';
@@ -30,6 +31,13 @@ export class OpportunityWorkspaceEntity extends BaseWorkspaceEntity {
   position: number;
   createdBy: ActorMetadata;
   updatedBy: ActorMetadata;
+  listStatus: string;
+  ordering: string;
+  currentIndex: number | null;
+  contactCount: number | null;
+  sessionStartedAt: Date | null;
+  sessionEndedAt: Date | null;
+  elapsedSeconds: number | null;
   pointOfContact: EntityRelation<PersonWorkspaceEntity> | null;
   pointOfContactId: string | null;
   company: EntityRelation<CompanyWorkspaceEntity> | null;
@@ -41,6 +49,7 @@ export class OpportunityWorkspaceEntity extends BaseWorkspaceEntity {
   timelineActivities: EntityRelation<TimelineActivityWorkspaceEntity[]>;
   owner: EntityRelation<WorkspaceMemberWorkspaceEntity> | null;
   ownerId: string | null;
+  members: EntityRelation<ListMemberWorkspaceEntity[]>;
   /** @deprecated */
   probability: string;
   searchVector: string;
