@@ -1487,6 +1487,118 @@ export const voiceRoutes = (): RouteDefinition[] => [
   },
 
   // --- Twilio webhook routes (no auth) ---
+{
+    method: 'POST',
+    path: '/v1/webhooks/amd',
+    auth: false,
+    handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
+      const body = req.body as Record<string, string> | undefined;
+      const callSid = body?.CallSid;
+      const answeredBy = body?.AnsweredBy;
+
+      if (!callSid || !answeredBy) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing CallSid or AnsweredBy',
+          },
+        });
+        return;
+      }
+
+      const isMachine =
+        answeredBy === 'machine_start' ||
+        answeredBy === 'machine_end_beep' ||
+        answeredBy === 'machine_end_silence' ||
+        answeredBy === 'machine_end_other' ||
+        answeredBy === 'fax';
+
+      if (isMachine) {
+        try {
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+          response.hangup();
+          
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+            
+          logger.info('amd.machine_detected', {
+            action: 'amd.machine_detected',
+            userId: 'system',
+            outcome: 'hung_up',
+            callSid,
+            answeredBy,
+          });
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : 'AMD hangup failed';
+          res.status(500).json({ error: { code: 'AMD_FAILED', message } });
+        }
+        return;
+      }
+
+      // Human detected - connect to conference
+      try {
+        const conferenceName = await redisService.getCustomerConferenceName(callSid);
+        
+        if (conferenceName) {
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+          
+          const dial = response.dial();
+          dial.conference(
+            {
+              startConferenceOnEnter: true,
+              endConferenceOnExit: true,
+              participantLabel: 'customer',
+            },
+            conferenceName,
+          );
+
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+            
+          logger.info('amd.human_detected', {
+            action: 'amd.human_detected',
+            userId: 'system',
+            outcome: 'connected',
+            callSid,
+            answeredBy,
+            conferenceName,
+          });
+        } else {
+          // No conference found - just hang up
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+          response.hangup();
+
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+            
+          logger.warn('amd.no_conference', {
+            action: 'amd.no_conference',
+            userId: 'system',
+            callSid,
+            answeredBy,
+          });
+        }
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'AMD conference connect failed';
+        res.status(500).json({ error: { code: 'AMD_FAILED', message } });
+      }
+    }),
+  },
 
   {
     method: 'POST',
