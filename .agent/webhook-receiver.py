@@ -14,7 +14,7 @@ No external deps — stdlib only.
 """
 
 import hashlib, hmac, json, os, re, subprocess, sys, threading, time
-import urllib.parse, urllib.request
+import urllib.error, urllib.parse, urllib.request
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -503,8 +503,16 @@ def _linear_api(query, variables=None):
         "https://api.linear.app/graphql", data=payload,
         headers={"Authorization": LINEAR_API_KEY, "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read())
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode() if e.fp else ""
+        print(f"[linear] API error {e.code}: {body[:200]}", flush=True)
+        return {"errors": [{"message": f"HTTP {e.code}"}]}
+    except Exception as e:
+        print(f"[linear] API exception: {e}", flush=True)
+        return {"errors": [{"message": str(e)}]}
 
 def handle_pr_review(pr_number, repo_full, bot_login):
     """fetch all reviews + comments from a bot on a PR, create/update a linear issue."""
@@ -591,9 +599,9 @@ def _collect_and_create(pr_number, repo_full, bot_login):
     finding_count = len(bot_inline) + len([r for r in bot_reviews if r.get("body", "").strip()])
 
     search_result = _linear_api(
-        '{ issueSearch(query: "' + title.replace('"', '\\"') + '", first: 1) { nodes { id identifier } } }'
+        '{ searchIssues(term: "' + title.replace('"', '\\"') + '", first: 1) { nodes { id identifier } } }'
     )
-    existing = (search_result.get("data", {}).get("issueSearch", {}).get("nodes") or [None])[0]
+    existing = (search_result.get("data", {}).get("searchIssues", {}).get("nodes") or [None])[0]
 
     if existing:
         _linear_api(
