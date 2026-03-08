@@ -71,7 +71,7 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 
 ## Auth
 
-Single auth system — Twenty's built-in JWT auth. No Clerk, no separate provider. See [AUTH.md](AUTH.md) for the full documentation (token format, secret derivation, refresh flow, middleware).
+Single auth system — built-in JWT auth. No Clerk, no separate provider. See [AUTH.md](AUTH.md) for the full documentation (token format, secret derivation, refresh flow, middleware).
 
 ## Code Quality
 
