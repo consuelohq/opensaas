@@ -194,17 +194,6 @@ const StyledEmpty = styled.div`
   text-align: center;
 `;
 
-const StyledEmpty = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(4)} 0;
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.sm};
-  text-align: center;
-`;
-
 const StyledOverlay = styled.div`
   position: fixed;
   inset: 0;
