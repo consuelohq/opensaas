@@ -111,7 +111,7 @@ export class PipelineIntelligenceService {
 
       // use the pure functions from the agent package
       const { buildPipelineContext } =
-        await import('@consuelo/agent/context/pipeline-intelligence.service.js');
+        await import('@consuelo/agent');
 
       const result = buildPipelineContext(
         deals,
