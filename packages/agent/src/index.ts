@@ -124,12 +124,14 @@ export {
 
 
 // pi extensions
-export { DatabaseSessionManager } from './pi-extensions/database-session-manager.js';
+export { DatabaseSessionManager } from './pi-extensions/index.js';
 export type {
   AgentSessionData,
   DatabaseConnection,
   SessionManager,
-} from './pi-extensions/database-session-manager.js';
+} from './pi-extensions/index.js';
+export { createPiCrmTools } from './pi-extensions/index.js';
+export { createContextInjection } from './pi-extensions/index.js';
 // types
 export type {
   AgentMessage,

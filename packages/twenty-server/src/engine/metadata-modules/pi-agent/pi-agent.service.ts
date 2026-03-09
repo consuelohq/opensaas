@@ -6,8 +6,14 @@ import { DataSource } from 'typeorm';
 
 import {
   DatabaseSessionManager,
+  createPiCrmTools,
+  createContextInjection,
+  CrmClient,
   type AgentSessionData,
 } from '@consuelo/agent';
+import type { AgentTool } from '@mariozechner/pi-agent-core';
+
+const BASE_SYSTEM_PROMPT = 'You are a sales assistant for Consuelo.';
 
 @Injectable()
 export class PiAgentService {
@@ -23,16 +29,27 @@ export class PiAgentService {
   async createSession(
     userId: string,
     workspaceId: string,
+    crmClient?: CrmClient,
   ): Promise<AgentSessionData> {
     try {
+      const contextInjection = createContextInjection();
+      const systemPrompt =
+        BASE_SYSTEM_PROMPT + contextInjection.buildSystemPromptSuffix();
+
+      const tools: AgentTool[] = crmClient
+        ? createPiCrmTools(crmClient)
+        : [];
+
       const session: AgentSessionData = {
         id: randomUUID(),
         workspaceId,
         userId,
         messages: [],
-        systemPrompt: '',
+        systemPrompt,
         modelId: '',
-        metadata: {},
+        metadata: {
+          toolNames: tools.map((t) => t.name),
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
