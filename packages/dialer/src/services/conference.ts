@@ -302,16 +302,24 @@ export class ConferenceService {
     options: TransferOptions,
   ): Promise<TransferResult> {
     try {
+      const statusCallback = options.statusCallbackUrl && options.transferId
+        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
+        : options.statusCallbackUrl;
+
       const { callSid: transferCallSid, conferenceSid } =
         await this.addParticipant(
           options.conferenceName,
           options.to,
           options.from,
-          { label: 'transfer-target', endConferenceOnExit: true },
+          {
+            label: 'transfer-target',
+            endConferenceOnExit: true,
+            statusCallback,
+          },
         );
 
       await this.removeParticipant(conferenceSid, options.callSid);
-      return { success: true, transferCallSid, conferenceSid };
+      return { success: true, transferCallSid, conferenceSid, transferId: options.transferId };
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Cold transfer failed';
@@ -344,6 +352,10 @@ export class ConferenceService {
 
       // add the transfer target
       const client = await this.getClient();
+      const statusCallback = options.statusCallbackUrl && options.transferId
+        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
+        : options.statusCallbackUrl;
+
       const participant = await client
         .conferences(conferenceSid)
         .participants.create({
@@ -351,12 +363,15 @@ export class ConferenceService {
           from: options.from,
           endConferenceOnExit: false,
           label: 'transfer-target',
+          statusCallback,
+          statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
         });
 
       return {
         success: true,
         transferCallSid: participant.callSid,
         conferenceSid,
+        transferId: options.transferId,
       };
     } catch (err: unknown) {
       const message =

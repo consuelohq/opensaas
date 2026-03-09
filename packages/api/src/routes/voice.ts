@@ -1159,6 +1159,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
+      const transferId = randomUUID();
+      const statusCallbackUrl = process.env.API_BASE_URL
+        ? `${process.env.API_BASE_URL}/v1/webhooks/dial-status`
+        : undefined;
+
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const result = await dialer.initiateTransfer({
@@ -1168,6 +1173,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
           from: body.from ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
           type: body.type,
           userId,
+          statusCallbackUrl,
+          transferId,
         });
 
         if (!result.success) {
@@ -1179,8 +1186,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
           return;
         }
-
-        const transferId = randomUUID();
         const transferRecord: TransferRecord = {
           transferId,
           status: body.type === 'warm' ? 'consulting' : 'completed',
@@ -1597,6 +1602,44 @@ export const voiceRoutes = (): RouteDefinition[] => [
           err instanceof Error ? err.message : 'AMD conference connect failed';
         res.status(500).json({ error: { code: 'AMD_FAILED', message } });
       }
+    }),
+  },
+
+  {
+    method: 'POST',
+    path: '/v1/webhooks/dial-status',
+    auth: false,
+    handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
+      const body = req.body as Record<string, string> | undefined;
+      const callSid = body?.CallSid;
+      const dialCallStatus = body?.DialCallStatus;
+      const transferId = body?.transfer_id;
+
+      if (!callSid || !dialCallStatus) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing CallSid or DialCallStatus',
+          },
+        });
+        return;
+      }
+
+      try {
+        const { createLogger } = await import('@consuelo/logger');
+        createLogger('voice:dial-status').info('Dial status callback received', {
+          callSid,
+          dialCallStatus,
+          dialCallDuration: body?.DialCallDuration,
+          transferId,
+        });
+      } catch (_err: unknown) {
+        // logger unavailable, continue
+      }
+
+      // Return empty TwiML for dial status callbacks
+      res.status(200).set('Content-Type', 'text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
     }),
   },
 
