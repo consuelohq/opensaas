@@ -192,8 +192,8 @@ export interface TransferResult {
   transferId?: string;
 }
 
-/** Ring time tracking for billing */
-export interface RingTimeMetrics {
+// Ring time tracking for billing
+export type RingTimeMetrics = {
   callSid: string;
   ringingAt: string;
   answeredAt?: string;
