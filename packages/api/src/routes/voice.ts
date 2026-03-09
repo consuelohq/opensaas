@@ -21,9 +21,16 @@ import {
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
-let _logger: unknown;
+type Logger = {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+  warn: (message: string, meta?: Record<string, unknown>) => void;
+  debug: (message: string, meta?: Record<string, unknown>) => void;
+};
 
-const getLogger = async () => {
+let _logger: Logger | null = null;
+
+const getLogger = async (): Promise<Logger> => {
   try {
     if (!_logger) {
       // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -432,7 +439,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
-      const voiceLogger = createLogger('api:voice');
+      const voiceLogger = await getLogger();
 
       try {
         voiceLogger.debug('Token request received', { userId, workspaceId });
