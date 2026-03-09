@@ -30,3 +30,5 @@ export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './afte
 export { createPreferenceInference } from './preference-inference.js';
 export { createTurnGrading } from './turn-grading.js';
 export type { TurnEvaluation } from './turn-grading.js';
+export { createUsageTracking } from './usage-tracking.js';
+export type { UsageStore, UsageRecord } from './usage-tracking.js';

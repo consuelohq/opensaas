@@ -13,6 +13,7 @@ import {
   createKbTools,
   createPreferenceInference,
   createTurnGrading,
+  createUsageTracking,
   CrmClient,
   type AgentSessionData,
   type ContextInjection,
@@ -23,6 +24,7 @@ import {
   type ContextLoader,
   type MemoryStore,
   type ExecutionStore,
+  type UsageStore,
 } from '@consuelo/agent';
 import type { AgentTool } from '@mariozechner/pi-agent-core';
 
@@ -49,6 +51,7 @@ export class PiAgentService {
       kbService?: KbService;
       memoryStore?: MemoryStore;
       executionStore?: ExecutionStore;
+      usageStore?: UsageStore;
     },
   ): Promise<AgentSessionData> {
     try {
@@ -80,6 +83,12 @@ export class PiAgentService {
         );
       }
 
+      if (options?.usageStore) {
+        afterTurnExtensions.push(
+          createUsageTracking(options.usageStore),
+        );
+      }
+
       const systemPrompt = BASE_SYSTEM_PROMPT;
 
       const tools: AgentTool[] = [
@@ -103,6 +112,7 @@ export class PiAgentService {
           hasPipelineIntelligence: !!options?.crmClient,
           hasPreferenceInference: !!options?.memoryStore,
           hasTurnGrading: !!options?.executionStore,
+          hasUsageTracking: !!options?.usageStore,
           extensionCount: extensions.length,
           afterTurnExtensionCount: afterTurnExtensions.length,
         },

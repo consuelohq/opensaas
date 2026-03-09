@@ -171,6 +171,8 @@ export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './pi-e
 export { createPreferenceInference } from './pi-extensions/index.js';
 export { createTurnGrading } from './pi-extensions/index.js';
 export type { TurnEvaluation } from './pi-extensions/index.js';
+export { createUsageTracking } from './pi-extensions/index.js';
+export type { UsageStore, UsageRecord } from './pi-extensions/index.js';
 
 // schemas (moved from @consuelo/coaching — DEV-1262)
 export type {
