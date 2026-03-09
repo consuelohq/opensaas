@@ -82,7 +82,7 @@ export class AgentService {
     // run before-turn extensions (context injection, pipeline intelligence)
     let transformedMessages = options.messages;
     for (const ext of this.beforeTurnExtensions) {
-      // HACK: before-turn extensions use pi-agent-core's AgentMessage type
+      // HACK(DEV-1315): before-turn extensions use pi-agent-core's AgentMessage type
       // which differs from ai SDK's CoreMessage — safe at runtime, both are message arrays
       transformedMessages = await ext.transformContext(
         transformedMessages as Parameters<typeof ext.transformContext>[0],

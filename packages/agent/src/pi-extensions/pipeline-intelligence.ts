@@ -43,6 +43,7 @@ const toDealInput = (deal: {
   stage: deal.stage,
   value: deal.amount ?? 0,
   closeDate: null,
+  // TODO(DEV-1300): replace with real CRM timestamps when available
   createdAt: new Date(),
   updatedAt: new Date(),
   daysInCurrentStage: 0,
@@ -56,6 +57,8 @@ const toDealInput = (deal: {
 // render pipeline context as human-readable text
 const renderPipelineBlock = (ctx: ReturnType<typeof buildPipelineContext>): string => {
   const parts: string[] = [];
+
+  parts.push('⚠️ Pipeline scores use estimated timestamps — treat as directional, not precise.');
 
   const { health } = ctx;
 
