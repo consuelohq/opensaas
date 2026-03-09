@@ -2,22 +2,40 @@
 // DEV-1263: migrated to pi's stream format — direct SSE, no Vercel AI SDK
 
 import * as Sentry from '@sentry/node';
-import { logger } from '@consuelo/logger';
+import { Logger } from '@consuelo/logger';
 import type { ChatRequest, AgentConfig } from './types.js';
 import type { ContextLoader } from './context/index.js';
 import type { TracingService } from './tracing/index.js';
 import type { PiStreamEvent, BeforeTurnExtension } from './agent.js';
 import type { AfterTurnExtension } from './pi-extensions/after-turn.types.js';
-import type { SessionManager, AgentSessionData } from './pi-extensions/database-session-manager.js';
+import type {
+  SessionManager,
+  AgentSessionData,
+} from './pi-extensions/database-session-manager.js';
+
+const logger = new Logger('agent:chat');
 
 // pi session — injected by the NestJS service layer
 import type { PiSession } from './agent.js';
 
 // SSE event types sent to the frontend
 export type SseTextEvent = { type: 'text'; content: string };
-export type SseToolCallEvent = { type: 'tool_call'; id: string; name: string; args?: Record<string, unknown> };
-export type SseToolResultEvent = { type: 'tool_result'; id: string; result: unknown };
-export type SseUsageEvent = { type: 'usage'; inputTokens: number; outputTokens: number };
+export type SseToolCallEvent = {
+  type: 'tool_call';
+  id: string;
+  name: string;
+  args?: Record<string, unknown>;
+};
+export type SseToolResultEvent = {
+  type: 'tool_result';
+  id: string;
+  result: unknown;
+};
+export type SseUsageEvent = {
+  type: 'usage';
+  inputTokens: number;
+  outputTokens: number;
+};
 export type SseSessionEvent = { type: 'session'; sessionId: string };
 export type SseDoneEvent = { type: 'done' };
 export type SseErrorEvent = { type: 'error'; message: string };
@@ -57,11 +75,24 @@ const mapEvent = (event: PiStreamEvent): SseEvent | null => {
     case 'text_delta':
       return { type: 'text', content: event.text };
     case 'tool_call_start':
-      return { type: 'tool_call', id: event.toolCallId, name: event.toolName, args: event.args };
+      return {
+        type: 'tool_call',
+        id: event.toolCallId,
+        name: event.toolName,
+        args: event.args,
+      };
     case 'tool_call_result':
-      return { type: 'tool_result', id: event.toolCallId, result: event.result };
+      return {
+        type: 'tool_result',
+        id: event.toolCallId,
+        result: event.result,
+      };
     case 'usage':
-      return { type: 'usage', inputTokens: event.inputTokens, outputTokens: event.outputTokens };
+      return {
+        type: 'usage',
+        inputTokens: event.inputTokens,
+        outputTokens: event.outputTokens,
+      };
     case 'done':
       return { type: 'done' };
     default:
@@ -139,8 +170,16 @@ export const handleChat = async (
         if (options.tracing) await options.tracing.flush();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'streaming failed';
-        logger.error({ err, userId, workspaceId, sessionId }, `chat stream error: ${message}`);
-        Sentry.captureException(err, { tags: { component: 'chat-handler' }, user: { id: userId } });
+        logger.error(`chat stream error: ${message}`, {
+          err,
+          userId,
+          workspaceId,
+          sessionId,
+        });
+        Sentry.captureException(err, {
+          tags: { component: 'chat-handler' },
+          user: { id: userId },
+        });
         controller.enqueue(sseEncode({ type: 'error', message }));
         controller.enqueue(sseEncode({ type: 'done' }));
       } finally {

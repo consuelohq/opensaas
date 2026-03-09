@@ -2,10 +2,15 @@
 // runs after each agent turn — detects preferences and persists to memory store
 // reuses existing inference logic from preference-inference.service.ts
 
-import { logger } from '@consuelo/logger';
+import { Logger } from '@consuelo/logger';
 import type { MemoryStore } from '../context/memory.store.js';
-import { inferPreferences, persistSignals } from '../context/preference-inference.service.js';
+import {
+  inferPreferences,
+  persistSignals,
+} from '../context/preference-inference.service.js';
 import type { AfterTurnExtension, AfterTurnEvent } from './after-turn.types.js';
+
+const logger = new Logger('agent:preference-inference');
 
 export const createPreferenceInference = (
   memoryStore: MemoryStore,
@@ -27,10 +32,19 @@ export const createPreferenceInference = (
 
       if (signals.length === 0) return;
 
-      await persistSignals(signals, userId, workspaceId, memoryStore.upsert.bind(memoryStore));
+      await persistSignals(
+        signals,
+        userId,
+        workspaceId,
+        memoryStore.upsert.bind(memoryStore),
+      );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
-      logger.error({ err, userId, workspaceId }, `preference inference failed: ${message}`);
+      logger.error(`preference inference failed: ${message}`, {
+        err,
+        userId,
+        workspaceId,
+      });
     }
   },
 });

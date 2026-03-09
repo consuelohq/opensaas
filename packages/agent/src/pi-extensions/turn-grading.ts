@@ -2,9 +2,11 @@
 // evaluates each agent turn with a heuristic score 0-100
 // inspired by Twenty's agent-turn-grader.service.ts fallback evaluation
 
-import { logger } from '@consuelo/logger';
+import { Logger } from '@consuelo/logger';
 import type { CreateExecutionInput, ExecutionStore } from '../types.js';
 import type { AfterTurnExtension, AfterTurnEvent } from './after-turn.types.js';
+
+const logger = new Logger('agent:turn-grading');
 
 export type TurnEvaluation = {
   score: number;
@@ -61,7 +63,10 @@ export const createTurnGrading = (
       await executionStore.create(input);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
-      logger.error({ err, conversationId: event.metadata.conversationId }, `turn grading failed: ${message}`);
+      logger.error(`turn grading failed: ${message}`, {
+        err,
+        conversationId: event.metadata.conversationId,
+      });
     }
   },
 });
