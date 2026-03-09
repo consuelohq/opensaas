@@ -18,8 +18,8 @@ export type AgentSessionData = {
 
 // minimal db interface — accepts TypeORM DataSource or any pg client with query()
 export type DatabaseConnection = {
-  query: (sql: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[] } | Record<string, unknown>[]>;
-};
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }>;
+}
 
 export type SessionManager = {
   save(session: AgentSessionData): Promise<void>;
