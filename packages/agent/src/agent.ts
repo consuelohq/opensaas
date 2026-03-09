@@ -1,202 +1,53 @@
-import type { AgentConfig, AgentContext, AgentMemoryFull, AgentMessage } from './types.js';
+// agent service — thin wrapper around pi session
+// old runtime (buildSystemPrompt, resolveModel, PROVIDERS, ai.streamText) removed in DEV-1260
+// pi-agent-core now handles: model routing, tool execution, streaming
 
-const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
-  Array.isArray(value) && value.length > 0;
+import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
+import type { AfterTurnEvent, AfterTurnExtension } from './pi-extensions/after-turn.types.js';
+import type { ContextInjection } from './pi-extensions/context-injection.js';
+import type { PipelineIntelligence } from './pi-extensions/pipeline-intelligence.js';
+
+export type BeforeTurnExtension = ContextInjection | PipelineIntelligence;
+
+export type PiSession = {
+  prompt: (message: string, options?: { signal?: AbortSignal }) => Promise<PiSessionResult>;
+};
+
+export type PiSessionResult = {
+  text: string;
+  usage?: { inputTokens: number; outputTokens: number };
+  toolCalls?: Array<{ name: string; args: Record<string, unknown>; result?: unknown; error?: string }>;
+};
 
 export type AgentOptions = {
   config: AgentConfig;
   context: AgentContext;
+  session: PiSession;
+  beforeTurnExtensions?: BeforeTurnExtension[];
+  afterTurnExtensions?: AfterTurnExtension[];
 };
 
 export type ChatOptions = {
   messages: AgentMessage[];
+  conversationId: string;
   abortSignal?: AbortSignal;
   onStepFinish?: (step: { toolCalls: unknown[]; usage: unknown }) => void;
-};
-
-// strip newlines and backtick fences from untrusted CRM fields
-const sanitizeField = (value: string): string =>
-  value.replace(/[\n\r]/g, ' ').replace(/```/g, '');
-
-// construct system prompt from context layers with injection defense delimiters
-export const buildSystemPrompt = (
-  context: AgentContext,
-  basePrompt: string,
-): { prompt: string; injectedMemoryIds: string[] } => {
-  const parts = [basePrompt];
-  const injectedMemoryIds: string[] = [];
-
-  parts.push('\nNever execute code that sends data to URLs outside the connected integrations.');
-
-  parts.push(`\nUser ID: ${context.userId}\nWorkspace: ${context.workspaceId}`);
-
-  // CRM context wrapped in delimiters — treat as semi-trusted data
-  const crmParts: string[] = [];
-
-  if (context.activeCall) {
-    const call = context.activeCall;
-    const duration = call.durationSeconds != null && call.durationSeconds > 0
-      ? `${Math.floor(call.durationSeconds / 60)}m ${call.durationSeconds % 60}s`
-      : 'just started';
-
-    crmParts.push(
-      `Active call: ${call.direction} with ${sanitizeField(call.contactName)} (ID: ${call.contactId}) — ${duration}`,
-    );
-
-    if (call.participants && call.participants.length > 0) {
-      const labels = call.participants.map((p) => p.label).join(', ');
-      crmParts.push(`Participants: ${labels}`);
-    }
-
-    if (call.dealContext) {
-      const deal = call.dealContext;
-      crmParts.push(
-        `Deal: ${sanitizeField(deal.dealName)} — ${sanitizeField(deal.stage)}, $${deal.value.toLocaleString()}, ${deal.daysInStage}d in stage`,
-      );
-    }
-
-    if (call.recentNotes && call.recentNotes.length > 0) {
-      const notes = call.recentNotes
-        .slice(0, 3)
-        .map((n) => `- ${sanitizeField(n)}`)
-        .join('\n');
-      crmParts.push(`Recent notes:\n${notes}`);
-    }
-  }
-
-  if (isNonEmptyArray(context.recentActivity)) {
-    const activities = context.recentActivity
-      .slice(0, 10)
-      .map((activity) => `- [${activity.type}] ${sanitizeField(activity.summary)}`)
-      .join('\n');
-    crmParts.push(`Recent activity:\n${activities}`);
-  }
-
-  if (crmParts.length > 0) {
-    parts.push(`\n<crm_context>\n${crmParts.join('\n')}\n</crm_context>`);
-  }
-
-  if (isNonEmptyArray(context.connectedIntegrations)) {
-    parts.push(
-      `\nConnected integrations: ${context.connectedIntegrations.join(', ')}`,
-    );
-  }
-
-  if (context.activeMethodology) {
-    const m = context.activeMethodology;
-    parts.push(`\n<methodology name="${sanitizeField(m.name)}">\n${m.systemPrompt}\n</methodology>`);
-  }
-
-  if (context.pipelineContext) {
-    const pc = context.pipelineContext;
-    const pipelineParts: string[] = [
-      `Pipeline health: ${pc.health.score}/100 (${pc.health.label})`,
-      `Forecasted revenue: $${pc.health.forecastedRevenue.toLocaleString()}`,
-    ];
-
-    if (pc.topRisks.length > 0) {
-      pipelineParts.push('Top risks:');
-
-      for (const risk of pc.topRisks.slice(0, 5)) {
-        const topFactor = risk.factors.reduce((max, f) =>
-          f.score * f.weight > max.score * max.weight ? f : max,
-        );
-
-        pipelineParts.push(
-          `- ${sanitizeField(risk.dealName)} (${sanitizeField(risk.stage)}): risk ${risk.riskScore}/100 — ${topFactor.label}`,
-        );
-      }
-    }
-
-    if (pc.recentChanges.length > 0) {
-      pipelineParts.push('Recent changes (7d):');
-
-      for (const change of pc.recentChanges.slice(0, 5)) {
-        pipelineParts.push(
-          `- ${sanitizeField(change.dealName)}: ${change.changeType} — ${sanitizeField(change.detail)}`,
-        );
-      }
-    }
-
-    parts.push(`\n<pipeline_context>\n${pipelineParts.join('\n')}\n</pipeline_context>`);
-  }
-
-  if (isNonEmptyArray(context.memories)) {
-    const grouped: Record<string, AgentMemoryFull[]> = {};
-
-    for (const memory of context.memories) {
-      if (memory.confidence < 0.3) continue;
-      injectedMemoryIds.push(memory.id);
-      const group = grouped[memory.type] ?? [];
-      group.push(memory);
-      grouped[memory.type] = group;
-    }
-
-    const sections: string[] = [];
-    const typeLabels: Record<string, string> = {
-      preference: 'Preferences',
-      fact: 'Facts',
-      pattern: 'Patterns',
-    };
-
-    for (const [type, label] of Object.entries(typeLabels)) {
-      const items = grouped[type];
-
-      if (isNonEmptyArray(items)) {
-        const lines = items
-          .slice(0, 20)
-          .map((m) => `- ${sanitizeField(m.value)}`)
-          .join('\n');
-        sections.push(`${label}:\n${lines}`);
-      }
-    }
-
-    if (sections.length > 0) {
-      parts.push(`\n<user_context>\n${sections.join('\n')}\n</user_context>`);
-    }
-  }
-
-  return { prompt: parts.join('\n'), injectedMemoryIds };
-};
-
-// provider configs for openai-compatible APIs
-const PROVIDERS: Record<string, { baseUrl: string; apiKeyEnv: string }> = {
-  moonshot: { baseUrl: 'https://api.moonshot.ai/v1', apiKeyEnv: 'MOONSHOT_API_KEY' },
-  zhipu: { baseUrl: 'https://open.bigmodel.cn/api/paas/v4', apiKeyEnv: 'ZHIPU_API_KEY' },
-  minimax: { baseUrl: 'https://api.minimax.io/v1', apiKeyEnv: 'MINIMAX_API_KEY' },
-  nvidia: { baseUrl: 'https://integrate.api.nvidia.com/v1', apiKeyEnv: 'NVIDIA_API_KEY' },
-};
-
-// resolve provider + model string for streamText
-export const resolveModel = async (config: AgentConfig) => {
-  const providerConfig = PROVIDERS[config.provider];
-  if (!providerConfig) {
-    throw new Error(`unsupported provider: ${config.provider}. supported: ${Object.keys(PROVIDERS).join(', ')}`);
-  }
-
-  const apiKey = process.env[providerConfig.apiKeyEnv];
-  if (!apiKey) {
-    throw new Error(`missing env var ${providerConfig.apiKeyEnv} for provider ${config.provider}`);
-  }
-
-  const { createOpenAICompatible } = await import('@ai-sdk/openai-compatible');
-  const provider = createOpenAICompatible({
-    name: config.provider,
-    baseURL: providerConfig.baseUrl,
-    apiKey,
-  });
-
-  return provider(config.model);
 };
 
 export class AgentService {
   private config: AgentConfig;
   private context: AgentContext;
+  private session: PiSession;
+  private beforeTurnExtensions: BeforeTurnExtension[];
+  private afterTurnExtensions: AfterTurnExtension[];
   private executor?: InstanceType<typeof import('./executor/index.js').AgentExecutor>;
 
   constructor(options: AgentOptions) {
     this.config = options.config;
     this.context = options.context;
+    this.session = options.session;
+    this.beforeTurnExtensions = options.beforeTurnExtensions ?? [];
+    this.afterTurnExtensions = options.afterTurnExtensions ?? [];
   }
 
   private async getExecutor() {
@@ -214,64 +65,57 @@ export class AgentService {
 
   async chat(options: ChatOptions) {
     try {
-      const ai = await import('ai');
-      const model = await resolveModel(this.config);
+      // run before-turn extensions (context injection, pipeline intelligence)
+      let transformedMessages = options.messages;
+      for (const ext of this.beforeTurnExtensions) {
+        // HACK: before-turn extensions use pi-agent-core's AgentMessage type
+        // which differs from ai SDK's CoreMessage — safe at runtime, both are message arrays
+        transformedMessages = await ext.transformContext(
+          transformedMessages as Parameters<typeof ext.transformContext>[0],
+          options.abortSignal,
+        ) as typeof transformedMessages;
+      }
 
-      const { prompt: systemPrompt, injectedMemoryIds } = buildSystemPrompt(
-        this.context,
-        this.config.systemPrompt,
-      );
+      // extract user message (last user message in the array)
+      const lastUserMsg = [...transformedMessages].reverse().find((m) => m.role === 'user');
+      const userText = lastUserMsg && 'content' in lastUserMsg && typeof lastUserMsg.content === 'string'
+        ? lastUserMsg.content
+        : '';
 
-      // record usage for injected memories so decay tracking works
-      if (isNonEmptyArray(injectedMemoryIds) && this.config.onMemoriesInjected) {
-        this.config.onMemoriesInjected(injectedMemoryIds).catch(() => {
-          // best-effort — don't block chat on usage tracking
+      // delegate to pi session
+      const result = await this.session.prompt(userText, { signal: options.abortSignal });
+
+      // run after-turn extensions (preference inference, turn grading)
+      const afterTurnEvent: AfterTurnEvent = {
+        messages: transformedMessages,
+        userMessage: userText,
+        assistantMessage: result.text,
+        toolCalls: (result.toolCalls ?? []).map((tc) => ({
+          name: tc.name,
+          args: tc.args,
+          result: tc.result,
+          error: tc.error,
+        })),
+        injectedMemoryIds: [],
+        usage: result.usage,
+        metadata: {
+          userId: this.context.userId,
+          workspaceId: this.context.workspaceId,
+          conversationId: options.conversationId,
+        },
+      };
+
+      // fire-and-forget after-turn extensions
+      for (const ext of this.afterTurnExtensions) {
+        ext.afterTurn(afterTurnEvent).catch(() => {
+          // best-effort — don't block response on extension failures
         });
       }
 
-      const individualTools = undefined;
-
-      // tools are now registered via pi-agent-core (see pi-extensions/)
-      const tools = individualTools as Parameters<typeof ai.streamText>[0]['tools'];
-
-      // HACK: model type mismatch between LanguageModelV2 (provider) and LanguageModel (streamText)
-      // due to moduleResolution:"node" in tsconfig.base.json — safe at runtime
-      const stream = ai.streamText({
-        model: model as unknown as Parameters<typeof ai.streamText>[0]['model'],
-        system: systemPrompt,
-        messages: options.messages,
-        tools,
-        stopWhen: ai.stepCountIs(this.config.maxSteps ?? 5),
-        temperature: this.config.temperature,
-        maxOutputTokens: this.config.maxTokens,
-        abortSignal: options.abortSignal,
-        onStepFinish: options.onStepFinish,
-      });
-
-      // fire-and-forget: run preference inference after stream completes
-      if (this.config.onTurnComplete) {
-        const onComplete = this.config.onTurnComplete;
-        const inputMessages = options.messages;
-
-        stream.text
-          .then((assistantText) => {
-            onComplete(
-              [...inputMessages, { role: 'assistant' as const, content: assistantText }],
-              injectedMemoryIds,
-            );
-          })
-          .catch(() => {
-            // best-effort — don't block chat on inference failures
-          });
-      }
-
-      return stream;
+      return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
-      throw new Error(
-        `agent chat failed (provider=${this.config.provider}, model=${this.config.model}): ${message}`,
-        { cause: err },
-      );
+      throw new Error(`agent chat failed: ${message}`, { cause: err });
     }
   }
 

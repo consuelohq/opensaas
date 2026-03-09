@@ -11,13 +11,18 @@ import {
   createPipelineIntelligence,
   createDialerTools,
   createKbTools,
+  createPreferenceInference,
+  createTurnGrading,
   CrmClient,
   type AgentSessionData,
   type ContextInjection,
   type PipelineIntelligence,
+  type AfterTurnExtension,
   type DialerService,
   type KbService,
   type ContextLoader,
+  type MemoryStore,
+  type ExecutionStore,
 } from '@consuelo/agent';
 import type { AgentTool } from '@mariozechner/pi-agent-core';
 
@@ -42,10 +47,12 @@ export class PiAgentService {
       contextLoader?: ContextLoader;
       dialerService?: DialerService;
       kbService?: KbService;
+      memoryStore?: MemoryStore;
+      executionStore?: ExecutionStore;
     },
   ): Promise<AgentSessionData> {
     try {
-      // build extensions
+      // build before-turn extensions
       const extensions: Array<ContextInjection | PipelineIntelligence> = [];
 
       if (options?.contextLoader) {
@@ -56,6 +63,21 @@ export class PiAgentService {
 
       if (options?.crmClient) {
         extensions.push(createPipelineIntelligence(options.crmClient));
+      }
+
+      // build after-turn extensions
+      const afterTurnExtensions: AfterTurnExtension[] = [];
+
+      if (options?.memoryStore) {
+        afterTurnExtensions.push(
+          createPreferenceInference(options.memoryStore),
+        );
+      }
+
+      if (options?.executionStore) {
+        afterTurnExtensions.push(
+          createTurnGrading(options.executionStore),
+        );
       }
 
       const systemPrompt = BASE_SYSTEM_PROMPT;
@@ -79,7 +101,10 @@ export class PiAgentService {
           toolNames: tools.map((t) => t.name),
           hasContextInjection: !!options?.contextLoader,
           hasPipelineIntelligence: !!options?.crmClient,
+          hasPreferenceInference: !!options?.memoryStore,
+          hasTurnGrading: !!options?.executionStore,
           extensionCount: extensions.length,
+          afterTurnExtensionCount: afterTurnExtensions.length,
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

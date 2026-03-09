@@ -1,6 +1,6 @@
 // core
-export { AgentService, buildSystemPrompt, resolveModel } from './agent.js';
-export type { AgentOptions, ChatOptions } from './agent.js';
+export { AgentService } from './agent.js';
+export type { AgentOptions, ChatOptions, PiSession, PiSessionResult, BeforeTurnExtension } from './agent.js';
 
 // chat
 export { handleChat } from './chat.js';
@@ -135,6 +135,11 @@ export { createDialerTools } from './pi-extensions/index.js';
 export type { DialerService } from './pi-extensions/index.js';
 export { createKbTools } from './pi-extensions/index.js';
 export type { KbService } from './pi-extensions/index.js';
+// after-turn extensions
+export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './pi-extensions/index.js';
+export { createPreferenceInference } from './pi-extensions/index.js';
+export { createTurnGrading } from './pi-extensions/index.js';
+export type { TurnEvaluation } from './pi-extensions/index.js';
 // types
 export type {
   AgentMessage,
