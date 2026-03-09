@@ -1,4 +1,5 @@
 import type { Contact, Queue, StorageProvider } from '../types.js';
+import * as Sentry from '@sentry/node';
 
 type Pool = {
   query(
@@ -20,22 +21,21 @@ export class PostgresStorageProvider implements StorageProvider {
     try {
       const now = new Date().toISOString();
       const result = await this.pool.query(
-        'INSERT INTO contacts (name, phone, email, company, tags, custom_fields, user_id, org_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+        'INSERT INTO contacts (workspace_id, name, phone, email, company, tags, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
         [
+          data.workspaceId ?? '',
           data.name,
           data.phone,
           data.email ?? null,
           data.company ?? null,
-          data.tags ? JSON.stringify(data.tags) : null,
-          data.customFields ? JSON.stringify(data.customFields) : null,
-          data.userId ?? null,
-          data.orgId ?? null,
+          data.tags ?? [],
           now,
           now,
         ],
       );
       return this.rowToContact(result.rows[0]);
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] createContact failed: ${message}`,
@@ -51,6 +51,7 @@ export class PostgresStorageProvider implements StorageProvider {
       );
       return result.rows.length > 0 ? this.rowToContact(result.rows[0]) : null;
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] getContact failed: ${message}`,
@@ -67,23 +68,37 @@ export class PostgresStorageProvider implements StorageProvider {
       if (!existing) return null;
 
       const now = new Date().toISOString();
-      const result = await this.pool.query(
-        'UPDATE contacts SET name = COALESCE($1, name), phone = COALESCE($2, phone), email = COALESCE($3, email), company = COALESCE($4, company), tags = COALESCE($5, tags), custom_fields = COALESCE($6, custom_fields), user_id = COALESCE($7, user_id), org_id = COALESCE($8, org_id), updated_at = $9 WHERE id = $10 RETURNING *',
-        [
-          data.name ?? null,
-          data.phone ?? null,
-          data.email ?? null,
-          data.company ?? null,
-          data.tags ? JSON.stringify(data.tags) : null,
-          data.customFields ? JSON.stringify(data.customFields) : null,
-          data.userId ?? null,
-          data.orgId ?? null,
-          now,
-          id,
-        ],
-      );
+      const updates: string[] = ['updated_at = $1'];
+      const values: unknown[] = [now];
+      let paramIndex = 2;
+
+      if (data.name !== undefined) {
+        updates.push(`name = $${paramIndex++}`);
+        values.push(data.name);
+      }
+      if (data.phone !== undefined) {
+        updates.push(`phone = $${paramIndex++}`);
+        values.push(data.phone);
+      }
+      if (data.email !== undefined) {
+        updates.push(`email = $${paramIndex++}`);
+        values.push(data.email);
+      }
+      if (data.company !== undefined) {
+        updates.push(`company = $${paramIndex++}`);
+        values.push(data.company);
+      }
+      if (data.tags !== undefined) {
+        updates.push(`tags = $${paramIndex++}`);
+        values.push(data.tags);
+      }
+
+      values.push(id);
+      const sql = `UPDATE contacts SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+      const result = await this.pool.query(sql, values);
       return result.rows.length > 0 ? this.rowToContact(result.rows[0]) : null;
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] updateContact failed: ${message}`,
@@ -99,6 +114,7 @@ export class PostgresStorageProvider implements StorageProvider {
       );
       return (result.rowCount ?? 0) > 0;
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] deleteContact failed: ${message}`,
@@ -106,17 +122,17 @@ export class PostgresStorageProvider implements StorageProvider {
     }
   }
 
-  async searchContacts(query: string, userId?: string): Promise<Contact[]> {
+  async searchContacts(query: string, workspaceId?: string): Promise<Contact[]> {
     try {
       const searchPattern = `%${query}%`;
       let sql: string;
       let params: unknown[];
 
-      if (userId) {
+      if (workspaceId) {
         sql = `SELECT * FROM contacts
-               WHERE user_id = $1
+               WHERE workspace_id = $1
                AND (name ILIKE $2 OR phone ILIKE $2 OR email ILIKE $2)`;
-        params = [userId, searchPattern];
+        params = [workspaceId, searchPattern];
       } else {
         sql = `SELECT * FROM contacts
                WHERE name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1`;
@@ -126,6 +142,7 @@ export class PostgresStorageProvider implements StorageProvider {
       const result = await this.pool.query(sql, params);
       return result.rows.map((row) => this.rowToContact(row));
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] searchContacts failed: ${message}`,
@@ -133,14 +150,15 @@ export class PostgresStorageProvider implements StorageProvider {
     }
   }
 
-  async listContacts(userId: string): Promise<Contact[]> {
+  async listContacts(workspaceId: string): Promise<Contact[]> {
     try {
       const result = await this.pool.query(
-        'SELECT * FROM contacts WHERE user_id = $1 ORDER BY created_at DESC',
-        [userId],
+        'SELECT * FROM contacts WHERE workspace_id = $1 ORDER BY created_at DESC',
+        [workspaceId],
       );
       return result.rows.map((row) => this.rowToContact(row));
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] listContacts failed: ${message}`,
@@ -165,6 +183,7 @@ export class PostgresStorageProvider implements StorageProvider {
       );
       return this.rowToQueue(result.rows[0]);
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] createQueue failed: ${message}`,
@@ -180,6 +199,7 @@ export class PostgresStorageProvider implements StorageProvider {
       );
       return result.rows.length > 0 ? this.rowToQueue(result.rows[0]) : null;
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(`[PostgresStorageProvider] getQueue failed: ${message}`);
     }
@@ -190,20 +210,42 @@ export class PostgresStorageProvider implements StorageProvider {
       const existing = await this.getQueue(id);
       if (!existing) return null;
 
-      const result = await this.pool.query(
-        'UPDATE queues SET name = COALESCE($1, name), contact_ids = COALESCE($2, contact_ids), ordering = COALESCE($3, ordering), current_index = COALESCE($4, current_index), status = COALESCE($5, status), results = COALESCE($6, results) WHERE id = $7 RETURNING *',
-        [
-          data.name ?? null,
-          data.contactIds ? JSON.stringify(data.contactIds) : null,
-          data.ordering ?? null,
-          data.currentIndex ?? null,
-          data.status ?? null,
-          data.results ? JSON.stringify(data.results) : null,
-          id,
-        ],
-      );
+      const now = new Date().toISOString();
+      const updates: string[] = ['updated_at = $1'];
+      const values: unknown[] = [now];
+      let paramIndex = 2;
+
+      if (data.name !== undefined) {
+        updates.push(`name = $${paramIndex++}`);
+        values.push(data.name);
+      }
+      if (data.contactIds !== undefined) {
+        updates.push(`contact_ids = $${paramIndex++}`);
+        values.push(JSON.stringify(data.contactIds));
+      }
+      if (data.ordering !== undefined) {
+        updates.push(`ordering = $${paramIndex++}`);
+        values.push(data.ordering);
+      }
+      if (data.currentIndex !== undefined) {
+        updates.push(`current_index = $${paramIndex++}`);
+        values.push(data.currentIndex);
+      }
+      if (data.status !== undefined) {
+        updates.push(`status = $${paramIndex++}`);
+        values.push(data.status);
+      }
+      if (data.results !== undefined) {
+        updates.push(`results = $${paramIndex++}`);
+        values.push(JSON.stringify(data.results));
+      }
+
+      values.push(id);
+      const sql = `UPDATE queues SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
+      const result = await this.pool.query(sql, values);
       return result.rows.length > 0 ? this.rowToQueue(result.rows[0]) : null;
     } catch (err: unknown) {
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : 'unknown error';
       throw new Error(
         `[PostgresStorageProvider] updateQueue failed: ${message}`,
@@ -214,20 +256,12 @@ export class PostgresStorageProvider implements StorageProvider {
   private rowToContact(row: Record<string, unknown>): Contact {
     return {
       id: String(row.id),
+      workspaceId: row.workspace_id != null ? String(row.workspace_id) : undefined,
       name: String(row.name ?? ''),
       phone: String(row.phone ?? ''),
       email: row.email != null ? String(row.email) : undefined,
       company: row.company != null ? String(row.company) : undefined,
-      tags:
-        row.tags != null
-          ? (JSON.parse(String(row.tags)) as string[])
-          : undefined,
-      customFields:
-        row.custom_fields != null
-          ? (JSON.parse(String(row.custom_fields)) as Record<string, string>)
-          : undefined,
-      userId: row.user_id != null ? String(row.user_id) : undefined,
-      orgId: row.org_id != null ? String(row.org_id) : undefined,
+      tags: Array.isArray(row.tags) ? (row.tags as string[]) : undefined,
       createdAt: String(row.created_at),
       updatedAt: String(row.updated_at),
     };

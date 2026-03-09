@@ -1703,6 +1703,41 @@ export const voiceRoutes = (): RouteDefinition[] => [
         // logger unavailable, continue
       }
 
+      // Update transfer lifecycle if this is a transfer callback
+      if (transferId) {
+        try {
+          const transfer = await redisService.getTransfer(transferId);
+          if (transfer) {
+            const updatedTransfer = { ...transfer };
+            
+            // Update based on dial call status
+            if (dialCallStatus === 'completed' || dialCallStatus === 'answered') {
+              updatedTransfer.connectedAt = new Date().toISOString();
+              if (transfer.transferType === 'cold') {
+                updatedTransfer.status = 'completed';
+                updatedTransfer.completedAt = new Date().toISOString();
+              }
+            } else if (dialCallStatus === 'busy' || dialCallStatus === 'no-answer' || dialCallStatus === 'failed') {
+              updatedTransfer.status = 'failed';
+              updatedTransfer.completedAt = new Date().toISOString();
+            }
+            
+            await redisService.setTransfer(transferId, updatedTransfer);
+          }
+        } catch (err: unknown) {
+          // Log but don't fail the webhook
+          try {
+            const { createLogger } = await import('@consuelo/logger');
+            createLogger('voice:dial-status').error('Failed to update transfer record', {
+              transferId,
+              error: err instanceof Error ? err.message : 'unknown error',
+            });
+          } catch {
+            // Logger unavailable, continue
+          }
+        }
+      }
+
       // Return empty TwiML for dial status callbacks
       res
         .status(200)

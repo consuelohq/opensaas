@@ -1,4 +1,7 @@
 import type { StorageProvider } from './types.js';
+import { createLogger } from '@consuelo/logger';
+
+const logger = createLogger('contacts:queue-stats');
 
 export type QueueStats = {
   queueId: string;
@@ -51,7 +54,7 @@ export class QueueStatsService {
       totalCalls,
       answeredCalls,
       unansweredCalls,
-      avgDurationSeconds: totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
+      avgDurationSeconds: answeredCalls > 0 ? Math.round(totalDuration / answeredCalls) : 0,
       answerRatePercentage:
         totalCalls > 0 ? Math.round((answeredCalls / totalCalls) * 100) : 0,
     };
@@ -62,7 +65,10 @@ export class QueueStatsService {
     data: { answered: boolean; duration?: number; agentId?: string },
   ): Promise<void> {
     const queue = await this.store.getQueue(queueId);
-    if (!queue) return;
+    if (!queue) {
+      logger.warn('recordCall called for non-existent queue', { queueId });
+      return;
+    }
 
     const record: CallRecord = {
       answered: data.answered,
@@ -116,7 +122,7 @@ export class QueueStatsService {
       overallAnswerRate:
         totalCalls > 0 ? Math.round((answeredCalls / totalCalls) * 100) : 0,
       overallAvgDuration:
-        totalCalls > 0 ? Math.round(totalDuration / totalCalls) : 0,
+        answeredCalls > 0 ? Math.round(totalDuration / answeredCalls) : 0,
       activeAgents: agentSet.size,
       callsPerHour,
     };
