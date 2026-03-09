@@ -17,6 +17,10 @@ export type { DialerService } from './dialer-tools.js';
 export { createKbTools } from './kb-tools.js';
 export type { KbService } from './kb-tools.js';
 
+// coaching
+export { createCoachingDetector } from './coaching-extension.js';
+export type { CoachingDetector } from './coaching-extension.js';
+
 // after-turn extensions
 export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './after-turn.types.js';
 export { createPreferenceInference } from './preference-inference.js';
