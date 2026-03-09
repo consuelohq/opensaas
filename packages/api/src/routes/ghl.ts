@@ -62,7 +62,7 @@ const loadConfig = (): GHLOAuthConfig => ({
   redirectUri: process.env.GHL_REDIRECT_URI ?? '',
   scopes: (
     process.env.GHL_SCOPES ??
-    'contacts.readonly contacts.write opportunities.readonly'
+    'contacts.readonly contacts.write conversations.readonly conversations.write conversations/messages.readonly conversations/messages.write locations.readonly'
   ).split(' '),
 });
 
