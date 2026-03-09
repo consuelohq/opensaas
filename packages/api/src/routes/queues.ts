@@ -2,9 +2,16 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import { getSharedPool } from '../shared/db.js';
-let _logger: unknown;
+type Logger = {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+  warn: (message: string, meta?: Record<string, unknown>) => void;
+  debug: (message: string, meta?: Record<string, unknown>) => void;
+};
 
-const getLogger = async () => {
+let _logger: Logger | null = null;
+
+const getLogger = async (): Promise<Logger> => {
   try {
     if (!_logger) {
       // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -137,7 +144,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         const placeholders: string[] = [];
         for (let i = 0; i < body.contactIds.length; i++) {
           const offset = i * 3;
-          placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3})`);
+          placeholders.push(`(${offset + 1}, ${offset + 2}, ${offset + 3})`);
           values.push(queueId, body.contactIds[i], i + 1);
         }
         await db.query(SQL_INSERT_ITEMS + placeholders.join(', '), values);
