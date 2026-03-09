@@ -1,6 +1,7 @@
 // core
 export { AgentService } from './agent.js';
-export type { AgentOptions, ChatOptions, PiSession, PiSessionResult, BeforeTurnExtension } from './agent.js';
+export type { AgentOptions, ChatOptions, PiSession, PiSessionResult, BeforeTurnExtension, ModelCyclingConfig } from './agent.js';
+export { DEFAULT_MODEL_CYCLING } from './agent.js';
 
 // chat
 export { handleChat } from './chat.js';
@@ -138,11 +139,26 @@ export type { KbService } from './pi-extensions/index.js';
 // coaching
 export { createCoachingDetector } from './pi-extensions/index.js';
 export type { CoachingDetector } from './pi-extensions/index.js';
+// coaching lifecycle (post-call analysis)
+export { createCoachingLifecycle } from './pi-extensions/index.js';
+export type { CoachingLifecycle, RecentlyEndedCall } from './pi-extensions/index.js';
 // after-turn extensions
 export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './pi-extensions/index.js';
 export { createPreferenceInference } from './pi-extensions/index.js';
 export { createTurnGrading } from './pi-extensions/index.js';
 export type { TurnEvaluation } from './pi-extensions/index.js';
+
+// schemas (moved from @consuelo/coaching — DEV-1262)
+export type {
+  SalesCoaching,
+  KeyMoment,
+  SentimentAnalysis,
+  PerformanceMetrics,
+  CallAnalytics,
+  PostCallAnalysisResult,
+} from './schemas/coaching.js';
+export { createCoachingSchemas } from './schemas/coaching.js';
+
 // types
 export type {
   AgentMessage,

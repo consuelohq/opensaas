@@ -21,6 +21,10 @@ export type { KbService } from './kb-tools.js';
 export { createCoachingDetector } from './coaching-extension.js';
 export type { CoachingDetector } from './coaching-extension.js';
 
+// coaching lifecycle (post-call analysis)
+export { createCoachingLifecycle } from './coaching-lifecycle.js';
+export type { CoachingLifecycle, RecentlyEndedCall } from './coaching-lifecycle.js';
+
 // after-turn extensions
 export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './after-turn.types.js';
 export { createPreferenceInference } from './preference-inference.js';

@@ -5,6 +5,9 @@ import { GroqProvider } from './providers/groq.js';
 import { analyzeConversationDynamics } from './services/dynamics.js';
 
 /**
+ * @deprecated Use `createCoachingDetector` and `createCoachingLifecycle` from `@consuelo/agent` instead.
+ * Coaching is now a pi skill — see DEV-1254.
+ *
  * Main Coach class — the public API for @consuelo/coaching.
  *
  * @example
