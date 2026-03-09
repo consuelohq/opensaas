@@ -102,10 +102,9 @@
     "file://~/.kiro/steering/ko.md",
     "file://~/.kiro/steering/CODEMODE.md",
     "file://AGENTS.md",
-    "file://.kiro/handoff-senior-engineer.md",
     "skill://.kiro/skills/worktree-batch/SKILL.md",
-    "skill://.kiro/skills/opencode/SKILL.md",
-    "skill://~/.kiro/skills/spec-creation/SKILL.md"
+    "skill://.kiro/skills/opencode-hands/SKILL.md",
+    "skill://~/.kiro/skills/opencode-research/SKILL.md"
   ],
   "hooks": {
     "agentSpawn": [

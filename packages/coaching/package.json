@@ -12,18 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "license": "MIT",
-  "peerDependencies": {
-    "openai": ">=4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "openai": {
-      "optional": true
-    }
-  },
+  "peerDependencies": {},
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
     "openai": "^6.22.0"
   }
 }
