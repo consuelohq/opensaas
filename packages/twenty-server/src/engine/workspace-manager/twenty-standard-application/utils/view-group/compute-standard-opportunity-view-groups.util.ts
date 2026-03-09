@@ -8,59 +8,48 @@ export const computeStandardOpportunityViewGroups = (
   args: Omit<CreateStandardViewGroupArgs<'opportunity'>, 'context'>,
 ): Record<string, FlatViewGroup> => {
   return {
-    byStageNew: createStandardViewGroupFlatMetadata({
+    byStageIdle: createStandardViewGroupFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewGroupName: 'new',
+        viewGroupName: 'idle',
         isVisible: true,
-        fieldValue: 'NEW',
+        fieldValue: 'IDLE',
         position: 0,
       },
     }),
-    byStageScreening: createStandardViewGroupFlatMetadata({
+    byStageActive: createStandardViewGroupFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewGroupName: 'screening',
+        viewGroupName: 'active',
         isVisible: true,
-        fieldValue: 'SCREENING',
+        fieldValue: 'ACTIVE',
         position: 1,
       },
     }),
-    byStageMeeting: createStandardViewGroupFlatMetadata({
+    byStagePaused: createStandardViewGroupFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewGroupName: 'meeting',
+        viewGroupName: 'paused',
         isVisible: true,
-        fieldValue: 'MEETING',
+        fieldValue: 'PAUSED',
         position: 2,
       },
     }),
-    byStageProposal: createStandardViewGroupFlatMetadata({
+    byStageCompleted: createStandardViewGroupFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewGroupName: 'proposal',
+        viewGroupName: 'completed',
         isVisible: true,
-        fieldValue: 'PROPOSAL',
+        fieldValue: 'COMPLETED',
         position: 3,
-      },
-    }),
-    byStageCustomer: createStandardViewGroupFlatMetadata({
-      ...args,
-      objectName: 'opportunity',
-      context: {
-        viewName: 'byStage',
-        viewGroupName: 'customer',
-        isVisible: true,
-        fieldValue: 'CUSTOMER',
-        position: 4,
       },
     }),
   };
