@@ -4699,18 +4699,23 @@ __metadata:
     "@ai-sdk/openai-compatible": "npm:^1.0.33"
     "@cloudflare/codemode": "npm:^0.1.0"
     "@consuelo/logger": "workspace:*"
+    "@mariozechner/pi-agent-core": "npm:^0.57.0"
+    "@sinclair/typebox": "npm:^0.34.0"
     ai: "npm:5.0.52"
     e2b: "npm:^1.13.2"
     isolated-vm: "npm:^6.0.0"
     zod: "npm:^4.3.6"
   peerDependencies:
     "@ai-sdk/openai-compatible": ^1.0.0
+    "@mariozechner/pi-agent-core": ^0.57.0
     ai: ^5.0.0
     e2b: ^1.0.0
     langfuse: ^3.0.0
     zod: ^3.25.0 || ^4.0.0
   peerDependenciesMeta:
     "@ai-sdk/openai-compatible":
+      optional: true
+    "@mariozechner/pi-agent-core":
       optional: true
     ai:
       optional: true
@@ -4794,11 +4799,6 @@ __metadata:
   resolution: "@consuelo/coaching@workspace:packages/coaching"
   dependencies:
     openai: "npm:^6.22.0"
-  peerDependencies:
-    openai: ">=4.0.0"
-  peerDependenciesMeta:
-    openai:
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -9808,7 +9808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mariozechner/pi-agent-core@npm:^0.57.1":
+"@mariozechner/pi-agent-core@npm:^0.57.0, @mariozechner/pi-agent-core@npm:^0.57.1":
   version: 0.57.1
   resolution: "@mariozechner/pi-agent-core@npm:0.57.1"
   dependencies:
@@ -23068,11 +23068,11 @@ __metadata:
   linkType: hard
 
 "@tiptap/extension-strike@npm:^3.14.0":
-  version: 3.19.0
-  resolution: "@tiptap/extension-strike@npm:3.19.0"
+  version: 3.20.1
+  resolution: "@tiptap/extension-strike@npm:3.20.1"
   peerDependencies:
-    "@tiptap/core": ^3.19.0
-  checksum: 10c0/a7f85fe51a07c0b209b2b5034d4f82b6c971ccce070dc59dc4d99a59a279b3546c2e6d5b2f374455e8010870db47de89932aee91e4cc8c78af7f76a343ec17bf
+    "@tiptap/core": ^3.20.1
+  checksum: 10c0/657d824beb5b213b8f2770abf4770a92bdd2c17b6b8242a01927bc0c727dd6184918f3eaa475d1a948aecc35023309463e06457b2e65b7317888bf4e55512fd4
   languageName: node
   linkType: hard
 
