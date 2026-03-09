@@ -1,3 +1,6 @@
+// chat endpoint handler — HTTP layer for agent conversations
+// updated in DEV-1260 to use pi session instead of old ai.streamText() flow
+
 import type {
   ChatRequest,
   ConversationStore,
@@ -7,11 +10,17 @@ import type {
 } from './types.js';
 import type { ContextLoader } from './context/index.js';
 import type { TracingService } from './tracing/index.js';
+import type { PiSession } from './agent.js';
+import type { BeforeTurnExtension } from './agent.js';
+import type { AfterTurnExtension } from './pi-extensions/after-turn.types.js';
 
 export type ChatHandlerOptions = {
   config: AgentConfig;
   store: ConversationStore;
   contextLoader: ContextLoader;
+  session: PiSession;
+  beforeTurnExtensions?: BeforeTurnExtension[];
+  afterTurnExtensions?: AfterTurnExtension[];
   tracing?: TracingService;
 };
 
@@ -26,7 +35,7 @@ export const handleChat = async (
   workspaceId: string,
   options: ChatHandlerOptions,
 ): Promise<ChatResult> => {
-  const { config, store, contextLoader } = options;
+  const { config, store, contextLoader, session } = options;
 
   // load or create conversation
   let conversation: ConversationState | null = null;
@@ -45,7 +54,13 @@ export const handleChat = async (
   // load context + build agent
   const context = await contextLoader.load(userId, workspaceId);
   const { AgentService } = await import('./agent.js');
-  const agent = new AgentService({ config, context });
+  const agent = new AgentService({
+    config,
+    context,
+    session,
+    beforeTurnExtensions: options.beforeTurnExtensions,
+    afterTurnExtensions: options.afterTurnExtensions,
+  });
 
   const conversationId = conversation.id;
   const conv = conversation;
@@ -55,12 +70,13 @@ export const handleChat = async (
 
   const ai = await import('ai');
 
-  // AI SDK UI message stream — text, tool calls, tool results all handled by protocol
+  // AI SDK UI message stream — pi session result piped through protocol
   const stream = ai.createUIMessageStream({
     execute: async ({ writer }) => {
       try {
         const result = await agent.chat({
           messages: conv.messages,
+          conversationId: conv.id,
           onStepFinish: (step) => {
             if (options.tracing) {
               options.tracing.logStep({
@@ -73,20 +89,20 @@ export const handleChat = async (
           },
         });
 
-        // merge streamText output into UI message stream
-        writer.merge(result.toUIMessageStream());
+        // write assistant text to UI stream as a text-delta event
+        // pi session returns complete text, not a stream — emit as single delta
+        const msgId = `msg-${Date.now()}`;
+        writer.write({ type: 'text-delta', delta: result.text, id: msgId });
 
-        // persist after stream completes
-        const finalText = await result.text;
-        conv.messages.push({ role: 'assistant', content: finalText });
+        // persist after completion
+        conv.messages.push({ role: 'assistant', content: result.text });
         conv.updatedAt = new Date();
 
-        const usage = await result.usage;
-        if (usage) {
+        if (result.usage) {
           conv.tokenUsage.push({
-            input: usage.inputTokens ?? 0,
+            input: result.usage.inputTokens,
             cached: 0,
-            output: usage.outputTokens ?? 0,
+            output: result.usage.outputTokens,
             provider: config.provider,
           });
         }

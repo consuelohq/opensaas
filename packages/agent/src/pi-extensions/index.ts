@@ -16,3 +16,9 @@ export { createDialerTools } from './dialer-tools.js';
 export type { DialerService } from './dialer-tools.js';
 export { createKbTools } from './kb-tools.js';
 export type { KbService } from './kb-tools.js';
+
+// after-turn extensions
+export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './after-turn.types.js';
+export { createPreferenceInference } from './preference-inference.js';
+export { createTurnGrading } from './turn-grading.js';
+export type { TurnEvaluation } from './turn-grading.js';
