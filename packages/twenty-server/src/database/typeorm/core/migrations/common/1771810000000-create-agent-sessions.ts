@@ -24,9 +24,18 @@ export class CreateAgentSessions1771810000000 implements MigrationInterface {
     await queryRunner.query(
       `CREATE INDEX "IDX_AGENT_SESSION_USER" ON "core"."agentSession" ("userId")`,
     );
+
+    // composite index for list queries filtering by userId AND workspaceId
+    await queryRunner.query(
+      `CREATE INDEX "IDX_AGENT_SESSION_USER_WORKSPACE" ON "core"."agentSession" ("userId", "workspaceId")`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS "core"."IDX_AGENT_SESSION_USER_WORKSPACE"`,
+    );
+
     await queryRunner.query(
       `DROP INDEX IF EXISTS "core"."IDX_AGENT_SESSION_USER"`,
     );

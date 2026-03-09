@@ -6,6 +6,14 @@ import type {
 } from '../types.js';
 import type TwilioClient from 'twilio';
 
+const escapeXml = (str: string): string =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
 /**
  * Conference + transfer orchestration via Twilio REST API.
  *
@@ -15,6 +23,7 @@ import type TwilioClient from 'twilio';
 export class ConferenceService {
   private client: ReturnType<typeof TwilioClient> | null = null;
   private credentials: TwilioCredentials;
+  private ringingStartTimes = new Map<string, number>();
 
   constructor(credentials?: TwilioCredentials) {
     this.credentials = {
@@ -26,6 +35,11 @@ export class ConferenceService {
 
   private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
     if (this.client) return this.client;
+    if (!this.credentials.accountSid || !this.credentials.authToken) {
+      throw new Error(
+        'Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.',
+      );
+    }
     try {
       const twilio = await import('twilio');
       this.client = twilio.default(
@@ -51,9 +65,9 @@ export class ConferenceService {
   ): string {
     const startOnEnter = opts?.startOnEnter ?? true;
     const endOnExit = opts?.endOnExit ?? false;
-    const waitUrl = opts?.waitUrl ?? '';
+    const waitUrl = opts?.waitUrl ? escapeXml(opts.waitUrl) : '';
     const label = opts?.participantLabel
-      ? ` participantLabel="${opts.participantLabel}"`
+      ? ` participantLabel="${escapeXml(opts.participantLabel)}"`
       : '';
 
     return [
@@ -61,11 +75,44 @@ export class ConferenceService {
       '<Response>',
       `<Dial>`,
       `<Conference startConferenceOnEnter="${startOnEnter}" endConferenceOnExit="${endOnExit}" beep="false" waitUrl="${waitUrl}"${label}>`,
-      conferenceName,
+      escapeXml(conferenceName),
       '</Conference>',
       '</Dial>',
       '</Response>',
     ].join('');
+  }
+
+  /** Wait for a conference to reach in-progress status with exponential backoff */
+  private async waitForConference(
+    client: Awaited<ReturnType<typeof this.getClient>>,
+    conferenceName: string,
+    timeoutMs: number = 20000,
+  ): Promise<{ sid: string }> {
+    const startTime = Date.now();
+    let delayMs = 500;
+    const maxDelayMs = 2000;
+
+    while (Date.now() - startTime < timeoutMs) {
+      const conferences = await client.conferences.list({
+        friendlyName: conferenceName,
+        status: 'in-progress',
+        limit: 1,
+      });
+
+      if (conferences.length) {
+        return { sid: conferences[0].sid };
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      delayMs = Math.min(delayMs * 2, maxDelayMs);
+    }
+
+    throw Object.assign(
+      new Error(
+        `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
+      ),
+      { status: 404 },
+    );
   }
 
   /** Dial the customer into the conference via REST API */
@@ -82,22 +129,8 @@ export class ConferenceService {
     try {
       const client = await this.getClient();
 
-      const conferences = await client.conferences.list({
-        friendlyName: conferenceName,
-        status: 'in-progress',
-        limit: 1,
-      });
+      const conf = await this.waitForConference(client, conferenceName);
 
-      if (!conferences.length) {
-        throw Object.assign(
-          new Error(
-            `Conference "${conferenceName}" not found or not in-progress`,
-          ),
-          { status: 404 },
-        );
-      }
-
-      const conf = conferences[0];
       const participant = await client
         .conferences(conf.sid)
         .participants.create({
@@ -107,9 +140,15 @@ export class ConferenceService {
           endConferenceOnExit: opts?.endConferenceOnExit ?? true,
           label: opts?.label ?? 'customer',
           statusCallback: opts?.statusCallback,
-          statusCallbackEvent: ['ringing', 'answered', 'completed'],
+          statusCallbackEvent: [
+            'initiated',
+            'ringing',
+            'answered',
+            'completed',
+          ],
         });
 
+      this.ringingStartTimes.set(participant.callSid, Date.now());
       return { callSid: participant.callSid, conferenceSid: conf.sid };
     } catch (err: unknown) {
       if (err instanceof Error && 'status' in err) throw err;
@@ -265,16 +304,24 @@ export class ConferenceService {
     options: TransferOptions,
   ): Promise<TransferResult> {
     try {
+      const statusCallback = options.statusCallbackUrl && options.transferId
+        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
+        : options.statusCallbackUrl;
+
       const { callSid: transferCallSid, conferenceSid } =
         await this.addParticipant(
           options.conferenceName,
           options.to,
           options.from,
-          { label: 'transfer-target', endConferenceOnExit: true },
+          {
+            label: 'transfer-target',
+            endConferenceOnExit: true,
+            statusCallback,
+          },
         );
 
       await this.removeParticipant(conferenceSid, options.callSid);
-      return { success: true, transferCallSid, conferenceSid };
+      return { success: true, transferCallSid, conferenceSid, transferId: options.transferId };
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Cold transfer failed';
@@ -297,12 +344,20 @@ export class ConferenceService {
       // hold the customer so agent can consult privately
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer) {
-        await this.holdParticipant(conferenceSid, customer.callSid, true);
+      if (!customer) {
+        return {
+          success: false,
+          error: 'CUSTOMER_NOT_FOUND: cannot hold customer for warm transfer',
+        };
       }
+      await this.holdParticipant(conferenceSid, customer.callSid, true);
 
       // add the transfer target
       const client = await this.getClient();
+      const statusCallback = options.statusCallbackUrl && options.transferId
+        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
+        : options.statusCallbackUrl;
+
       const participant = await client
         .conferences(conferenceSid)
         .participants.create({
@@ -310,12 +365,15 @@ export class ConferenceService {
           from: options.from,
           endConferenceOnExit: false,
           label: 'transfer-target',
+          statusCallback,
+          statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
         });
 
       return {
         success: true,
         transferCallSid: participant.callSid,
         conferenceSid,
+        transferId: options.transferId,
       };
     } catch (err: unknown) {
       const message =
@@ -332,20 +390,30 @@ export class ConferenceService {
     try {
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer?.hold) {
+      if (!customer) {
+        return {
+          success: false,
+          error: 'CUSTOMER_NOT_FOUND: cannot complete transfer safely',
+        };
+      }
+      if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }
 
       const target = participants.find((p) => p.label === 'transfer-target');
-      if (target) {
-        const client = await this.getClient();
-        await client
-          .conferences(conferenceSid)
-          .participants(target.callSid)
-          .update({
-            endConferenceOnExit: true,
-          });
+      if (!target) {
+        return {
+          success: false,
+          error: 'TRANSFER_TARGET_NOT_FOUND: cannot complete transfer',
+        };
       }
+      const client = await this.getClient();
+      await client
+        .conferences(conferenceSid)
+        .participants(target.callSid)
+        .update({
+          endConferenceOnExit: true,
+        });
 
       await this.removeParticipant(conferenceSid, agentCallSid);
       return { success: true, conferenceSid };
@@ -366,7 +434,14 @@ export class ConferenceService {
 
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
-      if (customer?.hold) {
+      if (!customer) {
+        return {
+          success: false,
+          error:
+            'CUSTOMER_NOT_FOUND: transfer cancelled but customer not found to unhold',
+        };
+      }
+      if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }
 

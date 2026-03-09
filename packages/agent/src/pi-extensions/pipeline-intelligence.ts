@@ -31,7 +31,7 @@ const DEFAULT_STAGE_AVERAGES: StageAverage[] = [
 // max tokens for pipeline context block
 const PIPELINE_TOKEN_BUDGET = 800;
 
-// convert CRM DealResult to DealInput for scoring (safe defaults for missing fields)
+// convert CRM DealResult to DealInput for scoring (null for missing freshness data)
 const toDealInput = (deal: {
   id: string;
   name: string;
@@ -110,7 +110,7 @@ export const createPipelineIntelligence = (
         (d) => d.stage !== 'CLOSED_WON' && d.stage !== 'CLOSED_LOST',
       );
 
-      if (openDeals.length === 0) return messages;
+      if (openDeals.length === 0) return messages.filter((m) => !isPipelineMessage(m));
 
       const pipelineCtx = buildPipelineContext(
         openDeals.map(toDealInput),
@@ -139,8 +139,8 @@ export const createPipelineIntelligence = (
 
       return [pipelineMessage, ...filtered];
     } catch {
-      // don't block the agent if pipeline loading fails
-      return messages;
+      // don't block the agent if pipeline loading fails — strip stale blocks
+      return messages.filter((m) => !isPipelineMessage(m));
     }
   },
 

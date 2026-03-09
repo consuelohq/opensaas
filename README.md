@@ -4,13 +4,13 @@
 
 <h2 align="center">Consuelo — Open-Source Sales Infrastructure</h2>
 
-<p align="center">CRM + Dialer + AI Coaching — built on a <a href="https://github.com/twentyhq/twenty">Twenty</a> fork</p>
+<p align="center">CRM + Dialer + AI Coaching
 
 ---
 
 ## What Is This?
 
-Consuelo is an open-source sales platform. This repo is a fork of [Twenty CRM](https://twenty.com) with an embedded dialer sidebar, real-time AI coaching, and composable backend packages (`@consuelo/*`).
+Consuelo is an open-source sales platform.
 
 **opensaas packages** (in `packages/`):
 
@@ -55,18 +55,6 @@ yarn start
 # → backend:  http://localhost:3000 (NestJS)
 ```
 
-The `start` script runs Twenty's frontend and backend concurrently via nx. Vite handles frontend hot-reload (HMR). The NestJS backend uses `ts-node` with watch mode for auto-restart on changes.
-
-### Individual packages
-
-```bash
-# run a specific twenty package
-npx nx start twenty-front
-npx nx start twenty-server
-
-# run the worker separately
-npx nx run twenty-server:worker
-```
 
 ## Environment Variables
 
@@ -83,13 +71,13 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 
 ## Auth
 
-Single auth system — Twenty's built-in JWT auth. No Clerk, no separate provider. See [AUTH.md](AUTH.md) for the full documentation (token format, secret derivation, refresh flow, middleware).
+Single auth system — built-in JWT auth. No Clerk, no separate provider. See [AUTH.md](AUTH.md) for the full documentation (token format, secret derivation, refresh flow, middleware).
 
 ## Code Quality
 
 ### ESLint
 
-Twenty's ESLint config applies globally. opensaas packages (`packages/api`, `packages/cli`, etc.) have stricter overrides:
+ESLint config applies globally. opensaas packages (`packages/api`, `packages/cli`, etc.) have strict overrides:
 
 - `no-console: 'error'` — use structured logger
 - `@typescript-eslint/no-explicit-any: 'warn'`
@@ -97,7 +85,7 @@ Twenty's ESLint config applies globally. opensaas packages (`packages/api`, `pac
 
 ### TypeScript
 
-All opensaas packages use `strict: true`. Twenty packages have their own strict settings.
+All opensaas packages use `strict: true`. 
 
 ### Git Hooks (Husky)
 
@@ -118,7 +106,7 @@ Bot commits set suelo-kiro[bot] as committer (not author): `GIT_COMMITTER_NAME="
 ## Contributing
 
 1. Fork the repo
-2. Create a feature branch from `twenty-fork`
+2. Create a feature branch from `main`
 3. Make your changes (follow [CODING-STANDARDS.md](CODING-STANDARDS.md))
 4. Push — pre-push hooks will run the 13 code review checks
 5. Open a PR

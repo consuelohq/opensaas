@@ -130,9 +130,24 @@ export class PiAgentService {
     }
   }
 
-  async loadSession(sessionId: string): Promise<AgentSessionData | null> {
+  async loadSession(
+    sessionId: string,
+    callerUserId: string,
+    callerWorkspaceId: string,
+  ): Promise<AgentSessionData | null> {
     try {
-      return await this.sessionManager.load(sessionId);
+      const session = await this.sessionManager.load(sessionId);
+      if (!session) {
+        return null;
+      }
+      // verify caller scope matches session ownership
+      if (
+        session.userId !== callerUserId ||
+        session.workspaceId !== callerWorkspaceId
+      ) {
+        return null;
+      }
+      return session;
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'unknown error loading session';
@@ -153,8 +168,23 @@ export class PiAgentService {
     }
   }
 
-  async deleteSession(sessionId: string): Promise<void> {
+  async deleteSession(
+    sessionId: string,
+    callerUserId: string,
+    callerWorkspaceId: string,
+  ): Promise<void> {
     try {
+      // load and verify ownership before deletion
+      const session = await this.sessionManager.load(sessionId);
+      if (!session) {
+        return;
+      }
+      if (
+        session.userId !== callerUserId ||
+        session.workspaceId !== callerWorkspaceId
+      ) {
+        return;
+      }
       await this.sessionManager.delete(sessionId);
     } catch (err: unknown) {
       const message =

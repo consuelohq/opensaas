@@ -14,7 +14,7 @@ export type AgentSessionData = {
   metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
-}
+};
 
 // minimal db interface — accepts TypeORM DataSource or any pg client with query()
 export type DatabaseConnection = {
@@ -26,7 +26,7 @@ export type SessionManager = {
   load(sessionId: string): Promise<AgentSessionData | null>;
   list(userId: string, workspaceId: string): Promise<AgentSessionData[]>;
   delete(sessionId: string): Promise<void>;
-}
+};
 
 export class DatabaseSessionManager implements SessionManager {
   constructor(private readonly db: DatabaseConnection) {}
@@ -64,7 +64,8 @@ export class DatabaseSessionManager implements SessionManager {
         [sessionId],
       );
 
-      const row = result.rows[0];
+      const rows = Array.isArray(result) ? result : result.rows;
+      const row = rows[0];
 
       if (!row) {
         return null;
@@ -106,7 +107,8 @@ export class DatabaseSessionManager implements SessionManager {
         [userId, workspaceId],
       );
 
-      return result.rows.map((row) => {
+      const rows = Array.isArray(result) ? result : result.rows;
+      return rows.map((row) => {
         const data =
           typeof row.data === 'string'
             ? JSON.parse(row.data)

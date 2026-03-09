@@ -27,7 +27,7 @@ export function ProblemSection() {
   return (
     <section
       ref={ref}
-      className="bg-(--color-fg) text-(--color-bg) py-20 sm:py-24"
+      className="py-20 sm:py-24"
     >
       <div className="mx-auto max-w-[1000px] px-6">
         <motion.p

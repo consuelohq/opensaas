@@ -14,13 +14,22 @@ import {
 } from '../services/twilio-config.js';
 
 // lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
-let _dialerLogger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
+let _dialerLogger: {
+  info: (message: string, attributes?: Record<string, unknown>) => void;
+  warn: (message: string, attributes?: Record<string, unknown>) => void;
+  error: (message: string, attributes?: Record<string, unknown>) => void;
+} | null = null;
 const getLogger = async () => {
-  if (!_dialerLogger) {
-    const { createLogger } = await import('@consuelo/logger');
-    _dialerLogger = createLogger('dialer:self-hosted');
+  try {
+    if (!_dialerLogger) {
+      const { createLogger } = await import('@consuelo/logger');
+      _dialerLogger = createLogger('dialer:self-hosted');
+    }
+    return _dialerLogger;
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
   }
-  return _dialerLogger;
 };
 
 const baseUrl = process.env.API_BASE_URL;
@@ -52,7 +61,11 @@ function getInMemoryLockStore(): InMemoryLockStore {
   return _inMemoryStore;
 }
 
-function buildDialer(accountSid: string, authToken: string, twimlAppSid?: string): Dialer {
+function buildDialer(
+  accountSid: string,
+  authToken: string,
+  twimlAppSid?: string,
+): Dialer {
   const dialer = new Dialer({
     credentials: { accountSid, authToken, twimlAppSid },
     baseUrl,
@@ -62,7 +75,9 @@ function buildDialer(accountSid: string, authToken: string, twimlAppSid?: string
 }
 
 // get a dialer for a specific workspace (multi-tenant)
-export async function getDialerForWorkspace(workspaceId: string): Promise<Dialer> {
+export async function getDialerForWorkspace(
+  workspaceId: string,
+): Promise<Dialer> {
   // check cache first
   const cached = dialerCache.get(workspaceId);
   if (cached) return cached;
@@ -72,7 +87,11 @@ export async function getDialerForWorkspace(workspaceId: string): Promise<Dialer
 
     if (config) {
       const creds = getDecryptedCredentials(config);
-      const dialer = buildDialer(creds.accountSid, creds.authToken, creds.twimlAppSid);
+      const dialer = buildDialer(
+        creds.accountSid,
+        creds.authToken,
+        creds.twimlAppSid,
+      );
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
@@ -80,7 +99,11 @@ export async function getDialerForWorkspace(workspaceId: string): Promise<Dialer
     // no config yet — auto-provision for hosted, or fall back to legacy env vars
     if (isHostedInstance()) {
       const creds = await provisionSubAccount(workspaceId);
-      const dialer = buildDialer(creds.accountSid, creds.authToken, creds.twimlAppSid);
+      const dialer = buildDialer(
+        creds.accountSid,
+        creds.authToken,
+        creds.twimlAppSid,
+      );
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
@@ -92,20 +115,34 @@ export async function getDialerForWorkspace(workspaceId: string): Promise<Dialer
       // auto-create TwiML App if not configured and API_BASE_URL is set
       if (!twimlAppSid && baseUrl) {
         try {
-          twimlAppSid = await ensureOrCreateTwimlApp(legacyAccountSid, legacyAuthToken);
-          (await getLogger()).info('TwiML App auto-created for self-hosted', { twimlAppSid });
+          twimlAppSid = await ensureOrCreateTwimlApp(
+            legacyAccountSid,
+            legacyAuthToken,
+          );
+          (await getLogger()).info('TwiML App auto-created for self-hosted', {
+            twimlAppSid,
+          });
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'unknown error';
-          (await getLogger()).warn('TwiML App auto-creation failed — set TWILIO_TWIML_APP_SID manually', { error: message });
+          (await getLogger()).warn(
+            'TwiML App auto-creation failed — set TWILIO_TWIML_APP_SID manually',
+            { error: message },
+          );
         }
       }
 
-      const dialer = buildDialer(legacyAccountSid, legacyAuthToken, twimlAppSid);
+      const dialer = buildDialer(
+        legacyAccountSid,
+        legacyAuthToken,
+        twimlAppSid,
+      );
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
 
-    throw new Error('Twilio not configured. Set BYOK credentials in settings or configure TWILIO_ACCOUNT_SID env var.');
+    throw new Error(
+      'Twilio not configured. Set BYOK credentials in settings or configure TWILIO_ACCOUNT_SID env var.',
+    );
   } catch (err: unknown) {
     // don't cache failed attempts
     dialerCache.delete(workspaceId);
