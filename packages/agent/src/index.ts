@@ -135,6 +135,9 @@ export { createDialerTools } from './pi-extensions/index.js';
 export type { DialerService } from './pi-extensions/index.js';
 export { createKbTools } from './pi-extensions/index.js';
 export type { KbService } from './pi-extensions/index.js';
+// coaching
+export { createCoachingDetector } from './pi-extensions/index.js';
+export type { CoachingDetector } from './pi-extensions/index.js';
 // after-turn extensions
 export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './pi-extensions/index.js';
 export { createPreferenceInference } from './pi-extensions/index.js';

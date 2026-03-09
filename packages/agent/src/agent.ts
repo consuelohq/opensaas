@@ -6,8 +6,9 @@ import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
 import type { AfterTurnEvent, AfterTurnExtension } from './pi-extensions/after-turn.types.js';
 import type { ContextInjection } from './pi-extensions/context-injection.js';
 import type { PipelineIntelligence } from './pi-extensions/pipeline-intelligence.js';
+import type { CoachingDetector } from './pi-extensions/coaching-extension.js';
 
-export type BeforeTurnExtension = ContextInjection | PipelineIntelligence;
+export type BeforeTurnExtension = ContextInjection | PipelineIntelligence | CoachingDetector;
 
 export type PiSession = {
   prompt: (message: string, options?: { signal?: AbortSignal }) => Promise<PiSessionResult>;
