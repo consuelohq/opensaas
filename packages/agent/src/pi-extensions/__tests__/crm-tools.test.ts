@@ -36,12 +36,26 @@ const mockCrmClient = {
 describe('createPiCrmTools', () => {
   const tools = createPiCrmTools(mockCrmClient);
 
-  it('creates CRM tools with expected core tools', () => {
-    assert.ok(tools.length >= 3, 'should have at least 3 tools');
+  it('creates exactly 12 tools', () => {
+    assert.equal(tools.length, 12);
+  });
+
+  it('has correct tool names', () => {
     const names = tools.map((t) => t.name);
-    assert.ok(names.includes('search_contacts'), 'should have search_contacts');
-    assert.ok(names.includes('get_contact'), 'should have get_contact');
-    assert.ok(names.includes('log_call'), 'should have log_call');
+    assert.deepEqual(names, [
+      'search_contacts',
+      'get_contact',
+      'list_deals',
+      'get_call_history',
+      'get_analytics',
+      'search_kb',
+      'list_integrations',
+      'log_call',
+      'update_deal',
+      'create_note',
+      'add_to_queue',
+      'create_task',
+    ]);
   });
 
   it('each tool has label, description, parameters, and execute', () => {
