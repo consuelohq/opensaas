@@ -52,6 +52,9 @@ export class TwilioProvider implements DialerProvider {
   private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
     try {
       if (this.client) return this.client;
+      if (!this.credentials.accountSid || !this.credentials.authToken) {
+        throw new Error('Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables.');
+      }
       const twilio = await import('twilio');
       this.client = twilio.default(
         this.credentials.accountSid,
@@ -106,20 +109,26 @@ export class TwilioProvider implements DialerProvider {
   async getToken(userId: string): Promise<VoiceToken> {
     try {
       const { apiKey, apiSecret, twimlAppSid, accountSid } = this.credentials;
-      if (!apiKey || !apiSecret || !twimlAppSid) {
+
+      const missing: string[] = [];
+      if (!apiKey) missing.push('TWILIO_API_KEY');
+      if (!apiSecret) missing.push('TWILIO_API_SECRET');
+      if (!twimlAppSid) missing.push('TWILIO_TWIML_APP_SID');
+
+      if (missing.length > 0) {
         throw new Error(
-          'Twilio API key, secret, and TwiML app SID are required for voice tokens',
+          `Missing required Twilio credentials for voice tokens: ${missing.join(', ')}`,
         );
       }
 
       const twilio = await import('twilio');
-      const { AccessToken } = twilio.jwt;
+      const { AccessToken } = twilio.default.jwt;
       const { VoiceGrant } = AccessToken;
 
       const identity = `user_${userId}`;
       const ttl = 3600;
 
-      const token = new AccessToken(accountSid, apiKey, apiSecret, {
+      const token = new AccessToken(accountSid!, apiKey!, apiSecret!, {
         identity,
         ttl,
       });
@@ -131,7 +140,14 @@ export class TwilioProvider implements DialerProvider {
 
       return { token: token.toJwt(), identity, ttl };
     } catch (err: unknown) {
-      Sentry.captureException(err);
+      Sentry.captureException(err, {
+        extra: {
+          hasApiKey: !!this.credentials.apiKey,
+          hasApiSecret: !!this.credentials.apiSecret,
+          hasTwimlAppSid: !!this.credentials.twimlAppSid,
+          accountSidPrefix: this.credentials.accountSid?.slice(0, 2),
+        },
+      });
       throw err;
     }
   }
@@ -225,7 +241,9 @@ export class TwilioProvider implements DialerProvider {
     }
   }
 
-  async searchAvailableNumbers(options: SearchAvailableNumbersOptions): Promise<AvailableNumber[]> {
+  async searchAvailableNumbers(
+    options: SearchAvailableNumbersOptions,
+  ): Promise<AvailableNumber[]> {
     try {
       const client = await this.getClient();
       const country = options.country ?? 'US';

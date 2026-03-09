@@ -3,9 +3,7 @@ import { normalizePhone } from './utils.js';
 import { parseDocument } from './parser.js';
 import { MemoryProvider } from './providers/memory.js';
 
-/**
- * Contacts — CRUD, search, and document import for sales contacts.
- */
+// Contacts — CRUD, search, and document import for sales contacts.
 export class Contacts {
   readonly store: StorageProvider;
 
@@ -30,16 +28,16 @@ export class Contacts {
     return this.store.deleteContact(id);
   }
 
-  async search(query: string, userId?: string): Promise<Contact[]> {
-    return this.store.searchContacts(query, userId);
+  async search(query: string, workspaceId?: string): Promise<Contact[]> {
+    return this.store.searchContacts(query, workspaceId);
   }
 
-  async list(userId: string): Promise<Contact[]> {
-    return this.store.listContacts(userId);
+  async list(workspaceId: string): Promise<Contact[]> {
+    return this.store.listContacts(workspaceId);
   }
 
-  /** Import contacts from any document format using Groq AI parser */
-  async importDocument(content: string, groqApiKey: string, userId?: string): Promise<Contact[]> {
+  // Import contacts from any document format using Groq AI parser
+  async importDocument(content: string, groqApiKey: string, workspaceId?: string): Promise<Contact[]> {
     const { contacts: parsed, errors } = await parseDocument(content, groqApiKey);
     if (errors.length > 0) throw new Error(errors.join(', '));
 
@@ -50,7 +48,7 @@ export class Contacts {
         phone: row.phone ?? '',
         email: row.email,
         company: row.company,
-        userId,
+        workspaceId,
       });
       results.push(contact);
     }

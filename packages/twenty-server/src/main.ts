@@ -106,11 +106,11 @@ const bootstrap = async () => {
   try {
     console.log('Importing API routes from:', apiRoutesPath);
     const routesModule = await import(apiRoutesPath);
-    console.log('Import succeeded, calling allRoutes()');
+    console.log('Import succeeded, calling allRoutes()...');
     const routes = routesModule.allRoutes();
-    console.log(`allRoutes() returned ${routes.length} routes, mounting...`);
     const expressApp = app.getHttpAdapter().getInstance();
 
+    // Load auth middleware
     const apiMiddlewarePath = [
       '..',
       '..',
@@ -159,6 +159,12 @@ const bootstrap = async () => {
       expressApp[method](route.path, ...handlers);
     }
     console.log(`Mounted ${routes.length} API routes OK`);
+
+    // Set up WebSocket servers for coaching (live transcript streaming + audio transcription)
+    console.log('Setting up coaching WebSocket servers...');
+    const httpServer = app.getHttpServer();
+    await routesModule.setupCoachingWebSocket(httpServer);
+    console.log('Coaching WebSocket servers initialized OK');
   } catch (err: unknown) {
     console.log(
       'API route loading failed:',

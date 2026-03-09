@@ -1,19 +1,52 @@
-import type { TransferType, TransferStatus } from '@consuelo/dialer';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import type {
+  TransferType,
+  TransferStatus,
+  RingTimeMetrics,
+} from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import { redisService } from '../services/redis.js';
 import type { RouteDefinition } from './index.js';
 import type { ApiRequest, ApiResponse } from '../types.js';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
-import { createLogger } from '@consuelo/logger';
+import {
+  sharedDialer,
+  sharedCallerIdLockService,
+  getDialerForWorkspace,
+} from '../shared/dialer.js';
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
-const logger = createLogger('api:audit');
+type Logger = {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+  warn: (message: string, meta?: Record<string, unknown>) => void;
+  debug: (message: string, meta?: Record<string, unknown>) => void;
+};
+
+let _logger: Logger | null = null;
+
+const getLogger = async (): Promise<Logger> => {
+  try {
+    if (!_logger) {
+      // eslint-disable-next-line @nx/enforce-module-boundaries
+      const { createLogger } = await import('@consuelo/logger');
+      _logger = createLogger('api:audit');
+    }
+    return _logger;
+  } catch (err: unknown) {
+    _logger = null;
+    const message = err instanceof Error ? err.message : 'unknown error';
+    throw new Error(`[getLogger] failed: ${message}`);
+  }
+};
+
+// in-memory tracking for ring time (will move to redis later)
+const ringingStartTimes = new Map<string, number>();
 
 // legacy singleton for webhook routes (no auth context)
 const getLegacyDialer = sharedDialer;
@@ -23,10 +56,10 @@ const getCallerIdLockService = sharedCallerIdLockService;
  * Validate Twilio signature on webhook requests.
  * Twilio sends a signature in the X-Twilio-Signature header.
  */
-export async function validateTwilioSignature(
+export const validateTwilioSignature = async (
   req: ApiRequest,
   res: ApiResponse,
-): Promise<boolean> {
+): Promise<boolean> => {
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   if (!authToken) {
     res.status(500).json({
@@ -55,7 +88,7 @@ export async function validateTwilioSignature(
 
   try {
     const twilio = await import('twilio');
-    const isValid = twilio.validateRequest(
+    const isValid = twilio.default.validateRequest(
       authToken,
       signature,
       url,
@@ -84,7 +117,7 @@ export async function validateTwilioSignature(
     });
     return false;
   }
-}
+};
 
 interface TransferRecord {
   transferId: string;
@@ -150,13 +183,19 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         let primarySid: string | null = null;
         try {
-          primarySid = await redisService.getPrimaryNumber(req.auth!.workspaceId);
-        } catch (_err: unknown) {
+          primarySid = await redisService.getPrimaryNumber(
+            req.auth!.workspaceId,
+          );
+        } catch {
           // redis unavailable — continue without primary info
         }
 
         const phoneNumbers = numbers.map(
-          (num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => {
+          (num: {
+            phoneNumber: string;
+            friendlyName?: string;
+            twilioSid?: string;
+          }) => {
             const phoneNumber = num.phoneNumber ?? '';
             const areaCode =
               phoneNumber.startsWith('+1') && phoneNumber.length >= 5
@@ -201,7 +240,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const areaCode = req.query?.areaCode as string | undefined;
       if (!areaCode || !/^\d{3}$/.test(areaCode)) {
         res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'areaCode must be a 3-digit string' },
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'areaCode must be a 3-digit string',
+          },
         });
         return;
       }
@@ -211,7 +253,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
-        const available = await dialer.searchAvailableNumbers({ areaCode, country, limit });
+        const available = await dialer.searchAvailableNumbers({
+          areaCode,
+          country,
+          limit,
+        });
         res.json({ available });
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -234,10 +280,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
-      const body = req.body as { areaCode?: string; phoneNumber?: string; friendlyName?: string } | undefined;
+      const body = req.body as
+        | { areaCode?: string; phoneNumber?: string; friendlyName?: string }
+        | undefined;
       if (!body?.areaCode && !body?.phoneNumber) {
         res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'areaCode or phoneNumber required' },
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'areaCode or phoneNumber required',
+          },
         });
         return;
       }
@@ -256,7 +307,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
 
         if (!result.success) {
-          res.status(400).json({ error: { code: 'PROVISION_FAILED', message: result.error ?? 'Provision failed' } });
+          res.status(400).json({
+            error: {
+              code: 'PROVISION_FAILED',
+              message: result.error ?? 'Provision failed',
+            },
+          });
           return;
         }
 
@@ -267,7 +323,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
             await redisService.setPrimaryNumber(workspaceId, result.sid);
           }
         } catch (err: unknown) {
-          Sentry.captureException(err, { extra: { context: 'auto_set_primary', workspaceId } });
+          Sentry.captureException(err, {
+            extra: { context: 'auto_set_primary', workspaceId },
+          });
         }
 
         res.json(result);
@@ -305,7 +363,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         res.json({ success: true, primarySid: sid });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message = err instanceof Error ? err.message : 'Set primary failed';
+        const message =
+          err instanceof Error ? err.message : 'Set primary failed';
         res.status(500).json({ error: { code: 'SET_PRIMARY_ERROR', message } });
       }
     }),
@@ -337,7 +396,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const result = await dialer.releaseNumber(sid);
 
         if (!result.success) {
-          res.status(400).json({ error: { code: 'RELEASE_FAILED', message: result.error ?? 'Release failed' } });
+          res.status(400).json({
+            error: {
+              code: 'RELEASE_FAILED',
+              message: result.error ?? 'Release failed',
+            },
+          });
           return;
         }
 
@@ -348,7 +412,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
             await redisService.deletePrimaryNumber(workspaceId);
           }
         } catch (err: unknown) {
-          Sentry.captureException(err, { extra: { context: 'clear_primary_on_release', workspaceId } });
+          Sentry.captureException(err, {
+            extra: { context: 'clear_primary_on_release', workspaceId },
+          });
         }
 
         res.json({ success: true });
@@ -365,24 +431,47 @@ export const voiceRoutes = (): RouteDefinition[] => [
     path: '/v1/voice/token',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
         return;
       }
 
+      const voiceLogger = await getLogger();
+
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        voiceLogger.debug('Token request received', { userId, workspaceId });
+        const dialer = await getDialerForWorkspace(workspaceId);
         const result = await dialer.getToken(userId);
+        voiceLogger.info('Token generated successfully', {
+          userId,
+          workspaceId,
+          identity: result.identity,
+        });
         res.json(result);
       } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Token generation failed';
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        voiceLogger.error('[voice/token] Token generation failed', {
+          userId,
+          workspaceId,
+          errorType: err?.constructor?.name ?? 'unknown',
+          errorMessage,
+          errorStack,
+        });
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
+          {
+            tags: { endpoint: '/v1/voice/token' },
+            extra: { userId, workspaceId, errorMessage },
+          },
         );
-        const message =
-          err instanceof Error ? err.message : 'Token generation failed';
-        res.status(500).json({ error: { code: 'TOKEN_ERROR', message } });
+        res
+          .status(500)
+          .json({ error: { code: 'TOKEN_ERROR', message: errorMessage } });
       }
     }),
   },
@@ -431,7 +520,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, callerId });
-        logger.info('voice.preflight', {
+        (await getLogger()).info('voice.preflight', {
           action: 'voice.preflight',
           userId: req.auth?.userId ?? 'anonymous',
           outcome: 'success',
@@ -453,6 +542,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
   {
     method: 'POST',
     path: '/v1/voice/twiml',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
@@ -476,6 +566,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
         const message =
           err instanceof Error ? err.message : 'Redis operation failed';
+        // eslint-disable-next-line @nx/enforce-module-boundaries
         const { createLogger } = await import('@consuelo/logger');
         createLogger('voice:twiml').error(
           'Failed to store conference mapping',
@@ -487,71 +578,82 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
-      const twiml = getLegacyDialer().generateConferenceTwiml(
-        conferenceName,
-        'agent',
-      );
+      const twiml = getLegacyDialer().generateConferenceTwiml(conferenceName, {
+        participantLabel: 'agent',
+        endOnExit: true,
+      });
 
-      // dial the customer into the conference (fire-and-forget)
+      // store mapping for lock release on call end
+      if (from) {
+        callerIdMap.set(callSid, from);
+      }
+
+      // send TwiML first so agent can connect and create the conference
+      res.type('text/xml').status(200).send(twiml);
+
+      // dial the customer into the conference (truly fire-and-forget)
       if (to && !to.startsWith('client:')) {
         const statusCallback = process.env.API_BASE_URL
           ? `${process.env.API_BASE_URL}/v1/webhooks/status`
           : undefined;
 
-        try {
-          const customerResult = await getLegacyDialer().addCustomerToConference(
-            conferenceName,
-            to,
-            from,
-            statusCallback,
-          );
+        void (async () => {
           try {
-            await redisService.setCustomerConferenceName(
-              customerResult.callSid,
-              conferenceName,
-            );
+            const customerResult =
+              await getLegacyDialer().addCustomerToConference(
+                conferenceName,
+                to,
+                from,
+                statusCallback,
+              );
+            try {
+              await redisService.setCustomerConferenceName(
+                customerResult.callSid,
+                conferenceName,
+              );
+            } catch (err: unknown) {
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(String(err)),
+                {
+                  extra: {
+                    context: 'twiml_redis_setCustomerConferenceName',
+                    callSid: customerResult.callSid,
+                    conferenceName,
+                  },
+                },
+              );
+              const message =
+                err instanceof Error ? err.message : 'Redis operation failed';
+              // eslint-disable-next-line @nx/enforce-module-boundaries
+              const { createLogger } = await import('@consuelo/logger');
+              createLogger('voice:twiml').error(
+                'Failed to store customer mapping',
+                {
+                  callSid: customerResult.callSid,
+                  conferenceName,
+                  error: message,
+                },
+              );
+            }
           } catch (err: unknown) {
             Sentry.captureException(
               err instanceof Error ? err : new Error(String(err)),
               {
-                extra: {
-                  context: 'twiml_redis_setCustomerConferenceName',
-                  callSid: customerResult.callSid,
-                  conferenceName,
-                },
+                extra: { context: 'twiml_customer_dial', conferenceName, to },
               },
             );
             const message =
-              err instanceof Error ? err.message : 'Redis operation failed';
+              err instanceof Error ? err.message : 'Customer dial failed';
+            // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:twiml').error(
-              'Failed to store customer mapping',
-              {
-                callSid: customerResult.callSid,
-                conferenceName,
-                error: message,
-              },
-            );
+            createLogger('voice:twiml').error('Customer dial failed', {
+              conferenceName,
+              to,
+              error: message,
+            });
           }
-        } catch (err: unknown) {
-          Sentry.captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            {
-              extra: { context: 'twiml_customer_dial', conferenceName, to },
-            },
-          );
-          const message =
-            err instanceof Error ? err.message : 'Customer dial failed';
-          const { createLogger } = await import('@consuelo/logger');
-          createLogger('voice:twiml').error('Customer dial failed', {
-            conferenceName,
-            to,
-            error: message,
-          });
-        }
+        })();
       }
-
-      res.type('text/xml').status(200).send(twiml);
     }),
   },
 
@@ -572,14 +674,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const { createLogger } = await import('@consuelo/logger');
-        const logger = createLogger('voice:active-call');
-
         const conferenceSid =
           await getLegacyDialer().conference.findConferenceSid(conferenceName);
 
         if (conferenceSid) {
-          logger.info('Active conference found', {
+          (await getLogger()).info('Active conference found', {
             action: 'Active conference found',
             conferenceName,
             conferenceSid,
@@ -587,12 +686,17 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
           res.json({ active: true, conferenceSid });
         } else {
-          logger.info('No active conference', { action: 'voice.no_active_conference', conferenceName, outcome: 'success' });
+          (await getLogger()).info('No active conference', {
+            action: 'voice.no_active_conference',
+            conferenceName,
+            outcome: 'success',
+          });
           res.json({ active: false });
         }
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Conference check failed';
+        // eslint-disable-next-line @nx/enforce-module-boundaries
         const { createLogger } = await import('@consuelo/logger');
         createLogger('voice:active-call').error(
           'Failed to check active conference',
@@ -648,7 +752,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 try {
                   await ensureOrCreateTwimlApp(legacySid, legacyToken);
                   hasTwiml = true;
-                } catch (_: unknown) {
+                } catch {
                   // twiml app creation/lookup failed
                 }
               }
@@ -661,8 +765,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 error: null,
               });
             } catch (err: unknown) {
-              const message = err instanceof Error ? err.message : 'Connection failed';
-              Sentry.captureException(err instanceof Error ? err : new Error(message));
+              const message =
+                err instanceof Error ? err.message : 'Connection failed';
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(message),
+              );
               res.json({
                 mode: 'byok',
                 configured: false,
@@ -692,7 +799,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         try {
           creds = getDecryptedCredentials(config);
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Credential decryption failed';
+          const message =
+            err instanceof Error ? err.message : 'Credential decryption failed';
           res.json({
             mode: config.mode,
             configured: false,
@@ -713,7 +821,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
           twilioConnected = true;
           hasPhoneNumbers = numbers.length > 0;
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Connection failed';
+          const message =
+            err instanceof Error ? err.message : 'Connection failed';
           res.json({
             mode: config.mode,
             configured: false,
@@ -737,7 +846,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message = err instanceof Error ? err.message : 'Status check failed';
+        const message =
+          err instanceof Error ? err.message : 'Status check failed';
         res.json({
           mode: isHostedInstance() ? 'hosted' : 'byok',
           configured: false,
@@ -779,6 +889,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Failed to get conference name';
+        // eslint-disable-next-line @nx/enforce-module-boundaries
         const { createLogger } = await import('@consuelo/logger');
         createLogger('voice:conference-by-call').error(
           'Failed to get conference name',
@@ -882,9 +993,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const conferenceSid =
           record.conferenceSid ??
-          (await dialer.conference.findConferenceSid(
-            record.conferenceName,
-          ));
+          (await dialer.conference.findConferenceSid(record.conferenceName));
         if (!conferenceSid) {
           res.status(404).json({
             error: {
@@ -930,6 +1039,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
+          // eslint-disable-next-line @nx/enforce-module-boundaries
           const { createLogger } = await import('@consuelo/logger');
           createLogger('voice:mute').error('Failed to update transfer record', {
             transferId,
@@ -938,7 +1048,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ transferId, customerMuted: body.muted });
-        logger.info('transfer.mute', {
+        (await getLogger()).info('transfer.mute', {
           action: 'transfer.mute',
           userId: req.auth?.userId ?? 'anonymous',
           outcome: 'success',
@@ -1081,6 +1191,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
+      const transferId = randomUUID();
+      const statusCallbackUrl = process.env.API_BASE_URL
+        ? `${process.env.API_BASE_URL}/v1/webhooks/dial-status`
+        : undefined;
+
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
         const result = await dialer.initiateTransfer({
@@ -1090,6 +1205,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
           from: body.from ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
           type: body.type,
           userId,
+          statusCallbackUrl,
+          transferId,
         });
 
         if (!result.success) {
@@ -1101,8 +1218,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
           return;
         }
-
-        const transferId = randomUUID();
         const transferRecord: TransferRecord = {
           transferId,
           status: body.type === 'warm' ? 'consulting' : 'completed',
@@ -1131,6 +1246,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           );
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
+          // eslint-disable-next-line @nx/enforce-module-boundaries
           const { createLogger } = await import('@consuelo/logger');
           createLogger('voice:transfer').error(
             'Failed to store transfer record',
@@ -1142,11 +1258,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ ...result, transferId });
-        logger.info('transfer.initiated', {
-          action: 'transfer.initiated',
-          userId: req.auth?.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+        try {
+          (await getLogger()).info('transfer.initiated', {
+            action: 'transfer.initiated',
+            userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch {
+          // ignore logger errors after response sent
+        }
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1218,6 +1338,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
             );
             const message =
               err instanceof Error ? err.message : 'Redis operation failed';
+            // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
             createLogger('voice:complete').error(
               'Failed to delete conference mapping',
@@ -1230,7 +1351,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.completed', { action: 'transfer.completed', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        (await getLogger()).info('transfer.completed', {
+          action: 'transfer.completed',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1285,7 +1410,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json(result);
-        logger.info('transfer.cancelled', { action: 'transfer.cancelled', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        (await getLogger()).info('transfer.cancelled', {
+          action: 'transfer.cancelled',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1373,8 +1502,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           );
         } else {
           // default: hold the customer
-          const participants =
-            await dialer.listParticipants(conferenceSid);
+          const participants = await dialer.listParticipants(conferenceSid);
           const customer = participants.find(
             (p: { label: string }) => p.label === 'customer',
           );
@@ -1388,7 +1516,11 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ success: true, hold: body.hold });
-        logger.info('call.hold', { action: 'call.hold', userId: req.auth?.userId ?? 'anonymous', outcome: 'success' });
+        (await getLogger()).info('call.hold', {
+          action: 'call.hold',
+          userId: req.auth?.userId ?? 'anonymous',
+          outcome: 'success',
+        });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Hold toggle failed';
@@ -1398,10 +1530,226 @@ export const voiceRoutes = (): RouteDefinition[] => [
   },
 
   // --- Twilio webhook routes (no auth) ---
+  {
+    method: 'POST',
+    path: '/v1/webhooks/amd',
+    auth: false,
+    handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
+      const body = req.body as Record<string, string> | undefined;
+      const callSid = body?.CallSid;
+      const answeredBy = body?.AnsweredBy;
+
+      if (!callSid || !answeredBy) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing CallSid or AnsweredBy',
+          },
+        });
+        return;
+      }
+
+      const isMachine =
+        answeredBy === 'machine_start' ||
+        answeredBy === 'machine_end_beep' ||
+        answeredBy === 'machine_end_silence' ||
+        answeredBy === 'machine_end_other' ||
+        answeredBy === 'fax';
+
+      if (isMachine) {
+        try {
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+          response.hangup();
+
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+
+          (await getLogger()).info('amd.machine_detected', {
+            action: 'amd.machine_detected',
+            userId: 'system',
+            outcome: 'hung_up',
+            callSid,
+            answeredBy,
+          });
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : 'AMD hangup failed';
+          res.status(500).json({ error: { code: 'AMD_FAILED', message } });
+        }
+        return;
+      }
+
+      // Human detected - connect to conference
+      try {
+        const conferenceName =
+          await redisService.getCustomerConferenceName(callSid);
+
+        if (conferenceName) {
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+
+          const dial = response.dial();
+          dial.conference(
+            {
+              startConferenceOnEnter: true,
+              endConferenceOnExit: true,
+              participantLabel: 'customer',
+            },
+            conferenceName,
+          );
+
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+
+          (await getLogger()).info('amd.human_detected', {
+            action: 'amd.human_detected',
+            userId: 'system',
+            outcome: 'connected',
+            callSid,
+            answeredBy,
+            conferenceName,
+          });
+        } else {
+          // No conference found - just hang up
+          const twilio = await import('twilio');
+          const VoiceResponse = twilio.default.twiml.VoiceResponse;
+          const response = new VoiceResponse();
+          response.hangup();
+
+          (res as unknown as Record<string, Function>)
+            .type('text/xml')
+            .status(200)
+            .send(response.toString());
+
+          (await getLogger()).warn('amd.no_conference', {
+            action: 'amd.no_conference',
+            userId: 'system',
+            callSid,
+            answeredBy,
+          });
+        }
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'AMD conference connect failed';
+        res.status(500).json({ error: { code: 'AMD_FAILED', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'POST',
+    path: '/v1/webhooks/dial-status',
+    auth: false,
+    handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
+      const body = req.body as Record<string, string> | undefined;
+      const callSid = body?.CallSid;
+      const callStatus = body?.CallStatus;
+      const dialCallStatus = body?.DialCallStatus;
+      const transferId = req.query?.transfer_id ?? body?.transfer_id;
+
+      if (!callSid) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing CallSid',
+          },
+        });
+        return;
+      }
+
+      try {
+        // eslint-disable-next-line @nx/enforce-module-boundaries
+        const { createLogger } = await import('@consuelo/logger');
+        const dialLogger = createLogger('voice:dial-status');
+
+        // track ring time for billing
+        if (callStatus === 'ringing') {
+          ringingStartTimes.set(callSid, Date.now());
+          dialLogger.info('Call ringing started', { callSid, callStatus });
+        } else if (callStatus === 'in-progress') {
+          const ringingAt = ringingStartTimes.get(callSid);
+          if (ringingAt) {
+            const ringDurationMs = Date.now() - ringingAt;
+            const metrics: RingTimeMetrics = {
+              callSid,
+              ringingAt: new Date(ringingAt).toISOString(),
+              answeredAt: new Date().toISOString(),
+              ringDurationMs,
+            };
+            dialLogger.info('Call answered - ring time metrics', {
+              ...metrics,
+            });
+            ringingStartTimes.delete(callSid);
+          }
+        }
+
+        dialLogger.info('Dial status callback received', {
+          callSid,
+          callStatus,
+          dialCallStatus,
+          dialCallDuration: body?.DialCallDuration,
+          transferId,
+        });
+      } catch {
+        // logger unavailable, continue
+      }
+
+      // Update transfer lifecycle if this is a transfer callback
+      if (transferId) {
+        try {
+          const transfer = await redisService.getTransfer(transferId);
+          if (transfer) {
+            const updatedTransfer = { ...transfer };
+            
+            // Update based on dial call status
+            if (dialCallStatus === 'completed' || dialCallStatus === 'answered') {
+              updatedTransfer.connectedAt = new Date().toISOString();
+              if (transfer.transferType === 'cold') {
+                updatedTransfer.status = 'completed';
+                updatedTransfer.completedAt = new Date().toISOString();
+              }
+            } else if (dialCallStatus === 'busy' || dialCallStatus === 'no-answer' || dialCallStatus === 'failed') {
+              updatedTransfer.status = 'failed';
+              updatedTransfer.completedAt = new Date().toISOString();
+            }
+            
+            await redisService.setTransfer(transferId, updatedTransfer);
+          }
+        } catch (err: unknown) {
+          // Log but don't fail the webhook
+          try {
+            const { createLogger } = await import('@consuelo/logger');
+            createLogger('voice:dial-status').error('Failed to update transfer record', {
+              transferId,
+              error: err instanceof Error ? err.message : 'unknown error',
+            });
+          } catch {
+            // Logger unavailable, continue
+          }
+        }
+      }
+
+      // Return empty TwiML for dial status callbacks
+      res
+        .status(200)
+        .type('text/xml')
+        .send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
+    }),
+  },
 
   {
     method: 'POST',
     path: '/v1/webhooks/status',
+    auth: false,
     handler: errorHandler(async (req, res) => {
       if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
@@ -1424,6 +1772,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Redis operation failed';
+        // eslint-disable-next-line @nx/enforce-module-boundaries
         const { createLogger } = await import('@consuelo/logger');
         createLogger('voice:status').error(
           'Failed to get customer conference',
@@ -1440,6 +1789,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : 'Redis operation failed';
+          // eslint-disable-next-line @nx/enforce-module-boundaries
           const { createLogger } = await import('@consuelo/logger');
           createLogger('voice:status').error('Failed to store call status', {
             callSid,
@@ -1450,27 +1800,33 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         if (FAILURE_STATUSES.has(callStatus)) {
           try {
+            // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
             createLogger('voice:status').warn('Customer call failed', {
               callSid,
               conferenceName,
               status: callStatus,
             });
-          } catch (_err: unknown) {
+          } catch {
             // logger unavailable, continue — intentional: logger optional in webhook handler
           }
         }
       }
 
       // Check if this is an agent call ending (check callerIdMap)
+      // Release lock on both failure and normal completion
       const callerId = callerIdMap.get(callSid);
-      if (callerId && FAILURE_STATUSES.has(callStatus)) {
+      if (
+        callerId &&
+        (FAILURE_STATUSES.has(callStatus) || callStatus === 'completed')
+      ) {
         try {
           await getCallerIdLockService().releaseLockByNumber(callerId);
           callerIdMap.delete(callSid);
         } catch (err: unknown) {
           const message =
             err instanceof Error ? err.message : 'Lock release failed';
+          // eslint-disable-next-line @nx/enforce-module-boundaries
           const { createLogger } = await import('@consuelo/logger');
           createLogger('voice:status').error(
             'Failed to release caller ID lock',
@@ -1536,6 +1892,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Redis operation failed';
+        // eslint-disable-next-line @nx/enforce-module-boundaries
         const { createLogger } = await import('@consuelo/logger');
         createLogger('voice:status').error('Failed to get call status', {
           callSid,

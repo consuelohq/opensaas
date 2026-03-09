@@ -46,6 +46,8 @@ export type {
   TransferOptions,
   TransferResult,
   TwimlParams,
+  RingTimeMetrics,
+  DialStatusPayload,
   ParallelGroupStatus,
   AmdResult,
   ParallelCall,

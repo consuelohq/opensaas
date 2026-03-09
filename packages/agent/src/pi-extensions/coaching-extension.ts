@@ -93,8 +93,8 @@ export const createCoachingDetector = (
 
       return [coachingMessage, ...filtered];
     } catch {
-      // don't block the agent if coaching detection fails
-      return messages;
+      // don't block the agent if coaching detection fails — strip stale context
+      return messages.filter((m) => !isCoachingMessage(m));
     }
   },
 

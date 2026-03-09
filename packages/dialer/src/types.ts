@@ -179,6 +179,8 @@ export interface TransferOptions {
   from: string;
   type: TransferType;
   userId: string;
+  statusCallbackUrl?: string;
+  transferId?: string;
 }
 
 /** Result of a transfer operation */
@@ -187,10 +189,30 @@ export interface TransferResult {
   transferCallSid?: string;
   conferenceSid?: string;
   error?: string;
+  transferId?: string;
 }
 
-/** TwiML generation params for the conference webhook */
-export interface TwimlParams {
+// Ring time tracking for billing
+export type RingTimeMetrics = {
+  callSid: string;
+  ringingAt: string;
+  answeredAt?: string;
+  ringDurationMs?: number;
+}
+
+// Dial status callback payload from Twilio
+export type DialStatusPayload = {
+  CallSid: string;
+  DialCallStatus: string;
+  DialCallDuration?: string;
+  DialSipResponseCode?: string;
+  RecordingUrl?: string;
+  CallerName?: string;
+  transferId?: string;
+}
+
+// TwiML generation params for the conference webhook
+export type TwimlParams = {
   to: string;
   from: string;
   conferenceName?: string;
@@ -198,14 +220,14 @@ export interface TwimlParams {
 
 // --- Parallel dialing types ---
 
-/** Parallel dial group lifecycle */
+// Parallel dial group lifecycle
 export type ParallelGroupStatus = 'dialing' | 'connected' | 'completed' | 'failed';
 
-/** AMD (answering machine detection) result */
+// AMD (answering machine detection) result
 export type AmdResult = 'human' | 'machine' | 'unknown';
 
-/** Single call within a parallel group */
-export interface ParallelCall {
+// Single call within a parallel group
+export type ParallelCall = {
   callSid: string;
   customerNumber: string;
   fromNumber: string;
@@ -215,8 +237,8 @@ export interface ParallelCall {
   contactId?: string;
 }
 
-/** Full parallel dial group state (stored in redis) */
-export interface ParallelGroup {
+// Full parallel dial group state (stored in redis)
+export type ParallelGroup = {
   groupId: string;
   conferenceName: string;
   status: ParallelGroupStatus;

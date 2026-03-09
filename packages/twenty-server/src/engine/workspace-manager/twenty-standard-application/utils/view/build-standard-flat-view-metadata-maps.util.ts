@@ -7,6 +7,7 @@ import { type AllStandardObjectName } from 'src/engine/workspace-manager/twenty-
 import { computeStandardCalendarEventViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-calendar-event-views.util';
 import { computeStandardCompanyViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-company-views.util';
 import { computeStandardDashboardViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-dashboard-views.util';
+import { computeStandardListMemberViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-list-member-views.util';
 import { computeStandardMessageThreadViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-message-thread-views.util';
 import { computeStandardMessageViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-message-views.util';
 import { computeStandardNoteViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-note-views.util';
@@ -26,6 +27,7 @@ const STANDARD_FLAT_VIEW_METADATA_BUILDERS_BY_OBJECT_NAME = {
   calendarEvent: computeStandardCalendarEventViews,
   company: computeStandardCompanyViews,
   dashboard: computeStandardDashboardViews,
+  listMember: computeStandardListMemberViews,
   message: computeStandardMessageViews,
   messageThread: computeStandardMessageThreadViews,
   note: computeStandardNoteViews,

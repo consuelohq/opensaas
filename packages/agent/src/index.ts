@@ -145,34 +145,37 @@ export {
 
 
 // pi extensions
-export { DatabaseSessionManager } from './pi-extensions/index.js';
+export {
+  DatabaseSessionManager,
+  createPiCrmTools,
+  createContextInjection,
+  createPipelineIntelligence,
+  createDialerTools,
+  createKbTools,
+  createCoachingDetector,
+  createCoachingLifecycle,
+  createPreferenceInference,
+  createTurnGrading,
+  createUsageTracking,
+} from './pi-extensions/index.js';
 export type {
   AgentSessionData,
   DatabaseConnection,
   SessionManager,
+  ContextInjection,
+  PipelineIntelligence,
+  DialerService,
+  KbService,
+  CoachingDetector,
+  CoachingLifecycle,
+  RecentlyEndedCall,
+  AfterTurnEvent,
+  AfterTurnExtension,
+  ToolCallSummary,
+  TurnEvaluation,
+  UsageStore,
+  UsageRecord,
 } from './pi-extensions/index.js';
-export { createPiCrmTools } from './pi-extensions/index.js';
-export { createContextInjection } from './pi-extensions/index.js';
-export type { ContextInjection } from './pi-extensions/index.js';
-export { createPipelineIntelligence } from './pi-extensions/index.js';
-export type { PipelineIntelligence } from './pi-extensions/index.js';
-export { createDialerTools } from './pi-extensions/index.js';
-export type { DialerService } from './pi-extensions/index.js';
-export { createKbTools } from './pi-extensions/index.js';
-export type { KbService } from './pi-extensions/index.js';
-// coaching
-export { createCoachingDetector } from './pi-extensions/index.js';
-export type { CoachingDetector } from './pi-extensions/index.js';
-// coaching lifecycle (post-call analysis)
-export { createCoachingLifecycle } from './pi-extensions/index.js';
-export type { CoachingLifecycle, RecentlyEndedCall } from './pi-extensions/index.js';
-// after-turn extensions
-export type { AfterTurnEvent, AfterTurnExtension, ToolCallSummary } from './pi-extensions/index.js';
-export { createPreferenceInference } from './pi-extensions/index.js';
-export { createTurnGrading } from './pi-extensions/index.js';
-export type { TurnEvaluation } from './pi-extensions/index.js';
-export { createUsageTracking } from './pi-extensions/index.js';
-export type { UsageStore, UsageRecord } from './pi-extensions/index.js';
 
 // schemas (moved from @consuelo/coaching — DEV-1262)
 export type {
