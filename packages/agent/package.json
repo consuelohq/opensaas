@@ -22,7 +22,8 @@
     "ai": "^5.0.0",
     "e2b": "^1.0.0",
     "langfuse": "^3.0.0",
-    "zod": "^3.25.0 || ^4.0.0"
+    "zod": "^3.25.0 || ^4.0.0",
+    "@mariozechner/pi-agent-core": "^0.57.0"
   },
   "peerDependenciesMeta": {
     "@ai-sdk/openai-compatible": {

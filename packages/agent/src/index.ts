@@ -122,6 +122,14 @@ export {
   parseCron,
 } from './automation/index.js';
 
+
+// pi extensions
+export { DatabaseSessionManager } from './pi-extensions/database-session-manager.js';
+export type {
+  AgentSessionData,
+  DatabaseConnection,
+  SessionManager,
+} from './pi-extensions/database-session-manager.js';
 // types
 export type {
   AgentMessage,
