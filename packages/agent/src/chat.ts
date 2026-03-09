@@ -1,6 +1,8 @@
 // chat endpoint handler — HTTP layer for agent conversations
 // DEV-1263: migrated to pi's stream format — direct SSE, no Vercel AI SDK
 
+import * as Sentry from '@sentry/node';
+import { logger } from '@consuelo/logger';
 import type { ChatRequest, AgentConfig } from './types.js';
 import type { ContextLoader } from './context/index.js';
 import type { TracingService } from './tracing/index.js';
@@ -137,6 +139,8 @@ export const handleChat = async (
         if (options.tracing) await options.tracing.flush();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'streaming failed';
+        logger.error({ err, userId, workspaceId, sessionId }, `chat stream error: ${message}`);
+        Sentry.captureException(err, { tags: { component: 'chat-handler' }, user: { id: userId } });
         controller.enqueue(sseEncode({ type: 'error', message }));
         controller.enqueue(sseEncode({ type: 'done' }));
       } finally {
