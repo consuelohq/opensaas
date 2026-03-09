@@ -6,14 +6,12 @@ import type {
   AgentMessage,
 } from './types.js';
 import type { ContextLoader } from './context/index.js';
-import type { ToolRegistry } from './tools/types.js';
 import type { TracingService } from './tracing/index.js';
 
 export type ChatHandlerOptions = {
   config: AgentConfig;
   store: ConversationStore;
   contextLoader: ContextLoader;
-  tools?: ToolRegistry;
   tracing?: TracingService;
 };
 
@@ -28,7 +26,7 @@ export const handleChat = async (
   workspaceId: string,
   options: ChatHandlerOptions,
 ): Promise<ChatResult> => {
-  const { config, store, contextLoader, tools } = options;
+  const { config, store, contextLoader } = options;
 
   // load or create conversation
   let conversation: ConversationState | null = null;
@@ -47,7 +45,7 @@ export const handleChat = async (
   // load context + build agent
   const context = await contextLoader.load(userId, workspaceId);
   const { AgentService } = await import('./agent.js');
-  const agent = new AgentService({ config, context, tools });
+  const agent = new AgentService({ config, context });
 
   const conversationId = conversation.id;
   const conv = conversation;

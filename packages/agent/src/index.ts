@@ -1,5 +1,5 @@
 // core
-export { AgentService, buildToolSet, buildSystemPrompt, resolveModel } from './agent.js';
+export { AgentService, buildSystemPrompt, resolveModel } from './agent.js';
 export type { AgentOptions, ChatOptions } from './agent.js';
 
 // chat
@@ -8,10 +8,6 @@ export type { ChatHandlerOptions, ChatResult } from './chat.js';
 
 // sandbox
 export { SandboxService } from './sandbox.js';
-
-// tools
-export { createToolRegistry } from './tools/index.js';
-export type { AgentToolDefinition, ToolRegistry } from './tools/index.js';
 
 // crm
 export { CrmClient, createCrmTools } from './crm/index.js';
@@ -132,6 +128,10 @@ export type {
 } from './pi-extensions/index.js';
 export { createPiCrmTools } from './pi-extensions/index.js';
 export { createContextInjection } from './pi-extensions/index.js';
+export { createDialerTools } from './pi-extensions/index.js';
+export type { DialerService } from './pi-extensions/index.js';
+export { createKbTools } from './pi-extensions/index.js';
+export type { KbService } from './pi-extensions/index.js';
 // types
 export type {
   AgentMessage,
