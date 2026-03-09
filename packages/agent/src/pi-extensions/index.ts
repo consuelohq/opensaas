@@ -9,6 +9,9 @@ export type {
 
 export { createPiCrmTools } from './crm-tools.js';
 export { createContextInjection } from './context-injection.js';
+export type { ContextInjection } from './context-injection.js';
+export { createPipelineIntelligence } from './pipeline-intelligence.js';
+export type { PipelineIntelligence } from './pipeline-intelligence.js';
 export { createDialerTools } from './dialer-tools.js';
 export type { DialerService } from './dialer-tools.js';
 export { createKbTools } from './kb-tools.js';

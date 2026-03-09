@@ -8,12 +8,16 @@ import {
   DatabaseSessionManager,
   createPiCrmTools,
   createContextInjection,
+  createPipelineIntelligence,
   createDialerTools,
   createKbTools,
   CrmClient,
   type AgentSessionData,
+  type ContextInjection,
+  type PipelineIntelligence,
   type DialerService,
   type KbService,
+  type ContextLoader,
 } from '@consuelo/agent';
 import type { AgentTool } from '@mariozechner/pi-agent-core';
 
@@ -35,18 +39,32 @@ export class PiAgentService {
     workspaceId: string,
     options?: {
       crmClient?: CrmClient;
+      contextLoader?: ContextLoader;
       dialerService?: DialerService;
       kbService?: KbService;
     },
   ): Promise<AgentSessionData> {
     try {
-      const contextInjection = createContextInjection();
-      const systemPrompt =
-        BASE_SYSTEM_PROMPT + contextInjection.buildSystemPromptSuffix();
+      // build extensions
+      const extensions: Array<ContextInjection | PipelineIntelligence> = [];
+
+      if (options?.contextLoader) {
+        extensions.push(
+          createContextInjection(options.contextLoader, userId, workspaceId),
+        );
+      }
+
+      if (options?.crmClient) {
+        extensions.push(createPipelineIntelligence(options.crmClient));
+      }
+
+      const systemPrompt = BASE_SYSTEM_PROMPT;
 
       const tools: AgentTool[] = [
         ...(options?.crmClient ? createPiCrmTools(options.crmClient) : []),
-        ...(options?.dialerService ? createDialerTools(options.dialerService) : []),
+        ...(options?.dialerService
+          ? createDialerTools(options.dialerService)
+          : []),
         ...(options?.kbService ? createKbTools(options.kbService) : []),
       ];
 
@@ -59,6 +77,9 @@ export class PiAgentService {
         modelId: '',
         metadata: {
           toolNames: tools.map((t) => t.name),
+          hasContextInjection: !!options?.contextLoader,
+          hasPipelineIntelligence: !!options?.crmClient,
+          extensionCount: extensions.length,
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
