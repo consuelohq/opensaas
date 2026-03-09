@@ -1,5 +1,7 @@
 **/**/.env
 .agent/config.sh
+.agent/linear-refresh.sh
+.agent/linear-comment.sh
 .DS_Store
 /.idea
 **/**/node_modules/

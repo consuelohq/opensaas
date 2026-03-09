@@ -1,17 +1,38 @@
 // core
-export { AgentService, buildToolSet, buildSystemPrompt, resolveModel } from './agent.js';
-export type { AgentOptions, ChatOptions } from './agent.js';
+export { AgentService } from './agent.js';
+export type {
+  AgentOptions,
+  ChatOptions,
+  PiSession,
+  PiSessionResult,
+  PiStreamEvent,
+  PiTextDelta,
+  PiToolCallStart,
+  PiToolCallResult,
+  PiUsage,
+  PiDone,
+  BeforeTurnExtension,
+  ModelCyclingConfig,
+} from './agent.js';
+export { DEFAULT_MODEL_CYCLING } from './agent.js';
 
 // chat
 export { handleChat } from './chat.js';
-export type { ChatHandlerOptions, ChatResult } from './chat.js';
+export type {
+  ChatHandlerOptions,
+  ChatResult,
+  SseEvent,
+  SseTextEvent,
+  SseToolCallEvent,
+  SseToolResultEvent,
+  SseUsageEvent,
+  SseSessionEvent,
+  SseDoneEvent,
+  SseErrorEvent,
+} from './chat.js';
 
 // sandbox
 export { SandboxService } from './sandbox.js';
-
-// tools
-export { createToolRegistry } from './tools/index.js';
-export type { AgentToolDefinition, ToolRegistry } from './tools/index.js';
 
 // crm
 export { CrmClient, createCrmTools } from './crm/index.js';
@@ -121,6 +142,51 @@ export {
   buildDebounceKey,
   parseCron,
 } from './automation/index.js';
+
+
+// pi extensions
+export {
+  DatabaseSessionManager,
+  createPiCrmTools,
+  createContextInjection,
+  createPipelineIntelligence,
+  createDialerTools,
+  createKbTools,
+  createCoachingDetector,
+  createCoachingLifecycle,
+  createPreferenceInference,
+  createTurnGrading,
+  createUsageTracking,
+} from './pi-extensions/index.js';
+export type {
+  AgentSessionData,
+  DatabaseConnection,
+  SessionManager,
+  ContextInjection,
+  PipelineIntelligence,
+  DialerService,
+  KbService,
+  CoachingDetector,
+  CoachingLifecycle,
+  RecentlyEndedCall,
+  AfterTurnEvent,
+  AfterTurnExtension,
+  ToolCallSummary,
+  TurnEvaluation,
+  UsageStore,
+  UsageRecord,
+} from './pi-extensions/index.js';
+
+// schemas (moved from @consuelo/coaching — DEV-1262)
+export type {
+  SalesCoaching,
+  KeyMoment,
+  SentimentAnalysis,
+  PerformanceMetrics,
+  CallAnalytics,
+  PostCallAnalysisResult,
+} from './schemas/coaching.js';
+export { createCoachingSchemas } from './schemas/coaching.js';
 
 // types
 export type {

@@ -9,24 +9,24 @@ type Logger = {
   debug: (message: string, meta?: Record<string, unknown>) => void;
 };
 
-let _logger: Logger | null = null;
+let logger: Logger | null = null;
 
 const getLogger = async (): Promise<Logger> => {
   try {
-    if (!_logger) {
+    if (!logger) {
       // eslint-disable-next-line @nx/enforce-module-boundaries
       const { createLogger } = await import('@consuelo/logger');
-      _logger = createLogger('api:audit');
+      logger = createLogger('api:audit');
     }
-    return _logger;
+    return logger;
   } catch (err: unknown) {
-    _logger = null;
+    logger = null;
     const message = err instanceof Error ? err.message : 'unknown error';
     throw new Error(`[getLogger] failed: ${message}`);
   }
 };
 
-type _Pool = {
+type Pool = {
   query(
     text: string,
     values?: unknown[],
@@ -82,6 +82,9 @@ const SQL_GET_ITEMS =
 
 const SQL_NEXT_PENDING =
   'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1';
+
+const SQL_EXISTING_CALLING =
+  'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 LIMIT 1';
 
 const SQL_UPDATE_ITEM_SKIP =
   'UPDATE queue_items SET status = $1, skip_reason = $2 WHERE id = $3 RETURNING *';
@@ -205,33 +208,58 @@ export const queueRoutes = (): RouteDefinition[] => {
         const auth = requireAuth(req, res);
         if (auth === null) return;
 
-        const db = await getPool();
-        const { rows } = await db.query(SQL_UPDATE_QUEUE_STARTED, [
-          'active',
-          req.params?.id,
-          auth.workspaceId,
-        ]);
-        if (rows.length === 0) {
-          res
-            .status(404)
-            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
-          return;
-        }
+        const pool = await getPool();
+        const client = await pool.connect();
+        let currentItem = null;
+        
+        try {
+          await client.query('BEGIN');
+          
+          const { rows } = await client.query(SQL_UPDATE_QUEUE_STARTED, [
+            'active',
+            req.params?.id,
+            auth.workspaceId,
+          ]);
+          if (rows.length === 0) {
+            await client.query('ROLLBACK');
+            res
+              .status(404)
+              .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+            return;
+          }
 
-        const next = await db.query(SQL_NEXT_PENDING, [
-          req.params?.id,
-          'pending',
-        ]);
-        if (next.rows.length > 0) {
-          await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
-        }
+          // Check for existing calling item first
+          const existing = await client.query(SQL_EXISTING_CALLING, [
+            req.params?.id,
+            'calling',
+          ]);
+          
+          if (existing.rows.length > 0) {
+            currentItem = existing.rows[0];
+          } else {
+            const next = await client.query(
+              'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
+              [req.params?.id, 'pending'],
+            );
+            if (next.rows.length > 0) {
+              await client.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
+              currentItem = next.rows[0];
+            }
+          }
 
-        res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
-        (await getLogger()).info('queue.started', {
-          action: 'queue.started',
-          userId: auth.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+          await client.query('COMMIT');
+          res.status(200).json({ ...rows[0], currentItem });
+          (await getLogger()).info('queue.started', {
+            action: 'queue.started',
+            userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch (err: unknown) {
+          await client.query('ROLLBACK');
+          throw err;
+        } finally {
+          client.release();
+        }
       }),
     },
 
@@ -268,33 +296,58 @@ export const queueRoutes = (): RouteDefinition[] => {
         const auth = requireAuth(req, res);
         if (auth === null) return;
 
-        const db = await getPool();
-        const { rows } = await db.query(SQL_UPDATE_QUEUE_STARTED, [
-          'active',
-          req.params?.id,
-          auth.workspaceId,
-        ]);
-        if (rows.length === 0) {
-          res
-            .status(404)
-            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
-          return;
-        }
+        const pool = await getPool();
+        const client = await pool.connect();
+        let currentItem = null;
+        
+        try {
+          await client.query('BEGIN');
+          
+          const { rows } = await client.query(SQL_UPDATE_QUEUE_STARTED, [
+            'active',
+            req.params?.id,
+            auth.workspaceId,
+          ]);
+          if (rows.length === 0) {
+            await client.query('ROLLBACK');
+            res
+              .status(404)
+              .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+            return;
+          }
 
-        const next = await db.query(SQL_NEXT_PENDING, [
-          req.params?.id,
-          'pending',
-        ]);
-        if (next.rows.length > 0) {
-          await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
-        }
+          // Check for existing calling item first
+          const existing = await client.query(SQL_EXISTING_CALLING, [
+            req.params?.id,
+            'calling',
+          ]);
+          
+          if (existing.rows.length > 0) {
+            currentItem = existing.rows[0];
+          } else {
+            const next = await client.query(
+              'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
+              [req.params?.id, 'pending'],
+            );
+            if (next.rows.length > 0) {
+              await client.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
+              currentItem = next.rows[0];
+            }
+          }
 
-        res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
-        (await getLogger()).info('queue.resumed', {
-          action: 'queue.resumed',
-          userId: auth.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+          await client.query('COMMIT');
+          res.status(200).json({ ...rows[0], currentItem });
+          (await getLogger()).info('queue.resumed', {
+            action: 'queue.resumed',
+            userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch (err: unknown) {
+          await client.query('ROLLBACK');
+          throw err;
+        } finally {
+          client.release();
+        }
       }),
     },
 

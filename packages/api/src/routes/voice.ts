@@ -1258,11 +1258,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ ...result, transferId });
-        (await getLogger()).info('transfer.initiated', {
-          action: 'transfer.initiated',
-          userId: req.auth?.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+        try {
+          (await getLogger()).info('transfer.initiated', {
+            action: 'transfer.initiated',
+            userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch {
+          // ignore logger errors after response sent
+        }
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1650,7 +1654,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const callSid = body?.CallSid;
       const callStatus = body?.CallStatus;
       const dialCallStatus = body?.DialCallStatus;
-      const transferId = body?.transfer_id;
+      const transferId = req.query?.transfer_id ?? body?.transfer_id;
 
       if (!callSid) {
         res.status(400).json({
@@ -1697,6 +1701,41 @@ export const voiceRoutes = (): RouteDefinition[] => [
         });
       } catch {
         // logger unavailable, continue
+      }
+
+      // Update transfer lifecycle if this is a transfer callback
+      if (transferId) {
+        try {
+          const transfer = await redisService.getTransfer(transferId);
+          if (transfer) {
+            const updatedTransfer = { ...transfer };
+            
+            // Update based on dial call status
+            if (dialCallStatus === 'completed' || dialCallStatus === 'answered') {
+              updatedTransfer.connectedAt = new Date().toISOString();
+              if (transfer.transferType === 'cold') {
+                updatedTransfer.status = 'completed';
+                updatedTransfer.completedAt = new Date().toISOString();
+              }
+            } else if (dialCallStatus === 'busy' || dialCallStatus === 'no-answer' || dialCallStatus === 'failed') {
+              updatedTransfer.status = 'failed';
+              updatedTransfer.completedAt = new Date().toISOString();
+            }
+            
+            await redisService.setTransfer(transferId, updatedTransfer);
+          }
+        } catch (err: unknown) {
+          // Log but don't fail the webhook
+          try {
+            const { createLogger } = await import('@consuelo/logger');
+            createLogger('voice:dial-status').error('Failed to update transfer record', {
+              transferId,
+              error: err instanceof Error ? err.message : 'unknown error',
+            });
+          } catch {
+            // Logger unavailable, continue
+          }
+        }
       }
 
       // Return empty TwiML for dial status callbacks

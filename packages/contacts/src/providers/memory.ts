@@ -1,6 +1,6 @@
 import type { Contact, Queue, StorageProvider } from '../types.js';
 
-/** In-memory storage provider — useful for testing and simple setups */
+// In-memory storage provider — useful for testing and simple setups
 export class MemoryProvider implements StorageProvider {
   private contacts = new Map<string, Contact>();
   private queues = new Map<string, Queue>();
@@ -31,16 +31,16 @@ export class MemoryProvider implements StorageProvider {
     return this.contacts.delete(id);
   }
 
-  async searchContacts(query: string, userId?: string): Promise<Contact[]> {
+  async searchContacts(query: string, workspaceId?: string): Promise<Contact[]> {
     const q = query.toLowerCase();
     return [...this.contacts.values()].filter((c) => {
-      if (userId && c.userId !== userId) return false;
+      if (workspaceId && c.workspaceId !== workspaceId) return false;
       return c.name?.toLowerCase().includes(q) || c.phone?.includes(q) || c.email?.toLowerCase().includes(q);
     });
   }
 
-  async listContacts(userId: string): Promise<Contact[]> {
-    return [...this.contacts.values()].filter((c) => c.userId === userId);
+  async listContacts(workspaceId: string): Promise<Contact[]> {
+    return [...this.contacts.values()].filter((c) => c.workspaceId === workspaceId);
   }
 
   async createQueue(data: Omit<Queue, 'id' | 'createdAt'>): Promise<Queue> {
