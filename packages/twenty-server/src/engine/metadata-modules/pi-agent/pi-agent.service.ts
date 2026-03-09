@@ -8,8 +8,12 @@ import {
   DatabaseSessionManager,
   createPiCrmTools,
   createContextInjection,
+  createDialerTools,
+  createKbTools,
   CrmClient,
   type AgentSessionData,
+  type DialerService,
+  type KbService,
 } from '@consuelo/agent';
 import type { AgentTool } from '@mariozechner/pi-agent-core';
 
@@ -29,16 +33,22 @@ export class PiAgentService {
   async createSession(
     userId: string,
     workspaceId: string,
-    crmClient?: CrmClient,
+    options?: {
+      crmClient?: CrmClient;
+      dialerService?: DialerService;
+      kbService?: KbService;
+    },
   ): Promise<AgentSessionData> {
     try {
       const contextInjection = createContextInjection();
       const systemPrompt =
         BASE_SYSTEM_PROMPT + contextInjection.buildSystemPromptSuffix();
 
-      const tools: AgentTool[] = crmClient
-        ? createPiCrmTools(crmClient)
-        : [];
+      const tools: AgentTool[] = [
+        ...(options?.crmClient ? createPiCrmTools(options.crmClient) : []),
+        ...(options?.dialerService ? createDialerTools(options.dialerService) : []),
+        ...(options?.kbService ? createKbTools(options.kbService) : []),
+      ];
 
       const session: AgentSessionData = {
         id: randomUUID(),

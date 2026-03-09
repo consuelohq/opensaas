@@ -1,5 +1,4 @@
 import type { AgentConfig, AgentContext, AgentMemoryFull, AgentMessage } from './types.js';
-import type { ToolRegistry } from './tools/types.js';
 
 const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
   Array.isArray(value) && value.length > 0;
@@ -7,7 +6,6 @@ const isNonEmptyArray = <T>(value: T[] | null | undefined): value is T[] =>
 export type AgentOptions = {
   config: AgentConfig;
   context: AgentContext;
-  tools?: ToolRegistry;
 };
 
 export type ChatOptions = {
@@ -19,23 +17,6 @@ export type ChatOptions = {
 // strip newlines and backtick fences from untrusted CRM fields
 const sanitizeField = (value: string): string =>
   value.replace(/[\n\r]/g, ' ').replace(/```/g, '');
-
-// convert our tool registry to AI SDK ToolSet format
-// HACK: ToolSet generic variance makes direct typing impossible — cast at boundaries
-export const buildToolSet = async (registry: ToolRegistry) => {
-  const { tool } = await import('ai');
-  const toolSet: Record<string, unknown> = {}; // HACK: ToolSet variance requires cast at call sites
-
-  for (const [name, def] of registry.tools) {
-    toolSet[name] = tool({
-      description: def.description,
-      inputSchema: def.parameters,
-      execute: def.execute,
-    });
-  }
-
-  return toolSet;
-};
 
 // construct system prompt from context layers with injection defense delimiters
 export const buildSystemPrompt = (
@@ -211,13 +192,11 @@ export const resolveModel = async (config: AgentConfig) => {
 export class AgentService {
   private config: AgentConfig;
   private context: AgentContext;
-  private tools?: ToolRegistry;
   private executor?: InstanceType<typeof import('./executor/index.js').AgentExecutor>;
 
   constructor(options: AgentOptions) {
     this.config = options.config;
     this.context = options.context;
-    this.tools = options.tools;
   }
 
   private async getExecutor() {
@@ -250,25 +229,10 @@ export class AgentService {
         });
       }
 
-      const individualTools = this.tools ? await buildToolSet(this.tools) : undefined;
+      const individualTools = undefined;
 
-      // wrap tools in code mode — LLM writes JS to orchestrate multiple tool calls
-      // HACK: createCodeTool returns Tool but streamText expects ToolSet values
-      let tools = individualTools as Parameters<typeof ai.streamText>[0]['tools'];
-      if (individualTools) {
-        try {
-          const { createCodeTool } = await import('@cloudflare/codemode/ai');
-          const executor = await this.getExecutor();
-          // HACK: ToolSet variance — individualTools is Record<string, unknown> from buildToolSet
-          const codemode = createCodeTool({
-            tools: individualTools as Parameters<typeof createCodeTool>[0]['tools'],
-            executor,
-          });
-          tools = { codemode, ...individualTools } as Parameters<typeof ai.streamText>[0]['tools'];
-        } catch {
-          // code mode unavailable — fall back to individual tools only
-        }
-      }
+      // tools are now registered via pi-agent-core (see pi-extensions/)
+      const tools = individualTools as Parameters<typeof ai.streamText>[0]['tools'];
 
       // HACK: model type mismatch between LanguageModelV2 (provider) and LanguageModel (streamText)
       // due to moduleResolution:"node" in tsconfig.base.json — safe at runtime
@@ -317,9 +281,5 @@ export class AgentService {
 
   getContext(): AgentContext {
     return this.context;
-  }
-
-  getTools(): ToolRegistry | undefined {
-    return this.tools;
   }
 }
