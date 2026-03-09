@@ -1,11 +1,35 @@
 // core
 export { AgentService } from './agent.js';
-export type { AgentOptions, ChatOptions, PiSession, PiSessionResult, BeforeTurnExtension, ModelCyclingConfig } from './agent.js';
+export type {
+  AgentOptions,
+  ChatOptions,
+  PiSession,
+  PiSessionResult,
+  PiStreamEvent,
+  PiTextDelta,
+  PiToolCallStart,
+  PiToolCallResult,
+  PiUsage,
+  PiDone,
+  BeforeTurnExtension,
+  ModelCyclingConfig,
+} from './agent.js';
 export { DEFAULT_MODEL_CYCLING } from './agent.js';
 
 // chat
 export { handleChat } from './chat.js';
-export type { ChatHandlerOptions, ChatResult } from './chat.js';
+export type {
+  ChatHandlerOptions,
+  ChatResult,
+  SseEvent,
+  SseTextEvent,
+  SseToolCallEvent,
+  SseToolResultEvent,
+  SseUsageEvent,
+  SseSessionEvent,
+  SseDoneEvent,
+  SseErrorEvent,
+} from './chat.js';
 
 // sandbox
 export { SandboxService } from './sandbox.js';
