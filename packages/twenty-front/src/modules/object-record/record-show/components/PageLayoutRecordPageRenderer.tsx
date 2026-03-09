@@ -1,5 +1,6 @@
 import { RecordShowRightDrawerActionMenu } from '@/action-menu/components/RecordShowRightDrawerActionMenu';
 import { RecordShowRightDrawerOpenRecordButton } from '@/action-menu/components/RecordShowRightDrawerOpenRecordButton';
+import { ListRecordQueueControls } from '@/dialer/components/ListRecordQueueControls';
 import { InformationBannerDeletedRecord } from '@/information-banner/components/deleted-record/InformationBannerDeletedRecord';
 import { CoreObjectNameSingular } from '@/object-metadata/types/CoreObjectNameSingular';
 import { RecordShowContainerContextStoreTargetedRecordsEffect } from '@/object-record/record-show/components/RecordShowContainerContextStoreTargetedRecordsEffect';
@@ -76,6 +77,12 @@ export const PageLayoutRecordPageRenderer = ({
       )}
 
       <StyledShowPageRightContainer>
+        {targetRecordIdentifier.targetObjectNameSingular ===
+          CoreObjectNameSingular.Opportunity && (
+          <ListRecordQueueControls
+            recordId={targetRecordIdentifier.id}
+          />
+        )}
         <StyledContentContainer isInRightDrawer={isInRightDrawer}>
           <LayoutRenderingProvider
             value={{

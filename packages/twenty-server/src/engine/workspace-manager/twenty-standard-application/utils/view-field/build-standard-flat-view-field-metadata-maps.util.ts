@@ -7,6 +7,7 @@ import { type FlatViewField } from 'src/engine/metadata-modules/flat-view-field/
 import { type AllStandardObjectName } from 'src/engine/workspace-manager/twenty-standard-application/types/all-standard-object-name.type';
 import { computeStandardCalendarEventViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-calendar-event-view-fields.util';
 import { computeStandardCompanyViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-company-view-fields.util';
+import { computeStandardListMemberViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-list-member-view-fields.util';
 import { computeStandardDashboardViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-dashboard-view-fields.util';
 import { computeStandardMessageThreadViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-message-thread-view-fields.util';
 import { computeStandardMessageViewFields } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field/compute-standard-message-view-fields.util';
@@ -26,6 +27,7 @@ type StandardViewFieldBuilder<P extends AllStandardObjectName> = (
 const STANDARD_FLAT_VIEW_FIELD_METADATA_BUILDERS_BY_OBJECT_NAME = {
   calendarEvent: computeStandardCalendarEventViewFields,
   company: computeStandardCompanyViewFields,
+  listMember: computeStandardListMemberViewFields,
   dashboard: computeStandardDashboardViewFields,
   message: computeStandardMessageViewFields,
   messageThread: computeStandardMessageThreadViewFields,

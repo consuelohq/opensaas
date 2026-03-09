@@ -20,14 +20,14 @@ export const computeStandardOpportunityViewFieldGroups = (
           isVisible: true,
         },
       }),
-    opportunityRecordPageFieldsAdditional:
+    opportunityRecordPageFieldsSession:
       createStandardViewFieldGroupFlatMetadata({
         ...args,
         objectName: 'opportunity',
         context: {
           viewName: 'opportunityRecordPageFields',
-          viewFieldGroupName: 'additional',
-          name: 'Additional',
+          viewFieldGroupName: 'session',
+          name: 'Session',
           position: 1,
           isVisible: true,
         },

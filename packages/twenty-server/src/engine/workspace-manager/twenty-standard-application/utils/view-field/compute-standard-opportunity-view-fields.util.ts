@@ -1,4 +1,3 @@
-import { AggregateOperations } from 'src/engine/api/graphql/graphql-query-runner/constants/aggregate-operations.constant';
 import { type FlatViewField } from 'src/engine/metadata-modules/flat-view-field/types/flat-view-field.type';
 import {
   createStandardViewFieldFlatMetadata,
@@ -22,66 +21,76 @@ export const computeStandardOpportunityViewFields = (
         size: 150,
       },
     }),
-    allOpportunitiesAmount: createStandardViewFieldFlatMetadata({
+    allOpportunitiesListStatus: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        viewFieldName: 'amount',
-        fieldName: 'amount',
+        viewFieldName: 'listStatus',
+        fieldName: 'listStatus',
         position: 1,
         isVisible: true,
-        size: 150,
-        aggregateOperation: AggregateOperations.AVG,
+        size: 120,
       },
     }),
-    allOpportunitiesCreatedBy: createStandardViewFieldFlatMetadata({
+    allOpportunitiesContactCount: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        viewFieldName: 'createdBy',
-        fieldName: 'createdBy',
+        viewFieldName: 'contactCount',
+        fieldName: 'contactCount',
         position: 2,
         isVisible: true,
-        size: 150,
+        size: 100,
       },
     }),
-    allOpportunitiesCloseDate: createStandardViewFieldFlatMetadata({
+    allOpportunitiesOrdering: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        viewFieldName: 'closeDate',
-        fieldName: 'closeDate',
+        viewFieldName: 'ordering',
+        fieldName: 'ordering',
         position: 3,
         isVisible: true,
-        size: 150,
-        aggregateOperation: AggregateOperations.MIN,
+        size: 120,
       },
     }),
-    allOpportunitiesCompany: createStandardViewFieldFlatMetadata({
+    allOpportunitiesOwner: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        viewFieldName: 'company',
-        fieldName: 'company',
+        viewFieldName: 'owner',
+        fieldName: 'owner',
         position: 4,
         isVisible: true,
         size: 150,
       },
     }),
-    allOpportunitiesPointOfContact: createStandardViewFieldFlatMetadata({
+    allOpportunitiesSessionStartedAt: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        viewFieldName: 'pointOfContact',
-        fieldName: 'pointOfContact',
+        viewFieldName: 'sessionStartedAt',
+        fieldName: 'sessionStartedAt',
         position: 5,
         isVisible: true,
         size: 150,
+      },
+    }),
+    allOpportunitiesElapsedSeconds: createStandardViewFieldFlatMetadata({
+      ...args,
+      objectName: 'opportunity',
+      context: {
+        viewName: 'allOpportunities',
+        viewFieldName: 'elapsedSeconds',
+        fieldName: 'elapsedSeconds',
+        position: 6,
+        isVisible: true,
+        size: 100,
       },
     }),
 
@@ -98,132 +107,82 @@ export const computeStandardOpportunityViewFields = (
         size: 150,
       },
     }),
-    byStageAmount: createStandardViewFieldFlatMetadata({
+    byStageContactCount: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewFieldName: 'amount',
-        fieldName: 'amount',
+        viewFieldName: 'contactCount',
+        fieldName: 'contactCount',
         position: 1,
         isVisible: true,
-        size: 150,
+        size: 100,
       },
     }),
-    byStageCreatedBy: createStandardViewFieldFlatMetadata({
+    byStageOrdering: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewFieldName: 'createdBy',
-        fieldName: 'createdBy',
+        viewFieldName: 'ordering',
+        fieldName: 'ordering',
         position: 2,
         isVisible: true,
-        size: 150,
+        size: 120,
       },
     }),
-    byStageCloseDate: createStandardViewFieldFlatMetadata({
+    byStageOwner: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        viewFieldName: 'closeDate',
-        fieldName: 'closeDate',
+        viewFieldName: 'owner',
+        fieldName: 'owner',
         position: 3,
-        isVisible: true,
-        size: 150,
-      },
-    }),
-    byStageCompany: createStandardViewFieldFlatMetadata({
-      ...args,
-      objectName: 'opportunity',
-      context: {
-        viewName: 'byStage',
-        viewFieldName: 'company',
-        fieldName: 'company',
-        position: 4,
-        isVisible: true,
-        size: 150,
-      },
-    }),
-    byStagePointOfContact: createStandardViewFieldFlatMetadata({
-      ...args,
-      objectName: 'opportunity',
-      context: {
-        viewName: 'byStage',
-        viewFieldName: 'pointOfContact',
-        fieldName: 'pointOfContact',
-        position: 5,
         isVisible: true,
         size: 150,
       },
     }),
 
     // opportunityRecordPageFields view fields
-    opportunityRecordPageFieldsAmount: createStandardViewFieldFlatMetadata({
+    opportunityRecordPageFieldsListStatus: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'opportunityRecordPageFields',
-        viewFieldName: 'amount',
-        fieldName: 'amount',
+        viewFieldName: 'listStatus',
+        fieldName: 'listStatus',
         position: 0,
         isVisible: true,
         size: 150,
         viewFieldGroupName: 'general',
       },
     }),
-    opportunityRecordPageFieldsCloseDate: createStandardViewFieldFlatMetadata({
+    opportunityRecordPageFieldsOrdering: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',
       context: {
         viewName: 'opportunityRecordPageFields',
-        viewFieldName: 'closeDate',
-        fieldName: 'closeDate',
+        viewFieldName: 'ordering',
+        fieldName: 'ordering',
         position: 1,
         isVisible: true,
         size: 150,
         viewFieldGroupName: 'general',
       },
     }),
-    opportunityRecordPageFieldsStage: createStandardViewFieldFlatMetadata({
-      ...args,
-      objectName: 'opportunity',
-      context: {
-        viewName: 'opportunityRecordPageFields',
-        viewFieldName: 'stage',
-        fieldName: 'stage',
-        position: 2,
-        isVisible: true,
-        size: 150,
-        viewFieldGroupName: 'general',
-      },
-    }),
-    opportunityRecordPageFieldsCompany: createStandardViewFieldFlatMetadata({
-      ...args,
-      objectName: 'opportunity',
-      context: {
-        viewName: 'opportunityRecordPageFields',
-        viewFieldName: 'company',
-        fieldName: 'company',
-        position: 3,
-        isVisible: true,
-        size: 150,
-        viewFieldGroupName: 'general',
-      },
-    }),
-    opportunityRecordPageFieldsPointOfContact:
+    opportunityRecordPageFieldsContactCount:
       createStandardViewFieldFlatMetadata({
         ...args,
         objectName: 'opportunity',
         context: {
           viewName: 'opportunityRecordPageFields',
-          viewFieldName: 'pointOfContact',
-          fieldName: 'pointOfContact',
-          position: 0,
+          viewFieldName: 'contactCount',
+          fieldName: 'contactCount',
+          position: 2,
           isVisible: true,
           size: 150,
-          viewFieldGroupName: 'additional',
+          viewFieldGroupName: 'general',
         },
       }),
     opportunityRecordPageFieldsOwner: createStandardViewFieldFlatMetadata({
@@ -233,12 +192,68 @@ export const computeStandardOpportunityViewFields = (
         viewName: 'opportunityRecordPageFields',
         viewFieldName: 'owner',
         fieldName: 'owner',
-        position: 1,
+        position: 3,
         isVisible: true,
         size: 150,
-        viewFieldGroupName: 'additional',
+        viewFieldGroupName: 'general',
       },
     }),
+    opportunityRecordPageFieldsSessionStartedAt:
+      createStandardViewFieldFlatMetadata({
+        ...args,
+        objectName: 'opportunity',
+        context: {
+          viewName: 'opportunityRecordPageFields',
+          viewFieldName: 'sessionStartedAt',
+          fieldName: 'sessionStartedAt',
+          position: 0,
+          isVisible: true,
+          size: 150,
+          viewFieldGroupName: 'session',
+        },
+      }),
+    opportunityRecordPageFieldsSessionEndedAt:
+      createStandardViewFieldFlatMetadata({
+        ...args,
+        objectName: 'opportunity',
+        context: {
+          viewName: 'opportunityRecordPageFields',
+          viewFieldName: 'sessionEndedAt',
+          fieldName: 'sessionEndedAt',
+          position: 1,
+          isVisible: true,
+          size: 150,
+          viewFieldGroupName: 'session',
+        },
+      }),
+    opportunityRecordPageFieldsElapsedSeconds:
+      createStandardViewFieldFlatMetadata({
+        ...args,
+        objectName: 'opportunity',
+        context: {
+          viewName: 'opportunityRecordPageFields',
+          viewFieldName: 'elapsedSeconds',
+          fieldName: 'elapsedSeconds',
+          position: 2,
+          isVisible: true,
+          size: 150,
+          viewFieldGroupName: 'session',
+        },
+      }),
+    opportunityRecordPageFieldsCurrentIndex:
+      createStandardViewFieldFlatMetadata({
+        ...args,
+        objectName: 'opportunity',
+        context: {
+          viewName: 'opportunityRecordPageFields',
+          viewFieldName: 'currentIndex',
+          fieldName: 'currentIndex',
+          position: 3,
+          isVisible: true,
+          size: 150,
+          viewFieldGroupName: 'session',
+        },
+      }),
     opportunityRecordPageFieldsCreatedAt: createStandardViewFieldFlatMetadata({
       ...args,
       objectName: 'opportunity',

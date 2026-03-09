@@ -38,6 +38,9 @@ const DASHBOARD_PAGE_TABS = {
       dealValueCreatedThisMonth: {
         universalIdentifier: '20202020-d111-4d11-8d11-da5ab0a11008',
       },
+      queuePerformance: {
+        universalIdentifier: '20202020-d111-4d11-8d11-da5ab0a11009',
+      },
     },
   },
 } as const satisfies Record<string, StandardPageLayoutTabConfig>;

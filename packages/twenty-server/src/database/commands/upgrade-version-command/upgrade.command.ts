@@ -24,6 +24,7 @@ import { BackfillMessageChannelThrottleRetryAfterCommand } from 'src/database/co
 import { MigrateActivityRichTextAttachmentFileIdsCommand } from 'src/database/commands/upgrade-version-command/1-18/1-18-migrate-activity-rich-text-attachment-file-ids.command';
 import { MigrateAttachmentFilesCommand } from 'src/database/commands/upgrade-version-command/1-18/1-18-migrate-attachment-files.command';
 import { MigratePersonAvatarFilesCommand } from 'src/database/commands/upgrade-version-command/1-18/1-18-migrate-person-avatar-files.command';
+import { UpdateListViewsCommand } from 'src/database/commands/upgrade-version-command/1-18/1-18-update-list-views.command';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { DataSourceService } from 'src/engine/metadata-modules/data-source/data-source.service';
@@ -61,6 +62,7 @@ export class UpgradeCommand extends UpgradeCommandRunner {
     protected readonly migrateAttachmentFilesCommand: MigrateAttachmentFilesCommand,
     protected readonly migrateActivityRichTextAttachmentFileIdsCommand: MigrateActivityRichTextAttachmentFileIdsCommand,
     protected readonly backfillMessageChannelThrottleRetryAfterCommand: BackfillMessageChannelThrottleRetryAfterCommand,
+    protected readonly updateListViewsCommand: UpdateListViewsCommand,
   ) {
     super(
       workspaceRepository,
@@ -92,6 +94,7 @@ export class UpgradeCommand extends UpgradeCommandRunner {
       this.migrateActivityRichTextAttachmentFileIdsCommand,
       this.backfillFileSizeAndMimeTypeCommand,
       this.backfillMessageChannelThrottleRetryAfterCommand,
+      this.updateListViewsCommand,
     ];
 
     this.allCommands = {

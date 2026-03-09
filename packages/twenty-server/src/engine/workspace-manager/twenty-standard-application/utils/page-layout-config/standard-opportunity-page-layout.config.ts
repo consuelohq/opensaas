@@ -84,7 +84,7 @@ const OPPORTUNITY_PAGE_TABS = {
 } as const satisfies Record<string, StandardPageLayoutTabConfig>;
 
 export const STANDARD_OPPORTUNITY_PAGE_LAYOUT_CONFIG = {
-  name: 'Default Opportunity Layout',
+  name: 'Default List Layout',
   type: PageLayoutType.RECORD_PAGE,
   objectUniversalIdentifier: STANDARD_OBJECTS.opportunity.universalIdentifier,
   universalIdentifier: '20202020-a103-4003-8003-0aa0b1ca1003',

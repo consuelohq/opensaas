@@ -781,6 +781,9 @@ export const STANDARD_OBJECTS = {
           person: {
             universalIdentifier: '2e4df215-91ed-4cba-b0fb-181d5c43aa49',
           },
+          duration: {
+            universalIdentifier: 'd0e96ca1-8ccd-4440-8e23-60399d31dab6',
+          },
         },
       },
     },
@@ -1331,20 +1334,23 @@ export const STANDARD_OBJECTS = {
           name: {
             universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1baf',
           },
-          amount: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1bb0',
+          listStatus: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000001',
           },
-          createdBy: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1bb1',
+          contactCount: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000002',
           },
-          closeDate: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1bb2',
+          ordering: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000003',
           },
-          company: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1bb3',
+          owner: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000004',
           },
-          pointOfContact: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca1bb4',
+          sessionStartedAt: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000005',
+          },
+          elapsedSeconds: {
+            universalIdentifier: 'a1b2c3d4-1001-4a01-8a01-000000000006',
           },
         },
       },
@@ -1354,37 +1360,28 @@ export const STANDARD_OBJECTS = {
           name: {
             universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2baf',
           },
-          amount: {
-            universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2bb0',
+          contactCount: {
+            universalIdentifier: 'a1b2c3d4-1002-4a02-8a02-000000000001',
           },
-          createdBy: {
-            universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2bb1',
+          ordering: {
+            universalIdentifier: 'a1b2c3d4-1002-4a02-8a02-000000000002',
           },
-          closeDate: {
-            universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2bb2',
-          },
-          company: {
-            universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2bb3',
-          },
-          pointOfContact: {
-            universalIdentifier: '20202020-af04-4a04-8a04-0aa0b2ca2bb4',
+          owner: {
+            universalIdentifier: 'a1b2c3d4-1002-4a02-8a02-000000000003',
           },
         },
         viewGroups: {
-          new: {
-            universalIdentifier: '20202020-af14-4a04-8a04-0aa0b2ca2bf1',
+          idle: {
+            universalIdentifier: 'a1b2c3d4-1003-4a03-8a03-000000000001',
           },
-          screening: {
-            universalIdentifier: '20202020-af14-4a04-8a04-0aa0b2ca2bf2',
+          active: {
+            universalIdentifier: 'a1b2c3d4-1003-4a03-8a03-000000000002',
           },
-          meeting: {
-            universalIdentifier: '20202020-af14-4a04-8a04-0aa0b2ca2bf3',
+          paused: {
+            universalIdentifier: 'a1b2c3d4-1003-4a03-8a03-000000000003',
           },
-          proposal: {
-            universalIdentifier: '20202020-af14-4a04-8a04-0aa0b2ca2bf4',
-          },
-          customer: {
-            universalIdentifier: '20202020-af14-4a04-8a04-0aa0b2ca2bf5',
+          completed: {
+            universalIdentifier: 'a1b2c3d4-1003-4a03-8a03-000000000004',
           },
         },
       },
@@ -1394,31 +1391,37 @@ export const STANDARD_OBJECTS = {
           general: {
             universalIdentifier: '20202020-a003-4a03-8a03-0aa0b1ca3101',
           },
-          additional: {
-            universalIdentifier: '20202020-a003-4a03-8a03-0aa0b1ca3102',
+          session: {
+            universalIdentifier: 'a1b2c3d4-1004-4a04-8a04-000000000001',
           },
           other: {
             universalIdentifier: '20202020-a003-4a03-8a03-0aa0b1ca3103',
           },
         },
         viewFields: {
-          amount: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3201',
+          listStatus: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000001',
           },
-          closeDate: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3202',
+          ordering: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000002',
           },
-          stage: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3203',
-          },
-          company: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3204',
-          },
-          pointOfContact: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3205',
+          contactCount: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000003',
           },
           owner: {
-            universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3206',
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000004',
+          },
+          sessionStartedAt: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000005',
+          },
+          sessionEndedAt: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000006',
+          },
+          elapsedSeconds: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000007',
+          },
+          currentIndex: {
+            universalIdentifier: 'a1b2c3d4-1005-4a05-8a05-000000000008',
           },
           createdAt: {
             universalIdentifier: '20202020-af03-4a03-8a03-0aa0b1ca3207',

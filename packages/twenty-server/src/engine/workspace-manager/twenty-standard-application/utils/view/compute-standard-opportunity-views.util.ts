@@ -1,4 +1,3 @@
-import { AggregateOperations } from 'src/engine/api/graphql/graphql-query-runner/constants/aggregate-operations.constant';
 import { type FlatView } from 'src/engine/metadata-modules/flat-view/types/flat-view.type';
 import { ViewKey } from 'src/engine/metadata-modules/view/enums/view-key.enum';
 import { ViewType } from 'src/engine/metadata-modules/view/enums/view-type.enum';
@@ -16,7 +15,7 @@ export const computeStandardOpportunityViews = (
       objectName: 'opportunity',
       context: {
         viewName: 'allOpportunities',
-        name: 'All Opportunities',
+        name: 'All Lists',
         type: ViewType.TABLE,
         key: ViewKey.INDEX,
         position: 0,
@@ -28,14 +27,12 @@ export const computeStandardOpportunityViews = (
       objectName: 'opportunity',
       context: {
         viewName: 'byStage',
-        name: 'By Stage',
+        name: 'By Status',
         type: ViewType.KANBAN,
         key: null,
         position: 2,
         icon: 'IconLayoutKanban',
-        mainGroupByFieldName: 'stage',
-        kanbanAggregateOperation: AggregateOperations.SUM,
-        kanbanAggregateOperationFieldName: 'amount',
+        mainGroupByFieldName: 'listStatus',
       },
     }),
     opportunityRecordPageFields: createStandardViewFlatMetadata({
@@ -43,7 +40,7 @@ export const computeStandardOpportunityViews = (
       objectName: 'opportunity',
       context: {
         viewName: 'opportunityRecordPageFields',
-        name: 'Opportunity Record Page Fields',
+        name: 'List Record Page Fields',
         type: ViewType.FIELDS_WIDGET,
         key: null,
         position: 0,

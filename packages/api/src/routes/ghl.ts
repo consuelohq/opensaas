@@ -66,7 +66,7 @@ const loadConfig = (): GHLOAuthConfig => ({
   ).split(' '),
 });
 
-/** /v1/integrations/ghl routes — OAuth + connection management */
+/** /v1/integrations/leadconnector routes — OAuth + connection management */
 export const ghlRoutes = (): RouteDefinition[] => {
   let authService: GHLAuthService | null = null;
   let syncService: GHLSyncService | null = null;
@@ -126,10 +126,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
   };
 
   return [
-    // POST /v1/integrations/ghl/oauth — start OAuth flow
+    // POST /v1/integrations/leadconnector/oauth — start OAuth flow
     {
       method: 'POST',
-      path: '/v1/integrations/ghl/oauth',
+      path: '/v1/integrations/leadconnector/oauth',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -167,10 +167,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // GET /v1/integrations/ghl/callback — handle OAuth callback
+    // GET /v1/integrations/leadconnector/callback — handle OAuth callback
     {
       method: 'GET',
-      path: '/v1/integrations/ghl/callback',
+      path: '/v1/integrations/leadconnector/callback',
       handler: errorHandler(async (req, res) => {
         const code = req.query?.code;
         const state = req.query?.state;
@@ -229,10 +229,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // GET /v1/integrations/ghl/status — connection status
+    // GET /v1/integrations/leadconnector/status — connection status
     {
       method: 'GET',
-      path: '/v1/integrations/ghl/status',
+      path: '/v1/integrations/leadconnector/status',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -243,10 +243,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // DELETE /v1/integrations/ghl/connection — disconnect
+    // DELETE /v1/integrations/leadconnector/connection — disconnect
     {
       method: 'DELETE',
-      path: '/v1/integrations/ghl/connection',
+      path: '/v1/integrations/leadconnector/connection',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -265,10 +265,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // POST /v1/integrations/ghl/push — push data to GHL for a contact
+    // POST /v1/integrations/leadconnector/push — push data to GHL for a contact
     {
       method: 'POST',
-      path: '/v1/integrations/ghl/push',
+      path: '/v1/integrations/leadconnector/push',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -338,10 +338,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // GET /v1/integrations/ghl/pipelines — list GHL pipelines with stages + existing mappings
+    // GET /v1/integrations/leadconnector/pipelines — list GHL pipelines with stages + existing mappings
     {
       method: 'GET',
-      path: '/v1/integrations/ghl/pipelines',
+      path: '/v1/integrations/leadconnector/pipelines',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -372,10 +372,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // PUT /v1/integrations/ghl/pipelines/mappings — update stage mappings
+    // PUT /v1/integrations/leadconnector/pipelines/mappings — update stage mappings
     {
       method: 'PUT',
-      path: '/v1/integrations/ghl/pipelines/mappings',
+      path: '/v1/integrations/leadconnector/pipelines/mappings',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -438,10 +438,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // POST /v1/integrations/ghl/pipelines/sync — sync opportunities with conflict detection
+    // POST /v1/integrations/leadconnector/pipelines/sync — sync opportunities with conflict detection
     {
       method: 'POST',
-      path: '/v1/integrations/ghl/pipelines/sync',
+      path: '/v1/integrations/leadconnector/pipelines/sync',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -483,10 +483,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // POST /v1/integrations/ghl/import — initial import with pagination
+    // POST /v1/integrations/leadconnector/import — initial import with pagination
     {
       method: 'POST',
-      path: '/v1/integrations/ghl/import',
+      path: '/v1/integrations/leadconnector/import',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -570,10 +570,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // POST /v1/integrations/ghl/sync — incremental sync
+    // POST /v1/integrations/leadconnector/sync — incremental sync
     {
       method: 'POST',
-      path: '/v1/integrations/ghl/sync',
+      path: '/v1/integrations/leadconnector/sync',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -658,10 +658,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // GET /v1/integrations/ghl/sync/log — get sync logs
+    // GET /v1/integrations/leadconnector/sync/log — get sync logs
     {
       method: 'GET',
-      path: '/v1/integrations/ghl/sync/log',
+      path: '/v1/integrations/leadconnector/sync/log',
       handler: errorHandler(async (req, res) => {
         const auth = requireAuth(req, res);
         if (!auth) return;
@@ -679,10 +679,10 @@ export const ghlRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // POST /v1/webhooks/ghl — receive GHL webhook events
+    // POST /v1/webhooks/leadconnector — receive GHL webhook events
     {
       method: 'POST',
-      path: '/v1/webhooks/ghl',
+      path: '/v1/webhooks/leadconnector',
       handler: errorHandler(async (req, res) => {
         const webhookSecret = process.env.GHL_WEBHOOK_SECRET;
         if (webhookSecret) {
