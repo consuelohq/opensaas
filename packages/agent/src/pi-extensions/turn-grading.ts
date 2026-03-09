@@ -63,10 +63,10 @@ export const createTurnGrading = (
       await executionStore.create(input);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
-      logger.error(
-        { err, conversationId: event.metadata.conversationId },
-        `turn grading failed: ${message}`,
-      );
+      logger.error(`turn grading failed: ${message}`, {
+        err,
+        conversationId: event.metadata.conversationId,
+      });
     }
   },
 });

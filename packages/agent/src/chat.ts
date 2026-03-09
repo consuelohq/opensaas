@@ -170,10 +170,12 @@ export const handleChat = async (
         if (options.tracing) await options.tracing.flush();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'streaming failed';
-        logger.error(
-          { err, userId, workspaceId, sessionId },
-          `chat stream error: ${message}`,
-        );
+        logger.error(`chat stream error: ${message}`, {
+          err,
+          userId,
+          workspaceId,
+          sessionId,
+        });
         Sentry.captureException(err, {
           tags: { component: 'chat-handler' },
           user: { id: userId },

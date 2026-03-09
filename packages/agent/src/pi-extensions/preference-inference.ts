@@ -40,10 +40,11 @@ export const createPreferenceInference = (
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'unknown error';
-      logger.error(
-        { err, userId, workspaceId },
-        `preference inference failed: ${message}`,
-      );
+      logger.error(`preference inference failed: ${message}`, {
+        err,
+        userId,
+        workspaceId,
+      });
     }
   },
 });
