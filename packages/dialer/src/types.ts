@@ -179,6 +179,8 @@ export interface TransferOptions {
   from: string;
   type: TransferType;
   userId: string;
+  statusCallbackUrl?: string;
+  transferId?: string;
 }
 
 /** Result of a transfer operation */
@@ -187,6 +189,26 @@ export interface TransferResult {
   transferCallSid?: string;
   conferenceSid?: string;
   error?: string;
+  transferId?: string;
+}
+
+/** Ring time tracking for billing */
+export interface RingTimeMetrics {
+  callSid: string;
+  ringingAt: string;
+  answeredAt?: string;
+  ringDurationMs?: number;
+}
+
+/** Dial status callback payload from Twilio */
+export interface DialStatusPayload {
+  CallSid: string;
+  DialCallStatus: string;
+  DialCallDuration?: string;
+  DialSipResponseCode?: string;
+  RecordingUrl?: string;
+  CallerName?: string;
+  transferId?: string;
 }
 
 /** TwiML generation params for the conference webhook */
