@@ -4699,18 +4699,23 @@ __metadata:
     "@ai-sdk/openai-compatible": "npm:^1.0.33"
     "@cloudflare/codemode": "npm:^0.1.0"
     "@consuelo/logger": "workspace:*"
+    "@mariozechner/pi-agent-core": "npm:^0.57.0"
+    "@sinclair/typebox": "npm:^0.34.0"
     ai: "npm:5.0.52"
     e2b: "npm:^1.13.2"
     isolated-vm: "npm:^6.0.0"
     zod: "npm:^4.3.6"
   peerDependencies:
     "@ai-sdk/openai-compatible": ^1.0.0
+    "@mariozechner/pi-agent-core": ^0.57.0
     ai: ^5.0.0
     e2b: ^1.0.0
     langfuse: ^3.0.0
     zod: ^3.25.0 || ^4.0.0
   peerDependenciesMeta:
     "@ai-sdk/openai-compatible":
+      optional: true
+    "@mariozechner/pi-agent-core":
       optional: true
     ai:
       optional: true
@@ -4794,11 +4799,6 @@ __metadata:
   resolution: "@consuelo/coaching@workspace:packages/coaching"
   dependencies:
     openai: "npm:^6.22.0"
-  peerDependencies:
-    openai: ">=4.0.0"
-  peerDependenciesMeta:
-    openai:
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -9623,9 +9623,9 @@ __metadata:
   linkType: hard
 
 "@lingui/detect-locale@npm:^5.2.0":
-  version: 5.9.1
-  resolution: "@lingui/detect-locale@npm:5.9.1"
-  checksum: 10c0/79e194dec800aaea78b45a78c8781265941ed698ee3d4187f8984487bb9fd946c05b854c5ae0b2bb50fcc23ceddcf77825fa75460a1fd9ef352fb55945f82a9a
+  version: 5.9.2
+  resolution: "@lingui/detect-locale@npm:5.9.2"
+  checksum: 10c0/a552dd1b85e25ef4fceb83272b9ab01eb6c6af94487a4b863f685910a694844e0b38faeb3b84d427b86bc14a66df091e6b70812d8126453b99ce2732297ca541
   languageName: node
   linkType: hard
 
@@ -9808,7 +9808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mariozechner/pi-agent-core@npm:^0.57.1":
+"@mariozechner/pi-agent-core@npm:^0.57.0, @mariozechner/pi-agent-core@npm:^0.57.1":
   version: 0.57.1
   resolution: "@mariozechner/pi-agent-core@npm:0.57.1"
   dependencies:
