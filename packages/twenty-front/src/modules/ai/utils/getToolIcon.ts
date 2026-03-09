@@ -20,7 +20,7 @@ const TOOL_ICON_MAPPINGS = [
     icon: IconWorld,
   },
   {
-    keywords: ['create_', 'update_', 'find_', 'delete_'],
+    keywords: ['create_', 'update_', 'find_', 'delete_', 'search_', 'get_', 'list_'],
     icon: IconDatabase,
   },
   {

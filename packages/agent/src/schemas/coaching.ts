@@ -43,7 +43,8 @@ export type PostCallAnalysisResult = {
 // zod schema builders — lazy-loaded, call only when runtime validation is needed
 
 export const createCoachingSchemas = async () => {
-  const { z } = await import('zod');
+  try {
+    const { z } = await import('zod');
 
   const SalesCoachingSchema = z.object({
     product_or_option_name: z.string(),
@@ -90,4 +91,8 @@ export const createCoachingSchemas = async () => {
     CallAnalyticsSchema,
     PostCallAnalysisResultSchema,
   };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'failed to load zod';
+    throw new Error(`createCoachingSchemas failed: ${message}`);
+  }
 };
