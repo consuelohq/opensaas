@@ -1,4 +1,4 @@
-import type { TransferType, TransferStatus } from '@consuelo/dialer';
+import type { TransferType, TransferStatus, RingTimeMetrics } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import { redisService } from '../services/redis.js';
 import type { RouteDefinition } from './index.js';
@@ -18,6 +18,9 @@ import {
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
 const logger = createLogger('api:audit');
+
+// in-memory tracking for ring time (will move to redis later)
+const ringingStartTimes = new Map<string, number>();
 
 // legacy singleton for webhook routes (no auth context)
 const getLegacyDialer = sharedDialer;
@@ -1613,14 +1616,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
       if (!(await validateTwilioSignature(req, res))) return;
       const body = req.body as Record<string, string> | undefined;
       const callSid = body?.CallSid;
+      const callStatus = body?.CallStatus;
       const dialCallStatus = body?.DialCallStatus;
       const transferId = body?.transfer_id;
 
-      if (!callSid || !dialCallStatus) {
+      if (!callSid) {
         res.status(400).json({
           error: {
             code: 'INVALID_REQUEST',
-            message: 'Missing CallSid or DialCallStatus',
+            message: 'Missing CallSid',
           },
         });
         return;
@@ -1628,8 +1632,30 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const { createLogger } = await import('@consuelo/logger');
-        createLogger('voice:dial-status').info('Dial status callback received', {
+        const dialLogger = createLogger('voice:dial-status');
+
+        // track ring time for billing
+        if (callStatus === 'ringing') {
+          ringingStartTimes.set(callSid, Date.now());
+          dialLogger.info('Call ringing started', { callSid, callStatus });
+        } else if (callStatus === 'in-progress') {
+          const ringingAt = ringingStartTimes.get(callSid);
+          if (ringingAt) {
+            const ringDurationMs = Date.now() - ringingAt;
+            const metrics: RingTimeMetrics = {
+              callSid,
+              ringingAt: new Date(ringingAt).toISOString(),
+              answeredAt: new Date().toISOString(),
+              ringDurationMs,
+            };
+            dialLogger.info('Call answered - ring time metrics', { ...metrics });
+            ringingStartTimes.delete(callSid);
+          }
+        }
+
+        dialLogger.info('Dial status callback received', {
           callSid,
+          callStatus,
           dialCallStatus,
           dialCallDuration: body?.DialCallDuration,
           transferId,
@@ -1639,7 +1665,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       // Return empty TwiML for dial status callbacks
-      res.status(200).set('Content-Type', 'text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
+      res.status(200).type('text/xml').send('<?xml version="1.0" encoding="UTF-8"?><Response></Response>');
     }),
   },
 

@@ -23,6 +23,7 @@ const escapeXml = (str: string): string =>
 export class ConferenceService {
   private client: ReturnType<typeof TwilioClient> | null = null;
   private credentials: TwilioCredentials;
+  private ringingStartTimes = new Map<string, number>();
 
   constructor(credentials?: TwilioCredentials) {
     this.credentials = {
@@ -147,6 +148,7 @@ export class ConferenceService {
           ],
         });
 
+      this.ringingStartTimes.set(participant.callSid, Date.now());
       return { callSid: participant.callSid, conferenceSid: conf.sid };
     } catch (err: unknown) {
       if (err instanceof Error && 'status' in err) throw err;

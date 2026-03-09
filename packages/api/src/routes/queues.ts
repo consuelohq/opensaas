@@ -38,6 +38,9 @@ const SQL_INSERT_QUEUE =
 const SQL_GET_QUEUE =
   'SELECT * FROM call_queues WHERE id = $1 AND workspace_id = $2';
 
+const SQL_LIST_QUEUES =
+  'SELECT * FROM call_queues WHERE workspace_id = $1 ORDER BY created_at DESC';
+
 const SQL_UPDATE_QUEUE_STATUS =
   'UPDATE call_queues SET status = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *';
 
@@ -134,7 +137,21 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 2. GET /v1/queues/:id — get queue with items
+    // 2. GET /v1/queues — list all queues (MUST be before :id route)
+    {
+      method: 'GET',
+      path: '/v1/queues',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_LIST_QUEUES, [auth.workspaceId]);
+        res.status(200).json(rows);
+      }),
+    },
+
+    // 3. GET /v1/queues/:id — get queue with items
     {
       method: 'GET',
       path: '/v1/queues/:id',
@@ -222,7 +239,45 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 5. POST /v1/queues/:id/skip
+    // 5. POST /v1/queues/:id/resume
+    {
+      method: 'POST',
+      path: '/v1/queues/:id/resume',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const db = await getPool();
+        const { rows } = await db.query(SQL_UPDATE_QUEUE_STARTED, [
+          'active',
+          req.params?.id,
+          auth.workspaceId,
+        ]);
+        if (rows.length === 0) {
+          res
+            .status(404)
+            .json({ error: { code: 'NOT_FOUND', message: 'Queue not found' } });
+          return;
+        }
+
+        const next = await db.query(SQL_NEXT_PENDING, [
+          req.params?.id,
+          'pending',
+        ]);
+        if (next.rows.length > 0) {
+          await db.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
+        }
+
+        res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
+        logger.info('queue.resumed', {
+          action: 'queue.resumed',
+          userId: auth.userId ?? 'anonymous',
+          outcome: 'success',
+        });
+      }),
+    },
+
+    // 6. POST /v1/queues/:id/skip
     {
       method: 'POST',
       path: '/v1/queues/:id/skip',
@@ -274,7 +329,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 6. POST /v1/queues/:id/next
+    // 7. POST /v1/queues/:id/next
     {
       method: 'POST',
       path: '/v1/queues/:id/next',
@@ -327,7 +382,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 7. POST /v1/queues/:id/restart
+    // 8. POST /v1/queues/:id/restart
     {
       method: 'POST',
       path: '/v1/queues/:id/restart',
@@ -362,7 +417,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 8. POST /v1/queues/:id/assign
+    // 9. POST /v1/queues/:id/assign
     {
       method: 'POST',
       path: '/v1/queues/:id/assign',
@@ -395,7 +450,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 9. GET /v1/queues/:id/analytics
+    // 10. GET /v1/queues/:id/analytics
     {
       method: 'GET',
       path: '/v1/queues/:id/analytics',
@@ -460,7 +515,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 10. GET /v1/queues/:id/export
+    // 11. GET /v1/queues/:id/export
     {
       method: 'GET',
       path: '/v1/queues/:id/export',
@@ -505,7 +560,7 @@ export const queueRoutes = (): RouteDefinition[] => {
       }),
     },
 
-    // 11. GET /v1/contacts/:id/dialer — contact with dialer-specific fields
+    // 12. GET /v1/contacts/:id/dialer — contact with dialer-specific fields
     {
       method: 'GET',
       path: '/v1/contacts/:id/dialer',
