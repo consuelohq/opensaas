@@ -36,13 +36,26 @@ const mockCrmClient = {
 describe('createPiCrmTools', () => {
   const tools = createPiCrmTools(mockCrmClient);
 
-  it('creates exactly 3 tools', () => {
-    assert.equal(tools.length, 3);
+  it('creates exactly 12 tools', () => {
+    assert.equal(tools.length, 12);
   });
 
   it('has correct tool names', () => {
     const names = tools.map((t) => t.name);
-    assert.deepEqual(names, ['search_contacts', 'get_contact', 'log_call']);
+    assert.deepEqual(names, [
+      'search_contacts',
+      'get_contact',
+      'list_deals',
+      'get_call_history',
+      'get_analytics',
+      'search_kb',
+      'list_integrations',
+      'log_call',
+      'update_deal',
+      'create_note',
+      'add_to_queue',
+      'create_task',
+    ]);
   });
 
   it('each tool has label, description, parameters, and execute', () => {

@@ -46,7 +46,7 @@ export const createKbTools = (
   kb: KbService,
 ): AgentTool[] => [
   {
-    name: 'search_kb',
+    name: 'kb_search',
     label: 'Search Knowledge Base',
     description: 'Search the knowledge base for relevant documents and information',
     parameters: SearchKbParams,

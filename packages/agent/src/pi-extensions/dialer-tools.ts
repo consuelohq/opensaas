@@ -83,6 +83,7 @@ type CancelP = Static<typeof CancelTransferParams>;
 
 export const createDialerTools = (
   dialer: DialerService,
+  userId: string,
 ): AgentTool[] => [
   {
     name: 'mute_call',
@@ -129,7 +130,7 @@ export const createDialerTools = (
           to: targetNumber,
           from,
           type,
-          userId: '',
+          userId,
         }),
         'transfer failed',
       );

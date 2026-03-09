@@ -100,9 +100,9 @@ export const createCoachingLifecycle = (
 
         return [postCallMessage, ...filtered];
       } catch {
-        // don't block the agent if lifecycle detection fails
+        // don't block the agent if lifecycle detection fails — strip stale prompts
         lastSuggestions = [];
-        return messages;
+        return messages.filter((m) => !isPostCallMessage(m));
       }
     },
 

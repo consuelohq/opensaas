@@ -2,6 +2,7 @@
 // old runtime (buildSystemPrompt, resolveModel, PROVIDERS, ai.streamText) removed in DEV-1260
 // DEV-1263: chat() now returns AsyncIterable<PiStreamEvent> for streaming
 
+import { logger } from '@consuelo/logger';
 import type { AgentConfig, AgentContext, AgentMessage } from './types.js';
 import type { AfterTurnEvent, AfterTurnExtension } from './pi-extensions/after-turn.types.js';
 import type { ContextInjection } from './pi-extensions/context-injection.js';
@@ -38,8 +39,8 @@ export type ModelCyclingConfig = {
 };
 
 export const DEFAULT_MODEL_CYCLING: ModelCyclingConfig = {
-  coachingModel: 'groq/gpt-oss-120b',
-  generalModel: 'groq/gpt-oss-120b',
+  coachingModel: 'openai/gpt-oss-120b',
+  generalModel: 'openai/gpt-oss-120b',
 };
 
 export type AgentOptions = {
@@ -82,7 +83,7 @@ export class AgentService {
     // run before-turn extensions (context injection, pipeline intelligence)
     let transformedMessages = options.messages;
     for (const ext of this.beforeTurnExtensions) {
-      // HACK: before-turn extensions use pi-agent-core's AgentMessage type
+      // HACK(DEV-1315): before-turn extensions use pi-agent-core's AgentMessage type
       // which differs from ai SDK's CoreMessage — safe at runtime, both are message arrays
       transformedMessages = await ext.transformContext(
         transformedMessages as Parameters<typeof ext.transformContext>[0],
@@ -113,10 +114,10 @@ export class AgentService {
           fullText += event.text;
           break;
         case 'tool_call_start':
-          toolCalls.push({ name: event.toolName, args: event.args ?? {} });
+          toolCalls.push({ name: event.toolName, args: event.args ?? {}, toolCallId: event.toolCallId });
           break;
         case 'tool_call_result': {
-          const tc = toolCalls.find((t) => !('result' in t) || t.result === undefined);
+          const tc = toolCalls.find((t) => t.toolCallId === event.toolCallId);
           if (tc) tc.result = event.result;
           break;
         }
@@ -142,8 +143,9 @@ export class AgentService {
     };
 
     for (const ext of this.afterTurnExtensions) {
-      ext.afterTurn(afterTurnEvent).catch(() => {
-        // best-effort — don't block response on extension failures
+      ext.afterTurn(afterTurnEvent).catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : 'unknown error';
+        logger.error({ err, extension: ext.name, userId: this.context.userId }, `after-turn extension failed: ${message}`);
       });
     }
   }

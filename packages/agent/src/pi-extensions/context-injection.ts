@@ -115,7 +115,7 @@ export const createContextInjection = (
         DEFAULT_CONTEXT_BUDGET,
       );
 
-      if (layers.length === 0) return messages;
+      if (layers.length === 0) return messages.filter((m) => !isContextMessage(m));
 
       const contextBlock = `${CONTEXT_MARKER}\n${renderContextBlock(layers)}`;
 
@@ -130,8 +130,8 @@ export const createContextInjection = (
 
       return [contextMessage, ...filtered];
     } catch {
-      // don't block the agent if context loading fails
-      return messages;
+      // don't block the agent if context loading fails — but strip stale context
+      return messages.filter((m) => !isContextMessage(m));
     }
   },
 
