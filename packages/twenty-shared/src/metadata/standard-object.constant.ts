@@ -781,6 +781,9 @@ export const STANDARD_OBJECTS = {
           person: {
             universalIdentifier: '2e4df215-91ed-4cba-b0fb-181d5c43aa49',
           },
+          duration: {
+            universalIdentifier: 'd0e96ca1-8ccd-4440-8e23-60399d31dab6',
+          },
         },
       },
     },
