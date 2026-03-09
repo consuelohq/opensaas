@@ -28,7 +28,7 @@ type Pool = {
 };
 
 const GHL_TOKEN_URL = 'https://services.leadconnectorhq.com/oauth/token';
-const GHL_AUTH_BASE = 'https://marketplace.gohighlevel.com/oauth/chooselocation';
+const GHL_AUTH_BASE = 'https://marketplace.leadconnectorhq.com/oauth/chooselocation';
 
 // derive encryption key from APP_SECRET
 const deriveKey = (): Buffer => {
