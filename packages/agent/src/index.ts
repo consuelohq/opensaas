@@ -146,3 +146,16 @@ export type {
   AgentArtifact,
   SkillSuggestion,
 } from './types.js';
+
+
+// pi-agent (DEV-1255)
+export { PiAgentModule, PiAgentService } from './pi/index.js';
+export type {
+  PiAgentConfig,
+  PiAgentOptions,
+  PiExecutionContext,
+  PiExecutionResult,
+  PiStreamEvent,
+  PiToolDefinition,
+  PiModuleOptions,
+} from './pi/index.js';
