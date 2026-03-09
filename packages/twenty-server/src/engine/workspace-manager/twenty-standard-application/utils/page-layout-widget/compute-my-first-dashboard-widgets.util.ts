@@ -682,6 +682,72 @@ const createDealValueCreatedThisMonth = ({
   });
 };
 
+const createQueuePerformance = ({
+  args,
+}: {
+  args: DashboardWidgetBuilderArgs;
+}): FlatPageLayoutWidget => {
+  const opportunityFields =
+    args.standardObjectMetadataRelatedEntityIds.opportunity.fields;
+  const opportunityObjectId =
+    args.standardObjectMetadataRelatedEntityIds.opportunity.id;
+
+  return createStandardPageLayoutWidgetFlatMetadata({
+    ...args,
+    objectMetadataUniversalIdentifier:
+      STANDARD_OBJECTS.opportunity.universalIdentifier,
+    context: {
+      layoutName: 'myFirstDashboard',
+      tabTitle: 'tab1',
+      widgetName: 'queuePerformance',
+      title: 'Queue Performance',
+      type: WidgetType.GRAPH,
+      gridPosition: { row: 20, column: 0, rowSpan: 6, columnSpan: 6 },
+      position: {
+        layoutMode: PageLayoutTabLayoutMode.GRID,
+        row: 20,
+        column: 0,
+        rowSpan: 6,
+        columnSpan: 6,
+      },
+      configuration: {
+        configurationType: WidgetConfigurationType.BAR_CHART,
+        aggregateFieldMetadataId: opportunityFields.listStatus.id,
+        aggregateOperation: AggregateOperations.COUNT,
+        primaryAxisGroupByFieldMetadataId: opportunityFields.listStatus.id,
+        primaryAxisDateGranularity: ObjectRecordGroupByDateGranularity.DAY,
+        primaryAxisOrderBy: GraphOrderBy.FIELD_POSITION_ASC,
+        axisNameDisplay: AxisNameDisplay.NONE,
+        displayDataLabel: true,
+        displayLegend: false,
+        color: 'blue',
+        layout: BarChartLayout.VERTICAL,
+        timezone: 'UTC',
+        firstDayOfTheWeek: CalendarStartDay.SUNDAY,
+      },
+      universalConfiguration: {
+        configurationType: WidgetConfigurationType.BAR_CHART,
+        aggregateFieldMetadataUniversalIdentifier:
+          STANDARD_OBJECTS.opportunity.fields.listStatus.universalIdentifier,
+        aggregateOperation: AggregateOperations.COUNT,
+        primaryAxisGroupByFieldMetadataUniversalIdentifier:
+          STANDARD_OBJECTS.opportunity.fields.listStatus.universalIdentifier,
+        primaryAxisDateGranularity: ObjectRecordGroupByDateGranularity.DAY,
+        primaryAxisOrderBy: GraphOrderBy.FIELD_POSITION_ASC,
+        axisNameDisplay: AxisNameDisplay.NONE,
+        displayDataLabel: true,
+        displayLegend: false,
+        color: 'blue',
+        layout: BarChartLayout.VERTICAL,
+        timezone: 'UTC',
+        firstDayOfTheWeek: CalendarStartDay.SUNDAY,
+      },
+      objectMetadataId: opportunityObjectId,
+      conditionalDisplay: null,
+    },
+  });
+};
+
 export const computeMyFirstDashboardWidgets = (
   args: DashboardWidgetBuilderArgs,
 ): FlatPageLayoutWidget[] => {
@@ -694,5 +760,6 @@ export const computeMyFirstDashboardWidgets = (
     createStockMarketIframe({ args }),
     createDealsCreatedThisMonth({ args }),
     createDealValueCreatedThisMonth({ args }),
+    createQueuePerformance({ args }),
   ];
 };
