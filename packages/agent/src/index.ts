@@ -128,6 +128,9 @@ export type {
 } from './pi-extensions/index.js';
 export { createPiCrmTools } from './pi-extensions/index.js';
 export { createContextInjection } from './pi-extensions/index.js';
+export type { ContextInjection } from './pi-extensions/index.js';
+export { createPipelineIntelligence } from './pi-extensions/index.js';
+export type { PipelineIntelligence } from './pi-extensions/index.js';
 export { createDialerTools } from './pi-extensions/index.js';
 export type { DialerService } from './pi-extensions/index.js';
 export { createKbTools } from './pi-extensions/index.js';
