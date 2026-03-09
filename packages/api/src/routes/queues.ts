@@ -2,10 +2,24 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import { getSharedPool } from '../shared/db.js';
-import { createLogger } from '@consuelo/logger';
-const logger = createLogger('api:audit');
+let _logger: unknown;
 
-type Pool = {
+const getLogger = async () => {
+  try {
+    if (!_logger) {
+      // eslint-disable-next-line @nx/enforce-module-boundaries
+      const { createLogger } = await import('@consuelo/logger');
+      _logger = createLogger('api:audit');
+    }
+    return _logger;
+  } catch (err: unknown) {
+    _logger = null;
+    const message = err instanceof Error ? err.message : 'unknown error';
+    throw new Error(`[getLogger] failed: ${message}`);
+  }
+};
+
+type _Pool = {
   query(
     text: string,
     values?: unknown[],
@@ -129,7 +143,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         await db.query(SQL_INSERT_ITEMS + placeholders.join(', '), values);
 
         res.status(201).json(queue);
-        logger.info('queue.created', {
+        (await getLogger()).info('queue.created', {
           action: 'queue.created',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
@@ -206,7 +220,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
-        logger.info('queue.started', {
+        (await getLogger()).info('queue.started', {
           action: 'queue.started',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
@@ -269,7 +283,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ ...rows[0], currentItem: next.rows[0] ?? null });
-        logger.info('queue.resumed', {
+        (await getLogger()).info('queue.resumed', {
           action: 'queue.resumed',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
@@ -321,7 +335,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         }
 
         res.status(200).json({ skipped: true, nextItem: next.rows[0] ?? null });
-        logger.info('queue.skipped', {
+        (await getLogger()).info('queue.skipped', {
           action: 'queue.skipped',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
@@ -374,7 +388,7 @@ export const queueRoutes = (): RouteDefinition[] => {
           ]);
           res.status(200).json({ nextItem: null, queueCompleted: true });
         }
-        logger.info('queue.next', {
+        (await getLogger()).info('queue.next', {
           action: 'queue.next',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',
@@ -409,7 +423,7 @@ export const queueRoutes = (): RouteDefinition[] => {
         );
 
         res.status(200).json({ restarted: true });
-        logger.info('queue.restarted', {
+        (await getLogger()).info('queue.restarted', {
           action: 'queue.restarted',
           userId: auth.userId ?? 'anonymous',
           outcome: 'success',

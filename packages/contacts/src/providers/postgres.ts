@@ -20,9 +20,7 @@ export class PostgresStorageProvider implements StorageProvider {
     try {
       const now = new Date().toISOString();
       const result = await this.pool.query(
-        `INSERT INTO contacts (name, phone, email, company, tags, custom_fields, user_id, org_id, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-         RETURNING *`,
+        'INSERT INTO contacts (name, phone, email, company, tags, custom_fields, user_id, org_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
         [
           data.name,
           data.phone,
@@ -70,18 +68,7 @@ export class PostgresStorageProvider implements StorageProvider {
 
       const now = new Date().toISOString();
       const result = await this.pool.query(
-        `UPDATE contacts
-         SET name = COALESCE($1, name),
-             phone = COALESCE($2, phone),
-             email = COALESCE($3, email),
-             company = COALESCE($4, company),
-             tags = COALESCE($5, tags),
-             custom_fields = COALESCE($6, custom_fields),
-             user_id = COALESCE($7, user_id),
-             org_id = COALESCE($8, org_id),
-             updated_at = $9
-         WHERE id = $10
-         RETURNING *`,
+        'UPDATE contacts SET name = COALESCE($1, name), phone = COALESCE($2, phone), email = COALESCE($3, email), company = COALESCE($4, company), tags = COALESCE($5, tags), custom_fields = COALESCE($6, custom_fields), user_id = COALESCE($7, user_id), org_id = COALESCE($8, org_id), updated_at = $9 WHERE id = $10 RETURNING *',
         [
           data.name ?? null,
           data.phone ?? null,
@@ -165,9 +152,7 @@ export class PostgresStorageProvider implements StorageProvider {
     try {
       const now = new Date().toISOString();
       const result = await this.pool.query(
-        `INSERT INTO queues (name, contact_ids, ordering, current_index, status, results, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING *`,
+        'INSERT INTO queues (name, contact_ids, ordering, current_index, status, results, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
         [
           data.name,
           JSON.stringify(data.contactIds),
@@ -206,15 +191,7 @@ export class PostgresStorageProvider implements StorageProvider {
       if (!existing) return null;
 
       const result = await this.pool.query(
-        `UPDATE queues
-         SET name = COALESCE($1, name),
-             contact_ids = COALESCE($2, contact_ids),
-             ordering = COALESCE($3, ordering),
-             current_index = COALESCE($4, current_index),
-             status = COALESCE($5, status),
-             results = COALESCE($6, results)
-         WHERE id = $7
-         RETURNING *`,
+        'UPDATE queues SET name = COALESCE($1, name), contact_ids = COALESCE($2, contact_ids), ordering = COALESCE($3, ordering), current_index = COALESCE($4, current_index), status = COALESCE($5, status), results = COALESCE($6, results) WHERE id = $7 RETURNING *',
         [
           data.name ?? null,
           data.contactIds ? JSON.stringify(data.contactIds) : null,
