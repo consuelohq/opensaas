@@ -1258,11 +1258,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         res.status(200).json({ ...result, transferId });
-        (await getLogger()).info('transfer.initiated', {
-          action: 'transfer.initiated',
-          userId: req.auth?.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+        try {
+          (await getLogger()).info('transfer.initiated', {
+            action: 'transfer.initiated',
+            userId: req.auth?.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch {
+          // ignore logger errors after response sent
+        }
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -1650,7 +1654,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const callSid = body?.CallSid;
       const callStatus = body?.CallStatus;
       const dialCallStatus = body?.DialCallStatus;
-      const transferId = body?.transfer_id;
+      const transferId = req.query?.transfer_id ?? body?.transfer_id;
 
       if (!callSid) {
         res.status(400).json({

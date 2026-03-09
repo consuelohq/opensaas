@@ -92,10 +92,16 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastUserMessageRef = useRef<string>('');
 
-  // merge DB messages with any in-flight streaming messages
+  // merge DB messages with any in-flight streaming messages, de-duplicating by id
   const messages: ExtendedUIMessage[] =
     streamingMessages.length > 0
-      ? [...uiMessages, ...streamingMessages]
+      ? (() => {
+          const existingIds = new Set(uiMessages.map((m) => m.id));
+          const uniqueStreaming = streamingMessages.filter(
+            (m) => !existingIds.has(m.id),
+          );
+          return [...uiMessages, ...uniqueStreaming];
+        })()
       : uiMessages;
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
@@ -190,7 +196,7 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
           },
           body: JSON.stringify({
             threadId: currentAIChatThread,
-            message: content,
+            messages: [...uiMessages, userMsg],
             browsingContext,
           }),
           signal: controller.signal,
@@ -347,7 +353,11 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
                 throw new Error(event.message);
               }
 
-              case 'done':
+              case 'done': {
+                // stream complete — reconcile buffer with persisted messages
+                setStreamingMessages([]);
+                return;
+              }
               case 'session':
                 break;
             }
@@ -360,6 +370,7 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
           const message =
             err instanceof Error ? err.message : 'Streaming failed';
 
+          console.error('[useAgentChat] Streaming error:', err);
           setError(new Error(message));
         }
       } finally {

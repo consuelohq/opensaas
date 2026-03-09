@@ -34,6 +34,9 @@ Respond with JSON:
 
 - Always log the call outcome
 - Always create a note with key takeaways
-- If the customer expressed interest, update the deal stage
+- Only update deal stage if there is EXPLICIT evidence (signed agreement, verbal commitment to buy, scheduled demo with decision-maker)
+  - "Expressed interest" or "seemed positive" is NOT sufficient for stage changes
+  - Require concrete signals: budget confirmed, timeline discussed, next steps agreed
 - If a follow-up was promised, create a task with a due date
+- For analytics: if timestamps or diarization are unavailable, use "N/A" instead of fabricating values
 - Be thorough — this is the permanent record of the call
