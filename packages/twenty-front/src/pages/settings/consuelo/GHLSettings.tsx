@@ -240,7 +240,7 @@ export const GHLSettings = () => {
     try {
       setError(null);
       const data = await fetchJson<ConnectionStatus>(
-        '/v1/integrations/ghl/status',
+        '/v1/integrations/leadconnector/status',
       );
       setStatus(data);
       setGhlConnection({
@@ -265,7 +265,7 @@ export const GHLSettings = () => {
       setConnecting(true);
       setError(null);
       const data = await fetchJson<{ redirectUrl: string }>(
-        '/v1/integrations/ghl/oauth',
+        '/v1/integrations/leadconnector/oauth',
         { method: 'POST' },
       );
       window.location.href = data.redirectUrl;
@@ -280,7 +280,7 @@ export const GHLSettings = () => {
     try {
       setDisconnecting(true);
       setError(null);
-      await fetchJson('/v1/integrations/ghl/connection', { method: 'DELETE' });
+      await fetchJson('/v1/integrations/leadconnector/connection', { method: 'DELETE' });
       setStatus({ connected: false });
       setGhlConnection({
         connected: false,

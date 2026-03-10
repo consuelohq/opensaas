@@ -12,7 +12,7 @@ import type {
   TwentyPipelineStage,
 } from '@/settings/integrations/types/ghl';
 
-const GHL_PIPELINES_API = `${REST_API_BASE_URL}/v1/integrations/ghl/pipelines`;
+const GHL_PIPELINES_API = `${REST_API_BASE_URL}/v1/integrations/leadconnector/pipelines`;
 
 const getAuthHeaders = (): Record<string, string> => {
   const tokenPair = getTokenPair();

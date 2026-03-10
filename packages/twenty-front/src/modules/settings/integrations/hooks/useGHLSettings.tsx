@@ -20,7 +20,7 @@ import type {
   GHLSyncLogEntry,
 } from '@/settings/integrations/types/ghl';
 
-const GHL_API_BASE = `${REST_API_BASE_URL}/v1/integrations/ghl`;
+const GHL_API_BASE = `${REST_API_BASE_URL}/v1/integrations/leadconnector`;
 
 const getAuthHeaders = (): Record<string, string> => {
   const tokenPair = getTokenPair();
