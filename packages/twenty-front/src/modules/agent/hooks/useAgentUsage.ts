@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 type UsageSummary = {
@@ -40,8 +40,8 @@ export const useAgentUsage = () => {
 
     try {
       const [summaryResponse, breakdownResponse] = await Promise.all([
-        fetch(`${REST_API_BASE_URL}/v1/agent/automations/usage`, { headers }),
-        fetch(`${REST_API_BASE_URL}/v1/agent/automations/usage/breakdown`, {
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage`, { headers }),
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage/breakdown`, {
           headers,
         }),
       ]);

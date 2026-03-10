@@ -71,7 +71,12 @@ type PaginatedSkills = {
   };
 };
 
-// STUB: DEV-948 — all methods throw 501 until storage layer is wired
+// STUB: DEV-948 — returns empty data until storage layer is wired
+const emptyPaginatedSkills = (): PaginatedSkills => ({
+  skills: [],
+  pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
+});
+
 const notImplemented = (route: string): never => {
   throw new HttpException(
     {
@@ -91,8 +96,8 @@ export class SkillController {
   // literal routes before param routes
 
   @Get('folders')
-  listFolders(@AuthWorkspace() _workspace: WorkspaceEntity): never {
-    return notImplemented('GET /v1/agent/skills/folders');
+  listFolders(@AuthWorkspace() _workspace: WorkspaceEntity) {
+    return { folders: [] };
   }
 
   @Post('folders')
@@ -109,8 +114,8 @@ export class SkillController {
     @Query() _query: ListSkillsQuery,
     @AuthUser() _user: UserEntity,
     @AuthWorkspace() _workspace: WorkspaceEntity,
-  ): never {
-    return notImplemented('GET /v1/agent/skills');
+  ) {
+    return emptyPaginatedSkills();
   }
 
   @Post()

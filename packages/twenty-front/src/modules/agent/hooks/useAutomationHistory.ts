@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 type AutomationRun = {
@@ -36,7 +36,7 @@ export const useAutomationHistory = (automationId: string | null) => {
 
     try {
       const response = await fetch(
-        `${REST_API_BASE_URL}/v1/agent/automations/${automationId}/runs`,
+        `${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/${automationId}/runs`,
         { headers: authHeaders() },
       );
 

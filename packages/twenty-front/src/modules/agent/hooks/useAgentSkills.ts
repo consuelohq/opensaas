@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 
 import { selectedSkillIdState } from '@/agent/states/agentState';
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 type SkillListItem = {
@@ -43,8 +43,8 @@ export const useAgentSkills = () => {
 
     try {
       const [skillsResponse, foldersResponse] = await Promise.all([
-        fetch(`${REST_API_BASE_URL}/v1/agent/skills`, { headers }),
-        fetch(`${REST_API_BASE_URL}/v1/agent/skills/folders`, { headers }),
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/skills`, { headers }),
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/skills/folders`, { headers }),
       ]);
 
       if (skillsResponse.ok) {

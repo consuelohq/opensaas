@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
 
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 const StyledContainer = styled.div`
@@ -105,7 +105,7 @@ export const SkillVersionHistory = ({
 
       try {
         const response = await fetch(
-          `${REST_API_BASE_URL}/v1/agent/skills/${skillId}/versions/${version}/rollback`,
+          `${REACT_APP_SERVER_BASE_URL}/v1/agent/skills/${skillId}/versions/${version}/rollback`,
           {
             method: 'POST',
             headers: {

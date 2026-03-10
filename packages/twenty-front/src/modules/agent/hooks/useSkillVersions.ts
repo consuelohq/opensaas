@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { REST_API_BASE_URL } from '@/apollo/constant/rest-api-base-url';
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 type SkillVersion = {
@@ -33,7 +33,7 @@ export const useSkillVersions = (skillId: string | null) => {
 
     try {
       const response = await fetch(
-        `${REST_API_BASE_URL}/v1/agent/skills/${skillId}/versions`,
+        `${REACT_APP_SERVER_BASE_URL}/v1/agent/skills/${skillId}/versions`,
         {
           headers: {
             Authorization: `Bearer ${tokenPair.accessOrWorkspaceAgnosticToken.token}`,
