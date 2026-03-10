@@ -12,14 +12,18 @@ import {
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { IsNull, type Repository } from 'typeorm';
 
 import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
+import { AgentSkillEntity } from 'src/engine/core-modules/agent/entities/agent-skill.entity';
+import { AgentSkillFolderEntity } from 'src/engine/core-modules/agent/entities/agent-skill-folder.entity';
 import type {
-  Skill,
   SkillCategory,
-  SkillIntegrationRequirement,
   SkillOutputFormat,
   SkillTriggerType,
+  SkillIntegrationRequirement,
 } from 'src/engine/core-modules/agent/types';
 import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
@@ -61,22 +65,6 @@ type ListSkillsQuery = {
   limit?: string;
 };
 
-type PaginatedSkills = {
-  skills: Skill[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-};
-
-// STUB: DEV-948 — returns empty data until storage layer is wired
-const emptyPaginatedSkills = (): PaginatedSkills => ({
-  skills: [],
-  pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-});
-
 const notImplemented = (route: string): never => {
   throw new HttpException(
     {
@@ -93,11 +81,23 @@ const notImplemented = (route: string): never => {
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 @UseFilters(RestApiExceptionFilter)
 export class SkillController {
+  constructor(
+    @InjectRepository(AgentSkillEntity)
+    private readonly skillRepository: Repository<AgentSkillEntity>,
+    @InjectRepository(AgentSkillFolderEntity)
+    private readonly folderRepository: Repository<AgentSkillFolderEntity>,
+  ) {}
+
   // literal routes before param routes
 
   @Get('folders')
-  listFolders(@AuthWorkspace() _workspace: WorkspaceEntity) {
-    return { folders: [] };
+  async listFolders(@AuthWorkspace() workspace: WorkspaceEntity) {
+    const folders = await this.folderRepository.find({
+      where: { workspaceId: workspace.id, deletedAt: IsNull() },
+      order: { name: 'ASC' },
+    });
+
+    return { folders };
   }
 
   @Post('folders')
@@ -110,12 +110,61 @@ export class SkillController {
   }
 
   @Get()
-  listSkills(
-    @Query() _query: ListSkillsQuery,
+  async listSkills(
+    @Query() query: ListSkillsQuery,
     @AuthUser() _user: UserEntity,
-    @AuthWorkspace() _workspace: WorkspaceEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
   ) {
-    return emptyPaginatedSkills();
+    const page = Math.max(1, parseInt(query.page ?? '1', 10) || 1);
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(query.limit ?? '20', 10) || 20),
+    );
+
+    const qb = this.skillRepository
+      .createQueryBuilder('skill')
+      .where('skill.workspaceId = :workspaceId', {
+        workspaceId: workspace.id,
+      })
+      .andWhere('skill.deletedAt IS NULL');
+
+    if (query.category) {
+      qb.andWhere('skill.category = :category', {
+        category: query.category,
+      });
+    }
+
+    if (query.type) {
+      qb.andWhere('skill.type = :type', { type: query.type });
+    }
+
+    if (query.folderId) {
+      qb.andWhere('skill.folderId = :folderId', {
+        folderId: query.folderId,
+      });
+    }
+
+    if (query.search) {
+      qb.andWhere('(skill.name ILIKE :search OR skill.description ILIKE :search)', {
+        search: `%${query.search}%`,
+      });
+    }
+
+    const [skills, total] = await qb
+      .orderBy('skill.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      skills,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   @Post()

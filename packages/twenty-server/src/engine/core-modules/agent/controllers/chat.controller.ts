@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 
 import {
+  convertToModelMessages,
   createUIMessageStream,
   pipeUIMessageStreamToResponse,
   streamText,
@@ -22,7 +23,11 @@ import { WorkspaceAuthGuard } from 'src/engine/guards/workspace-auth.guard';
 import { AiModelRegistryService } from 'src/engine/metadata-modules/ai/ai-models/services/ai-model-registry.service';
 
 type ChatBody = {
-  message: string;
+  messages: Array<{
+    role: string;
+    parts?: Array<{ type: string; text?: string }>;
+    content?: string;
+  }>;
   conversationId?: string;
   skillId?: string;
 };
@@ -59,7 +64,7 @@ export class ChatController {
           const result = streamText({
             model: models[0].model,
             system: `You are Consuelo, an AI sales assistant. You help sales reps with coaching, call prep, CRM data, and pipeline management. Be concise and actionable. The current user is ${user.firstName ?? 'a team member'}.`,
-            messages: [{ role: 'user', content: body.message }],
+            messages: convertToModelMessages(body.messages),
           });
 
           writer.merge(result.toUIMessageStream());
