@@ -118,6 +118,7 @@ const savedNavActions = navActions.map((action) => ({
 </header>
 
 <style>
+	@reference "../../styles/global.css";
 	.header {
 		@apply sticky top-0 z-20 w-full animate-fadeInShadowLight [animation-range:0%_20rem] [animation-timeline:scroll()] before:absolute after:absolute after:left-0 after:top-full after:z-10 after:block after:h-px after:w-full lg:after:hidden dark:animate-fadeInShadowDark dark:[animation-range:0%_20rem] dark:[animation-timeline:scroll()];
 	}
