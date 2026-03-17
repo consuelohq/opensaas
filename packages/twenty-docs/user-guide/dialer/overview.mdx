@@ -1,81 +1,134 @@
 ---
 title: Dialer Overview
-description: Learn about the Consuelo dialer sidebar and its layout.
+description: Learn about the Consuelo dialer and Discord bot for making calls.
 ---
 
-The Consuelo dialer is a sidebar that provides full telephony functionality directly within the CRM. Access it anytime using keyboard shortcuts or the navigation bar.
+> Make calls, manage queues, and collaborate with your team.
 
-## Opening the Dialer
+Consuelo provides multiple ways to handle your calling workflow — through the built-in CRM dialer or the Discord bot for teams that work in chat.
 
-**Keyboard Shortcut:**
+## Ways to Make Calls
 
-- Mac: `Cmd+D`
-- Windows: `Ctrl+D`
+<CardGroup cols={2}>
+  <Card title="CRM Dialer" icon="phone" href="/user-guide/dialer/making-calls">
+    Built-in sidebar for making calls directly from the CRM.
+  </Card>
 
-**Alternative:**
+  <Card
+    title="Discord Bot"
+    icon="discord"
+    href="/user-guide/dialer/capabilities/discord-bot"
+  >
+    Manage calls and queues from Discord with slash commands.
+  </Card>
+</CardGroup>
 
-- Click the phone icon in the top navigation bar
+## What's in this section
 
-## Dialer Layout
+### CRM Dialer
 
-The dialer sidebar consists of several key areas:
+<CardGroup cols={2}>
+  <Card
+    title="Making Calls"
+    icon="phone"
+    href="/user-guide/dialer/making-calls"
+  >
+    Different methods to initiate calls from the CRM.
+  </Card>
 
-### 1. Dial Pad
+  <Card
+    title="Transfers"
+    icon="arrow-right-arrow-left"
+    href="/user-guide/dialer/transfers"
+  >
+    Warm and cold transfers to other recipients.
+  </Card>
 
-The main area for entering phone numbers:
+  <Card title="Hold & Mute" icon="pause" href="/user-guide/dialer/hold-mute">
+    Managing active call controls.
+  </Card>
+</CardGroup>
 
-- Numeric keypad (0-9)
-- Asterisk (\*) and pound (#) keys
-- Clear button
-- Call button
+### Discord Bot
 
-### 2. Caller ID Selector
+<CardGroup cols={2}>
+  <Card
+    title="Overview"
+    icon="robot"
+    href="/user-guide/dialer/capabilities/discord-bot"
+  >
+    Full capabilities and feature overview.
+  </Card>
 
-Dropdown to select which phone number displays when calling:
+  <Card
+    title="Queue Management"
+    icon="list-ol"
+    href="/user-guide/dialer/capabilities/queue-management"
+  >
+    Start, pause, and monitor call queues.
+  </Card>
 
-- Shows all configured caller IDs
-- Indicates local presence status
-- Quick access to add new numbers
+  <Card
+    title="Call Controls"
+    icon="sliders"
+    href="/user-guide/dialer/capabilities/call-controls"
+  >
+    Transfers, whispers, and dispositions.
+  </Card>
 
-### 3. Contact Search
+  <Card
+    title="Contact Search"
+    icon="magnifying-glass"
+    href="/user-guide/dialer/capabilities/contact-search"
+  >
+    Search contacts and view history.
+  </Card>
 
-Search for contacts while the dialer is open:
+  <Card
+    title="Team Collaboration"
+    icon="users"
+    href="/user-guide/dialer/capabilities/team-collaboration"
+  >
+    Channel notifications and coordination.
+  </Card>
 
-- Type to search by name or phone number
-- Shows matching results in real-time
-- Click a result to auto-fill the number
+  <Card
+    title="Setup Guide"
+    icon="wrench"
+    href="/user-guide/dialer/how-tos/discord-setup"
+  >
+    How to set up and configure the Discord bot.
+  </Card>
+</CardGroup>
 
-### 4. Active Call Controls
+## Quick Comparison
 
-When on a call, these controls appear:
+| Feature            | CRM Dialer | Discord Bot |
+| ------------------ | ---------- | ----------- |
+| Make calls         | ✅         | ✅          |
+| Queue management   | ✅         | ✅          |
+| Transfers          | ✅         | ✅          |
+| Contact search     | ✅         | ✅          |
+| Team notifications | ❌         | ✅          |
+| Whisper mode       | ❌         | ✅          |
+| Slash commands     | ❌         | ✅          |
 
-- **Mute** - Toggle microphone on/off
-- **Hold** - Place caller on hold
-- **Transfer** - Initiate a call transfer
-- **Keypad** - Access DTMF tones
-- **Hang Up** - End the call
+## Which to Use?
 
-### 5. Call History
+**Use the CRM Dialer when:**
 
-Recent calls list showing:
+- You need the full CRM context visible
+- You prefer a visual interface
+- You're working at your desk
 
-- Call direction (inbound/outbound)
-- Contact name and number
-- Duration and timestamp
-- Call status (completed, missed, no answer)
+**Use the Discord Bot when:**
 
-## Keyboard Shortcuts
-
-| Shortcut           | Action                       |
-| ------------------ | ---------------------------- |
-| `Cmd+D` / `Ctrl+D` | Open/close dialer            |
-| `Enter`            | Initiate call                |
-| `M`                | Toggle mute                  |
-| `H`                | Toggle hold                  |
-| `T`                | Open transfer                |
-| `Escape`           | Close dialer / Cancel action |
+- Your team communicates in Discord
+- You want team visibility on calls
+- You prefer chat-based workflows
+- You need real-time coaching via whisper
 
 <Note>
-  Keyboard shortcuts work globally when the dialer is open. Press `?` to see all
-  available shortcuts.
+  Both methods use the same Consuelo infrastructure. Calls made via Discord
+  appear in the CRM call history, and vice versa.
 </Note>
