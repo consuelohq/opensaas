@@ -38,20 +38,18 @@ export const navigationBarData: NavData = {
 		text: 'Consuelo'
 	},
 	navItems: [
-		{ name: 'Home', link: '/' },
-		{ name: 'Pricing', link: '/pricing' },
 		{ name: 'Features', link: '/features' },
+		{ name: 'Pricing', link: '/pricing' },
+		{ name: 'FAQ', link: '/faq' },
 		{
 			name: 'Resources',
 			link: '#',
 			submenu: [
 				{ name: 'Blog', link: '/blog' },
-				{ name: 'Changelog', link: '/changelog' },
-				{ name: 'FAQ', link: '/faq' },
-				{ name: 'Terms', link: '/terms' }
+				{ name: 'Changelog', link: '/changelog' }
 			]
 		},
 		{ name: 'Contact', link: '/contact' }
 	],
-	navActions: [{ name: 'Try it now', link: '/', style: 'primary', size: 'lg' }]
+	navActions: [{ name: 'Get Started', link: 'https://app.consuelohq.com', style: 'primary', size: 'lg' }]
 }

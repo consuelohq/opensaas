@@ -48,60 +48,24 @@ export const footerNavigationData: FooterData = {
 		{
 			category: 'Product',
 			subCategories: [
-				{
-					subCategory: 'Features',
-					subCategoryLink: '/features'
-				},
-				{
-					subCategory: 'FAQ',
-					subCategoryLink: '/faq'
-				},
-				{
-					subCategory: 'Pricing',
-					subCategoryLink: '/pricing'
-				},
-				{
-					subCategory: 'Changelog',
-					subCategoryLink: '/changelog'
-				},
-				{
-					subCategory: 'Terms',
-					subCategoryLink: '/terms'
-				}
+				{ subCategory: 'Features', subCategoryLink: '/features' },
+				{ subCategory: 'Pricing', subCategoryLink: '/pricing' },
+				{ subCategory: 'Changelog', subCategoryLink: '/changelog' }
 			]
 		},
 		{
-			category: 'About us',
+			category: 'Company',
 			subCategories: [
-				{
-					subCategory: 'About us',
-					subCategoryLink: '/'
-				},
-				{
-					subCategory: 'News',
-					subCategoryLink: '/blog'
-				},
-				{
-					subCategory: 'Careers',
-					subCategoryLink: '/blog'
-				}
+				{ subCategory: 'Blog', subCategoryLink: '/blog' },
+				{ subCategory: 'FAQ', subCategoryLink: '/faq' },
+				{ subCategory: 'Contact', subCategoryLink: '/contact' }
 			]
 		},
 		{
-			category: 'Get in touch',
+			category: 'Legal',
 			subCategories: [
-				{
-					subCategory: 'Contact',
-					subCategoryLink: '/contact'
-				},
-				{
-					subCategory: 'Support',
-					subCategoryLink: '/contact'
-				},
-				{
-					subCategory: 'Join us',
-					subCategoryLink: '/contact'
-				}
+				{ subCategory: 'Terms', subCategoryLink: '/terms' },
+				{ subCategory: 'Privacy', subCategoryLink: '/terms' }
 			]
 		}
 	],
