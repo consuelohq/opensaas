@@ -98,6 +98,7 @@ export async function buildPostCallCard(
             <Button action={`disposition:${callId}:${key}`}>{label}</Button>
           ),
         )}
+        <Button action={`disposition-modal:${callId}`}>{'\uD83D\uDCCB Full Disposition'}</Button>
         <Button action={`notes:${callId}`}>Add Notes</Button>
       </Actions>
     </Card>

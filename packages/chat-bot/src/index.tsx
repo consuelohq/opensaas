@@ -19,7 +19,7 @@ export { TransferManager } from './transfer-manager.js';
 export type { DiscordAuth } from './auth.js';
 
 export async function createBot() {
-  const { Chat, Card, CardText, Fields, Field, Actions, Button } = await import('chat');
+  const { Chat, Card, CardText, Fields, Field, Actions, Button, Modal, TextInput, Select, SelectOption } = await import('chat');
   const { createDiscordAdapter } = await import('@chat-adapter/discord');
   const { createRedisState } = await import('@chat-adapter/state-redis');
 
@@ -38,9 +38,18 @@ export async function createBot() {
     redisUrl: process.env.REDIS_URL,
   });
 
+  // build adapters — Slack is conditional on env vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adapters: Record<string, any> = { discord: createDiscordAdapter() }; // HACK: adapter type from peer dep
+  if (process.env.SLACK_BOT_TOKEN) {
+    const { createSlackAdapter } = await import('@chat-adapter/slack');
+    adapters.slack = createSlackAdapter();
+    logger.info('slack adapter enabled');
+  }
+
   const bot = new Chat({
     userName: 'consuelo',
-    adapters: { discord: createDiscordAdapter() },
+    adapters,
     state: createRedisState({ url: process.env.REDIS_URL }),
   });
 
@@ -892,9 +901,9 @@ export async function createBot() {
 
       // disposition:{callId}:{outcome}
       if (action.startsWith('disposition:')) {
-        const parts = action.split(':');
-        const callId = parts[1];
-        const outcome = parts[2] as Disposition;
+        const actionParts = action.split(':');
+        const callId = actionParts[1];
+        const outcome = actionParts[2] as Disposition;
         if (!callId || !outcome) return;
 
         const auth = await getAuth(event.userId);
@@ -917,6 +926,39 @@ export async function createBot() {
 
         // advance queue if active
         await queueDialer.advanceAfterDisposition(event.userId);
+        return;
+      }
+
+      // disposition-modal:{callId} — open Slack modal for richer disposition
+      if (action.startsWith('disposition-modal:')) {
+        const callId = action.split(':')[1];
+        if (!callId || !event.openModal) return;
+
+        try {
+          await event.openModal(
+            <Modal
+              callbackId="call_disposition"
+              title="Call Disposition"
+              submitLabel="Save"
+              privateMetadata={callId}
+            >
+              <Select id="outcome" label="Outcome" placeholder="Select outcome">
+                <SelectOption label="Connected" value="connected" />
+                <SelectOption label="Voicemail" value="voicemail" />
+                <SelectOption label="No Answer" value="no-answer" />
+                <SelectOption label="Busy" value="busy" />
+                <SelectOption label="Follow-up" value="follow-up" />
+                <SelectOption label="Not Interested" value="not-interested" />
+              </Select>
+              <TextInput id="notes" label="Notes" placeholder="Call notes..." multiline optional />
+            </Modal>,
+          );
+        } catch (err: unknown) {
+          logger.error('failed to open disposition modal', {
+            error: err instanceof Error ? err.message : 'unknown',
+            callId,
+          });
+        }
         return;
       }
 
@@ -1141,6 +1183,44 @@ export async function createBot() {
     }
   });
 
+  // handle Slack disposition modal submission
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bot.onModalSubmit('call_disposition', async (event: any) => { // HACK: chat SDK types unavailable (peer dep)
+    try {
+      const callId = event.privateMetadata;
+      const outcome = event.values?.outcome as Disposition | undefined;
+      const notes = event.values?.notes as string | undefined;
+      if (!callId || !outcome) return;
+
+      const auth = await getAuth(event.user?.id ?? event.user?.userName ?? '');
+      if (!auth) return;
+
+      try {
+        const client = userClient(auth);
+        await client.post(`/v1/calls/${callId}/disposition`, { outcome, notes });
+      } catch (err: unknown) {
+        logger.error('modal disposition api call failed', {
+          error: err instanceof Error ? err.message : 'unknown',
+          callId,
+        });
+        return { action: 'errors' as const, errors: { outcome: 'Failed to save. Try again.' } };
+      }
+
+      if (event.relatedThread) {
+        const label = outcome.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+        await event.relatedThread.post(`\u2705 Disposition: ${label}${notes ? `\nNotes: ${notes}` : ''}`);
+      }
+
+      // advance queue if active
+      const userId = event.user?.id ?? event.user?.userName ?? '';
+      await queueDialer.advanceAfterDisposition(userId);
+    } catch (err: unknown) {
+      logger.error('modal submit handler failed', {
+        error: err instanceof Error ? err.message : 'unknown',
+      });
+    }
+  });
+
   // capture notes from thread replies
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bot.onMessage(async (event: any) => { // HACK: chat SDK types unavailable (peer dep)
@@ -1184,7 +1264,7 @@ export async function createBot() {
     }
   });
 
-  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, channelNotifier, transferManager, postCallCardForUser };
+  return { bot, Card, CardText, Fields, Field, Actions, Button, Modal, TextInput, Select, SelectOption, queueDialer, channelNotifier, transferManager, postCallCardForUser };
 }
 
 const VERSION = '0.0.1';

@@ -69,13 +69,24 @@ async function main() {
       });
     });
 
-    // webhook server for discord interactions
+    // webhook server for discord + slack interactions
     const webhookServer = createServer(async (req, res) => {
       try {
         if (req.method === 'POST' && req.url === '/api/webhooks/discord') {
           const body = await readBody(req);
           const webReq = toWebRequest(req, body, WEBHOOK_PORT);
           const webRes = await bot.webhooks.discord(webReq, {
+            waitUntil: (task: Promise<unknown>) => { task.catch(() => {}); },
+          });
+          res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
+          const resBody = await webRes.text();
+          res.end(resBody);
+          return;
+        }
+        if (req.method === 'POST' && req.url === '/api/webhooks/slack') {
+          const body = await readBody(req);
+          const webReq = toWebRequest(req, body, WEBHOOK_PORT);
+          const webRes = await bot.webhooks.slack(webReq, {
             waitUntil: (task: Promise<unknown>) => { task.catch(() => {}); },
           });
           res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
