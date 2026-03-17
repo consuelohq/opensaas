@@ -127,6 +127,17 @@
             }
           }
         },
+        "dialer": {
+          "label": "Dialer",
+          "groups": {
+            "dialerCapabilities": {
+              "label": "Capabilities"
+            },
+            "dialerHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
         "settings": {
           "label": "Settings",
           "groups": {
