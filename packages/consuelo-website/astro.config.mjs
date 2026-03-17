@@ -1,17 +1,10 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
+import icon from "astro-icon";
 
-import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
-import sitemap from '@astrojs/sitemap';
-import icon from 'astro-icon';
+import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.consuelohq.com',
-  vite: {
-    plugins: [tailwindcss()],
-    server: { allowedHosts: true },
-  },
-  integrations: [react(), sitemap(), icon()]
+  site: "https://www.consuelohq.com",
+  integrations: [icon(), sitemap()],
 });
