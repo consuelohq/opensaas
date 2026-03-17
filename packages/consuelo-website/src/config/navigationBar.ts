@@ -37,7 +37,7 @@ export const navigationBarData: NavData = {
 		src: '/logo.svg',
 		darkSrc: '/logo-dark.svg',
 		alt: 'Consuelo',
-		text: 'Consuelo'
+		text: 'Consuelo.'
 	},
 	navItems: [
 		{ name: 'Home', link: '/' },
@@ -55,5 +55,5 @@ export const navigationBarData: NavData = {
 		},
 		{ name: 'Contact', link: '/contact' }
 	],
-	navActions: [{ name: 'Get Started', link: 'https://app.consuelohq.com', style: 'primary', size: 'lg' }]
+	navActions: [{ name: 'Try it now', link: 'https://app.consuelohq.com', style: 'primary', size: 'lg' }]
 }
