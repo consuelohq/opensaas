@@ -34,19 +34,21 @@ export interface NavData {
 export const navigationBarData: NavData = {
 	logo: {
 		src: '/logo.svg',
-		alt: 'Consuelo — Sales Infrastructure',
+		alt: 'Consuelo',
 		text: 'Consuelo'
 	},
 	navItems: [
-		{ name: 'Features', link: '/features' },
+		{ name: 'Home', link: '/' },
 		{ name: 'Pricing', link: '/pricing' },
-		{ name: 'FAQ', link: '/faq' },
+		{ name: 'Features', link: '/features' },
 		{
 			name: 'Resources',
 			link: '#',
 			submenu: [
 				{ name: 'Blog', link: '/blog' },
-				{ name: 'Changelog', link: '/changelog' }
+				{ name: 'Changelog', link: '/changelog' },
+				{ name: 'FAQ', link: '/faq' },
+				{ name: 'Docs', link: 'https://docs.consuelohq.com' }
 			]
 		},
 		{ name: 'Contact', link: '/contact' }
