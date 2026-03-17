@@ -68,7 +68,8 @@ export const footerNavigationData: FooterData = {
 			category: 'Company',
 			subCategories: [
 				{ subCategory: 'Contact', subCategoryLink: '/contact' },
-				{ subCategory: 'Terms', subCategoryLink: '/terms' }
+				{ subCategory: 'Terms', subCategoryLink: '/terms' },
+				{ subCategory: 'Privacy Policy', subCategoryLink: '/privacy' }
 			]
 		}
 	],
