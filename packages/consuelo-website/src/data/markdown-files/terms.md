@@ -77,8 +77,8 @@ These terms are governed by and construed in accordance with the laws of the jur
 
 If you have any questions about these Terms of Service, please contact us at:
 
-Email: support@Consuelo.com
-Address: 123 Consuelo Lane, Productivity City, PC 12345
+Email: support@consuelohq.com
+Address: consuelohq.com
 
 ## Miscellaneous
 
@@ -94,4 +94,4 @@ If any provision of these terms is found to be invalid or unenforceable, the rem
 
 Our failure to enforce any right or provision of these terms will not be considered a waiver of those rights.
 
-_Last updated: July 10, 2024_
+_Last updated: March 17, 2026_

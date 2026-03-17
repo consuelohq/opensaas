@@ -1,104 +1,50 @@
 [
 	{
-		"question": "What is the cost of the basic plan?",
-		"reply": "The basic plan is $9.99 per month, which includes access to core features and limited integrations. This plan is perfect for individuals or small teams looking to improve their productivity without a large investment.",
+		"question": "How much does Consuelo cost?",
+		"reply": "The power dialer starts at $20/mo. The CRM is free after your trial. No hidden fees, no per-seat surprises. Most dialers charge $200–300/mo for less.",
 		"category": "pricing",
 		"open": true
 	},
 	{
-		"question": "Are there any discounts for annual subscriptions?",
-		"reply": "Yes, we offer a 20% discount on annual subscriptions for all our plans. By choosing an annual subscription, you can save money and ensure uninterrupted access to all Consuelo features for the entire year.",
-		"category": "pricing",
+		"question": "What makes your dialer different?",
+		"reply": "Multi-line dials, local presence, and spam shield — all for $20/mo. Most dialers charge 10x more for fewer features. Ours is connected to your CRM, coaching, and analytics so everything works together.",
+		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Can I change my subscription plan at any time?",
-		"reply": "Yes, you can upgrade or downgrade your subscription plan at any time from your account settings. This flexibility allows you to adjust your plan based on your changing needs and usage.",
-		"category": "pricing",
+		"question": "Do I need a separate CRM?",
+		"reply": "No. Consuelo includes a CRM that manages itself. Talk to it, tell it what to do. It handles contacts, follow-ups, and pipeline automatically. No more paying for a CRM your team never updates.",
+		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Is there a free trial available?",
-		"reply": "Yes, we offer a 14-day free trial for all new users. During the trial, you can explore all the features of Consuelo without any commitment, allowing you to see how it fits into your workflow.",
-		"category": "pricing",
+		"question": "How does AI coaching work?",
+		"reply": "On-call whispers give your reps real-time guidance while they're on the phone. Upload your scripts for training. Post-call analytics show what's working and what isn't — so every call gets better.",
+		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Do you offer refunds?",
-		"reply": "We offer a 30-day money-back guarantee if you are not satisfied with our service. Simply contact our support team within 30 days of your purchase, and we'll process your refund.",
-		"category": "pricing",
-		"open": false
-	},
-	{
-		"question": "How do I cancel my subscription?",
-		"reply": "You can cancel your subscription from your account settings at any time. After cancellation, you will still have access to your account until the end of the billing cycle.",
-		"category": "pricing",
-		"open": false
-	},
-	{
-		"question": "Can I use Consuelo with Google Calendar?",
-		"reply": "Yes, Consuelo integrates seamlessly with Google Calendar for easy scheduling and task management. This integration helps you keep track of your events and tasks in one place.",
+		"question": "Can I use this with GoHighLevel?",
+		"reply": "Yes. Consuelo embeds directly inside GHL. Your team never leaves their workflow. We also have a Google Chrome extension and connect to ads platforms straight to your CRM.",
 		"category": "integrations",
 		"open": true
 	},
 	{
-		"question": "Does Consuelo work with Slack?",
-		"reply": "Yes, you can integrate Consuelo with Slack to receive notifications and updates directly in your channels. This allows you to stay informed about your projects without leaving Slack.",
-		"category": "integrations",
-		"open": false
-	},
-	{
-		"question": "How do I connect Consuelo with Trello?",
-		"reply": "To connect Consuelo with Trello, go to the integrations page in your settings and follow the instructions to link your accounts. This integration helps you manage your Trello boards and Consuelo projects together.",
-		"category": "integrations",
-		"open": false
-	},
-	{
-		"question": "Is there an API for custom integrations?",
-		"reply": "Yes, we provide an API that allows you to create custom integrations with Consuelo. Our API documentation provides detailed instructions and examples to help you get started.",
-		"category": "integrations",
-		"open": false
-	},
-	{
-		"question": "Can I sync Consuelo with my email?",
-		"reply": "Currently, we do not support email integration, but this feature is on our roadmap for future releases. Stay tuned for updates as we continue to enhance Consuelo's capabilities.",
-		"category": "integrations",
-		"open": false
-	},
-	{
-		"question": "Does Consuelo support Zapier?",
-		"reply": "Yes, Consuelo integrates with Zapier, allowing you to connect with over 2,000 apps and automate your workflows. This integration helps you streamline your processes and improve efficiency.",
-		"category": "integrations",
-		"open": false
-	},
-	{
-		"question": "What are the main features of Consuelo?",
-		"reply": "Consuelo includes in-app messaging, project management, time tracking, customizable dashboards, and more. These features are designed to help you stay organized, communicate effectively, and manage your time efficiently.",
-		"category": "features",
-		"open": true
-	},
-	{
-		"question": "How do I use the in-app messaging feature?",
-		"reply": "In-app messaging allows you to communicate with your team directly within Consuelo. Simply navigate to the messaging tab to start a conversation. You can send messages, share files, and create group chats.",
+		"question": "How does lead disbursement work?",
+		"reply": "Management disperses leads across the team automatically. Say you have 1,000 leads and 5 reps — each gets their share. AI manages the queue, and automation re-queues old leads that didn't answer within a set period.",
 		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Can I customize my dashboard?",
-		"reply": "Yes, you can customize your dashboard by adding, removing, and rearranging widgets to fit your workflow. This customization helps you keep important information at your fingertips.",
+		"question": "What about insurance chargebacks?",
+		"reply": "Post-sale sequences automatically follow up at 1 week, 1 month, and 3 months. Pipeline nourishment keeps leads warm. Better follow-up means fewer chargebacks and higher retention.",
 		"category": "features",
 		"open": false
 	},
 	{
-		"question": "How does the time tracking feature work?",
-		"reply": "Time tracking allows you to log the time spent on tasks and projects. Start the timer when you begin a task and stop it when you're done. You can also manually log time if needed.",
-		"category": "features",
-		"open": false
-	},
-	{
-		"question": "Is there a mobile app for Consuelo?",
-		"reply": "Yes, Consuelo is available on both iOS and Android, allowing you to manage your tasks and projects on the go. Download the app from the App Store or Google Play to stay productive anywhere.",
-		"category": "features",
+		"question": "What integrations do you support?",
+		"reply": "GoHighLevel (embedded), Google Chrome extension, ads platforms (straight to CRM), and Discord/Slack/Teams via Chat SDK. Everything in the infrastructure is connected so collaboration is never an issue.",
+		"category": "integrations",
 		"open": false
 	}
 ]
