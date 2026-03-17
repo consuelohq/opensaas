@@ -209,9 +209,7 @@
             {
               "key": "aiHowTos",
               "label": "How-Tos",
-              "pages": [
-                "user-guide/ai/how-tos/ai-faq"
-              ]
+              "pages": ["user-guide/ai/how-tos/ai-faq"]
             }
           ]
         },
@@ -290,9 +288,7 @@
             {
               "key": "permissionsAccessHowTos",
               "label": "How-Tos",
-              "pages": [
-                "user-guide/permissions-access/how-tos/permissions-faq"
-              ]
+              "pages": ["user-guide/permissions-access/how-tos/permissions-faq"]
             }
           ]
         },
@@ -313,9 +309,34 @@
             {
               "key": "billingHowTos",
               "label": "How-Tos",
+              "pages": ["user-guide/billing/how-tos/billing-faq"]
+            }
+          ]
+        },
+        {
+          "key": "dialer",
+          "label": "Dialer",
+          "icon": "phone",
+          "pages": [
+            "user-guide/dialer/overview",
+            "user-guide/dialer/making-calls",
+            "user-guide/dialer/transfers",
+            "user-guide/dialer/hold-mute",
+            {
+              "key": "dialerCapabilities",
+              "label": "Capabilities",
               "pages": [
-                "user-guide/billing/how-tos/billing-faq"
+                "user-guide/dialer/capabilities/discord-bot",
+                "user-guide/dialer/capabilities/queue-management",
+                "user-guide/dialer/capabilities/call-controls",
+                "user-guide/dialer/capabilities/contact-search",
+                "user-guide/dialer/capabilities/team-collaboration"
               ]
+            },
+            {
+              "key": "dialerHowTos",
+              "label": "How-Tos",
+              "pages": ["user-guide/dialer/how-tos/discord-setup"]
             }
           ]
         },
@@ -340,9 +361,7 @@
             {
               "key": "settingsHowTos",
               "label": "How-Tos",
-              "pages": [
-                "user-guide/settings/how-tos/settings-faq"
-              ]
+              "pages": ["user-guide/settings/how-tos/settings-faq"]
             }
           ]
         }
@@ -355,9 +374,7 @@
         {
           "key": "developersGroup",
           "label": "Developers",
-          "pages": [
-            "developers/introduction"
-          ]
+          "pages": ["developers/introduction"]
         },
         {
           "key": "extend",
@@ -432,9 +449,7 @@
                         {
                           "key": "feedback",
                           "label": "Feedback",
-                          "pages": [
-                            "twenty-ui/progress-bar"
-                          ]
+                          "pages": ["twenty-ui/progress-bar"]
                         },
                         {
                           "key": "input",
