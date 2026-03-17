@@ -15,7 +15,6 @@
 // - UI
 import { Icon } from 'astro-icon/components'
 import Button from './Button.astro'
-import Switcher from './ModeSwitcher.astro'
 
 // Data
 import { navigationBarData } from '../../config/navigationBar'
@@ -102,8 +101,6 @@ const savedNavActions = navActions.map((action) => ({
 			</ul>
 
 			<!-- Theme Switcher -->
-			<Switcher />
-
 			<!-- Navigation action buttons -->
 			<div class="header__actions">
 				{

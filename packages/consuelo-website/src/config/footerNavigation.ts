@@ -38,7 +38,7 @@ export const footerNavigationData: FooterData = {
 	footerAbout: {
 		title: 'Consuelo',
 		aboutText:
-			'Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics — all in one platform.',
+			'The $20/seat sales platform for insurance teams. Power dialer, AI Whisper, CRM, and analytics in one place.',
 		logo: {
 			src: '/logo.svg',
 			darkSrc: '/logo-dark.svg',
