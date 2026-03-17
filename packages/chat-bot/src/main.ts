@@ -51,7 +51,7 @@ function toWebRequest(req: IncomingMessage, body: Buffer, port: number): Request
 
 async function main() {
   try {
-    const { bot, queueDialer, channelNotifier } = await createBot();
+    const { bot, queueDialer, channelNotifier, transferManager } = await createBot();
     await bot.initialize();
     logger.info('bot initialized');
 
@@ -192,6 +192,9 @@ async function main() {
 
       // stop channel notification subscriber
       await channelNotifier.stop();
+
+      // stop transfer manager
+      await transferManager.stop();
 
       // close servers
       await new Promise<void>((resolve) => webhookServer.close(() => resolve()));

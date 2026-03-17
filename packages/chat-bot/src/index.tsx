@@ -3,8 +3,10 @@ import { createLogger } from '@consuelo/logger';
 import { getAuth, removeAuth } from './auth.js';
 import { createApiClient } from './api-client.js';
 import { QueueDialer, formatProgressText, formatSummaryText } from './queue-dialer.js';
+import type { CallEvent } from './queue-dialer.js';
 import { buildPostCallCard, buildDispositionConfirmCard } from './post-call-card.js';
 import { ChannelNotifier } from './channel-notifications.js';
+import { TransferManager } from './transfer-manager.js';
 import type { Disposition } from './post-call-card.js';
 import type { DiscordAuth } from './auth.js';
 
@@ -13,6 +15,7 @@ const logger = createLogger('chat-bot');
 export { logger };
 export { getAuth, setAuth, removeAuth, getDiscordUserId } from './auth.js';
 export { ChannelNotifier } from './channel-notifications.js';
+export { TransferManager } from './transfer-manager.js';
 export type { DiscordAuth } from './auth.js';
 
 export async function createBot() {
@@ -27,6 +30,11 @@ export async function createBot() {
   });
 
   const channelNotifier = new ChannelNotifier({
+    redisUrl: process.env.REDIS_URL,
+  });
+
+  const transferManager = new TransferManager({
+    apiUrl,
     redisUrl: process.env.REDIS_URL,
   });
 
@@ -64,6 +72,22 @@ export async function createBot() {
       return { data: null, error: message };
     }
   }
+
+  // wire transfer manager to call events from queue-dialer's redis listener
+  queueDialer.onCallEvent((event: CallEvent) => {
+    if (!event.userId) return;
+    if (event.type === 'call.started') {
+      transferManager.trackCallStarted(
+        event.userId,
+        event.callId,
+        event.conferenceName ?? '',
+        (event as Record<string, unknown>).contactName as string | undefined,
+        (event as Record<string, unknown>).leadPhone as string | undefined,
+      );
+    } else if (event.type === 'call.ended' || event.type === 'call.failed') {
+      transferManager.trackCallEnded(event.userId);
+    }
+  });
 
   bot.onSlashCommand('/consuelo', async (event) => {
     try {
@@ -626,11 +650,206 @@ export async function createBot() {
         return;
       }
 
+      // transfer — warm transfer to another team member
+      if (subcommand === 'transfer') {
+        const mentionArg = parts[1];
+        if (!mentionArg) {
+          await event.reply(
+            <Card title={"Transfer"}>
+              <CardText>Usage: /consuelo transfer @manager</CardText>
+            </Card>,
+            { ephemeral: true },
+          );
+          return;
+        }
+
+        // parse discord mention: <@123456789> or <@!123456789>
+        const mentionMatch = mentionArg.match(/^<@!?(\d+)>$/);
+        if (!mentionMatch) {
+          await event.reply(errorCard('Mention a user: /consuelo transfer @manager'), { ephemeral: true });
+          return;
+        }
+        const managerDiscordId = mentionMatch[1];
+
+        // check rep has an active call
+        const activeCall = await transferManager.getActiveCall(auth);
+        if (!activeCall || !activeCall.callSid) {
+          await event.reply(errorCard('No active call. Start a call first.'), { ephemeral: true });
+          return;
+        }
+
+        // check no existing transfer in progress
+        const existing = transferManager.getActiveTransferForRep(event.userId);
+        if (existing) {
+          await event.reply(errorCard('A transfer is already in progress. Complete or cancel it first.'), { ephemeral: true });
+          return;
+        }
+
+        // resolve manager phone
+        const { phone: managerPhone, error: phoneErr } = await transferManager.resolveManagerPhone(managerDiscordId);
+        if (!managerPhone) {
+          await event.reply(
+            <Card title={"\u26A0\uFE0F Transfer Failed"}>
+              <CardText>{phoneErr ?? 'Could not resolve manager phone'}</CardText>
+            </Card>,
+            { ephemeral: true },
+          );
+          return;
+        }
+
+        // calculate call duration
+        const callStart = new Date(activeCall.startedAt).getTime();
+        const durationSec = Math.floor((Date.now() - callStart) / 1000);
+
+        // create pending transfer
+        const transferId = transferManager.createPendingTransfer({
+          callSid: activeCall.callSid,
+          conferenceName: activeCall.conferenceName,
+          repDiscordId: event.userId,
+          repAuth: auth,
+          managerDiscordId,
+          managerPhone,
+          contactName: activeCall.contactName ?? 'Unknown',
+          contactPhone: activeCall.contactPhone ?? '',
+          contactCompany: '',
+          callDuration: durationSec,
+          type: 'warm',
+        });
+
+        const durationStr = formatDuration(durationSec);
+        const contactLine = activeCall.contactName
+          ? `Lead: ${activeCall.contactName} | ${activeCall.contactPhone ?? ''}`
+          : `Phone: ${activeCall.contactPhone ?? 'Unknown'}`;
+
+        // DM the manager with context card
+        try {
+          await event.sendDM(managerDiscordId,
+            <Card title={`\uD83D\uDCDE Transfer request from <@${event.userId}>`}>
+              <CardText>
+                {contactLine}{"\n"}
+                Duration so far: {durationStr}
+              </CardText>
+              <Actions>
+                <Button action={`transfer-join:${transferId}`}>Join Call</Button>
+                <Button action={`transfer-decline:${transferId}`}>Decline</Button>
+              </Actions>
+            </Card>,
+          );
+        } catch (dmErr: unknown) {
+          logger.error('failed to DM manager', {
+            error: dmErr instanceof Error ? dmErr.message : 'unknown',
+            managerDiscordId,
+          });
+          await event.reply(errorCard('Failed to notify manager. They may have DMs disabled.'), { ephemeral: true });
+          return;
+        }
+
+        // confirm to rep
+        await event.reply(
+          <Card title={"\uD83D\uDCDE Transfer Initiated"}>
+            <CardText>
+              {`Notified <@${managerDiscordId}>. Waiting for them to join...`}
+            </CardText>
+            <Actions>
+              <Button action={`transfer-cancel:${transferId}`}>Cancel Transfer</Button>
+            </Actions>
+          </Card>,
+        );
+        return;
+      }
+
+      // whisper — add manager in listen-only mode
+      if (subcommand === 'whisper') {
+        const mentionArg = parts[1];
+        if (!mentionArg) {
+          await event.reply(
+            <Card title={"Whisper"}>
+              <CardText>Usage: /consuelo whisper @manager</CardText>
+            </Card>,
+            { ephemeral: true },
+          );
+          return;
+        }
+
+        const mentionMatch = mentionArg.match(/^<@!?(\d+)>$/);
+        if (!mentionMatch) {
+          await event.reply(errorCard('Mention a user: /consuelo whisper @manager'), { ephemeral: true });
+          return;
+        }
+        const managerDiscordId = mentionMatch[1];
+
+        const activeCall = await transferManager.getActiveCall(auth);
+        if (!activeCall || !activeCall.callSid) {
+          await event.reply(errorCard('No active call. Start a call first.'), { ephemeral: true });
+          return;
+        }
+
+        const { phone: managerPhone, error: phoneErr } = await transferManager.resolveManagerPhone(managerDiscordId);
+        if (!managerPhone) {
+          await event.reply(
+            <Card title={"\u26A0\uFE0F Whisper Failed"}>
+              <CardText>{phoneErr ?? 'Could not resolve manager phone'}</CardText>
+            </Card>,
+            { ephemeral: true },
+          );
+          return;
+        }
+
+        const callStart = new Date(activeCall.startedAt).getTime();
+        const durationSec = Math.floor((Date.now() - callStart) / 1000);
+
+        const transferId = transferManager.createPendingTransfer({
+          callSid: activeCall.callSid,
+          conferenceName: activeCall.conferenceName,
+          repDiscordId: event.userId,
+          repAuth: auth,
+          managerDiscordId,
+          managerPhone,
+          contactName: activeCall.contactName ?? 'Unknown',
+          contactPhone: activeCall.contactPhone ?? '',
+          contactCompany: '',
+          callDuration: durationSec,
+          type: 'whisper',
+        });
+
+        // DM manager
+        try {
+          await event.sendDM(managerDiscordId,
+            <Card title={`\uD83D\uDD07 Whisper request from <@${event.userId}>`}>
+              <CardText>
+                {`<@${event.userId}> wants you to listen in on their call.`}{"\n"}
+                Lead: {activeCall.contactName ?? 'Unknown'}{"\n"}
+                Duration: {formatDuration(durationSec)}
+              </CardText>
+              <Actions>
+                <Button action={`whisper-join:${transferId}`}>Listen In</Button>
+                <Button action={`transfer-decline:${transferId}`}>Decline</Button>
+              </Actions>
+            </Card>,
+          );
+        } catch (dmErr: unknown) {
+          logger.error('failed to DM manager for whisper', {
+            error: dmErr instanceof Error ? dmErr.message : 'unknown',
+          });
+          await event.reply(errorCard('Failed to notify manager. They may have DMs disabled.'), { ephemeral: true });
+          return;
+        }
+
+        await event.reply(
+          <Card title={"\uD83D\uDD07 Whisper Initiated"}>
+            <CardText>
+              {`Notified <@${managerDiscordId}>. They'll join in listen-only mode.`}
+            </CardText>
+          </Card>,
+        );
+        return;
+      }
+
       // unknown subcommand
       await event.reply(
         <Card title={"Consuelo"}>
           <CardText>
-            Available commands: login, logout, ping, me, status, contacts search, history, queue, config
+            Available commands: login, logout, ping, me, status, contacts search, history, queue, config, transfer, whisper
           </CardText>
         </Card>,
         { ephemeral: true },
@@ -714,6 +933,206 @@ export async function createBot() {
         );
         return;
       }
+
+      // transfer-join:{transferId} — manager accepts transfer
+      if (action.startsWith('transfer-join:')) {
+        const transferId = action.split(':')[1];
+        if (!transferId) return;
+
+        const transfer = transferManager.getTransfer(transferId);
+        if (!transfer) {
+          await event.reply(errorCard('Transfer expired or not found.'));
+          return;
+        }
+        if (transfer.status !== 'pending') {
+          await event.reply(errorCard(`Transfer already ${transfer.status}.`));
+          return;
+        }
+
+        const result = await transferManager.initiateTransfer(transferId);
+        if (!result.success) {
+          await event.reply(errorCard(result.error ?? 'Failed to join call.'));
+          return;
+        }
+
+        await event.reply(
+          <Card title={"\uD83D\uDCDE Joining Call"}>
+            <CardText>
+              Your phone is ringing. Answer to join the conference.{"\n"}
+              Customer is on hold while you consult with the rep.
+            </CardText>
+          </Card>,
+        );
+
+        // notify rep that manager is joining
+        const repReply = queueDialer.getReplyCallback(transfer.repAuth.userId);
+        if (repReply) {
+          try {
+            await repReply(
+              <Card title={"\uD83D\uDC64 Manager Joining"}>
+                <CardText>
+                  {`<@${transfer.managerDiscordId}> is joining the call. Customer is on hold.`}
+                </CardText>
+                <Actions>
+                  <Button action={`transfer-complete:${transferId}`}>Complete Transfer</Button>
+                  <Button action={`transfer-cancel:${transferId}`}>Cancel Transfer</Button>
+                </Actions>
+              </Card>,
+            );
+          } catch {
+            // non-fatal
+          }
+        }
+        return;
+      }
+
+      // whisper-join:{transferId} — manager accepts whisper
+      if (action.startsWith('whisper-join:')) {
+        const transferId = action.split(':')[1];
+        if (!transferId) return;
+
+        const transfer = transferManager.getTransfer(transferId);
+        if (!transfer) {
+          await event.reply(errorCard('Whisper session expired or not found.'));
+          return;
+        }
+        if (transfer.status !== 'pending') {
+          await event.reply(errorCard(`Whisper session already ${transfer.status}.`));
+          return;
+        }
+
+        const result = await transferManager.initiateWhisper(transferId);
+        if (!result.success) {
+          await event.reply(errorCard(result.error ?? 'Failed to start whisper.'));
+          return;
+        }
+
+        await event.reply(
+          <Card title={"\uD83D\uDD07 Whisper Active"}>
+            <CardText>
+              Your phone is ringing. Answer to listen in (muted).{"\n"}
+              The customer and rep cannot hear you.
+            </CardText>
+          </Card>,
+        );
+
+        // notify rep
+        const repReply = queueDialer.getReplyCallback(transfer.repAuth.userId);
+        if (repReply) {
+          try {
+            await repReply(
+              <Card title={"\uD83D\uDD07 Whisper Active"}>
+                <CardText>{`<@${transfer.managerDiscordId}> is now listening in (muted).`}</CardText>
+              </Card>,
+            );
+          } catch {
+            // non-fatal
+          }
+        }
+        return;
+      }
+
+      // transfer-complete:{transferId} — rep completes warm transfer
+      if (action.startsWith('transfer-complete:')) {
+        const transferId = action.split(':')[1];
+        if (!transferId) return;
+
+        const transfer = transferManager.getTransfer(transferId);
+        if (!transfer) {
+          await event.reply(errorCard('Transfer not found.'));
+          return;
+        }
+
+        const result = await transferManager.completeTransfer(transferId);
+        if (!result.success) {
+          await event.reply(errorCard(result.error ?? 'Failed to complete transfer.'));
+          return;
+        }
+
+        await event.reply(
+          <Card title={"\u2705 Transfer Complete"}>
+            <CardText>
+              {`You've left the call. <@${transfer.managerDiscordId}> is now speaking with the customer.`}
+            </CardText>
+          </Card>,
+        );
+        return;
+      }
+
+      // transfer-cancel:{transferId} — rep or manager cancels transfer
+      if (action.startsWith('transfer-cancel:')) {
+        const transferId = action.split(':')[1];
+        if (!transferId) return;
+
+        const transfer = transferManager.getTransfer(transferId);
+        if (!transfer) {
+          await event.reply(errorCard('Transfer not found.'));
+          return;
+        }
+
+        if (transfer.status === 'pending') {
+          // manager hasn't joined yet — just mark as cancelled
+          const t = transferManager.getTransfer(transferId);
+          if (t) t.status = 'cancelled';
+          await event.reply(
+            <Card title={"\u274C Transfer Cancelled"}>
+              <CardText>Transfer cancelled before manager joined.</CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        const result = await transferManager.cancelTransfer(transferId);
+        if (!result.success) {
+          await event.reply(errorCard(result.error ?? 'Failed to cancel transfer.'));
+          return;
+        }
+
+        await event.reply(
+          <Card title={"\u274C Transfer Cancelled"}>
+            <CardText>
+              {`<@${transfer.managerDiscordId}> removed from call. Customer unheld.`}
+            </CardText>
+          </Card>,
+        );
+        return;
+      }
+
+      // transfer-decline:{transferId} — manager declines
+      if (action.startsWith('transfer-decline:')) {
+        const transferId = action.split(':')[1];
+        if (!transferId) return;
+
+        const transfer = transferManager.getTransfer(transferId);
+        if (!transfer) {
+          await event.reply(errorCard('Transfer not found.'));
+          return;
+        }
+
+        const t = transferManager.getTransfer(transferId);
+        if (t) t.status = 'declined';
+
+        await event.reply(
+          <Card title={"Transfer Declined"}>
+            <CardText>You declined the transfer request.</CardText>
+          </Card>,
+        );
+
+        // notify rep
+        const repReply = queueDialer.getReplyCallback(transfer.repAuth.userId);
+        if (repReply) {
+          try {
+            await repReply(
+              <Card title={"\u274C Transfer Declined"}>
+                <CardText>{`<@${transfer.managerDiscordId}> declined the transfer.`}</CardText>
+              </Card>,
+            );
+          } catch {
+            // non-fatal
+          }
+        }
+        return;
+      }
     } catch (err: unknown) {
       logger.error('action handler failed', {
         error: err instanceof Error ? err.message : 'unknown',
@@ -765,7 +1184,7 @@ export async function createBot() {
     }
   });
 
-  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, channelNotifier, postCallCardForUser };
+  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, channelNotifier, transferManager, postCallCardForUser };
 }
 
 const VERSION = '0.0.1';

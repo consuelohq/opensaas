@@ -16,7 +16,7 @@ type ActiveQueueState = {
   consueloUserId: string;
 };
 
-type CallEvent = {
+export type CallEvent = {
   type: string;
   callId: string;
   conferenceName?: string;
@@ -73,6 +73,7 @@ export class QueueDialer {
   private redisSubscriber: unknown = null;
   private replyCallbacks = new Map<string, ReplyFn>();
   private callEndedCallbacks = new Map<string, CallEndedFn>();
+  private callEventCallbacks: Array<(event: CallEvent) => void> = [];
 
   constructor(private config: QueueDialerConfig) {}
 
@@ -82,6 +83,10 @@ export class QueueDialer {
 
   setCallEndedCallback(discordUserId: string, fn: CallEndedFn): void {
     this.callEndedCallbacks.set(discordUserId, fn);
+  }
+
+  onCallEvent(callback: (event: CallEvent) => void): void {
+    this.callEventCallbacks.push(callback);
   }
 
   getReplyCallback(discordUserId: string): ReplyFn | undefined {
@@ -330,6 +335,15 @@ export class QueueDialer {
       event = JSON.parse(message) as CallEvent;
     } catch {
       return;
+    }
+
+    // broadcast to external listeners (transfer manager, etc.)
+    for (const callback of this.callEventCallbacks) {
+      try {
+        callback(event);
+      } catch {
+        // non-fatal
+      }
     }
 
     if (event.type !== 'call.ended' && event.type !== 'call.failed') return;
