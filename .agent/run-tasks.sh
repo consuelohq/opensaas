@@ -183,6 +183,10 @@ while [[ $# -gt 0 ]]; do
       echo "  --dry-run        Preview tasks without processing"
       echo "  --help           Show this help message"
       echo ""
+      echo "Agent Selection (Linear only):"
+      echo "  Tasks with the 'opencode' label in Linear run with opencode instead of kiro."
+      echo "  All other tasks use kiro (default)."
+      echo ""
       echo "Task Sources:"
       echo "  issues    - GitHub Issues with agent-ready label (default)"
       echo "  projects  - GitHub Projects board (mercury) with 'spec prepared' status"
@@ -220,8 +224,15 @@ if [ -n "$AGENT_OVERRIDE" ]; then
 fi
 
 # Get the agent command based on CLI choice
+# Usage: get_agent_cmd [agent_type]
+#   agent_type: "opencode" to use opencode, anything else uses kiro (default)
 get_agent_cmd() {
-  echo "$KIRO_CMD"
+  local agent_type="${1:-kiro}"
+  if [ "$agent_type" = "opencode" ]; then
+    echo "opencode run -m opencode-go/glm-5 --dir $PROJECT_ROOT"
+  else
+    echo "$KIRO_CMD"
+  fi
 }
 
 # =============================================================================
@@ -233,6 +244,7 @@ spawn_task_subprocess() {
   local issue_number="$1"
   local issue_title="$2"
   local issue_body="$3"
+  local agent_type="${4:-kiro}"
 
   # Determine issue reference format based on task source
   local issue_ref=""
@@ -295,9 +307,9 @@ do NOT push — we push all commits together at the end of the run.
 PROMPT_EOF
 
   # Spawn agent subprocess
-  log_info "Starting $AGENT_CLI subprocess for $issue_ref (agent: $agent_type)..."
+  log_info "Starting $agent_type subprocess for $issue_ref..."
 
-  local agent_cmd=$(get_agent_cmd)
+  local agent_cmd=$(get_agent_cmd "$agent_type")
   local task_log="$LOG_DIR/task-${issue_number}.log"
   $agent_cmd "$(cat "$prompt_file")" < /dev/null 2>&1 | tee "$task_log"
   local exit_code=${PIPESTATUS[0]}
@@ -506,6 +518,13 @@ parse_linear_id() {
   echo "$1" | jq -r '.linear_id // ""'
 }
 
+# Detect agent type from task labels ("opencode" label → opencode, otherwise kiro)
+parse_agent_type() {
+  local has_opencode
+  has_opencode=$(echo "$1" | jq -r 'if (.labels // [] | map(ascii_downcase) | index("opencode")) then "opencode" else "kiro" end' 2>/dev/null)
+  echo "${has_opencode:-kiro}"
+}
+
 # =============================================================================
 # GITHUB PROJECTS SUPPORT (Mercury integration)
 # =============================================================================
@@ -707,7 +726,8 @@ get_linear_tasks() {
 "))
       else "" end
     )),
-    linear_id: .id
+    linear_id: .id,
+    labels: [.labels.nodes[].name]
   }' 2>/dev/null
 }
 
@@ -806,6 +826,9 @@ get_single_linear_issue() {
           title
           description
           createdAt
+          labels {
+            nodes { name }
+          }
           comments {
             nodes {
               body
@@ -827,7 +850,8 @@ get_single_linear_issue() {
         "\n\n---\n## Comments\n\n" + ([.comments.nodes[] | "**" + .user.name + "** (" + .createdAt + "):\n" + .body + "\n"] | join("\n---\n"))
       else "" end
     )),
-    linear_id: .id
+    linear_id: .id,
+    labels: [.labels.nodes[].name]
   }' 2>/dev/null
 }
 
@@ -1427,6 +1451,7 @@ process_issue() {
   local issue_title=$(parse_issue_title "$issue_json")
   local issue_body=$(parse_issue_body "$issue_json")
   local linear_id=$(parse_linear_id "$issue_json")  # Only present for Linear tasks
+  local agent_type=$(parse_agent_type "$issue_json")
 
   # Determine display format based on task source
   local issue_display=""
@@ -1440,7 +1465,7 @@ process_issue() {
   fi
 
   log_info "=========================================="
-  log_info "Spawning fresh subprocess for issue $issue_display"
+  log_info "Spawning fresh subprocess for issue $issue_display ($agent_type)"
   log_info "Title: $issue_title"
   log_info "=========================================="
 
@@ -1468,7 +1493,7 @@ process_issue() {
   local head_before=$(git rev-parse HEAD)
 
   # Spawn fresh $AGENT_CLI subprocess (isolated context)
-  spawn_task_subprocess "$issue_number" "$issue_title" "$issue_body"
+  spawn_task_subprocess "$issue_number" "$issue_title" "$issue_body" "$agent_type"
   local subprocess_exit=$?
 
   # Post output summary to Linear
