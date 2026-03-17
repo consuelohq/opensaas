@@ -315,9 +315,10 @@ PROMPT_EOF
 
   if [ "$agent_type" = "opencode" ]; then
     /Users/kokayi/.opencode/bin/opencode run \
+      --attach http://localhost:4096 \
       -m opencode-go/glm-5 \
       --dir "$PROJECT_ROOT" \
-      "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
+      "$prompt_text" 2>&1 | tee "$task_log"
   else
     $KIRO_CMD "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
   fi
