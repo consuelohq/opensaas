@@ -1,77 +1,127 @@
 [
 	{
 		"header": {
-			"title": "Basic",
-			"subtitle": "Ideal for individual developers.",
+			"title": "Starter",
+			"subtitle": "Free CRM to manage your pipeline.",
 			"currency": "$",
-			"price": "19",
-			"priceLabel": "month, billed anually",
-			"priceMontly": "25",
+			"price": "0",
+			"priceLabel": "month",
+			"priceMontly": "0",
 			"priceLabelMontly": "month",
-			"buttonName": "Try for free",
+			"buttonName": "Start Free",
 			"buttonLink": "/"
 		},
 		"body": {
 			"listItems": [
-				{ "listItem": "Join forces with fellow architects" },
-				{ "listItem": "Present your projects with flair and captivate your audience." },
-				{ "listItem": "Immerse yourself in the dynamic realm of architecture." }
+				{
+					"listItem": "Full CRM — free after trial"
+				},
+				{
+					"listItem": "Contact management"
+				},
+				{
+					"listItem": "Basic analytics"
+				},
+				{
+					"listItem": "1 user"
+				}
 			]
 		},
 		"footer": {
 			"buttonName": "See all features",
-			"buttonLink": "/"
+			"buttonLink": "/features"
 		},
 		"type": "basic"
 	},
 	{
 		"header": {
-			"title": "Team",
-			"subtitle": "Ideal for small teams",
+			"title": "Pro",
+			"subtitle": "Power dialer + AI coaching for closers.",
 			"currency": "$",
-			"price": "29",
-			"priceLabel": "month, billed anually",
-			"priceMontly": "35",
+			"price": "20",
+			"priceLabel": "month",
+			"priceMontly": "20",
 			"priceLabelMontly": "month",
-			"buttonName": "Try for free",
+			"buttonName": "Start Free Trial",
 			"buttonLink": "/"
 		},
 		"body": {
 			"listItems": [
-				{ "listItem": "Join forces with fellow architects" },
-				{ "listItem": "Present your projects with flair and captivate your audience." },
-				{ "listItem": "Immerse yourself in the dynamic realm of architecture." },
-				{ "listItem": "Unlock endless inspiration" }
+				{
+					"listItem": "Everything in Starter"
+				},
+				{
+					"listItem": "Power dialer (multi-line)"
+				},
+				{
+					"listItem": "Local presence"
+				},
+				{
+					"listItem": "Spam shield"
+				},
+				{
+					"listItem": "AI queue management"
+				},
+				{
+					"listItem": "On-call coaching (whispers)"
+				},
+				{
+					"listItem": "Post-call analytics"
+				},
+				{
+					"listItem": "Call transfer"
+				},
+				{
+					"listItem": "Up to 5 users"
+				}
 			]
 		},
 		"footer": {
 			"buttonName": "See all features",
-			"buttonLink": "/"
+			"buttonLink": "/features"
 		},
 		"type": "featured"
 	},
 	{
 		"header": {
-			"title": "Enterprise",
-			"subtitle": "Ideal for companies",
-			"currency": "$",
-			"price": "49",
-			"priceLabel": "month, billed anually",
-			"priceMontly": "65",
+			"title": "Team",
+			"subtitle": "Scale your sales org with full automation.",
+			"currency": "",
+			"price": "Custom",
+			"priceLabel": "month",
+			"priceMontly": "Custom",
 			"priceLabelMontly": "month",
-			"buttonName": "Try for free",
+			"buttonName": "Contact Sales",
 			"buttonLink": "/"
 		},
 		"body": {
 			"listItems": [
-				{ "listItem": "Join forces with fellow architects" },
-				{ "listItem": "Present your projects with flair and captivate your audience." },
-				{ "listItem": "Immerse yourself in the dynamic realm of architecture." }
+				{
+					"listItem": "Everything in Pro"
+				},
+				{
+					"listItem": "Lead disbursement"
+				},
+				{
+					"listItem": "Post-sale sequences"
+				},
+				{
+					"listItem": "Pipeline nourishment"
+				},
+				{
+					"listItem": "Chat SDK (Discord, Slack, Teams)"
+				},
+				{
+					"listItem": "Custom integrations"
+				},
+				{
+					"listItem": "Unlimited users"
+				}
 			]
 		},
 		"footer": {
 			"buttonName": "See all features",
-			"buttonLink": "/"
+			"buttonLink": "/features"
 		},
 		"type": "basic"
 	}
