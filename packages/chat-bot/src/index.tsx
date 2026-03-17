@@ -4,13 +4,15 @@ import { getAuth, removeAuth } from './auth.js';
 import { createApiClient } from './api-client.js';
 import { QueueDialer, formatProgressText, formatSummaryText } from './queue-dialer.js';
 import { buildPostCallCard, buildDispositionConfirmCard } from './post-call-card.js';
+import { ChannelNotifier } from './channel-notifications.js';
 import type { Disposition } from './post-call-card.js';
 import type { DiscordAuth } from './auth.js';
 
 const logger = createLogger('chat-bot');
 
 export { logger };
-export { getAuth, setAuth, removeAuth } from './auth.js';
+export { getAuth, setAuth, removeAuth, getDiscordUserId } from './auth.js';
+export { ChannelNotifier } from './channel-notifications.js';
 export type { DiscordAuth } from './auth.js';
 
 export async function createBot() {
@@ -21,6 +23,10 @@ export async function createBot() {
   const apiUrl = process.env.CONSUELO_API_URL ?? 'http://localhost:8000';
   const queueDialer = new QueueDialer({
     apiUrl,
+    redisUrl: process.env.REDIS_URL,
+  });
+
+  const channelNotifier = new ChannelNotifier({
     redisUrl: process.env.REDIS_URL,
   });
 
@@ -553,11 +559,78 @@ export async function createBot() {
         return;
       }
 
+      // config — workspace settings
+      if (subcommand === 'config') {
+        const configAction = parts[1];
+
+        if (configAction === 'channel') {
+          const channelArg = parts[2];
+          if (!channelArg) {
+            // show current channel
+            const current = await channelNotifier.getChannel(auth.workspaceId);
+            const display = current ? `<#${current}>` : 'Not set';
+            await event.reply(
+              <Card title={"\u2699\uFE0F Notification Channel"}>
+                <CardText>Current: {display}{"\n"}Usage: /consuelo config channel #channel-name</CardText>
+              </Card>,
+              { ephemeral: true },
+            );
+            return;
+          }
+
+          // parse channel mention: <#1234567890> or raw ID
+          const channelMatch = channelArg.match(/^<#(\d+)>$/) ?? channelArg.match(/^(\d+)$/);
+          if (!channelMatch) {
+            await event.reply(errorCard('Invalid channel. Use #channel-name or a channel ID.'), { ephemeral: true });
+            return;
+          }
+
+          // admin check via API
+          type RoleResponse = { role?: string };
+          const { data: roleData, error: roleErr } = await apiCall<RoleResponse>(auth, 'get', '/v1/users/me/role');
+          if (roleErr) {
+            await event.reply(errorCard(roleErr === 'unauthorized'
+              ? 'Session expired. Run /consuelo login to re-link.'
+              : `Failed to check permissions: ${roleErr}`), { ephemeral: true });
+            return;
+          }
+          if (roleData?.role !== 'admin' && roleData?.role !== 'owner') {
+            await event.reply(errorCard('Only workspace admins can set the notification channel.'), { ephemeral: true });
+            return;
+          }
+
+          try {
+            await channelNotifier.setChannel(auth.workspaceId, channelMatch[1]);
+          } catch (err: unknown) {
+            logger.error('failed to set notification channel', {
+              error: err instanceof Error ? err.message : 'unknown',
+            });
+            await event.reply(errorCard('Failed to save channel setting.'), { ephemeral: true });
+            return;
+          }
+
+          await event.reply(
+            <Card title={"\u2705 Channel Set"}>
+              <CardText>Notifications will be posted to {`<#${channelMatch[1]}>`}.</CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        await event.reply(
+          <Card title={"Config"}>
+            <CardText>Usage: /consuelo config channel #channel-name</CardText>
+          </Card>,
+          { ephemeral: true },
+        );
+        return;
+      }
+
       // unknown subcommand
       await event.reply(
         <Card title={"Consuelo"}>
           <CardText>
-            Available commands: login, logout, ping, me, status, contacts search, history, queue
+            Available commands: login, logout, ping, me, status, contacts search, history, queue, config
           </CardText>
         </Card>,
         { ephemeral: true },
@@ -692,7 +765,7 @@ export async function createBot() {
     }
   });
 
-  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, postCallCardForUser };
+  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, channelNotifier, postCallCardForUser };
 }
 
 const VERSION = '0.0.1';
