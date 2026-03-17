@@ -23070,11 +23070,11 @@ __metadata:
   linkType: hard
 
 "@tiptap/extension-strike@npm:^3.14.0":
-  version: 3.19.0
-  resolution: "@tiptap/extension-strike@npm:3.19.0"
+  version: 3.20.1
+  resolution: "@tiptap/extension-strike@npm:3.20.1"
   peerDependencies:
-    "@tiptap/core": ^3.19.0
-  checksum: 10c0/a7f85fe51a07c0b209b2b5034d4f82b6c971ccce070dc59dc4d99a59a279b3546c2e6d5b2f374455e8010870db47de89932aee91e4cc8c78af7f76a343ec17bf
+    "@tiptap/core": ^3.20.1
+  checksum: 10c0/657d824beb5b213b8f2770abf4770a92bdd2c17b6b8242a01927bc0c727dd6184918f3eaa475d1a948aecc35023309463e06457b2e65b7317888bf4e55512fd4
   languageName: node
   linkType: hard
 
