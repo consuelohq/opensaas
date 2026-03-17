@@ -309,9 +309,18 @@ PROMPT_EOF
   # Spawn agent subprocess
   log_info "Starting $agent_type subprocess for $issue_ref..."
 
-  local agent_cmd=$(get_agent_cmd "$agent_type")
   local task_log="$LOG_DIR/task-${issue_number}.log"
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null 2>&1 | tee "$task_log"
+  local prompt_text
+  prompt_text="$(cat "$prompt_file")"
+
+  if [ "$agent_type" = "opencode" ]; then
+    /Users/kokayi/.opencode/bin/opencode run \
+      -m opencode-go/glm-5 \
+      --dir "$PROJECT_ROOT" \
+      "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
+  else
+    $KIRO_CMD "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
+  fi
   local exit_code=${PIPESTATUS[0]}
 
   rm -f "$prompt_file"
