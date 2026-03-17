@@ -51,9 +51,16 @@ function toWebRequest(req: IncomingMessage, body: Buffer, port: number): Request
 
 async function main() {
   try {
-    const { bot } = await createBot();
+    const { bot, queueDialer } = await createBot();
     await bot.initialize();
     logger.info('bot initialized');
+
+    // start auto-dial loop (redis pub/sub for call events)
+    queueDialer.startCallEventListener().catch((err: unknown) => {
+      logger.error('auto-dial listener failed to start', {
+        error: err instanceof Error ? err.message : 'unknown',
+      });
+    });
 
     // webhook server for discord interactions
     const webhookServer = createServer(async (req, res) => {
@@ -172,6 +179,9 @@ async function main() {
 
       // close gateway
       gatewayConnected = false;
+
+      // stop queue dialer redis subscriber
+      await queueDialer.stop();
 
       // close servers
       await new Promise<void>((resolve) => webhookServer.close(() => resolve()));

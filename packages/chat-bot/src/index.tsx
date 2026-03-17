@@ -2,6 +2,7 @@
 import { createLogger } from '@consuelo/logger';
 import { getAuth, removeAuth } from './auth.js';
 import { createApiClient } from './api-client.js';
+import { QueueDialer, formatProgressText, formatSummaryText } from './queue-dialer.js';
 import type { DiscordAuth } from './auth.js';
 
 const logger = createLogger('chat-bot');
@@ -16,6 +17,10 @@ export async function createBot() {
   const { createRedisState } = await import('@chat-adapter/state-redis');
 
   const apiUrl = process.env.CONSUELO_API_URL ?? 'http://localhost:8000';
+  const queueDialer = new QueueDialer({
+    apiUrl,
+    redisUrl: process.env.REDIS_URL,
+  });
 
   const bot = new Chat({
     userName: 'consuelo',
@@ -280,11 +285,279 @@ export async function createBot() {
         return;
       }
 
+      // queue commands
+      if (subcommand === 'queue') {
+        const queueAction = parts[1] ?? '';
+        const queueArg = parts[2];
+
+        if (!queueAction) {
+          await event.reply(
+            <Card title={"Queue"}>
+              <CardText>
+                Usage: /consuelo queue {'<start|pause|resume|stop|status|call>'}{"\n"}
+                start [category] — start dialing a queue{"\n"}
+                pause — pause active queue{"\n"}
+                resume — resume paused queue{"\n"}
+                stop — stop queue and show summary{"\n"}
+                status — show queue progress{"\n"}
+                call — dial current lead (preview mode)
+              </CardText>
+            </Card>,
+            { ephemeral: true },
+          );
+          return;
+        }
+
+        // queue start [category]
+        if (queueAction === 'start') {
+          type PrefsResponse = { phone?: string; repPhone?: string };
+          const { data: prefs, error: prefsErr } = await apiCall<PrefsResponse>(
+            auth, 'get', '/v1/settings/preferences',
+          );
+          const repPhone = prefs?.repPhone ?? prefs?.phone;
+          if (!repPhone) {
+            await event.reply(
+              <Card title={"\u260E\uFE0F Phone Required"}>
+                <CardText>
+                  Set your phone number first via preferences before starting a queue.
+                </CardText>
+              </Card>,
+              { ephemeral: true },
+            );
+            return;
+          }
+
+          // find a queue to start — by category filter or most recent idle
+          type QueueListItem = {
+            id: string;
+            name: string;
+            status: string;
+            category?: string;
+            total_contacts: number;
+          };
+          const { data: queues, error: listErr } = await apiCall<QueueListItem[]>(
+            auth, 'get', '/v1/queues',
+          );
+          if (listErr || !queues) {
+            await event.reply(errorCard(listErr ?? 'Failed to list queues'), { ephemeral: true });
+            return;
+          }
+
+          const category = queueArg;
+          const eligible = queues.filter((q) => {
+            if (q.status !== 'idle' && q.status !== 'paused') return false;
+            if (category && q.category !== category) return false;
+            return true;
+          });
+
+          if (eligible.length === 0) {
+            await event.reply(
+              <Card title={"\uD83D\uDCCB No Queue Found"}>
+                <CardText>
+                  No idle queues found{category ? ` for category "${category}"` : ''}. Create one first.
+                </CardText>
+              </Card>,
+            );
+            return;
+          }
+
+          const target = eligible[0];
+          const mode = (parts[3] === 'preview' ? 'preview' : 'power') as 'power' | 'preview';
+
+          // store reply callback for auto-dial loop messages
+          queueDialer.setReplyCallback(auth.userId, async (content) => {
+            await event.reply(
+              <Card title={"\uD83D\uDCDE Queue Update"}>
+                <CardText>{String(content)}</CardText>
+              </Card>,
+            );
+          });
+
+          const result = await queueDialer.startQueue(
+            auth, event.userId, target.id, mode, repPhone,
+          );
+
+          if (result.error) {
+            await event.reply(errorCard(result.error), { ephemeral: true });
+            return;
+          }
+
+          await event.reply(
+            <Card title={"\uD83D\uDFE2 Queue Started"}>
+              <Fields>
+                <Field label="Queue" value={target.name} />
+                <Field label="Leads" value={String(target.total_contacts)} />
+                <Field label="Mode" value={mode} />
+              </Fields>
+              <CardText>
+                {result.currentItem
+                  ? 'Calling your phone to connect with first lead...'
+                  : 'No pending leads in this queue.'}
+              </CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        // queue pause
+        if (queueAction === 'pause') {
+          const queueId = queueDialer.getActiveQueueId(event.userId);
+          if (!queueId) {
+            await event.reply(errorCard('No active queue. Start one with /consuelo queue start'), { ephemeral: true });
+            return;
+          }
+          const result = await queueDialer.pauseQueue(auth, queueId);
+          if (!result) {
+            await event.reply(errorCard('Failed to pause queue'), { ephemeral: true });
+            return;
+          }
+          const completed = (result.completed_contacts ?? 0);
+          const total = (result.total_contacts ?? 0);
+          await event.reply(
+            <Card title={"\u23F8\uFE0F Queue Paused"}>
+              <CardText>{`${completed}/${total} completed.`}</CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        // queue resume
+        if (queueAction === 'resume') {
+          const queueId = queueDialer.getActiveQueueId(event.userId);
+          if (!queueId) {
+            await event.reply(errorCard('No active queue to resume.'), { ephemeral: true });
+            return;
+          }
+          const result = await queueDialer.resumeQueue(auth, event.userId, queueId);
+          if (!result) {
+            await event.reply(errorCard('Failed to resume queue'), { ephemeral: true });
+            return;
+          }
+          await event.reply(
+            <Card title={"\u25B6\uFE0F Queue Resumed"}>
+              <CardText>
+                {result.currentItem
+                  ? 'Calling next lead...'
+                  : 'No more pending leads.'}
+              </CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        // queue stop
+        if (queueAction === 'stop') {
+          const queueId = queueDialer.getActiveQueueId(event.userId);
+          if (!queueId) {
+            await event.reply(errorCard('No active queue to stop.'), { ephemeral: true });
+            return;
+          }
+          const analytics = await queueDialer.getAnalytics(auth, queueId);
+          const queue = await queueDialer.stopQueue(auth, event.userId, queueId);
+          if (!queue) {
+            await event.reply(errorCard('Failed to stop queue'), { ephemeral: true });
+            return;
+          }
+
+          if (analytics) {
+            const summary = formatSummaryText(queue.name ?? 'Queue', analytics);
+            await event.reply(
+              <Card title={"\uD83D\uDCCB Queue Summary"}>
+                <CardText>{summary}</CardText>
+              </Card>,
+            );
+          } else {
+            await event.reply(
+              <Card title={"\u23F9\uFE0F Queue Stopped"}>
+                <CardText>{`${queue.name} stopped.`}</CardText>
+              </Card>,
+            );
+          }
+          return;
+        }
+
+        // queue status
+        if (queueAction === 'status') {
+          const queueId = queueDialer.getActiveQueueId(event.userId) ?? queueArg;
+          if (!queueId) {
+            // show list of queues
+            const queues = await queueDialer.listQueues(auth);
+            if (queues.length === 0) {
+              await event.reply(
+                <Card title={"\uD83D\uDCCB Queues"}>
+                  <CardText>No queues found.</CardText>
+                </Card>,
+              );
+              return;
+            }
+            const lines = queues.map((q) => {
+              const completed = (q as Record<string, unknown>).completed_contacts ?? 0;
+              const total = (q as Record<string, unknown>).total_contacts ?? 0;
+              return `${q.status === 'active' ? '\uD83D\uDFE2' : '\u26AA'} **${q.name}** — ${q.status} (${completed}/${total})`;
+            }).join('\n');
+            await event.reply(
+              <Card title={"\uD83D\uDCCB Queues"}>
+                <CardText>{lines}</CardText>
+              </Card>,
+            );
+            return;
+          }
+
+          const [queue, analytics] = await Promise.all([
+            queueDialer.getQueueWithItems(auth, queueId),
+            queueDialer.getAnalytics(auth, queueId),
+          ]);
+
+          if (!queue) {
+            await event.reply(errorCard('Queue not found'), { ephemeral: true });
+            return;
+          }
+
+          const state = queueDialer.getActiveMode(event.userId);
+          const mode = state ?? 'power';
+          const progressText = formatProgressText(queue, analytics, mode);
+          const currentItem = queue.items?.find((i) => i.status === 'calling');
+
+          await event.reply(
+            <Card title={"\uD83D\uDCCA Queue Status"}>
+              <CardText>
+                {progressText}
+                {currentItem ? `\n\nCurrent: Contact ${currentItem.contact_id}` : ''}
+              </CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        // queue call — manual dial for preview mode
+        if (queueAction === 'call') {
+          const dialed = await queueDialer.dialCurrentItem(auth, event.userId);
+          if (!dialed) {
+            await event.reply(errorCard('No current lead to dial, or no active queue.'), { ephemeral: true });
+            return;
+          }
+          await event.reply(
+            <Card title={"\uD83D\uDCDE Dialing"}>
+              <CardText>Calling your phone to connect with current lead...</CardText>
+            </Card>,
+          );
+          return;
+        }
+
+        await event.reply(
+          <Card title={"Queue"}>
+            <CardText>Unknown queue action: {queueAction}</CardText>
+          </Card>,
+          { ephemeral: true },
+        );
+        return;
+      }
+
       // unknown subcommand
       await event.reply(
         <Card title={"Consuelo"}>
           <CardText>
-            Available commands: login, logout, ping, me, status, contacts search, history
+            Available commands: login, logout, ping, me, status, contacts search, history, queue
           </CardText>
         </Card>,
         { ephemeral: true },
@@ -297,7 +570,7 @@ export async function createBot() {
     }
   });
 
-  return { bot, Card, CardText, Fields, Field };
+  return { bot, Card, CardText, Fields, Field, queueDialer };
 }
 
 const VERSION = '0.0.1';
