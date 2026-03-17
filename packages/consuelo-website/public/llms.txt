@@ -1,8 +1,8 @@
 # Consuelo
 
-> Consuelo is an open-source sales infrastructure platform. Voice AI that shortens ramp time on sales teams — CRM, dialer, real-time AI coaching, and analytics in one platform.
+> Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics in one platform. $20/seat. Free CRM forever.
 
-Consuelo helps sales teams onboard new reps faster and helps top performers pivot to new products with AI-powered training and CRM automation. Built on a Twenty CRM fork with an embedded dialer sidebar, real-time AI coaching, and composable backend packages.
+Consuelo replaces your entire sales stack — power dialer with local presence, free CRM built on Twenty, real-time AI coaching, and analytics. Built as composable open-source packages on a Twenty CRM fork.
 
 - Website: https://www.consuelohq.com
 - GitHub: https://github.com/consuelohq/opensaas

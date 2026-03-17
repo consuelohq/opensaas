@@ -21,9 +21,9 @@ export interface Config {
 }
 
 export const configData: Config = {
-	siteTitle: 'Consuelo — Sales Infrastructure That Works Everywhere You Work',
+	siteTitle: 'Consuelo — Open-Source Sales Infrastructure',
 	siteDescription:
-		'Power dialer, AI coaching, CRM, and lead automation — all connected. $20/mo.',
+		'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. $20/seat. Free CRM forever. Open source.',
 	ogImage: '/og.jpg',
 	logo: {
 		src: '/logo.svg',
@@ -32,5 +32,5 @@ export const configData: Config = {
 	canonical: true,
 	noindex: false,
 	mode: 'auto',
-	scrollAnimations: false
+	scrollAnimations: true
 }
