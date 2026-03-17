@@ -266,7 +266,7 @@ function WorkflowCanvas() {
 
 export function HowItWorks() {
   return (
-    <section className="py-20 sm:py-24">
+    <section id="how-it-works" className="py-20 sm:py-24">
       <div className="mx-auto max-w-3xl px-6">
         <div className="mb-10 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">

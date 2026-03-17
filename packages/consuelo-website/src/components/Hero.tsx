@@ -8,14 +8,12 @@ const tabs = [
   { label: "Analytics", image: "/previews/analytics.webp" },
 ] as const;
 
-const LOBEHUB = "https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-svg/icons";
-
-const logos = [
-  { src: `${LOBEHUB}/openclaw-color.svg`, alt: "OpenClaw" },
-  { src: `${LOBEHUB}/perplexity-color.svg`, alt: "Perplexity" },
-  { src: `${LOBEHUB}/notion.svg`, alt: "Notion" },
-  { src: `${LOBEHUB}/openhands-color.svg`, alt: "OpenHands" },
-  { src: `${LOBEHUB}/railway.svg`, alt: "Railway" },
+const proofPoints = [
+  "Open Source",
+  "No Contracts",
+  "Free CRM Forever",
+  "Local Presence",
+  "AI Coaching",
 ];
 
 const fade = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } };
@@ -35,7 +33,7 @@ export function Hero() {
           transition={{ duration: 0.4 }}
           className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-(--color-border) px-4 py-1.5 text-sm text-(--color-muted) transition-colors hover:border-(--color-muted)"
         >
-          Meet The Agent Platform Now with ChatGPT
+          Open-source sales infrastructure
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </motion.a>
 
@@ -47,7 +45,7 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.08 }}
           className="text-[1.75rem] font-bold leading-[1.08] tracking-tight text-balance sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem]"
         >
-          Sales infrastructure that works everywhere you work.
+          $20 power dialer. Free CRM. AI that coaches you live.
         </motion.h1>
 
         {/* subcopy */}
@@ -58,7 +56,7 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.16 }}
           className="mx-auto mt-5 max-w-[480px] text-base text-(--color-muted) sm:text-lg"
         >
-          Power dialer, AI coaching, and CRM — unified in one platform your team actually wants to use.
+          Dialers are overpriced. CRMs collect dust. Leads go cold. Consuelo connects your dialer, CRM, AI coaching, and lead automation — so nothing falls through the cracks.
         </motion.p>
 
         {/* ctas — square-ish buttons */}
@@ -73,13 +71,13 @@ export function Hero() {
             href="/signup"
             className="bg-(--color-fg) px-6 py-3 text-sm font-medium text-(--color-bg) transition-opacity hover:opacity-80"
           >
-            Start for free
+            Get Started Free
           </a>
           <a
-            href="/demo"
+            href="#how-it-works"
             className="border border-(--color-border) px-6 py-3 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-fg)"
           >
-            Talk to sales
+            See How It Works
           </a>
         </motion.div>
 
@@ -89,10 +87,13 @@ export function Hero() {
           initial="hidden"
           animate="visible"
           transition={{ duration: 0.4, delay: 0.32 }}
-          className="mx-auto mt-12 flex max-w-2xl items-center justify-between px-6"
+          className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-(--color-muted)"
         >
-          {logos.map((l) => (
-            <img key={l.alt} src={l.src} alt={l.alt} className="h-8 sm:h-10" />
+          {proofPoints.map((point, i) => (
+            <span key={point} className="flex items-center gap-2">
+              {i > 0 && <span className="text-(--color-border)">·</span>}
+              {point}
+            </span>
           ))}
         </motion.div>
       </div>
