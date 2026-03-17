@@ -1,36 +1,38 @@
 [
 	{
-		"title": "v1.0.6: Enhanced Security Features",
-		"date": "2024-07-01",
-		"text": "<p>We've implemented new security protocols to safeguard your data. Enjoy peace of mind with improved encryption and multi-factor authentication.</p> <ul><li>2FA enabled by default</li><li>HubSpot integration</li><li>Zoho CRM integration</li></ul>",
+		"title": "v0.3.1: Open Source Release",
+		"date": "2026-03-15",
+		"text": "<p>Consuelo is now fully open source! Release the codebase under MIT license with complete documentation for self-hosting and community contributions.</p><ul><li>Full source code on GitHub</li><li>Self-hosting documentation</li><li>Docker deployment guides</li><li>Community Discord launched</li></ul>",
 		"image": "/feeds/feed-01.png"
 	},
 	{
-		"title": "v1.0.5: User Interface Improvements",
-		"date": "2024-06-15",
-		"text": "<p>Our latest update brings a revamped user interface for a more intuitive and visually appealing experience. Navigation and usability have been greatly enhanced.</p><ul><li>Updated dashboard layout</li><li>Improved accessibility features</li><li>Streamlined navigation menus</li></ul>",
+		"title": "v0.3.0: Analytics Dashboard",
+		"date": "2026-03-01",
+		"text": "<p>Real-time analytics dashboard with call metrics, team performance tracking, and historical trends. Track what matters for your sales team.</p><ul><li>Call volume metrics</li><li>Connect rate tracking</li><li>Average call duration</li><li>Team leaderboards</li></ul>",
 		"image": "/feeds/feed-02.png"
 	},
 	{
-		"title": "v1.0.4: New In-App Messaging",
-		"date": "2024-05-20",
-		"text": "<p>Introducing in-app messaging! Communicate directly within the app to keep conversations organized and accessible without switching between tools.</p>"
-	},
-	{
-		"title": "v1.0.3: Performance Enhancements",
-		"date": "2024-04-10",
-		"text": "<p>We've optimized the app to run faster and smoother. Experience improved load times and overall performance.</p>",
+		"title": "v0.2.1: Contact Management + Queue System",
+		"date": "2026-02-20",
+		"text": "<p>Built-in contact management with CSV import, phone normalization, and intelligent queue system for high-volume outreach campaigns.</p><ul><li>CSV import with field mapping</li><li>Automatic phone normalization</li><li>Queue categories and prioritization</li><li>DNC list filtering</li></ul>",
 		"image": "/feeds/feed-03.png"
 	},
 	{
-		"title": "v1.0.2: CRM Integration",
-		"date": "2024-03-25",
-		"text": "<p>Connect your app with popular CRM systems to streamline customer management. Synchronize data and improve customer relationship processes.</p><ul><li>Salesforce integration</li><li>HubSpot integration</li><li>Zoho CRM integration</li></ul>"
+		"title": "v0.2.0: AI Coaching Beta",
+		"date": "2026-02-05",
+		"text": "<p>Real-time AI coaching powered by Groq and OpenAI. Get live suggestions, objection handling tips, and call analysis during and after conversations.</p><ul><li>Real-time transcription</li><li>Live coaching suggestions</li><li>Post-call analysis</li><li>Structured output via Zod schemas</li></ul>",
+		"image": "/feeds/feed-04.png"
 	},
 	{
-		"title": "v1.0.1: Third-Party API Support",
-		"date": "2024-02-15",
-		"text": "<p>Seamlessly integrate with third-party APIs to extend the functionality of your app. Enjoy smooth data exchange and enhanced performance.</p>",
-		"image": "/feeds/feed-04.png"
+		"title": "v0.1.1: Warm & Cold Call Transfers",
+		"date": "2026-01-22",
+		"text": "<p>Conference-based call transfer architecture. Initiate warm transfers with consultation, or cold transfer directly — both powered by Twilio conferences.</p><ul><li>Cold transfer (blind)</li><li>Warm transfer with consultation</li><li>Hold/unhold during transfer</li><li>Transfer cancellation support</li></ul>",
+		"image": "/feeds/feed-01.png"
+	},
+	{
+		"title": "v0.1.0: Power Dialer Launch",
+		"date": "2026-01-06",
+		"text": "<p>Initial release of Consuelo's power dialer with local presence dialing. Make more calls, connect with more prospects, all from your browser.</p><ul><li>Browser-based calling via Twilio</li><li>Local presence (geo-proximity caller ID)</li><li>Caller ID lock to prevent conflicts</li><li>Parallel dialing (3 concurrent lines)</li></ul>",
+		"image": "/feeds/feed-02.png"
 	}
 ]
