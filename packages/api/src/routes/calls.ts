@@ -3,13 +3,33 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, getDialerForWorkspace } from '../shared/dialer.js';
-import { createLogger } from '@consuelo/logger';
-const logger = createLogger('api:audit');
+import { sharedDialer, getDialerForWorkspace, sharedCallerIdLockService } from '../shared/dialer.js';
+
+let _callsLogger: {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+} | null = null;
+
+const getCallsLogger = async () => {
+  try {
+    if (!_callsLogger) {
+      // eslint-disable-next-line @nx/enforce-module-boundaries
+      const { createLogger } = await import('@consuelo/logger');
+      _callsLogger = createLogger('api:audit');
+    }
+    return _callsLogger;
+  } catch (err: unknown) {
+    _callsLogger = null;
+    throw err;
+  }
+};
+
 import { validateTwilioSignature } from './voice.js';
 
 const getLegacyDialer = sharedDialer;
+const getCallerIdLockService = sharedCallerIdLockService;
 import { getSharedPool } from '../shared/db.js';
+import { redisService } from '../services/redis.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -33,6 +53,17 @@ interface AnalysisBody {
   keyMoments?: unknown[];
   summary?: string;
 }
+
+interface InitiatePhoneCallBody {
+  repPhone: string;
+  leadPhone: string;
+  from?: string;
+  localPresence?: boolean;
+  queueId?: string;
+  contactId?: string;
+}
+
+const PHONE_CALL_TIMEOUT_SECONDS = 30;
 
 const SQL_HISTORY =
   'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.workspace_id = $1';
@@ -93,7 +124,7 @@ export const callRoutes = (): RouteDefinition[] => {
           res
             .status(201)
             .json({ callSid: result.callSid, status: 'initiated' });
-          logger.info('call.initiated', {
+          (await getCallsLogger()).info('call.initiated', {
             action: 'call.initiated',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
@@ -163,7 +194,7 @@ export const callRoutes = (): RouteDefinition[] => {
           res
             .status(201)
             .json({ callSid, conferenceName, status: 'calling-agent' });
-          logger.info('call.callback', {
+          (await getCallsLogger()).info('call.callback', {
             action: 'call.callback',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
@@ -236,6 +267,187 @@ export const callRoutes = (): RouteDefinition[] => {
               },
             );
           });
+      }),
+    },
+
+    // --- phone-based dialer: initiate call by dialing rep's phone (DEV-1123) ---
+    {
+      method: 'POST',
+      path: '/v1/calls/initiate-phone',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const body = req.body as InitiatePhoneCallBody | undefined;
+        if (!body?.repPhone || !body?.leadPhone) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Missing repPhone or leadPhone',
+            },
+          });
+          return;
+        }
+        if (!E164_REGEX.test(body.repPhone) || !E164_REGEX.test(body.leadPhone)) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PHONE',
+              message: 'Phone numbers must be E.164 format',
+            },
+          });
+          return;
+        }
+        if (body.from && !E164_REGEX.test(body.from)) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_PHONE',
+              message: 'from must be E.164 format',
+            },
+          });
+          return;
+        }
+
+        try {
+          const dialer = await getDialerForWorkspace(auth.workspaceId);
+          let callerId = body.from ?? '';
+
+          // local presence: auto-select outbound caller ID based on lead's area code
+          if (!callerId && body.localPresence !== false) {
+            try {
+              const numbers = await dialer.listNumbers();
+              if (numbers.length > 0) {
+                const pool = {
+                  numbers,
+                  primaryNumber: numbers.find((n) => n.isPrimary),
+                };
+                const selection = await dialer.localPresence.selectNumber(
+                  pool,
+                  body.leadPhone,
+                );
+                if (selection) {
+                  callerId = selection.phoneNumber;
+                }
+              }
+            } catch (err: unknown) {
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(String(err)),
+                { extra: { context: 'initiate_phone_local_presence' } },
+              );
+              // fall through to default caller ID
+            }
+          }
+
+          if (!callerId) {
+            callerId = process.env.TWILIO_CALLER_ID ?? body.repPhone;
+          }
+
+          // acquire caller ID lock
+          try {
+            const lockService = getCallerIdLockService();
+            const locked = await lockService.acquireLock(
+              callerId,
+              auth.userId,
+              '',
+            );
+            if (!locked) {
+              res.status(409).json({
+                error: {
+                  code: 'CALLER_ID_LOCKED',
+                  message: 'Caller ID number is currently in use by another call',
+                },
+              });
+              return;
+            }
+          } catch (err: unknown) {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              { extra: { context: 'initiate_phone_caller_id_lock' } },
+            );
+            // non-fatal: proceed without lock
+          }
+
+          const callId = randomUUID();
+          const conferenceName = `conf-phone-${randomUUID()}`;
+          const baseUrl = process.env.API_BASE_URL ?? '';
+          const statusCallbackUrl = `${baseUrl}/v1/voice/phone-status`;
+
+          // generate TwiML that joins rep to conference when they answer
+          const twiml = dialer.conference.generateConferenceTwiml(
+            conferenceName,
+            {
+              startOnEnter: true,
+              endOnExit: false,
+              participantLabel: 'agent',
+            },
+          );
+
+          // call rep's phone with conference TwiML + status callback
+          const { callSid: repCallSid } = await dialer.conference.createCall(
+            body.repPhone,
+            callerId,
+            {
+              twiml,
+              statusCallback: statusCallbackUrl,
+              statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+              timeout: PHONE_CALL_TIMEOUT_SECONDS,
+            },
+          );
+
+          // store call state in redis for the status webhook
+          await redisService.setPhoneCallState(callId, {
+            conferenceName,
+            leadPhone: body.leadPhone,
+            callerId,
+            repCallSid,
+            repPhone: body.repPhone,
+            contactId: body.contactId ?? null,
+            queueId: body.queueId ?? null,
+            workspaceId: auth.workspaceId,
+            userId: auth.userId,
+            status: 'initiating',
+            createdAt: new Date().toISOString(),
+          });
+          await redisService.mapCallSidToCallId(repCallSid, callId);
+
+          // publish call.started event
+          await redisService.publishCallEvent({
+            type: 'call.started',
+            callId,
+            conferenceName,
+            repPhone: body.repPhone,
+            leadPhone: body.leadPhone,
+            contactId: body.contactId ?? null,
+            userId: auth.userId,
+            timestamp: new Date().toISOString(),
+          });
+
+          res.status(201).json({
+            callId,
+            conferenceName,
+            repCallSid,
+            status: 'initiating',
+          });
+          (await getCallsLogger()).info('call.initiate_phone', {
+            action: 'call.initiate_phone',
+            userId: auth.userId,
+            callId,
+            outcome: 'success',
+          });
+        } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'initiate_phone',
+                repPhone: body.repPhone,
+                leadPhone: body.leadPhone,
+              },
+            },
+          );
+          const message =
+            err instanceof Error ? err.message : 'Failed to initiate phone call';
+          res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
+        }
       }),
     },
 
@@ -384,7 +596,7 @@ export const callRoutes = (): RouteDefinition[] => {
           }
 
           res.status(200).json({ callSid, status: 'completed' });
-          logger.info('call.hangup', {
+          (await getCallsLogger()).info('call.hangup', {
             action: 'call.hangup',
             userId: req.auth?.userId ?? 'anonymous',
             outcome: 'success',
@@ -441,7 +653,7 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         res.status(201).json({ callId, persisted: true });
-        logger.info('call.analysis', {
+        (await getCallsLogger()).info('call.analysis', {
           action: 'call.analysis',
           userId: auth?.userId ?? 'anonymous',
           outcome: 'success',
