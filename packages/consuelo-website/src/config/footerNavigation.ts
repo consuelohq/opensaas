@@ -3,6 +3,7 @@
 // Description: The footer navigation data for the website.
 export interface Logo {
 	src: string
+	darkSrc?: string
 	alt: string
 	text: string
 }
@@ -40,6 +41,7 @@ export const footerNavigationData: FooterData = {
 			'Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics — all in one platform.',
 		logo: {
 			src: '/logo.svg',
+			darkSrc: '/logo-dark.svg',
 			alt: 'Consuelo',
 			text: 'Consuelo'
 		}

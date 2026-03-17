@@ -3,6 +3,7 @@
 // Description: The navigation bar data for the website.
 export interface Logo {
 	src: string
+	darkSrc?: string
 	alt: string
 	text: string
 }
@@ -34,6 +35,7 @@ export interface NavData {
 export const navigationBarData: NavData = {
 	logo: {
 		src: '/logo.svg',
+		darkSrc: '/logo-dark.svg',
 		alt: 'Consuelo',
 		text: 'Consuelo'
 	},
