@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Welcome to Consuelo! By using our services, you agree to be bound by these terms and conditions. Please read them carefully.
+Welcome to Consuelo! By using our services — including our power dialer, AI CRM, real-time coaching, and analytics platform — you agree to be bound by these terms and conditions. Please read them carefully.
 
 ## Acceptance of Terms
 
