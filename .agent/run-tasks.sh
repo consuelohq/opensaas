@@ -1823,7 +1823,7 @@ main() {
   elif [ "$TASK_SOURCE" = "linear" ]; then
     log_info "Autonomous Agent Task Runner (Linear)"
     log_info "Team ID: ${LINEAR_TEAM_ID}"
-    log_info "Label: ${LINEAR_LABEL_NAME:-hero}"
+    log_info "Label: kiro or opencode"
     log_info "Ready state: ${LINEAR_STATE_OPEN:-Open}"
   else
     log_info "Autonomous Agent Task Runner (GitHub Issues)"
@@ -1869,7 +1869,7 @@ main() {
     elif [ "$TASK_SOURCE" = "projects" ]; then
       log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
     elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
+      log_success "No Linear issues with 'kiro' or 'opencode' label in '${LINEAR_STATE_OPEN:-Open}' state"
     else
       log_success "No open issues with label '$ISSUE_LABEL' to process"
     fi
@@ -1886,7 +1886,7 @@ main() {
     if [ "$TASK_SOURCE" = "projects" ]; then
       log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
     elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
+      log_success "No Linear issues with 'kiro' or 'opencode' label in '${LINEAR_STATE_OPEN:-Open}' state"
     else
       log_success "No open issues with label '$ISSUE_LABEL' to process"
     fi
