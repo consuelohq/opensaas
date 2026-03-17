@@ -54,6 +54,18 @@ interface AnalysisBody {
   summary?: string;
 }
 
+type Disposition = 'connected' | 'voicemail' | 'no-answer' | 'busy' | 'follow-up' | 'not-interested';
+
+const VALID_DISPOSITIONS: ReadonlySet<string> = new Set<Disposition>([
+  'connected', 'voicemail', 'no-answer', 'busy', 'follow-up', 'not-interested',
+]);
+
+interface DispositionBody {
+  outcome: Disposition;
+  notes?: string;
+  contactId?: string;
+}
+
 interface InitiatePhoneCallBody {
   repPhone: string;
   leadPhone: string;
@@ -85,6 +97,9 @@ const SQL_PERSIST_ANALYSIS =
 
 const SQL_GET_CALL_BY_RECORDING_SID =
   'SELECT id FROM calls WHERE recording_sid = $1 AND workspace_id = $2';
+
+const SQL_SET_DISPOSITION =
+  'UPDATE calls SET outcome = $1, notes = $2, updated_at = NOW() WHERE id = $3 AND workspace_id = $4 RETURNING id, outcome, notes';
 
 const getPool = getSharedPool;
 
@@ -725,6 +740,88 @@ export const callRoutes = (): RouteDefinition[] => {
         res.status(404).json({
           error: { code: 'NOT_FOUND', message: 'No recording available' },
         });
+      }),
+    },
+    {
+      method: 'POST',
+      path: '/v1/calls/:id/disposition',
+      handler: errorHandler(async (req, res) => {
+        const auth = requireAuth(req, res);
+        if (auth === null) return;
+
+        const callId = req.params?.id;
+        if (!callId) {
+          res.status(400).json({
+            error: { code: 'INVALID_REQUEST', message: 'Missing call ID' },
+          });
+          return;
+        }
+
+        const body = req.body as Partial<DispositionBody> | undefined;
+        if (!body || (!body.outcome && !body.notes)) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Provide outcome and/or notes',
+            },
+          });
+          return;
+        }
+        if (body.outcome && !VALID_DISPOSITIONS.has(body.outcome)) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: 'Invalid outcome. Valid: connected, voicemail, no-answer, busy, follow-up, not-interested',
+            },
+          });
+          return;
+        }
+
+        try {
+          const db = await getPool();
+          // build dynamic update
+          const setClauses: string[] = ['updated_at = NOW()'];
+          const params: unknown[] = [];
+          let idx = 1;
+          if (body.outcome) {
+            setClauses.push(`outcome = ${idx}`);
+            params.push(body.outcome);
+            idx++;
+          }
+          if (body.notes !== undefined) {
+            setClauses.push(`notes = ${idx}`);
+            params.push(body.notes);
+            idx++;
+          }
+          params.push(callId, auth.workspaceId);
+          const sql = `UPDATE calls SET ${setClauses.join(', ')} WHERE id = ${idx} AND workspace_id = ${idx + 1} RETURNING id, outcome, notes`;
+          const { rows } = await db.query(sql, params);
+          if (rows.length === 0) {
+            res.status(404).json({
+              error: { code: 'NOT_FOUND', message: 'Call not found' },
+            });
+            return;
+          }
+
+          res.status(200).json({
+            callId,
+            outcome: rows[0].outcome,
+            notes: rows[0].notes,
+          });
+          (await getCallsLogger()).info('call.disposition', {
+            action: 'call.disposition',
+            userId: auth.userId,
+            callId,
+            outcome: body.outcome,
+          });
+        } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            { extra: { context: 'disposition', callId } },
+          );
+          const message = err instanceof Error ? err.message : 'Unknown error';
+          res.status(500).json({ error: { code: 'DISPOSITION_FAILED', message } });
+        }
       }),
     },
     {

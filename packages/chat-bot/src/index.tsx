@@ -3,6 +3,8 @@ import { createLogger } from '@consuelo/logger';
 import { getAuth, removeAuth } from './auth.js';
 import { createApiClient } from './api-client.js';
 import { QueueDialer, formatProgressText, formatSummaryText } from './queue-dialer.js';
+import { buildPostCallCard, buildDispositionConfirmCard } from './post-call-card.js';
+import type { Disposition } from './post-call-card.js';
 import type { DiscordAuth } from './auth.js';
 
 const logger = createLogger('chat-bot');
@@ -12,7 +14,7 @@ export { getAuth, setAuth, removeAuth } from './auth.js';
 export type { DiscordAuth } from './auth.js';
 
 export async function createBot() {
-  const { Chat, Card, CardText, Fields, Field } = await import('chat');
+  const { Chat, Card, CardText, Fields, Field, Actions, Button } = await import('chat');
   const { createDiscordAdapter } = await import('@chat-adapter/discord');
   const { createRedisState } = await import('@chat-adapter/state-redis');
 
@@ -366,12 +368,10 @@ export async function createBot() {
 
           // store reply callback for auto-dial loop messages
           queueDialer.setReplyCallback(auth.userId, async (content) => {
-            await event.reply(
-              <Card title={"\uD83D\uDCDE Queue Update"}>
-                <CardText>{String(content)}</CardText>
-              </Card>,
-            );
+            await event.reply(content);
           });
+
+          queueDialer.setCallEndedCallback(auth.userId, postCallCardForUser);
 
           const result = await queueDialer.startQueue(
             auth, event.userId, target.id, mode, repPhone,
@@ -570,7 +570,129 @@ export async function createBot() {
     }
   });
 
-  return { bot, Card, CardText, Fields, Field, queueDialer };
+  // track pending notes requests: callId -> discordUserId
+  const pendingNotes = new Map<string, string>();
+
+  // wire post-call card into queue-dialer call events
+  const postCallCardForUser = async (callId: string, discordUserId: string, auth: DiscordAuth) => {
+    try {
+      const client = userClient(auth);
+      const card = await buildPostCallCard(callId, client, {
+        Card, CardText, Fields, Field, Actions, Button,
+      });
+      const replyFn = queueDialer.getReplyCallback(discordUserId);
+      if (replyFn) {
+        await replyFn(card);
+      }
+    } catch (err: unknown) {
+      logger.error('failed to post call card', {
+        error: err instanceof Error ? err.message : 'unknown',
+        callId,
+      });
+    }
+  };
+
+  // handle disposition button clicks and notes flow
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bot.onAction(async (event: any) => { // HACK: chat SDK types unavailable (peer dep)
+    try {
+      const action = event.action ?? '';
+
+      // disposition:{callId}:{outcome}
+      if (action.startsWith('disposition:')) {
+        const parts = action.split(':');
+        const callId = parts[1];
+        const outcome = parts[2] as Disposition;
+        if (!callId || !outcome) return;
+
+        const auth = await getAuth(event.userId);
+        if (!auth) return;
+
+        try {
+          const client = userClient(auth);
+          await client.post(`/v1/calls/${callId}/disposition`, { outcome });
+        } catch (err: unknown) {
+          logger.error('disposition api call failed', {
+            error: err instanceof Error ? err.message : 'unknown',
+            callId,
+            outcome,
+          });
+        }
+
+        // confirm disposition
+        const confirmCard = buildDispositionConfirmCard(outcome, { Card, CardText });
+        await event.reply(confirmCard);
+
+        // advance queue if active
+        await queueDialer.advanceAfterDisposition(event.userId);
+        return;
+      }
+
+      // notes:{callId}
+      if (action.startsWith('notes:')) {
+        const callId = action.split(':')[1];
+        if (!callId) return;
+
+        pendingNotes.set(event.userId, callId);
+        await event.reply(
+          <Card title={"\uD83D\uDCDD Add Notes"}>
+            <CardText>Type your notes for this call and send them as a reply.</CardText>
+          </Card>,
+        );
+        return;
+      }
+    } catch (err: unknown) {
+      logger.error('action handler failed', {
+        error: err instanceof Error ? err.message : 'unknown',
+        action: event.action,
+      });
+    }
+  });
+
+  // capture notes from thread replies
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bot.onMessage(async (event: any) => { // HACK: chat SDK types unavailable (peer dep)
+    try {
+      const callId = pendingNotes.get(event.userId);
+      if (!callId) return;
+
+      const auth = await getAuth(event.userId);
+      if (!auth) return;
+
+      const notes = event.text?.trim();
+      if (!notes) return;
+
+      pendingNotes.delete(event.userId);
+
+      try {
+        const client = userClient(auth);
+        await client.post(`/v1/calls/${callId}/disposition`, { notes });
+      } catch (err: unknown) {
+        logger.error('notes save failed', {
+          error: err instanceof Error ? err.message : 'unknown',
+          callId,
+        });
+        await event.reply(
+          <Card title={"\u26A0\uFE0F Error"}>
+            <CardText>Failed to save notes. Try again.</CardText>
+          </Card>,
+        );
+        return;
+      }
+
+      await event.reply(
+        <Card title={"\u2705 Notes Saved"}>
+          <CardText>Notes added to call record.</CardText>
+        </Card>,
+      );
+    } catch (err: unknown) {
+      logger.error('message handler failed', {
+        error: err instanceof Error ? err.message : 'unknown',
+      });
+    }
+  });
+
+  return { bot, Card, CardText, Fields, Field, Actions, Button, queueDialer, postCallCardForUser };
 }
 
 const VERSION = '0.0.1';

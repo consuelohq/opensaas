@@ -59,7 +59,8 @@ type QueueRecord = {
   skipped_contacts: number;
 };
 
-type ReplyFn = (content: string) => Promise<void>;
+type ReplyFn = (content: unknown) => Promise<void>;
+type CallEndedFn = (callId: string, discordUserId: string, auth: DiscordAuth) => Promise<void>;
 
 export type QueueDialerConfig = {
   apiUrl: string;
@@ -71,11 +72,20 @@ export class QueueDialer {
   private activeQueues = new Map<string, ActiveQueueState>();
   private redisSubscriber: unknown = null;
   private replyCallbacks = new Map<string, ReplyFn>();
+  private callEndedCallbacks = new Map<string, CallEndedFn>();
 
   constructor(private config: QueueDialerConfig) {}
 
   setReplyCallback(discordUserId: string, replyFn: ReplyFn): void {
     this.replyCallbacks.set(discordUserId, replyFn);
+  }
+
+  setCallEndedCallback(discordUserId: string, fn: CallEndedFn): void {
+    this.callEndedCallbacks.set(discordUserId, fn);
+  }
+
+  getReplyCallback(discordUserId: string): ReplyFn | undefined {
+    return this.replyCallbacks.get(discordUserId);
   }
 
   private userClient(auth: DiscordAuth) {
@@ -323,9 +333,9 @@ export class QueueDialer {
     }
 
     if (event.type !== 'call.ended' && event.type !== 'call.failed') return;
-    if (!event.userId) return;
+    if (!event.callId || !event.userId) return;
 
-    // find active queue for this consuelo userId
+    // find the discord user for this consuelo userId
     let discordUserId: string | undefined;
     let activeState: ActiveQueueState | undefined;
     for (const [key, state] of this.activeQueues) {
@@ -335,15 +345,42 @@ export class QueueDialer {
         break;
       }
     }
-    if (!activeState || !discordUserId) return;
+
+    if (!discordUserId || !activeState) return;
+
+    // post the post-call card — disposition buttons trigger queue advance
+    const callEndedFn = this.callEndedCallbacks.get(discordUserId);
+    if (callEndedFn) {
+      try {
+        await callEndedFn(event.callId, discordUserId, activeState.auth);
+      } catch (err: unknown) {
+        logger.error('post-call card callback failed', {
+          error: err instanceof Error ? err.message : 'unknown',
+        });
+      }
+    }
+  }
+
+  // called after disposition to advance queue
+  async advanceAfterDisposition(
+    discordUserId: string,
+  ): Promise<{ nextItem: QueueItem | null; queueCompleted?: boolean } | null> {
+    const activeState = this.activeQueues.get(discordUserId);
+    if (!activeState) return null;
 
     const result = await this.advanceAndDial(activeState.auth, discordUserId, activeState.queueId);
     const replyFn = this.replyCallbacks.get(discordUserId);
 
     if (result.queueCompleted && replyFn) {
-      const analytics = await this.getAnalytics(activeState.auth, activeState.queueId);
-      if (analytics) {
-        await replyFn(formatSummaryText(activeState.queueName, analytics));
+      try {
+        const analytics = await this.getAnalytics(activeState.auth, activeState.queueId);
+        if (analytics) {
+          await replyFn(formatSummaryText(activeState.queueName, analytics));
+        }
+      } catch (err: unknown) {
+        logger.error('failed to post queue summary', {
+          error: err instanceof Error ? err.message : 'unknown',
+        });
       }
     } else if (result.nextItem && activeState.mode === 'preview' && replyFn) {
       try {
@@ -361,6 +398,8 @@ export class QueueDialer {
         });
       }
     }
+
+    return result;
   }
 
   async stop(): Promise<void> {
