@@ -1,0 +1,126 @@
+---
+import "../styles/global.css";
+import Navbar from "../components/Navbar";
+import { CookieConsent } from "../components/CookieConsent";
+
+type Props = {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonicalUrl?: string;
+};
+
+const {
+  title = "Consuelo: Voice AI that shortens ramp time on sales teams.",
+  description = "Shorten the ramp time of newly onboarded sales agents and help your top performers pivot to new products with AI-powered training and CRM automation.",
+  image = "/preview.png",
+  canonicalUrl = Astro.url.href,
+} = Astro.props;
+
+const siteUrl = "https://www.consuelohq.com";
+const fullTitle = title.includes("Consuelo") ? title : `${title} | Consuelo`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="application-name" content="Consuelo" />
+    <meta name="author" content="Consuelo Team" />
+    <meta
+      name="keywords"
+      content="AI sales training, sales agent onboarding, CRM automation, sales coaching, insurance sales, sales enablement"
+    />
+    <meta name="robots" content="index, follow" />
+
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#000000"
+    />
+    <meta name="color-scheme" content="light dark" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Consuelo" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}${image}`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Consuelo - AI Sales Agent Training Platform"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@consuelohq" />
+    <meta name="twitter:creator" content="@consuelohq" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}${image}`} />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": `${siteUrl}/#organization`,
+            name: "Consuelo",
+            url: siteUrl,
+            logo: `${siteUrl}/logo.svg`,
+            sameAs: ["https://twitter.com/consuelohq", "https://github.com/consuelohq"],
+            description,
+          },
+          {
+            "@type": "WebSite",
+            "@id": `${siteUrl}/#website`,
+            url: siteUrl,
+            name: "Consuelo",
+            publisher: { "@id": `${siteUrl}/#organization` },
+          },
+          {
+            "@type": "SoftwareApplication",
+            name: "Consuelo",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            url: siteUrl,
+            description: "Open-source sales infrastructure platform — CRM, dialer, real-time AI coaching, and analytics.",
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "USD",
+            },
+            author: { "@id": `${siteUrl}/#organization` },
+          },
+        ],
+      })}
+    />
+  </head>
+  <body class="bg-(--color-bg) text-(--color-fg) antialiased">
+    <Navbar client:load />
+    <slot name="header" />
+    <main>
+      <slot />
+    </main>
+    <slot name="footer" />
+    <CookieConsent client:load />
+  </body>
+</html>

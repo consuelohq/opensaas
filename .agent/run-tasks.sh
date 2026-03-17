@@ -1234,6 +1234,7 @@ Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.
   HUSKY=0 git push origin staging
 
   PR_URL=$(gh pr create \
+    --repo "$GITHUB_REPO" \
     --base "$PR_TARGET_BRANCH" \
     --head staging \
     --title "staging" \
@@ -1247,7 +1248,7 @@ $issue_list" \
   if [ $? -eq 0 ] && [ -n "$PR_URL" ]; then
     log_success "Staging PR created: $PR_URL"
   else
-    log_warning "Failed to create staging PR (non-fatal)"
+    log_warning "Failed to create staging PR: $PR_URL"
     PR_URL=""
   fi
 }
