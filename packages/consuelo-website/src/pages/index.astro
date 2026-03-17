@@ -1,5 +1,10 @@
 ---
 import SiteLayout from "../layouts/SiteLayout.astro";
+
+const SEO = {
+  title: 'Consuelo — $20 Power Dialer. Free CRM. AI Coaching.',
+  description: 'Open-source sales infrastructure for insurance teams. Power dialer with local presence, free CRM, real-time AI coaching, and analytics. Replace your $250/seat stack for $20.'
+}
 import { Hero } from "../components/Hero";
 import { DashboardDemo } from "../components/DashboardDemo";
 import { ProblemSection } from "../components/ProblemSection";
@@ -10,7 +15,7 @@ import { ProofSection } from "../components/ProofSection";
 import { PricingPreview } from "../components/PricingPreview";
 ---
 
-<SiteLayout>
+<SiteLayout title={SEO.title} description={SEO.description}>
   <!-- hero -->
   <Hero client:load />
 
