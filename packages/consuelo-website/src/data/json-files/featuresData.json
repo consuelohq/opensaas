@@ -1,0 +1,92 @@
+[
+	{
+		"title": "Power Dialer",
+		"icon": "bolt",
+		"description": "Multi-line parallel dialing that dramatically increases your contact rate and call volume. Reach more leads in less time — one rep does the work of five.",
+		"category": "Sales Tools"
+	},
+	{
+		"title": "Local Presence",
+		"icon": "device-phone-mobile",
+		"description": "Automatically dial from local numbers so prospects see a familiar area code. Higher answer rates mean more conversations and more sales.",
+		"category": "Sales Tools"
+	},
+	{
+		"title": "Spam Shield",
+		"icon": "shield-check",
+		"description": "Protect your caller ID reputation with automatic number rotation and health monitoring. Keep your numbers clean so your calls get answered.",
+		"category": "Sales Tools"
+	},
+	{
+		"title": "Call Transfer",
+		"icon": "phone-arrow-up-right",
+		"description": "Warm and cold transfers that keep the conversation flowing. Hand off to closers, managers, or specialists without dropping the prospect.",
+		"category": "Sales Tools"
+	},
+	{
+		"title": "AI CRM",
+		"icon": "light-bulb",
+		"description": "A CRM that manages itself. Talk to your CRM, tell it what to do — it logs calls, updates records, and keeps your pipeline clean without manual data entry.",
+		"category": "AI & Automation"
+	},
+	{
+		"title": "On-Call Coaching",
+		"icon": "microphone",
+		"description": "AI whispers help you while you're live on a call — increasing talk time and closing rate. Upload your scripts for whisper training and script mode.",
+		"category": "AI & Automation"
+	},
+	{
+		"title": "Smart Queue",
+		"icon": "rectangle-stack",
+		"description": "AI creates and manages your call queue automatically. Old leads that didn't answer get recycled back into rotation so nothing falls through the cracks.",
+		"category": "AI & Automation"
+	},
+	{
+		"title": "Post-Sale Sequences",
+		"icon": "arrow-path-rounded-square",
+		"description": "Automated follow-up that calls back one week after a sale, emails at one month and three months. Keeps customers engaged and reduces chargebacks.",
+		"category": "Automation"
+	},
+	{
+		"title": "Pipeline Nourishment",
+		"icon": "arrow-trending-up",
+		"description": "Re-engagement queues that automatically work cold leads back into your pipeline. Dripped leads from old campaigns get a second life instead of dying in a spreadsheet.",
+		"category": "Automation"
+	},
+	{
+		"title": "Lead Disbursement",
+		"icon": "user-group",
+		"description": "Management disperses 1,000 leads between five reps and each person gets exactly their leads. No more sharing CRM access or fighting over who called who.",
+		"category": "Team Management"
+	},
+	{
+		"title": "Chat SDK",
+		"icon": "chat-bubble-left-right",
+		"description": "Connected to Discord, Slack, and Teams — extends Consuelo's functionality directly into the platforms your team already uses. Collaboration is no longer an issue.",
+		"category": "Team Management"
+	},
+	{
+		"title": "Analytics",
+		"icon": "chart-pie",
+		"description": "Post-call analytics that actually get done. See what makes better calls, longer calls, and more sales — then use that data to build a better team.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Ads to CRM",
+		"icon": "cursor-arrow-ripple",
+		"description": "Connect your ads platform straight to your CRM. Leads from campaigns flow directly into your pipeline — no CSV exports, no manual imports, no resold leads.",
+		"category": "Integrations"
+	},
+	{
+		"title": "GHL Embedded",
+		"icon": "cube-transparent",
+		"description": "Works inside GoHighLevel as a native embedded app. Your team dials, coaches, and manages leads without ever leaving the GHL dashboard.",
+		"category": "Integrations"
+	},
+	{
+		"title": "Google Extension",
+		"icon": "computer-desktop",
+		"description": "Works right in your browser. Click-to-dial from any webpage, log calls automatically, and access your dialer wherever you're already working.",
+		"category": "Integrations"
+	}
+]

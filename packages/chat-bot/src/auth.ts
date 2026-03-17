@@ -3,6 +3,7 @@ import { createLogger } from '@consuelo/logger';
 const logger = createLogger('chat-bot:auth');
 
 const REDIS_KEY_PREFIX = 'consuelo:discord:user:';
+const REVERSE_KEY_PREFIX = 'consuelo:discord:reverse:';
 
 export type DiscordAuth = {
   workspaceId: string;
@@ -47,6 +48,8 @@ export async function setAuth(discordUserId: string, auth: Omit<DiscordAuth, 'li
     const redis = await getRedis();
     const value: DiscordAuth = { ...auth, linkedAt: new Date().toISOString() };
     await redis.set(`${REDIS_KEY_PREFIX}${discordUserId}`, JSON.stringify(value));
+    // reverse index: opensaas userId → discord userId (for @mentions in notifications)
+    await redis.set(`${REVERSE_KEY_PREFIX}${auth.workspaceId}:${auth.userId}`, discordUserId);
   } catch (err: unknown) {
     logger.error('failed to set auth', {
       discordUserId,
@@ -59,6 +62,12 @@ export async function setAuth(discordUserId: string, auth: Omit<DiscordAuth, 'li
 export async function removeAuth(discordUserId: string): Promise<boolean> {
   try {
     const redis = await getRedis();
+    // clean up reverse index before deleting forward mapping
+    const raw = await redis.get(`${REDIS_KEY_PREFIX}${discordUserId}`);
+    if (raw) {
+      const auth = JSON.parse(raw) as DiscordAuth;
+      await redis.del(`${REVERSE_KEY_PREFIX}${auth.workspaceId}:${auth.userId}`);
+    }
     const removed = await redis.del(`${REDIS_KEY_PREFIX}${discordUserId}`);
     return removed > 0;
   } catch (err: unknown) {
@@ -67,5 +76,19 @@ export async function removeAuth(discordUserId: string): Promise<boolean> {
       error: err instanceof Error ? err.message : 'unknown',
     });
     return false;
+  }
+}
+
+export async function getDiscordUserId(workspaceId: string, opensaasUserId: string): Promise<string | null> {
+  try {
+    const redis = await getRedis();
+    return await redis.get(`${REVERSE_KEY_PREFIX}${workspaceId}:${opensaasUserId}`);
+  } catch (err: unknown) {
+    logger.error('failed to get discord user id', {
+      workspaceId,
+      opensaasUserId,
+      error: err instanceof Error ? err.message : 'unknown',
+    });
+    return null;
   }
 }

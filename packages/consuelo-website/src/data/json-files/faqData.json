@@ -1,0 +1,50 @@
+[
+	{
+		"question": "How much does Consuelo cost?",
+		"reply": "The power dialer starts at $20/mo. The CRM is free after your trial. No hidden fees, no per-seat surprises. Most dialers charge $200–300/mo for less.",
+		"category": "pricing",
+		"open": true
+	},
+	{
+		"question": "What makes your dialer different?",
+		"reply": "Multi-line dials, local presence, and spam shield — all for $20/mo. Most dialers charge 10x more for fewer features. Ours is connected to your CRM, coaching, and analytics so everything works together.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "Do I need a separate CRM?",
+		"reply": "No. Consuelo includes a CRM that manages itself. Talk to it, tell it what to do. It handles contacts, follow-ups, and pipeline automatically. No more paying for a CRM your team never updates.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "How does AI coaching work?",
+		"reply": "On-call whispers give your reps real-time guidance while they're on the phone. Upload your scripts for training. Post-call analytics show what's working and what isn't — so every call gets better.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "Can I use this with GoHighLevel?",
+		"reply": "Yes. Consuelo embeds directly inside GHL. Your team never leaves their workflow. We also have a Google Chrome extension and connect to ads platforms straight to your CRM.",
+		"category": "integrations",
+		"open": true
+	},
+	{
+		"question": "How does lead disbursement work?",
+		"reply": "Management disperses leads across the team automatically. Say you have 1,000 leads and 5 reps — each gets their share. AI manages the queue, and automation re-queues old leads that didn't answer within a set period.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "What about insurance chargebacks?",
+		"reply": "Post-sale sequences automatically follow up at 1 week, 1 month, and 3 months. Pipeline nourishment keeps leads warm. Better follow-up means fewer chargebacks and higher retention.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "What integrations do you support?",
+		"reply": "GoHighLevel (embedded), Google Chrome extension, ads platforms (straight to CRM), and Discord/Slack/Teams via Chat SDK. Everything in the infrastructure is connected so collaboration is never an issue.",
+		"category": "integrations",
+		"open": false
+	}
+]

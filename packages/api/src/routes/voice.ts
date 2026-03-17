@@ -1727,6 +1727,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
         } catch (err: unknown) {
           // Log but don't fail the webhook
           try {
+            // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
             createLogger('voice:dial-status').error('Failed to update transfer record', {
               transferId,
@@ -1902,6 +1903,176 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       res.status(200).json({ callSid, conferenceName, status });
+    }),
+  },
+
+  // --- phone-based dialer: status callback for phone-initiated calls (DEV-1123) ---
+  {
+    method: 'POST',
+    path: '/v1/voice/phone-status',
+    handler: errorHandler(async (req, res) => {
+      if (!(await validateTwilioSignature(req, res))) return;
+
+      const body = req.body as Record<string, string> | undefined;
+      const callSid = body?.CallSid ?? '';
+      const callStatus = body?.CallStatus ?? '';
+
+      if (!callSid) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing CallSid' },
+        });
+        return;
+      }
+
+      // look up the phone call state via callSid → callId mapping
+      let callId: string | null = null;
+      try {
+        callId = await redisService.getCallIdByCallSid(callSid);
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          { extra: { context: 'phone_status_lookup', callSid } },
+        );
+      }
+
+      if (!callId) {
+        // not a phone-initiated call — ignore
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      let callState: Record<string, unknown> | null = null;
+      try {
+        callState = await redisService.getPhoneCallState(callId);
+      } catch (err: unknown) {
+        Sentry.captureException(
+          err instanceof Error ? err : new Error(String(err)),
+          { extra: { context: 'phone_status_state', callId } },
+        );
+      }
+
+      if (!callState) {
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      const phoneLogger = await getLogger();
+
+      // rep answered — dial the lead into the conference
+      if (callStatus === 'in-progress' && callState.status === 'initiating') {
+        try {
+          const workspaceId = callState.workspaceId as string;
+          const dialer = await getDialerForWorkspace(workspaceId);
+
+          await dialer.conference.addParticipant(
+            callState.conferenceName as string,
+            callState.leadPhone as string,
+            callState.callerId as string,
+            {
+              label: 'customer',
+              endConferenceOnExit: true,
+              statusCallback: `${process.env.API_BASE_URL ?? ''}/v1/voice/phone-status`,
+            },
+          );
+
+          await redisService.setPhoneCallState(callId, {
+            ...callState,
+            status: 'connected',
+          });
+
+          await redisService.publishCallEvent({
+            type: 'call.connected',
+            callId,
+            conferenceName: callState.conferenceName,
+            contactId: callState.contactId ?? null,
+            userId: callState.userId,
+            timestamp: new Date().toISOString(),
+          });
+
+          phoneLogger.info('phone_call.connected', {
+            callId,
+            conferenceName: callState.conferenceName as string,
+          });
+        } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'phone_status_dial_lead',
+                callId,
+                conferenceName: callState.conferenceName,
+              },
+            },
+          );
+
+          await redisService.publishCallEvent({
+            type: 'call.failed',
+            callId,
+            reason: err instanceof Error ? err.message : 'Failed to dial lead',
+            contactId: callState.contactId ?? null,
+            userId: callState.userId,
+            timestamp: new Date().toISOString(),
+          });
+
+          // release caller ID lock on failure
+          try {
+            const lockService = getCallerIdLockService();
+            await lockService.releaseLock(callSid);
+          } catch (_lockErr: unknown) {
+            // non-fatal: lock will expire via TTL
+          }
+        }
+      }
+
+      // call completed or failed
+      const terminalStatuses = ['completed', 'busy', 'no-answer', 'canceled', 'failed'];
+      if (terminalStatuses.includes(callStatus)) {
+        const isFailed = callStatus !== 'completed';
+        const eventType = isFailed ? 'call.failed' : 'call.ended';
+
+        const duration = body?.CallDuration ? Number(body.CallDuration) : 0;
+
+        try {
+          await redisService.publishCallEvent({
+            type: eventType,
+            callId,
+            conferenceName: callState.conferenceName,
+            contactId: callState.contactId ?? null,
+            userId: callState.userId,
+            duration,
+            reason: isFailed ? callStatus : undefined,
+            timestamp: new Date().toISOString(),
+          });
+
+          phoneLogger.info(`phone_call.${eventType}`, {
+            callId,
+            callStatus,
+            duration,
+          });
+        } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            { extra: { context: 'phone_status_event', callId, callStatus } },
+          );
+        }
+
+        // release caller ID lock
+        try {
+          const lockService = getCallerIdLockService();
+          await lockService.releaseLock(callSid);
+        } catch (_lockErr: unknown) {
+          // non-fatal: lock will expire via TTL
+        }
+
+        // cleanup redis state
+        try {
+          await redisService.deletePhoneCallState(callId);
+        } catch (_cleanupErr: unknown) {
+          // non-fatal: TTL will handle cleanup
+        }
+      }
+
+      res.status(200).json({ received: true });
     }),
   },
 ];

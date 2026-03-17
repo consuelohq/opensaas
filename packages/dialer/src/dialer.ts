@@ -14,6 +14,7 @@ import type {
   SearchAvailableNumbersOptions,
   AvailableNumber,
   ReleaseResult,
+  PhoneNumber,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
 import {
@@ -184,7 +185,7 @@ export class Dialer {
   async createCall(
     to: string,
     from: string,
-    opts: { url?: string; twiml?: string; statusCallback?: string },
+    opts: { url?: string; twiml?: string; statusCallback?: string; statusCallbackEvent?: string[]; timeout?: number },
   ): Promise<{ callSid: string }> {
     return this.conference.createCall(to, from, opts);
   }
@@ -261,7 +262,7 @@ export class Dialer {
   }
 
   /** List all incoming phone numbers on the account */
-  async listNumbers(): Promise<import('./types.js').PhoneNumber[]> {
+  async listNumbers(): Promise<PhoneNumber[]> {
     return this.provider.listNumbers();
   }
 

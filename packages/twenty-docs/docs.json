@@ -39,7 +39,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "user-guide/introduction",
@@ -534,7 +534,7 @@
             "tab": "Guide de l'utilisateur",
             "groups": [
               {
-                "group": "Découvrez Twenty",
+                "group": "Découvrez Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/fr/user-guide/introduction",
@@ -969,7 +969,7 @@
             "tab": "دليل المستخدم",
             "groups": [
               {
-                "group": "اكتشف Twenty",
+                "group": "اكتشف Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ar/user-guide/introduction",
@@ -1404,7 +1404,7 @@
             "tab": "Uživatelská příručka",
             "groups": [
               {
-                "group": "Objevte Twenty",
+                "group": "Objevte Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/cs/user-guide/introduction",
@@ -1839,7 +1839,7 @@
             "tab": "Benutzerhandbuch",
             "groups": [
               {
-                "group": "Entdecken Sie Twenty",
+                "group": "Entdecken Sie Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/de/user-guide/introduction",
@@ -2274,7 +2274,7 @@
             "tab": "Guía de usuario",
             "groups": [
               {
-                "group": "Descubre Twenty",
+                "group": "Descubre Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/es/user-guide/introduction",
@@ -2709,7 +2709,7 @@
             "tab": "Guida utente",
             "groups": [
               {
-                "group": "Scopri Twenty",
+                "group": "Scopri Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/it/user-guide/introduction",
@@ -3144,7 +3144,7 @@
             "tab": "ユーザーガイド",
             "groups": [
               {
-                "group": "Twenty を知る",
+                "group": "Consuelo を知る",
                 "icon": "rocket",
                 "pages": [
                   "l/ja/user-guide/introduction",
@@ -3579,7 +3579,7 @@
             "tab": "사용자 안내서",
             "groups": [
               {
-                "group": "Twenty 알아보기",
+                "group": "Consuelo 알아보기",
                 "icon": "rocket",
                 "pages": [
                   "l/ko/user-guide/introduction",
@@ -4014,7 +4014,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/pt/user-guide/introduction",
@@ -4449,7 +4449,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ro/user-guide/introduction",
@@ -4884,7 +4884,7 @@
             "tab": "Руководство пользователя",
             "groups": [
               {
-                "group": "Откройте Twenty",
+                "group": "Откройте Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ru/user-guide/introduction",
@@ -5319,7 +5319,7 @@
             "tab": "Kullanıcı Rehberi",
             "groups": [
               {
-                "group": "Twenty'yi Keşfedin",
+                "group": "Consuelo'yu Keşfedin",
                 "icon": "rocket",
                 "pages": [
                   "l/tr/user-guide/introduction",
@@ -5754,7 +5754,7 @@
             "tab": "用户指南",
             "groups": [
               {
-                "group": "发现 Twenty",
+                "group": "发现 Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/zh/user-guide/introduction",
@@ -6186,8 +6186,8 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/twentyhq/twenty",
-      "twitter": "https://twitter.com/twentycrm",
+      "github": "https://github.com/consuelohq/opensaas",
+      "twitter": "https://twitter.com/consuelohq",
       "discord": "https://discord.gg/cx5n4Jzs57"
     }
   },

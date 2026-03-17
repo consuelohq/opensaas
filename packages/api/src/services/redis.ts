@@ -210,6 +210,90 @@ class RedisService {
       throw err;
     }
   }
+
+  // --- phone-based dialer infrastructure (DEV-1123) ---
+
+  async getRepPhone(userId: string): Promise<string | null> {
+    try {
+      const client = await this.getClient();
+      return await client.get(`consuelo:user:${userId}:phone`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getRepPhone', userId } });
+      throw err;
+    }
+  }
+
+  async setRepPhone(userId: string, phone: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.set(`consuelo:user:${userId}:phone`, phone);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setRepPhone', userId } });
+      throw err;
+    }
+  }
+
+  async setPhoneCallState(callId: string, state: Record<string, unknown>): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(`phone-call:${callId}`, CONFERENCE_TTL_SECONDS, JSON.stringify(state));
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setPhoneCallState', callId } });
+      throw err;
+    }
+  }
+
+  async getPhoneCallState(callId: string): Promise<Record<string, unknown> | null> {
+    try {
+      const client = await this.getClient();
+      const result = await client.get(`phone-call:${callId}`);
+      if (!result) return null;
+      return JSON.parse(result) as Record<string, unknown>;
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getPhoneCallState', callId } });
+      throw err;
+    }
+  }
+
+  async deletePhoneCallState(callId: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.del(`phone-call:${callId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'deletePhoneCallState', callId } });
+      throw err;
+    }
+  }
+
+  async mapCallSidToCallId(callSid: string, callId: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(`phone-call-sid:${callSid}`, CONFERENCE_TTL_SECONDS, callId);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'mapCallSidToCallId', callSid } });
+      throw err;
+    }
+  }
+
+  async getCallIdByCallSid(callSid: string): Promise<string | null> {
+    try {
+      const client = await this.getClient();
+      return await client.get(`phone-call-sid:${callSid}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getCallIdByCallSid', callSid } });
+      throw err;
+    }
+  }
+
+  async publishCallEvent(event: Record<string, unknown>): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.publish('consuelo:call-events', JSON.stringify(event));
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'publishCallEvent' } });
+      throw err;
+    }
+  }
 }
 
 export const redisService = new RedisService();

@@ -76,6 +76,9 @@ linear_get_ready_issues() {
           title
           description
           createdAt
+          labels {
+            nodes { name }
+          }
           comments {
             nodes {
               body

@@ -51,17 +51,42 @@ function toWebRequest(req: IncomingMessage, body: Buffer, port: number): Request
 
 async function main() {
   try {
-    const { bot } = await createBot();
+    const { bot, queueDialer, channelNotifier, transferManager } = await createBot();
     await bot.initialize();
     logger.info('bot initialized');
 
-    // webhook server for discord interactions
+    // start auto-dial loop (redis pub/sub for call events)
+    queueDialer.startCallEventListener().catch((err: unknown) => {
+      logger.error('auto-dial listener failed to start', {
+        error: err instanceof Error ? err.message : 'unknown',
+      });
+    });
+
+    // start channel notification listener (redis pub/sub → discord channel)
+    channelNotifier.start().catch((err: unknown) => {
+      logger.error('channel notifier failed to start', {
+        error: err instanceof Error ? err.message : 'unknown',
+      });
+    });
+
+    // webhook server for discord + slack interactions
     const webhookServer = createServer(async (req, res) => {
       try {
         if (req.method === 'POST' && req.url === '/api/webhooks/discord') {
           const body = await readBody(req);
           const webReq = toWebRequest(req, body, WEBHOOK_PORT);
           const webRes = await bot.webhooks.discord(webReq, {
+            waitUntil: (task: Promise<unknown>) => { task.catch(() => {}); },
+          });
+          res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
+          const resBody = await webRes.text();
+          res.end(resBody);
+          return;
+        }
+        if (req.method === 'POST' && req.url === '/api/webhooks/slack') {
+          const body = await readBody(req);
+          const webReq = toWebRequest(req, body, WEBHOOK_PORT);
+          const webRes = await bot.webhooks.slack(webReq, {
             waitUntil: (task: Promise<unknown>) => { task.catch(() => {}); },
           });
           res.writeHead(webRes.status, Object.fromEntries(webRes.headers.entries()));
@@ -172,6 +197,15 @@ async function main() {
 
       // close gateway
       gatewayConnected = false;
+
+      // stop queue dialer redis subscriber
+      await queueDialer.stop();
+
+      // stop channel notification subscriber
+      await channelNotifier.stop();
+
+      // stop transfer manager
+      await transferManager.stop();
 
       // close servers
       await new Promise<void>((resolve) => webhookServer.close(() => resolve()));

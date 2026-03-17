@@ -1,0 +1,83 @@
+---
+// Highlights Section
+// ------------
+// Description: A section with a multiple text and image rows.
+
+// Components
+// - UI
+import TextImage from '../basic/TextImage.astro'
+
+// Content
+import highlight01 from '../../../assets/highlights/highlight-01.svg'
+import highlight01mobile from '../../../assets/highlights/highlight-01-mobile.svg'
+import highlight02 from '../../../assets/highlights/highlight-02.svg'
+import highlight02mobile from '../../../assets/highlights/highlight-02-mobile.svg'
+import highlight03 from '../../../assets/highlights/highlight-03.svg'
+import highlight03mobile from '../../../assets/highlights/highlight-03-mobile.svg'
+import highlight04 from '../../../assets/highlights/highlight-04.svg'
+import highlight04mobile from '../../../assets/highlights/highlight-04-mobile.svg'
+
+type HighlightBlock = {
+	title: string
+	text: string
+	image: any
+	mobileImage?: any
+	imageWidth: number
+	imageHeight: number
+	imagePosition: 'left' | 'right'
+}
+const highlightBlocks: HighlightBlock[] = [
+	{
+		title: 'Dialers suck. <strong>We fixed that.</strong>',
+		text: 'Power dialer with multi-line dials and local presence for $20/mo — not $300 like the competition. Spam shield protects your numbers so you actually get through to leads.',
+		image: highlight01,
+		imageWidth: highlight01.width,
+		imageHeight: highlight01.height,
+		mobileImage: highlight01mobile,
+		imagePosition: 'right'
+	},
+	{
+		title: 'A CRM that actually <strong>gets used</strong>',
+		text: 'Talk to your CRM — tell it what to do. AI manages contacts, queues, and follow-ups automatically. Connect your ads platform straight to the CRM so leads flow in and nothing gets lost.',
+		image: highlight02,
+		mobileImage: highlight02mobile,
+		imageWidth: highlight02.width,
+		imageHeight: highlight02.height,
+		imagePosition: 'left'
+	},
+	{
+		title: 'AI coaching that makes every <strong>rep better</strong>',
+		text: 'On-call whispers increase talk time when you get someone on the line. Post-call analytics that actually get done. Upload your scripts for whisper training and script mode.',
+		image: highlight03,
+		mobileImage: highlight03mobile,
+		imageWidth: highlight03.width,
+		imageHeight: highlight03.height,
+		imagePosition: 'right'
+	},
+	{
+		title: 'Everything connected, <strong>nothing falls through</strong>',
+		text: 'Lead disbursement across teams in seconds. Post-sale sequences — 1 week call, 1 month email, 3 month email — run automatically. Pipeline nourishment and re-engagement queues reduce insurance chargebacks through better follow-up.',
+		image: highlight04,
+		mobileImage: highlight04mobile,
+		imageWidth: highlight04.width,
+		imageHeight: highlight04.height,
+		imagePosition: 'left'
+	}
+]
+---
+
+{
+	highlightBlocks.map((highlight, key) => (
+		<TextImage
+			id={`highlight-${key}`}
+			title={highlight.title}
+			text={highlight.text}
+			image={highlight.image}
+			imageWidth={highlight.imageWidth}
+			imageHeight={highlight.imageHeight}
+			mobileImage={highlight.mobileImage}
+			imagePosition={highlight.imagePosition}
+			classes={key === 0 ? '!pb-0' : key === highlightBlocks.length - 1 ? '!pt-0' : '!py-0'}
+		/>
+	))
+}

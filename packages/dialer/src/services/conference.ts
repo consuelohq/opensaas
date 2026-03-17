@@ -166,6 +166,8 @@ export class ConferenceService {
       url?: string;
       twiml?: string;
       statusCallback?: string;
+      statusCallbackEvent?: string[];
+      timeout?: number;
     },
   ): Promise<{ callSid: string }> {
     try {
@@ -176,7 +178,8 @@ export class ConferenceService {
         ...(opts.url ? { url: opts.url } : {}),
         ...(opts.twiml ? { twiml: opts.twiml } : {}),
         statusCallback: opts.statusCallback,
-        statusCallbackEvent: ['completed'],
+        statusCallbackEvent: opts.statusCallbackEvent ?? ['completed'],
+        ...(opts.timeout ? { timeout: opts.timeout } : {}),
       });
       return { callSid: call.sid };
     } catch (err: unknown) {

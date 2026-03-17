@@ -1,0 +1,62 @@
+{
+  "display_information": {
+    "name": "Consuelo",
+    "description": "Sales dialer bot — queue management, call disposition, coaching, and team notifications",
+    "background_color": "#1a1a2e"
+  },
+  "features": {
+    "bot_user": {
+      "display_name": "Consuelo",
+      "always_online": true
+    },
+    "slash_commands": [
+      {
+        "command": "/consuelo",
+        "description": "Consuelo sales commands — login, status, queue, contacts, history, transfer, whisper",
+        "usage_hint": "[login|logout|ping|me|status|contacts search <query>|history|queue <start|pause|resume|stop|status|call>|config channel #channel|transfer @user|whisper @user]",
+        "should_escape": false
+      }
+    ]
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "app_mentions:read",
+        "channels:history",
+        "channels:read",
+        "chat:write",
+        "commands",
+        "groups:history",
+        "groups:read",
+        "im:history",
+        "im:read",
+        "im:write",
+        "mpim:history",
+        "mpim:read",
+        "reactions:read",
+        "reactions:write",
+        "users:read"
+      ]
+    }
+  },
+  "settings": {
+    "event_subscriptions": {
+      "request_url": "https://your-domain.com/api/webhooks/slack",
+      "bot_events": [
+        "app_mention",
+        "message.channels",
+        "message.groups",
+        "message.im",
+        "message.mpim",
+        "member_joined_channel"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true,
+      "request_url": "https://your-domain.com/api/webhooks/slack"
+    },
+    "org_deploy_enabled": false,
+    "socket_mode_enabled": false,
+    "token_rotation_enabled": false
+  }
+}
