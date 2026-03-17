@@ -45,7 +45,9 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.08 }}
           className="text-[1.75rem] font-bold leading-[1.08] tracking-tight text-balance sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem]"
         >
-          $20 power dialer. Free CRM. AI that coaches you live.
+          Telecommunication{" "}
+          <span className="text-[#E2187D]">infrastructure</span> that
+          integrates everywhere
         </motion.h1>
 
         {/* subcopy */}
