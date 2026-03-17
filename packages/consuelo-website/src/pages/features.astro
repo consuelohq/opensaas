@@ -19,44 +19,44 @@ const featuresSupport = featuresData.filter((feature) => feature.category === 'S
 // Content
 // - SEO
 const SEO = {
-	title: 'Consuelo | Features to Boost Productivity & Security',
+	title: 'Consuelo | Features for Insurance Sales Teams',
 	description:
-		"Explore Consuelo's powerful features designed to enhance productivity, ensure top-notch security, and integrate seamlessly with your favorite tools. Join thousands of satisfied users and transform your workflow with Consuelo today!"
+		'Power dialer with local presence, free CRM, real-time AI coaching, analytics, and integrations. Built for insurance sales teams.'
 }
 // - Page Header
 const header = {
-	title: 'Why you and your team will <strong>love</strong> Consuelo.',
-	text: 'Streamline your tasks, protect your data, and enjoy working with our tools!'
+	title: 'Everything your sales team needs in <strong>one platform</strong>.',
+	text: 'Power dialer, CRM, AI coaching, analytics, and integrations — built for insurance sales.'
 }
 ---
 
 <Layout title={SEO.title} description={SEO.description}>
 	<Hero title={header.title} text={header.text} />
 	<Feature
-		title="Insightful Analytics"
-		text="Delve into your data with precision and uncover actionable insights."
+		title="Call Analytics & Reporting"
+		text="Track every metric that matters — call volume, connect rates, conversion, and rep performance."
 		data={featuresAnalytics}
 	/>
 	<Feature
-		title="Efficiency Unleashed"
-		text="Streamline tasks and focus on what matters with tools designed to boost your productivity."
+		title="Compliance & Security"
+		text="TCPA compliant, DNC management, call recording consent, and role-based access control."
 		data={featuresSecurity}
 		classes="bg-neutral-50 dark:bg-neutral-900"
 	/>
 	<Feature
-		title="Ultimate Data Protection"
-		text="Keep your data safe with top-notch security measures and real-time threat detection."
+		title="Dialer & Productivity"
+		text="Power dialer with local presence, multi-line, voicemail drop, and queue management."
 		data={featuresProductivity}
 	/>
 	<Feature
-		title="Seamless Connectivity"
-		text="Effortlessly connect your favorite apps and automate workflows for a smoother workday."
+		title="Integrations"
+		text="Connect with GoHighLevel, Salesforce, HubSpot, Zapier, and more."
 		data={featuresIntegrations}
 		classes="bg-neutral-50 dark:bg-neutral-900"
 	/>
 	<Feature
-		title="24/7 Expert Help"
-		text="Our friendly support team is always here to assist you with any questions or issues."
+		title="Support & Onboarding"
+		text="Dedicated onboarding, training, knowledge base, and responsive support."
 		data={featuresSupport}
 	/>
 	<CTA />
