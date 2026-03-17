@@ -37,10 +37,10 @@ export const footerNavigationData: FooterData = {
 	footerAbout: {
 		title: 'Consuelo',
 		aboutText:
-			'Sales infrastructure that works everywhere you work. Power dialer, AI coaching, CRM, and lead automation — all connected.',
+			'Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics — all in one platform.',
 		logo: {
 			src: '/logo.svg',
-			alt: 'Consuelo — Sales Infrastructure',
+			alt: 'Consuelo',
 			text: 'Consuelo'
 		}
 	},
@@ -50,26 +50,27 @@ export const footerNavigationData: FooterData = {
 			subCategories: [
 				{ subCategory: 'Features', subCategoryLink: '/features' },
 				{ subCategory: 'Pricing', subCategoryLink: '/pricing' },
+				{ subCategory: 'FAQ', subCategoryLink: '/faq' },
 				{ subCategory: 'Changelog', subCategoryLink: '/changelog' }
+			]
+		},
+		{
+			category: 'Resources',
+			subCategories: [
+				{ subCategory: 'Documentation', subCategoryLink: 'https://docs.consuelohq.com' },
+				{ subCategory: 'Blog', subCategoryLink: '/blog' },
+				{ subCategory: 'GitHub', subCategoryLink: 'https://github.com/consuelohq/opensaas' }
 			]
 		},
 		{
 			category: 'Company',
 			subCategories: [
-				{ subCategory: 'Blog', subCategoryLink: '/blog' },
-				{ subCategory: 'FAQ', subCategoryLink: '/faq' },
-				{ subCategory: 'Contact', subCategoryLink: '/contact' }
-			]
-		},
-		{
-			category: 'Legal',
-			subCategories: [
-				{ subCategory: 'Terms', subCategoryLink: '/terms' },
-				{ subCategory: 'Privacy', subCategoryLink: '/terms' }
+				{ subCategory: 'Contact', subCategoryLink: '/contact' },
+				{ subCategory: 'Terms', subCategoryLink: '/terms' }
 			]
 		}
 	],
 	subFooter: {
-		copywriteText: '© Consuelo 2026.'
+		copywriteText: '© Consuelo 2025.'
 	}
 }

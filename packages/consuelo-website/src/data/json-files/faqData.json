@@ -1,49 +1,103 @@
 [
 	{
 		"question": "How much does Consuelo cost?",
-		"reply": "The power dialer starts at $20/mo. The CRM is free after your trial. No hidden fees, no per-seat surprises. Most dialers charge $200–300/mo for less.",
+		"reply": "The power dialer is $20/seat/mo on the Growth plan. The AI CRM is free forever — no trial expiration, no feature gates. Most teams replace $250+/seat stacks (Salesforce + PhoneBurner + Gong) with one $20/seat platform.",
 		"category": "pricing",
 		"open": true
 	},
 	{
-		"question": "What makes your dialer different?",
-		"reply": "Multi-line dials, local presence, and spam shield — all for $20/mo. Most dialers charge 10x more for fewer features. Ours is connected to your CRM, coaching, and analytics so everything works together.",
+		"question": "Is there a free trial?",
+		"reply": "Yes — 14-day free trial of the Growth plan, no credit card required. You get full access to the power dialer, AI coaching, and analytics. After the trial, you can stay on the free Starter plan or upgrade.",
+		"category": "pricing",
+		"open": false
+	},
+	{
+		"question": "What's included in the free Starter plan?",
+		"reply": "1 seat, power dialer, full CRM, 50 AI coaching minutes per month, and basic analytics. Enough to run a solo operation. Upgrade to Growth when you need multi-line dialing, team management, and unlimited coaching.",
+		"category": "pricing",
+		"open": false
+	},
+	{
+		"question": "Are there contracts or cancellation fees?",
+		"reply": "No contracts, cancel anytime. Monthly billing, no annual commitment required. We keep customers by being useful, not by locking them in.",
+		"category": "pricing",
+		"open": false
+	},
+	{
+		"question": "Do you charge per minute for calls?",
+		"reply": "Calling minutes are billed separately through Twilio at cost — no markup. You pay Twilio directly for usage. Consuelo's $20/seat covers the dialer, CRM, coaching, and analytics.",
+		"category": "pricing",
+		"open": false
+	},
+	{
+		"question": "How does Consuelo compare to PhoneBurner or Kixie?",
+		"reply": "PhoneBurner is $149/seat, Kixie is $95/seat — neither includes a CRM or AI coaching. Consuelo is $20/seat with a free CRM, real-time coaching, and analytics included. You get more for less.",
+		"category": "pricing",
+		"open": false
+	},
+	{
+		"question": "What is local presence dialing?",
+		"reply": "Calls display a local number matching your prospect's area code. Higher answer rates because people pick up local numbers. Consuelo matches by geo-proximity — exact area code first, then nearest within 100 miles.",
+		"category": "features",
+		"open": true
+	},
+	{
+		"question": "How does real-time AI coaching work?",
+		"reply": "On-call whispers give reps live guidance while they're on the phone — objection handling, script prompts, compliance reminders. Upload your own scripts for training. Post-call scoring shows what worked and what didn't.",
 		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Do I need a separate CRM?",
-		"reply": "No. Consuelo includes a CRM that manages itself. Talk to it, tell it what to do. It handles contacts, follow-ups, and pipeline automatically. No more paying for a CRM your team never updates.",
+		"question": "Is the CRM really free?",
+		"reply": "Yes. Built on the open-source Twenty CRM — free forever, not a trial. Contacts, companies, pipeline, deals. It manages itself: talk to it, tell it what to do, and it handles follow-ups and updates automatically.",
 		"category": "features",
 		"open": false
 	},
 	{
-		"question": "How does AI coaching work?",
-		"reply": "On-call whispers give your reps real-time guidance while they're on the phone. Upload your scripts for training. Post-call analytics show what's working and what isn't — so every call gets better.",
+		"question": "How does multi-line dialing work?",
+		"reply": "Dial up to 3 lines simultaneously. First prospect to answer gets connected, the rest are dropped cleanly. Combined with local presence and spam shield, you get dramatically higher contact rates and call volume.",
 		"category": "features",
 		"open": false
 	},
 	{
-		"question": "Can I use this with GoHighLevel?",
-		"reply": "Yes. Consuelo embeds directly inside GHL. Your team never leaves their workflow. We also have a Google Chrome extension and connect to ads platforms straight to your CRM.",
+		"question": "Can I record calls?",
+		"reply": "Yes — with consent management built in. Recordings feed into AI coaching for post-call analysis and scoring. Review calls, identify patterns, and train your team on what actually works.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "How does lead automation work?",
+		"reply": "AI manages your queue — auto-prioritization, re-engagement sequences for leads that didn't answer, and post-sale follow-ups at 1 week, 1 month, and 3 months. Management can disperse thousands of leads across the team automatically.",
+		"category": "features",
+		"open": false
+	},
+	{
+		"question": "Does Consuelo work with GoHighLevel?",
+		"reply": "Yes. Consuelo embeds directly inside GHL as a widget — your team never leaves their workflow. Full contact sync, call logging, and pipeline mapping between both platforms.",
 		"category": "integrations",
 		"open": true
 	},
 	{
-		"question": "How does lead disbursement work?",
-		"reply": "Management disperses leads across the team automatically. Say you have 1,000 leads and 5 reps — each gets their share. AI manages the queue, and automation re-queues old leads that didn't answer within a set period.",
-		"category": "features",
+		"question": "Can I import contacts from Salesforce or HubSpot?",
+		"reply": "Yes. CSV import with field mapping handles any CRM export. Bring your contacts, companies, and deal data over in minutes. The API also supports programmatic migration for larger datasets.",
+		"category": "integrations",
 		"open": false
 	},
 	{
-		"question": "What about insurance chargebacks?",
-		"reply": "Post-sale sequences automatically follow up at 1 week, 1 month, and 3 months. Pipeline nourishment keeps leads warm. Better follow-up means fewer chargebacks and higher retention.",
-		"category": "features",
+		"question": "Is there a Zapier integration?",
+		"reply": "Yes. Connect Consuelo to thousands of apps through Zapier — trigger workflows, sync data, and automate handoffs between your tools.",
+		"category": "integrations",
 		"open": false
 	},
 	{
-		"question": "What integrations do you support?",
-		"reply": "GoHighLevel (embedded), Google Chrome extension, ads platforms (straight to CRM), and Discord/Slack/Teams via Chat SDK. Everything in the infrastructure is connected so collaboration is never an issue.",
+		"question": "Does Consuelo have an API?",
+		"reply": "Yes — full REST API plus webhooks. Build custom integrations, sync data with your existing tools, or connect ads platforms straight to your CRM for real-time lead routing.",
+		"category": "integrations",
+		"open": false
+	},
+	{
+		"question": "What about team communication tools?",
+		"reply": "Consuelo connects to Discord, Slack, and Microsoft Teams via Chat SDK. Team management, notifications, and collaboration extend directly into the platforms your team already uses.",
 		"category": "integrations",
 		"open": false
 	}

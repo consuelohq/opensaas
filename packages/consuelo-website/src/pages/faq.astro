@@ -12,33 +12,34 @@ import CTA from '../components/blocks/CTA/BasicDark.astro'
 import faqData from '../data/json-files/faqData.json'
 // - FAQ Categories
 const faqPricing = faqData.filter((faq) => faq.category === 'pricing')
+const faqFeatures = faqData.filter((faq) => faq.category === 'features')
 const faqIntegrations = faqData.filter((faq) => faq.category === 'integrations')
 
 // Content
 import faqImage1 from '../assets/faq/faq-01.png'
 // - SEO
 const SEO = {
-	title: 'Consuelo | Get Your Questions Answered with a Smile',
+	title: 'Consuelo | FAQ — Pricing, Features, Integrations',
 	description:
-		'Dive into the Consuelo FAQ Funhouse to get answers to all your questions about pricing, integrations, features, and more. Discover how Consuelo can make your work life more productive and enjoyable.'
+		'Get answers about Consuelo pricing, features, integrations, and how it works for insurance sales teams.'
 }
 // - Page Header
 const header = {
-	title: 'Get Answers to Your <strong>Consuelo</strong> Questions.',
-	text: 'Find answers to common questions about Consuelo '
+	title: 'Frequently Asked <strong>Questions</strong>',
+	text: 'Everything you need to know about Consuelo.'
 }
 ---
 
 <Layout title={SEO.title} description={SEO.description}>
 	<Hero title={header.title} text={header.text} />
 	<FAQ
-		title="Understanding Our Pricing Plans"
-		text="Get all the details on Consuelo’s pricing plans. Learn about the costs, discounts, and subscription options to find the best plan that fits your needs and budget."
+		title="Pricing & Plans"
+		text="Transparent pricing for insurance sales teams. No hidden fees, no contracts, no surprises."
 		data={faqPricing}
 	/>
 	<TextImage
-		title="Why Consuelo’s Pricing Plans Offer Great Value"
-		text="At Consuelo, we believe in providing exceptional value at every price point. Our pricing plans are designed to cater to a variety of needs, from individuals and small teams to large enterprises. Each plan includes access to our powerful features, seamless integrations, and top-notch customer support. "
+		title="Replace Your Entire Stack for $20/seat"
+		text="Most insurance sales teams pay $250+/seat/mo across separate dialer, CRM, coaching, and analytics tools. Consuelo combines all four into one connected platform — so your data flows, your team collaborates, and your costs drop."
 		image={faqImage1}
 		mobileImage={faqImage1}
 		imagePosition="left"
@@ -46,8 +47,13 @@ const header = {
 		classes="bg-neutral-50 dark:bg-neutral-900 lg:!py-64"
 	/>
 	<FAQ
-		title="Integrations Made Easy"
-		text="Discover how Consuelo seamlessly integrates with your favorite tools and platforms. From Google Calendar to Slack, find out how to connect and enhance your productivity with powerful integrations."
+		title="Features & Capabilities"
+		text="Power dialer, AI coaching, smart CRM, lead automation — everything your team needs to sell more."
+		data={faqFeatures}
+	/>
+	<FAQ
+		title="Integrations"
+		text="Connect Consuelo to GoHighLevel, Zapier, Slack, and the tools your team already uses."
 		data={faqIntegrations}
 	/>
 	<CTA />

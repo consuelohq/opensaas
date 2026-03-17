@@ -229,7 +229,7 @@ fi
 get_agent_cmd() {
   local agent_type="${1:-kiro}"
   if [ "$agent_type" = "opencode" ]; then
-    echo "opencode run -m opencode-go/glm-5 --dir $PROJECT_ROOT"
+    echo "/opt/homebrew/bin/opencode run --attach http://localhost:4096 -m opencode-go/glm-5 --dir $PROJECT_ROOT"
   else
     echo "$KIRO_CMD"
   fi
@@ -309,9 +309,19 @@ PROMPT_EOF
   # Spawn agent subprocess
   log_info "Starting $agent_type subprocess for $issue_ref..."
 
-  local agent_cmd=$(get_agent_cmd "$agent_type")
   local task_log="$LOG_DIR/task-${issue_number}.log"
-  $agent_cmd "$(cat "$prompt_file")" < /dev/null 2>&1 | tee "$task_log"
+  local prompt_text
+  prompt_text="$(cat "$prompt_file")"
+
+  if [ "$agent_type" = "opencode" ]; then
+    /opt/homebrew/bin/opencode run \
+      --attach http://localhost:4096 \
+      -m opencode-go/glm-5 \
+      --dir "$PROJECT_ROOT" \
+      "$prompt_text" 2>&1 | tee "$task_log"
+  else
+    $KIRO_CMD "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
+  fi
   local exit_code=${PIPESTATUS[0]}
 
   rm -f "$prompt_file"
@@ -1499,7 +1509,20 @@ process_issue() {
   # Post output summary to Linear
   if [ "$TASK_SOURCE" = "linear" ] && [ -n "$linear_id" ]; then
     local task_log="$LOG_DIR/task-${issue_number}.log"
-    if [ -f "$task_log" ]; then
+    if [ "$agent_type" = "opencode" ]; then
+      # opencode writes to its sqlite db, not stdout — pull last session summary
+      local oc_session_id
+      oc_session_id=$(sqlite3 ~/.local/share/opencode/opencode.db \
+        "SELECT id FROM session ORDER BY time_created DESC LIMIT 1;" 2>/dev/null)
+      if [ -n "$oc_session_id" ]; then
+        local oc_summary
+        oc_summary=$(sqlite3 ~/.local/share/opencode/opencode.db \
+          "SELECT substr(data, 1, 4000) FROM message WHERE session_id='$oc_session_id' ORDER BY time_created DESC LIMIT 1;" 2>/dev/null)
+        add_linear_comment "$linear_id" "$(printf '**opencode output (session %s):**\n```\n%s\n```' "$oc_session_id" "$oc_summary")"
+      else
+        add_linear_comment "$linear_id" "**opencode** ran (exit=$subprocess_exit) — check opencode db for details"
+      fi
+    elif [ -f "$task_log" ] && [ -s "$task_log" ]; then
       local summary
       summary=$(tail -50 "$task_log" | head -c 4000)
       add_linear_comment "$linear_id" "$(printf '**kiro output (last 50 lines):**\n```\n%s\n```' "$summary")"
@@ -1823,7 +1846,7 @@ main() {
   elif [ "$TASK_SOURCE" = "linear" ]; then
     log_info "Autonomous Agent Task Runner (Linear)"
     log_info "Team ID: ${LINEAR_TEAM_ID}"
-    log_info "Label: ${LINEAR_LABEL_NAME:-hero}"
+    log_info "Label: kiro or opencode"
     log_info "Ready state: ${LINEAR_STATE_OPEN:-Open}"
   else
     log_info "Autonomous Agent Task Runner (GitHub Issues)"
@@ -1869,7 +1892,7 @@ main() {
     elif [ "$TASK_SOURCE" = "projects" ]; then
       log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
     elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
+      log_success "No Linear issues with 'kiro' or 'opencode' label in '${LINEAR_STATE_OPEN:-Open}' state"
     else
       log_success "No open issues with label '$ISSUE_LABEL' to process"
     fi
@@ -1886,7 +1909,7 @@ main() {
     if [ "$TASK_SOURCE" = "projects" ]; then
       log_success "No tasks with status '${PROJECT_STATUS_READY}' in mercury project"
     elif [ "$TASK_SOURCE" = "linear" ]; then
-      log_success "No Linear issues with '${LINEAR_LABEL_NAME:-hero}' label in '${LINEAR_STATE_OPEN:-Open}' state"
+      log_success "No Linear issues with 'kiro' or 'opencode' label in '${LINEAR_STATE_OPEN:-Open}' state"
     else
       log_success "No open issues with label '$ISSUE_LABEL' to process"
     fi

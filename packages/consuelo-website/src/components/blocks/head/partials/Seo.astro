@@ -34,7 +34,37 @@ const { title, description, ogImage, canonical, noindex } = Astro.props
 	<meta property="twitter:title" content={title} />
 	<meta property="twitter:description" content={description} />
 	<meta property="twitter:image" content={ogImage} />
+	<meta name="twitter:site" content="@consuelohq" />
 	<link rel="canonical" href={Astro.url} />
 	{canonical && <link rel="canonical" href={Astro.url} item-prop="url" />}
 	{noindex && <meta name="robots" content="noindex,nofollow" />}
+	<script type="application/ld+json" set:html={JSON.stringify({
+		"@context": "https://schema.org",
+		"@type": "Organization",
+		"name": "Consuelo",
+		"url": "https://www.consuelohq.com",
+		"logo": "https://www.consuelohq.com/logo.svg",
+		"sameAs": [
+			"https://twitter.com/consuelohq",
+			"https://github.com/consuelohq/opensaas"
+		],
+		"description": "Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics."
+	})} />
+	{Astro.url.pathname === '/' && (
+		<script type="application/ld+json" set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "SoftwareApplication",
+			"name": "Consuelo",
+			"applicationCategory": "BusinessApplication",
+			"operatingSystem": "Web",
+			"offers": {
+				"@type": "AggregateOffer",
+				"lowPrice": "0",
+				"highPrice": "20",
+				"priceCurrency": "USD",
+				"offerCount": "3"
+			},
+			"description": "Open-source sales infrastructure platform with power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams."
+		})} />
+	)}
 </Fragment>

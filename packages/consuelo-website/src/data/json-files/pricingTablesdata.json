@@ -1,128 +1,86 @@
 [
-	{
-		"header": {
-			"title": "Starter",
-			"subtitle": "Free CRM to manage your pipeline.",
-			"currency": "$",
-			"price": "0",
-			"priceLabel": "month",
-			"priceMontly": "0",
-			"priceLabelMontly": "month",
-			"buttonName": "Start Free",
-			"buttonLink": "/"
-		},
-		"body": {
-			"listItems": [
-				{
-					"listItem": "Full CRM — free after trial"
-				},
-				{
-					"listItem": "Contact management"
-				},
-				{
-					"listItem": "Basic analytics"
-				},
-				{
-					"listItem": "1 user"
-				}
-			]
-		},
-		"footer": {
-			"buttonName": "See all features",
-			"buttonLink": "/features"
-		},
-		"type": "basic"
-	},
-	{
-		"header": {
-			"title": "Pro",
-			"subtitle": "Power dialer + AI coaching for closers.",
-			"currency": "$",
-			"price": "20",
-			"priceLabel": "month",
-			"priceMontly": "20",
-			"priceLabelMontly": "month",
-			"buttonName": "Start Free Trial",
-			"buttonLink": "/"
-		},
-		"body": {
-			"listItems": [
-				{
-					"listItem": "Everything in Starter"
-				},
-				{
-					"listItem": "Power dialer (multi-line)"
-				},
-				{
-					"listItem": "Local presence"
-				},
-				{
-					"listItem": "Spam shield"
-				},
-				{
-					"listItem": "AI queue management"
-				},
-				{
-					"listItem": "On-call coaching (whispers)"
-				},
-				{
-					"listItem": "Post-call analytics"
-				},
-				{
-					"listItem": "Call transfer"
-				},
-				{
-					"listItem": "Up to 5 users"
-				}
-			]
-		},
-		"footer": {
-			"buttonName": "See all features",
-			"buttonLink": "/features"
-		},
-		"type": "featured"
-	},
-	{
-		"header": {
-			"title": "Team",
-			"subtitle": "Scale your sales org with full automation.",
-			"currency": "",
-			"price": "Custom",
-			"priceLabel": "month",
-			"priceMontly": "Custom",
-			"priceLabelMontly": "month",
-			"buttonName": "Contact Sales",
-			"buttonLink": "/"
-		},
-		"body": {
-			"listItems": [
-				{
-					"listItem": "Everything in Pro"
-				},
-				{
-					"listItem": "Lead disbursement"
-				},
-				{
-					"listItem": "Post-sale sequences"
-				},
-				{
-					"listItem": "Pipeline nourishment"
-				},
-				{
-					"listItem": "Chat SDK (Discord, Slack, Teams)"
-				},
-				{
-					"listItem": "Custom integrations"
-				},
-				{
-					"listItem": "Unlimited users"
-				}
-			]
-		},
-		"footer": {
-			"buttonName": "See all features",
-			"buttonLink": "/features"
-		},
-		"type": "basic"
-	}
+  {
+    "header": {
+      "title": "Starter",
+      "subtitle": "For solo reps getting started.",
+      "currency": "$",
+      "price": "0",
+      "priceLabel": "free forever",
+      "priceMontly": "0",
+      "priceLabelMontly": "free forever",
+      "buttonName": "Start free",
+      "buttonLink": "https://app.consuelohq.com"
+    },
+    "body": {
+      "listItems": [
+        { "listItem": "1 seat" },
+        { "listItem": "Power dialer" },
+        { "listItem": "Full CRM (contacts, companies, pipeline)" },
+        { "listItem": "50 AI coaching minutes/month" },
+        { "listItem": "Basic analytics" }
+      ]
+    },
+    "footer": {
+      "buttonName": "See all features",
+      "buttonLink": "/features"
+    },
+    "type": "basic"
+  },
+  {
+    "header": {
+      "title": "Growth",
+      "subtitle": "For teams that need to move fast.",
+      "currency": "$",
+      "price": "20",
+      "priceLabel": "seat/month",
+      "priceMontly": "20",
+      "priceLabelMontly": "seat/month",
+      "buttonName": "Start free trial",
+      "buttonLink": "https://app.consuelohq.com"
+    },
+    "body": {
+      "listItems": [
+        { "listItem": "Unlimited seats" },
+        { "listItem": "Local presence dialing" },
+        { "listItem": "Multi-line dialing" },
+        { "listItem": "Unlimited AI coaching" },
+        { "listItem": "Call transfer (warm + cold)" },
+        { "listItem": "Full analytics & reporting" },
+        { "listItem": "Priority support" }
+      ]
+    },
+    "footer": {
+      "buttonName": "See all features",
+      "buttonLink": "/features"
+    },
+    "type": "featured"
+  },
+  {
+    "header": {
+      "title": "Enterprise",
+      "subtitle": "For orgs with compliance needs.",
+      "currency": "",
+      "price": "Custom",
+      "priceLabel": "",
+      "priceMontly": "Custom",
+      "priceLabelMontly": "",
+      "buttonName": "Talk to sales",
+      "buttonLink": "/contact"
+    },
+    "body": {
+      "listItems": [
+        { "listItem": "Everything in Growth" },
+        { "listItem": "SSO / SAML" },
+        { "listItem": "Custom integrations" },
+        { "listItem": "Dedicated CSM" },
+        { "listItem": "SLA" },
+        { "listItem": "On-prem option" }
+      ]
+    },
+    "footer": {
+      "buttonName": "See all features",
+      "buttonLink": "/features"
+    },
+    "type": "basic"
+  }
 ]

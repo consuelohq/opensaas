@@ -48,7 +48,6 @@ linear_graphql() {
 # Orders by createdAt ASC (oldest first for multi-part specs)
 linear_get_ready_issues() {
   local team_id="${LINEAR_TEAM_ID:-}"
-  local label_name="${LINEAR_LABEL_NAME:-kiro}"
   local state_name="${LINEAR_STATE_OPEN:-Open}"
 
   if [ -z "$team_id" ]; then
@@ -56,15 +55,13 @@ linear_get_ready_issues() {
     return 1
   fi
 
-  # Build query with values directly interpolated (Linear's variable support is limited)
-  # NOTE: orderBy only specifies WHICH field, not direction (defaults to descending)
-  # Use sort parameter with createdAt.order: Ascending for oldest-first ordering
+  # Fetch issues labeled kiro OR opencode (agent detection happens per-task)
   local query="
     query {
       issues(
         filter: {
           team: { id: { eq: \"$team_id\" } }
-          labels: { name: { eqIgnoreCase: \"$label_name\" } }
+          labels: { or: [{ name: { eqIgnoreCase: \"kiro\" } }, { name: { eqIgnoreCase: \"opencode\" } }] }
           state: { name: { eqIgnoreCase: \"$state_name\" } }
         }
         sort: [{ createdAt: { order: Ascending } }]

@@ -1,16 +1,20 @@
 {
   "name": "Consuelo",
   "short_name": "Consuelo",
-  "description": "AI-powered sales training platform that shortens ramp time for sales teams",
+  "description": "Open-source sales infrastructure for insurance teams — power dialer, AI CRM, real-time coaching, and analytics.",
   "icons": [
     {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "apple-touch-icon"
+      "src": "/apple-touch-icon-800x800.png",
+      "sizes": "800x800",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#000000",
+  "theme_color": "#E2187D",
   "background_color": "#000000",
   "display": "standalone",
   "start_url": "/",

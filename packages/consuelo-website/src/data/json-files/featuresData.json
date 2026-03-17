@@ -1,92 +1,212 @@
 [
 	{
+		"title": "Call Metrics Dashboard",
+		"icon": "chart-pie",
+		"description": "Real-time visibility into call volume, connect rates, talk time, and disposition — across every rep, team, and campaign.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Rep Performance Scoring",
+		"icon": "arrow-trending-up",
+		"description": "AI-scored calls based on talk time, objection handling, and close rate. Know exactly who needs coaching and who's ready to lead.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Team Leaderboards",
+		"icon": "user-group",
+		"description": "Live leaderboards that drive healthy competition. Track dials, connects, appointments set, and policies written across your agency.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Conversion Tracking",
+		"icon": "cursor-arrow-ripple",
+		"description": "Follow every lead from first dial to closed policy. See which campaigns, lists, and reps actually produce revenue — not just activity.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Call Recording Analytics",
+		"icon": "microphone",
+		"description": "Every call recorded and analyzed. AI surfaces the moments that matter — objections handled, buying signals missed, compliance risks flagged.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Pipeline Velocity",
+		"icon": "bolt",
+		"description": "Measure how fast leads move through your pipeline. Identify bottlenecks, stalled deals, and the exact stage where prospects drop off.",
+		"category": "Analytics"
+	},
+	{
+		"title": "Campaign ROI Tracking",
+		"icon": "light-bulb",
+		"description": "Connect ad spend directly to closed policies. Know which lead sources are profitable and which are burning budget before it's too late.",
+		"category": "Analytics"
+	},
+	{
 		"title": "Power Dialer",
 		"icon": "bolt",
-		"description": "Multi-line parallel dialing that dramatically increases your contact rate and call volume. Reach more leads in less time — one rep does the work of five.",
-		"category": "Sales Tools"
+		"description": "Multi-line parallel dialing that lets one rep do the work of five. Dramatically increase contact rate and call volume without adding headcount.",
+		"category": "Productivity"
 	},
 	{
 		"title": "Local Presence",
 		"icon": "device-phone-mobile",
-		"description": "Automatically dial from local numbers so prospects see a familiar area code. Higher answer rates mean more conversations and more sales.",
-		"category": "Sales Tools"
+		"description": "Automatically dial from local area codes so prospects see a familiar number. Higher answer rates mean more conversations and more policies written.",
+		"category": "Productivity"
 	},
 	{
-		"title": "Spam Shield",
-		"icon": "shield-check",
-		"description": "Protect your caller ID reputation with automatic number rotation and health monitoring. Keep your numbers clean so your calls get answered.",
-		"category": "Sales Tools"
+		"title": "Call Queue Management",
+		"icon": "rectangle-stack",
+		"description": "AI builds and manages your call queue automatically. Old leads that didn't answer get recycled back into rotation — nothing falls through the cracks.",
+		"category": "Productivity"
+	},
+	{
+		"title": "Voicemail Drop",
+		"icon": "microphone",
+		"description": "Pre-recorded voicemails dropped with one click. Move to the next dial instantly instead of waiting for the beep — reclaim hours every week.",
+		"category": "Productivity"
+	},
+	{
+		"title": "Click-to-Call",
+		"icon": "cursor-arrow-ripple",
+		"description": "Dial any number from your CRM, browser, or lead list with a single click. No copy-pasting, no manual dialing, no wasted seconds between calls.",
+		"category": "Productivity"
+	},
+	{
+		"title": "Speed-to-Lead",
+		"icon": "arrow-trending-up",
+		"description": "New leads hit your dialer the moment they come in. First to call wins in insurance — Consuelo makes sure that's always your team.",
+		"category": "Productivity"
+	},
+	{
+		"title": "Lead Disbursement",
+		"icon": "user-group",
+		"description": "Distribute a thousand leads across five reps with one click. Round-robin, weighted, or manual — each agent gets exactly their leads, no overlap.",
+		"category": "Productivity"
 	},
 	{
 		"title": "Call Transfer",
 		"icon": "phone-arrow-up-right",
 		"description": "Warm and cold transfers that keep the conversation flowing. Hand off to closers, managers, or specialists without dropping the prospect.",
-		"category": "Sales Tools"
+		"category": "Productivity"
 	},
 	{
-		"title": "AI CRM",
-		"icon": "light-bulb",
-		"description": "A CRM that manages itself. Talk to your CRM, tell it what to do — it logs calls, updates records, and keeps your pipeline clean without manual data entry.",
-		"category": "AI & Automation"
+		"title": "TCPA Compliance",
+		"icon": "shield-check",
+		"description": "Built-in TCPA safeguards for every outbound call. Time-zone restrictions, consent tracking, and calling-hour enforcement — compliance by default.",
+		"category": "Security"
 	},
 	{
-		"title": "On-Call Coaching",
-		"icon": "microphone",
-		"description": "AI whispers help you while you're live on a call — increasing talk time and closing rate. Upload your scripts for whisper training and script mode.",
-		"category": "AI & Automation"
-	},
-	{
-		"title": "Smart Queue",
+		"title": "DNC List Management",
 		"icon": "rectangle-stack",
-		"description": "AI creates and manages your call queue automatically. Old leads that didn't answer get recycled back into rotation so nothing falls through the cracks.",
-		"category": "AI & Automation"
+		"description": "Automatic Do-Not-Call list scrubbing before every dial session. Federal, state, and internal DNC lists checked in real time so you never call someone who opted out.",
+		"category": "Security"
 	},
 	{
-		"title": "Post-Sale Sequences",
-		"icon": "arrow-path-rounded-square",
-		"description": "Automated follow-up that calls back one week after a sale, emails at one month and three months. Keeps customers engaged and reduces chargebacks.",
-		"category": "Automation"
+		"title": "Call Recording Consent",
+		"icon": "microphone",
+		"description": "Automated consent announcements for two-party states. The system knows which states require disclosure and handles it before your rep says a word.",
+		"category": "Security"
 	},
 	{
-		"title": "Pipeline Nourishment",
-		"icon": "arrow-trending-up",
-		"description": "Re-engagement queues that automatically work cold leads back into your pipeline. Dripped leads from old campaigns get a second life instead of dying in a spreadsheet.",
-		"category": "Automation"
-	},
-	{
-		"title": "Lead Disbursement",
+		"title": "Role-Based Access",
 		"icon": "user-group",
-		"description": "Management disperses 1,000 leads between five reps and each person gets exactly their leads. No more sharing CRM access or fighting over who called who.",
-		"category": "Team Management"
+		"description": "Agents see their leads. Managers see their team. Admins see everything. Granular permissions that match how your agency actually operates.",
+		"category": "Security"
 	},
 	{
-		"title": "Chat SDK",
-		"icon": "chat-bubble-left-right",
-		"description": "Connected to Discord, Slack, and Teams — extends Consuelo's functionality directly into the platforms your team already uses. Collaboration is no longer an issue.",
-		"category": "Team Management"
+		"title": "Spam Shield",
+		"icon": "shield-check",
+		"description": "Automatic number rotation and caller ID health monitoring. Keep your numbers clean and your answer rates high — no more flagged or blocked calls.",
+		"category": "Security"
 	},
 	{
-		"title": "Analytics",
-		"icon": "chart-pie",
-		"description": "Post-call analytics that actually get done. See what makes better calls, longer calls, and more sales — then use that data to build a better team.",
-		"category": "Analytics"
+		"title": "Data Export & Portability",
+		"icon": "arrow-path-rounded-square",
+		"description": "Your data is yours. Export contacts, call logs, recordings, and analytics anytime in standard formats. No vendor lock-in, no hostage data.",
+		"category": "Security"
+	},
+	{
+		"title": "End-to-End Encryption",
+		"icon": "shield-check",
+		"description": "All call data, recordings, and customer information encrypted in transit and at rest. Enterprise-grade security without the enterprise price tag.",
+		"category": "Security"
+	},
+	{
+		"title": "GoHighLevel",
+		"icon": "cube-transparent",
+		"description": "Works inside GHL as a native embedded app. Your team dials, coaches, and manages leads without ever leaving the GoHighLevel dashboard.",
+		"category": "Integrations"
+	},
+	{
+		"title": "Salesforce Import",
+		"icon": "arrow-path-rounded-square",
+		"description": "Migrate your entire Salesforce org in minutes. Contacts, companies, pipeline stages, and custom fields — mapped and imported automatically.",
+		"category": "Integrations"
+	},
+	{
+		"title": "Zapier",
+		"icon": "bolt",
+		"description": "Connect Consuelo to 5,000+ apps through Zapier. Trigger workflows, sync data, and automate the busywork between your tools.",
+		"category": "Integrations"
+	},
+	{
+		"title": "Webhook API",
+		"icon": "arrow-trending-up",
+		"description": "Real-time webhooks for every event — calls, dispositions, lead updates, recordings. Build custom integrations that react the moment something happens.",
+		"category": "Integrations"
+	},
+	{
+		"title": "CSV Import & Export",
+		"icon": "rectangle-stack",
+		"description": "Bulk import leads from any source and export your data anytime. Standard CSV format means your data works everywhere, not just here.",
+		"category": "Integrations"
+	},
+	{
+		"title": "REST API",
+		"icon": "computer-desktop",
+		"description": "Full REST API for everything Consuelo does. Build custom dashboards, connect internal tools, or automate your entire sales workflow programmatically.",
+		"category": "Integrations"
 	},
 	{
 		"title": "Ads to CRM",
 		"icon": "cursor-arrow-ripple",
-		"description": "Connect your ads platform straight to your CRM. Leads from campaigns flow directly into your pipeline — no CSV exports, no manual imports, no resold leads.",
+		"description": "Connect your ads platform straight to your CRM. Leads from campaigns flow directly into your pipeline — no CSV exports, no manual imports.",
 		"category": "Integrations"
 	},
 	{
-		"title": "GHL Embedded",
-		"icon": "cube-transparent",
-		"description": "Works inside GoHighLevel as a native embedded app. Your team dials, coaches, and manages leads without ever leaving the GHL dashboard.",
-		"category": "Integrations"
+		"title": "Onboarding Assistance",
+		"icon": "light-bulb",
+		"description": "Dedicated onboarding that gets your team dialing on day one. We migrate your data, configure your dialer, and train your reps — not just hand you docs.",
+		"category": "Support"
 	},
 	{
-		"title": "Google Extension",
+		"title": "Knowledge Base",
+		"icon": "chat-bubble-left-right",
+		"description": "Searchable docs, video walkthroughs, and step-by-step guides for every feature. Find answers fast without waiting for a support ticket.",
+		"category": "Support"
+	},
+	{
+		"title": "Live Chat Support",
+		"icon": "chat-bubble-left-right",
+		"description": "Real humans, not chatbots. Get help from someone who actually knows the product — available when you need it, not when a queue says so.",
+		"category": "Support"
+	},
+	{
+		"title": "Training Webinars",
 		"icon": "computer-desktop",
-		"description": "Works right in your browser. Click-to-dial from any webpage, log calls automatically, and access your dialer wherever you're already working.",
-		"category": "Integrations"
+		"description": "Weekly live sessions covering power dialer tactics, AI coaching setup, and pipeline management. Your team gets better every week, not just at onboarding.",
+		"category": "Support"
+	},
+	{
+		"title": "Community Forum",
+		"icon": "user-group",
+		"description": "Connect with other insurance sales teams using Consuelo. Share scripts, strategies, and workflows that actually work in the field.",
+		"category": "Support"
+	},
+	{
+		"title": "Open Source Transparency",
+		"icon": "chart-pie",
+		"description": "Consuelo is open source. Inspect the code, suggest features, report bugs, and know exactly what's running your sales operation. No black boxes.",
+		"category": "Support"
 	}
 ]
