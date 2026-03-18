@@ -191,27 +191,30 @@
           ]
         },
         {
-          "key": "ai",
-          "label": "AI",
+          "key": "computer",
+          "label": "Computer",
           "icon": "robot",
           "pages": [
-            "user-guide/ai/overview",
+            "user-guide/computer/overview",
             {
-              "key": "aiCapabilities",
+              "key": "computerCapabilities",
               "label": "Capabilities",
               "pages": [
-                "user-guide/ai/capabilities/ai-chatbot",
-                "user-guide/ai/capabilities/ai-agents",
-                "user-guide/ai/capabilities/permissions-access-control"
+                "user-guide/computer/capabilities/real-time-coaching",
+                "user-guide/computer/capabilities/post-call-analysis",
+                "user-guide/computer/capabilities/crm-tools",
+                "user-guide/computer/capabilities/context-awareness",
+                "user-guide/computer/capabilities/permissions-access-control"
               ]
             },
             {
-              "key": "aiHowTos",
+              "key": "computerHowTos",
               "label": "How-Tos",
               "pages": [
-                "user-guide/ai/how-tos/ai-faq"
+                "user-guide/computer/how-tos/computer-faq"
               ]
             }
+          }
           ]
         },
         {

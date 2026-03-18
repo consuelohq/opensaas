@@ -340,6 +340,11 @@
                 "user-guide/discord-bot/capabilities/contact-search",
                 "user-guide/discord-bot/capabilities/team-collaboration"
               ]
+            },
+            {
+              "key": "dialerHowTos",
+              "label": "How-Tos",
+              "pages": ["user-guide/dialer/how-tos/discord-setup"]
             }
           ]
         },
