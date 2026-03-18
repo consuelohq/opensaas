@@ -456,19 +456,15 @@ const SettingsDialerNotifications = lazy(() =>
 );
 
 const SettingsDialerWorkspace = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerWorkspace').then(
-    (module) => ({
-      default: module.SettingsDialerWorkspace,
-    }),
-  ),
+  import('~/pages/settings/dialer/SettingsDialerWorkspace').then((module) => ({
+    default: module.SettingsDialerWorkspace,
+  })),
 );
 
 const SettingsDialerTwilio = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerTwilio').then(
-    (module) => ({
-      default: module.SettingsDialerTwilio,
-    }),
-  ),
+  import('~/pages/settings/dialer/SettingsDialerTwilio').then((module) => ({
+    default: module.SettingsDialerTwilio,
+  })),
 );
 
 const SettingsDialerGHL = lazy(() =>
@@ -477,6 +473,11 @@ const SettingsDialerGHL = lazy(() =>
   })),
 );
 
+const SettingsDialerDiscord = lazy(() =>
+  import('~/pages/settings/dialer/SettingsDialerDiscord').then((module) => ({
+    default: module.SettingsDialerDiscord,
+  })),
+);
 
 type SettingsRoutesProps = {
   isFunctionSettingsEnabled?: boolean;
@@ -747,9 +748,10 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         path={SettingsPath.DialerTwilio}
         element={<SettingsDialerTwilio />}
       />
+      <Route path={SettingsPath.DialerGHL} element={<SettingsDialerGHL />} />
       <Route
-        path={SettingsPath.DialerGHL}
-        element={<SettingsDialerGHL />}
+        path={SettingsPath.DialerDiscord}
+        element={<SettingsDialerDiscord />}
       />
 
       {isAdminPageEnabled && (

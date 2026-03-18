@@ -12,77 +12,87 @@ This guide walks you through setting up the Consuelo Discord bot for your worksp
 Before starting, you'll need:
 
 - A Consuelo workspace with admin access
+- A Discord Application created at [Discord Developer Portal](https://discord.com/developers)
 - Discord server where you can add bots
-- Your Consuelo API key (found in Settings → API)
-- Your workspace ID and user ID
 
-## Step 1: Invite the Bot
+## Step 1: Create a Discord Application
 
-### For Cloud-hosted Consuelo
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application**
+3. Give it a name (e.g., "Consuelo Bot")
+4. Copy the **Application ID** — you'll need this later
 
-The bot is hosted by Consuelo. Just invite it to your server:
+Navigate to **Bot** in the left sidebar:
 
-1. Visit the invite link (provided by your Consuelo admin)
-2. Select your Discord server
-3. Grant the requested permissions
-4. Authorize the bot
+1. Click **Add Bot**
+2. Copy the **Token** — this is your bot token
+3. Enable **Message Content Intent** under Privileged Gateway Intents
+4. Enable **Server Members Intent** (optional, for member lookup features)
 
-### For Self-Hosted
+Navigate to **General Information** in the left sidebar:
 
-If you're self-hosting Consuelo, deploy the bot separately:
+1. Copy the **Public Key** — you'll need this for the interactions endpoint
 
-```bash
-cd packages/chat-bot
-npm install
-npm run build
-npm start
-```
+Navigate to **OAuth2** → **General**:
 
-Set these environment variables:
+1. Copy the **Client Secret** — you'll need this for OAuth flows
 
-```bash
-DISCORD_BOT_TOKEN=your_discord_bot_token
-CONSUELO_API_URL=https://your-consuelo-instance.com
-CONSUELO_API_KEY=your_api_key
-REDIS_URL=redis://localhost:6379
-PORT=3100
-```
+## Step 2: Configure in Consuelo
 
-## Step 2: Link Your Account
+Go to **Settings** → **Dialer** → **Discord** in your Consuelo workspace.
 
-Each user must link their Discord account to their Consuelo workspace.
+### Bot Configuration
 
-### Find Your Credentials
+Enter your Discord application credentials:
 
-1. **Workspace ID**: Go to Settings → General, copy the workspace ID
-2. **User ID**: Go to Settings → Profile, your user ID is shown there
-3. **API Key**: Go to Settings → API, generate a new API key
+1. **Application ID** (required): Paste your Discord Application ID
+2. **Public Key** (required): Paste your Public Key from the Discord Developer Portal
+3. **Bot Token**: Paste your bot token (shown as dots once saved)
+4. **Client Secret**: Paste your client secret for OAuth flows
 
-### Run the Link Command
+Click **Save Configuration**.
 
-```
-/consuelo login
-```
+### Webhook Endpoint
 
-The bot will respond with a link:
+Copy the **Interactions Endpoint URL** shown in the settings.
 
-```
-🔗 Link Your Account
+1. Go back to Discord Developer Portal → Your Application → **General Information**
+2. Paste the URL into **Interactions Endpoint URL**
+3. Click **Save Changes**
 
-Click below to connect your Discord account to your Consuelo workspace.
+## Step 3: Generate Bot Invite Link
 
-[Link Account]
-```
+In the Discord settings page:
 
-Click the link and enter:
+1. Click **Generate Invite Link**
+2. Copy the generated URL
+3. Open it in your browser
+4. Select your Discord server
+5. Authorize the bot with the requested permissions
 
-- **Workspace ID**: Your workspace identifier
-- **User ID**: Your user identifier
-- **API Key**: Your generated API key
+The bot is now in your server!
 
-Click **Link Account** — you'll see a success message.
+## Step 4: Link Your Account
+
+In the same Discord settings page, find the **Discord Connection** section:
+
+1. Click **Link Discord Account**
+2. A popup will open — enter your workspace ID and user ID
+3. Your API key is auto-filled if you have one, or generate one first
+
+### Generate an API Key (if needed)
+
+If you don't have an API key:
+
+1. Go to **Settings** → **Workspace** → **APIs & Webhooks**
+2. Click **Create API Key** in the API Keys section
+3. Give it a name (e.g., "Discord Bot")
+4. Set an expiration date
+5. Copy the key — you won't see it again!
 
 ### Verify the Link
+
+Back in Discord, run:
 
 ```
 /consuelo ping
@@ -99,7 +109,7 @@ Workspace: your-workspace-id
 Status: Online
 ```
 
-## Step 3: Set Your Phone Number
+## Step 5: Set Your Phone Number
 
 The bot needs to know which phone number to call when connecting you to leads.
 
@@ -118,7 +128,7 @@ curl -X PATCH https://api.consuelohq.com/v1/users/me \
   -d '{"phone": "+15551234567"}'
 ```
 
-## Step 4: Configure Notifications (Optional)
+## Step 6: Configure Notifications (Optional)
 
 Set a channel for automatic call notifications.
 
@@ -143,7 +153,24 @@ Replace `#call-notifications` with your actual channel name.
 Notifications will be posted to #call-notifications.
 ```
 
-## Step 5: Test Your Setup
+## Self-Hosted Setup
+
+If you're self-hosting Consuelo, you can still configure via environment variables (backward compatible):
+
+```bash
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_PUBLIC_KEY=your_public_key
+DISCORD_APPLICATION_ID=your_application_id
+DISCORD_CLIENT_SECRET=your_client_secret
+CONSUELO_API_URL=https://your-consuelo-instance.com
+CONSUELO_API_KEY=your_api_key
+REDIS_URL=redis://localhost:6379
+PORT=3100
+```
+
+However, the UI configuration in Settings → Dialer → Discord takes precedence when set.
+
+## Test Your Setup
 
 ### Quick Health Check
 
@@ -175,13 +202,13 @@ Should show your queues or "No queues found."
 
 **Problem**: You haven't linked your Discord account.
 
-**Solution**: Run `/consuelo login` and complete the link process.
+**Solution**: Open Settings → Dialer → Discord and click **Link Discord Account**.
 
 ### "Missing phone number" Error
 
 **Problem**: Your phone number isn't set in Consuelo.
 
-**Solution**: Add your phone in CRM Settings → Profile.
+**Solution**: Add your phone in Settings → Profile.
 
 ### "Unauthorized" Error
 
@@ -189,10 +216,10 @@ Should show your queues or "No queues found."
 
 **Solution**:
 
-1. Go to CRM Settings → API
+1. Go to Settings → Workspace → APIs & Webhooks
 2. Revoke the old key
 3. Generate a new key
-4. Run `/consuelo logout` then `/consuelo login` again
+4. Run `/consuelo logout` then link your account again
 
 ### Bot Not Responding
 
@@ -202,7 +229,7 @@ Should show your queues or "No queues found."
 
 1. Check the bot's status in your Discord server
 2. Verify the bot has permission to read messages and send messages
-3. For self-hosted: Check that the bot service is running
+3. In Settings → Dialer → Discord, verify your credentials are saved correctly
 
 ### Can't Set Notification Channel
 
@@ -214,12 +241,23 @@ Should show your queues or "No queues found."
 2. Check that the bot has "Send Messages" permission in the channel
 3. Try using the channel ID instead of the mention
 
+### Webhook Errors
+
+**Problem**: Interactions endpoint not receiving events.
+
+**Solution**:
+
+1. Verify the **Interactions Endpoint URL** in Discord Developer Portal matches what's shown in Settings → Dialer → Discord
+2. Make sure you saved the changes after pasting the webhook URL
+3. Check that your Consuelo instance is publicly accessible
+
 ## Security Notes
 
 <Warning>
-  **Protect your API key!** - Never share your API key in public channels - Use
-  DMs for the `/consuelo login` link - Regenerate keys if you suspect compromise
-  - The bot stores credentials encrypted in Redis
+  **Protect your credentials!** - Never share your bot token or client secret in
+  public channels - Use DMs for account linking - Regenerate tokens if you
+  suspect compromise - API keys in Settings → Workspace → APIs & Webhooks are
+  stored securely
 </Warning>
 
 ## Next Steps
