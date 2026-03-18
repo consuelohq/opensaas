@@ -1,10 +1,18 @@
 import styled from '@emotion/styled';
 import { IconArrowUp, IconPlayerStop } from '@tabler/icons-react';
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
+import type { ComponentProps } from 'react';
+import type { Streamdown } from 'streamdown';
 
 import { useAgentChat } from '@/agent/hooks/useAgentChat';
 
 import { toolRendererRegistry } from './renderers';
+
+type StreamdownProps = ComponentProps<typeof Streamdown>;
+
+const LazyStreamdown = lazy(() =>
+  import('streamdown').then((mod) => ({ default: mod.Streamdown })),
+);
 
 const StyledContainer = styled.div`
   display: flex;
@@ -42,33 +50,93 @@ const StyledMessageText = styled.div<{ isUser: boolean }>`
   line-height: 1.5;
   max-width: 100%;
   padding: ${({ theme, isUser }) => (isUser ? theme.spacing(1, 2) : '0')};
-  white-space: pre-wrap;
   width: fit-content;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
 
-  code {
-    background: ${({ theme }) => theme.background.tertiary};
-    border-radius: ${({ theme }) => theme.border.radius.sm};
-    line-height: 1.4;
-    max-width: 100%;
-    overflow: auto;
-    padding: ${({ theme }) => theme.spacing(1)};
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
+  .streamdown {
+    font-size: inherit;
+    line-height: inherit;
 
-  pre {
-    background: ${({ theme }) => theme.background.tertiary};
-    border-radius: ${({ theme }) => theme.border.radius.sm};
-    max-width: 100%;
-    overflow-x: auto;
-    padding: ${({ theme }) => theme.spacing(2)};
+    p {
+      margin: 0 0 0.75em 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
 
     code {
-      background: none;
-      border-radius: 0;
-      padding: 0;
+      background: ${({ theme }) => theme.background.tertiary};
+      border-radius: ${({ theme }) => theme.border.radius.sm};
+      padding: ${({ theme }) => theme.spacing(0.5, 1)};
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: ${({ theme }) => theme.background.tertiary};
+      border-radius: ${({ theme }) => theme.border.radius.sm};
+      margin: 0.75em 0;
+      overflow-x: auto;
+      padding: ${({ theme }) => theme.spacing(2)};
+
+      code {
+        background: transparent;
+        padding: 0;
+      }
+    }
+
+    ul,
+    ol {
+      margin: 0.5em 0;
+      padding-left: 1.5em;
+    }
+
+    li {
+      margin: 0.25em 0;
+    }
+
+    blockquote {
+      border-left: 3px solid ${({ theme }) => theme.border.color.light};
+      margin: 0.75em 0;
+      padding-left: ${({ theme }) => theme.spacing(2)};
+      color: ${({ theme }) => theme.font.color.secondary};
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 1em 0 0.5em;
+      font-weight: ${({ theme }) => theme.font.weight.semiBold};
+    }
+
+    a {
+      color: ${({ theme }) => theme.font.color.primary};
+      text-decoration: underline;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: 0.75em 0;
+      width: 100%;
+
+      th,
+      td {
+        border: 1px solid ${({ theme }) => theme.border.color.light};
+        padding: ${({ theme }) => theme.spacing(1, 2)};
+      }
+
+      th {
+        background: ${({ theme }) => theme.background.secondary};
+        font-weight: ${({ theme }) => theme.font.weight.medium};
+      }
+    }
+
+    .shiki {
+      background: ${({ theme }) => theme.background.secondary};
+      border-radius: ${({ theme }) => theme.border.radius.sm};
+      padding: ${({ theme }) => theme.spacing(2)};
     }
   }
 `;
@@ -103,9 +171,7 @@ const StyledInput = styled.input`
 const StyledSendButton = styled.button<{ disabled: boolean }>`
   align-items: center;
   background: ${({ theme, disabled }) =>
-    disabled
-      ? theme.background.transparent.light
-      : theme.background.tertiary};
+    disabled ? theme.background.transparent.light : theme.background.tertiary};
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme, disabled }) =>
@@ -132,7 +198,16 @@ const StyledLoadingDots = styled.div`
   padding: ${({ theme }) => theme.spacing(1)} 0;
 `;
 
-export const AgentChatPanel = () => {
+const StyledLoadingSkeleton = styled.div`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.md};
+`;
+
+type AgentChatPanelProps = {
+  mode?: 'streaming' | 'static';
+};
+
+export const AgentChatPanel = ({ mode = 'streaming' }: AgentChatPanelProps) => {
   const { messages, input, setInput, handleSubmit, handleStop, isLoading } =
     useAgentChat();
 
@@ -164,7 +239,20 @@ export const AgentChatPanel = () => {
                     isUser={isUser}
                   >
                     <StyledMessageText isUser={isUser}>
-                      {part.text}
+                      <Suspense
+                        fallback={
+                          <StyledLoadingSkeleton>
+                            Loading...
+                          </StyledLoadingSkeleton>
+                        }
+                      >
+                        <LazyStreamdown
+                          mode={isUser ? 'static' : mode}
+                          shikiTheme={['github-light', 'github-dark']}
+                        >
+                          {part.text}
+                        </LazyStreamdown>
+                      </Suspense>
                     </StyledMessageText>
                   </StyledMessageBubble>
                 );
