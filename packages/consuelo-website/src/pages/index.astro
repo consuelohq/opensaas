@@ -1,76 +1,29 @@
 ---
-import SiteLayout from "../layouts/SiteLayout.astro";
+// Components
+// - Layout
+import Layout from '../layouts/Layout.astro'
+// - UI
+import Hero from '../components/blocks/hero/HomeCTA.astro'
+import Features from '../components/blocks/features/FeatureCards.astro'
+import Testimonial from '../components/blocks/testimonials/BasicDark.astro'
+import Highlights from '../components/blocks/highlights/HightlightRows.astro'
+import CTA from '../components/blocks/CTA/BasicDark.astro'
 
+// Content
+// - Testimonial background
+import testimonialBackground from '../assets/testimonial-bg-01.webp'
+// - SEO
 const SEO = {
-  title: 'Consuelo — $20 Power Dialer. Free CRM. AI Coaching.',
-  description: 'Open-source sales infrastructure for insurance teams. Power dialer with local presence, free CRM, real-time AI coaching, and analytics. Replace your $250/seat stack for $20.'
+	title: 'Consuelo — $20 Power Dialer. Free CRM. AI Coaching.',
+	description:
+		'Open-source sales infrastructure for insurance teams. Power dialer with local presence, free CRM, real-time AI coaching, and analytics. Replace your $250/seat stack for $20.'
 }
-import { Hero } from "../components/Hero";
-import { DashboardDemo } from "../components/DashboardDemo";
-import { ProblemSection } from "../components/ProblemSection";
-import { SolutionSection } from "../components/SolutionSection";
-import { HowItWorks } from "../components/HowItWorks";
-import { DialerDemo } from "../components/DialerDemo";
-import { ProofSection } from "../components/ProofSection";
-import { PricingPreview } from "../components/PricingPreview";
 ---
 
-<SiteLayout title={SEO.title} description={SEO.description}>
-  <!-- hero -->
-  <Hero client:load />
-
-  <!-- full CRM dashboard demo — 4 clickable tabs -->
-  <section class="py-20 sm:py-24">
-    <div class="mx-auto w-full max-w-7xl px-6">
-      <DashboardDemo client:visible />
-    </div>
-  </section>
-
-  <!-- problem + solution — emotional bridge -->
-  <ProblemSection client:visible />
-  <SolutionSection client:visible />
-
-  <!-- how it works — workflow visualization -->
-  <HowItWorks client:visible />
-
-  <!-- standalone dialer demo -->
-  <section class="py-20 sm:py-24">
-    <div class="mx-auto max-w-[480px] px-6">
-      <DialerDemo client:visible />
-    </div>
-  </section>
-
-  <!-- proof + pricing -->
-  <ProofSection client:visible />
-  <PricingPreview client:load />
-
-  <!-- open source callout -->
-  <section class=" py-20 sm:py-24">
-    <div class="mx-auto max-w-[600px] px-6 text-center">
-      <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Open source, from day one.</h2>
-      <p class="mt-4 text-(--color-muted)">
-        Every package is open source. Self-host, extend, contribute — no vendor lock-in.
-      </p>
-      <a href="https://github.com/consuelohq/opensaas" class="mt-8 inline-flex items-center gap-2 rounded-full border border-(--color-border) px-6 py-3 text-sm font-medium transition-colors hover:border-(--color-muted)">
-        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        View on GitHub
-      </a>
-    </div>
-  </section>
-
-  <!-- final cta -->
-  <section class=" py-20 sm:py-28">
-    <div class="mx-auto max-w-[600px] px-6 text-center">
-      <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Ready to shorten ramp time?</h2>
-      <p class="mt-4 text-(--color-muted)">Get your team selling faster with AI-powered coaching and a dialer built for speed.</p>
-      <div class="mt-8 flex justify-center gap-4">
-        <a href="/demo" class="rounded-full bg-(--color-fg) px-7 py-3 text-sm font-medium text-(--color-bg) transition-opacity hover:opacity-80">
-          Book a demo
-        </a>
-        <a href="/signup" class="rounded-full border border-(--color-border) px-7 py-3 text-sm font-medium text-(--color-muted) transition-colors hover:text-(--color-fg)">
-          Start for free
-        </a>
-      </div>
-    </div>
-  </section>
-</SiteLayout>
+<Layout title={SEO.title} description={SEO.description}>
+	<Hero />
+	<Features />
+	<Testimonial bg={testimonialBackground} bgPosition="right" />
+	<Highlights />
+	<CTA />
+</Layout>

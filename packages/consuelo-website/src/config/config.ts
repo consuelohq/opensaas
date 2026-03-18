@@ -4,6 +4,7 @@
 
 export interface Logo {
 	src: string
+	darkSrc?: string
 	alt: string
 }
 
@@ -27,6 +28,7 @@ export const configData: Config = {
 	ogImage: '/og.jpg',
 	logo: {
 		src: '/logo.svg',
+		darkSrc: '/logo-dark.svg',
 		alt: 'Consuelo'
 	},
 	canonical: true,

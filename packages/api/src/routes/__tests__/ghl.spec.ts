@@ -131,11 +131,14 @@ const findRoute = (method: string, path: string): Route => {
 const exec = (route: Route, req?: Partial<ApiRequest>) =>
   executeHandler(route.handler, req);
 
-const authReq = (overrides?: Partial<ApiRequest>) =>
-  ({ ...createAuthenticatedRequest(overrides) });
+const authReq = (overrides?: Partial<ApiRequest>) => ({
+  ...createAuthenticatedRequest(overrides),
+});
 
 const noAuthReq = (overrides?: Partial<ApiRequest>) =>
-  ({ auth: undefined, ...overrides } as Partial<ApiRequest> & { auth: undefined });
+  ({ auth: undefined, ...overrides }) as Partial<ApiRequest> & {
+    auth: undefined;
+  };
 
 const mockConnected = () => {
   mockAuth.getStatus.mockResolvedValue({
@@ -171,12 +174,14 @@ describe('POST /v1/integrations/ghl/oauth', () => {
 
   it('returns redirect URL with PKCE state', async () => {
     mockAuth.getAuthUrl.mockReturnValue({
-      url: 'https://marketplace.gohighlevel.com/oauth?state=mock-state-hex',
+      url: 'https://marketplace.leadconnectorhq.com/oauth/chooselocation?state=mock-state-hex',
       codeVerifier: 'pkce-verifier-123',
     });
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
-    expect((res.body as { redirectUrl: string }).redirectUrl).toContain('gohighlevel.com');
+    expect((res.body as { redirectUrl: string }).redirectUrl).toContain(
+      'leadconnectorhq.com',
+    );
     expect((res.body as { state: string }).state).toBe('mock-state-hex');
   });
 
@@ -196,7 +201,9 @@ describe('POST /v1/integrations/ghl/oauth', () => {
     )!;
     const res = await executeHandler(oauthRoute.handler, authReq());
     expect(res.statusCode).toBe(503);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONFIGURED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONFIGURED',
+    );
     process.env.GHL_CLIENT_ID = savedId;
     process.env.GHL_CLIENT_SECRET = savedSecret;
   });
@@ -210,33 +217,50 @@ describe('GET /v1/integrations/ghl/callback', () => {
   const route = () => findRoute('GET', '/v1/integrations/ghl/callback');
 
   it('returns 400 when error param present', async () => {
-    const res = await exec(route(), createMockRequest({
-      query: { error: 'access_denied' },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        query: { error: 'access_denied' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_AUTH_DENIED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_AUTH_DENIED',
+    );
   });
 
   it('returns 400 when code or state missing', async () => {
     const res = await exec(route(), createMockRequest({ query: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_CALLBACK');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_CALLBACK',
+    );
   });
 
   it('returns 400 when only code provided without state', async () => {
-    const res = await exec(route(), createMockRequest({
-      query: { code: 'auth-code-123' },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        query: { code: 'auth-code-123' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_CALLBACK');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_CALLBACK',
+    );
   });
 
   it('returns 400 for invalid/expired state', async () => {
-    const res = await exec(route(), createMockRequest({
-      query: { code: 'auth-code-123', state: 'unknown-state' },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        query: { code: 'auth-code-123', state: 'unknown-state' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_STATE');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_STATE',
+    );
   });
 });
 
@@ -248,7 +272,11 @@ describe('GET /v1/integrations/ghl/status', () => {
   const route = () => findRoute('GET', '/v1/integrations/ghl/status');
 
   it('returns connection status', async () => {
-    const status = { connected: true, locationId: 'loc-001', connectedAt: '2026-01-01' };
+    const status = {
+      connected: true,
+      locationId: 'loc-001',
+      connectedAt: '2026-01-01',
+    };
     mockAuth.getStatus.mockResolvedValue(status);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
@@ -306,18 +334,28 @@ describe('POST /v1/integrations/ghl/push', () => {
 
   it('pushes call outcome', async () => {
     mockPush.pushCallOutcome.mockResolvedValue(true);
-    const res = await exec(route(), authReq({
-      body: { type: 'call-outcome', contactId: 'ct-001', data: { disposition: 'answered' } },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: {
+          type: 'call-outcome',
+          contactId: 'ct-001',
+          data: { disposition: 'answered' },
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { pushed: boolean }).pushed).toBe(true);
   });
 
   it('pushes tag update', async () => {
     mockPush.pushTagUpdate.mockResolvedValue(true);
-    const res = await exec(route(), authReq({
-      body: { type: 'tags', contactId: 'ct-001', data: { tags: ['vip'] } },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: { type: 'tags', contactId: 'ct-001', data: { tags: ['vip'] } },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { pushed: boolean }).pushed).toBe(true);
   });
@@ -325,16 +363,23 @@ describe('POST /v1/integrations/ghl/push', () => {
   it('returns 400 when type or contactId missing', async () => {
     const res = await exec(route(), authReq({ body: { type: 'tags' } }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_PAYLOAD');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_PAYLOAD',
+    );
   });
 
   it('returns 400 when GHL not connected', async () => {
     mockDisconnected();
-    const res = await exec(route(), authReq({
-      body: { type: 'call-outcome', contactId: 'ct-001' },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: { type: 'call-outcome', contactId: 'ct-001' },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONNECTED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONNECTED',
+    );
   });
 
   it('returns 401 without auth', async () => {
@@ -367,7 +412,9 @@ describe('GET /v1/integrations/ghl/pipelines', () => {
     mockDisconnected();
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONNECTED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONNECTED',
+    );
   });
 
   it('returns 401 without auth', async () => {
@@ -381,16 +428,21 @@ describe('GET /v1/integrations/ghl/pipelines', () => {
 // ===========================================================
 
 describe('PUT /v1/integrations/ghl/pipelines/mappings', () => {
-  const route = () => findRoute('PUT', '/v1/integrations/ghl/pipelines/mappings');
+  const route = () =>
+    findRoute('PUT', '/v1/integrations/ghl/pipelines/mappings');
 
   beforeEach(() => mockConnected());
 
   it('updates pipeline mappings', async () => {
     mockPipeline.updateMappings.mockResolvedValue(undefined);
-    const mappings = [{
-      ghlPipelineId: 'gp-1', ghlStageId: 'gs-1',
-      twentyPipelineId: 'tp-1', twentyStageId: 'ts-1',
-    }];
+    const mappings = [
+      {
+        ghlPipelineId: 'gp-1',
+        ghlStageId: 'gs-1',
+        twentyPipelineId: 'tp-1',
+        twentyStageId: 'ts-1',
+      },
+    ];
     const res = await exec(route(), authReq({ body: { mappings } }));
     expect(res.statusCode).toBe(200);
     expect((res.body as { updated: boolean }).updated).toBe(true);
@@ -400,26 +452,39 @@ describe('PUT /v1/integrations/ghl/pipelines/mappings', () => {
   it('returns 400 when mappings not an array', async () => {
     const res = await exec(route(), authReq({ body: { mappings: 'bad' } }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_PAYLOAD');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_PAYLOAD',
+    );
   });
 
   it('returns 400 when mapping fields missing', async () => {
-    const res = await exec(route(), authReq({
-      body: { mappings: [{ ghlPipelineId: 'gp-1' }] },
-    }));
+    const res = await exec(
+      route(),
+      authReq({
+        body: { mappings: [{ ghlPipelineId: 'gp-1' }] },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { message: string } }).error.message).toContain('ghlStageId');
+    expect(
+      (res.body as { error: { message: string } }).error.message,
+    ).toContain('ghlStageId');
   });
 
   it('returns 400 when GHL not connected', async () => {
     mockDisconnected();
-    const mappings = [{
-      ghlPipelineId: 'gp-1', ghlStageId: 'gs-1',
-      twentyPipelineId: 'tp-1', twentyStageId: 'ts-1',
-    }];
+    const mappings = [
+      {
+        ghlPipelineId: 'gp-1',
+        ghlStageId: 'gs-1',
+        twentyPipelineId: 'tp-1',
+        twentyStageId: 'ts-1',
+      },
+    ];
     const res = await exec(route(), authReq({ body: { mappings } }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONNECTED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONNECTED',
+    );
   });
 });
 
@@ -433,7 +498,11 @@ describe('POST /v1/integrations/ghl/pipelines/sync', () => {
   beforeEach(() => mockConnected());
 
   it('syncs opportunities without conflict check', async () => {
-    mockPipeline.syncOpportunities.mockResolvedValue({ synced: 5, created: 3, updated: 2 });
+    mockPipeline.syncOpportunities.mockResolvedValue({
+      synced: 5,
+      created: 3,
+      updated: 2,
+    });
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(200);
     expect((res.body as { synced: number }).synced).toBe(5);
@@ -443,7 +512,10 @@ describe('POST /v1/integrations/ghl/pipelines/sync', () => {
   it('syncs with conflict detection', async () => {
     mockPipeline.detectConflicts.mockResolvedValue([{ id: 'c-1' }]);
     mockPipeline.syncOpportunities.mockResolvedValue({ synced: 2 });
-    const res = await exec(route(), authReq({ body: { checkConflicts: true } }));
+    const res = await exec(
+      route(),
+      authReq({ body: { checkConflicts: true } }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { conflicts: unknown[] }).conflicts).toHaveLength(1);
   });
@@ -452,7 +524,9 @@ describe('POST /v1/integrations/ghl/pipelines/sync', () => {
     mockDisconnected();
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONNECTED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONNECTED',
+    );
   });
 
   it('returns 401 without auth', async () => {
@@ -479,18 +553,27 @@ describe('POST /v1/integrations/ghl/import', () => {
     mockSync.importContacts.mockResolvedValue({ imported: 100, skipped: 0 });
     mockSync.updateSyncLog.mockResolvedValue(undefined);
 
-    const res = await exec(route(), authReq({ body: { conflictResolution: 'merge' } }));
+    const res = await exec(
+      route(),
+      authReq({ body: { conflictResolution: 'merge' } }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { success: boolean }).success).toBe(true);
     expect((res.body as { imported: number }).imported).toBe(100);
-    expect(mockSync.createSyncLog).toHaveBeenCalledWith('ws-test-001', 'import', 0);
+    expect(mockSync.createSyncLog).toHaveBeenCalledWith(
+      'ws-test-001',
+      'import',
+      0,
+    );
   });
 
   it('returns 400 when GHL not connected', async () => {
     mockDisconnected();
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('GHL_NOT_CONNECTED');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'GHL_NOT_CONNECTED',
+    );
   });
 
   it('logs failure on import error', async () => {
@@ -501,7 +584,10 @@ describe('POST /v1/integrations/ghl/import', () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(500);
     expect(mockSync.updateSyncLog).toHaveBeenCalledWith(
-      'log-002', 'failed', {}, 'GHL API down',
+      'log-002',
+      'failed',
+      {},
+      'GHL API down',
     );
   });
 
@@ -530,7 +616,11 @@ describe('POST /v1/integrations/ghl/sync', () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(200);
     expect((res.body as { success: boolean }).success).toBe(true);
-    expect(mockSync.createSyncLog).toHaveBeenCalledWith('ws-test-001', 'incremental', 0);
+    expect(mockSync.createSyncLog).toHaveBeenCalledWith(
+      'ws-test-001',
+      'incremental',
+      0,
+    );
   });
 
   it('returns 400 when GHL not connected', async () => {
@@ -547,7 +637,10 @@ describe('POST /v1/integrations/ghl/sync', () => {
     const res = await exec(route(), authReq({ body: {} }));
     expect(res.statusCode).toBe(500);
     expect(mockSync.updateSyncLog).toHaveBeenCalledWith(
-      'log-004', 'failed', {}, 'timeout',
+      'log-004',
+      'failed',
+      {},
+      'timeout',
     );
   });
 });
@@ -570,7 +663,10 @@ describe('GET /v1/integrations/ghl/sync/log', () => {
 
   it('respects limit and offset query params', async () => {
     mockSync.getSyncLogs.mockResolvedValue([]);
-    const res = await exec(route(), authReq({ query: { limit: '10', offset: '20' } }));
+    const res = await exec(
+      route(),
+      authReq({ query: { limit: '10', offset: '20' } }),
+    );
     expect(res.statusCode).toBe(200);
     expect(mockSync.getSyncLogs).toHaveBeenCalledWith('ws-test-001', 10, 20);
   });
@@ -596,39 +692,63 @@ describe('POST /v1/webhooks/ghl', () => {
   const route = () => findRoute('POST', '/v1/webhooks/ghl');
 
   it('processes valid webhook payload', async () => {
-    const res = await exec(route(), createMockRequest({
-      body: { type: 'ContactCreate', locationId: 'loc-001', body: { id: 'c1' } },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        body: {
+          type: 'ContactCreate',
+          locationId: 'loc-001',
+          body: { id: 'c1' },
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
     expect((res.body as { received: boolean }).received).toBe(true);
     expect(mockWebhook.handleWebhook).toHaveBeenCalled();
   });
 
   it('returns 400 when type or locationId missing', async () => {
-    const res = await exec(route(), createMockRequest({
-      body: { body: { id: 'c1' } },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        body: { body: { id: 'c1' } },
+      }),
+    );
     expect(res.statusCode).toBe(400);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_PAYLOAD');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_PAYLOAD',
+    );
   });
 
   it('returns 401 when signature verification fails', async () => {
     process.env.GHL_WEBHOOK_SECRET = 'webhook-secret';
     mockVerifySignature.mockReturnValueOnce(false);
-    const res = await exec(route(), createMockRequest({
-      headers: { 'x-ghl-signature': 'bad-sig' },
-      body: { type: 'ContactCreate', locationId: 'loc-001', body: {} },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        headers: { 'x-ghl-signature': 'bad-sig' },
+        body: { type: 'ContactCreate', locationId: 'loc-001', body: {} },
+      }),
+    );
     expect(res.statusCode).toBe(401);
-    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_SIGNATURE');
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'INVALID_SIGNATURE',
+    );
     delete process.env.GHL_WEBHOOK_SECRET;
   });
 
   it('skips signature check when no webhook secret configured', async () => {
     delete process.env.GHL_WEBHOOK_SECRET;
-    const res = await exec(route(), createMockRequest({
-      body: { type: 'ContactUpdate', locationId: 'loc-001', body: { id: 'c2' } },
-    }));
+    const res = await exec(
+      route(),
+      createMockRequest({
+        body: {
+          type: 'ContactUpdate',
+          locationId: 'loc-001',
+          body: { id: 'c2' },
+        },
+      }),
+    );
     expect(res.statusCode).toBe(200);
   });
 });

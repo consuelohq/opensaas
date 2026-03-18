@@ -321,16 +321,24 @@
             "user-guide/dialer/overview",
             "user-guide/dialer/making-calls",
             "user-guide/dialer/transfers",
-            "user-guide/dialer/hold-mute",
+            "user-guide/dialer/hold-mute"
+          ]
+        },
+        {
+          "key": "discordBot",
+          "label": "Discord Bot",
+          "icon": "discord",
+          "pages": [
+            "user-guide/discord-bot/overview",
+            "user-guide/discord-bot/getting-started",
             {
-              "key": "dialerCapabilities",
+              "key": "discordBotCapabilities",
               "label": "Capabilities",
               "pages": [
-                "user-guide/dialer/capabilities/discord-bot",
-                "user-guide/dialer/capabilities/queue-management",
-                "user-guide/dialer/capabilities/call-controls",
-                "user-guide/dialer/capabilities/contact-search",
-                "user-guide/dialer/capabilities/team-collaboration"
+                "user-guide/discord-bot/capabilities/queue-management",
+                "user-guide/discord-bot/capabilities/call-controls",
+                "user-guide/discord-bot/capabilities/contact-search",
+                "user-guide/discord-bot/capabilities/team-collaboration"
               ]
             },
             {

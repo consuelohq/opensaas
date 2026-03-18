@@ -3,6 +3,7 @@
 // Description: The navigation bar data for the website.
 export interface Logo {
 	src: string
+	darkSrc?: string
 	alt: string
 	text: string
 }
@@ -34,8 +35,9 @@ export interface NavData {
 export const navigationBarData: NavData = {
 	logo: {
 		src: '/logo.svg',
+		darkSrc: '/logo-dark.svg',
 		alt: 'Consuelo',
-		text: 'Consuelo'
+		text: 'Consuelo.'
 	},
 	navItems: [
 		{ name: 'Home', link: '/' },
@@ -53,5 +55,5 @@ export const navigationBarData: NavData = {
 		},
 		{ name: 'Contact', link: '/contact' }
 	],
-	navActions: [{ name: 'Get Started', link: 'https://app.consuelohq.com', style: 'primary', size: 'lg' }]
+	navActions: [{ name: 'Try it now', link: 'https://app.consuelohq.com', style: 'primary', size: 'lg' }]
 }

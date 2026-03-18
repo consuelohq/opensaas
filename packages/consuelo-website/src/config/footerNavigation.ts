@@ -3,6 +3,7 @@
 // Description: The footer navigation data for the website.
 export interface Logo {
 	src: string
+	darkSrc?: string
 	alt: string
 	text: string
 }
@@ -37,9 +38,10 @@ export const footerNavigationData: FooterData = {
 	footerAbout: {
 		title: 'Consuelo',
 		aboutText:
-			'Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics — all in one platform.',
+			'The $20/seat sales platform for insurance teams. Power dialer, AI Whisper, CRM, and analytics in one place.',
 		logo: {
 			src: '/logo.svg',
+			darkSrc: '/logo-dark.svg',
 			alt: 'Consuelo',
 			text: 'Consuelo'
 		}
@@ -66,7 +68,8 @@ export const footerNavigationData: FooterData = {
 			category: 'Company',
 			subCategories: [
 				{ subCategory: 'Contact', subCategoryLink: '/contact' },
-				{ subCategory: 'Terms', subCategoryLink: '/terms' }
+				{ subCategory: 'Terms', subCategoryLink: '/terms' },
+				{ subCategory: 'Privacy Policy', subCategoryLink: '/privacy' }
 			]
 		}
 	],

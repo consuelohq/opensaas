@@ -346,6 +346,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "user-guide/dialer/overview",
+                  "user-guide/dialer/making-calls",
+                  "user-guide/dialer/transfers",
+                  "user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "user-guide/discord-bot/overview",
+                  "user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/discord-bot/capabilities/queue-management",
+                      "user-guide/discord-bot/capabilities/call-controls",
+                      "user-guide/discord-bot/capabilities/contact-search",
+                      "user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Settings",
                 "icon": "gear",
                 "pages": [
@@ -376,9 +403,7 @@
             "groups": [
               {
                 "group": "Developers",
-                "pages": [
-                  "developers/introduction"
-                ]
+                "pages": ["developers/introduction"]
               },
               {
                 "group": "Extend",
@@ -812,6 +837,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/fr/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/fr/user-guide/dialer/overview",
+                  "l/fr/user-guide/dialer/making-calls",
+                  "l/fr/user-guide/dialer/transfers",
+                  "l/fr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/fr/user-guide/discord-bot/overview",
+                  "l/fr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -1288,6 +1340,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ar/user-guide/dialer/overview",
+                  "l/ar/user-guide/dialer/making-calls",
+                  "l/ar/user-guide/dialer/transfers",
+                  "l/ar/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ar/user-guide/discord-bot/overview",
+                  "l/ar/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "\\ا\\ل\\إ\\ع\\د\\ا\\د\\ا\\ت",
                 "icon": "gear",
                 "pages": [
@@ -1754,6 +1833,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/cs/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/cs/user-guide/dialer/overview",
+                  "l/cs/user-guide/dialer/making-calls",
+                  "l/cs/user-guide/dialer/transfers",
+                  "l/cs/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/cs/user-guide/discord-bot/overview",
+                  "l/cs/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
+                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
+                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
+                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -2230,6 +2336,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/de/user-guide/dialer/overview",
+                  "l/de/user-guide/dialer/making-calls",
+                  "l/de/user-guide/dialer/transfers",
+                  "l/de/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/de/user-guide/discord-bot/overview",
+                  "l/de/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/de/user-guide/discord-bot/capabilities/queue-management",
+                      "l/de/user-guide/discord-bot/capabilities/call-controls",
+                      "l/de/user-guide/discord-bot/capabilities/contact-search",
+                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Einstellungen",
                 "icon": "gear",
                 "pages": [
@@ -2696,6 +2829,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/es/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/es/user-guide/dialer/overview",
+                  "l/es/user-guide/dialer/making-calls",
+                  "l/es/user-guide/dialer/transfers",
+                  "l/es/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/es/user-guide/discord-bot/overview",
+                  "l/es/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/es/user-guide/discord-bot/capabilities/queue-management",
+                      "l/es/user-guide/discord-bot/capabilities/call-controls",
+                      "l/es/user-guide/discord-bot/capabilities/contact-search",
+                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -3172,6 +3332,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/it/user-guide/dialer/overview",
+                  "l/it/user-guide/dialer/making-calls",
+                  "l/it/user-guide/dialer/transfers",
+                  "l/it/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/it/user-guide/discord-bot/overview",
+                  "l/it/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/it/user-guide/discord-bot/capabilities/queue-management",
+                      "l/it/user-guide/discord-bot/capabilities/call-controls",
+                      "l/it/user-guide/discord-bot/capabilities/contact-search",
+                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Impostazioni",
                 "icon": "gear",
                 "pages": [
@@ -3638,6 +3825,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/ja/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ja/user-guide/dialer/overview",
+                  "l/ja/user-guide/dialer/making-calls",
+                  "l/ja/user-guide/dialer/transfers",
+                  "l/ja/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ja/user-guide/discord-bot/overview",
+                  "l/ja/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -4114,6 +4328,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ko/user-guide/dialer/overview",
+                  "l/ko/user-guide/dialer/making-calls",
+                  "l/ko/user-guide/dialer/transfers",
+                  "l/ko/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ko/user-guide/discord-bot/overview",
+                  "l/ko/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "설정",
                 "icon": "gear",
                 "pages": [
@@ -4580,6 +4821,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/pt/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/pt/user-guide/dialer/overview",
+                  "l/pt/user-guide/dialer/making-calls",
+                  "l/pt/user-guide/dialer/transfers",
+                  "l/pt/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/pt/user-guide/discord-bot/overview",
+                  "l/pt/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
+                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
+                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
+                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -5056,6 +5324,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ro/user-guide/dialer/overview",
+                  "l/ro/user-guide/dialer/making-calls",
+                  "l/ro/user-guide/dialer/transfers",
+                  "l/ro/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ro/user-guide/discord-bot/overview",
+                  "l/ro/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Setări",
                 "icon": "gear",
                 "pages": [
@@ -5522,6 +5817,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/ru/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ru/user-guide/dialer/overview",
+                  "l/ru/user-guide/dialer/making-calls",
+                  "l/ru/user-guide/dialer/transfers",
+                  "l/ru/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ru/user-guide/discord-bot/overview",
+                  "l/ru/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -5998,6 +6320,33 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/tr/user-guide/dialer/overview",
+                  "l/tr/user-guide/dialer/making-calls",
+                  "l/tr/user-guide/dialer/transfers",
+                  "l/tr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/tr/user-guide/discord-bot/overview",
+                  "l/tr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Ayarlar",
                 "icon": "gear",
                 "pages": [
@@ -6464,6 +6813,33 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/zh/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/zh/user-guide/dialer/overview",
+                  "l/zh/user-guide/dialer/making-calls",
+                  "l/zh/user-guide/dialer/transfers",
+                  "l/zh/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/zh/user-guide/discord-bot/overview",
+                  "l/zh/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
+                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
+                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
+                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]

@@ -1,0 +1,315 @@
+---
+// Components
+// - Layout
+import Layout from '../layouts/Layout.astro'
+// - UI
+import SidebarContent from '../components/blocks/basic/StickySidebar.astro'
+import Hero from '../components/blocks/hero/PageHeader.astro'
+
+// Content
+// - SEO
+const SEO = {
+	title: 'Consuelo | Privacy Policy',
+	description:
+		'Privacy policy for Consuelo — how we collect, use, and protect your data on our open-source sales infrastructure platform.'
+}
+// - Page Header
+const header = {
+	title: 'Privacy Policy',
+	text: 'Last updated: March 2026. Your privacy matters to us.'
+}
+---
+
+<Layout title={SEO.title} description={SEO.description}>
+	<Hero title={header.title} text={header.text} />
+	<SidebarContent>
+		<div slot="sidebar">
+			<h3>Introduction</h3>
+			<p>
+				Consuelo ("we", "us", "our") is committed to protecting your privacy. This policy explains
+				what data we collect, how we use it, and your rights regarding that data.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Who We Are</h4>
+			<p>
+				Consuelo operates the website at <strong>consuelohq.com</strong> and provides an open-source
+				sales infrastructure platform including power dialer, AI CRM, real-time coaching, and analytics
+				for insurance sales teams. Our registered office is located at [registered address].
+			</p>
+			<p>
+				For the purposes of data protection law, we are the data controller of your personal data.
+				Our Data Protection Officer can be contacted at <strong>support@consuelohq.com</strong>.
+			</p>
+
+			<h4>Scope</h4>
+			<p>
+				This privacy policy applies to visitors of consuelohq.com and users of our services. It does
+				not apply to third-party websites that may be linked from our site. We encourage you to read
+				the privacy policies of any third-party services you use.
+			</p>
+		</div>
+	</SidebarContent>
+	<SidebarContent classes="bg-neutral-50 dark:bg-neutral-900">
+		<div slot="sidebar">
+			<h3>Data We Collect</h3>
+			<p>
+				We collect data automatically through our website using analytics tools. This section
+				explains what we track and why.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Analytics Provider</h4>
+			<p>
+				We use <strong>PostHog</strong> (posthog.com) as our analytics platform. PostHog is a
+				privacy-focused analytics provider that processes data on our behalf. You can learn more
+				about PostHog's data practices at <strong>posthog.com/privacy</strong>.
+			</p>
+
+			<h4>What We Track</h4>
+			<p>When you visit our website, we automatically collect:</p>
+			<ul>
+				<li><strong>Page views:</strong> URLs you visit, including the full path and query parameters</li>
+				<li><strong>Page leaves:</strong> when you navigate away from a page</li>
+				<li><strong>Clicks:</strong> elements you click on (autocaptured)</li>
+				<li><strong>Form submissions:</strong> forms you submit (autocaptured)</li>
+				<li><strong>Scroll depth:</strong> how far you scroll down a page (25%, 50%, 75%, 100%)</li>
+				<li><strong>Time on page:</strong> how long you spend on each page</li>
+				<li><strong>Session recordings:</strong> recordings of your interactions on our website</li>
+				<li><strong>Heatmaps:</strong> aggregated visual representations of user behavior</li>
+				<li><strong>Outbound link clicks:</strong> links you click that navigate away from our site</li>
+			</ul>
+
+			<h4>Session Recordings</h4>
+			<p>
+				We record user sessions to understand how people interact with our website and improve
+				the user experience. Session recordings capture:
+			</p>
+			<ul>
+				<li>Mouse movements and clicks</li>
+				<li>Scrolling behavior</li>
+				<li>Page navigation</li>
+				<li><strong>Console logs</strong> (for debugging purposes)</li>
+			</ul>
+			<p>
+				Session recordings are processed by PostHog and are used solely to improve our product
+				and website experience.
+			</p>
+
+			<h4>Cross-Domain Tracking</h4>
+			<p>
+				We enable cross-subdomain tracking, which means your session data persists across
+				<code>*.consuelohq.com</code> subdomains. This allows us to maintain a consistent
+				understanding of your journey across our platform.
+			</p>
+
+			<h4>Local Storage & Cookies</h4>
+			<p>
+				We use <strong>localStorage</strong> and <strong>cookies</strong> to persist your
+				preferences and session data. This includes:
+			</p>
+			<ul>
+				<li>Cookies for tracking consent status</li>
+				<li>LocalStorage for session continuity</li>
+				<li>Cookies for cross-page analytics</li>
+			</ul>
+		</div>
+	</SidebarContent>
+	<SidebarContent>
+		<div slot="sidebar">
+			<h3>How We Use Your Data</h3>
+			<p>
+				Your data helps us improve our product and provide a better experience for all users.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Purpose of Processing</h4>
+			<p>We use the data collected to:</p>
+			<ul>
+				<li>Understand how visitors interact with our website</li>
+				<li>Identify areas for improvement in our product and user experience</li>
+				<li>Analyze traffic patterns and user behavior</li>
+				<li>Debug technical issues when errors occur</li>
+				<li>Measure the effectiveness of our content and features</li>
+				<li>Make data-driven decisions about product development</li>
+			</ul>
+
+			<h4>Legal Basis for Processing</h4>
+			<p>
+				Under GDPR, we rely on <strong>consent</strong> as our legal basis for processing your
+				personal data through our analytics tools. You can withdraw your consent at any time
+				by declining cookies or contacting us.
+			</p>
+			<p>
+				Under CCPA, we collect personal information for the business purposes described above.
+				You have the right to know what information we collect, request deletion, and opt out
+				of the sale of personal information (we do not sell personal information).
+			</p>
+
+			<h4>Data Retention</h4>
+			<p>
+				We retain analytics data for <strong>12 months</strong>. Session recordings are
+				retained for <strong>90 days</strong>. After these periods, data is automatically
+				deleted from our systems.
+			</p>
+		</div>
+	</SidebarContent>
+	<SidebarContent classes="bg-neutral-50 dark:bg-neutral-900">
+		<div slot="sidebar">
+			<h3>Your Rights</h3>
+			<p>
+				You have control over your data. This section explains your rights and how to exercise them.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Opting Out</h4>
+			<p>
+				<strong>You can opt out of tracking at any time.</strong> When you first visit our website,
+				you will see a cookie banner. Clicking <strong>"Decline"</strong> will prevent us from
+				loading analytics and tracking your behavior. If you previously accepted cookies, you can
+				clear your browser's cookies and localStorage to reset your consent.
+			</p>
+
+			<h4>GDPR Rights (EU/EEA Users)</h4>
+			<p>If you are in the European Union or European Economic Area, you have the right to:</p>
+			<ul>
+				<li><strong>Access:</strong> Request a copy of your personal data</li>
+				<li><strong>Rectification:</strong> Correct inaccurate personal data</li>
+				<li><strong>Erasure:</strong> Request deletion of your personal data</li>
+				<li><strong>Restrict processing:</strong> Limit how we use your data</li>
+				<li><strong>Data portability:</strong> Receive your data in a portable format</li>
+				<li><strong>Object:</strong> Object to processing of your personal data</li>
+				<li><strong>Withdraw consent:</strong> Withdraw consent at any time</li>
+			</ul>
+			<p>
+				To exercise these rights, contact us at <strong>support@consuelohq.com</strong>. We will
+				respond within 30 days of receiving your request.
+			</p>
+
+			<h4>CCPA Rights (California Users)</h4>
+			<p>If you are a California resident, you have the right to:</p>
+			<ul>
+				<li><strong>Know:</strong> Request disclosure of what personal information we collect</li>
+				<li><strong>Delete:</strong> Request deletion of your personal information</li>
+				<li><strong>Opt-out:</strong> Opt out of the sale of personal information (we do not sell)</li>
+				<li><strong>Non-discrimination:</strong> Not be discriminated against for exercising your rights</li>
+			</ul>
+			<p>
+				We are required to disclose, at or before collection, the categories of personal
+				information we collect and how we use it. We do not sell or share personal information
+				for cross-context behavioral advertising.
+			</p>
+
+			<h4>Do Not Track</h4>
+			<p>
+				We currently do not respond to Do Not Track signals in your browser settings. If you
+				wish to opt out of tracking, please use the cookie banner decline option or contact us.
+			</p>
+		</div>
+	</SidebarContent>
+	<SidebarContent>
+		<div slot="sidebar">
+			<h3>Data Sharing</h3>
+			<p>
+				Your data may be shared with trusted third parties under specific circumstances.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Third-Party Processors</h4>
+			<p>We share your data with:</p>
+			<ul>
+				<li>
+					<strong>PostHog</strong> — our analytics provider, processes data on our behalf under
+					a data processing agreement. PostHog does not sell your data or use it for their own
+					purposes.
+				</li>
+			</ul>
+
+			<h4>Legal Requirements</h4>
+			<p>
+				We may disclose your data if required by law, regulation, or legal process. This includes
+				responding to valid requests from public authorities, including for national security or
+				law enforcement purposes.
+			</p>
+
+			<h4>Business Transfers</h4>
+			<p>
+				In the event of a merger, acquisition, or sale of assets, your data may be transferred
+				as part of that transaction. We will notify you of any such change in ownership.
+			</p>
+
+			<h4>We Do Not Sell Your Data</h4>
+			<p>
+				We do not sell, rent, or trade your personal information to third parties for their
+				marketing purposes. Your data is used solely to improve our product and user experience.
+			</p>
+		</div>
+	</SidebarContent>
+	<SidebarContent classes="bg-neutral-50 dark:bg-neutral-900">
+		<div slot="sidebar">
+			<h3>Security & International Transfers</h3>
+			<p>
+				We take reasonable steps to protect your data, but no system is 100% secure.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Data Security</h4>
+			<p>
+				We implement appropriate technical and organizational measures to protect your personal
+				data against unauthorized access, alteration, disclosure, or destruction. This includes:
+			</p>
+			<ul>
+				<li>Encryption of data in transit (HTTPS)</li>
+				<li>Access controls and authentication</li>
+				<li>Regular security reviews</li>
+			</ul>
+			<p>
+				However, no method of transmission over the internet is 100% secure. We cannot guarantee
+				absolute security of your data.
+			</p>
+
+			<h4>International Data Transfers</h4>
+			<p>
+				PostHog processes data in the United States. If you are in the EU/EEA, we rely on
+				<strong>Standard Contractual Clauses</strong> (SCCs) as approved by the European Commission
+				to ensure adequate protection for cross-border transfers. PostHog has signed these clauses
+				as part of their data processing agreement.
+			</p>
+		</div>
+	</SidebarContent>
+	<SidebarContent>
+		<div slot="sidebar">
+			<h3>Contact & Changes</h3>
+			<p>
+				Questions about this policy? We're here to help.
+			</p>
+		</div>
+		<div class="basic-text">
+			<h4>Contact Us</h4>
+			<p>
+				For questions about this privacy policy, to exercise your rights, or to report a
+				privacy concern, please contact us:
+			</p>
+			<p>
+				<strong>Email:</strong> support@consuelohq.com<br />
+			</p>
+
+			<h4>Changes to This Policy</h4>
+			<p>
+				We may update this privacy policy from time to time. When we make material changes,
+				we will notify you by posting the updated policy on this page and updating the
+				"Last updated" date. Continued use of our services after changes constitutes acceptance
+				of the updated policy.
+			</p>
+			<p>
+				We encourage you to review this policy periodically to stay informed about how we
+				protect your data.
+			</p>
+
+			<h4>Effective Date</h4>
+			<p>
+				This privacy policy is effective as of <strong>March 2026</strong>.
+			</p>
+		</div>
+	</SidebarContent>
+</Layout>
