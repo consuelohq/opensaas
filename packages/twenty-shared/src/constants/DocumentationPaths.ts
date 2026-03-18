@@ -178,22 +178,23 @@ export const DOCUMENTATION_PATHS = {
   USER_GUIDE_DATA_MODEL_HOW_TOS_DATA_MODEL_FAQ:
     '/user-guide/data-model/how-tos/data-model-faq',
   USER_GUIDE_DATA_MODEL_OVERVIEW: '/user-guide/data-model/overview',
-  USER_GUIDE_DIALER_CAPABILITIES_CALL_CONTROLS:
-    '/user-guide/dialer/capabilities/call-controls',
-  USER_GUIDE_DIALER_CAPABILITIES_CONTACT_SEARCH:
-    '/user-guide/dialer/capabilities/contact-search',
-  USER_GUIDE_DIALER_CAPABILITIES_DISCORD_BOT:
-    '/user-guide/dialer/capabilities/discord-bot',
-  USER_GUIDE_DIALER_CAPABILITIES_QUEUE_MANAGEMENT:
-    '/user-guide/dialer/capabilities/queue-management',
-  USER_GUIDE_DIALER_CAPABILITIES_TEAM_COLLABORATION:
-    '/user-guide/dialer/capabilities/team-collaboration',
   USER_GUIDE_DIALER_HOLD_MUTE: '/user-guide/dialer/hold-mute',
   USER_GUIDE_DIALER_HOW_TOS_DISCORD_SETUP:
     '/user-guide/dialer/how-tos/discord-setup',
   USER_GUIDE_DIALER_MAKING_CALLS: '/user-guide/dialer/making-calls',
   USER_GUIDE_DIALER_OVERVIEW: '/user-guide/dialer/overview',
   USER_GUIDE_DIALER_TRANSFERS: '/user-guide/dialer/transfers',
+  USER_GUIDE_DISCORD_BOT_CAPABILITIES_CALL_CONTROLS:
+    '/user-guide/discord-bot/capabilities/call-controls',
+  USER_GUIDE_DISCORD_BOT_CAPABILITIES_CONTACT_SEARCH:
+    '/user-guide/discord-bot/capabilities/contact-search',
+  USER_GUIDE_DISCORD_BOT_CAPABILITIES_QUEUE_MANAGEMENT:
+    '/user-guide/discord-bot/capabilities/queue-management',
+  USER_GUIDE_DISCORD_BOT_CAPABILITIES_TEAM_COLLABORATION:
+    '/user-guide/discord-bot/capabilities/team-collaboration',
+  USER_GUIDE_DISCORD_BOT_GETTING_STARTED:
+    '/user-guide/discord-bot/getting-started',
+  USER_GUIDE_DISCORD_BOT_OVERVIEW: '/user-guide/discord-bot/overview',
   USER_GUIDE_GETTING_STARTED_CAPABILITIES_GLOSSARY:
     '/user-guide/getting-started/capabilities/glossary',
   USER_GUIDE_GETTING_STARTED_CAPABILITIES_IMPLEMENTATION_SERVICES:

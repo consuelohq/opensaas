@@ -72,13 +72,13 @@
             }
           }
         },
-        "computer": {
-          "label": "Computer",
+        "ai": {
+          "label": "AI",
           "groups": {
-            "computerCapabilities": {
+            "aiCapabilities": {
               "label": "Capabilities"
             },
-            "computerHowTos": {
+            "aiHowTos": {
               "label": "How-Tos"
             }
           }
@@ -128,9 +128,12 @@
           }
         },
         "dialer": {
-          "label": "Dialer",
+          "label": "Dialer"
+        },
+        "discordBot": {
+          "label": "Discord Bot",
           "groups": {
-            "dialerCapabilities": {
+            "discordBotCapabilities": {
               "label": "Capabilities"
             },
             "dialerHowTos": {
