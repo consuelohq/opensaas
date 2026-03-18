@@ -221,9 +221,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -313,9 +311,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -326,21 +322,22 @@
                   "user-guide/dialer/overview",
                   "user-guide/dialer/making-calls",
                   "user-guide/dialer/transfers",
-                  "user-guide/dialer/hold-mute",
+                  "user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "user-guide/discord-bot/overview",
+                  "user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "user-guide/dialer/capabilities/discord-bot",
-                      "user-guide/dialer/capabilities/queue-management",
-                      "user-guide/dialer/capabilities/call-controls",
-                      "user-guide/dialer/capabilities/contact-search",
-                      "user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/dialer/how-tos/discord-setup"
+                      "user-guide/discord-bot/capabilities/queue-management",
+                      "user-guide/discord-bot/capabilities/call-controls",
+                      "user-guide/discord-bot/capabilities/contact-search",
+                      "user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -363,9 +360,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -376,9 +371,7 @@
             "groups": [
               {
                 "group": "Developers",
-                "pages": [
-                  "developers/introduction"
-                ]
+                "pages": ["developers/introduction"]
               },
               {
                 "group": "Extend",
@@ -443,9 +436,7 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": [
-                                  "twenty-ui/progress-bar"
-                                ]
+                                "pages": ["twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Input",
@@ -692,9 +683,7 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/fr/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -784,9 +773,7 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/fr/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -797,21 +784,22 @@
                   "l/fr/user-guide/dialer/overview",
                   "l/fr/user-guide/dialer/making-calls",
                   "l/fr/user-guide/dialer/transfers",
-                  "l/fr/user-guide/dialer/hold-mute",
+                  "l/fr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/fr/user-guide/discord-bot/overview",
+                  "l/fr/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/fr/user-guide/dialer/capabilities/discord-bot",
-                      "l/fr/user-guide/dialer/capabilities/queue-management",
-                      "l/fr/user-guide/dialer/capabilities/call-controls",
-                      "l/fr/user-guide/dialer/capabilities/contact-search",
-                      "l/fr/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/fr/user-guide/dialer/how-tos/discord-setup"
+                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -834,9 +822,7 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/fr/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -847,9 +833,7 @@
             "groups": [
               {
                 "group": "Développeurs",
-                "pages": [
-                  "l/fr/developers/introduction"
-                ]
+                "pages": ["l/fr/developers/introduction"]
               },
               {
                 "group": "Étendre",
@@ -914,9 +898,7 @@
                               },
                               {
                                 "group": "Retour d'information",
-                                "pages": [
-                                  "l/fr/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/fr/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrée ",
@@ -1163,9 +1145,7 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": [
-                      "l/ar/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/ar/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -1255,9 +1235,7 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": [
-                      "l/ar/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/ar/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -1268,21 +1246,22 @@
                   "l/ar/user-guide/dialer/overview",
                   "l/ar/user-guide/dialer/making-calls",
                   "l/ar/user-guide/dialer/transfers",
-                  "l/ar/user-guide/dialer/hold-mute",
+                  "l/ar/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ar/user-guide/discord-bot/overview",
+                  "l/ar/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ar/user-guide/dialer/capabilities/discord-bot",
-                      "l/ar/user-guide/dialer/capabilities/queue-management",
-                      "l/ar/user-guide/dialer/capabilities/call-controls",
-                      "l/ar/user-guide/dialer/capabilities/contact-search",
-                      "l/ar/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ar/user-guide/dialer/how-tos/discord-setup"
+                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -1305,9 +1284,7 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": [
-                      "l/ar/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/ar/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -1318,9 +1295,7 @@
             "groups": [
               {
                 "group": "المطورون",
-                "pages": [
-                  "l/ar/developers/introduction"
-                ]
+                "pages": ["l/ar/developers/introduction"]
               },
               {
                 "group": "التوسيع",
@@ -1385,9 +1360,7 @@
                               },
                               {
                                 "group": "التغذية الراجعة",
-                                "pages": [
-                                  "l/ar/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/ar/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "إدخال",
@@ -1634,9 +1607,7 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": [
-                      "l/cs/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/cs/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -1726,9 +1697,7 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": [
-                      "l/cs/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/cs/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -1739,21 +1708,22 @@
                   "l/cs/user-guide/dialer/overview",
                   "l/cs/user-guide/dialer/making-calls",
                   "l/cs/user-guide/dialer/transfers",
-                  "l/cs/user-guide/dialer/hold-mute",
+                  "l/cs/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/cs/user-guide/discord-bot/overview",
+                  "l/cs/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/cs/user-guide/dialer/capabilities/discord-bot",
-                      "l/cs/user-guide/dialer/capabilities/queue-management",
-                      "l/cs/user-guide/dialer/capabilities/call-controls",
-                      "l/cs/user-guide/dialer/capabilities/contact-search",
-                      "l/cs/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/cs/user-guide/dialer/how-tos/discord-setup"
+                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
+                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
+                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
+                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -1776,9 +1746,7 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": [
-                      "l/cs/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/cs/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -1789,9 +1757,7 @@
             "groups": [
               {
                 "group": "Vývojáři",
-                "pages": [
-                  "l/cs/developers/introduction"
-                ]
+                "pages": ["l/cs/developers/introduction"]
               },
               {
                 "group": "Rozšíření",
@@ -1856,9 +1822,7 @@
                               },
                               {
                                 "group": "Zpětná vazba",
-                                "pages": [
-                                  "l/cs/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/cs/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Vstup",
@@ -2105,9 +2069,7 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": [
-                      "l/de/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/de/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -2197,9 +2159,7 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": [
-                      "l/de/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/de/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -2210,21 +2170,22 @@
                   "l/de/user-guide/dialer/overview",
                   "l/de/user-guide/dialer/making-calls",
                   "l/de/user-guide/dialer/transfers",
-                  "l/de/user-guide/dialer/hold-mute",
+                  "l/de/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/de/user-guide/discord-bot/overview",
+                  "l/de/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/de/user-guide/dialer/capabilities/discord-bot",
-                      "l/de/user-guide/dialer/capabilities/queue-management",
-                      "l/de/user-guide/dialer/capabilities/call-controls",
-                      "l/de/user-guide/dialer/capabilities/contact-search",
-                      "l/de/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/de/user-guide/dialer/how-tos/discord-setup"
+                      "l/de/user-guide/discord-bot/capabilities/queue-management",
+                      "l/de/user-guide/discord-bot/capabilities/call-controls",
+                      "l/de/user-guide/discord-bot/capabilities/contact-search",
+                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -2247,9 +2208,7 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": [
-                      "l/de/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/de/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -2260,9 +2219,7 @@
             "groups": [
               {
                 "group": "Entwickler",
-                "pages": [
-                  "l/de/developers/introduction"
-                ]
+                "pages": ["l/de/developers/introduction"]
               },
               {
                 "group": "Erweitern",
@@ -2327,9 +2284,7 @@
                               },
                               {
                                 "group": "Rückmeldung",
-                                "pages": [
-                                  "l/de/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/de/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Eingabe",
@@ -2576,9 +2531,7 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": [
-                      "l/es/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/es/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -2668,9 +2621,7 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": [
-                      "l/es/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/es/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -2681,21 +2632,22 @@
                   "l/es/user-guide/dialer/overview",
                   "l/es/user-guide/dialer/making-calls",
                   "l/es/user-guide/dialer/transfers",
-                  "l/es/user-guide/dialer/hold-mute",
+                  "l/es/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/es/user-guide/discord-bot/overview",
+                  "l/es/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/es/user-guide/dialer/capabilities/discord-bot",
-                      "l/es/user-guide/dialer/capabilities/queue-management",
-                      "l/es/user-guide/dialer/capabilities/call-controls",
-                      "l/es/user-guide/dialer/capabilities/contact-search",
-                      "l/es/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/es/user-guide/dialer/how-tos/discord-setup"
+                      "l/es/user-guide/discord-bot/capabilities/queue-management",
+                      "l/es/user-guide/discord-bot/capabilities/call-controls",
+                      "l/es/user-guide/discord-bot/capabilities/contact-search",
+                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -2718,9 +2670,7 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": [
-                      "l/es/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/es/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -2731,9 +2681,7 @@
             "groups": [
               {
                 "group": "Desarrolladores",
-                "pages": [
-                  "l/es/developers/introduction"
-                ]
+                "pages": ["l/es/developers/introduction"]
               },
               {
                 "group": "Ampliar",
@@ -2798,9 +2746,7 @@
                               },
                               {
                                 "group": "Retroalimentación",
-                                "pages": [
-                                  "l/es/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/es/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrada",
@@ -3047,9 +2993,7 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": [
-                      "l/it/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/it/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -3139,9 +3083,7 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": [
-                      "l/it/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/it/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -3152,21 +3094,22 @@
                   "l/it/user-guide/dialer/overview",
                   "l/it/user-guide/dialer/making-calls",
                   "l/it/user-guide/dialer/transfers",
-                  "l/it/user-guide/dialer/hold-mute",
+                  "l/it/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/it/user-guide/discord-bot/overview",
+                  "l/it/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/it/user-guide/dialer/capabilities/discord-bot",
-                      "l/it/user-guide/dialer/capabilities/queue-management",
-                      "l/it/user-guide/dialer/capabilities/call-controls",
-                      "l/it/user-guide/dialer/capabilities/contact-search",
-                      "l/it/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/it/user-guide/dialer/how-tos/discord-setup"
+                      "l/it/user-guide/discord-bot/capabilities/queue-management",
+                      "l/it/user-guide/discord-bot/capabilities/call-controls",
+                      "l/it/user-guide/discord-bot/capabilities/contact-search",
+                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -3189,9 +3132,7 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": [
-                      "l/it/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/it/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -3202,9 +3143,7 @@
             "groups": [
               {
                 "group": "Sviluppatori",
-                "pages": [
-                  "l/it/developers/introduction"
-                ]
+                "pages": ["l/it/developers/introduction"]
               },
               {
                 "group": "Estendi",
@@ -3269,9 +3208,7 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": [
-                                  "l/it/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/it/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Input",
@@ -3518,9 +3455,7 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": [
-                      "l/ja/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/ja/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -3610,9 +3545,7 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": [
-                      "l/ja/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/ja/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -3623,21 +3556,22 @@
                   "l/ja/user-guide/dialer/overview",
                   "l/ja/user-guide/dialer/making-calls",
                   "l/ja/user-guide/dialer/transfers",
-                  "l/ja/user-guide/dialer/hold-mute",
+                  "l/ja/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ja/user-guide/discord-bot/overview",
+                  "l/ja/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ja/user-guide/dialer/capabilities/discord-bot",
-                      "l/ja/user-guide/dialer/capabilities/queue-management",
-                      "l/ja/user-guide/dialer/capabilities/call-controls",
-                      "l/ja/user-guide/dialer/capabilities/contact-search",
-                      "l/ja/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ja/user-guide/dialer/how-tos/discord-setup"
+                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -3660,9 +3594,7 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": [
-                      "l/ja/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/ja/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -3673,9 +3605,7 @@
             "groups": [
               {
                 "group": "開発者",
-                "pages": [
-                  "l/ja/developers/introduction"
-                ]
+                "pages": ["l/ja/developers/introduction"]
               },
               {
                 "group": "拡張",
@@ -3740,9 +3670,7 @@
                               },
                               {
                                 "group": "フィードバック",
-                                "pages": [
-                                  "l/ja/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/ja/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "入力",
@@ -3989,9 +3917,7 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": [
-                      "l/ko/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/ko/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -4081,9 +4007,7 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": [
-                      "l/ko/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/ko/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -4094,21 +4018,22 @@
                   "l/ko/user-guide/dialer/overview",
                   "l/ko/user-guide/dialer/making-calls",
                   "l/ko/user-guide/dialer/transfers",
-                  "l/ko/user-guide/dialer/hold-mute",
+                  "l/ko/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ko/user-guide/discord-bot/overview",
+                  "l/ko/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ko/user-guide/dialer/capabilities/discord-bot",
-                      "l/ko/user-guide/dialer/capabilities/queue-management",
-                      "l/ko/user-guide/dialer/capabilities/call-controls",
-                      "l/ko/user-guide/dialer/capabilities/contact-search",
-                      "l/ko/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ko/user-guide/dialer/how-tos/discord-setup"
+                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -4131,9 +4056,7 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": [
-                      "l/ko/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/ko/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -4144,9 +4067,7 @@
             "groups": [
               {
                 "group": "개발자",
-                "pages": [
-                  "l/ko/developers/introduction"
-                ]
+                "pages": ["l/ko/developers/introduction"]
               },
               {
                 "group": "확장",
@@ -4211,9 +4132,7 @@
                               },
                               {
                                 "group": "피드백",
-                                "pages": [
-                                  "l/ko/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/ko/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "입력",
@@ -4460,9 +4379,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/pt/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -4552,9 +4469,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/pt/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -4565,21 +4480,22 @@
                   "l/pt/user-guide/dialer/overview",
                   "l/pt/user-guide/dialer/making-calls",
                   "l/pt/user-guide/dialer/transfers",
-                  "l/pt/user-guide/dialer/hold-mute",
+                  "l/pt/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/pt/user-guide/discord-bot/overview",
+                  "l/pt/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/pt/user-guide/dialer/capabilities/discord-bot",
-                      "l/pt/user-guide/dialer/capabilities/queue-management",
-                      "l/pt/user-guide/dialer/capabilities/call-controls",
-                      "l/pt/user-guide/dialer/capabilities/contact-search",
-                      "l/pt/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/dialer/how-tos/discord-setup"
+                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
+                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
+                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
+                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -4602,9 +4518,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/pt/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -4615,9 +4529,7 @@
             "groups": [
               {
                 "group": "Programadores",
-                "pages": [
-                  "l/pt/developers/introduction"
-                ]
+                "pages": ["l/pt/developers/introduction"]
               },
               {
                 "group": "Extend",
@@ -4682,9 +4594,7 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": [
-                                  "l/pt/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/pt/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrada",
@@ -4931,9 +4841,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/ro/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -5023,9 +4931,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/ro/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -5036,21 +4942,22 @@
                   "l/ro/user-guide/dialer/overview",
                   "l/ro/user-guide/dialer/making-calls",
                   "l/ro/user-guide/dialer/transfers",
-                  "l/ro/user-guide/dialer/hold-mute",
+                  "l/ro/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ro/user-guide/discord-bot/overview",
+                  "l/ro/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ro/user-guide/dialer/capabilities/discord-bot",
-                      "l/ro/user-guide/dialer/capabilities/queue-management",
-                      "l/ro/user-guide/dialer/capabilities/call-controls",
-                      "l/ro/user-guide/dialer/capabilities/contact-search",
-                      "l/ro/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/dialer/how-tos/discord-setup"
+                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -5073,9 +4980,7 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/ro/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -5086,9 +4991,7 @@
             "groups": [
               {
                 "group": "Dezvoltatori",
-                "pages": [
-                  "l/ro/developers/introduction"
-                ]
+                "pages": ["l/ro/developers/introduction"]
               },
               {
                 "group": "Extend",
@@ -5153,9 +5056,7 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": [
-                                  "l/ro/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/ro/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Intrare",
@@ -5402,9 +5303,7 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": [
-                      "l/ru/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/ru/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -5494,9 +5393,7 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": [
-                      "l/ru/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/ru/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -5507,21 +5404,22 @@
                   "l/ru/user-guide/dialer/overview",
                   "l/ru/user-guide/dialer/making-calls",
                   "l/ru/user-guide/dialer/transfers",
-                  "l/ru/user-guide/dialer/hold-mute",
+                  "l/ru/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ru/user-guide/discord-bot/overview",
+                  "l/ru/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ru/user-guide/dialer/capabilities/discord-bot",
-                      "l/ru/user-guide/dialer/capabilities/queue-management",
-                      "l/ru/user-guide/dialer/capabilities/call-controls",
-                      "l/ru/user-guide/dialer/capabilities/contact-search",
-                      "l/ru/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ru/user-guide/dialer/how-tos/discord-setup"
+                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -5544,9 +5442,7 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": [
-                      "l/ru/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/ru/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -5557,9 +5453,7 @@
             "groups": [
               {
                 "group": "Разработчики",
-                "pages": [
-                  "l/ru/developers/introduction"
-                ]
+                "pages": ["l/ru/developers/introduction"]
               },
               {
                 "group": "Расширяйте",
@@ -5624,9 +5518,7 @@
                               },
                               {
                                 "group": "Обратная связь",
-                                "pages": [
-                                  "l/ru/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/ru/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Ввод",
@@ -5873,9 +5765,7 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": [
-                      "l/tr/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/tr/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -5965,9 +5855,7 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": [
-                      "l/tr/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/tr/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -5978,21 +5866,22 @@
                   "l/tr/user-guide/dialer/overview",
                   "l/tr/user-guide/dialer/making-calls",
                   "l/tr/user-guide/dialer/transfers",
-                  "l/tr/user-guide/dialer/hold-mute",
+                  "l/tr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/tr/user-guide/discord-bot/overview",
+                  "l/tr/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/tr/user-guide/dialer/capabilities/discord-bot",
-                      "l/tr/user-guide/dialer/capabilities/queue-management",
-                      "l/tr/user-guide/dialer/capabilities/call-controls",
-                      "l/tr/user-guide/dialer/capabilities/contact-search",
-                      "l/tr/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/tr/user-guide/dialer/how-tos/discord-setup"
+                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -6015,9 +5904,7 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": [
-                      "l/tr/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/tr/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -6028,9 +5915,7 @@
             "groups": [
               {
                 "group": "Geliştiriciler",
-                "pages": [
-                  "l/tr/developers/introduction"
-                ]
+                "pages": ["l/tr/developers/introduction"]
               },
               {
                 "group": "Genişlet",
@@ -6095,9 +5980,7 @@
                               },
                               {
                                 "group": "Geri Bildirim",
-                                "pages": [
-                                  "l/tr/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/tr/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "Girdi",
@@ -6344,9 +6227,7 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": [
-                      "l/zh/user-guide/ai/how-tos/ai-faq"
-                    ]
+                    "pages": ["l/zh/user-guide/ai/how-tos/ai-faq"]
                   }
                 ]
               },
@@ -6436,9 +6317,7 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": [
-                      "l/zh/user-guide/billing/how-tos/billing-faq"
-                    ]
+                    "pages": ["l/zh/user-guide/billing/how-tos/billing-faq"]
                   }
                 ]
               },
@@ -6449,21 +6328,22 @@
                   "l/zh/user-guide/dialer/overview",
                   "l/zh/user-guide/dialer/making-calls",
                   "l/zh/user-guide/dialer/transfers",
-                  "l/zh/user-guide/dialer/hold-mute",
+                  "l/zh/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/zh/user-guide/discord-bot/overview",
+                  "l/zh/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/zh/user-guide/dialer/capabilities/discord-bot",
-                      "l/zh/user-guide/dialer/capabilities/queue-management",
-                      "l/zh/user-guide/dialer/capabilities/call-controls",
-                      "l/zh/user-guide/dialer/capabilities/contact-search",
-                      "l/zh/user-guide/dialer/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/zh/user-guide/dialer/how-tos/discord-setup"
+                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
+                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
+                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
+                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
                     ]
                   }
                 ]
@@ -6486,9 +6366,7 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": [
-                      "l/zh/user-guide/settings/how-tos/settings-faq"
-                    ]
+                    "pages": ["l/zh/user-guide/settings/how-tos/settings-faq"]
                   }
                 ]
               }
@@ -6499,9 +6377,7 @@
             "groups": [
               {
                 "group": "开发者",
-                "pages": [
-                  "l/zh/developers/introduction"
-                ]
+                "pages": ["l/zh/developers/introduction"]
               },
               {
                 "group": "扩展",
@@ -6566,9 +6442,7 @@
                               },
                               {
                                 "group": "反馈",
-                                "pages": [
-                                  "l/zh/twenty-ui/progress-bar"
-                                ]
+                                "pages": ["l/zh/twenty-ui/progress-bar"]
                               },
                               {
                                 "group": "输入",
