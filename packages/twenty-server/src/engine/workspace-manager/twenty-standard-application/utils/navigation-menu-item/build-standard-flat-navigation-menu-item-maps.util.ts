@@ -13,6 +13,7 @@ import {
 } from 'src/engine/workspace-manager/twenty-standard-application/utils/navigation-menu-item/create-standard-navigation-menu-item-folder-flat-metadata.util';
 
 const FLAT_NAVIGATION_MENU_ITEM_NAMES = [
+  'allListMembers',
   'allPeople',
   'allCompanies',
   'allOpportunities',

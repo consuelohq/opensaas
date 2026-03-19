@@ -8,6 +8,7 @@ import { type ProcessedNavigationMenuItem } from '@/navigation-menu-item/types/p
 import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { objectMetadataItemsState } from '@/object-metadata/states/objectMetadataItemsState';
 import { coreViewsState } from '@/views/states/coreViewState';
+import { type View } from '@/views/types/View';
 import { convertCoreViewToView } from '@/views/utils/convertCoreViewToView';
 import { isDefined } from 'twenty-shared/utils';
 
@@ -24,6 +25,28 @@ export type FlatWorkspaceItem =
 export type NavigationMenuItemClickParams = {
   item: FlatWorkspaceItem;
   objectMetadataItem?: ObjectMetadataItem | null;
+};
+
+const getWorkspaceItemPriority = (
+  item: FlatWorkspaceItem,
+  objectMetadataItems: ObjectMetadataItem[],
+  views: View[],
+) => {
+  if (item.itemType === NavigationMenuItemType.FOLDER) {
+    return 1;
+  }
+
+  const objectMetadataItem = getObjectMetadataForNavigationMenuItem(
+    item,
+    objectMetadataItems,
+    views,
+  );
+
+  if (objectMetadataItem?.nameSingular === 'listMember') {
+    return 0;
+  }
+
+  return 1;
 };
 
 export const useWorkspaceSectionItems = (): FlatWorkspaceItem[] => {
@@ -78,7 +101,18 @@ export const useWorkspaceSectionItems = (): FlatWorkspaceItem[] => {
     return acc;
   }, []);
 
-  return flatItems.flatMap((item) =>
+  const prioritizedFlatItems = [...flatItems].sort((a, b) => {
+    const priorityA = getWorkspaceItemPriority(a, objectMetadataItems, views);
+    const priorityB = getWorkspaceItemPriority(b, objectMetadataItems, views);
+
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    return a.position - b.position;
+  });
+
+  return prioritizedFlatItems.flatMap((item) =>
     item.itemType === NavigationMenuItemType.FOLDER
       ? [item, ...(folderChildrenById.get(item.id) ?? [])]
       : [item],

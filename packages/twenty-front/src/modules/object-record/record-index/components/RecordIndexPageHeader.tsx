@@ -1,4 +1,7 @@
 import { RecordIndexActionMenu } from '@/action-menu/components/RecordIndexActionMenu';
+import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
+import { useRecoilState } from 'recoil';
+import { LightIconButton } from 'twenty-ui/input';
 import { MAIN_CONTEXT_STORE_INSTANCE_ID } from '@/context-store/constants/MainContextStoreInstanceId';
 import { contextStoreCurrentViewIdComponentState } from '@/context-store/states/contextStoreCurrentViewIdComponentState';
 import { contextStoreNumberOfSelectedRecordsComponentState } from '@/context-store/states/contextStoreNumberOfSelectedRecordsComponentState';
@@ -10,7 +13,7 @@ import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/ho
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { isDefined } from 'twenty-shared/utils';
-import { useIcons } from 'twenty-ui/display';
+import { IconPhone, useIcons } from 'twenty-ui/display';
 
 const StyledTitleWithSelectedRecords = styled.div`
   display: flex;
@@ -29,6 +32,9 @@ const StyledSelectedRecordsCount = styled.div`
 `;
 
 export const RecordIndexPageHeader = () => {
+  const [dialerSidebarOpen, setDialerSidebarOpen] = useRecoilState(
+    dialerSidebarOpenState,
+  );
   const { findObjectMetadataItemByNamePlural } =
     useFilteredObjectMetadataItems();
 
@@ -68,6 +74,12 @@ export const RecordIndexPageHeader = () => {
     <PageHeader title={pageHeaderTitle} Icon={Icon}>
       {isDefined(contextStoreCurrentViewId) && (
         <>
+          <LightIconButton
+            Icon={IconPhone}
+            accent={dialerSidebarOpen ? 'secondary' : 'tertiary'}
+            size="small"
+            onClick={() => setDialerSidebarOpen((prev) => !prev)}
+          />
           <RecordIndexActionMenu />
           <PageHeaderToggleCommandMenuButton />
         </>
