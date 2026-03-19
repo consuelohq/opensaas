@@ -36,6 +36,10 @@ const getWorkspaceItemPriority = (
     return 1;
   }
 
+  if ('objectNameSingular' in item && item.objectNameSingular === 'listMember') {
+    return 0;
+  }
+
   const objectMetadataItem = getObjectMetadataForNavigationMenuItem(
     item,
     objectMetadataItems,
