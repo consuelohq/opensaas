@@ -10,6 +10,8 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
 import { NodeEnvironment } from 'src/engine/core-modules/twenty-config/interfaces/node-environment.interface';
 
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+
 import { setPgDateTypeParser } from 'src/database/pg/set-pg-date-type-parser';
 import { LoggerService } from 'src/engine/core-modules/logger/logger.service';
 import { getSessionStorageOptions } from 'src/engine/core-modules/session-storage/session-storage.module-factory';
@@ -21,6 +23,30 @@ import './instrument';
 
 import { settings } from './engine/constants/settings';
 import { generateFrontConfig } from './utils/generate-front-config';
+
+const applyMountedRouteCors = (req: Request, res: Response) => {
+  const origin = req.headers.origin;
+
+  if (!origin) {
+    return;
+  }
+
+  const requestedHeaders = req.headers['access-control-request-headers'];
+
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    typeof requestedHeaders === 'string' && requestedHeaders.length > 0
+      ? requestedHeaders
+      : 'Authorization, Content-Type',
+  );
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+  );
+};
 
 const bootstrap = async () => {
   setPgDateTypeParser();
@@ -103,9 +129,11 @@ const bootstrap = async () => {
   const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join(
     '/',
   );
+
   try {
     console.log('Importing API routes from:', apiRoutesPath);
     const routesModule = await import(apiRoutesPath);
+
     console.log('Import succeeded, calling allRoutes()...');
     const routes = routesModule.allRoutes();
     const expressApp = app.getHttpAdapter().getInstance();
@@ -120,7 +148,7 @@ const bootstrap = async () => {
       'index.js',
     ].join('/');
     const { authMiddleware } = await import(apiMiddlewarePath);
-    const auth = authMiddleware();
+    const auth = authMiddleware() as unknown as RequestHandler;
 
     for (const route of routes) {
       const method = route.method.toLowerCase() as
@@ -129,26 +157,39 @@ const bootstrap = async () => {
         | 'put'
         | 'patch'
         | 'delete';
-      const handlers: any[] = [];
+      const handlers: RequestHandler[] = [];
+
+      const routeHandler = route.handler as (
+        req: Parameters<typeof route.handler>[0],
+        res: Parameters<typeof route.handler>[1],
+      ) => Promise<void>;
+
+      expressApp.options(route.path, (req: Request, res: Response) => {
+        applyMountedRouteCors(req, res);
+        res.sendStatus(204);
+      });
+
+      handlers.push((req: Request, res: Response, next: NextFunction) => {
+        applyMountedRouteCors(req, res);
+        next();
+      });
 
       if (route.auth !== false) {
         handlers.push(auth);
       }
 
-      handlers.push(async (req: any, res: any) => {
+      handlers.push(async (req: Request, res: Response) => {
         // HACK: Express types are compatible with ApiRequest/ApiResponse but TypeScript cannot verify across packages
         try {
-          await route.handler(req, res);
+          await routeHandler(
+            req as Parameters<typeof route.handler>[0],
+            res as Parameters<typeof route.handler>[1],
+          );
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'unknown error';
+
           if (!res.headersSent) {
-            // ensure CORS headers are present on error responses
-            // (nestjs CORS middleware may not cover routes mounted directly on express)
-            const origin = req.headers.origin;
-            if (origin) {
-              res.setHeader('Access-Control-Allow-Origin', origin);
-              res.setHeader('Access-Control-Allow-Credentials', 'true');
-            }
+            applyMountedRouteCors(req, res);
             res
               .status(500)
               .json({ error: { code: 'INTERNAL_SERVER_ERROR', message } });
@@ -163,7 +204,9 @@ const bootstrap = async () => {
     // Set up WebSocket servers for coaching (live transcript streaming + audio transcription)
     console.log('Setting up coaching WebSocket servers...');
     const httpServer = app.getHttpServer();
+
     await routesModule.setupCoachingWebSocket(httpServer);
+
     console.log('Coaching WebSocket servers initialized OK');
   } catch (err: unknown) {
     console.log(
