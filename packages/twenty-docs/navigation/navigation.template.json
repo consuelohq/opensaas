@@ -72,13 +72,13 @@
             }
           }
         },
-        "ai": {
-          "label": "AI",
+        "computer": {
+          "label": "Computer",
           "groups": {
-            "aiCapabilities": {
+            "computerCapabilities": {
               "label": "Capabilities"
             },
-            "aiHowTos": {
+            "computerHowTos": {
               "label": "How-Tos"
             }
           }
