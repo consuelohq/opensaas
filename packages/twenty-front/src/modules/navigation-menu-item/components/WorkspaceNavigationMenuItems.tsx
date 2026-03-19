@@ -14,7 +14,6 @@ import {
   IconComment,
   IconFolder,
   IconLink,
-  IconPhone,
   IconPlus,
   IconTool,
   useIcons,
@@ -24,7 +23,7 @@ import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 import { useNavigateCommandMenu } from '@/command-menu/hooks/useNavigateCommandMenu';
 import { CommandMenuPages } from '@/command-menu/types/CommandMenuPages';
-import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
+
 import { useOpenNavigationMenuItemInCommandMenu } from '@/navigation-menu-item/hooks/useOpenNavigationMenuItemInCommandMenu';
 import {
   type NavigationMenuItemClickParams,
@@ -41,7 +40,6 @@ import { NavigationDrawerSectionForWorkspaceItems } from '@/object-metadata/comp
 import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { useIsPrefetchLoading } from '@/prefetch/hooks/useIsPrefetchLoading';
 import { prefetchNavigationMenuItemsState } from '@/prefetch/states/prefetchNavigationMenuItemsState';
-import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { NavigationDrawerItemsCollapsableContainer } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItemsCollapsableContainer';
 import { NavigationDrawerSectionTitle } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSectionTitle';
 import { NavigationDrawerSubItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSubItem';
@@ -57,9 +55,6 @@ const StyledRightIconsContainer = styled.div`
 
 export const WorkspaceNavigationMenuItems = () => {
   const items = useWorkspaceSectionItems();
-  const [dialerSidebarOpen, setDialerSidebarOpen] = useRecoilState(
-    dialerSidebarOpenState,
-  );
   const [agentFolderOpen, setAgentFolderOpen] = useState(true);
   const enterEditMode = useRecoilCallback(
     ({ set, snapshot }) =>
@@ -159,20 +154,10 @@ export const WorkspaceNavigationMenuItems = () => {
     return <NavigationDrawerSectionForObjectMetadataItemsSkeletonLoader />;
   }
 
-  const dialerHeaderContent = (
-    <NavigationDrawerItem
-      label={t`Dialer`}
-      Icon={IconPhone}
-      onClick={() => setDialerSidebarOpen(!dialerSidebarOpen)}
-      active={dialerSidebarOpen}
-      keyboard={['⌘', 'D']}
-    />
-  );
-
   const agentFooterContent = (
     <NavigationDrawerItemsCollapsableContainer isGroup>
       <NavigationDrawerSectionTitle
-        label={t`Agent`}
+        label={t`Computer`}
         onClick={() => setAgentFolderOpen(!agentFolderOpen)}
         rightIcon={
           agentFolderOpen ? (
@@ -203,7 +188,6 @@ export const WorkspaceNavigationMenuItems = () => {
     <NavigationDrawerSectionForWorkspaceItems
       sectionTitle={t`Workspace`}
       items={items}
-      headerContent={dialerHeaderContent}
       footerContent={agentFooterContent}
       rightIcon={
         isNavigationMenuItemEditingEnabled ? (
