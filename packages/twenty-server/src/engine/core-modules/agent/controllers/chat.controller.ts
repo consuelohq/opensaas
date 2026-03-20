@@ -8,68 +8,65 @@ import {
 } from '@nestjs/common';
 
 import {
-  convertToModelMessages,
   createUIMessageStream,
   pipeUIMessageStreamToResponse,
-  streamText,
 } from 'ai';
 import { type Response } from 'express';
+import { type ExtendedUIMessage } from 'twenty-shared/ai';
 
 import { RestApiExceptionFilter } from 'src/engine/api/rest/rest-api-exception.filter';
-import { UserEntity } from 'src/engine/core-modules/user/user.entity';
-import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
+import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { AuthUserWorkspaceId } from 'src/engine/decorators/auth/auth-user-workspace-id.decorator';
+import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
 import { JwtAuthGuard } from 'src/engine/guards/jwt-auth.guard';
 import { WorkspaceAuthGuard } from 'src/engine/guards/workspace-auth.guard';
-import { AiModelRegistryService } from 'src/engine/metadata-modules/ai/ai-models/services/ai-model-registry.service';
+import { type BrowsingContextType } from 'src/engine/metadata-modules/ai/ai-agent/types/browsingContext.type';
+import { ChatExecutionService } from 'src/engine/metadata-modules/ai/ai-chat/services/chat-execution.service';
 
 type ChatBody = {
-  messages: Array<{
-    role: string;
-    parts?: Array<{ type: string; text?: string }>;
-    content?: string;
-  }>;
+  messages: ExtendedUIMessage[];
   conversationId?: string;
   skillId?: string;
+  browsingContext?: BrowsingContextType | null;
 };
 
 @Controller('v1/agent/chat')
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 @UseFilters(RestApiExceptionFilter)
 export class ChatController {
-  constructor(private readonly aiModelRegistry: AiModelRegistryService) {}
+  constructor(
+    private readonly chatExecutionService: ChatExecutionService,
+  ) {}
 
   @Post()
   async chat(
     @Body() body: ChatBody,
-    @AuthUser() user: UserEntity,
+    @AuthWorkspace() workspace: WorkspaceEntity,
+    @AuthUserWorkspaceId() userWorkspaceId: string,
     @Res() response: Response,
   ) {
-    const models = this.aiModelRegistry.getAvailableModels();
-
-    if (models.length === 0) {
-      response.status(503).json({
-        error: {
-          code: 'NO_AI_MODELS',
-          message:
-            'No AI models configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or GROQ_API_KEY.',
-        },
-      });
-
-      return;
-    }
-
-    const stream = createUIMessageStream({
+    const stream = createUIMessageStream<ExtendedUIMessage>({
       execute: async ({ writer }) => {
         try {
-          const result = streamText({
-            model: models[0].model,
-            system: `You are Consuelo, an AI sales assistant. You help sales reps with coaching, call prep, CRM data, and pipeline management. Be concise and actionable. The current user is ${user.firstName ?? 'a team member'}.`,
-            messages: convertToModelMessages(body.messages),
-          });
+          const { stream: chatStream } =
+            await this.chatExecutionService.streamChat({
+              workspace,
+              userWorkspaceId,
+              messages: body.messages,
+              browsingContext: body.browsingContext ?? null,
+            });
 
-          writer.merge(result.toUIMessageStream());
+          writer.merge(
+            chatStream.toUIMessageStream({
+              onError: (error) => {
+                return error instanceof Error ? error.message : String(error);
+              },
+              sendStart: false,
+            }),
+          );
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'unknown error';
+          const message =
+            err instanceof Error ? err.message : 'unknown error';
 
           writer.write({
             type: 'error',

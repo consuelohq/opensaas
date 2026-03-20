@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from 'src/engine/core-modules/auth/auth.module';
+import { AiChatModule } from 'src/engine/metadata-modules/ai/ai-chat/ai-chat.module';
 import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 import { AutomationController } from 'src/engine/core-modules/agent/controllers/automation.controller';
 import { ChatController } from 'src/engine/core-modules/agent/controllers/chat.controller';
@@ -37,6 +38,7 @@ import { UsageMeteringService } from 'src/engine/core-modules/agent/services/usa
 
 @Module({
   imports: [
+    AiChatModule,
     AuthModule,
     WorkspaceCacheStorageModule,
     TypeOrmModule.forFeature([
