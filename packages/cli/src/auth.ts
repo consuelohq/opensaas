@@ -5,7 +5,11 @@ import { createLogger } from '@consuelo/logger';
 
 const logger = createLogger('CLI:Auth');
 
-const AUTH_URL = 'https://www.consuelohq.com/calls/auth/cli';
+// note: twenty-server does not have a CLI browser auth endpoint yet.
+// the recommended auth flow is `consuelo auth:login` via twenty-sdk.
+// this browser flow is kept for backward compat but may not work until
+// a /cli/auth endpoint is added to twenty-server.
+const AUTH_URL = 'https://consuelo.consuelohq.com/cli/auth';
 const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 export interface AuthResult {
@@ -29,7 +33,9 @@ export function authenticateHosted(): Promise<AuthResult> {
       const email = url.searchParams.get('email') ?? 'user';
 
       const ok = Boolean(apiKey);
-      const title = ok ? '✓ Authentication successful!' : '✗ Authentication failed';
+      const title = ok
+        ? '✓ Authentication successful!'
+        : '✗ Authentication failed';
       const body = ok
         ? 'You can close this window and return to the terminal.'
         : 'No API key was received. Please try again.';
