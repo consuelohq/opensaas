@@ -1194,7 +1194,6 @@ msgid "agent"
 msgstr "агент"
 
 #. js-lingui-id: iEQQyu
-#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/hooks/useWorkflowAiAgentPermissionActions.ts
 #: src/pages/settings/ai/SettingsAgentForm.tsx
 #: src/pages/settings/ai/SettingsAgentForm.tsx
@@ -1280,6 +1279,12 @@ msgstr ""
 #: src/modules/ai/components/AIChatApiKeyNotConfiguredMessage.tsx
 msgid "AI not configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or XAI_API_KEY in your environment."
 msgstr "ШІ не налаштовано. Встановіть у своєму середовищі OPENAI_API_KEY, ANTHROPIC_API_KEY або XAI_API_KEY."
+
+#. js-lingui-id: Hru7Ws
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/dialer/SettingsDialerAI.tsx
+msgid "AI Provider"
+msgstr ""
 
 #. js-lingui-id: jwOWhc
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -1998,6 +2003,11 @@ msgstr ""
 msgid "Attachments"
 msgstr "Вкладення"
 
+#. js-lingui-id: FH8ED9
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Audio Devices"
+msgstr ""
+
 #. js-lingui-id: EPEFrH
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -2396,6 +2406,11 @@ msgstr "Перегляд календаря"
 #: src/pages/settings/accounts/SettingsAccountsCalendars.tsx
 msgid "Calendars"
 msgstr "Календарі"
+
+#. js-lingui-id: saW1OG
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Calling & Presence"
+msgstr ""
 
 #. js-lingui-id: msssZq
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -2886,6 +2901,11 @@ msgstr "Завершено"
 #: src/pages/settings/admin-panel/SettingsAdminQueueDetail.tsx
 msgid "Completed jobs kept for {completedDuration}, failed jobs kept for {failedDuration} (max {maxCount} each)"
 msgstr "Завершені завдання зберігаються протягом {completedDuration}, невдалі завдання зберігаються протягом {failedDuration} (максимум {maxCount} кожного)"
+
+#. js-lingui-id: 9lzViG
+#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+msgid "Computer"
+msgstr ""
 
 #. js-lingui-id: 0CuAor
 #: src/modules/command-menu/pages/page-layout/components/ChartFiltersSettings.tsx
@@ -4396,7 +4416,7 @@ msgid "Developers links"
 msgstr ""
 
 #. js-lingui-id: ErTdky
-#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "Dialer"
 msgstr ""
 
@@ -4405,6 +4425,12 @@ msgstr ""
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowActionsConfig.tsx
 msgid "Discard Draft"
 msgstr "Відмінити чернетку"
+
+#. js-lingui-id: lxXSWc
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/dialer/SettingsDialerDiscord.tsx
+msgid "Discord Bot"
+msgstr ""
 
 #. js-lingui-id: Xm/s+u
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelsGeneral.tsx
@@ -6413,6 +6439,12 @@ msgstr "Отримайте максимум від свого робочого �
 msgid "Get your subscription"
 msgstr "Отримайте свою передплату"
 
+#. js-lingui-id: G0Kj+B
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/dialer/SettingsDialerGHL.tsx
+msgid "GHL Integration"
+msgstr ""
+
 #. js-lingui-id: 2GT3Hf
 #: src/modules/command-menu/components/CommandMenu.tsx
 msgid "Global"
@@ -7100,6 +7132,11 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowAiAgentPromptTab.tsx
 msgid "Instructions for AI"
 msgstr "Інструкції для AI"
+
+#. js-lingui-id: nbfdhU
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Integrations"
+msgstr ""
 
 #. js-lingui-id: RGm66q
 #: src/utils/title-utils.ts
@@ -9319,6 +9356,11 @@ msgstr "Не синхронізовано"
 msgid "Notes"
 msgstr "Нотатки"
 
+#. js-lingui-id: iDNBZe
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Notifications"
+msgstr ""
+
 #. js-lingui-id: YwzE9K
 #: src/utils/date-utils.ts
 msgid "now"
@@ -9680,6 +9722,12 @@ msgstr ""
 msgid "Ordered List"
 msgstr ""
 
+#. js-lingui-id: 9rlHJE
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/dialer/SettingsDialerWorkspace.tsx
+msgid "Org/Workspace"
+msgstr ""
+
 #. js-lingui-id: ucgZ0o
 #: src/modules/billing/components/internal/PlansTags.tsx
 #: src/modules/billing/hooks/useBillingWording.ts
@@ -9995,6 +10043,11 @@ msgstr "Номер телефону"
 msgid "Phone number copied to clipboard"
 msgstr "Номер телефону скопійовано в буфер обміну"
 
+#. js-lingui-id: HRghyD
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Phone Numbers"
+msgstr ""
+
 #. js-lingui-id: vqKcU0
 #: src/modules/workflow/workflow-steps/components/WorkflowDropdownStepOutputItems.tsx
 #: src/modules/workflow/workflow-variables/components/WorkflowVariablesDropdownStepItems.tsx
@@ -10260,6 +10313,7 @@ msgid "Processing..."
 msgstr "Обробка..."
 
 #. js-lingui-id: vERlcd
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/SettingsProfile.tsx
 #: src/pages/settings/SettingsProfile.tsx
@@ -12367,6 +12421,8 @@ msgstr "Підписатися зараз"
 
 #. js-lingui-id: WVzGc2
 #: src/modules/billing/components/SettingsBillingSubscriptionInfo.tsx
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/dialer/SettingsDialerSubscription.tsx
 msgid "Subscription"
 msgstr "Підписка"
 
@@ -14369,6 +14425,7 @@ msgstr "Робочі процеси"
 #: src/pages/settings/dialer/SettingsDialerAI.tsx
 #: src/pages/settings/dialer/SettingsDialerAudio.tsx
 #: src/pages/settings/dialer/SettingsDialerCalling.tsx
+#: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 #: src/pages/settings/dialer/SettingsDialerGHL.tsx
 #: src/pages/settings/dialer/SettingsDialerNotifications.tsx
 #: src/pages/settings/dialer/SettingsDialerPhoneNumbers.tsx
