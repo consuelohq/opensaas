@@ -14,13 +14,16 @@ import { isNonEmptyString } from '@sniptt/guards';
 import { useRecoilValue } from 'recoil';
 import {
   IconApi,
-  // IconApps, // TODO: Re-enable when integrations page is ready
   IconAt,
+  IconBell,
+  IconBuildingSkyscraper,
   IconCalendarEvent,
   IconColorSwatch,
   type IconComponent,
+  IconCreditCard,
   IconCurrencyDollar,
   IconDoorEnter,
+  IconHeadphones,
   IconHelpCircle,
   IconHierarchy2,
   IconKey,
@@ -28,10 +31,6 @@ import {
   IconLock,
   IconMail,
   IconMessage,
-  IconBell,
-  IconBuildingSkyscraper,
-  IconCreditCard,
-  IconHeadphones,
   IconPhone,
   IconPlug,
   IconRocket,
@@ -43,6 +42,7 @@ import {
   IconUsers,
   IconWorld,
 } from 'twenty-ui/display';
+import { IconBrandDiscord } from '@tabler/icons-react';
 import {
   FeatureFlagKey,
   PermissionFlagType,
@@ -169,13 +169,6 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           Icon: IconApi,
           isHidden: !permissionMap[PermissionFlagType.API_KEYS_AND_WEBHOOKS],
         },
-        // TODO: Re-enable when integrations page is ready
-        // {
-        //   label: t`Integrations`,
-        //   path: SettingsPath.Integrations,
-        //   Icon: IconApps,
-        //   isHidden: !permissionMap[PermissionFlagType.API_KEYS_AND_WEBHOOKS],
-        // },
         {
           label: t`Applications`,
           path: SettingsPath.Applications,
@@ -200,71 +193,57 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           isAdvanced: true,
           isHidden: !permissionMap[PermissionFlagType.SECURITY],
         },
-      ],
-    },
-    {
-      label: 'Dialer',
-      items: [
         {
-          label: 'Dialer',
+          label: t`Dialer`,
           path: SettingsPath.Dialer,
           Icon: IconPhone,
           subItems: [
             {
-              label: 'Profile',
+              label: t`Profile`,
               path: SettingsPath.DialerProfile,
               Icon: IconUserCircle,
               indentationLevel: 2,
             },
             {
-              label: 'Phone Numbers',
+              label: t`Phone Numbers`,
               path: SettingsPath.DialerPhoneNumbers,
               Icon: IconPhone,
               indentationLevel: 2,
             },
             {
-              label: 'Calling & Presence',
+              label: t`Calling & Presence`,
               path: SettingsPath.DialerCalling,
               Icon: IconToggleRight,
               indentationLevel: 2,
             },
             {
-              label: 'Audio Devices',
+              label: t`Audio Devices`,
               path: SettingsPath.DialerAudio,
               Icon: IconHeadphones,
               indentationLevel: 2,
             },
             {
-              label: 'AI Provider',
-              path: SettingsPath.DialerAI,
-              Icon: IconSparkles,
-              indentationLevel: 2,
-            },
-            {
-              label: 'Subscription',
-              path: SettingsPath.DialerSubscription,
-              Icon: IconCreditCard,
-              indentationLevel: 2,
-            },
-            {
-              label: 'Notifications',
+              label: t`Notifications`,
               path: SettingsPath.DialerNotifications,
               Icon: IconBell,
               indentationLevel: 2,
             },
-            {
-              label: 'Workspace',
-              path: SettingsPath.DialerWorkspace,
-              Icon: IconBuildingSkyscraper,
-              indentationLevel: 2,
-            },
-            {
-              label: 'GHL Integration',
-              path: SettingsPath.DialerGHL,
-              Icon: IconLink,
-              indentationLevel: 2,
-            },
           ],
+        },
+      ],
+    },
+    {
+      label: t`Integrations`,
+      items: [
+        {
+          label: t`Discord Bot`,
+          path: SettingsPath.DialerDiscord,
+          Icon: IconBrandDiscord,
+        },
+        {
+          label: t`GHL Integration`,
+          path: SettingsPath.DialerGHL,
+          Icon: IconLink,
         },
       ],
     },
@@ -297,6 +276,21 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
               '_blank',
             ),
           Icon: IconHelpCircle,
+        },
+        {
+          label: t`AI Provider`,
+          path: SettingsPath.DialerAI,
+          Icon: IconSparkles,
+        },
+        {
+          label: t`Subscription`,
+          path: SettingsPath.DialerSubscription,
+          Icon: IconCreditCard,
+        },
+        {
+          label: t`Org/Workspace`,
+          path: SettingsPath.DialerWorkspace,
+          Icon: IconBuildingSkyscraper,
         },
         {
           label: t`Logout`,

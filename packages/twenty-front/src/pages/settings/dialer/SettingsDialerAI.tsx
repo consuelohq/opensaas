@@ -15,11 +15,7 @@ export const SettingsDialerAI = () => {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        {
-          children: 'Dialer',
-          href: getSettingsPath(SettingsPath.Dialer),
-        },
-        { children: 'AI Provider' },
+        { children: <Trans>AI Provider</Trans> },
       ]}
     >
       <SettingsPageContainer>

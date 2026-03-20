@@ -8,17 +8,13 @@ import { DiscordSettings } from '~/pages/settings/consuelo/DiscordSettings';
 export const SettingsDialerDiscord = () => {
   return (
     <SubMenuTopBarContainer
-      title="Discord Integration"
+      title="Discord Bot"
       links={[
         {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        {
-          children: 'Dialer',
-          href: getSettingsPath(SettingsPath.Dialer),
-        },
-        { children: 'Discord Integration' },
+        { children: <Trans>Discord Bot</Trans> },
       ]}
     >
       <SettingsPageContainer>

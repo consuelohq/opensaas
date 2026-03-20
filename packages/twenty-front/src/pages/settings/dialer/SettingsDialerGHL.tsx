@@ -14,11 +14,7 @@ export const SettingsDialerGHL = () => {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        {
-          children: 'Dialer',
-          href: getSettingsPath(SettingsPath.Dialer),
-        },
-        { children: 'GHL Integration' },
+        { children: <Trans>GHL Integration</Trans> },
       ]}
     >
       <SettingsPageContainer>

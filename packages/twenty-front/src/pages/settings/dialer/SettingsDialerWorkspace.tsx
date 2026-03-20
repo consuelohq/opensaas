@@ -9,17 +9,13 @@ import { WorkspaceSettings } from '~/pages/settings/consuelo/WorkspaceSettings';
 export const SettingsDialerWorkspace = () => {
   return (
     <SubMenuTopBarContainer
-      title="Workspace"
+      title="Org/Workspace"
       links={[
         {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        {
-          children: 'Dialer',
-          href: getSettingsPath(SettingsPath.Dialer),
-        },
-        { children: 'Workspace' },
+        { children: <Trans>Org/Workspace</Trans> },
       ]}
     >
       <SettingsPageContainer>

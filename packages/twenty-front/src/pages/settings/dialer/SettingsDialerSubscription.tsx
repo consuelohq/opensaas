@@ -15,11 +15,7 @@ export const SettingsDialerSubscription = () => {
           children: <Trans>Workspace</Trans>,
           href: getSettingsPath(SettingsPath.Workspace),
         },
-        {
-          children: 'Dialer',
-          href: getSettingsPath(SettingsPath.Dialer),
-        },
-        { children: 'Subscription' },
+        { children: <Trans>Subscription</Trans> },
       ]}
     >
       <SettingsPageContainer>
