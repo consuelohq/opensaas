@@ -30,7 +30,7 @@ Only include contacts that have at least a name. Return: {"contacts": [...]}
  */
 export async function parseDocument(
   content: string,
-  groqApiKey: string
+  groqApiKey: string,
 ): Promise<ParseResult> {
   if (!content.trim()) {
     return { contacts: [], errors: ['Empty document'], rawCount: 0 };
@@ -46,7 +46,7 @@ export async function parseDocument(
         { role: 'user', content },
       ],
       response_format: { type: 'json_object' },
-    }, { signal: AbortSignal.timeout(30_000) });
+    });
 
     const text = response.choices[0]?.message?.content;
     if (!text) {
@@ -57,7 +57,12 @@ export async function parseDocument(
     const rawContacts = Array.isArray(parsed.contacts) ? parsed.contacts : [];
 
     const contacts = rawContacts
-      .filter((c): c is ParsedContact => typeof c === 'object' && c !== null && typeof (c as ParsedContact).name === 'string')
+      .filter(
+        (c): c is ParsedContact =>
+          typeof c === 'object' &&
+          c !== null &&
+          typeof (c as ParsedContact).name === 'string',
+      )
       .filter((c) => c.name.trim().length > 0);
 
     return { contacts, errors: [], rawCount: rawContacts.length };
