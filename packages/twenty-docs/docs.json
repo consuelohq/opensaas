@@ -330,6 +330,38 @@
                 ]
               },
               {
+                "group": "CLI",
+                "icon": "terminal",
+                "pages": [
+                  "user-guide/cli/overview",
+                  "user-guide/cli/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/cli/capabilities/configuration",
+                      "user-guide/cli/capabilities/contacts-management",
+                      "user-guide/cli/capabilities/call-operations",
+                      "user-guide/cli/capabilities/queue-management",
+                      "user-guide/cli/capabilities/knowledge-base",
+                      "user-guide/cli/capabilities/file-management",
+                      "user-guide/cli/capabilities/analytics-history",
+                      "user-guide/cli/capabilities/deployment"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/cli/how-tos/set-up-twilio",
+                      "user-guide/cli/how-tos/import-contacts-csv",
+                      "user-guide/cli/how-tos/use-local-presence",
+                      "user-guide/cli/how-tos/deploy-to-railway",
+                      "user-guide/cli/how-tos/troubleshoot-auth",
+                      "user-guide/cli/how-tos/cli-faq"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Discord Bot",
                 "icon": "discord",
                 "pages": [
