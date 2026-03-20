@@ -1,0 +1,84 @@
+---
+import type { LaunchOverviewSection } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+  title: string;
+  intro: string;
+  sections: LaunchOverviewSection[];
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+const { sectionId, title, intro, sections, ctaLabel, ctaHref } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-overview">
+    <div class="launch-overview__intro">
+      <p class="launch-eyebrow">what is consuelo?</p>
+      <h2 class="launch-overview__title">{title}</h2>
+      <p class="launch-copy">{intro}</p>
+      <a class="launch-button launch-mono" href={ctaHref}>{ctaLabel}</a>
+    </div>
+
+    <div class="launch-grid-2">
+      {sections.map((section) => (
+        <article class="launch-overview__card launch-card">
+          <h3>{section.title}</h3>
+          <p class="launch-copy">{section.text}</p>
+          <ul>
+            {section.items.map((item) => (
+              <li class="launch-mono">{item}</li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-overview {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .launch-overview__intro {
+    display: grid;
+    gap: 1rem;
+    max-width: 50rem;
+  }
+
+  .launch-overview__title {
+    margin: 0;
+    font-size: clamp(1.85rem, 1.4rem + 1.4vw, 3rem);
+    letter-spacing: -0.06em;
+  }
+
+  .launch-overview__card {
+    border-radius: 1.25rem;
+    padding: 1.35rem;
+  }
+
+  .launch-overview__card h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    letter-spacing: -0.04em;
+  }
+
+  .launch-overview__card ul {
+    margin: 1.1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .launch-overview__card li {
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--launch-line);
+    color: var(--launch-muted);
+    font-size: 0.86rem;
+  }
+</style>

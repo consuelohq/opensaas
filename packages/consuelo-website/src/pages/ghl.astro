@@ -1,17 +1,16 @@
 ---
-const mercuryUrl = '/mercury';
+import { ghlMarketplaceUrl } from '../data/launch-content';
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="refresh" content={`0;url=${mercuryUrl}`} />
+    <meta http-equiv="refresh" content={'0;url=' + ghlMarketplaceUrl} />
     <meta name="robots" content="noindex,nofollow" />
-    <link rel="canonical" href={new URL(mercuryUrl, Astro.url).toString()} />
-    <title>Redirecting to Mercury</title>
+    <title>Redirecting to GoHighLevel</title>
   </head>
   <body style="font-family: system-ui, sans-serif; background: #141010; color: #fff; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 24px;">
-    <p>redirecting to mercury. <a href={mercuryUrl} style="color: inherit;">continue manually</a>.</p>
+    <p>redirecting to the GoHighLevel install flow. <a href={ghlMarketplaceUrl} style="color: inherit;">continue manually</a>.</p>
   </body>
 </html>

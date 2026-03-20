@@ -1,0 +1,360 @@
+---
+import { launchTabs, siteLinks } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-hero">
+    <div class="launch-hero__announcement launch-mono">
+      <span class="launch-hero__badge">new</span>
+      <span>new app available in beta chrome safari and firefox.</span>
+      <a class="launch-inline-link" href={siteLinks.app}>sign up now</a>
+    </div>
+
+    <div class="launch-hero__copy">
+      <h1 class="launch-title">telecommunication infrastructure that integrates everywhere.</h1>
+      <p class="launch-copy">software that meets where you are from crm's to work channels to your ai agents.</p>
+    </div>
+
+    <div class="launch-hero__install launch-card" data-launch-hero>
+      <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces">
+        {launchTabs.map((tab, index) => (
+          <button
+            class:list={['launch-hero__tab', { 'is-active': index === 0 }]}
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? 'true' : 'false'}
+            data-tab-button={tab.id}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div class="launch-hero__command" data-command-box>
+        {launchTabs.map((tab, index) => (
+          <div class:list={['launch-hero__command-panel', { 'is-active': index === 0 }]} data-tab-panel={tab.id}>
+            <div>
+              <p class="launch-hero__command-value launch-mono">{tab.value}</p>
+              <p class="launch-hero__command-text">{tab.description}</p>
+              {tab.note && <p class="launch-hero__command-note launch-mono">{tab.note}</p>}
+            </div>
+            <div class="launch-hero__command-actions">
+              {tab.kind === 'link' && tab.href ? (
+                <a class="launch-button--ghost launch-mono" href={tab.href}>{tab.actionLabel}</a>
+              ) : (
+                <button class="launch-button--ghost launch-mono" type="button" data-copy-button={tab.id}>{tab.actionLabel}</button>
+              )}
+              <button class="launch-button--quiet launch-mono" type="button" data-copy-value={tab.id}>copy</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="launch-hero__media launch-card" data-launch-media>
+      {launchTabs.map((tab, index) => (
+        <article class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
+          <div class="launch-hero__media-copy">
+            <p class="launch-eyebrow">{tab.mediaEyebrow}</p>
+            <h2 class="launch-hero__media-title">{tab.mediaTitle}</h2>
+            <p class="launch-copy">{tab.mediaText}</p>
+          </div>
+          <div class="launch-hero__screen">
+            <div class="launch-hero__screen-bar launch-mono">
+              <span>consuelo</span>
+              <span>{tab.label}</span>
+            </div>
+            <img src={tab.imageSrc} alt={tab.imageAlt} loading="eager" />
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ launchTabs }}>
+  const root = document.querySelector('[data-launch-hero]');
+  const mediaRoot = document.querySelector('[data-launch-media]');
+
+  if (root && mediaRoot) {
+    const tabs = launchTabs;
+    const buttons = Array.from(root.querySelectorAll('[data-tab-button]'));
+    const panels = Array.from(root.querySelectorAll('[data-tab-panel]'));
+    const mediaPanels = Array.from(mediaRoot.querySelectorAll('[data-media-panel]'));
+    const copyButtons = Array.from(root.querySelectorAll('[data-copy-value]'));
+    let activeIndex = 0;
+    let rotationHandle;
+
+    const sync = (nextIndex) => {
+      activeIndex = nextIndex;
+      buttons.forEach((button, index) => {
+        const isActive = index === nextIndex;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      panels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
+      mediaPanels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
+    };
+
+    const restartRotation = () => {
+      window.clearInterval(rotationHandle);
+      rotationHandle = window.setInterval(() => {
+        sync((activeIndex + 1) % tabs.length);
+      }, 6500);
+    };
+
+    buttons.forEach((button, index) => {
+      button.addEventListener('click', () => {
+        sync(index);
+        restartRotation();
+      });
+    });
+
+    copyButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const tabId = button.getAttribute('data-copy-value');
+        const entry = tabs.find((tab) => tab.id === tabId);
+        if (!entry) return;
+        await navigator.clipboard.writeText(entry.value);
+        const previous = button.textContent;
+        button.textContent = 'copied';
+        window.setTimeout(() => {
+          button.textContent = previous;
+        }, 1400);
+      });
+    });
+
+    root.querySelectorAll('[data-copy-button]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const tabId = button.getAttribute('data-copy-button');
+        const entry = tabs.find((tab) => tab.id === tabId);
+        if (!entry) return;
+        await navigator.clipboard.writeText(entry.value);
+        const previous = button.textContent;
+        button.textContent = 'copied';
+        window.setTimeout(() => {
+          button.textContent = previous;
+        }, 1400);
+      });
+    });
+
+    sync(0);
+    restartRotation();
+  }
+</script>
+
+<style>
+  .launch-hero {
+    display: grid;
+    gap: 1.5rem;
+    padding-top: clamp(2rem, 1.3rem + 2vw, 4rem);
+    padding-bottom: clamp(2rem, 1.3rem + 2vw, 4rem);
+  }
+
+  .launch-hero__announcement {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    color: var(--launch-muted);
+    font-size: 0.95rem;
+  }
+
+  .launch-hero__badge {
+    border: 1px solid var(--launch-line);
+    padding: 0.28rem 0.44rem;
+    border-radius: 0.4rem;
+    color: var(--launch-fg);
+    background: var(--launch-panel);
+  }
+
+  .launch-hero__copy {
+    display: grid;
+    gap: 1.35rem;
+    max-width: 48rem;
+  }
+
+  .launch-hero__install {
+    border-radius: 1.4rem;
+    overflow: hidden;
+  }
+
+  .launch-hero__tabs {
+    display: flex;
+    gap: 0.2rem;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--launch-line);
+    padding: 0.45rem 0.45rem 0;
+    scrollbar-width: none;
+  }
+
+  .launch-hero__tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .launch-hero__tab {
+    border: 0;
+    background: transparent;
+    color: var(--launch-muted);
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem 0.85rem 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .launch-hero__tab.is-active {
+    background: var(--launch-bg);
+    color: var(--launch-fg);
+    border-left: 1px solid var(--launch-line);
+    border-right: 1px solid var(--launch-line);
+    border-top: 1px solid var(--launch-line);
+    margin-bottom: -1px;
+  }
+
+  .launch-hero__command {
+    padding: 1.25rem;
+    background: var(--launch-bg);
+  }
+
+  .launch-hero__command-panel {
+    display: none;
+    gap: 1rem;
+  }
+
+  .launch-hero__command-panel.is-active {
+    display: grid;
+  }
+
+  .launch-hero__command-value {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  .launch-hero__command-text,
+  .launch-hero__command-note {
+    margin: 0.55rem 0 0;
+    color: var(--launch-muted);
+  }
+
+  .launch-hero__command-note {
+    font-size: 0.8rem;
+  }
+
+  .launch-hero__command-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .launch-hero__media {
+    border-radius: 1.6rem;
+    overflow: hidden;
+  }
+
+  .launch-hero__media-panel {
+    display: none;
+    gap: 1.5rem;
+    padding: clamp(1.2rem, 1rem + 1vw, 1.8rem);
+  }
+
+  .launch-hero__media-panel.is-active {
+    display: grid;
+  }
+
+  .launch-hero__media-title {
+    margin: 0 0 1rem;
+    font-size: clamp(1.5rem, 1.1rem + 1vw, 2.15rem);
+    line-height: 1.05;
+    letter-spacing: -0.05em;
+  }
+
+  .launch-hero__screen {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    border: 1px solid var(--launch-line);
+    background: color-mix(in srgb, var(--launch-bg) 82%, var(--launch-fg) 18%);
+  }
+
+  .launch-hero__screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.04), transparent);
+    pointer-events: none;
+  }
+
+  .launch-hero__screen-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--launch-line);
+    color: var(--launch-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .launch-hero__screen img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  @media (min-width: 880px) {
+    .launch-hero__command-panel {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .launch-hero__media-panel {
+      grid-template-columns: minmax(18rem, 25rem) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .launch-hero {
+      gap: 1.1rem;
+    }
+
+    .launch-hero__announcement {
+      width: 100%;
+      padding: 0.85rem 0.95rem;
+      border: 1px solid var(--launch-line);
+      border-radius: 1rem;
+      background: var(--launch-panel);
+    }
+
+    .launch-hero__command {
+      padding: 1rem;
+    }
+
+    .launch-hero__command-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .launch-hero__command-actions > * {
+      width: 100%;
+    }
+
+    .launch-hero__media-panel {
+      padding: 1rem;
+    }
+
+    .launch-hero__screen img {
+      aspect-ratio: 4 / 5;
+    }
+  }
+</style>

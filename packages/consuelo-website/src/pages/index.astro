@@ -1,29 +1,73 @@
 ---
-// Components
-// - Layout
-import Layout from '../layouts/Layout.astro'
-// - UI
-import Hero from '../components/blocks/hero/HomeCTA.astro'
-import Features from '../components/blocks/features/FeatureCards.astro'
-import Testimonial from '../components/blocks/testimonials/BasicDark.astro'
-import Highlights from '../components/blocks/highlights/HightlightRows.astro'
-import CTA from '../components/blocks/CTA/BasicDark.astro'
+import LaunchFaq from '../components/launch/LaunchFaq.astro';
+import LaunchFooter from '../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../components/launch/LaunchHeader.astro';
+import LaunchHero from '../components/launch/LaunchHero.astro';
+import LaunchMercuryPromo from '../components/launch/LaunchMercuryPromo.astro';
+import LaunchOverview from '../components/launch/LaunchOverview.astro';
+import {
+  launchFaqItems,
+  launchOverviewIntro,
+  launchOverviewSections,
+  launchPageSections,
+  siteLinks,
+} from '../data/launch-content';
+import LaunchLayout from '../layouts/LaunchLayout.astro';
 
-// Content
-// - Testimonial background
-import testimonialBackground from '../assets/testimonial-bg-01.webp'
-// - SEO
-const SEO = {
-	title: 'Consuelo — $20 Power Dialer. Free CRM. AI Coaching.',
-	description:
-		'Open-source sales infrastructure for insurance teams. Power dialer with local presence, free CRM, real-time AI coaching, and analytics. Replace your $250/seat stack for $20.'
-}
+const description = 'Telecommunication infrastructure that integrates everywhere. Browser app, embed, work channels, and assistant-ready workflows in one Consuelo platform.';
 ---
 
-<Layout title={SEO.title} description={SEO.description}>
-	<Hero />
-	<Features />
-	<Testimonial bg={testimonialBackground} bgPosition="right" />
-	<Highlights />
-	<CTA />
-</Layout>
+<LaunchLayout title="Consuelo" description={description} canonicalPath="/">
+  <LaunchHeader pageSections={launchPageSections} />
+  <LaunchHero sectionId="intro" />
+  <LaunchOverview
+    sectionId="overview"
+    title="one platform that can show up in the browser, inside your crm, in chat, and in terminal workflows."
+    intro={launchOverviewIntro}
+    sections={launchOverviewSections}
+    ctaLabel="read docs"
+    ctaHref={siteLinks.docs}
+  />
+
+  <section class="launch-section" id="deployment">
+    <div class="launch-content launch-content--wide launch-notes launch-grid-3">
+      <article class="launch-card launch-notes__card">
+        <p class="launch-eyebrow">deployment model</p>
+        <h2>host it yourself or use Mercury.</h2>
+        <p class="launch-copy">The crm can stay free. Mercury is there when you want hosted telephony and AI usage. Self-hosting stays on the table when control matters more.</p>
+      </article>
+      <article class="launch-card launch-notes__card">
+        <p class="launch-eyebrow">clean install paths</p>
+        <h2>short links where they matter.</h2>
+        <p class="launch-copy">The site can hide ugly provider urls behind clean entry points like <span class="launch-mono">consuelohq.com/ghl</span> so the product feels intentional all the way through.</p>
+      </article>
+      <article class="launch-card launch-notes__card">
+        <p class="launch-eyebrow">docs first</p>
+        <h2>the details stay close.</h2>
+        <p class="launch-copy">The landing page handles orientation, and the docs pick up the exact install and operations details once someone is ready to go deeper.</p>
+      </article>
+    </div>
+  </section>
+
+  <LaunchFaq
+    sectionId="faq"
+    title="answers people usually need before they trust the stack"
+    intro="Simple landing page, but it should still answer the questions people are going to have about the product, the deployment model, and the hosted layer."
+    items={launchFaqItems}
+  />
+  <LaunchMercuryPromo sectionId="mercury" />
+  <LaunchFooter sectionId="waitlist" />
+</LaunchLayout>
+
+<style>
+  .launch-notes__card {
+    border-radius: 1.2rem;
+    padding: 1.25rem;
+  }
+
+  .launch-notes__card h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.2rem;
+    letter-spacing: -0.05em;
+  }
+</style>

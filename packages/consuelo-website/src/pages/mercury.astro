@@ -1,0 +1,160 @@
+---
+import LaunchFaq from '../components/launch/LaunchFaq.astro';
+import LaunchFooter from '../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../components/launch/LaunchHeader.astro';
+import {
+  mercuryFaqItems,
+  mercuryProblems,
+  mercurySteps,
+  siteLinks,
+} from '../data/launch-content';
+import LaunchLayout from '../layouts/LaunchLayout.astro';
+
+const description = 'Mercury is the hosted Consuelo plan for teams that want telephony and AI usage without turning infrastructure into the first project.';
+---
+
+<LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
+  <LaunchHeader />
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-hero launch-grid-2">
+      <div class="mercury-hero__copy">
+        <p class="launch-eyebrow">mercury</p>
+        <h1 class="launch-title">hosted telephony and ai usage for teams that want the product without the setup burden.</h1>
+        <p class="launch-copy">Mercury is the hosted layer for Consuelo. Keep the crm free, self-host when you want maximum control, or use Mercury when you want hosted infrastructure and a faster path to getting live.</p>
+        <div class="mercury-hero__actions">
+          <a class="launch-button launch-mono" href={siteLinks.app}>get started with mercury</a>
+          <a class="launch-button--ghost launch-mono" href={siteLinks.docs}>read docs</a>
+        </div>
+      </div>
+
+      <aside class="launch-card mercury-hero__card">
+        <p class="launch-eyebrow">hosted plan</p>
+        <h2>starting at $20 plus usage</h2>
+        <p class="launch-copy">Mercury is for teams that do not want to manage Twilio setup, provider keys, and hosted operations before they can test the workflow.</p>
+        <ul>
+          <li class="launch-mono">hosted workspace path</li>
+          <li class="launch-mono">hosted telephony and ai usage</li>
+          <li class="launch-mono">free crm still available</li>
+          <li class="launch-mono">self-host later if you want</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-section">
+      <div class="mercury-section__intro">
+        <p class="launch-eyebrow">what problem is mercury solving?</p>
+        <h2>most teams want to prove the workflow before they become infrastructure operators.</h2>
+      </div>
+      <div class="launch-grid-3">
+        {mercuryProblems.map((problem) => (
+          <article class="launch-card mercury-card">
+            <h3>{problem.title}</h3>
+            <p class="launch-copy">{problem.text}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-section">
+      <div class="mercury-section__intro">
+        <p class="launch-eyebrow">how mercury works</p>
+        <h2>a cleaner path for teams that want hosted access now and deployment flexibility later.</h2>
+      </div>
+      <div class="launch-grid-3">
+        {mercurySteps.map((step) => (
+          <article class="launch-card mercury-card mercury-card--step">
+            <p class="launch-eyebrow">{step.step}</p>
+            <h3>{step.title}</h3>
+            <p class="launch-copy">{step.text}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-compare launch-grid-2">
+      <article class="launch-card mercury-card">
+        <p class="launch-eyebrow">mercury</p>
+        <h2>choose hosted when speed wins.</h2>
+        <p class="launch-copy">Mercury is the right fit when you want the app, the dialer, and the usage layer live quickly without making provider setup your first bottleneck.</p>
+      </article>
+      <article class="launch-card mercury-card">
+        <p class="launch-eyebrow">self-hosted</p>
+        <h2>choose self-managed when ownership wins.</h2>
+        <p class="launch-copy">Self-host when you want to bring your own Twilio and AI keys, own the deployment path, and control the infrastructure directly from the start.</p>
+      </article>
+    </div>
+  </section>
+
+  <LaunchFaq
+    title="Mercury FAQ"
+    intro="The hosted plan should feel straightforward: what it is, when to use it, how it fits with self-hosting, and what stays flexible later."
+    items={mercuryFaqItems}
+  />
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .mercury-hero {
+    align-items: start;
+    padding-top: clamp(2rem, 1.3rem + 2vw, 4rem);
+    padding-bottom: clamp(2rem, 1.3rem + 2vw, 4rem);
+  }
+
+  .mercury-hero__copy {
+    display: grid;
+    gap: 1.3rem;
+  }
+
+  .mercury-hero__card,
+  .mercury-card {
+    border-radius: 1.2rem;
+    padding: 1.25rem;
+  }
+
+  .mercury-hero__card h2,
+  .mercury-section h2,
+  .mercury-card h2,
+  .mercury-card h3 {
+    margin: 0 0 0.75rem;
+    letter-spacing: -0.05em;
+  }
+
+  .mercury-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .mercury-hero__card ul {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .mercury-hero__card li {
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--launch-line);
+    color: var(--launch-muted);
+    font-size: 0.86rem;
+  }
+
+  .mercury-section {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .mercury-section__intro {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 44rem;
+  }
+</style>

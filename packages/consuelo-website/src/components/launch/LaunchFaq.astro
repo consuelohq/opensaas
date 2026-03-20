@@ -1,0 +1,85 @@
+---
+import type { LaunchFaqItem } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+  title: string;
+  intro: string;
+  items: LaunchFaqItem[];
+};
+
+const { sectionId, title, intro, items } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-faq">
+    <div class="launch-faq__intro">
+      <p class="launch-eyebrow">faq</p>
+      <h2>{title}</h2>
+      <p class="launch-copy">{intro}</p>
+    </div>
+
+    <div class="launch-faq__list launch-card">
+      {items.map((item, index) => (
+        <details class="launch-faq__item" open={index === 0}>
+          <summary>
+            <span>{item.question}</span>
+            <span class="launch-mono">+</span>
+          </summary>
+          <p class="launch-copy">{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-faq {
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  .launch-faq h2 {
+    margin: 0;
+    font-size: clamp(1.85rem, 1.4rem + 1.4vw, 3rem);
+    letter-spacing: -0.06em;
+  }
+
+  .launch-faq__intro {
+    display: grid;
+    gap: 1rem;
+    max-width: 40rem;
+  }
+
+  .launch-faq__list {
+    border-radius: 1.25rem;
+    overflow: hidden;
+  }
+
+  .launch-faq__item + .launch-faq__item {
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-faq__item summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.2rem 1.3rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1rem;
+  }
+
+  .launch-faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .launch-faq__item p {
+    padding: 0 1.3rem 1.25rem;
+  }
+
+  .launch-faq__item[open] summary span:last-child {
+    transform: rotate(45deg);
+  }
+</style>

@@ -1,0 +1,557 @@
+---
+import { siteLinks } from '../../data/launch-content';
+import { launchDocsMenuTabs } from '../../data/launch-docs';
+
+type Props = {
+  pageSections?: LaunchPageSection[];
+};
+
+type LaunchPageSection = {
+  id: string;
+  label: string;
+};
+
+const launchHeaderLinks = [
+  { label: 'docs', href: siteLinks.docs },
+  { label: 'mercury', href: siteLinks.mercury },
+  { label: 'enterprise', href: siteLinks.enterprise },
+];
+
+const launchMobileMenuLinks = [
+  ...launchHeaderLinks,
+  { label: 'login', href: siteLinks.login },
+  { label: 'free', href: siteLinks.free },
+];
+
+const { pageSections = [] } = Astro.props as Props;
+const hasPageSections = pageSections.length > 0;
+---
+
+<header class="launch-header launch-section" data-launch-header>
+  <div class="launch-content launch-content--wide launch-header__inner">
+    <a class="launch-header__brand launch-mono" href="/">consuelo.</a>
+
+    <nav class="launch-header__nav launch-mono" aria-label="Primary">
+      {launchHeaderLinks.map((link) => (
+        <a href={link.href}>{link.label}</a>
+      ))}
+    </nav>
+
+    <div class="launch-header__actions launch-mono">
+      <a class="launch-button--ghost" href={siteLinks.login}>login</a>
+      <a class="launch-button" href={siteLinks.free}>free</a>
+    </div>
+
+    <button
+      class="launch-header__menu-toggle launch-button--ghost launch-mono"
+      type="button"
+      aria-controls="launch-mobile-menu"
+      aria-expanded="false"
+      data-mobile-menu-toggle
+    >
+      menu
+    </button>
+  </div>
+
+  {hasPageSections && (
+    <div class="launch-header__page-nav launch-mono" data-page-nav>
+      <button
+        class="launch-header__page-nav-toggle"
+        type="button"
+        aria-controls="launch-page-nav-panel"
+        aria-expanded="false"
+        data-page-nav-toggle
+      >
+        <span class="launch-header__page-nav-kicker">on this page</span>
+        <span class="launch-header__page-nav-active" data-active-section-label>
+          {pageSections[0].label}
+        </span>
+      </button>
+
+      <div
+        class="launch-header__page-nav-panel launch-card"
+        id="launch-page-nav-panel"
+        data-page-nav-panel
+        data-open="false"
+      >
+        {pageSections.map((section) => (
+          <a class="launch-header__page-link" href={`#${section.id}`} data-page-anchor>
+            {section.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+</header>
+
+<div class="launch-header__mobile-menu" data-mobile-menu data-open="false" aria-hidden="true" id="launch-mobile-menu">
+  <button class="launch-header__mobile-backdrop" type="button" aria-label="close menu" data-mobile-menu-close></button>
+
+  <div class="launch-header__mobile-panel">
+    <div class="launch-header__mobile-top launch-mono">
+      <a class="launch-header__brand" href="/">consuelo.</a>
+      <button class="launch-header__mobile-close launch-button--ghost launch-mono" type="button" data-mobile-menu-close>
+        close
+      </button>
+    </div>
+
+    <div class="launch-header__mobile-scroll launch-mono">
+      <section class="launch-header__mobile-section">
+        <p class="launch-eyebrow">menu</p>
+        <div class="launch-header__mobile-links">
+          {launchMobileMenuLinks.map((link) => (
+            <a href={link.href} data-mobile-link>{link.label}</a>
+          ))}
+        </div>
+      </section>
+
+      {hasPageSections && (
+        <section class="launch-header__mobile-section">
+          <p class="launch-eyebrow">landing page</p>
+          <div class="launch-header__mobile-links">
+            {pageSections.map((section) => (
+              <a href={`#${section.id}`} data-mobile-link>{section.label}</a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section class="launch-header__mobile-section">
+        <p class="launch-eyebrow">docs</p>
+
+        <div class="launch-header__docs-tabs">
+          {launchDocsMenuTabs.map((tab) => (
+            <section class="launch-header__docs-tab">
+              <p class="launch-header__docs-tab-title">{tab.label}</p>
+
+              <div class="launch-header__docs-groups">
+                {tab.groups.map((group) => (
+                  <details class="launch-header__docs-group">
+                    <summary>{group.label}</summary>
+
+                    <div class="launch-header__docs-links">
+                      {group.links.map((link) => (
+                        <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ pageSections }}>
+  const header = document.querySelector('[data-launch-header]');
+  const menu = document.querySelector('[data-mobile-menu]');
+  const menuToggle = document.querySelector('[data-mobile-menu-toggle]');
+  const menuCloseButtons = Array.from(
+    document.querySelectorAll('[data-mobile-menu-close]'),
+  );
+  const pageNav = document.querySelector('[data-page-nav]');
+  const pageNavToggle = document.querySelector('[data-page-nav-toggle]');
+  const pageNavPanel = document.querySelector('[data-page-nav-panel]');
+  const activeSectionLabel = document.querySelector('[data-active-section-label]');
+  const pageAnchors = Array.from(document.querySelectorAll('[data-page-anchor]'));
+  const mobileLinks = Array.from(document.querySelectorAll('[data-mobile-link]'));
+
+  const setMenuOpen = (nextOpen) => {
+    if (!(menu instanceof HTMLElement) || !(menuToggle instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    menu.dataset.open = nextOpen ? 'true' : 'false';
+    menu.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+    menuToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+    document.body.style.overflow = nextOpen ? 'hidden' : '';
+  };
+
+  const setPageNavOpen = (nextOpen) => {
+    if (!(pageNavPanel instanceof HTMLElement) || !(pageNavToggle instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    pageNavPanel.dataset.open = nextOpen ? 'true' : 'false';
+    pageNavToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+  };
+
+  const syncActiveSection = (sectionId) => {
+    const activeSection = pageSections.find((section) => section.id === sectionId);
+
+    if (!activeSection) {
+      return;
+    }
+
+    if (activeSectionLabel instanceof HTMLElement) {
+      activeSectionLabel.textContent = activeSection.label;
+    }
+
+    pageAnchors.forEach((anchor) => {
+      if (!(anchor instanceof HTMLAnchorElement)) {
+        return;
+      }
+
+      const isActive = anchor.getAttribute('href') === '#' + sectionId;
+      anchor.classList.toggle('is-active', isActive);
+      anchor.setAttribute('aria-current', isActive ? 'location' : 'false');
+    });
+  };
+
+  if (menuToggle instanceof HTMLButtonElement) {
+    menuToggle.addEventListener('click', () => {
+      const isOpen = menu instanceof HTMLElement && menu.dataset.open === 'true';
+      setMenuOpen(!isOpen);
+    });
+  }
+
+  menuCloseButtons.forEach((button) => {
+    if (!(button instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    button.addEventListener('click', () => {
+      setMenuOpen(false);
+    });
+  });
+
+  mobileLinks.forEach((link) => {
+    if (!(link instanceof HTMLAnchorElement)) {
+      return;
+    }
+
+    link.addEventListener('click', () => {
+      setMenuOpen(false);
+      setPageNavOpen(false);
+    });
+  });
+
+  if (pageNavToggle instanceof HTMLButtonElement) {
+    pageNavToggle.addEventListener('click', () => {
+      const isOpen = pageNavPanel instanceof HTMLElement && pageNavPanel.dataset.open === 'true';
+      setPageNavOpen(!isOpen);
+    });
+  }
+
+  if (pageSections.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((entryA, entryB) => entryB.intersectionRatio - entryA.intersectionRatio);
+
+        const nextSection = visibleEntries[0];
+
+        if (nextSection) {
+          syncActiveSection(nextSection.target.id);
+        }
+      },
+      {
+        rootMargin: '-18% 0px -55% 0px',
+        threshold: [0.2, 0.45, 0.7],
+      },
+    );
+
+    pageSections.forEach((section) => {
+      const element = document.getElementById(section.id);
+
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    syncActiveSection(pageSections[0].id);
+  }
+
+  const syncHeaderState = () => {
+    if (!(header instanceof HTMLElement)) {
+      return;
+    }
+
+    header.classList.toggle('is-scrolled', window.scrollY > 24);
+  };
+
+  syncHeaderState();
+  window.addEventListener('scroll', syncHeaderState, { passive: true });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      setMenuOpen(false);
+      setPageNavOpen(false);
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (
+      pageNav instanceof HTMLElement &&
+      pageNavPanel instanceof HTMLElement &&
+      pageNavPanel.dataset.open === 'true' &&
+      !pageNav.contains(event.target)
+    ) {
+      setPageNavOpen(false);
+    }
+  });
+</script>
+
+<style>
+  .launch-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(18px);
+    background: color-mix(in srgb, var(--launch-bg) 88%, transparent);
+    transition: background 180ms ease, border-color 180ms ease;
+  }
+
+  .launch-header.is-scrolled {
+    background: color-mix(in srgb, var(--launch-bg) 94%, transparent);
+  }
+
+  .launch-header__inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    min-height: 5.25rem;
+    transition: min-height 180ms ease;
+  }
+
+  .launch-header.is-scrolled .launch-header__inner {
+    min-height: 4.5rem;
+  }
+
+  .launch-header__brand {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+  }
+
+  .launch-header__nav {
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    color: var(--launch-muted);
+    font-size: 0.98rem;
+  }
+
+  .launch-header__nav a:hover,
+  .launch-header__docs-links a:hover {
+    color: var(--launch-fg);
+  }
+
+  .launch-header__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-self: end;
+  }
+
+  .launch-header__menu-toggle,
+  .launch-header__page-nav {
+    display: none;
+  }
+
+  .launch-header__page-nav {
+    position: relative;
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-header__page-nav-toggle {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.95rem 1.25rem;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    text-align: left;
+  }
+
+  .launch-header__page-nav-kicker {
+    color: var(--launch-muted);
+  }
+
+  .launch-header__page-nav-active {
+    justify-self: end;
+    transition: color 160ms ease, transform 160ms ease;
+  }
+
+  .launch-header__page-nav-panel {
+    position: absolute;
+    inset: calc(100% + 0.45rem) 1rem auto;
+    border-radius: 1rem;
+    display: grid;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-0.35rem);
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  .launch-header__page-nav-panel[data-open='true'] {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .launch-header__page-link {
+    padding: 0.95rem 1rem;
+    border-top: 1px solid var(--launch-line);
+    background: color-mix(in srgb, var(--launch-bg) 95%, transparent);
+    color: var(--launch-muted);
+  }
+
+  .launch-header__page-link:first-child {
+    border-top: 0;
+  }
+
+  .launch-header__page-link.is-active {
+    color: var(--launch-fg);
+    background: var(--launch-panel);
+  }
+
+  .launch-header__mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .launch-header__mobile-menu[data-open='true'] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .launch-header__mobile-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(20, 16, 16, 0.48);
+  }
+
+  .launch-header__mobile-panel {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(100%, 34rem);
+    background: var(--launch-bg);
+    border-left: 1px solid var(--launch-line);
+    transform: translateX(100%);
+    transition: transform 220ms ease;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .launch-header__mobile-menu[data-open='true'] .launch-header__mobile-panel {
+    transform: translateX(0);
+  }
+
+  .launch-header__mobile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--launch-line);
+  }
+
+  .launch-header__mobile-scroll {
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .launch-header__mobile-section {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .launch-header__mobile-links {
+    display: grid;
+    border: 1px solid var(--launch-line);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .launch-header__mobile-links a {
+    padding: 0.95rem 1rem;
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-header__mobile-links a:first-child {
+    border-top: 0;
+  }
+
+  .launch-header__docs-tabs {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .launch-header__docs-tab {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .launch-header__docs-tab-title {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--launch-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .launch-header__docs-groups {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .launch-header__docs-group {
+    border: 1px solid var(--launch-line);
+    border-radius: 1rem;
+    background: var(--launch-panel);
+    overflow: hidden;
+  }
+
+  .launch-header__docs-group summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.95rem 1rem;
+  }
+
+  .launch-header__docs-group summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .launch-header__docs-links {
+    display: grid;
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-header__docs-links a {
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--launch-line);
+    color: var(--launch-muted);
+  }
+
+  .launch-header__docs-links a:first-child {
+    border-top: 0;
+  }
+
+  @media (max-width: 800px) {
+    .launch-header__nav,
+    .launch-header__actions {
+      display: none;
+    }
+
+    .launch-header__menu-toggle,
+    .launch-header__page-nav {
+      display: block;
+    }
+  }
+</style>

@@ -326,12 +326,12 @@
                 ]
               },
               {
-                "group": "GoHighLevel",
-                "icon": "plug",
-                "pages": [
-                  "user-guide/ghl/overview",
-                  {
-                    "group": "Embedded Dialer",
+          "group": "GoHighLevel",
+          "icon": "plug",
+          "pages": [
+            "user-guide/ghl/overview",
+            {
+              "group": "Embedded Dialer",
                     "pages": [
                       "user-guide/ghl/embedded/overview",
                       "user-guide/ghl/embedded/getting-started",
@@ -880,9 +880,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/fr/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -1402,9 +1402,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/ar/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -1924,9 +1924,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/cs/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -2446,9 +2446,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/de/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -2968,9 +2968,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/es/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -3490,9 +3490,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/it/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -4012,9 +4012,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/ja/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -4534,9 +4534,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/ko/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -5056,9 +5056,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/pt/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -5578,9 +5578,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/ro/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -6100,9 +6100,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/ru/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -6622,9 +6622,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/tr/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",
@@ -7144,9 +7144,9 @@
         ]
       },
       {
-        "group": "GoHighLevel",
-        "icon": "plug",
-        "pages": [
+          "group": "Overview",
+          "icon": "plug",
+          "pages": [
           "l/zh/user-guide/ghl/overview",
           {
             "group": "Embedded Dialer",

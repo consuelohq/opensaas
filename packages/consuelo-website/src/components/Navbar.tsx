@@ -90,7 +90,7 @@ const platform: { sections: Section[]; cta: Cta } = {
     links: [
       { title: "Book a demo", href: "/demo" },
       { title: "Start free trial", href: "/signup" },
-      { title: "See pricing", href: "/pricing" },
+      { title: "See mercury", href: "/mercury" },
     ],
   },
 };
@@ -165,7 +165,7 @@ export default function Navbar() {
             <Trigger label="Platform" isOpen={active === "platform"} onEnter={() => open("platform")} onLeave={() => {}} onClick={() => setActive(active === "platform" ? null : "platform")} />
             <Trigger label="Resources" isOpen={active === "resources"} onEnter={() => open("resources")} onLeave={() => {}} onClick={() => setActive(active === "resources" ? null : "resources")} />
             <NavLink href="/customers">Customers</NavLink>
-            <NavLink href="/pricing">Pricing</NavLink>
+            <NavLink href="/mercury">Mercury</NavLink>
 
             {/* mega menu — drops right below triggers, same hover zone */}
             {active && (
@@ -198,7 +198,7 @@ export default function Navbar() {
           <MobileSection title="Platform" sections={platform.sections} />
           <MobileSection title="Resources" sections={resources.sections} />
           <a href="/customers" className="block py-2.5 text-[15px] font-medium">Customers</a>
-          <a href="/pricing" className="block py-2.5 text-[15px] font-medium">Pricing</a>
+          <a href="/mercury" className="block py-2.5 text-[15px] font-medium">Mercury</a>
           <div className="mt-3 flex flex-col gap-2">
             <a href="/signin" className="rounded-lg border border-(--color-border) py-2.5 text-center text-[14px] font-medium">Sign in</a>
             <a href="/signup" className="rounded-lg bg-(--color-fg) py-2.5 text-center text-[14px] font-medium text-(--color-bg)">Start for free</a>

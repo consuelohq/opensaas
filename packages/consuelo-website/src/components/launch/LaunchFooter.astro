@@ -1,0 +1,135 @@
+---
+import { footerLinks, siteLinks } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-footer-signup">
+    <div>
+      <p class="launch-eyebrow">be the first to know when we release new products</p>
+      <h2>join the waitlist for early access.</h2>
+    </div>
+
+    <form class="launch-footer-signup__form" data-newsletter-form>
+      <input aria-label="Email address" name="email" placeholder="email address" type="email" />
+      <button class="launch-button launch-mono" type="submit">subscribe</button>
+    </form>
+  </div>
+</section>
+
+<footer class="launch-section">
+  <div class="launch-content launch-content--wide launch-footer-links launch-mono">
+    {footerLinks.map((link) => (
+      <a href={link.href}>{link.label}</a>
+    ))}
+  </div>
+  <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
+    <span>©2026 consuelo</span>
+    <div>
+      <a href="/privacy">privacy</a>
+      <a href="/terms">terms</a>
+      <a href={siteLinks.docs}>docs</a>
+    </div>
+  </div>
+</footer>
+
+<script define:vars={{ siteLinks }}>
+  const form = document.querySelector('[data-newsletter-form]');
+  if (form) {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const input = form.querySelector('input[name="email"]');
+      const email = input instanceof HTMLInputElement ? input.value.trim() : '';
+      const base = siteLinks.newsletter;
+      const separator = base.includes('?') ? '&' : '?';
+      const body = email ? 'body=' + encodeURIComponent('newsletter: ' + email) : '';
+      window.location.href = body ? base + separator + body : base;
+    });
+  }
+</script>
+
+<style>
+  .launch-footer-signup {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .launch-footer-signup h2 {
+    margin: 0;
+    font-size: clamp(1.7rem, 1.25rem + 1.1vw, 2.6rem);
+    letter-spacing: -0.05em;
+  }
+
+  .launch-footer-signup__form {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .launch-footer-signup__form input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1rem;
+    background: transparent;
+    color: var(--launch-fg);
+    border: 1px solid var(--launch-line);
+    border-radius: 0.85rem;
+  }
+
+  .launch-footer-links {
+    display: grid;
+    gap: 0;
+  }
+
+  .launch-footer-links a,
+  .launch-footer-meta a,
+  .launch-footer-meta span {
+    padding: 1rem 0;
+    color: var(--launch-muted);
+  }
+
+  .launch-footer-links a + a {
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-footer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid var(--launch-line);
+    color: var(--launch-muted);
+    font-size: 0.85rem;
+  }
+
+  .launch-footer-meta div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  @media (min-width: 760px) {
+    .launch-footer-signup {
+      grid-template-columns: minmax(0, 1fr) minmax(18rem, 28rem);
+      align-items: end;
+    }
+
+    .launch-footer-signup__form {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .launch-footer-links {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .launch-footer-links a + a {
+      border-top: 0;
+      border-left: 1px solid var(--launch-line);
+      padding-left: 1rem;
+    }
+  }
+</style>

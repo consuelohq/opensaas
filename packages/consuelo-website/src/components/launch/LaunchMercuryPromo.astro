@@ -1,0 +1,52 @@
+---
+import { siteLinks } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-mercury-promo">
+    <div>
+      <p class="launch-eyebrow">mercury</p>
+      <h2>hosted telephony and ai usage without making infrastructure your first project.</h2>
+    </div>
+    <div class="launch-mercury-promo__body launch-card">
+      <p class="launch-copy">Mercury is the hosted layer for teams that want Consuelo live quickly. Keep the crm free, self-host when you need maximum control, or use Mercury when speed and convenience matter more than wiring every provider yourself.</p>
+      <div class="launch-mercury-promo__actions">
+        <a class="launch-button launch-mono" href={siteLinks.mercury}>learn about mercury</a>
+        <a class="launch-button--ghost launch-mono" href={siteLinks.app}>open the app</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-mercury-promo {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .launch-mercury-promo h2 {
+    margin: 0;
+    max-width: 40rem;
+    font-size: clamp(1.85rem, 1.4rem + 1.4vw, 3rem);
+    letter-spacing: -0.06em;
+  }
+
+  .launch-mercury-promo__body {
+    border-radius: 1.3rem;
+    padding: 1.3rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .launch-mercury-promo__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>
