@@ -7,6 +7,8 @@ declare module 'groq-sdk' {
           model: string;
           messages: Array<{ role: string; content: string }>;
           response_format?: { type: string };
+        }, options?: {
+          signal?: AbortSignal;
         }): Promise<{
           choices: Array<{
             message?: {
