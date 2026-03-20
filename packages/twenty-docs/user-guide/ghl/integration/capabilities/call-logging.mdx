@@ -1,0 +1,46 @@
+---
+title: Call Logging and Push Updates
+description: Push call outcomes, tags, and contact updates from Consuelo back to GoHighLevel.
+---
+
+The GHL integration can write selected updates back to GoHighLevel for contacts that already have a sync mapping.
+
+## Supported push types
+
+The current implementation supports three push flows:
+
+| Push type | What Consuelo sends |
+| --- | --- |
+| call-outcome | a note containing the call outcome, duration, optional notes, and optional recording link |
+| tags | an updated tag array for the mapped GHL contact |
+| contact-update | mapped contact field changes such as name, email, phone, or address values |
+
+## How call outcome logging works
+
+When a call outcome is pushed, Consuelo:
+
+1. looks up the mapped GHL contact from the synced CRM person id
+2. builds the call note body
+3. writes that note to the GHL contact record
+
+The note body can include:
+
+- outcome
+- duration in seconds
+- follow-up notes
+- recording link
+
+## Requirement for push updates
+
+Push updates only work for contacts with an existing sync mapping. If a CRM contact is not linked to a GHL contact yet, the integration has nowhere safe to send the update.
+
+## What gets mapped on contact updates
+
+For contact updates, Consuelo maps changed CRM fields back into the corresponding GHL contact fields before sending the update.
+
+## Related pages
+
+- [Bidirectional Sync](/user-guide/ghl/integration/capabilities/bidirectional-sync)
+- [Import Contacts from GHL](/user-guide/ghl/integration/how-tos/import-contacts-from-ghl)
+- [Troubleshoot Sync](/user-guide/ghl/integration/how-tos/troubleshoot-sync)
+

@@ -1,0 +1,51 @@
+---
+title: Call Logging
+description: Log call outcomes from the embedded dialer back to the active GoHighLevel contact.
+---
+
+The embedded dialer can send the call outcome back to GoHighLevel after the call ends.
+
+## How logging works
+
+At the end of a call, the embedded dialer:
+
+1. determines the outcome from the finished call session
+2. looks up the current GHL contact in widget state
+3. sends the outcome, call identifier, and duration back through the GHL bridge
+4. writes that activity to the contact record in GoHighLevel
+
+## What gets sent back
+
+The embedded logging flow is built around the current contact and the completed call state.
+
+| Value | Source |
+| --- | --- |
+| contact id | current GHL contact in widget state |
+| outcome | derived from the finished call |
+| call id | active call session |
+| duration | call duration after hangup |
+
+## When logging succeeds best
+
+Call logging works best when:
+
+- the call started from a GHL contact context
+- the contact exists in the current GHL location
+- the widget stays open until the call has fully ended
+
+## Common reasons logs do not appear
+
+- the call was a manual dial with no mapped GHL contact
+- the app lost the embedded session before the call finished
+- the location did not grant the permissions required for writing activity
+
+<Note>
+  Notes and other follow-up details appear in the contact activity flow after the call finishes. If you close the widget too early, you can interrupt that writeback.
+</Note>
+
+## Related pages
+
+- [Dialer Controls](/user-guide/ghl/embedded/capabilities/dialer-controls)
+- [SSO Auth](/user-guide/ghl/embedded/capabilities/sso-auth)
+- [Troubleshoot the Embedded Dialer](/user-guide/ghl/embedded/how-tos/troubleshoot-embed)
+

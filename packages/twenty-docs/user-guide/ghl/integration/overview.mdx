@@ -1,0 +1,60 @@
+---
+title: Overview
+description: Connect a GoHighLevel location to Consuelo for sync, pipeline mapping, and push updates.
+---
+
+> The GoHighLevel integration connects your GHL location to Consuelo over OAuth so contacts and pipeline data can move between systems.
+
+The integration is the admin-facing side of the GHL story. It is separate from the embedded widget and focuses on connection management, imports, sync logs, pipeline mapping, and writing selected updates back to GHL.
+
+## What the integration does
+
+<CardGroup cols={2}>
+  <Card title="Bidirectional Sync" icon="arrow-right-arrow-left" href="/user-guide/ghl/integration/capabilities/bidirectional-sync">
+    Import contacts from GHL, process webhook-driven updates, and keep mapped records aligned.
+  </Card>
+  <Card title="Pipeline Mapping" icon="kanban" href="/user-guide/ghl/integration/capabilities/pipeline-mapping">
+    Map each GHL stage to a Consuelo stage before syncing opportunities.
+  </Card>
+  <Card title="Field Mapping" icon="table-columns" href="/user-guide/ghl/integration/capabilities/field-mapping">
+    Understand the default field map, phone normalization, and custom field handling.
+  </Card>
+  <Card title="Call Logging" icon="note" href="/user-guide/ghl/integration/capabilities/call-logging">
+    Push call outcomes, tag changes, and contact updates back to mapped GHL contacts.
+  </Card>
+</CardGroup>
+
+## Integration building blocks
+
+The integration is built around four core pieces:
+
+| Piece | What it does |
+| --- | --- |
+| OAuth connection | starts the GHL authorization flow, stores encrypted tokens, and refreshes them when needed |
+| Contact sync | imports GHL contacts into People records and keeps a sync map between systems |
+| Pipeline mapping | maps GHL stages to your CRM stages so opportunity sync knows where to land records |
+| Push updates | writes selected activity and contact changes back to GoHighLevel |
+
+## What gets synced today
+
+The implementation already supports:
+
+- connection status and disconnect flows
+- full contact import with pagination
+- incremental contact sync with last-sync tracking
+- sync logs for imports and incremental runs
+- contact webhook handling for create, update, delete, and do-not-contact changes
+- pipeline stage mapping and opportunity sync jobs
+- push updates for call outcomes, tags, and contact field changes
+
+## When to use this section
+
+Use this section if you are the person connecting GoHighLevel to Consuelo, planning the import, or reviewing what data is allowed to move in each direction.
+
+## Next steps
+
+- [Getting Started](/user-guide/ghl/integration/getting-started)
+- [Bidirectional Sync](/user-guide/ghl/integration/capabilities/bidirectional-sync)
+- [Pipeline Mapping](/user-guide/ghl/integration/capabilities/pipeline-mapping)
+- [Troubleshoot Sync](/user-guide/ghl/integration/how-tos/troubleshoot-sync)
+

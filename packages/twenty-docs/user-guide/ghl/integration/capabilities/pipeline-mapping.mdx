@@ -1,0 +1,53 @@
+---
+title: Pipeline Mapping
+description: Map GoHighLevel stages to Consuelo stages before syncing opportunities.
+---
+
+Pipeline sync is stage-driven. Before Consuelo can sync GHL opportunities, each relevant GHL stage needs a matching destination stage in your CRM.
+
+## What gets mapped
+
+The integration stores stage-level mappings, not just pipeline-level mappings.
+
+Each mapping includes:
+
+- the GHL pipeline id
+- the GHL stage id
+- the destination pipeline id
+- the destination stage id
+
+## How pipeline sync works
+
+1. load pipelines and stages from GoHighLevel
+2. save the stage-to-stage mappings for the workspace
+3. fetch GHL opportunities
+4. skip any opportunity whose GHL stage is not mapped
+5. create or update the local opportunity sync record for mapped stages
+
+## What the sync job stores
+
+The opportunity sync table keeps track of:
+
+- GHL opportunity id
+- GHL pipeline id and stage id
+- mapped CRM pipeline id and stage id
+- GHL contact id
+- monetary value
+- opportunity status
+
+## Conflict detection
+
+The pipeline sync flow can also check for stage conflicts by comparing the stored GHL stage against the current CRM stage for the synced opportunity.
+
+Use conflict checks when you want to review differences before a larger sync run.
+
+## Important limitation
+
+Unmapped GHL stages are skipped by design. If a stage is not mapped, Consuelo does not guess where that opportunity belongs.
+
+## Related pages
+
+- [Set Up Pipeline Sync](/user-guide/ghl/integration/how-tos/set-up-pipeline-sync)
+- [Bidirectional Sync](/user-guide/ghl/integration/capabilities/bidirectional-sync)
+- [Troubleshoot Sync](/user-guide/ghl/integration/how-tos/troubleshoot-sync)
+
