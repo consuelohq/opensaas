@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 type DocsPage =
   | string
@@ -44,9 +45,8 @@ export type LaunchDocMenuTab = {
 };
 
 const docsBaseUrl = 'https://docs.consuelohq.com';
-const docsConfig = JSON.parse(
-  readFileSync(new URL('../../../twenty-docs/docs.json', import.meta.url), 'utf-8'),
-) as DocsConfig;
+const docsConfigPath = resolve(process.cwd(), '../twenty-docs/docs.json');
+const docsConfig = JSON.parse(readFileSync(docsConfigPath, 'utf-8')) as DocsConfig;
 
 const englishNavigation = docsConfig.navigation.languages.find(
   (language) => language.language === 'en',
