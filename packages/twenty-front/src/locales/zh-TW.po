@@ -1194,6 +1194,7 @@ msgid "agent"
 msgstr "代理"
 
 #. js-lingui-id: iEQQyu
+#: src/modules/agent/components/AgentPage.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/hooks/useWorkflowAiAgentPermissionActions.ts
 #: src/pages/settings/ai/SettingsAgentForm.tsx
 #: src/pages/settings/ai/SettingsAgentForm.tsx
@@ -1863,6 +1864,11 @@ msgstr "升序"
 msgid "Ask AI"
 msgstr "詢問 AI"
 
+#. js-lingui-id: 2J838w
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Ask the Agent anything"
+msgstr ""
+
 #. js-lingui-id: mc9nK2
 #: src/modules/ai/components/AIChatTab.tsx
 msgid "Ask, search or make anything..."
@@ -2517,7 +2523,6 @@ msgid "Catalan"
 msgstr "加泰羅尼亞語"
 
 #. js-lingui-id: K7tIrx
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 #: src/pages/skills/SkillDetailPage.tsx
 msgid "Category"
@@ -2588,8 +2593,8 @@ msgstr "圖表"
 
 #. js-lingui-id: AHZflp
 #: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
-msgid "Chat"
-msgstr ""
+#~ msgid "Chat"
+#~ msgstr ""
 
 #. js-lingui-id: UxeiNP
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
@@ -2854,6 +2859,11 @@ msgstr "指令選單"
 msgid "command menu item"
 msgstr ""
 
+#. js-lingui-id: VR6F+1
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Commands & Skills"
+msgstr ""
+
 #. js-lingui-id: 4XlFx/
 #: src/pages/settings/applications/tabs/SettingsApplicationsCreateTab.tsx
 msgid "Commands copied to clipboard"
@@ -2913,6 +2923,11 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/if-else-action/components/WorkflowEditActionIfElseBody.tsx
 msgid "Conditions"
 msgstr "條件"
+
+#. js-lingui-id: 14PdY0
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Config"
+msgstr ""
 
 #. js-lingui-id: Vj43Y/
 #: src/modules/settings/admin-panel/components/SettingsAdminContent.tsx
@@ -3194,7 +3209,6 @@ msgid "Control which types of entities this role can be assigned to"
 msgstr "控制此角色可指派於哪些實體類型"
 
 #. js-lingui-id: YyNOE7
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/ai/components/internal/AIChatContextUsageButton.tsx
 msgid "Conversation"
 msgstr ""
@@ -3411,6 +3425,11 @@ msgstr ""
 msgid "Create a new contact and link them to a company. Details: "
 msgstr ""
 
+#. js-lingui-id: kcOHdy
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Create a new skill"
+msgstr ""
+
 #. js-lingui-id: n1Nbbe
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "Create a record"
@@ -3563,7 +3582,6 @@ msgstr "創建、編輯和刪除工作空間視圖"
 
 #. js-lingui-id: d+F6q9
 #: src/modules/activities/calendar/components/CalendarEventDetails.tsx
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/components/SettingsDatabaseEventsForm.tsx
 msgid "Created"
 msgstr "已建立"
@@ -4353,7 +4371,6 @@ msgid "Describe what you want the AI to do..."
 msgstr "描述您希望 AI 實現的功能..."
 
 #. js-lingui-id: Nu4oKW
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/data-model/new-object/components/SettingsAvailableStandardObjectsSection.tsx
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
 #: src/modules/settings/logic-functions/components/SettingsLogicFunctionNewForm.tsx
@@ -4426,8 +4443,12 @@ msgstr ""
 msgid "Discard Draft"
 msgstr "放棄草稿"
 
-#. js-lingui-id: lxXSWc
+#. js-lingui-id: OdPOhy
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Discord"
+msgstr ""
+
+#. js-lingui-id: lxXSWc
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 msgid "Discord Bot"
 msgstr ""
@@ -6440,7 +6461,6 @@ msgid "Get your subscription"
 msgstr "獲取訂閱"
 
 #. js-lingui-id: G0Kj+B
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/dialer/SettingsDialerGHL.tsx
 msgid "GHL Integration"
 msgstr ""
@@ -6510,6 +6530,11 @@ msgstr "前往任務"
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Go to Workflows"
 msgstr "前往工作流程"
+
+#. js-lingui-id: XwH7hv
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "GoHighLevel"
+msgstr ""
 
 #. js-lingui-id: FYlHHU
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
@@ -8266,8 +8291,12 @@ msgstr "消息同步和日曆同步不可用，因為服務已關閉"
 msgid "Message Sync is not available because the service is down"
 msgstr "消息同步不可用，因為服務已關閉"
 
+#. js-lingui-id: tLtgGh
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Message the Agent…"
+msgstr ""
+
 #. js-lingui-id: t7TeQU
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 msgid "Messages"
 msgstr "訊息"
@@ -8481,7 +8510,6 @@ msgid "mySkill"
 msgstr ""
 
 #. js-lingui-id: 6YtxFj
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
 #: src/modules/settings/admin-panel/config-variables/components/SettingsAdminConfigVariablesTable.tsx
@@ -10314,7 +10342,6 @@ msgstr "正在處理……"
 
 #. js-lingui-id: vERlcd
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/SettingsProfile.tsx
 #: src/pages/settings/SettingsProfile.tsx
 #: src/pages/settings/SettingsTwoFactorAuthenticationMethod.tsx
@@ -11611,8 +11638,8 @@ msgstr ""
 
 #. js-lingui-id: 7v7oax
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Select a skill or start a conversation"
-msgstr ""
+#~ msgid "Select a skill or start a conversation"
+#~ msgstr ""
 
 #. js-lingui-id: jL3gox
 #: src/modules/object-record/record-field/ui/form-types/components/FormBooleanFieldInput.tsx
@@ -11757,8 +11784,8 @@ msgstr "選擇您偏好的語言"
 
 #. js-lingui-id: FpxquU
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Selected Skill"
-msgstr ""
+#~ msgid "Selected Skill"
+#~ msgstr ""
 
 #. js-lingui-id: mjK8F3
 #: src/pages/settings/members/SettingsWorkspaceMembers.tsx
@@ -12076,7 +12103,6 @@ msgid "Skill not found"
 msgstr ""
 
 #. js-lingui-id: PCSkw2
-#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
 #: src/modules/skills/components/SkillsIndexPage.tsx
 #: src/pages/settings/ai/SettingsAI.tsx
 #: src/pages/skills/SkillDetailPage.tsx
@@ -12268,6 +12294,11 @@ msgstr ""
 #: src/pages/onboarding/PaymentSuccess.tsx
 msgid "Start"
 msgstr "開始"
+
+#. js-lingui-id: GE4F4y
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Start a new conversation"
+msgstr ""
 
 #. js-lingui-id: D3iCkb
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
@@ -13155,8 +13186,8 @@ msgstr "標題"
 
 #. js-lingui-id: MHrjPM
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Title"
-msgstr ""
+#~ msgid "Title"
+#~ msgstr ""
 
 #. js-lingui-id: /jQctM
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx

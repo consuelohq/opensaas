@@ -1189,6 +1189,7 @@ msgid "agent"
 msgstr ""
 
 #. js-lingui-id: iEQQyu
+#: src/modules/agent/components/AgentPage.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/hooks/useWorkflowAiAgentPermissionActions.ts
 #: src/pages/settings/ai/SettingsAgentForm.tsx
 #: src/pages/settings/ai/SettingsAgentForm.tsx
@@ -1858,6 +1859,11 @@ msgstr ""
 msgid "Ask AI"
 msgstr ""
 
+#. js-lingui-id: 2J838w
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Ask the Agent anything"
+msgstr ""
+
 #. js-lingui-id: mc9nK2
 #: src/modules/ai/components/AIChatTab.tsx
 msgid "Ask, search or make anything..."
@@ -2512,7 +2518,6 @@ msgid "Catalan"
 msgstr ""
 
 #. js-lingui-id: K7tIrx
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 #: src/pages/skills/SkillDetailPage.tsx
 msgid "Category"
@@ -2583,8 +2588,8 @@ msgstr ""
 
 #. js-lingui-id: AHZflp
 #: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
-msgid "Chat"
-msgstr ""
+#~ msgid "Chat"
+#~ msgstr ""
 
 #. js-lingui-id: UxeiNP
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
@@ -2849,6 +2854,11 @@ msgstr ""
 msgid "command menu item"
 msgstr ""
 
+#. js-lingui-id: VR6F+1
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Commands & Skills"
+msgstr ""
+
 #. js-lingui-id: 4XlFx/
 #: src/pages/settings/applications/tabs/SettingsApplicationsCreateTab.tsx
 msgid "Commands copied to clipboard"
@@ -2907,6 +2917,11 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/filter-action/components/WorkflowEditActionFilterBody.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/if-else-action/components/WorkflowEditActionIfElseBody.tsx
 msgid "Conditions"
+msgstr ""
+
+#. js-lingui-id: 14PdY0
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Config"
 msgstr ""
 
 #. js-lingui-id: Vj43Y/
@@ -3189,7 +3204,6 @@ msgid "Control which types of entities this role can be assigned to"
 msgstr ""
 
 #. js-lingui-id: YyNOE7
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/ai/components/internal/AIChatContextUsageButton.tsx
 msgid "Conversation"
 msgstr ""
@@ -3406,6 +3420,11 @@ msgstr ""
 msgid "Create a new contact and link them to a company. Details: "
 msgstr ""
 
+#. js-lingui-id: kcOHdy
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Create a new skill"
+msgstr ""
+
 #. js-lingui-id: n1Nbbe
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "Create a record"
@@ -3558,7 +3577,6 @@ msgstr ""
 
 #. js-lingui-id: d+F6q9
 #: src/modules/activities/calendar/components/CalendarEventDetails.tsx
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/components/SettingsDatabaseEventsForm.tsx
 msgid "Created"
 msgstr ""
@@ -4348,7 +4366,6 @@ msgid "Describe what you want the AI to do..."
 msgstr ""
 
 #. js-lingui-id: Nu4oKW
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/data-model/new-object/components/SettingsAvailableStandardObjectsSection.tsx
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
 #: src/modules/settings/logic-functions/components/SettingsLogicFunctionNewForm.tsx
@@ -4421,8 +4438,12 @@ msgstr ""
 msgid "Discard Draft"
 msgstr ""
 
-#. js-lingui-id: lxXSWc
+#. js-lingui-id: OdPOhy
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "Discord"
+msgstr ""
+
+#. js-lingui-id: lxXSWc
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 msgid "Discord Bot"
 msgstr ""
@@ -6435,7 +6456,6 @@ msgid "Get your subscription"
 msgstr ""
 
 #. js-lingui-id: G0Kj+B
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/dialer/SettingsDialerGHL.tsx
 msgid "GHL Integration"
 msgstr ""
@@ -6504,6 +6524,11 @@ msgstr ""
 #. js-lingui-id: 203RqP
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Go to Workflows"
+msgstr ""
+
+#. js-lingui-id: XwH7hv
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+msgid "GoHighLevel"
 msgstr ""
 
 #. js-lingui-id: FYlHHU
@@ -8261,8 +8286,12 @@ msgstr ""
 msgid "Message Sync is not available because the service is down"
 msgstr ""
 
+#. js-lingui-id: tLtgGh
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Message the Agent…"
+msgstr ""
+
 #. js-lingui-id: t7TeQU
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 msgid "Messages"
 msgstr ""
@@ -8476,7 +8505,6 @@ msgid "mySkill"
 msgstr ""
 
 #. js-lingui-id: 6YtxFj
-#: src/modules/agent/components/AgentContextPanel.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
 #: src/modules/settings/admin-panel/config-variables/components/SettingsAdminConfigVariablesTable.tsx
@@ -10309,7 +10337,6 @@ msgstr ""
 
 #. js-lingui-id: vERlcd
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/SettingsProfile.tsx
 #: src/pages/settings/SettingsProfile.tsx
 #: src/pages/settings/SettingsTwoFactorAuthenticationMethod.tsx
@@ -11606,8 +11633,8 @@ msgstr ""
 
 #. js-lingui-id: 7v7oax
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Select a skill or start a conversation"
-msgstr ""
+#~ msgid "Select a skill or start a conversation"
+#~ msgstr ""
 
 #. js-lingui-id: jL3gox
 #: src/modules/object-record/record-field/ui/form-types/components/FormBooleanFieldInput.tsx
@@ -11752,8 +11779,8 @@ msgstr ""
 
 #. js-lingui-id: FpxquU
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Selected Skill"
-msgstr ""
+#~ msgid "Selected Skill"
+#~ msgstr ""
 
 #. js-lingui-id: mjK8F3
 #: src/pages/settings/members/SettingsWorkspaceMembers.tsx
@@ -12071,7 +12098,6 @@ msgid "Skill not found"
 msgstr ""
 
 #. js-lingui-id: PCSkw2
-#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
 #: src/modules/skills/components/SkillsIndexPage.tsx
 #: src/pages/settings/ai/SettingsAI.tsx
 #: src/pages/skills/SkillDetailPage.tsx
@@ -12262,6 +12288,11 @@ msgstr ""
 #. js-lingui-id: tXkhj/
 #: src/pages/onboarding/PaymentSuccess.tsx
 msgid "Start"
+msgstr ""
+
+#. js-lingui-id: GE4F4y
+#: src/modules/agent/components/AgentComposer.tsx
+msgid "Start a new conversation"
 msgstr ""
 
 #. js-lingui-id: D3iCkb
@@ -13150,8 +13181,8 @@ msgstr ""
 
 #. js-lingui-id: MHrjPM
 #: src/modules/agent/components/AgentContextPanel.tsx
-msgid "Title"
-msgstr ""
+#~ msgid "Title"
+#~ msgstr ""
 
 #. js-lingui-id: /jQctM
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx

@@ -27,7 +27,6 @@ import {
   IconHelpCircle,
   IconHierarchy2,
   IconKey,
-  IconLink,
   IconLock,
   IconMail,
   IconMessage,
@@ -43,6 +42,7 @@ import {
   IconWorld,
 } from 'twenty-ui/display';
 import { IconBrandDiscord } from '@tabler/icons-react';
+import { IconGoHighLevel } from '@/settings/components/IconGoHighLevel';
 import {
   FeatureFlagKey,
   PermissionFlagType,
@@ -133,6 +133,43 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           isHidden: !permissionMap[PermissionFlagType.WORKSPACE],
         },
         {
+          label: t`Dialer`,
+          path: SettingsPath.Dialer,
+          Icon: IconPhone,
+          subItems: [
+            {
+              label: t`Config`,
+              path: SettingsPath.DialerProfile,
+              Icon: IconSettings,
+              indentationLevel: 2,
+            },
+            {
+              label: t`Phone Numbers`,
+              path: SettingsPath.DialerPhoneNumbers,
+              Icon: IconPhone,
+              indentationLevel: 2,
+            },
+            {
+              label: t`Calling & Presence`,
+              path: SettingsPath.DialerCalling,
+              Icon: IconToggleRight,
+              indentationLevel: 2,
+            },
+            {
+              label: t`Audio Devices`,
+              path: SettingsPath.DialerAudio,
+              Icon: IconHeadphones,
+              indentationLevel: 2,
+            },
+            {
+              label: t`Notifications`,
+              path: SettingsPath.DialerNotifications,
+              Icon: IconBell,
+              indentationLevel: 2,
+            },
+          ],
+        },
+        {
           label: t`Data model`,
           path: SettingsPath.Objects,
           Icon: IconHierarchy2,
@@ -193,57 +230,20 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           isAdvanced: true,
           isHidden: !permissionMap[PermissionFlagType.SECURITY],
         },
-        {
-          label: t`Dialer`,
-          path: SettingsPath.Dialer,
-          Icon: IconPhone,
-          subItems: [
-            {
-              label: t`Profile`,
-              path: SettingsPath.DialerProfile,
-              Icon: IconUserCircle,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Phone Numbers`,
-              path: SettingsPath.DialerPhoneNumbers,
-              Icon: IconPhone,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Calling & Presence`,
-              path: SettingsPath.DialerCalling,
-              Icon: IconToggleRight,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Audio Devices`,
-              path: SettingsPath.DialerAudio,
-              Icon: IconHeadphones,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Notifications`,
-              path: SettingsPath.DialerNotifications,
-              Icon: IconBell,
-              indentationLevel: 2,
-            },
-          ],
-        },
       ],
     },
     {
       label: t`Integrations`,
       items: [
         {
-          label: t`Discord Bot`,
+          label: t`Discord`,
           path: SettingsPath.DialerDiscord,
           Icon: IconBrandDiscord,
         },
         {
-          label: t`GHL Integration`,
+          label: t`GoHighLevel`,
           path: SettingsPath.DialerGHL,
-          Icon: IconLink,
+          Icon: IconGoHighLevel,
         },
       ],
     },
