@@ -1,6 +1,5 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
-import { useState } from 'react';
 import {
   useRecoilCallback,
   useRecoilState,
@@ -8,9 +7,6 @@ import {
   useSetRecoilState,
 } from 'recoil';
 import {
-  IconBolt,
-  IconChevronDown,
-  IconChevronRight,
   IconComment,
   IconFolder,
   IconLink,
@@ -40,8 +36,6 @@ import { NavigationDrawerSectionForWorkspaceItems } from '@/object-metadata/comp
 import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { useIsPrefetchLoading } from '@/prefetch/hooks/useIsPrefetchLoading';
 import { prefetchNavigationMenuItemsState } from '@/prefetch/states/prefetchNavigationMenuItemsState';
-import { NavigationDrawerItemsCollapsableContainer } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItemsCollapsableContainer';
-import { NavigationDrawerSectionTitle } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSectionTitle';
 import { NavigationDrawerSubItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSubItem';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 import { isDefined } from 'twenty-shared/utils';
@@ -55,7 +49,6 @@ const StyledRightIconsContainer = styled.div`
 
 export const WorkspaceNavigationMenuItems = () => {
   const items = useWorkspaceSectionItems();
-  const [agentFolderOpen, setAgentFolderOpen] = useState(true);
   const enterEditMode = useRecoilCallback(
     ({ set, snapshot }) =>
       () => {
@@ -155,33 +148,11 @@ export const WorkspaceNavigationMenuItems = () => {
   }
 
   const agentFooterContent = (
-    <NavigationDrawerItemsCollapsableContainer isGroup>
-      <NavigationDrawerSectionTitle
-        label={t`Computer`}
-        onClick={() => setAgentFolderOpen(!agentFolderOpen)}
-        rightIcon={
-          agentFolderOpen ? (
-            <IconChevronDown size={16} />
-          ) : (
-            <IconChevronRight size={16} />
-          )
-        }
-      />
-      {agentFolderOpen && (
-        <>
-          <NavigationDrawerSubItem
-            label={t`Chat`}
-            Icon={IconComment}
-            to={AppPath.Agent}
-          />
-          <NavigationDrawerSubItem
-            label={t`Skills`}
-            Icon={IconBolt}
-            to={AppPath.AgentSkills}
-          />
-        </>
-      )}
-    </NavigationDrawerItemsCollapsableContainer>
+    <NavigationDrawerSubItem
+      label={t`Computer`}
+      Icon={IconComment}
+      to={AppPath.Agent}
+    />
   );
 
   return (

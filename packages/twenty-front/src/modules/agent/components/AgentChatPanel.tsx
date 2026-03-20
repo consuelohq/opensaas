@@ -1,12 +1,20 @@
 import styled from '@emotion/styled';
-import { IconArrowUp, IconPlayerStop } from '@tabler/icons-react';
-import { lazy, Suspense, useEffect, useRef } from 'react';
+import { useLingui } from '@lingui/react/macro';
+import { lazy, Suspense } from 'react';
 import type { ComponentProps } from 'react';
 import type { Streamdown } from 'streamdown';
 
-import { useAgentChat } from '@/agent/hooks/useAgentChat';
-
-import { toolRendererRegistry } from './renderers';
+import { AgentComposer } from '@/agent/components/AgentComposer';
+import {
+  ExecuteToolToolUI,
+  FindPeopleToolUI,
+  LearnToolsToolUI,
+  LoadSkillToolUI,
+} from '@/agent/components/AgentToolUIs';
+import {
+  MessagePrimitive,
+  ThreadPrimitive,
+} from '@assistant-ui/react';
 
 type StreamdownProps = ComponentProps<typeof Streamdown>;
 
@@ -22,12 +30,18 @@ const StyledContainer = styled.div`
   overflow: hidden;
 `;
 
+const StyledViewport = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+`;
+
 const StyledMessageList = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
-  overflow-y: auto;
   padding: ${({ theme }) => theme.spacing(4)} ${({ theme }) => theme.spacing(6)};
 `;
 
@@ -141,48 +155,6 @@ const StyledMessageText = styled.div<{ isUser: boolean }>`
   }
 `;
 
-const StyledToolPartWrapper = styled.div`
-  align-self: flex-start;
-  max-width: 100%;
-`;
-
-const StyledInputArea = styled.form`
-  align-items: center;
-  border-top: 1px solid ${({ theme }) => theme.border.color.light};
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(3)} ${({ theme }) => theme.spacing(6)};
-`;
-
-const StyledInput = styled.input`
-  background: transparent;
-  border: none;
-  color: ${({ theme }) => theme.font.color.primary};
-  flex: 1;
-  font-family: inherit;
-  font-size: ${({ theme }) => theme.font.size.md};
-  outline: none;
-
-  &::placeholder {
-    color: ${({ theme }) => theme.font.color.tertiary};
-  }
-`;
-
-const StyledSendButton = styled.button<{ disabled: boolean }>`
-  align-items: center;
-  background: ${({ theme, disabled }) =>
-    disabled ? theme.background.transparent.light : theme.background.tertiary};
-  border: none;
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.font.color.extraLight : theme.font.color.primary};
-  cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
-  display: flex;
-  height: 28px;
-  justify-content: center;
-  width: 28px;
-`;
-
 const StyledEmpty = styled.div`
   align-items: center;
   color: ${({ theme }) => theme.font.color.tertiary};
@@ -192,120 +164,67 @@ const StyledEmpty = styled.div`
   justify-content: center;
 `;
 
-const StyledLoadingDots = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.md};
-  padding: ${({ theme }) => theme.spacing(1)} 0;
-`;
-
 const StyledLoadingSkeleton = styled.div`
   color: ${({ theme }) => theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.md};
 `;
 
-type AgentChatPanelProps = {
-  mode?: 'streaming' | 'static';
-};
+const UserMessage = () => (
+  <StyledMessageBubble isUser={true}>
+    <StyledMessageText isUser={true}>
+      <MessagePrimitive.Content />
+    </StyledMessageText>
+  </StyledMessageBubble>
+);
 
-export const AgentChatPanel = ({ mode = 'streaming' }: AgentChatPanelProps) => {
-  const { messages, input, setInput, handleSubmit, handleStop, isLoading } =
-    useAgentChat();
+const AssistantMessage = () => (
+  <StyledMessageBubble isUser={false}>
+    <StyledMessageText isUser={false}>
+      <Suspense
+        fallback={<StyledLoadingSkeleton>Loading…</StyledLoadingSkeleton>}
+      >
+        <MessagePrimitive.Content
+          components={{
+            Text: ({ text }) => (
+              <LazyStreamdown
+                mode="streaming"
+                shikiTheme={['github-light', 'github-dark']}
+              >
+                {text}
+              </LazyStreamdown>
+            ),
+          }}
+        />
+      </Suspense>
+    </StyledMessageText>
+  </StyledMessageBubble>
+);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const onSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    handleSubmit();
-  };
-
-  const hasMessages = messages.length > 0;
+export const AgentChatPanel = () => {
+  const { t } = useLingui();
 
   return (
     <StyledContainer>
-      {hasMessages ? (
-        <StyledMessageList>
-          {messages.map((message) =>
-            message.parts?.map((part, partIndex) => {
-              if (part.type === 'text' && part.text) {
-                const isUser = message.role === 'user';
-
-                return (
-                  <StyledMessageBubble
-                    key={`${message.id}-${partIndex}`}
-                    isUser={isUser}
-                  >
-                    <StyledMessageText isUser={isUser}>
-                      <Suspense
-                        fallback={
-                          <StyledLoadingSkeleton>
-                            Loading...
-                          </StyledLoadingSkeleton>
-                        }
-                      >
-                        <LazyStreamdown
-                          mode={isUser ? 'static' : mode}
-                          shikiTheme={['github-light', 'github-dark']}
-                        >
-                          {part.text}
-                        </LazyStreamdown>
-                      </Suspense>
-                    </StyledMessageText>
-                  </StyledMessageBubble>
-                );
-              }
-
-              if (part.type === 'dynamic-tool') {
-                const toolPart = part as {
-                  type: 'dynamic-tool';
-                  toolName: string;
-                  state: string;
-                  input: unknown;
-                };
-                const Renderer = toolRendererRegistry[toolPart.toolName];
-
-                if (
-                  Renderer &&
-                  toolPart.input &&
-                  toolPart.state !== 'input-streaming'
-                ) {
-                  return (
-                    <StyledToolPartWrapper key={`${message.id}-${partIndex}`}>
-                      <Renderer input={toolPart.input} />
-                    </StyledToolPartWrapper>
-                  );
-                }
-              }
-
-              return null;
-            }),
-          )}
-          {isLoading && <StyledLoadingDots>…</StyledLoadingDots>}
-          <div ref={bottomRef} />
-        </StyledMessageList>
-      ) : (
-        <StyledEmpty>Ask the Agent anything</StyledEmpty>
-      )}
-      <StyledInputArea onSubmit={onSubmit}>
-        <StyledInput
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="Message the Agent…"
-          autoFocus
-        />
-        {isLoading ? (
-          <StyledSendButton type="button" disabled={false} onClick={handleStop}>
-            <IconPlayerStop size={14} />
-          </StyledSendButton>
-        ) : (
-          <StyledSendButton type="submit" disabled={input.trim() === ''}>
-            <IconArrowUp size={14} />
-          </StyledSendButton>
-        )}
-      </StyledInputArea>
+      <LearnToolsToolUI />
+      <LoadSkillToolUI />
+      <ExecuteToolToolUI />
+      <FindPeopleToolUI />
+      <ThreadPrimitive.Root>
+        <StyledViewport>
+          <ThreadPrimitive.Empty>
+            <StyledEmpty>{t`Ask the Agent anything`}</StyledEmpty>
+          </ThreadPrimitive.Empty>
+          <StyledMessageList>
+            <ThreadPrimitive.Messages
+              components={{
+                UserMessage,
+                AssistantMessage,
+              }}
+            />
+          </StyledMessageList>
+        </StyledViewport>
+        <AgentComposer />
+      </ThreadPrimitive.Root>
     </StyledContainer>
   );
 };

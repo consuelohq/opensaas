@@ -1,8 +1,10 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { IconRobot } from 'twenty-ui/display';
 
 import { AgentChatPanel } from '@/agent/components/AgentChatPanel';
 import { AgentContextPanel } from '@/agent/components/AgentContextPanel';
+import { AgentRuntimeProviderWrapper } from '@/agent/components/AgentRuntimeProvider';
 import { useAgentHotkeys } from '@/agent/hooks/useAgentHotkeys';
 import { PageBody } from '@/ui/layout/page/components/PageBody';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
@@ -22,16 +24,20 @@ const StyledContent = styled.div`
 `;
 
 export const AgentPage = () => {
+  const { t } = useLingui();
+
   useAgentHotkeys();
 
   return (
     <PageContainer>
-      <PageHeader title="Agent" Icon={IconRobot} />
+      <PageHeader title={t`Agent`} Icon={IconRobot} />
       <StyledPageBody>
-        <StyledContent>
-          <AgentChatPanel />
-          <AgentContextPanel />
-        </StyledContent>
+        <AgentRuntimeProviderWrapper>
+          <StyledContent>
+            <AgentChatPanel />
+            <AgentContextPanel />
+          </StyledContent>
+        </AgentRuntimeProviderWrapper>
       </StyledPageBody>
     </PageContainer>
   );
