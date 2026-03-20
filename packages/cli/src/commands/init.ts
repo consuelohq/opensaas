@@ -20,7 +20,7 @@ import { captureError } from '../sentry.js';
 import { validateTwilio, validateGroq } from '../validators/index.js';
 import { generateEnv } from '../generators/env.js';
 import { generateDockerCompose } from '../generators/docker.js';
-import { authenticateHosted } from '../auth.js';
+
 import {
   provisionDockerPostgres,
   validateConnectionStringFormat,
@@ -185,18 +185,26 @@ async function runNonInteractive(template: Template): Promise<void> {
 }
 
 async function handleHostedSetup(template: Template): Promise<void> {
-  const spin = spinner('waiting for authentication...').start();
-
   try {
-    const { apiKey, email } = await authenticateHosted();
-    spin.succeed(`authenticated as ${email}`);
+    log.info('hosted mode requires authentication with consuelo (twenty CRM)');
+    log.info(
+      'you can create an API key in Settings → Developers after signing in',
+    );
+    log.info('');
 
-    generateEnv({ deploymentType: 'hosted', template, apiKey });
-    success('API key saved to .env');
+    const { registerCommands } = await import('twenty-sdk/cli');
+    const { Command } = await import('commander');
+    const sub = new Command();
+    registerCommands(sub);
+    await sub.parseAsync(['node', 'consuelo', 'auth:login']);
+
+    generateEnv({ deploymentType: 'hosted', template });
+    success('configured for hosted mode');
   } catch (err: unknown) {
-    spin.fail(err instanceof Error ? err.message : 'authentication failed');
+    log.warn('authentication skipped (twenty-sdk not available)');
+    log.info('run `consuelo auth:login` manually after installing twenty-sdk');
+    generateEnv({ deploymentType: 'hosted', template });
     captureError(err, { command: 'init' });
-    throw err;
   }
 }
 
