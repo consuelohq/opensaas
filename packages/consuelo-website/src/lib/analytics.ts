@@ -28,7 +28,7 @@ export function initPostHog() {
     // web vitals + network performance
     capture_performance: true,
     // JS error tracking
-    autocapture_exceptions: true,
+    capture_exceptions: true,
     // cross-subdomain (consuelohq.com → app.consuelohq.com)
     cross_subdomain_cookie: true,
     // anonymous until identified

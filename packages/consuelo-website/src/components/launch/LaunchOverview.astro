@@ -1,39 +1,42 @@
 ---
-import type { LaunchOverviewSection } from '../../data/launch-content';
+import {
+  launchOverview,
+  launchOverviewFeatures,
+} from '../../data/launch-content';
 
 type Props = {
   sectionId?: string;
-  title: string;
-  intro: string;
-  sections: LaunchOverviewSection[];
-  ctaLabel: string;
-  ctaHref: string;
 };
 
-const { sectionId, title, intro, sections, ctaLabel, ctaHref } = Astro.props as Props;
+const { sectionId } = Astro.props as Props;
 ---
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-overview">
     <div class="launch-overview__intro">
-      <p class="launch-eyebrow">what is consuelo?</p>
-      <h2 class="launch-overview__title">{title}</h2>
-      <p class="launch-copy">{intro}</p>
-      <a class="launch-button launch-mono" href={ctaHref}>{ctaLabel}</a>
+      <p class="launch-eyebrow">{launchOverview.eyebrow}</p>
+      <h2 class="launch-overview__title">{launchOverview.title}</h2>
+      <p class="launch-copy">{launchOverview.intro}</p>
     </div>
 
-    <div class="launch-grid-2">
-      {sections.map((section) => (
-        <article class="launch-overview__card launch-card">
-          <h3>{section.title}</h3>
-          <p class="launch-copy">{section.text}</p>
-          <ul>
-            {section.items.map((item) => (
-              <li class="launch-mono">{item}</li>
-            ))}
-          </ul>
-        </article>
-      ))}
+    <div class="launch-overview__body">
+      <div class="launch-overview__list">
+        {launchOverviewFeatures.map((feature) => (
+          <div class="launch-overview__item">
+            <span class="launch-overview__check" aria-hidden="true">
+              <svg viewBox="0 0 16 16">
+                <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
+              </svg>
+            </span>
+            <p class="launch-copy">
+              <strong>{feature.title}</strong>
+              <span>{feature.text}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <a class="launch-button launch-mono" href={launchOverview.ctaHref}>{launchOverview.ctaLabel}</a>
     </div>
   </div>
 </section>
@@ -41,44 +44,71 @@ const { sectionId, title, intro, sections, ctaLabel, ctaHref } = Astro.props as 
 <style>
   .launch-overview {
     display: grid;
-    gap: 2rem;
+    gap: 1.75rem;
+  }
+
+  .launch-overview__intro,
+  .launch-overview__body,
+  .launch-overview__list {
+    display: grid;
+    gap: 1rem;
   }
 
   .launch-overview__intro {
-    display: grid;
-    gap: 1rem;
-    max-width: 50rem;
+    max-width: 54rem;
   }
 
   .launch-overview__title {
     margin: 0;
-    font-size: clamp(1.85rem, 1.4rem + 1.4vw, 3rem);
-    letter-spacing: -0.06em;
+    font-size: clamp(1.95rem, 1.45rem + 1.5vw, 3.1rem);
+    letter-spacing: -0.07em;
+    line-height: 1.04;
   }
 
-  .launch-overview__card {
-    border-radius: 1.25rem;
-    padding: 1.35rem;
-  }
-
-  .launch-overview__card h3 {
-    margin: 0 0 0.75rem;
-    font-size: 1.15rem;
-    letter-spacing: -0.04em;
-  }
-
-  .launch-overview__card ul {
-    margin: 1.1rem 0 0;
-    padding: 0;
-    list-style: none;
+  .launch-overview__item {
     display: grid;
-    gap: 0.55rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8rem;
+    align-items: start;
   }
 
-  .launch-overview__card li {
-    padding-top: 0.55rem;
-    border-top: 1px solid var(--launch-line);
+  .launch-overview__check {
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.35rem;
     color: var(--launch-muted);
-    font-size: 0.86rem;
+  }
+
+  .launch-overview__check svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.2;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+
+  .launch-overview__item p {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .launch-overview__item strong {
+    color: var(--launch-fg);
+    font-weight: 500;
+  }
+
+  @media (min-width: 860px) {
+    .launch-overview__body {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 1.5rem;
+    }
+
+    .launch-overview__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.6rem;
+    }
   }
 </style>

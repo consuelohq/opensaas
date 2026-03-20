@@ -131,17 +131,24 @@ const resources: { sections: Section[] } = {
 export default function Navbar() {
   const [active, setActive] = useState<"platform" | "resources" | null>(null);
   const [mobile, setMobile] = useState(false);
-  const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ref = useRef<HTMLElement>(null);
 
   const open = (key: "platform" | "resources") => {
-    clearTimeout(timeout.current);
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
+
     setActive(key);
   };
   const close = () => {
     timeout.current = setTimeout(() => setActive(null), 120);
   };
-  const stay = () => clearTimeout(timeout.current);
+  const stay = () => {
+    if (timeout.current) {
+      clearTimeout(timeout.current);
+    }
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

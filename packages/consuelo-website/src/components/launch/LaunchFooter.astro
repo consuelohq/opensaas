@@ -1,5 +1,9 @@
 ---
-import { footerLinks, siteLinks } from '../../data/launch-content';
+import {
+  footerLinks,
+  launchFooterSignup,
+  siteLinks,
+} from '../../data/launch-content';
 
 type Props = {
   sectionId?: string;
@@ -10,14 +14,17 @@ const { sectionId } = Astro.props as Props;
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-footer-signup">
-    <div>
-      <p class="launch-eyebrow">be the first to know when we release new products</p>
-      <h2>join the waitlist for early access.</h2>
+    <div class="launch-footer-signup__intro">
+      <p class="launch-eyebrow">{launchFooterSignup.eyebrow}</p>
+      <h2>{launchFooterSignup.title}</h2>
+      <p class="launch-copy">{launchFooterSignup.intro}</p>
     </div>
 
     <form class="launch-footer-signup__form" data-newsletter-form>
-      <input aria-label="Email address" name="email" placeholder="email address" type="email" />
-      <button class="launch-button launch-mono" type="submit">subscribe</button>
+      <div class="launch-footer-signup__field">
+        <input aria-label="Email address" name="email" placeholder="Email address" type="email" />
+        <button class="launch-button launch-mono" type="submit">{launchFooterSignup.buttonLabel}</button>
+      </div>
     </form>
   </div>
 </section>
@@ -31,8 +38,8 @@ const { sectionId } = Astro.props as Props;
   <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
     <span>©2026 consuelo</span>
     <div>
-      <a href="/privacy">privacy</a>
-      <a href="/terms">terms</a>
+      <a href={siteLinks.privacy}>privacy</a>
+      <a href={siteLinks.terms}>terms</a>
       <a href={siteLinks.docs}>docs</a>
     </div>
   </div>
@@ -40,7 +47,7 @@ const { sectionId } = Astro.props as Props;
 
 <script define:vars={{ siteLinks }}>
   const form = document.querySelector('[data-newsletter-form]');
-  if (form) {
+  if (form instanceof HTMLFormElement) {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       const input = form.querySelector('input[name="email"]');
@@ -56,13 +63,20 @@ const { sectionId } = Astro.props as Props;
 <style>
   .launch-footer-signup {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.2rem;
+  }
+
+  .launch-footer-signup__intro {
+    display: grid;
+    gap: 0.95rem;
+    max-width: 32rem;
   }
 
   .launch-footer-signup h2 {
     margin: 0;
-    font-size: clamp(1.7rem, 1.25rem + 1.1vw, 2.6rem);
-    letter-spacing: -0.05em;
+    font-size: clamp(1.9rem, 1.35rem + 1.4vw, 3rem);
+    letter-spacing: -0.07em;
+    line-height: 1.02;
   }
 
   .launch-footer-signup__form {
@@ -70,14 +84,25 @@ const { sectionId } = Astro.props as Props;
     gap: 0.75rem;
   }
 
-  .launch-footer-signup__form input {
+  .launch-footer-signup__field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    border: 1px solid var(--launch-line);
+    background: var(--launch-panel);
+  }
+
+  .launch-footer-signup__field input {
     width: 100%;
     min-height: 3rem;
     padding: 0 1rem;
     background: transparent;
     color: var(--launch-fg);
-    border: 1px solid var(--launch-line);
-    border-radius: 0.85rem;
+    border: 0;
+  }
+
+  .launch-footer-signup__field .launch-button {
+    margin: 0.28rem;
+    min-height: 2.45rem;
   }
 
   .launch-footer-links {
@@ -88,8 +113,9 @@ const { sectionId } = Astro.props as Props;
   .launch-footer-links a,
   .launch-footer-meta a,
   .launch-footer-meta span {
-    padding: 1rem 0;
+    padding: 0.95rem 0;
     color: var(--launch-muted);
+    font-size: 0.8rem;
   }
 
   .launch-footer-links a + a {
@@ -102,8 +128,6 @@ const { sectionId } = Astro.props as Props;
     justify-content: space-between;
     gap: 1rem;
     border-top: 1px solid var(--launch-line);
-    color: var(--launch-muted);
-    font-size: 0.85rem;
   }
 
   .launch-footer-meta div {
@@ -112,14 +136,11 @@ const { sectionId } = Astro.props as Props;
     gap: 1rem;
   }
 
-  @media (min-width: 760px) {
+  @media (min-width: 860px) {
     .launch-footer-signup {
-      grid-template-columns: minmax(0, 1fr) minmax(18rem, 28rem);
+      grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem);
       align-items: end;
-    }
-
-    .launch-footer-signup__form {
-      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1.5rem;
     }
 
     .launch-footer-links {
@@ -130,6 +151,16 @@ const { sectionId } = Astro.props as Props;
       border-top: 0;
       border-left: 1px solid var(--launch-line);
       padding-left: 1rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .launch-footer-signup__field {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .launch-footer-signup__field .launch-button {
+      width: calc(100% - 0.56rem);
     }
   }
 </style>

@@ -1,0 +1,180 @@
+---
+import { launchMetrics, launchStats } from '../../data/launch-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+
+const getLinePoints = (points: number[]) => {
+  const maxValue = Math.max(...points);
+  const minValue = Math.min(...points);
+  const range = Math.max(maxValue - minValue, 1);
+
+  return points
+    .map((point, index) => {
+      const x = 14 + (index / Math.max(points.length - 1, 1)) * 152;
+      const y = 90 - ((point - minValue) / range) * 68;
+
+      return x.toFixed(2) + ',' + y.toFixed(2);
+    })
+    .join(' ');
+};
+
+const getBars = (bars: number[]) => {
+  const maxValue = Math.max(...bars, 1);
+
+  return bars.map((bar, index) => {
+    const height = (bar / maxValue) * 72;
+
+    return {
+      x: 14 + index * 13,
+      y: 92 - height,
+      height,
+    };
+  });
+};
+
+const dotSlots = Array.from({ length: 64 }, (_, index) => index);
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-stats">
+    <div class="launch-stats__intro">
+      <p class="launch-eyebrow">{launchStats.eyebrow}</p>
+      <h2 class="launch-stats__title">{launchStats.title}</h2>
+      <p class="launch-copy">{launchStats.intro}</p>
+    </div>
+
+    <div class="launch-stats__grid">
+      {launchMetrics.map((metric) => (
+        <article class="launch-stats__metric">
+          <div class="launch-stats__chart" aria-hidden="true">
+            {metric.chart === 'line' && metric.points && (
+              <svg viewBox="0 0 180 104" role="presentation">
+                <polyline points={getLinePoints(metric.points)} />
+              </svg>
+            )}
+
+            {metric.chart === 'dots' && (
+              <svg viewBox="0 0 180 104" role="presentation">
+                {dotSlots.map((slot) => {
+                  const column = slot % 8;
+                  const row = Math.floor(slot / 8);
+                  const isFilled = slot < (metric.filledDots ?? 0);
+                  const x = 24 + column * 17;
+                  const y = 16 + row * 11;
+
+                  return <circle cx={x} cy={y} r="1.6" class:list={{ 'is-filled': isFilled }} />;
+                })}
+              </svg>
+            )}
+
+            {metric.chart === 'bars' && metric.bars && (
+              <svg viewBox="0 0 180 104" role="presentation">
+                {getBars(metric.bars).map((bar) => (
+                  <rect x={bar.x} y={bar.y} width="5" height={bar.height} />
+                ))}
+              </svg>
+            )}
+          </div>
+
+          <p class="launch-stats__value launch-mono">{metric.value}</p>
+          <p class="launch-stats__label">{metric.label}</p>
+          <p class="launch-stats__caption launch-mono">{metric.caption}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-stats {
+    display: grid;
+    gap: 1.6rem;
+  }
+
+  .launch-stats__intro {
+    display: grid;
+    gap: 1rem;
+    max-width: 52rem;
+  }
+
+  .launch-stats__title {
+    margin: 0;
+    font-size: clamp(1.8rem, 1.35rem + 1.3vw, 2.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.07em;
+  }
+
+  .launch-stats__grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .launch-stats__metric {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.25rem 0;
+  }
+
+  .launch-stats__chart {
+    min-height: 6.5rem;
+  }
+
+  .launch-stats__chart svg {
+    width: 100%;
+    height: 100%;
+    color: var(--launch-muted);
+  }
+
+  .launch-stats__chart polyline,
+  .launch-stats__chart rect,
+  .launch-stats__chart circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.05;
+    opacity: 0.88;
+  }
+
+  .launch-stats__chart rect,
+  .launch-stats__chart circle.is-filled {
+    fill: currentColor;
+    stroke: none;
+  }
+
+  .launch-stats__chart circle {
+    opacity: 0.26;
+    fill: currentColor;
+    stroke: none;
+  }
+
+  .launch-stats__value {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--launch-muted);
+  }
+
+  .launch-stats__label,
+  .launch-stats__caption {
+    margin: 0;
+  }
+
+  .launch-stats__label {
+    font-size: 0.95rem;
+    color: var(--launch-fg);
+  }
+
+  .launch-stats__caption {
+    font-size: 0.74rem;
+    color: var(--launch-muted);
+  }
+
+  @media (min-width: 860px) {
+    .launch-stats__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+</style>

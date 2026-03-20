@@ -1,5 +1,8 @@
 ---
-import { siteLinks } from '../../data/launch-content';
+import {
+  launchMercury,
+  launchMercuryHighlights,
+} from '../../data/launch-content';
 
 type Props = {
   sectionId?: string;
@@ -10,15 +13,25 @@ const { sectionId } = Astro.props as Props;
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-mercury-promo">
-    <div>
-      <p class="launch-eyebrow">mercury</p>
-      <h2>hosted telephony and ai usage without making infrastructure your first project.</h2>
+    <div class="launch-mercury-promo__intro">
+      <p class="launch-eyebrow">{launchMercury.eyebrow}</p>
+      <h2>{launchMercury.title}</h2>
+      <p class="launch-copy">{launchMercury.intro}</p>
     </div>
-    <div class="launch-mercury-promo__body launch-card">
-      <p class="launch-copy">Mercury is the hosted layer for teams that want Consuelo live quickly. Keep the crm free, self-host when you need maximum control, or use Mercury when speed and convenience matter more than wiring every provider yourself.</p>
+
+    <div class="launch-mercury-promo__body">
+      <div class="launch-mercury-promo__highlights">
+        {launchMercuryHighlights.map((highlight) => (
+          <article>
+            <h3>{highlight.title}</h3>
+            <p class="launch-copy">{highlight.text}</p>
+          </article>
+        ))}
+      </div>
+
       <div class="launch-mercury-promo__actions">
-        <a class="launch-button launch-mono" href={siteLinks.mercury}>learn about mercury</a>
-        <a class="launch-button--ghost launch-mono" href={siteLinks.app}>open the app</a>
+        <a class="launch-button launch-mono" href={launchMercury.primaryHref}>{launchMercury.primaryLabel}</a>
+        <a class="launch-button--ghost launch-mono" href={launchMercury.secondaryHref}>{launchMercury.secondaryLabel}</a>
       </div>
     </div>
   </div>
@@ -27,26 +40,68 @@ const { sectionId } = Astro.props as Props;
 <style>
   .launch-mercury-promo {
     display: grid;
-    gap: 1.25rem;
+    gap: 1.4rem;
+  }
+
+  .launch-mercury-promo__intro {
+    display: grid;
+    gap: 1rem;
+    max-width: 43rem;
   }
 
   .launch-mercury-promo h2 {
     margin: 0;
-    max-width: 40rem;
-    font-size: clamp(1.85rem, 1.4rem + 1.4vw, 3rem);
-    letter-spacing: -0.06em;
+    font-size: clamp(1.85rem, 1.35rem + 1.35vw, 2.9rem);
+    letter-spacing: -0.07em;
+    line-height: 1.05;
   }
 
-  .launch-mercury-promo__body {
-    border-radius: 1.3rem;
-    padding: 1.3rem;
+  .launch-mercury-promo__body,
+  .launch-mercury-promo__highlights {
     display: grid;
     gap: 1rem;
+  }
+
+  .launch-mercury-promo__highlights article {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.9rem 0 0;
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-mercury-promo__highlights article:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .launch-mercury-promo__highlights h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
   }
 
   .launch-mercury-promo__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    padding-top: 0.4rem;
+  }
+
+  @media (min-width: 860px) {
+    .launch-mercury-promo__body {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1.5rem;
+      align-items: end;
+    }
+
+    .launch-mercury-promo__highlights {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+
+    .launch-mercury-promo__highlights article {
+      padding-top: 0;
+      border-top: 0;
+    }
   }
 </style>

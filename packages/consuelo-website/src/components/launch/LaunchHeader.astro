@@ -1,5 +1,9 @@
 ---
-import { siteLinks } from '../../data/launch-content';
+import {
+  launchHeaderLinks,
+  launchMobileMenuLinks,
+  siteLinks,
+} from '../../data/launch-content';
 import { launchDocsMenuTabs } from '../../data/launch-docs';
 
 type Props = {
@@ -11,18 +15,6 @@ type LaunchPageSection = {
   label: string;
 };
 
-const launchHeaderLinks = [
-  { label: 'docs', href: siteLinks.docs },
-  { label: 'mercury', href: siteLinks.mercury },
-  { label: 'enterprise', href: siteLinks.enterprise },
-];
-
-const launchMobileMenuLinks = [
-  ...launchHeaderLinks,
-  { label: 'login', href: siteLinks.login },
-  { label: 'free', href: siteLinks.free },
-];
-
 const { pageSections = [] } = Astro.props as Props;
 const hasPageSections = pageSections.length > 0;
 ---
@@ -31,25 +23,32 @@ const hasPageSections = pageSections.length > 0;
   <div class="launch-content launch-content--wide launch-header__inner">
     <a class="launch-header__brand launch-mono" href="/">consuelo.</a>
 
-    <nav class="launch-header__nav launch-mono" aria-label="Primary">
-      {launchHeaderLinks.map((link) => (
-        <a href={link.href}>{link.label}</a>
-      ))}
-    </nav>
+    <div class="launch-header__desktop">
+      <nav class="launch-header__nav launch-mono" aria-label="Primary">
+        {launchHeaderLinks.map((link) => (
+          <a href={link.href}>{link.label}</a>
+        ))}
+      </nav>
 
-    <div class="launch-header__actions launch-mono">
-      <a class="launch-button--ghost" href={siteLinks.login}>login</a>
-      <a class="launch-button" href={siteLinks.free}>free</a>
+      <div class="launch-header__actions launch-mono">
+        <a class="launch-header__login" href={siteLinks.login}>login</a>
+        <a class="launch-button" href={siteLinks.free}>free</a>
+      </div>
     </div>
 
     <button
-      class="launch-header__menu-toggle launch-button--ghost launch-mono"
+      class="launch-header__menu-toggle"
       type="button"
       aria-controls="launch-mobile-menu"
       aria-expanded="false"
       data-mobile-menu-toggle
     >
-      menu
+      <span class="sr-only">open menu</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path class="launch-header__menu-line launch-header__menu-line--top" d="M4 7H20" />
+        <path class="launch-header__menu-line launch-header__menu-line--middle" d="M4 12H20" />
+        <path class="launch-header__menu-line launch-header__menu-line--bottom" d="M4 17H20" />
+      </svg>
     </button>
   </div>
 
@@ -69,13 +68,15 @@ const hasPageSections = pageSections.length > 0;
       </button>
 
       <div
-        class="launch-header__page-nav-panel launch-card"
+        class="launch-header__page-nav-panel"
         id="launch-page-nav-panel"
         data-page-nav-panel
         data-open="false"
       >
         {pageSections.map((section) => (
-          <a class="launch-header__page-link" href={`#${section.id}`} data-page-anchor>
+          <a class="launch-header__page-link" href={
+            '#' + section.id
+          } data-page-anchor>
             {section.label}
           </a>
         ))}
@@ -90,8 +91,12 @@ const hasPageSections = pageSections.length > 0;
   <div class="launch-header__mobile-panel">
     <div class="launch-header__mobile-top launch-mono">
       <a class="launch-header__brand" href="/">consuelo.</a>
-      <button class="launch-header__mobile-close launch-button--ghost launch-mono" type="button" data-mobile-menu-close>
-        close
+      <button class="launch-header__mobile-close" type="button" data-mobile-menu-close>
+        <span class="sr-only">close menu</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6L18 18" />
+          <path d="M18 6L6 18" />
+        </svg>
       </button>
     </div>
 
@@ -110,7 +115,9 @@ const hasPageSections = pageSections.length > 0;
           <p class="launch-eyebrow">landing page</p>
           <div class="launch-header__mobile-links">
             {pageSections.map((section) => (
-              <a href={`#${section.id}`} data-mobile-link>{section.label}</a>
+              <a href={
+                '#' + section.id
+              } data-mobile-link>{section.label}</a>
             ))}
           </div>
         </section>
@@ -127,7 +134,13 @@ const hasPageSections = pageSections.length > 0;
               <div class="launch-header__docs-groups">
                 {tab.groups.map((group) => (
                   <details class="launch-header__docs-group">
-                    <summary>{group.label}</summary>
+                    <summary>
+                      <span>{group.label}</span>
+                      <span class="launch-header__summary-icon" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                      </span>
+                    </summary>
 
                     <div class="launch-header__docs-links">
                       {group.links.map((link) => (
@@ -166,6 +179,7 @@ const hasPageSections = pageSections.length > 0;
 
     menu.dataset.open = nextOpen ? 'true' : 'false';
     menu.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+    menuToggle.dataset.open = nextOpen ? 'true' : 'false';
     menuToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
     document.body.style.overflow = nextOpen ? 'hidden' : '';
   };
@@ -297,11 +311,23 @@ const hasPageSections = pageSections.length > 0;
 </script>
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .launch-header {
     position: sticky;
     top: 0;
     z-index: 40;
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(16px);
     background: color-mix(in srgb, var(--launch-bg) 88%, transparent);
     transition: background 180ms ease, border-color 180ms ease;
   }
@@ -315,42 +341,90 @@ const hasPageSections = pageSections.length > 0;
     grid-template-columns: auto 1fr auto;
     gap: 1rem;
     align-items: center;
-    min-height: 5.25rem;
-    transition: min-height 180ms ease;
-  }
-
-  .launch-header.is-scrolled .launch-header__inner {
-    min-height: 4.5rem;
+    min-height: 4.25rem;
   }
 
   .launch-header__brand {
-    font-size: 1.85rem;
+    font-size: 1.55rem;
     font-weight: 700;
-    letter-spacing: -0.06em;
+    letter-spacing: -0.08em;
+  }
+
+  .launch-header__desktop {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1.15rem;
   }
 
   .launch-header__nav {
     display: flex;
-    justify-content: center;
-    gap: 1.25rem;
+    justify-content: flex-end;
+    gap: 1rem;
     color: var(--launch-muted);
-    font-size: 0.98rem;
+    font-size: 0.84rem;
   }
 
   .launch-header__nav a:hover,
-  .launch-header__docs-links a:hover {
+  .launch-header__docs-links a:hover,
+  .launch-header__mobile-links a:hover {
     color: var(--launch-fg);
   }
 
   .launch-header__actions {
     display: flex;
-    gap: 0.75rem;
-    justify-self: end;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .launch-header__login {
+    font-size: 0.84rem;
+    color: var(--launch-muted);
   }
 
   .launch-header__menu-toggle,
   .launch-header__page-nav {
     display: none;
+  }
+
+  .launch-header__menu-toggle,
+  .launch-header__mobile-close {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--launch-fg);
+  }
+
+  .launch-header__menu-toggle svg,
+  .launch-header__mobile-close svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+
+  .launch-header__menu-line {
+    transform-origin: center;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--top {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--middle {
+    opacity: 0;
+  }
+
+  .launch-header__menu-toggle[data-open='true'] .launch-header__menu-line--bottom {
+    transform: translateY(-5px) rotate(-45deg);
   }
 
   .launch-header__page-nav {
@@ -364,7 +438,7 @@ const hasPageSections = pageSections.length > 0;
     grid-template-columns: auto 1fr;
     gap: 1rem;
     align-items: center;
-    padding: 0.95rem 1.25rem;
+    padding: 0.85rem 1rem;
     background: transparent;
     border: 0;
     color: inherit;
@@ -373,19 +447,19 @@ const hasPageSections = pageSections.length > 0;
 
   .launch-header__page-nav-kicker {
     color: var(--launch-muted);
+    font-size: 0.78rem;
   }
 
   .launch-header__page-nav-active {
     justify-self: end;
-    transition: color 160ms ease, transform 160ms ease;
+    font-size: 0.8rem;
   }
 
   .launch-header__page-nav-panel {
     position: absolute;
-    inset: calc(100% + 0.45rem) 1rem auto;
-    border-radius: 1rem;
-    display: grid;
-    overflow: hidden;
+    inset: calc(100% + 0.4rem) 1rem auto;
+    border: 1px solid var(--launch-line);
+    background: var(--launch-panel);
     opacity: 0;
     pointer-events: none;
     transform: translateY(-0.35rem);
@@ -399,10 +473,11 @@ const hasPageSections = pageSections.length > 0;
   }
 
   .launch-header__page-link {
-    padding: 0.95rem 1rem;
+    display: block;
+    padding: 0.85rem 1rem;
     border-top: 1px solid var(--launch-line);
-    background: color-mix(in srgb, var(--launch-bg) 95%, transparent);
     color: var(--launch-muted);
+    font-size: 0.8rem;
   }
 
   .launch-header__page-link:first-child {
@@ -411,7 +486,6 @@ const hasPageSections = pageSections.length > 0;
 
   .launch-header__page-link.is-active {
     color: var(--launch-fg);
-    background: var(--launch-panel);
   }
 
   .launch-header__mobile-menu {
@@ -432,13 +506,13 @@ const hasPageSections = pageSections.length > 0;
     position: absolute;
     inset: 0;
     border: 0;
-    background: rgba(20, 16, 16, 0.48);
+    background: rgba(0, 0, 0, 0.55);
   }
 
   .launch-header__mobile-panel {
     position: absolute;
     inset: 0 0 0 auto;
-    width: min(100%, 34rem);
+    width: min(100%, 28rem);
     background: var(--launch-bg);
     border-left: 1px solid var(--launch-line);
     transform: translateX(100%);
@@ -456,64 +530,58 @@ const hasPageSections = pageSections.length > 0;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1.25rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--launch-line);
   }
 
   .launch-header__mobile-scroll {
     overflow-y: auto;
-    padding: 1.25rem;
+    padding: 1rem;
     display: grid;
-    gap: 1.5rem;
+    gap: 1.35rem;
   }
 
-  .launch-header__mobile-section {
+  .launch-header__mobile-section,
+  .launch-header__docs-tab {
     display: grid;
-    gap: 0.9rem;
+    gap: 0.8rem;
   }
 
   .launch-header__mobile-links {
     display: grid;
     border: 1px solid var(--launch-line);
-    border-radius: 1rem;
-    overflow: hidden;
+    background: var(--launch-panel);
   }
 
-  .launch-header__mobile-links a {
-    padding: 0.95rem 1rem;
+  .launch-header__mobile-links a,
+  .launch-header__docs-links a {
+    padding: 0.9rem 1rem;
     border-top: 1px solid var(--launch-line);
+    font-size: 0.82rem;
+    color: var(--launch-muted);
   }
 
-  .launch-header__mobile-links a:first-child {
+  .launch-header__mobile-links a:first-child,
+  .launch-header__docs-links a:first-child {
     border-top: 0;
   }
 
-  .launch-header__docs-tabs {
+  .launch-header__docs-tabs,
+  .launch-header__docs-groups {
     display: grid;
-    gap: 1rem;
-  }
-
-  .launch-header__docs-tab {
-    display: grid;
-    gap: 0.7rem;
+    gap: 0.75rem;
   }
 
   .launch-header__docs-tab-title {
     margin: 0;
-    font-size: 0.86rem;
-    color: var(--launch-muted);
-    text-transform: uppercase;
+    font-size: 0.74rem;
     letter-spacing: 0.08em;
-  }
-
-  .launch-header__docs-groups {
-    display: grid;
-    gap: 0.65rem;
+    text-transform: uppercase;
+    color: var(--launch-muted);
   }
 
   .launch-header__docs-group {
     border: 1px solid var(--launch-line);
-    border-radius: 1rem;
     background: var(--launch-panel);
     overflow: hidden;
   }
@@ -521,11 +589,42 @@ const hasPageSections = pageSections.length > 0;
   .launch-header__docs-group summary {
     list-style: none;
     cursor: pointer;
-    padding: 0.95rem 1rem;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.82rem;
   }
 
   .launch-header__docs-group summary::-webkit-details-marker {
     display: none;
+  }
+
+  .launch-header__summary-icon {
+    position: relative;
+    width: 0.8rem;
+    height: 0.8rem;
+    flex: 0 0 auto;
+  }
+
+  .launch-header__summary-icon span {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 0.8rem;
+    height: 1px;
+    background: currentColor;
+    transform: translate(-50%, -50%);
+    transition: transform 160ms ease, opacity 160ms ease;
+  }
+
+  .launch-header__summary-icon span:last-child {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  .launch-header__docs-group[open] .launch-header__summary-icon span:last-child {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(90deg) scaleX(0.2);
   }
 
   .launch-header__docs-links {
@@ -533,25 +632,22 @@ const hasPageSections = pageSections.length > 0;
     border-top: 1px solid var(--launch-line);
   }
 
-  .launch-header__docs-links a {
-    padding: 0.85rem 1rem;
-    border-top: 1px solid var(--launch-line);
-    color: var(--launch-muted);
-  }
-
-  .launch-header__docs-links a:first-child {
-    border-top: 0;
-  }
-
-  @media (max-width: 800px) {
-    .launch-header__nav,
-    .launch-header__actions {
+  @media (max-width: 820px) {
+    .launch-header__desktop {
       display: none;
     }
 
     .launch-header__menu-toggle,
     .launch-header__page-nav {
-      display: block;
+      display: inline-flex;
+    }
+
+    .launch-header__inner {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .launch-header__menu-toggle {
+      justify-self: end;
     }
   }
 </style>
