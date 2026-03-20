@@ -60,6 +60,14 @@ Co-Authored-By: suelo-kiro[bot] <260422584+suelo-kiro[bot]@users.noreply.github.
       HUSKY=0 git push origin "$RUN_BRANCH" 2>/dev/null || true
     fi
   fi
+
+  # Remove worktree to avoid disk bloat
+  if [ -d "$AGENT_WORKTREE" ]; then
+    cd "$PROJECT_ROOT" 2>/dev/null || true
+    git worktree remove "$AGENT_WORKTREE" --force 2>/dev/null || rm -rf "$AGENT_WORKTREE"
+    git worktree prune 2>/dev/null || true
+  fi
+
   exit $exit_code
 }
 trap cleanup_and_push EXIT INT TERM
@@ -74,6 +82,7 @@ NC='\033[0m' # No Color
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+AGENT_WORKTREE="${PROJECT_ROOT}/../opensaas-agent"
 
 # Load agent configuration
 if [ -f "$SCRIPT_DIR/config.sh" ]; then
@@ -229,7 +238,7 @@ fi
 get_agent_cmd() {
   local agent_type="${1:-kiro}"
   if [ "$agent_type" = "opencode" ]; then
-    echo "/opt/homebrew/bin/opencode run --attach http://localhost:4096 -m opencode-go/glm-5 --dir $PROJECT_ROOT"
+    echo "/opt/homebrew/bin/opencode run --attach http://localhost:4096 -m opencode-go/glm-5 --dir ${AGENT_WORKTREE:-$PROJECT_ROOT}"
   else
     echo "$KIRO_CMD"
   fi
@@ -317,7 +326,7 @@ PROMPT_EOF
     /opt/homebrew/bin/opencode run \
       --attach http://localhost:4096 \
       -m opencode-go/glm-5 \
-      --dir "$PROJECT_ROOT" \
+      --dir "${AGENT_WORKTREE:-$PROJECT_ROOT}" \
       "$prompt_text" 2>&1 | tee "$task_log"
   else
     $KIRO_CMD "$prompt_text" < /dev/null 2>&1 | tee "$task_log"
@@ -921,33 +930,54 @@ setup_workspace() {
 
   git fetch origin 2>/dev/null || true
 
-  # Remove any worktree holding staging so we can checkout here
-  local wt
-  wt=$(git worktree list --porcelain 2>/dev/null | grep -B1 'branch refs/heads/staging' | head -1 | sed 's/worktree //')
-  if [[ -n "$wt" && "$wt" != "$PROJECT_ROOT" ]]; then
-    git worktree remove "$wt" --force 2>/dev/null || true
+  # --- Pre-flight: clean up stale worktrees ---
+  git worktree prune 2>/dev/null || true
+  # Remove leftover opensaas-main-push-* worktrees from previous runs
+  for stale in "${PROJECT_ROOT}/../opensaas-main-push-"*; do
+    [ -d "$stale" ] || continue
+    git worktree remove "$stale" --force 2>/dev/null || rm -rf "$stale"
+  done
+
+  # --- Remove previous agent worktree if it exists ---
+  if [ -d "$AGENT_WORKTREE" ]; then
+    git worktree remove "$AGENT_WORKTREE" --force 2>/dev/null || {
+      rm -rf "$AGENT_WORKTREE"
+      git worktree prune 2>/dev/null || true
+    }
   fi
 
-  # Checkout staging (create from origin if needed)
-  git checkout staging 2>/dev/null || git checkout -b staging "origin/staging" || {
-    log_error "Cannot checkout staging branch"
-    exit 1
+  # --- Create fresh worktree from origin/staging ---
+  git worktree add "$AGENT_WORKTREE" -b staging origin/staging 2>/dev/null || {
+    # Branch 'staging' may already exist locally — detach and reset
+    git worktree add --detach "$AGENT_WORKTREE" origin/staging 2>/dev/null || {
+      log_error "Cannot create worktree from origin/staging"
+      exit 1
+    }
+    cd "$AGENT_WORKTREE"
+    git checkout -B staging origin/staging 2>/dev/null || true
   }
 
-  # Sync with remote staging first (avoids non-fast-forward on push later)
-  git pull --rebase origin staging 2>/dev/null || {
-    git rebase --abort 2>/dev/null
-    log_warning "Pull --rebase from origin/staging failed — continuing with current state"
-  }
+  cd "$AGENT_WORKTREE" || { log_error "Cannot cd to worktree"; exit 1; }
 
-  # Merge main to pick up any new commits (preserves staging history)
+  # Merge main to pick up deploy fixes
   git merge "origin/$SOURCE_BRANCH" --no-edit 2>/dev/null || {
     git merge --abort 2>/dev/null
     log_warning "Merge from origin/$SOURCE_BRANCH conflict — continuing with current staging state"
   }
 
   rm -rf /tmp/oc-review-* 2>/dev/null || true
-  log_info "Workspace ready at $PROJECT_ROOT (staging)"
+  log_info "Workspace ready at $AGENT_WORKTREE (staging worktree)"
+}
+
+# Fast-forward local main to match origin/main after a run completes.
+# This keeps ko's local main in sync without switching branches.
+sync_local_main() {
+  cd "$PROJECT_ROOT" || return
+  git fetch origin main 2>/dev/null || return
+  # Update local main ref without checkout (fast-forward only)
+  git branch -f main origin/main 2>/dev/null && \
+    log_success "Local main synced with origin/main" || \
+    log_warning "Could not fast-forward local main — may need manual sync"
 }
 
 # =============================================================================
@@ -2000,6 +2030,9 @@ main() {
   # CRITICAL: Final push to ensure ALL changes are on GitHub
   # This catches any uncommitted changes (like metrics.json) that weren't part of task commits
   final_push_all_changes
+
+  # Sync local main with remote (fast-forward only)
+  sync_local_main
 
   log_info "=========================================="
   log_info "Run complete!"
