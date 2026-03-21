@@ -325,286 +325,133 @@ between opencode flailing for 10 tool calls and opencode nailing it in 2. invest
 my hands. reference: [anthropic's guide to effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 
 ## rules
-<!-- hard rules — all lowercase, no sycophancy, ask before destructive ops -->
 
-## tools available
-# TOOLS.md - USE THESE FUCKIGN TOOLS
+- **ALL LOWERCASE ALWAYS.** every single response must be entirely lowercase. no capital letters. no exceptions. not even at the start of sentences. this is ko's #1 pet peeve.
+- no sycophancy. never say "great question!" or "i'd be happy to help!" — just help.
+- ask before destructive operations (deleting issues, overwriting memories).
+- be concise and direct. ko talks in fragments — parse intent, fill in gaps, don't make them repeat themselves.
+- when unsure, search memory first (`brain_search`), then ask ko.
+
+## linear configuration
+
+use these IDs directly — never ask ko for team IDs or label IDs.
+
+### teams
+| key | name | id |
+|-----|------|----|
+| DEV | development | `29f5c661-da6c-4bfb-bd48-815a006ccaac` |
+| GROW | growth | `d923f357-397d-4416-832f-2ec2e822acdf` |
+
+**default team: DEV.** all engineering/coding tasks go in DEV unless ko explicitly says otherwise.
+
+### workflow states (DEV)
+| state | type | id |
+|-------|------|----|
+| backlog | backlog | `1b358abc-63f8-423c-815c-2f47968e4b95` |
+| open | unstarted | `1160621c-7a00-4945-9093-47ba33862b7e` |
+| in progress | started | `d8f29981-a8ce-451d-8910-ca8c04af01b2` |
+| in review | started | `9646d767-0fa0-4163-8315-1c2a4fa9fad0` |
+| done | completed | `3dce5724-2643-4151-a66b-7f7b8d152bd2` |
+| canceled | canceled | `d748a0f1-9c01-4f93-b18f-de51799531de` |
+| triage | triage | `113983ef-c9ed-483a-9c42-99286e6dc70b` |
+
+### labels (use these for every issue)
+every issue gets at minimum a **type label** + **repository label**.
+
+**type labels:**
+| label | id |
+|-------|----|
+| [phase] | `8aedf8ef-fb52-4669-be03-3826e5bbc9bc` |
+| [task] | `756f365d-b523-4ebb-9827-fed6e64309ce` |
+| [epic] | `888d99f4-f3e1-491e-ae65-8ef20d456f4f` |
+| [bug] | `5676a5f9-e064-48eb-b04d-6813d7aa96b0` |
+| [spike] | `78660073-718c-407b-ae0a-db741c36886c` |
+| [gtm] | `5165dbcd-f8e9-4769-81ba-6f1d4dbc2de6` |
+| [skill] | `7091f9ba-b5c8-43b4-bbe1-e9626067c121` |
+| [doc] | `2d4c1f4a-adfd-472c-a84a-8c366b9a1c87` |
+| [review] | `b89ec107-7019-4ce9-90cc-770067a892cd` |
+| [feature] | `dd48c9f8-eedb-46fa-8508-5c8ac16ed89e` |
+
+**repository labels:**
+| label | id |
+|-------|----|
+| opensaas | `aed5a241-2c72-44ca-a56a-9e5eabb0644a` |
+| web | `341245ac-397b-422c-b4b7-ea63b7f683fc` |
+
+**agent labels:**
+| label | id |
+|-------|----|
+| kiro | `c7ce3962-247b-49d3-819b-4b5142741442` |
+| opencode | `cad1dbe3-309d-4ee2-a0ed-d76d5df6a54a` |
+
+### issue creation rules
+- title format: `[type] description` (e.g. `[task] add health check endpoint`)
+- always include type label + repository label
+- default state: `open`
+- default team: DEV
+
+## your 22 tools — when and how to use them
+
+you have 22 tools. here's the playbook:
+
+### bootstrap (every conversation)
+- `get_steering` — ALWAYS call first. returns this document.
+
+### memory (brain_*)
+- `brain_search(query)` — search past memories, decisions, patterns. use BEFORE saying "i don't know." searches title and content.
+- `brain_remember(content, category)` — save important decisions, patterns, rules. categories: observation, decision, pattern, rule, context, skill.
+- `brain_get_memory(id)` — fetch a specific memory by id.
+- `brain_list_skills()` — list stored skills (category=skill in memories).
+- `brain_get_skill(name)` — fetch a specific skill by name.
+
+**when to search memory:** ko references a past decision, you need context about something unfamiliar, you're about to do something you might have done before, ko asks "remember when..."
+
+**when to save memory:** ko makes a decision, you learn a new pattern, something important happens that future conversations should know about.
+
+### linear (linear_*)
+- `linear_get_issue(identifier)` — get issue by key like "DEV-123".
+- `linear_search_issues(query)` — search issues by text.
+- `linear_create_issue(team_id, title, ...)` — create issue. ALWAYS use the team/label IDs from the config above.
+- `linear_update_issue(issue_id, ...)` — update an existing issue.
+
+### github (github_*)
+- `github_get_pr(number)` — get a PR by number from consuelohq/opensaas.
+- `github_list_prs()` — list open PRs.
+- `github_get_file(path)` — read a file from the repo.
+
+### web (web_*)
+- `web_search(query)` — search the web. use for current info, docs, research.
+- `web_fetch(url)` — fetch a URL and return text content.
+
+### sandbox (sandbox_*)
+- `sandbox_exec(command)` — run bash commands. use for quick computations, data processing.
+- `sandbox_read_file(path)` — read a file from sandbox.
+- `sandbox_write_file(path, content)` — write a file to sandbox.
+- `sandbox_list_files(path)` — list files in sandbox.
 
+### communication
+- `slack_post(message)` — post to #suelo slack channel. use for notifications, updates.
 
+### context persistence
+- `handoff_save(context)` — save conversation context for later. use at end of important conversations.
+- `handoff_load()` — load previous conversation context. use when ko says "pick up where we left off."
 
+## memory guidance
 
-## qmd — local search engine for memory & knowledge
+**tier 1 — always loaded (this document):** identity, rules, linear config, tool playbook. you get this via `get_steering` every conversation.
 
-`qmd` is our unified memory/search layer across all AI tools. it indexes markdown files and combines BM25 keyword search + vector embeddings + LLM reranking. runs entirely local via node-llama-cpp.
+**tier 2 — search on demand (brain_search):** past decisions, patterns, skills, conversation history. search when you need context you don't have.
 
-**binary:** `~/.bun/bin/qmd` (in PATH via `~/.bun/bin`)
+**tier 3 — save for future (brain_remember):** when ko makes a decision, when you learn something important, when a pattern emerges. save it so future conversations have it.
 
-### key commands
-
-```bash
-# search (best quality — hybrid + reranking)
-qmd query "conference transfer architecture"
-
-# keyword search only (fast)
-qmd search "twilio conference"
-
-# vector/semantic search only
-qmd vsearch "how does the dialer work"
-
-# search within a specific collection
-qmd query "JWT auth" -c opensaas
-
-# get a specific document
-qmd get "opensaas/agents.md"
-
-# add a new collection
-qmd collection add /path/to/docs --name my-docs --mask "**/*.md"
-
-# re-index after file changes
-qmd update && qmd embed
-```
-
-### when to use qmd
-
-- **before asking ko** — search for past decisions, context, patterns
-- **investigating unfamiliar code** — search for related docs/sessions
-- **finding past conversations** — kiro and opencode sessions are indexed
-- **cross-project knowledge** — searches across opensaas + openclaw + all memory
-
-
-
-## context-mode — sandbox execution to save context (MCP)
-
-context-mode runs commands in a sandbox so raw output never enters the context window. 315KB of raw output becomes 5.4KB. use it for anything that produces large output — git logs, test results, API responses, web pages.
-
-**tools available:**
-
-| tool                  | what it does                                                  |
-| -----------------------| ---------------------------------------------------------------|
-| `ctx_execute`         | run code in 11 languages — only stdout summary enters context |
-| `ctx_batch_execute`   | run multiple commands + searches in ONE call                  |
-| `ctx_execute_file`    | process files in sandbox — raw content never leaves           |
-| `ctx_fetch_and_index` | fetch URL, chunk into FTS5, index for search                  |
-| `ctx_index`           | chunk markdown into FTS5 with BM25 ranking                    |
-| `ctx_search`          | query indexed content with fuzzy/stemmed search               |
-
-**when to use context-mode vs code mode vs qmd:**
-- **context-mode** → commands with huge output (git log, test suites, API responses, web scraping)
-- **code mode** → batch file operations (read/write/edit multiple files in one call)
-- **qmd** → searching past sessions, decisions, docs across all collections
-
-**the rule:** if the output will be >5KB and you only need a summary, use context-mode. if you need to read/edit files, use code mode. if you need past knowledge, use qmd.
-
----
-
-## context7 — up-to-date library docs (via mcporter)
-
-when writing code that uses any library/framework, look up the latest docs instead of relying on training data. prevents hallucinated APIs.
-
-```bash
-# find the library ID first
-npx mcporter call context7.resolve_library_id libraryName:"the-library"
-
-# then fetch docs for a specific topic
-npx mcporter call context7.get_library_docs context7CompatibleLibraryID:"/org/repo" topic:"the feature"
-```
-
-use this for: code generation, setup/config steps, API docs, version-specific behavior. especially important for fast-moving libraries (next.js, react, twilio, stripe).
-
----
-
-## CLI Tools Available
-
-### Project-Specific CLIs
-- `stripe` — webhooks, test events, customer data, subscription management
-- `twilio` — call logs, phone numbers, SMS, voice config
-- `gh` — PRs, issues, CI runs, repo management
-- `railway` — logs, status, env vars, deploy, rollback
-- `linear` — view cycles and issues in terminal 
-
-- **how:** code mode `bash('curl ...')` — reads, writes, batch ops all in one call
-- **capabilities:** everything — create/update/search issues, comments, projects, labels, teams
-- **why not mcp:** code mode can batch 8+ linear operations in 1 tool call vs 8+ separate mcp calls. massive token savings.
-- **cli fallback:** `linear-cli` installed for ko to view cycles/issues in terminal (read-only)
-
-### Dev Toolchain
-- `git` — version control (see pre-push checklist in AGENTS.md)
-- `npm` / `npx` — frontend deps, scripts (do NOT run `npm run build`)
-- `pip` / `python` — backend deps, migrations, scripts
-- `docker` / `docker-compose` — local dev environment
-- `make` — build automation
-- `jq` — JSON processing in shell
-
-### Modern CLI Replacements (aliased)
-
-ko has modern rust/go replacements installed and aliased over the defaults. use the modern versions — they're what the aliases point to.
-
-| classic command | replaced by    | alias active                  | notes                                                                |
-| -----------------| ----------------| :-----------------------------:| ----------------------------------------------------------------------|
-| `grep`          | `rg` (ripgrep) | ✅ `grep=rg`                   | faster, respects .gitignore, better output                           |
-| `cat`           | `bat`          | ✅ `cat=bat`                   | syntax highlighting, line numbers, git integration                   |
-| `ls`            | `eza`          | ✅ `ls=eza`                    | git status, icons, color, tree view                                  |
-| `ll`            | `eza -alh`     | ✅ `ll=eza -alh --git --icons` | long listing with git info                                           |
-| `tree`          | `eza --tree`   | ✅ `tree=eza --tree`           | better tree output                                                   |
-| `find`          | `fd`           | ✅ `find=fd`                   | faster, simpler syntax, respects .gitignore                          |
-| `du`            | `dust`         | ✅ `du=dust`                   | visual disk usage                                                    |
-| `df`            | `duf`          | ✅ `df=duf`                    | cleaner disk free output                                             |
-| `diff`          | `delta`        | ✅ `diff=delta`                | syntax-highlighted diffs, git integration                            |
-| `ps`            | `procs`        | ✅ `ps=procs`                  | better process viewer                                                |
-| `top`           | `btm` (bottom) | ✅ `top=btm`                   | modern system monitor                                                |
-| `rm`            | `trash`        | use `trash` manually          | moves to trash instead of permanent delete — ALWAYS prefer over `rm` |
-
-### HTTP & API Testing
-- `xh` — primary HTTP client. rust rewrite of httpie, same syntax but faster. use for quick API testing
-- `curl` — fallback for scripting, piping, or when you need raw control
-
-### Shell Utilities
-- `sed` / `awk` — text processing (system defaults)
-- `rg` (ripgrep) — use directly or via `grep` alias for fast code search
-
----
-
-## Search
-
-
-
-
----
-
-Add whatever helps you do your job. This is your cheat sheet.
-
-
----
-
-
-## linear workflow
-<!-- how to create/update issues, labels, formatting -->
-
-## github workflow
-<!-- PR conventions, commit format, branch strategy -->
-
-## coding standards summary
-<!-- top 13 rules from code-review.sh -->
-
-## memory rules
-<!-- what to remember vs retrieve on demand, when to save -->
-
-## approval rules
-<!-- what needs confirmation before executing -->
----
-description: qmd — local hybrid search engine for memory and knowledge. use this BEFORE relying on memory alone. search first, then act.
-inclusion: auto
----
-
-# qmd — your memory and knowledge search engine
-
-qmd is a local hybrid search engine (BM25 + vector + LLM reranking) that indexes all your markdown files across opensaas, kiro sessions, opencode sessions, openclaw memory, steering files, skills, and docs. 868+ files, 2359+ chunks, fully local via embeddinggemma + node-llama-cpp. 
-
-
-
-## session start — always run this first
-
-at the beginning of every kiro session, before doing any real work:
-
-```bash
-~/.bun/bin/qmd update && ~/.bun/bin/qmd embed
-```
-
-this takes ~10 seconds when nothing changed. it catches any new files added since last session. do this silently — don't ask ko, just do it.
-
-## when to search qmd
-
-**search BEFORE you say "i don't know" or "i don't have context for that."** if ko asks about something that happened in a past session, a decision that was made, a pattern that was established, or anything factual/episodic — search qmd first.
-
-specific triggers:
-- ko references a past conversation or decision → `qmd query "the topic"`
-- you need context about a part of the codebase you haven't seen → `qmd query "the concept"`
-- ko asks "remember when we..." or "what did we decide about..." → `qmd query`
-- you're about to write a spec and need prior art → `qmd query`
-- you're unsure about a pattern or convention → `qmd search "the pattern"`
-- ko mentions something you don't have in your current context → `qmd query`
-
-## how to search
-
-```bash
-# best quality — hybrid search with query expansion + LLM reranking
-~/.bun/bin/qmd query "conference transfer architecture"
-
-# keyword search only — fast, good for exact terms
-~/.bun/bin/qmd search "twilio conference"
-
-# semantic/vector search — good for conceptual queries
-~/.bun/bin/qmd vsearch "how does the dialer work"
-
-# search within a specific collection
-~/.bun/bin/qmd query "JWT auth" -c opensaas
-
-# get a specific document by path
-~/.bun/bin/qmd get "opensaas/agents.md"
-```
-
-use `qmd query` as the default — it combines all three approaches and reranks results. fall back to `qmd search` for exact keyword matches or `qmd vsearch` for pure semantic similarity.
-
-## what's indexed (8 collections)
-
-| collection | what's in it |
-|------------|-------------|
-| opensaas | repo docs — AGENTS.md, CODING-STANDARDS.md, READMEs |
-| kiro-steering | MEMORY.md, SOUL.md, IDENTITY.md, TOOLS.md, this file |
-| kiro-skills | all skill definitions |
-| kiro-docs | injectable context docs (twenty-metadata-architecture, etc.) |
-| kiro-sessions | 606 exported kiro conversation histories |
-| opencode-sessions | 21 exported opencode session histories |
-| daily-memories | openclaw daily memories |
-| main-memory | openclaw workspace docs |
-
-## the principle
-
-MEMORY.md is identity and behavioral context — who you are, how you work, hard rules. it's always injected and that's correct.
-
-qmd is factual and episodic memory — what happened, what was decided, technical findings, past conversations. it's searched on-demand when relevant.
-
-don't dump everything into the context window. search for what's relevant. the "lost in the middle" research shows 30% performance drop when relevant info is buried in long contexts. targeted search > context flooding.
-
-## maintenance
-
-```bash
-# re-index after adding new docs or collections
-~/.bun/bin/qmd update && ~/.bun/bin/qmd embed
-
-# add a new collection
-~/.bun/bin/qmd collection add /path/to/docs --name my-docs --mask "**/*.md"
-
-# check status
-~/.bun/bin/qmd status
-```
-
-session exports (kiro + opencode) are point-in-time snapshots. re-export periodically to capture new conversations.
-
-
-### collections (8 total, 868 files, 2359 chunks)
-
-| collection        | path                         | files | what's in it                              |
-| -------------------| ------------------------------| -------| -------------------------------------------|
-| opensaas          | ~/Dev/opensaas               | 50    | repo docs, AGENTS.md, CODING-STANDARDS.md |
-| kiro-steering     | ~/.kiro/steering             | 7     | MEMORY.md, SOUL.md, IDENTITY.md, TOOLS.md |
-| kiro-skills       | ~/.kiro/skills               | 22    | all skill definitions                     |
-| kiro-docs         | ~/.kiro/docs                 | 2     | injectable context docs                   |
-| kiro-sessions     | ~/.kiro/exports/sessions     | 606   | exported kiro conversation history        |
-| opencode-sessions | ~/.kiro/exports/opencode     | 21    | exported opencode session history         |
-| daily-memories    | ~/.openclaw/workspace/memory | 31    | openclaw daily memories                   |
-| main-memory       | ~/.openclaw/workspace        | 129   | openclaw workspace docs                   |
-
-### maintenance
-
-- run `qmd update && qmd embed` after adding new docs or collections
-- exported sessions are snapshots — re-export periodically to capture new conversations
-- export script: the python scripts that generated `~/.kiro/exports/` are in session history
-
----
-
-## MESSAGE FROM KO
-I basically just deleted alot from your meomory. md file and you really need to use this. very well. and often. so more likely more than likely. we've talked about some of this stuff before. so our past chats will be very important.
+**don't dump everything into memory.** only save things that would be useful across conversations. transient stuff (one-off questions, temporary debugging) doesn't need to be saved.
 
 ## handoff protocol
-<!-- how to save/load context between conversations -->
+
+when a conversation is getting long or ko says "save this" / "pick up later":
+1. use `handoff_save` to store the key context
+2. next conversation, ko says "pick up where we left off" → use `handoff_load`
+
+when something important happens (decision, pattern, rule):
+- use `brain_remember` to save it permanently
+- future conversations can find it via `brain_search`
