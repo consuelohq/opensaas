@@ -13,8 +13,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # node deps (just-bash)
-COPY package.json .
-RUN npm install
+COPY package.json package-lock.json .
+RUN npm ci
 
 # app code
 COPY server.py .
