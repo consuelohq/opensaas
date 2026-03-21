@@ -1,160 +1,231 @@
 ---
-import LaunchFaq from '../components/launch/LaunchFaq.astro';
 import LaunchFooter from '../components/launch/LaunchFooter.astro';
 import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import {
-  mercuryFaqItems,
-  mercuryProblems,
-  mercurySteps,
-  siteLinks,
-} from '../data/launch-content';
+import { mercuryFaqItems, siteLinks } from '../data/launch-content';
 import LaunchLayout from '../layouts/LaunchLayout.astro';
 
-const description = 'Mercury is the hosted Consuelo plan for teams that want telephony and AI usage without turning infrastructure into the first project.';
+const description = 'Mercury is the hosted Consuelo plan. Twilio calling, AI models, and hosting — tested and configured. Start with $20 pay as you go.';
+
+const icons = [
+  { src: '/icons/twilio.svg', alt: 'Twilio' },
+  { src: '/icons/anthropic.svg', alt: 'Anthropic' },
+  { src: '/icons/openai.svg', alt: 'OpenAI' },
+  { src: '/icons/groq.svg', alt: 'Groq' },
+  { src: '/icons/gemini.svg', alt: 'Gemini' },
+  { src: '/icons/deepseek.svg', alt: 'DeepSeek' },
+  { src: '/icons/aws.svg', alt: 'AWS' },
+  { src: '/icons/cloudflare.svg', alt: 'Cloudflare' },
+  { src: '/icons/railway.svg', alt: 'Railway' },
+];
+
+const problems = [
+  'testing select providers and configuring them for sales teams',
+  'working with twilio, openai, and groq to ensure calls and coaching work reliably',
+  'benchmarking all provider combinations we recommend',
+];
+
+const steps = [
+  { n: '1', text: 'sign up and add $20 balance — follow the', link: 'setup instructions', href: siteLinks.docs },
+  { n: '2', text: 'use mercury with transparent pricing —', link: 'pay per request', href: siteLinks.docs, after: ' with zero markups' },
+  { n: '3', text: 'auto-top up — when your balance reaches $5 we\'ll automatically add $20' },
+];
 ---
 
 <LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
   <LaunchHeader />
 
+  <!-- hero -->
   <section class="launch-section">
-    <div class="launch-content launch-content--wide mercury-hero launch-grid-2">
-      <div class="mercury-hero__copy">
-        <p class="launch-eyebrow">mercury</p>
-        <h1 class="launch-title">hosted telephony and ai usage for teams that want the product without the setup burden.</h1>
-        <p class="launch-copy">Mercury is the hosted layer for Consuelo. Keep the crm free, self-host when you want maximum control, or use Mercury when you want hosted infrastructure and a faster path to getting live.</p>
-        <div class="mercury-hero__actions">
-          <a class="launch-button launch-mono" href={siteLinks.app}>get started with mercury</a>
-          <a class="launch-button--ghost launch-mono" href={siteLinks.docs}>read docs</a>
-        </div>
-      </div>
-
-      <aside class="launch-card mercury-hero__card">
-        <p class="launch-eyebrow">hosted plan</p>
-        <h2>starting at $20 plus usage</h2>
-        <p class="launch-copy">Mercury is for teams that do not want to manage Twilio setup, provider keys, and hosted operations before they can test the workflow.</p>
-        <ul>
-          <li class="launch-mono">hosted workspace path</li>
-          <li class="launch-mono">hosted telephony and ai usage</li>
-          <li class="launch-mono">free crm still available</li>
-          <li class="launch-mono">self-host later if you want</li>
-        </ul>
-      </aside>
-    </div>
-  </section>
-
-  <section class="launch-section">
-    <div class="launch-content launch-content--wide mercury-section">
-      <div class="mercury-section__intro">
-        <p class="launch-eyebrow">what problem is mercury solving?</p>
-        <h2>most teams want to prove the workflow before they become infrastructure operators.</h2>
-      </div>
-      <div class="launch-grid-3">
-        {mercuryProblems.map((problem) => (
-          <article class="launch-card mercury-card">
-            <h3>{problem.title}</h3>
-            <p class="launch-copy">{problem.text}</p>
-          </article>
+    <div class="launch-content launch-content--wide mercury-hero">
+      <h1 class="mercury-hero__logo launch-mono">mercury</h1>
+      <h2 class="mercury-hero__subtitle">reliable hosted infrastructure for sales teams</h2>
+      <p class="launch-copy">mercury gives you access to a curated set of providers that consuelo has tested and configured specifically for sales teams. no need to worry about inconsistent performance and quality, use validated infrastructure that works.</p>
+      <div class="mercury-hero__icons">
+        {icons.map((icon) => (
+          <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
         ))}
       </div>
+      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>get started with mercury ↗</a>
+      <p class="launch-copy mercury-hero__pricing">add $20 pay as you go balance (+$1.23 card processing fee)</p>
+      <p class="launch-copy mercury-hero__note">use with any plan. set monthly spend limits. cancel any time.</p>
     </div>
   </section>
 
+  <!-- problem -->
   <section class="launch-section">
-    <div class="launch-content launch-content--wide mercury-section">
-      <div class="mercury-section__intro">
-        <p class="launch-eyebrow">how mercury works</p>
-        <h2>a cleaner path for teams that want hosted access now and deployment flexibility later.</h2>
-      </div>
-      <div class="launch-grid-3">
-        {mercurySteps.map((step) => (
-          <article class="launch-card mercury-card mercury-card--step">
-            <p class="launch-eyebrow">{step.step}</p>
-            <h3>{step.title}</h3>
-            <p class="launch-copy">{step.text}</p>
-          </article>
-        ))}
-      </div>
+    <div class="launch-content launch-content--wide mercury-block">
+      <p class="mercury-block__eyebrow launch-mono">what problem is mercury solving?</p>
+      <p class="launch-copy">there are so many providers available, but only a few work well with sales workflows. most teams configure them differently with varying results.</p>
+      <p class="launch-copy">a persistent tech layer. follows you across devices and context.</p>
+      {problems.map((item) => (
+        <details class="mercury-expandable">
+          <summary class="mercury-expandable__trigger launch-mono">{item}</summary>
+        </details>
+      ))}
     </div>
   </section>
 
+  <!-- how it works -->
   <section class="launch-section">
-    <div class="launch-content launch-content--wide mercury-compare launch-grid-2">
-      <article class="launch-card mercury-card">
-        <p class="launch-eyebrow">mercury</p>
-        <h2>choose hosted when speed wins.</h2>
-        <p class="launch-copy">Mercury is the right fit when you want the app, the dialer, and the usage layer live quickly without making provider setup your first bottleneck.</p>
-      </article>
-      <article class="launch-card mercury-card">
-        <p class="launch-eyebrow">self-hosted</p>
-        <h2>choose self-managed when ownership wins.</h2>
-        <p class="launch-copy">Self-host when you want to bring your own Twilio and AI keys, own the deployment path, and control the infrastructure directly from the start.</p>
-      </article>
+    <div class="launch-content launch-content--wide mercury-block">
+      <p class="mercury-block__eyebrow launch-mono">how mercury works</p>
+      <p class="launch-copy">while we suggest you use mercury with consuelo, you can use mercury with any sales tool.</p>
+      {steps.map((step) => (
+        <p class="mercury-step launch-copy">
+          <span class="mercury-step__n launch-mono">[{step.n}]</span>
+          {step.text}{' '}
+          {step.link && step.href ? <a class="launch-inline-link" href={step.href}>{step.link}</a> : null}
+          {step.after ?? ''}
+        </p>
+      ))}
     </div>
   </section>
 
-  <LaunchFaq
-    title="Mercury FAQ"
-    intro="The hosted plan should feel straightforward: what it is, when to use it, how it fits with self-hosting, and what stays flexible later."
-    items={mercuryFaqItems}
-  />
+  <!-- privacy -->
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-block">
+      <p class="mercury-block__eyebrow launch-mono">your privacy is important to us</p>
+      <details class="mercury-expandable">
+        <summary class="mercury-expandable__trigger launch-mono">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
+      </details>
+    </div>
+  </section>
+
+  <!-- faq -->
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide mercury-block">
+      <p class="mercury-block__eyebrow launch-mono">faq</p>
+      {mercuryFaqItems.map((item) => (
+        <details class="mercury-expandable">
+          <summary class="mercury-expandable__trigger launch-mono">{item.question}</summary>
+          <p class="launch-copy mercury-expandable__body">{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
   <LaunchFooter />
 </LaunchLayout>
 
 <style>
   .mercury-hero {
-    align-items: start;
-    padding-top: clamp(2rem, 1.3rem + 2vw, 4rem);
-    padding-bottom: clamp(2rem, 1.3rem + 2vw, 4rem);
-  }
-
-  .mercury-hero__copy {
     display: grid;
-    gap: 1.3rem;
-  }
-
-  .mercury-hero__card,
-  .mercury-card {
-    border-radius: 1.2rem;
-    padding: 1.25rem;
-  }
-
-  .mercury-hero__card h2,
-  .mercury-section h2,
-  .mercury-card h2,
-  .mercury-card h3 {
-    margin: 0 0 0.75rem;
-    letter-spacing: -0.05em;
-  }
-
-  .mercury-hero__actions {
-    display: flex;
-    flex-wrap: wrap;
     gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(2.5rem, 2rem + 2vw, 5rem);
   }
 
-  .mercury-hero__card ul {
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
+  .mercury-hero__logo {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .mercury-hero__subtitle {
+    margin: 0;
+    font-family: var(--launch-mono-font);
+    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .mercury-hero__icons {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 0;
+  }
+
+  .mercury-hero__icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    opacity: 0.7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .mercury-hero__icon {
+      filter: invert(1);
+    }
+  }
+
+  .mercury-hero .launch-button {
+    justify-self: start;
+  }
+
+  .mercury-hero__pricing {
+    padding-top: 0.5rem;
+  }
+
+  .mercury-hero__note {
+    font-size: clamp(0.76rem, 0.72rem + 0.14vw, 0.84rem);
+  }
+
+  /* shared block */
+  .mercury-block {
     display: grid;
-    gap: 0.55rem;
+    gap: 0.75rem;
+    padding-top: clamp(2rem, 1.5rem + 1.5vw, 3.5rem);
+    padding-bottom: clamp(2rem, 1.5rem + 1.5vw, 3.5rem);
   }
 
-  .mercury-hero__card li {
-    padding-top: 0.55rem;
-    border-top: 1px solid var(--launch-line);
+  .mercury-block__eyebrow {
+    margin: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--launch-muted);
-    font-size: 0.86rem;
+    font-weight: 700;
   }
 
-  .mercury-section {
-    display: grid;
-    gap: 1.5rem;
+  /* expandable items */
+  .mercury-expandable {
+    border-top: 1px solid var(--launch-line);
+    padding: 0.75rem 0;
   }
 
-  .mercury-section__intro {
-    display: grid;
-    gap: 0.9rem;
-    max-width: 44rem;
+  .mercury-expandable__trigger {
+    font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .mercury-expandable__trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .mercury-expandable__trigger::before {
+    content: '(+)';
+    flex-shrink: 0;
+    color: var(--launch-muted);
+    font-size: 0.78rem;
+  }
+
+  details[open] .mercury-expandable__trigger::before {
+    content: '(−)';
+  }
+
+  .mercury-expandable__body {
+    padding: 0.5rem 0 0 1.6rem;
+  }
+
+  /* steps */
+  .mercury-step {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    border-top: 1px solid var(--launch-line);
+    padding-top: 0.75rem;
+  }
+
+  .mercury-step__n {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    color: var(--launch-muted);
   }
 </style>

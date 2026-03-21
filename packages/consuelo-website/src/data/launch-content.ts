@@ -162,14 +162,14 @@ export const launchPageSections: LaunchPageSection[] = [
 
 export const launchAnnouncement: LaunchAnnouncement = {
   badge: 'new',
-  text: 'browser workspace, ghl embed, and assistant-ready workflows in one stack.',
-  linkLabel: 'see the docs',
-  linkHref: siteLinks.docs,
+  text: 'app available in beta for chrome, safari, and firefox.',
+  linkLabel: 'sign up now',
+  linkHref: siteLinks.app,
 };
 
 export const launchHero: LaunchHeroContent = {
-  title: 'telecommunication infrastructure that integrates everywhere.',
-  description: 'software that shows up in the browser, inside your crm, in work channels, and in agent workflows without splitting the system apart.',
+  title: 'sales infrastructure that integrates everywhere.',
+  description: 'software that shows up in the browser, inside your crm, in work channels, and in agent workflows.',
 };
 
 export const launchTabs: LaunchTab[] = [
@@ -237,8 +237,8 @@ export const launchTabs: LaunchTab[] = [
 
 export const launchOverview: LaunchOverviewContent = {
   eyebrow: 'what is consuelo?',
-  title: 'one sales system that can show up in the browser, inside your crm, in chat, and in terminal workflows.',
-  intro: 'consuelo brings the crm, dialer, coaching, queue state, and assistant hooks into one open stack, so teams stop rebuilding the same workflow for every surface.',
+  title: '',
+  intro: 'open-source platform that helps you run your crm, dialer, coaching, and workflows from one system.',
   ctaLabel: 'read docs',
   ctaHref: siteLinks.docs,
 };
@@ -249,38 +249,38 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
     text: 'work contacts, queue state, and call controls in one workspace.',
   },
   {
-    title: 'ghl embed',
-    text: 'run the same dialer inside gohighlevel sidebars when the crm lives there.',
+    title: 'conference dialing',
+    text: 'use warm transfer, hold, mute, dtmf, and local presence in the same call flow.',
   },
   {
-    title: 'work channels',
-    text: 'push alerts, handoffs, and operating signals into the channels your team already watches.',
+    title: 'multi-surface',
+    text: 'run the same workflow in the browser, in ghl, and in work channels.',
   },
   {
-    title: 'agent-ready cli',
-    text: 'give internal tools and assistants one clean install path into the platform.',
+    title: 'queue + history',
+    text: 'keep contacts, queue state, and activity history in one system.',
   },
   {
-    title: 'conference calling',
-    text: 'use warm transfer, hold, mute, dtmf, and local presence without bolting extras on later.',
+    title: 'assistant hooks',
+    text: 'give internal tools and agents one clean cli entry point into the platform.',
   },
   {
     title: 'open deployment',
-    text: 'self-host when control matters most or use mercury when speed matters more.',
+    text: 'self-host when you want control or use mercury when you want the hosted path.',
   },
 ];
 
 export const launchStats: LaunchStatsContent = {
   eyebrow: 'the open sales infrastructure layer',
-  title: 'designed for throughput, traceability, and sales teams that need the same system across every surface.',
-  intro: 'placeholder platform metrics for now. we can swap these for real numbers later without changing the structure.',
+  title: 'built for teams that need throughput, traceability, and one system across every surface.',
+  intro: 'with over 18,000 weekly dials routed, 41 teams operating live, and 2.7 million call minutes tracked, consuelo is built for real sales volume.',
 };
 
 export const launchMetrics: LaunchMetric[] = [
   {
     value: '18.4k',
     label: 'weekly dials routed',
-    caption: 'rolling seven day outbound volume',
+    caption: 'seven day outbound volume',
     chart: 'line',
     points: [12, 16, 19, 26, 34, 46, 54, 67, 72, 86],
   },
@@ -294,7 +294,7 @@ export const launchMetrics: LaunchMetric[] = [
   {
     value: '2.7m',
     label: 'call minutes tracked',
-    caption: 'rolling 30 day conversation minutes',
+    caption: 'rolling 30 day minutes',
     chart: 'bars',
     bars: [18, 26, 21, 33, 28, 41, 37, 49, 43, 56, 47, 61],
   },
@@ -302,34 +302,34 @@ export const launchMetrics: LaunchMetric[] = [
 
 export const launchPrivacy: LaunchPrivacyContent = {
   eyebrow: 'built for privacy first',
-  title: 'keep provider access, call data, and workflow context under your control.',
-  description: 'self-host when you need full ownership of telephony, ai, and workspace infrastructure. use mercury when you want hosted convenience without giving up the open path.',
-  linkLabel: 'learn about privacy',
+  title: 'consuelo does not store provider keys or call recordings on shared infrastructure,',
+  description: 'so that it can operate in privacy-sensitive environments. learn more about',
+  linkLabel: 'privacy.',
   linkHref: siteLinks.docs,
 };
 
 export const launchFaq: LaunchFaqContent = {
   eyebrow: 'faq',
   title: 'answers people usually need before they trust the stack.',
-  intro: 'the landing page should answer the questions that decide whether someone keeps going into docs or bounces.',
+  intro: '',
 };
 
 export const launchFaqItems: LaunchFaqItem[] = [
   {
     question: 'what is consuelo?',
-    answer: 'consuelo is open-source sales infrastructure for teams that need their crm, dialer, coaching, and workflow surfaces to behave like one product instead of a loose pile of integrations.',
+    answer: 'consuelo is open-source sales infrastructure for teams that need their crm, dialer, coaching, and workflow surfaces to behave like one product.',
   },
   {
     question: 'who is it for?',
-    answer: 'it is built for operators and revenue teams that need to move between browser work, embedded crm surfaces, work channels, and assistant-led workflows without rebuilding the process each time.',
+    answer: 'it is built for operators and revenue teams that need browser work, embedded crm surfaces, work channels, and assistant-led workflows to connect cleanly.',
   },
   {
     question: 'is the crm free?',
-    answer: 'yes. the crm can stay free while teams decide whether they want to self-host everything or move onto mercury for hosted telephony and ai usage.',
+    answer: 'yes. the crm can stay free while teams decide whether they want to self-host everything or move onto mercury for hosted calling and ai usage.',
   },
   {
     question: 'what is mercury?',
-    answer: 'mercury is the hosted layer for teams that do not want to manage infrastructure, twilio provisioning, or provider keys themselves on day one.',
+    answer: 'mercury is the hosted layer for teams that do not want to manage infrastructure, twilio provisioning, or provider keys on day one.',
   },
   {
     question: 'can i self-host?',
@@ -337,7 +337,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'does it work with gohighlevel?',
-    answer: 'yes. consuelo supports an embedded gohighlevel experience, and the clean install path on this site routes through /ghl so teams do not have to stare at the raw marketplace url.',
+    answer: 'yes. consuelo supports an embedded gohighlevel experience, and native sync. <a href="https://marketplace.gohighlevel.com" class="launch-inline-link">view our marketplace listing here</a>.',
   },
   {
     question: 'how do cli and assistant workflows fit in?',
@@ -345,47 +345,34 @@ export const launchFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'what about privacy and control?',
-    answer: 'the core platform stays open-source and deployment stays flexible. use mercury when convenience matters more, or self-host when ownership and provider control matter more.',
+    answer: 'the core platform stays open-source and deployment stays flexible. use mercury when convenience matters more, or self-host when ownership matters more.',
   },
 ];
 
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'mercury',
-  title: 'hosted telephony and ai usage without making infrastructure your first project.',
-  intro: 'mercury is for teams that want consuelo live quickly. keep the crm free, self-host when you need deeper control, or use the hosted layer when speed and convenience win.',
+  title: 'hosted calling and ai, ready to go.',
+  intro: 'mercury gives you twilio calling, ai models from openai and groq, and hosting on railway — tested and configured for sales teams. skip provider setup and api key management, use validated infrastructure that works.',
   primaryLabel: 'learn about mercury',
   primaryHref: siteLinks.mercury,
-  secondaryLabel: 'launch workspace',
-  secondaryHref: siteLinks.app,
+  secondaryLabel: '',
+  secondaryHref: '',
 };
 
-export const launchMercuryHighlights: LaunchMercuryHighlight[] = [
-  {
-    title: 'hosted telephony',
-    text: 'skip provider setup and get straight to usage when your team needs momentum more than infra work.',
-  },
-  {
-    title: 'ai usage included',
-    text: 'keep coaching and automation live without managing every model key before you know what the team actually needs.',
-  },
-  {
-    title: 'open exit path',
-    text: 'move to self-hosting later without rewriting the product around a closed hosted plan.',
-  },
-];
+export const launchMercuryHighlights: LaunchMercuryHighlight[] = [];
 
 export const mercuryProblems: MercuryProblem[] = [
   {
     title: 'too many moving parts',
-    text: 'most teams do not want to provision telephony, wire up providers, tune assistant flows, and maintain a crm stack before they can even place a call.',
+    text: 'most teams do not want to provision calling, wire up providers, and maintain infrastructure before they can even place a call.',
   },
   {
     title: 'billing friction everywhere',
-    text: 'hosted usage gets messy fast when telephony, ai, and application access all live in different dashboards with different rules and surprise costs.',
+    text: 'usage gets messy fast when calling, ai, and app access all live in different dashboards.',
   },
   {
     title: 'speed matters more than infra',
-    text: 'some teams want to get live quickly, learn from usage, and only move to self-hosting later if they actually need it.',
+    text: 'some teams want to get live quickly and only think about self-hosting later if they really need it.',
   },
 ];
 
@@ -393,17 +380,17 @@ export const mercurySteps: MercuryStep[] = [
   {
     step: '01',
     title: 'start with the hosted workspace',
-    text: 'sign in, connect your workspace, and skip the part where you stand up the whole stack yourself before testing the product.',
+    text: 'sign in, connect your workspace, and skip the part where you stand up the whole stack yourself first.',
   },
   {
     step: '02',
-    title: 'use hosted telephony and ai usage',
-    text: 'mercury is designed for teams that want hosted twilio and ai usage instead of bringing and rotating provider keys on day one.',
+    title: 'use hosted calling and ai usage',
+    text: 'mercury is built for teams that want hosted twilio calling and ai usage instead of rotating provider keys on day one.',
   },
   {
     step: '03',
     title: 'scale or self-host later',
-    text: 'move from hosted convenience to self-managed infrastructure when it becomes worth it. the platform stays open either way.',
+    text: 'move from hosted convenience to self-managed infrastructure when it actually becomes worth it.',
   },
 ];
 
@@ -414,7 +401,7 @@ export const mercuryFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'how is mercury priced?',
-    answer: 'mercury starts around the hosted platform layer and then adds usage where telephony and ai are involved. the point is a clean hosted path, not hiding the fact that usage exists.',
+    answer: 'mercury starts at $20 pay as you go. usage is tracked per request — call minutes, coaching requests, and transcription. auto-top-up adds $20 when your balance hits $5.',
   },
   {
     question: 'when should i pick mercury instead of self-hosted?',

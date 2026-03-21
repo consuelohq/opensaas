@@ -63,25 +63,25 @@ const { sectionId } = Astro.props as Props;
 <style>
   .launch-footer-signup {
     display: grid;
-    gap: 1.2rem;
+    gap: 1rem;
   }
 
   .launch-footer-signup__intro {
     display: grid;
-    gap: 0.95rem;
-    max-width: 32rem;
+    gap: 0.75rem;
+    max-width: 36rem;
   }
 
   .launch-footer-signup h2 {
     margin: 0;
-    font-size: clamp(1.9rem, 1.35rem + 1.4vw, 3rem);
-    letter-spacing: -0.07em;
-    line-height: 1.02;
+    font-size: clamp(1rem, 0.9rem + 0.3vw, 1.15rem);
+    letter-spacing: -0.06em;
+    line-height: 1.04;
   }
 
   .launch-footer-signup__form {
     display: grid;
-    gap: 0.75rem;
+    max-width: 40rem;
   }
 
   .launch-footer-signup__field {
@@ -93,16 +93,16 @@ const { sectionId } = Astro.props as Props;
 
   .launch-footer-signup__field input {
     width: 100%;
-    min-height: 3rem;
-    padding: 0 1rem;
+    min-height: 2.75rem;
+    padding: 0 0.95rem;
     background: transparent;
     color: var(--launch-fg);
     border: 0;
   }
 
   .launch-footer-signup__field .launch-button {
-    margin: 0.28rem;
-    min-height: 2.45rem;
+    margin: 0.26rem;
+    min-height: 2.15rem;
   }
 
   .launch-footer-links {
@@ -113,9 +113,9 @@ const { sectionId } = Astro.props as Props;
   .launch-footer-links a,
   .launch-footer-meta a,
   .launch-footer-meta span {
-    padding: 0.95rem 0;
+    padding: 0.9rem 0;
     color: var(--launch-muted);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
   }
 
   .launch-footer-links a + a {
@@ -136,11 +136,9 @@ const { sectionId } = Astro.props as Props;
     gap: 1rem;
   }
 
-  @media (min-width: 860px) {
+  @media (min-width: 980px) {
     .launch-footer-signup {
-      grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem);
-      align-items: end;
-      gap: 1.5rem;
+      gap: 1.15rem;
     }
 
     .launch-footer-links {
@@ -160,7 +158,7 @@ const { sectionId } = Astro.props as Props;
     }
 
     .launch-footer-signup__field .launch-button {
-      width: calc(100% - 0.56rem);
+      width: calc(100% - 0.52rem);
     }
   }
 </style>

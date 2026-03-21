@@ -6,37 +6,11 @@ read `CODING-STANDARDS.md` before writing any code. every rule in that file is m
 
 
 ## project overview
+Consuelo - Teleommunication infrastructure.
 
-opensaas is an open-source sales infrastructure platform built on a [twenty CRM](https://github.com/twentyhq/twenty) fork. monorepo structured as an nx workspace managed with yarn 4.
 
-/Users/kokayi/Dev/opensaas/packages/consuelo-website OUR WEBSITE IS NOT TWENTY-WEBSITE IF YOURE READING TWENTY WEBSITE ITS INCORRECT WE HAVE AN ASTRO SITE NOT NEXT.JS
 
-### opensaas packages (`@consuelo/*`)
 
-- `packages/dialer` — twilio-based calling (local presence, caller ID locking, parallel dialing)
-- `packages/coaching` — AI coaching via groq/openai (real-time + post-call analysis, structured outputs via zod)
-- `packages/analytics` — call analytics and metrics
-- `packages/contacts` — contact management, CSV import, phone normalization, queue system
-- `packages/api` — REST API layer (framework-agnostic route definitions)
-- `packages/cli` — `consuelo` CLI tool
-- `packages/sdk` — unified SDK entry point
-- `packages/metering` — usage tracking and rate limiting
-- `packages/workspace` — workspace/org management
-- `packages/logger` — structured logging
-
-### twenty CRM packages
-
-```
-packages/
-├── twenty-front/          # React frontend application
-├── twenty-server/         # NestJS backend API
-├── twenty-ui/             # Shared UI components library
-├── twenty-shared/         # Common types and utilities
-├── twenty-emails/         # Email templates with React Email
-├── twenty-website/        # Next.js documentation website
-├── twenty-zapier/         # Zapier integration
-└── twenty-e2e-testing/    # Playwright E2E tests
-```
 
 ## key commands
 
@@ -134,7 +108,7 @@ npx nx run twenty-front:graphql:generate --configuration=metadata
 
 ### tech stack
 
-- **frontend**: React 18, TypeScript, Recoil (state management), Emotion (styling), Vite
+- **frontend**: React 18, TypeScript, Recoil (state management), Emotion (styling), Vite, astro
 - **backend**: NestJS, TypeORM, PostgreSQL, Redis, GraphQL (with GraphQL Yoga)
 - **monorepo**: Nx workspace managed with Yarn 4
 - **background jobs**: BullMQ
@@ -255,135 +229,6 @@ when running in CI, the dev environment is **not** pre-configured. dependencies 
 - **skip the setup script** for tasks that only read code — architecture questions, code review, documentation, etc.
 - the script is idempotent and safe to run multiple times.
 
-## current work: twenty CRM fork (feb 2026)
-
-we're building a twenty CRM fork with an embedded dialer sidebar. the python backend (`kokayicobb/consuelo_on_call_coaching`) has battle-tested patterns we're porting to typescript.
-
-**linear epic:** DEV-702 (89 tasks across 10 phases)
-
-### 10 phases
-
-| phase | issue | subtasks | api routes | status |
-|-------|-------|----------|------------|--------|
-| 1. fork & rebrand twenty | DEV-703 | 8 | — | ✅ done |
-| 2. dialer UI | DEV-711 | 16 | 23 | **in progress** (DEV-716 ✅, DEV-717 ✅) |
-| 3. coaching panel | DEV-722 | 5 | — | python extraction done |
-| 4. contacts + queue | DEV-728 | 7 | — | updated with patterns |
-| 5. history + analytics | DEV-736 | 7 | — | spec'd |
-| 6. files + KB | DEV-743 | 6 | 13 | **in progress** (DEV-748 ✅) |
-| 7. settings + config | DEV-750 | 10 | 18 | python extraction done |
-| 8. CLI data & action commands | DEV-760 | 6 | — | ✅ done |
-| 9. deploy + infra | DEV-768 | 7 | — | spec'd |
-| 10. GHL integration | DEV-779 | 7 | 13 | created with subtasks |
-| 11. natural language assistant | DEV-807 | 4 | 3 | spec'd |
-
-### key patterns extracted from python codebase
-
-1. **call transfers** — blind, warm (3-way conference), external. from `call_transfer_service.py` (94KB). 8 routes, `call_transfers` table.
-2. **parallel dialing** — 3 concurrent outbound, first-to-answer wins. redis-backed with atomic `SETNX`. from `script.py`.
-3. **local presence** — geo-proximity via haversine on `area_code_locations`. exact area code → proximity 100mi → primary fallback. from `local_presence.py`.
-4. **caller ID lock** — prevents concurrent usage (twilio error 31486). 5-min TTL, stale cleanup.
-5. **structured AI outputs** — zod schemas (from python instructor/pydantic). KB context injection. PostHog LLM tracking.
-6. **queue system** — parallel dialing, categories, DNC filtering, aggregated stats.
-7. **pgvector knowledge base** — PDF ingestion pipeline (extract→chunk→embed→index), user-scoped collections, 384-dim embeddings.
-8. **phone number management** — twilio provisioning, soft delete, atomic set-primary, nickname with redis cache.
-9. **stripe subscription/billing** — 12 price IDs (6 add-ons × monthly/annual), checkout + portal + webhooks, usage metering.
-10. **GHL integration** — OAuth2+PKCE, bidirectional contact sync, webhook handling, pipeline mapping.
-
-### phase dependency graph
-
-```
-Phase 1 → Phase 2 → Phase 3
-              │
-              ├→ Phase 4 → Phase 5
-              │       └→ Phase 10 (GHL)
-              └→ Phase 5
-Phase 1 → Phase 6 (independent)
-Phase 1 → Phase 8 (independent)
-Phase 1 → Phase 9
-Phase 2 → Phase 7 (settings needs dialer for audio/calling mode)
-Phase 8 → Phase 11 (assistant needs CLI commands as tools)
-Phase 1 → Phase 11 (sidebar needs twenty CRM)
-```
-
-## dialer module — conference-based architecture
-
-all calls go through twilio conferences — even 1-on-1 calls. this enables transfers (adding/removing participants) without dropping the call. `device.connect()` on the frontend stays the same; the backend TwiML webhook returns `<Conference>` instead of `<Dial><Number>`.
-
-### call flow
-
-1. browser calls `device.connect({ To, From })` → twilio hits `POST /v1/voice/twiml`
-2. webhook generates `conf-{uuid}`, stores `callSid → conferenceName` in `conferenceMap`
-3. returns TwiML: `<Conference startConferenceOnEnter="true" endConferenceOnExit="false" participantLabel="agent">conf-{uuid}</Conference>`
-4. fire-and-forget: REST API dials customer into same conference with `endConferenceOnExit: true`
-
-### participant labels
-
-- `'agent'` — the browser user (set via TwiML `participantLabel`)
-- `'customer'` — the PSTN number being called (set via REST API `label` param)
-- `'transfer-target'` — the transfer recipient (set during transfer initiation)
-
-### conferenceMap (in-memory, needs redis in prod)
-
-```typescript
-// callSid → conferenceName mapping, set in TwiML webhook, used by transfer/hold routes
-const conferenceMap = new Map<string, string>();
-```
-
-### transfer flows
-
-- **cold transfer**: add target to conference → remove agent immediately
-- **warm transfer**: hold customer → add target for consult → agent can complete (leave) or cancel (remove target, unhold customer)
-- **hold**: server-side via twilio participant API (not UI-only)
-
-### API routes (`packages/api/src/routes/voice.ts`)
-
-| method | path | description |
-|--------|------|-------------|
-| GET | `/v1/voice/token` | twilio access token for browser SDK |
-| POST | `/v1/voice/twiml` | conference TwiML webhook (twilio calls this) |
-| POST | `/v1/calls/:callSid/transfer` | initiate cold or warm transfer |
-| POST | `/v1/calls/:callSid/transfer/complete` | complete warm transfer |
-| POST | `/v1/calls/:callSid/transfer/cancel` | cancel warm transfer |
-| POST | `/v1/calls/:callSid/hold` | toggle hold on customer participant |
-
-### dialer file map
-
-**backend — `@consuelo/dialer` package:**
-
-| file | what it does |
-|------|-------------|
-| `src/services/conference.ts` | `ConferenceService` — conference creation, participant management, transfer orchestration |
-| `src/dialer.ts` | `Dialer` class — exposes conference + transfer methods alongside existing call methods |
-| `src/types.ts` | all types: `ConferenceParticipant`, `TransferType` (`'cold'`\|`'warm'`), `TransferResult`, `TwimlParams` |
-| `src/services/twilio.ts` | `TwilioService` — low-level twilio client (calls, SMS) |
-| `src/services/local-presence.ts` | `LocalPresenceService` — geo-proximity caller ID selection |
-| `src/services/caller-id-lock.ts` | `CallerIdLockService` — prevents concurrent caller ID usage |
-
-**frontend — `packages/twenty-front/src/modules/dialer/`:**
-
-| file | what it does |
-|------|-------------|
-| `hooks/useTwilioDevice.ts` | twilio Voice SDK device management, call state, DTMF |
-| `hooks/useCallTransfer.ts` | transfer API calls: initiate, complete, cancel, hold toggle |
-| `components/InCallControls.tsx` | mute, hold, DTMF, transfer button, warm transfer consult bar |
-| `components/TransferModal.tsx` | phone input, warm/cold toggle, transfer initiation |
-| `components/DialPad.tsx` | phone number input + dial button |
-| `states/dialerState.ts` | recoil atoms: `callSidState`, `callStatusState`, `activeCallState` |
-| `states/conferenceState.ts` | recoil atom: `conferenceSidState` |
-| `types/dialer.ts` | frontend types: `TransferType`, `TransferStatus`, `CallStatus` |
-| `constants/dialer.ts` | `DIALER_API_BASE_URL` |
-
-### twilio setup requirement
-
-the TwiML app in twilio console must have its voice URL pointed at `POST /v1/voice/twiml`. without this, calls work the old way (direct dial) but transfers won't function.
-
-### import patterns
-
-- dialer package: lazy `await import('twilio')` — twilio is a peer dep
-- frontend icons: `@tabler/icons-react` directly (not `twenty-ui/display`)
-- state atoms: `createState` from `@/ui/utilities/state/utils/createState`
-
 ### keyboard shortcuts
 
 twenty has a full hotkey system built in. **always use it** — never raw `addEventListener` for keyboard shortcuts.
@@ -403,7 +248,7 @@ dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules
 
 ## deployment — railway
 
-production is deployed on railway at `consuelo.consuelohq.com`. four services:
+production is deployed on railway at `app.consuelohq.com`. four services:
 
 | service | what it does | Dockerfile |
 |---------|-------------|------------|
@@ -443,7 +288,7 @@ railway variables --set "KEY=value" --service opensaas  # set env var
 railway redeploy --service opensaas      # trigger redeploy
 ```
 
-note: the railway CLI cannot delete env vars or set start commands. use the dashboard for those.
+note: the railway CLI cannot delete env vars or set start commands. use the dashboard for those. use this, stop suggesting we do things when this is in your tool kit, mainly for logs and verification. and make sure we are on the right deploy, not a prior deploy
 
 ## patches & workarounds
 
@@ -496,26 +341,6 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 - `resolverSchemaScope: 'core'` — for the main graphql config (core schema)
 - `resolverSchemaScope: 'metadata'` — for the metadata graphql config
 - workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
-
-## key files
-
-- `AUTH.md` — full JWT auth system documentation
-- `CODING-STANDARDS.md` — all 13 mandatory code review rules
-- `packages/api/src/middleware/auth.ts` — JWT validation middleware using twenty's derived-secret scheme
-- `packages/twenty-server/patches/` — yarn patches for transitive deps (see patches section above)
-- `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts` — graphql schema merging config
-- `.husky/pre-commit` — lint + typecheck staged opensaas .ts files
-- `.husky/pre-push` — runs `scripts/code-review.sh`
-- `yarn.config.cjs` — yarn constraints (`MONOREPO_ROOT_WORKSPACE` must match root `package.json` name)
-- `nx.json` — Nx workspace configuration with task definitions
-- `tsconfig.base.json` — base TypeScript configuration
-- `package.json` — root package with workspace definitions and resolutions (including patches)
-
-## package manager
-
-- yarn 4.9.2 (via corepack: `corepack enable && corepack prepare yarn@4.9.2 --activate`)
-- node engine: `^24.5.0`
-- `yarn.config.cjs` has constraints — `MONOREPO_ROOT_WORKSPACE` must match root `package.json` name
 
 ## critical rules
 

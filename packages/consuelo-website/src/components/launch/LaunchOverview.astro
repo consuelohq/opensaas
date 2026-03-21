@@ -15,7 +15,7 @@ const { sectionId } = Astro.props as Props;
   <div class="launch-content launch-content--wide launch-overview">
     <div class="launch-overview__intro">
       <p class="launch-eyebrow">{launchOverview.eyebrow}</p>
-      <h2 class="launch-overview__title">{launchOverview.title}</h2>
+      {launchOverview.title && <h2 class="launch-overview__title">{launchOverview.title}</h2>}
       <p class="launch-copy">{launchOverview.intro}</p>
     </div>
 
@@ -23,11 +23,7 @@ const { sectionId } = Astro.props as Props;
       <div class="launch-overview__list">
         {launchOverviewFeatures.map((feature) => (
           <div class="launch-overview__item">
-            <span class="launch-overview__check" aria-hidden="true">
-              <svg viewBox="0 0 16 16">
-                <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
-              </svg>
-            </span>
+            <span class="launch-overview__marker launch-mono" aria-hidden="true">[*]</span>
             <p class="launch-copy">
               <strong>{feature.title}</strong>
               <span>{feature.text}</span>
@@ -36,7 +32,7 @@ const { sectionId } = Astro.props as Props;
         ))}
       </div>
 
-      <a class="launch-button launch-mono" href={launchOverview.ctaHref}>{launchOverview.ctaLabel}</a>
+      <a class="launch-button launch-mono launch-overview__cta" href={launchOverview.ctaHref}>{launchOverview.ctaLabel} ↗</a>
     </div>
   </div>
 </section>
@@ -44,25 +40,26 @@ const { sectionId } = Astro.props as Props;
 <style>
   .launch-overview {
     display: grid;
-    gap: 1.75rem;
+    gap: 1.35rem;
   }
 
   .launch-overview__intro,
   .launch-overview__body,
   .launch-overview__list {
     display: grid;
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
-  .launch-overview__intro {
-    max-width: 54rem;
+  .launch-overview__intro,
+  .launch-overview__body {
+    max-width: 58rem;
   }
 
   .launch-overview__title {
     margin: 0;
-    font-size: clamp(1.95rem, 1.45rem + 1.5vw, 3.1rem);
-    letter-spacing: -0.07em;
-    line-height: 1.04;
+    font-size: clamp(1rem, 0.9rem + 0.3vw, 1.15rem);
+    letter-spacing: -0.06em;
+    line-height: 1.06;
   }
 
   .launch-overview__item {
@@ -72,43 +69,24 @@ const { sectionId } = Astro.props as Props;
     align-items: start;
   }
 
-  .launch-overview__check {
-    width: 1rem;
-    height: 1rem;
-    margin-top: 0.35rem;
+  .launch-overview__marker {
     color: var(--launch-muted);
-  }
-
-  .launch-overview__check svg {
-    width: 100%;
-    height: 100%;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.2;
-    stroke-linecap: square;
-    stroke-linejoin: miter;
+    font-size: 0.74rem;
+    padding-top: 0.25rem;
   }
 
   .launch-overview__item p {
-    display: grid;
-    gap: 0.15rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
   }
 
   .launch-overview__item strong {
     color: var(--launch-fg);
-    font-weight: 500;
+    font-weight: 700;
   }
 
-  @media (min-width: 860px) {
-    .launch-overview__body {
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: end;
-      gap: 1.5rem;
-    }
-
-    .launch-overview__list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem 1.6rem;
-    }
+  .launch-overview__cta {
+    width: fit-content;
   }
 </style>

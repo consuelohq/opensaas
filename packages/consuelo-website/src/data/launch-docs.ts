@@ -52,6 +52,10 @@ const englishNavigation = docsConfig.navigation.languages.find(
   (language) => language.language === 'en',
 );
 
+const groupLabelOverrides: Record<string, string> = {
+  'Discover Twenty': 'discover consuelo',
+};
+
 const docLabelOverrides: Record<string, string> = {
   'developers/introduction': 'introduction',
   'user-guide/introduction': 'introduction',
@@ -89,7 +93,7 @@ export const launchDocsMenuTabs: LaunchDocMenuTab[] =
       const slugs = [...new Set(flattenPages(group.pages))];
 
       return {
-        label: group.group.toLowerCase(),
+        label: groupLabelOverrides[group.group] ?? group.group.toLowerCase(),
         links: slugs.map((slug) => ({
           label: formatDocLabel(slug),
           href: docsBaseUrl + '/' + slug,

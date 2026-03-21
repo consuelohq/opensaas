@@ -7,7 +7,7 @@ type Props = {
 
 const {
   title = 'Consuelo',
-  description = 'Telecommunication infrastructure that integrates everywhere.',
+  description = 'Sales infrastructure that integrates everywhere.',
   canonicalPath = Astro.url.pathname,
 } = Astro.props;
 
@@ -69,22 +69,6 @@ const structuredData = {
 </html>
 
 <style is:global>
-  @font-face {
-    font-family: 'GeistSans';
-    src: url('/fonts/GeistSans-Variable.woff2') format('woff2');
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-  }
-
-  @font-face {
-    font-family: 'GeistMono';
-    src: url('/fonts/GeistMono-Variable.woff2') format('woff2');
-    font-style: normal;
-    font-weight: 100 900;
-    font-display: swap;
-  }
-
   :root {
     color-scheme: light;
     --launch-bg: #ffffff;
@@ -94,7 +78,8 @@ const structuredData = {
     --launch-line: rgba(0, 0, 0, 0.12);
     --launch-panel: rgba(0, 0, 0, 0.03);
     --launch-panel-strong: rgba(0, 0, 0, 0.06);
-    --launch-success: #59d98e;
+    --launch-success: #6fdd92;
+    --launch-mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -107,7 +92,7 @@ const structuredData = {
       --launch-line: rgba(255, 255, 255, 0.1);
       --launch-panel: #0e0e10;
       --launch-panel-strong: rgba(255, 255, 255, 0.08);
-      --launch-success: #78e69c;
+      --launch-success: #82e8a4;
     }
   }
 
@@ -128,9 +113,17 @@ const structuredData = {
       linear-gradient(var(--launch-soft), var(--launch-soft)) right top / 1px 100% no-repeat,
       var(--launch-bg);
     color: var(--launch-fg);
-    font-family: 'GeistSans', system-ui, sans-serif;
+    font-family: var(--launch-mono-font);
+    font-size: 0.9rem;
+    line-height: 1.55;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  a,
+  button,
+  summary {
+    cursor: pointer;
   }
 
   a {
@@ -149,7 +142,7 @@ const structuredData = {
   }
 
   .launch-shell {
-    width: min(100%, 1240px);
+    width: min(100%, 1600px);
     margin: 0 auto;
     border-left: 1px solid var(--launch-line);
     border-right: 1px solid var(--launch-line);
@@ -161,21 +154,21 @@ const structuredData = {
   }
 
   .launch-content {
-    padding: clamp(1rem, 0.82rem + 0.9vw, 1.5rem);
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
   }
 
   .launch-content--wide {
-    padding-inline: clamp(1rem, 0.45rem + 2.1vw, 2.35rem);
+    padding-inline: clamp(1.5rem, 0.8rem + 3vw, 5rem);
   }
 
   .launch-mono {
-    font-family: 'GeistMono', ui-monospace, monospace;
+    font-family: var(--launch-mono-font);
   }
 
   .launch-eyebrow {
-    margin: 0 0 0.8rem;
-    font-family: 'GeistMono', ui-monospace, monospace;
-    font-size: 0.72rem;
+    margin: 0 0 0.7rem;
+    font-family: var(--launch-mono-font);
+    font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--launch-muted);
@@ -183,17 +176,19 @@ const structuredData = {
 
   .launch-title {
     margin: 0;
-    font-size: clamp(2.3rem, 1.65rem + 2.9vw, 4.35rem);
-    line-height: 0.96;
-    letter-spacing: -0.07em;
+    font-family: var(--launch-mono-font);
+    font-size: clamp(1.35rem, 0.9rem + 1.8vw, 2rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.06em;
   }
 
   .launch-copy {
     margin: 0;
-    max-width: 42rem;
+    max-width: 48rem;
     color: var(--launch-muted);
-    font-size: clamp(0.95rem, 0.9rem + 0.18vw, 1.02rem);
-    line-height: 1.7;
+    font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
+    line-height: 1.72;
   }
 
   .launch-button,
@@ -202,11 +197,11 @@ const structuredData = {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.45rem;
-    border-radius: 0.38rem;
+    gap: 0.42rem;
+    border-radius: 0.2rem;
     border: 1px solid var(--launch-line);
-    min-height: 2.4rem;
-    padding: 0 0.9rem;
+    min-height: 2.2rem;
+    padding: 0 0.78rem;
     transition: background 160ms ease, color 160ms ease, border-color 160ms ease, opacity 160ms ease;
     white-space: nowrap;
   }
@@ -217,8 +212,17 @@ const structuredData = {
     border-color: var(--launch-fg);
   }
 
-  .launch-button:hover {
-    opacity: 0.9;
+  .launch-button:hover,
+  .launch-button--ghost:hover,
+  .launch-button--quiet:hover,
+  .launch-inline-link:hover {
+    opacity: 0.92;
+  }
+
+  .launch-button--sm {
+    min-height: 1.85rem;
+    padding: 0 0.65rem;
+    font-size: 0.78rem;
   }
 
   .launch-button--ghost {

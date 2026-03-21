@@ -12,7 +12,7 @@ const { sectionId } = Astro.props as Props;
   <div class="launch-content launch-content--wide launch-privacy">
     <p class="launch-eyebrow">{launchPrivacy.eyebrow}</p>
     <div class="launch-privacy__row">
-      <span class="launch-privacy__marker" aria-hidden="true">[*]</span>
+      <span class="launch-privacy__marker launch-mono" aria-hidden="true">[*]</span>
       <p class="launch-copy">
         <strong>{launchPrivacy.title}</strong>
         <span>{launchPrivacy.description}</span>
@@ -25,7 +25,7 @@ const { sectionId } = Astro.props as Props;
 <style>
   .launch-privacy {
     display: grid;
-    gap: 1rem;
+    gap: 0.85rem;
   }
 
   .launch-privacy__row {
@@ -33,14 +33,13 @@ const { sectionId } = Astro.props as Props;
     grid-template-columns: auto minmax(0, 1fr);
     gap: 0.8rem;
     align-items: start;
-    max-width: 56rem;
+    max-width: 58rem;
   }
 
   .launch-privacy__marker {
     color: var(--launch-muted);
-    font-family: 'GeistMono', ui-monospace, monospace;
-    font-size: 0.85rem;
-    padding-top: 0.1rem;
+    font-size: 0.74rem;
+    padding-top: 0.25rem;
   }
 
   .launch-privacy__row p {
@@ -51,6 +50,6 @@ const { sectionId } = Astro.props as Props;
 
   .launch-privacy__row strong {
     color: var(--launch-fg);
-    font-weight: 500;
+    font-weight: 700;
   }
 </style>
