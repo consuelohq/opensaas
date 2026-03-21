@@ -30,9 +30,9 @@ def _request(method, path, data=None, params=None):
 
 
 def search(query: str, limit: int = 10) -> str:
-    """search memories by keyword. returns matching memories."""
+    """search memories by keyword (searches title and content). returns matching memories."""
     records = _request("GET", "memories", params={
-        "content": f"ilike.%{query}%",
+        "or": f"(title.ilike.%{query}%,content.ilike.%{query}%)",
         "status": "eq.active",
         "order": "created_at.desc",
         "limit": str(limit),
@@ -68,14 +68,26 @@ def get_memory(memory_id: str) -> str:
 
 
 def list_skills() -> str:
-    """list available skill files."""
-    result = _request("GET", "skills", params={"order": "name.asc", "select": "id,name,description"})
-    return json.dumps(result)
+    """list available skills stored in memory."""
+    result = _request("GET", "memories", params={
+        "category": "eq.skill",
+        "status": "eq.active",
+        "order": "title.asc",
+        "select": "id,title,content",
+    })
+    if isinstance(result, dict) and "error" in result:
+        return json.dumps(result)
+    return json.dumps([{"id": r.get("id"), "name": r.get("title"), "description": r.get("content", "")[:200]} for r in result])
 
 
 def get_skill(name: str) -> str:
-    """get a skill file by name."""
-    result = _request("GET", "skills", params={"name": f"eq.{name}", "select": "name,content"})
+    """get a skill by name."""
+    result = _request("GET", "memories", params={
+        "category": "eq.skill",
+        "title": f"ilike.%{name}%",
+        "status": "eq.active",
+        "select": "title,content",
+    })
     if isinstance(result, list) and result:
-        return json.dumps(result[0])
+        return json.dumps({"name": result[0].get("title"), "content": result[0].get("content")})
     return json.dumps({"error": f"skill '{name}' not found"})
