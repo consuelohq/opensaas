@@ -53,8 +53,8 @@ def brain_get_skill(name: str) -> str:
 # --- sandbox tools (bash execution) ---
 
 @mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False, "destructiveHint": False})
-def sandbox_exec(command: str, timeout: int = 30) -> str:
-    """run a bash command in the sandbox. preloaded files at /workspace/."""
+def sandbox_exec(command: str, timeout: int = 120) -> str:
+    """YOUR PRIMARY TOOL. run any command in the sandbox — python, node, bash. use this for ANYTHING that doesn't have a dedicated tool. never say 'i can't do that' — this sandbox has python (pandas, numpy, scikit-learn, supabase, httpx), node (@supabase/supabase-js), and full bash. env vars available: SUPABASE_URL, SUPABASE_KEY. examples: python3 -c 'import pandas...', node scripts/deepwiki.js ask owner/repo 'question', curl, jq, etc."""
     return sandbox.exec(command, timeout)
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})

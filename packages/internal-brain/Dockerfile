@@ -19,6 +19,7 @@ RUN npm ci
 # app code — cache bust v2
 COPY server.py .
 COPY tools/ tools/
+COPY scripts/ scripts/
 COPY BRAIN.md .
 
 EXPOSE 8000

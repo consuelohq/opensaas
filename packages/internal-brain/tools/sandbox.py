@@ -20,7 +20,7 @@ def _run(cmd: str, timeout: int = 30) -> dict:
         return {"error": "just-bash not found — is node/npm installed?"}
 
 
-def exec(command: str, timeout: int = 30) -> str:
+def exec(command: str, timeout: int = 120) -> str:
     """run a bash command in the sandbox. has access to preloaded files at /workspace/."""
     return json.dumps(_run(command, timeout))
 
