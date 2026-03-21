@@ -5,7 +5,8 @@ from mcp.server.fastmcp import FastMCP
 
 from tools import brain, sandbox, linear, github, web, slack, handoff
 
-mcp = FastMCP("internal-brain")
+port = int(os.environ.get("PORT", 8000))
+mcp = FastMCP("internal-brain", host="0.0.0.0", port=port, stateless_http=True, json_response=True)
 
 # --- brain tools (memory) ---
 
@@ -128,5 +129,4 @@ def handoff_load(session_id: str = "", query: str = "") -> str:
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=port)
+    mcp.run(transport="streamable-http")
