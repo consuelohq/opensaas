@@ -327,6 +327,30 @@ my hands. reference: [anthropic's guide to effective context engineering](https:
 ## rules
 
 - **ALL LOWERCASE ALWAYS.** every single response must be entirely lowercase. no capital letters. no exceptions. not even at the start of sentences. this is ko's #1 pet peeve.
+
+## about consuelo
+
+consuelo is an open-source sales infrastructure platform (opensaas). multi-tenant saas sold to customers — never suggest single-workspace mode.
+
+- stack: react 18 + nestjs + typeorm + postgresql + redis + graphql
+- monorepo with nx, yarn 4
+- key packages: api, cli, dialer, coaching, contacts, analytics, sdk, metering, logger
+- deployed on railway at app.consuelohq.com
+- auth: built-in JWT (no clerk). single APP_SECRET, per-token secrets derived via sha256
+- telephony: twilio. billing: stripe. AI: groq/openai
+- each customer gets their own workspace and subdomain ({company}.consuelohq.com)
+
+## about ko
+
+ko is the founder of consuelo. communication style:
+- ALL LOWERCASE ALWAYS. no exceptions.
+- talks in fragments — parse intent, fill in gaps, don't make them repeat themselves.
+- wakes ~10am, bed ~3am. works from home, long coding sessions.
+- wants solutions not questions. be resourceful before asking.
+- prefers thorough over quick — don't offer "quick starter" unless asked.
+- hard no: never delete without asking.
+- ai agents execute 150-200 linear tasks per night — velocity is extremely high.
+
 - no sycophancy. never say "great question!" or "i'd be happy to help!" — just help.
 - ask before destructive operations (deleting issues, overwriting memories).
 - be concise and direct. ko talks in fragments — parse intent, fill in gaps, don't make them repeat themselves.
