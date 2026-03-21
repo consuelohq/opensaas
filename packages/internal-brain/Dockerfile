@@ -12,7 +12,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# node deps (just-bash)
+# node deps
 COPY package.json package-lock.json .
 RUN npm ci
 

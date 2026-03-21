@@ -1,41 +1,54 @@
-"""sandbox tools — bash execution via just-bash CLI."""
+"""sandbox tools — real bash execution in the railway container."""
 
 import json
 import subprocess
-
-
-def _run(cmd: str, timeout: int = 30) -> dict:
-    try:
-        result = subprocess.run(
-            ["npx", "just-bash", "-c", cmd, "--json"],
-            capture_output=True, text=True, timeout=timeout,
-        )
-        try:
-            return json.loads(result.stdout)
-        except json.JSONDecodeError:
-            return {"stdout": result.stdout, "stderr": result.stderr, "exitCode": result.returncode}
-    except subprocess.TimeoutExpired:
-        return {"error": "timeout", "timeout": timeout}
-    except FileNotFoundError:
-        return {"error": "just-bash not found — is node/npm installed?"}
+import os
 
 
 def exec(command: str, timeout: int = 120) -> str:
-    """run a bash command in the sandbox. has access to preloaded files at /workspace/."""
-    return json.dumps(_run(command, timeout))
+    """run a command in the real container environment. has python (pandas, numpy, scikit-learn, supabase, httpx), node (@supabase/supabase-js), curl, jq, and all env vars (SUPABASE_URL, SUPABASE_KEY, etc)."""
+    try:
+        result = subprocess.run(
+            ["bash", "-c", command],
+            capture_output=True, text=True, timeout=timeout,
+            env=os.environ.copy(),
+        )
+        return json.dumps({
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+            "exitCode": result.returncode,
+        })
+    except subprocess.TimeoutExpired:
+        return json.dumps({"error": "timeout", "timeout": timeout})
 
 
 def read_file(path: str) -> str:
-    """read a file from the sandbox filesystem."""
-    return json.dumps(_run(f"cat {path}"))
+    """read a file from the container filesystem."""
+    try:
+        with open(path, "r") as f:
+            return f.read()
+    except Exception as e:
+        return json.dumps({"error": str(e)})
 
 
 def write_file(path: str, content: str) -> str:
-    """write content to a file in the sandbox filesystem."""
-    escaped = content.replace("'", "'\\''")
-    return json.dumps(_run(f"cat > {path} << 'BRAINEOF'\n{escaped}\nBRAINEOF"))
+    """write content to a file in the container filesystem."""
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w") as f:
+            f.write(content)
+        return json.dumps({"ok": True, "path": path})
+    except Exception as e:
+        return json.dumps({"error": str(e)})
 
 
-def list_files(path: str = "/workspace") -> str:
-    """list files in a sandbox directory."""
-    return json.dumps(_run(f"find {path} -type f"))
+def list_files(path: str = "/app") -> str:
+    """list files in a container directory."""
+    try:
+        result = subprocess.run(
+            ["find", path, "-type", "f", "-maxdepth", "3"],
+            capture_output=True, text=True, timeout=10,
+        )
+        return result.stdout
+    except Exception as e:
+        return json.dumps({"error": str(e)})
