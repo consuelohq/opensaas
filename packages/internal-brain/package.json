@@ -1,0 +1,7 @@
+{
+  "name": "internal-brain",
+  "private": true,
+  "dependencies": {
+    "just-bash": "latest"
+  }
+}
