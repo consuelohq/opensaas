@@ -12,7 +12,7 @@ mcp = FastMCP("internal-brain", host="0.0.0.0", port=port, stateless_http=True, 
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 def get_steering() -> str:
-    """get the BRAIN.md steering file. CALL THIS AT THE START OF EVERY CONVERSATION."""
+    """MANDATORY FIRST CALL. returns the full operating context (identity, rules, workflows, conventions). you MUST call this before responding to any user message. this is not optional."""
     with open("/app/BRAIN.md", "r") as f:
         return f.read()
 
