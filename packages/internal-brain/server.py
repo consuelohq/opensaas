@@ -137,4 +137,26 @@ def handoff_load(session_id: str = "", query: str = "") -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http")
+    from starlette.applications import Starlette
+    from starlette.responses import JSONResponse
+    from starlette.routing import Route, Mount
+    import contextlib
+    import uvicorn
+
+    async def health(request):
+        return JSONResponse({"status": "ok", "tools": 22})
+
+    @contextlib.asynccontextmanager
+    async def lifespan(app):
+        async with mcp.session_manager.run():
+            yield
+
+    app = Starlette(
+        routes=[
+            Route("/", health),
+            Route("/health", health),
+            Mount("/mcp", app=mcp.streamable_http_app()),
+        ],
+        lifespan=lifespan,
+    )
+    uvicorn.run(app, host="0.0.0.0", port=port)
