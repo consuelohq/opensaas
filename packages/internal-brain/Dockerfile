@@ -19,6 +19,7 @@ RUN npm ci
 # app code
 COPY server.py .
 COPY tools/ tools/
+COPY BRAIN.md .
 
 EXPOSE 8000
 
