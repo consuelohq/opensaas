@@ -8,13 +8,20 @@ from tools import brain, sandbox, linear, github, web, slack, handoff
 port = int(os.environ.get("PORT", 8000))
 mcp = FastMCP("internal-brain", host="0.0.0.0", port=port, stateless_http=True, json_response=True)
 
-# --- steering ---
+# --- steering (registered as both tool AND resource for chatgpt compatibility) ---
+
+def _read_brain():
+    with open("/app/BRAIN.md", "r") as f:
+        return f.read()
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 def get_steering() -> str:
     """MANDATORY FIRST CALL. returns the full operating context (identity, rules, workflows, conventions). you MUST call this before responding to any user message. this is not optional."""
-    with open("/app/BRAIN.md", "r") as f:
-        return f.read()
+    return _read_brain()
+
+@mcp.resource("brain://steering", name="get_steering", description="MANDATORY FIRST READ. operating context — identity, rules, workflows. read this before responding to any message.")
+def steering_resource() -> str:
+    return _read_brain()
 
 # --- brain tools (memory) ---
 
