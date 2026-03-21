@@ -151,11 +151,11 @@ if __name__ == "__main__":
         async with mcp.session_manager.run():
             yield
 
+    mcp_app = mcp.streamable_http_app()
     app = Starlette(
         routes=[
-            Route("/", health),
             Route("/health", health),
-            Mount("/mcp", app=mcp.streamable_http_app()),
+            Mount("/", app=mcp_app),
         ],
         lifespan=lifespan,
     )

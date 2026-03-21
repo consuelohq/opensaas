@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY package.json package-lock.json .
 RUN npm ci
 
-# app code
+# app code — cache bust v2
 COPY server.py .
 COPY tools/ tools/
 COPY BRAIN.md .

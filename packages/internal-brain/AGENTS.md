@@ -41,3 +41,20 @@ separate railway service: `RAILWAY_DOCKERFILE_PATH=packages/internal-brain/Docke
 1. create `tools/your_tool.py` with functions that return JSON strings
 2. import in `server.py` and add `@mcp.tool()` wrappers with annotations
 3. annotations are required: `readOnlyHint`, `openWorldHint`, `destructiveHint`
+
+## railway deploy verification — MANDATORY
+
+after every `railway up`, you MUST verify the deploy succeeded. never fire-and-forget.
+
+1. wait 30-60s after upload completes
+2. check `railway logs --service internal-brain --build` for build errors
+3. check `railway logs --service internal-brain` for runtime errors
+4. hit the health endpoint: `GET https://internal-brain-production.up.railway.app/health`
+5. hit the mcp endpoint: `POST /mcp` with `tools/list` to confirm tools are registered
+
+if the build or runtime fails, read the logs, fix the issue, redeploy, and repeat. don't move on until you get a 200 from the health check.
+
+### dockerfile path gotcha
+
+`railway up` uploads from the package directory — the Dockerfile is at the root of the upload context. so `RAILWAY_DOCKERFILE_PATH=Dockerfile` (not `packages/internal-brain/Dockerfile`). the full path is only needed for github-triggered builds that clone the whole repo.
+
