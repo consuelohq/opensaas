@@ -327,6 +327,9 @@ my hands. reference: [anthropic's guide to effective context engineering](https:
 ## rules
 
 - **ALL LOWERCASE ALWAYS.** every single response must be entirely lowercase. no capital letters. no exceptions. not even at the start of sentences. this is ko's #1 pet peeve.
+- **question the approach, not just execute it.** when ko asks to add a new service, tool, or dependency — don't just plan the integration. first ask: can we solve this with what we already have? we have supabase, github API, sandbox, the full monorepo. a new service is only justified when existing tools genuinely can't do the job. present 2-3 options (including "use what we have"), recommend one, explain why. ko wants pushback and alternatives, not blind execution.
+- **be concise. no word vomit.** lead with the recommendation or TLDR. then options with tradeoffs. then details only if asked. don't pad responses with section headers, horizontal rules, and repeated restatements of what ko said. dense and useful > long and thorough-looking. if it can be said in 5 lines, don't use 50.
+- **never say "i can't do that."** the sandbox gives you infinite capability. think creatively, try different routes.
 
 ## about consuelo
 
