@@ -342,6 +342,48 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 - `resolverSchemaScope: 'metadata'` — for the metadata graphql config
 - workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
 
+## consuelo internal instance — direct API access
+
+the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API you can hit directly.
+
+### graphql endpoints
+- workspace data: `https://consuelo.consuelohq.com/graphql` — contacts, companies, lists, tasks, notes, etc.
+- metadata: `https://consuelo.consuelohq.com/metadata` — object definitions, field metadata
+- auth: `Authorization: Bearer $INTERNAL_CONSUELO_API_KEY` (workspace-scoped JWT token, in `.env`)
+
+the workspace token can query/mutate workspace-level data (people, companies, etc.) but NOT core-level queries like `currentUser`. core queries require a user JWT from the login flow.
+
+### database access (for admin operations)
+when you need to bypass the API (bulk operations, feature flags, cache inspection):
+- postgres public URL: `postgresql://postgres:<pw>@maglev.proxy.rlwy.net:21615/railway`
+- redis public URL: `redis://default:<pw>@mainline.proxy.rlwy.net:46909`
+- credentials are in the Railway service env vars (use `railway variables --json --service Postgres` or `--service Redis`)
+
+### feature flags — cache invalidation is REQUIRED
+
+feature flags are stored in `core."featureFlag"` table (per workspace). **but the server caches them in a 3-tier system:**
+
+1. **local in-memory** (server process) — cleared on redeploy
+2. **redis** (`engine:workspace:feature-flag:feature-flags-map:<workspaceId>:data` + `:hash`) — persists across deploys
+3. **postgres** (source of truth)
+
+**if you modify flags directly in postgres, you MUST also flush the redis cache:**
+```javascript
+// connect to redis public URL and delete:
+redis.del(
+  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:data`,
+  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:hash`
+);
+```
+
+without this, the server reads stale data from redis and your DB changes are invisible. a server redeploy alone is NOT enough — it only clears tier 1 (local memory), not tier 2 (redis).
+
+**the proper way** (if you have API access): use the `updateWorkspaceFeatureFlag` admin mutation, which calls `invalidateAndRecompute` internally and handles all cache tiers. but that requires `AdminPanelGuard` auth.
+
+### workspace IDs
+- consuelo (internal): `7d0894c1-bdb1-4dd6-9a00-78681b52d5f6`
+- alex moreno: `8eaedb39-991a-47fc-8337-00a195483851`
+
 ## critical rules
 
 1. **read CODING-STANDARDS.md** — contains all error tracking, logging, SQL, phone normalization, and code review rules
@@ -526,3 +568,62 @@ private async getClient() {
 - one PR per feature
 
 ALl text must be localized with Lingui
+
+# context-mode — MANDATORY routing rules
+
+You have context-mode MCP tools available. These rules are NOT optional — they protect your context window from flooding. A single unrouted command can dump 56 KB into context and waste the entire session.
+
+## BLOCKED commands — do NOT attempt these
+
+### curl / wget — BLOCKED
+Any shell command containing `curl` or `wget` will be intercepted and blocked by the context-mode plugin. Do NOT retry.
+Instead use:
+- `context-mode_ctx_fetch_and_index(url, source)` to fetch and index web pages
+- `context-mode_ctx_execute(language: "javascript", code: "const r = await fetch(...)")` to run HTTP calls in sandbox
+
+### Inline HTTP — BLOCKED
+Any shell command containing `fetch('http`, `requests.get(`, `requests.post(`, `http.get(`, or `http.request(` will be intercepted and blocked. Do NOT retry with shell.
+Instead use:
+- `context-mode_ctx_execute(language, code)` to run HTTP calls in sandbox — only stdout enters context
+
+### Direct web fetching — BLOCKED
+Do NOT use any direct URL fetching tool. Use the sandbox equivalent.
+Instead use:
+- `context-mode_ctx_fetch_and_index(url, source)` then `context-mode_ctx_search(queries)` to query the indexed content
+
+## REDIRECTED tools — use sandbox equivalents
+
+### Shell (>20 lines output)
+Shell is ONLY for: `git`, `mkdir`, `rm`, `mv`, `cd`, `ls`, `npm install`, `pip install`, and other short-output commands.
+For everything else, use:
+- `context-mode_ctx_batch_execute(commands, queries)` — run multiple commands + search in ONE call
+- `context-mode_ctx_execute(language: "shell", code: "...")` — run in sandbox, only stdout enters context
+
+### File reading (for analysis)
+If you are reading a file to **edit** it → reading is correct (edit needs content in context).
+If you are reading to **analyze, explore, or summarize** → use `context-mode_ctx_execute_file(path, language, code)` instead. Only your printed summary enters context.
+
+### grep / search (large results)
+Search results can flood context. Use `context-mode_ctx_execute(language: "shell", code: "grep ...")` to run searches in sandbox. Only your printed summary enters context.
+
+## Tool selection hierarchy
+
+1. **GATHER**: `context-mode_ctx_batch_execute(commands, queries)` — Primary tool. Runs all commands, auto-indexes output, returns search results. ONE call replaces 30+ individual calls.
+2. **FOLLOW-UP**: `context-mode_ctx_search(queries: ["q1", "q2", ...])` — Query indexed content. Pass ALL questions as array in ONE call.
+3. **PROCESSING**: `context-mode_ctx_execute(language, code)` | `context-mode_ctx_execute_file(path, language, code)` — Sandbox execution. Only stdout enters context.
+4. **WEB**: `context-mode_ctx_fetch_and_index(url, source)` then `context-mode_ctx_search(queries)` — Fetch, chunk, index, query. Raw HTML never enters context.
+5. **INDEX**: `context-mode_ctx_index(content, source)` — Store content in FTS5 knowledge base for later search.
+
+## Output constraints
+
+- Keep responses under 500 words.
+- Write artifacts (code, configs, PRDs) to FILES — never return them as inline text. Return only: file path + 1-line description.
+- When indexing content, use descriptive source labels so others can `search(source: "label")` later.
+
+## ctx commands
+
+| Command | Action |
+|---------|--------|
+| `ctx stats` | Call the `stats` MCP tool and display the full output verbatim |
+| `ctx doctor` | Call the `doctor` MCP tool, run the returned shell command, display as checklist |
+| `ctx upgrade` | Call the `upgrade` MCP tool, run the returned shell command, display as checklist |
