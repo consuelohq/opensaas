@@ -92,3 +92,16 @@ def update_issue(issue_id: str, title: str = None, description: str = None, stat
         }
     """, {"id": issue_id, "input": inp})
     return json.dumps(result.get("data", {}).get("issueUpdate", {}))
+
+
+def comment(issue_id: str, body: str) -> str:
+    """add a comment to an issue. does NOT modify the issue body."""
+    result = _gql("""
+        mutation($input: CommentCreateInput!) {
+            commentCreate(input: $input) {
+                success
+                comment { id body createdAt }
+            }
+        }
+    """, {"input": {"issueId": issue_id, "body": body}})
+    return json.dumps(result.get("data", {}).get("commentCreate", {}))
