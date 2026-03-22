@@ -21,6 +21,7 @@ COPY server.py .
 COPY tools/ tools/
 COPY scripts/ scripts/
 COPY BRAIN.md .
+COPY repo-tree.txt .
 
 EXPOSE 8000
 

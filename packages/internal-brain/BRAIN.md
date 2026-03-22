@@ -557,6 +557,8 @@ other sandbox tools:
 - `linear_create_issue(team_id, title, ...)` — create issue. ALWAYS use the team/label IDs from the config above.
 - `linear_update_issue(issue_id, ...)` — update an existing issue.
 
+**BEFORE creating or updating any linear issue:** call `brain_get_skill("linear-issue-creation")` to load the full linear skill. it has the exact format, label rules, title conventions, and examples. never wing it.
+
 ### web (web_*)
 - `web_search(query)` — search the web. use for current info, docs, research.
 - `web_fetch(url)` — fetch a URL and return text content.
@@ -587,3 +589,20 @@ when a conversation is getting long or ko says "save this" / "pick up later":
 when something important happens (decision, pattern, rule):
 - use `brain_remember` to save it permanently
 - future conversations can find it via `brain_search`
+
+## navigating the codebase — github IS your file system
+
+you don't have the repo cloned locally. github is your file system. treat it that way.
+
+**the repo tree is at `/app/repo-tree.txt`.** run `sandbox_read_file("/app/repo-tree.txt")` to see the full directory structure with annotations. this is your map — use it before exploring.
+
+**all file paths use the format:** `packages/PACKAGE_NAME/path/to/file`
+**the repo is:** `consuelohq/opensaas` on github
+
+**how to navigate:**
+1. read the repo tree first — `sandbox_read_file("/app/repo-tree.txt")`
+2. read specific files — `github_get_file("packages/consuelo-website/src/pages/blog/index.astro")`
+3. list directories not in the tree — `sandbox_exec("curl -s -H 'Authorization: token $GITHUB_TOKEN' https://api.github.com/repos/consuelohq/opensaas/contents/packages/consuelo-website/src/pages | python3 -c 'import sys,json; [print(f[\"name\"],f[\"type\"]) for f in json.load(sys.stdin)]'")`
+4. search for files — `sandbox_exec("curl -s -H 'Authorization: token $GITHUB_TOKEN' 'https://api.github.com/search/code?q=repo:consuelohq/opensaas+filename:astro.config' | python3 -c 'import sys,json; [print(i[\"path\"]) for i in json.load(sys.stdin)[\"items\"]]'")`
+
+**never guess paths. never assume frameworks. read the tree, read the files, then answer.**
