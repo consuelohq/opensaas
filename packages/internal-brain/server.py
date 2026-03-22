@@ -12,7 +12,13 @@ mcp = FastMCP("internal-brain", host="0.0.0.0", port=port, stateless_http=True, 
 
 def _read_brain():
     with open("/app/BRAIN.md", "r") as f:
-        return f.read()
+        brain = f.read()
+    try:
+        with open("/app/repo-tree.txt", "r") as f:
+            brain += "\n\n" + f.read()
+    except FileNotFoundError:
+        pass
+    return brain
 
 @mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
 def get_steering() -> str:
