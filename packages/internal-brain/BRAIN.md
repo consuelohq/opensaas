@@ -610,3 +610,88 @@ you don't have the repo cloned locally. github is your file system. treat it tha
 4. search for files — `sandbox_exec("curl -s -H 'Authorization: token $GITHUB_TOKEN' 'https://api.github.com/search/code?q=repo:consuelohq/opensaas+filename:astro.config' | python3 -c 'import sys,json; [print(i[\"path\"]) for i in json.load(sys.stdin)[\"items\"]]'")`
 
 **never guess paths. never assume frameworks. read the tree, read the files, then answer.**
+
+## data architecture — where everything lives
+
+consuelo has TWO data backends right now. this is transitional — everything is moving to consuelo CRM.
+
+### supabase (legacy / email system)
+the supabase instance holds the outbound email system and early GTM data:
+- `leads` — lead records
+- `campaigns` — email campaigns
+- `lead_sequences` — sequence assignments
+- `sequence_steps` — individual steps in sequences
+- `email_queue` — outbound email queue
+- `email_ramp` — warmup / volume scaling logic
+- `email_stats` — email performance tracking (opens, clicks, replies)
+- `email_variants` — A/B copy variants
+- `interactions` — engagement/behavior tracking
+- `memories` — brain memories (your knowledge base)
+
+access via env vars: `SUPABASE_URL`, `SUPABASE_KEY`
+
+### consuelo CRM (primary — where everything is moving)
+the CRM at `consuelo.consuelohq.com` holds contacts, companies, lists, tasks, notes, and will eventually hold everything.
+- **9,759 contacts** imported (insurance agencies — the GTM target market)
+- companies, lists (calling lists), tasks, notes, dashboards, workflows
+- graphql API at `https://consuelo.consuelohq.com/graphql`
+- metadata API at `https://consuelo.consuelohq.com/metadata`
+- auth: `Authorization: Bearer <token>` (JWT-based)
+
+**the migration direction:** supabase email data → consuelo CRM. soon emails, sequences, and all GTM data will live in consuelo. build with that future in mind.
+
+### docs — docs.consuelohq.com
+comprehensive documentation for the entire platform. **use this as your primary reference** when you need to understand:
+- API endpoints and schemas
+- object models and relationships
+- how features work
+- configuration options
+- integration guides
+
+if you're unsure about how something works in consuelo, check docs.consuelohq.com first.
+
+## dogfooding — we use our own product
+
+`consuelo.consuelohq.com` is our internal instance. we eat our own dogfood. this means:
+- the contacts in the CRM are real GTM targets (insurance agencies)
+- the lists are real calling lists for outbound sales
+- the dashboards should show real business metrics
+- the workflows should automate real GTM processes
+
+when building GTM systems, ML pipelines, or analytics — the data source is our own product. query the consuelo API for contacts, interactions, call data. query supabase for email performance data. the goal is to build systems that make the business money using data from our own tools.
+
+## ML / algorithm strategy (active — see GROW-18, GROW-19)
+
+ko's thesis: deterministic systems + ML > pure generative AI for revenue-generating systems.
+
+the framework:
+- **math decides priority** — ML models for lead scoring, send-time optimization, conversion prediction
+- **code enforces logic** — deterministic rules for routing, sequencing, retry logic
+- **LLMs handle ambiguity** — transcript classification, intent detection, objection parsing
+
+high-priority ML pipelines to build:
+1. **lead scoring** — predict conversion probability from interactions + email_stats + contact data
+2. **send-time optimization** — predict best time to reach each lead
+3. **sequence optimization** — next-best-action instead of static email flows
+4. **variant auto-allocation** — bandit algorithms to auto-pick best-performing copy
+5. **call answer probability** — predict who picks up (once dialer data flows)
+6. **rep × lead matching** — route leads to best-fit reps
+
+data sources for these pipelines:
+- supabase: `email_stats`, `interactions`, `email_variants`, `leads`, `sequences`
+- consuelo CRM: contacts, companies, call logs, tasks, notes
+
+google cloud ($2k credits available) for: bigquery storage, vertex AI training, batch model jobs.
+
+## GTM channels (expanding beyond email)
+
+email is the foundation but not the ceiling. channels to build out:
+- email sequences (active — supabase)
+- phone/dialer (active — consuelo CRM + twilio)
+- linkedin outreach (planned)
+- SMS (planned)
+- social media / content (planned)
+- SEO (consuelohq.com)
+- online events / webinars (planned)
+
+the system should learn across ALL channels — shared intelligence layer, not siloed per channel.
