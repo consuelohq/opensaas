@@ -1,12 +1,100 @@
+import { Logger } from '@nestjs/common';
+
 import { createHash } from 'crypto';
 
 import RedisStore from 'connect-redis';
-import { createClient } from 'redis';
+import { createClient, type RedisClientType } from 'redis';
 
 import type session from 'express-session';
 
 import { CacheStorageType } from 'src/engine/core-modules/cache-storage/types/cache-storage-type.enum';
 import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
+
+const sessionStorageLogger = new Logger('SessionStorage');
+const SESSION_REDIS_CONNECT_TIMEOUT_MS = 10000;
+const SESSION_REDIS_KEEP_ALIVE_MS = 5000;
+const SESSION_REDIS_MAX_RECONNECT_DELAY_MS = 2000;
+const SESSION_REDIS_PING_INTERVAL_MS = 10000;
+
+let redisSessionClient: RedisClientType | null = null;
+let redisSessionClientUrl: string | null = null;
+let isRedisSessionClientConnecting = false;
+let hasLoggedRedisSessionDisconnect = false;
+
+const attachRedisSessionClientHandlers = (
+  client: RedisClientType,
+): RedisClientType => {
+  client.on('error', (err) => {
+    if (hasLoggedRedisSessionDisconnect) {
+      return;
+    }
+
+    hasLoggedRedisSessionDisconnect = true;
+
+    sessionStorageLogger.error(
+      `[SessionStorage] redis session client error: ${err.message}`,
+    );
+  });
+
+  client.on('ready', () => {
+    if (hasLoggedRedisSessionDisconnect) {
+      sessionStorageLogger.log(
+        '[SessionStorage] redis session client reconnected',
+      );
+    }
+
+    hasLoggedRedisSessionDisconnect = false;
+  });
+
+  return client;
+};
+
+const getRedisSessionClient = (connectionString: string): RedisClientType => {
+  try {
+    if (
+      redisSessionClient === null ||
+      redisSessionClientUrl !== connectionString
+    ) {
+      redisSessionClient = attachRedisSessionClientHandlers(
+        createClient({
+          url: connectionString,
+          pingInterval: SESSION_REDIS_PING_INTERVAL_MS,
+          socket: {
+            connectTimeout: SESSION_REDIS_CONNECT_TIMEOUT_MS,
+            keepAlive: SESSION_REDIS_KEEP_ALIVE_MS,
+            reconnectStrategy: (retries) =>
+              Math.min(retries * 50, SESSION_REDIS_MAX_RECONNECT_DELAY_MS),
+          },
+        }),
+      );
+      redisSessionClientUrl = connectionString;
+    }
+
+    if (!redisSessionClient.isOpen && !isRedisSessionClientConnecting) {
+      isRedisSessionClientConnecting = true;
+
+      void redisSessionClient
+        .connect()
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : 'unknown error';
+
+          sessionStorageLogger.error(
+            `[SessionStorage] redis session connection failed: ${message}`,
+          );
+        })
+        .finally(() => {
+          isRedisSessionClientConnecting = false;
+        });
+    }
+
+    return redisSessionClient;
+  } catch (err: unknown) {
+    redisSessionClient = null;
+    redisSessionClientUrl = null;
+    isRedisSessionClientConnecting = false;
+    throw err;
+  }
+};
 
 export const getSessionStorageOptions = (
   twentyConfigService: TwentyConfigService,
@@ -55,13 +143,7 @@ export const getSessionStorageOptions = (
         );
       }
 
-      const redisClient = createClient({
-        url: connectionString,
-      });
-
-      redisClient.connect().catch((err) => {
-        throw new Error(`Redis connection failed: ${err}`);
-      });
+      const redisClient = getRedisSessionClient(connectionString);
 
       return {
         ...sessionStorage,
