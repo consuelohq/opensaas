@@ -343,6 +343,10 @@ export const launchFaqItems: LaunchFaqItem[] = [
     answer: 'mercury is the hosted layer for teams that do not want to manage infrastructure, twilio provisioning, or provider keys on day one.',
   },
   {
+    question: 'do i need to buy the whole system at once?',
+    answer: 'no. consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. you can buy crm, calling, ai coaching, or hosted infrastructure one step at a time, while everything still compounds because the system is designed to work together.',
+  },
+  {
     question: 'can i self-host?',
     answer: 'yes. self-hosting stays first-class. you can run the open platform yourself, bring your own providers, and keep full control over the stack.',
   },
@@ -409,6 +413,10 @@ export const mercuryFaqItems: LaunchFaqItem[] = [
   {
     question: 'what is mercury?',
     answer: "mercury is consuelo's hosted plan. it is meant for teams that want the product without taking on infrastructure work up front.",
+  },
+  {
+    question: 'do i need to buy the whole system at once?',
+    answer: 'no. consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. you can buy crm, calling, ai coaching, or hosted infrastructure one step at a time, while everything still compounds because the system is designed to work together.',
   },
   {
     question: 'how is mercury priced?',

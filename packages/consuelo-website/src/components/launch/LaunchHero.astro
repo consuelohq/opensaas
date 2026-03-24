@@ -322,6 +322,17 @@ const { sectionId } = Astro.props as Props;
   }
 
   @media (max-width: 720px) {
+    .launch-hero__announcement {
+      gap: 0.28rem;
+      flex-wrap: nowrap;
+      font-size: 0.63rem;
+      white-space: nowrap;
+    }
+
+    .launch-hero__badge {
+      padding: 0.04rem 0.22rem;
+    }
+
     .launch-hero__snippet-panel {
       grid-template-columns: minmax(0, 1fr) auto;
       padding: 0.82rem 0.9rem;
