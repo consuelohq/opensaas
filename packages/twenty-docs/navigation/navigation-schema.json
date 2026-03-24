@@ -6,7 +6,7 @@
       "groups": [
         {
           "key": "discoverTwenty",
-          "label": "Discover Twenty",
+          "label": "Discover Consuelo",
           "icon": "rocket",
           "pages": [
             "user-guide/introduction",
@@ -14,7 +14,7 @@
               "key": "gettingStartedCapabilities",
               "label": "Capabilities",
               "pages": [
-                "user-guide/getting-started/capabilities/what-is-twenty",
+                "user-guide/getting-started/capabilities/what-is-consuelo",
                 "user-guide/getting-started/capabilities/implementation-services",
                 "user-guide/getting-started/capabilities/glossary"
               ]
@@ -24,7 +24,7 @@
               "label": "How-Tos",
               "pages": [
                 "user-guide/getting-started/how-tos/create-workspace",
-                "user-guide/getting-started/how-tos/navigate-around-twenty",
+                "user-guide/getting-started/how-tos/navigate-around-consuelo",
                 "user-guide/getting-started/how-tos/configure-your-workspace"
               ]
             }
@@ -114,8 +114,8 @@
                 "user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                 "user-guide/calendar-emails/how-tos/limit-emails-imported",
                 "user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                "user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                "user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                "user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                "user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                 "user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
               ]
             }
@@ -164,10 +164,10 @@
                   "label": "Connect to Other Tools",
                   "pages": [
                     "user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                    "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                    "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                    "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                    "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                    "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                    "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                    "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                    "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                   ]
                 },
                 {
@@ -416,54 +416,54 @@
                     "developers/contribute/capabilities/frontend-development/storybook",
                     {
                       "key": "twentyUi",
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "pages": [
-                        "twenty-ui/introduction",
+                        "consuelo-ui/introduction",
                         {
                           "key": "display",
                           "label": "Display",
                           "pages": [
-                            "twenty-ui/display/checkmark",
-                            "twenty-ui/display/chip",
-                            "twenty-ui/display/icons",
-                            "twenty-ui/display/soon-pill",
-                            "twenty-ui/display/tag",
-                            "twenty-ui/display/app-tooltip"
+                            "consuelo-ui/display/checkmark",
+                            "consuelo-ui/display/chip",
+                            "consuelo-ui/display/icons",
+                            "consuelo-ui/display/soon-pill",
+                            "consuelo-ui/display/tag",
+                            "consuelo-ui/display/app-tooltip"
                           ]
                         },
                         {
                           "key": "feedback",
                           "label": "Feedback",
                           "pages": [
-                            "twenty-ui/progress-bar"
+                            "consuelo-ui/progress-bar"
                           ]
                         },
                         {
                           "key": "input",
                           "label": "Input",
                           "pages": [
-                            "twenty-ui/input/buttons",
-                            "twenty-ui/input/color-scheme",
-                            "twenty-ui/input/text",
-                            "twenty-ui/input/checkbox",
-                            "twenty-ui/input/icon-picker",
-                            "twenty-ui/input/image-input",
-                            "twenty-ui/input/radio",
-                            "twenty-ui/input/select",
-                            "twenty-ui/input/toggle",
-                            "twenty-ui/input/block-editor"
+                            "consuelo-ui/input/buttons",
+                            "consuelo-ui/input/color-scheme",
+                            "consuelo-ui/input/text",
+                            "consuelo-ui/input/checkbox",
+                            "consuelo-ui/input/icon-picker",
+                            "consuelo-ui/input/image-input",
+                            "consuelo-ui/input/radio",
+                            "consuelo-ui/input/select",
+                            "consuelo-ui/input/toggle",
+                            "consuelo-ui/input/block-editor"
                           ]
                         },
                         {
                           "key": "navigation",
                           "label": "Navigation",
                           "pages": [
-                            "twenty-ui/navigation",
-                            "twenty-ui/navigation/breadcrumb",
-                            "twenty-ui/navigation/links",
-                            "twenty-ui/navigation/menu-item",
-                            "twenty-ui/navigation/navigation-bar",
-                            "twenty-ui/navigation/step-bar"
+                            "consuelo-ui/navigation",
+                            "consuelo-ui/navigation/breadcrumb",
+                            "consuelo-ui/navigation/links",
+                            "consuelo-ui/navigation/menu-item",
+                            "consuelo-ui/navigation/navigation-bar",
+                            "consuelo-ui/navigation/step-bar"
                           ]
                         }
                       ]

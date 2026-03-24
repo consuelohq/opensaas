@@ -8,7 +8,7 @@ title: Docker Compose로 1-클릭
 
 ## 개요
 
-이 가이드는 Docker Compose를 사용하여 Twenty 애플리케이션을 설치 및 구성하기 위한 단계별 지침을 제공합니다. 프로세스를 간단하게 만들고 설정을 망칠 수 있는 일반적인 함정을 피하는 것이 목적입니다.
+이 가이드는 Docker Compose를 사용하여 Consuelo 애플리케이션을 설치 및 구성하기 위한 단계별 지침을 제공합니다. 프로세스를 간단하게 만들고 설정을 망칠 수 있는 일반적인 함정을 피하는 것이 목적입니다.
 
 **중요:** 이 가이드에서 명시적으로 언급된 설정만 수정하세요. 다른 구성을 변경하면 문제가 발생할 수 있습니다.
 
@@ -21,7 +21,7 @@ title: Docker Compose로 1-클릭
 
 ## 옵션 1: 한 줄 스크립트
 
-단일 명령으로 최신 안정 버전의 Twenty를 설치하십시오:
+단일 명령으로 최신 안정 버전의 Consuelo를 설치하십시오:
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
@@ -104,9 +104,9 @@ curl http://localhost:3000
 
 ## 구성
 
-### Twenty를 외부 액세스에 노출
+### Consuelo를 외부 액세스에 노출
 
-기본적으로 Twenty는 `localhost`의 포트 `3000`에서 실행됩니다. 외부 도메인 또는 IP 주소로 액세스하려면 `.env` 파일의 `SERVER_URL`을 구성해야 합니다.
+기본적으로 Consuelo는 `localhost`의 포트 `3000`에서 실행됩니다. 외부 도메인 또는 IP 주소로 액세스하려면 `.env` 파일의 `SERVER_URL`을 구성해야 합니다.
 
 #### `SERVER_URL` 이해하기
 
@@ -118,11 +118,11 @@ curl http://localhost:3000
 
 ### SSL 요구 사항
 
-SSL(HTTPS)는 일부 브라우저 기능이 제대로 작동하기 위해 필수입니다. 이러한 기능은 로컬 개발 중에는 작동할 수 있지만 (브라우저는 localhost를 다르게 처리합니다), 일반 도메인에 Twenty를 호스팅할 때는 적절한 SSL 설정이 필요합니다.
+SSL(HTTPS)는 일부 브라우저 기능이 제대로 작동하기 위해 필수입니다. 이러한 기능은 로컬 개발 중에는 작동할 수 있지만 (브라우저는 localhost를 다르게 처리합니다), 일반 도메인에 Consuelo를 호스팅할 때는 적절한 SSL 설정이 필요합니다.
 
 예를 들어, 클립보드 API는 안전한 컨텍스트가 필요할 수 있습니다. 응용 프로그램 내 복사 버튼과 같은 일부 기능은 HTTPS가 활성화되지 않으면 작동하지 않을 수 있습니다.
 
-최적의 보안 및 기능을 위해 SSL 종료와 함께 Reverse Proxy 뒤에 Twenty를 설정하는 것을 강력히 권장합니다.
+최적의 보안 및 기능을 위해 SSL 종료와 함께 Reverse Proxy 뒤에 Consuelo를 설정하는 것을 강력히 권장합니다.
 
 #### `SERVER_URL` 설정
 

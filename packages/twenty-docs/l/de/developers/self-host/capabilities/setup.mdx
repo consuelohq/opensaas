@@ -5,10 +5,10 @@ title: Einrichtung
 # Konfigurationsverwaltung
 
 <Warning>
-  **Erstinstallation?** Folgen Sie dem [Docker Compose-Installationshandbuch](/l/de/developers/self-host/capabilities/docker-compose), um Twenty zum Laufen zu bringen, und kehren Sie dann hierher zurück, um die Konfiguration fortzusetzen.
+  **Erstinstallation?** Folgen Sie dem [Docker Compose-Installationshandbuch](/l/de/developers/self-host/capabilities/docker-compose), um Consuelo zum Laufen zu bringen, und kehren Sie dann hierher zurück, um die Konfiguration fortzusetzen.
 </Warning>
 
-Twenty bietet **zwei Konfigurationsmodi**, um unterschiedlichen Implementierungsbedürfnissen gerecht zu werden:
+Consuelo bietet **zwei Konfigurationsmodi**, um unterschiedlichen Implementierungsbedürfnissen gerecht zu werden:
 
 **Zugriff auf das Admin-Panel:** Nur Benutzer mit Admin-Berechtigungen (`canAccessFullAdminPanel: true`) können auf die Konfigurationsoberfläche zugreifen.
 
@@ -62,7 +62,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## Multi-Workspace-Modus
 
-Standardmäßig läuft Twenty im **Single-Workspace-Modus** — ideal für die meisten selbstgehosteten Bereitstellungen, bei denen Sie eine CRM-Instanz für Ihre Organisation benötigen.
+Standardmäßig läuft Consuelo im **Single-Workspace-Modus** — ideal für die meisten selbstgehosteten Bereitstellungen, bei denen Sie eine CRM-Instanz für Ihre Organisation benötigen.
 
 ### Single-Workspace-Modus (Standard)
 
@@ -136,7 +136,7 @@ Wenn aktiviert, können nur Benutzer mit `canAccessFullAdminPanel` zusätzliche 
    * `https://{your-domain}/auth/google/redirect` (für SSO)
    * `https://{your-domain}/auth/google-apis/get-access-token` (für Integrationen)
 
-### In Twenty konfigurieren
+### In Consuelo konfigurieren
 
 1. Gehen Sie zu **Einstellungen → Admin-Panel → Konfigurationsvariablen**
 2. Finden Sie den Abschnitt **Google Auth**
@@ -168,7 +168,7 @@ Fügen Sie im [OAuth-Zustimmungsbildschirm](https://console.cloud.google.com/api
 ## Microsoft 365-Integration
 
 <Warning>
-  Benutzer müssen eine [Microsoft 365-Lizenz](https://admin.microsoft.com/Adminportal/Home) besitzen, um die Kalender- und Messaging-API verwenden zu können. Ohne eine solche Lizenz können sie ihr Konto nicht mit Twenty synchronisieren.
+  Benutzer müssen eine [Microsoft 365-Lizenz](https://admin.microsoft.com/Adminportal/Home) besitzen, um die Kalender- und Messaging-API verwenden zu können. Ohne eine solche Lizenz können sie ihr Konto nicht mit Consuelo synchronisieren.
 </Warning>
 
 ### Erstellen Sie ein Projekt in Microsoft Azure
@@ -197,7 +197,7 @@ Sie müssen die folgenden Weiterleitungs-URIs zu Ihrem Projekt hinzufügen:
 * `https://{your-domain}/auth/microsoft/redirect`, falls Sie das Microsoft-SSO verwenden möchten
 * `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### In Twenty konfigurieren
+### In Consuelo konfigurieren
 
 1. Gehen Sie zu **Einstellungen → Admin-Panel → Konfigurationsvariablen**
 2. Finden Sie den Abschnitt **Microsoft Auth**
@@ -294,7 +294,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## Logikfunktionen
 
-Twenty unterstützt Logikfunktionen für Workflows und benutzerdefinierte Logik. Die Ausführungsumgebung wird über die Umgebungsvariable `SERVERLESS_TYPE` konfiguriert.
+Consuelo unterstützt Logikfunktionen für Workflows und benutzerdefinierte Logik. Die Ausführungsumgebung wird über die Umgebungsvariable `SERVERLESS_TYPE` konfiguriert.
 
 <Warning>
   **Sicherheitshinweis:** Der lokale Treiber (`SERVERLESS_TYPE=LOCAL`) führt Code ohne Sandbox direkt auf dem Host in einem Node.js-Prozess aus. Er sollte nur für vertrauenswürdigen Code in der Entwicklung verwendet werden. Für Produktivbereitstellungen, die nicht vertrauenswürdigen Code verarbeiten, empfehlen wir nachdrücklich, `SERVERLESS_TYPE=LAMBDA` oder `SERVERLESS_TYPE=DISABLED` zu verwenden.
@@ -333,5 +333,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-  Bei Verwendung von `SERVERLESS_TYPE=DISABLED` führt jeder Versuch, eine Logikfunktion auszuführen, zu einem Fehler. Dies ist nützlich, wenn Sie Twenty ohne Unterstützung für Logikfunktionen betreiben möchten.
+  Bei Verwendung von `SERVERLESS_TYPE=DISABLED` führt jeder Versuch, eine Logikfunktion auszuführen, zu einem Fehler. Dies ist nützlich, wenn Sie Consuelo ohne Unterstützung für Logikfunktionen betreiben möchten.
 </Note>

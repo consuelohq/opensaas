@@ -28,7 +28,7 @@ Pornește fluxul de lucru când este creată o nouă înregistrare într-un obie
 
 <Note>
   * This trigger is great for records created by csv, mailbox and calendar synchronization, API.
-  * **It is not recommended for records created manually**: with this trigger, workflows start as soon as the record is created. Since Twenty UI offers auto-save on the fly (there is not an edit mode and then a validation to save records), the workflow will be triggered before the user inputs all the fields.
+  * **It is not recommended for records created manually**: with this trigger, workflows start as soon as the record is created. Since Consuelo UI offers auto-save on the fly (there is not an edit mode and then a validation to save records), the workflow will be triggered before the user inputs all the fields.
     To trigger this workflow on records created manually, it is recommended to use the trigger `Record is created or updated` instead.
 </Note>
 
@@ -120,7 +120,7 @@ Pornește fluxul de lucru când este primită o cerere GET sau POST de la un ser
 **Configurare**:
 
 * The workflow provides a unique webhook URL—copy this and add it to your external system as the endpoint to call.
-* For POST requests, define the expected body structure so Twenty knows what data to expect. Add here the fields you will receive that will be needed below in your workflow.
+* For POST requests, define the expected body structure so Consuelo knows what data to expect. Add here the fields you will receive that will be needed below in your workflow.
 * Configure authentication (coming soon).
 
 ## Choosing the Right Trigger

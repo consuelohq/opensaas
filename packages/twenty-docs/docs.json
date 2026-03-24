@@ -39,14 +39,14 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "user-guide/getting-started/capabilities/what-is-twenty",
+                      "user-guide/getting-started/capabilities/what-is-consuelo",
                       "user-guide/getting-started/capabilities/implementation-services",
                       "user-guide/getting-started/capabilities/glossary"
                     ]
@@ -55,7 +55,7 @@
                     "group": "How-Tos",
                     "pages": [
                       "user-guide/getting-started/how-tos/create-workspace",
-                      "user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -137,8 +137,8 @@
                       "user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -182,10 +182,10 @@
                         "group": "Connect to Other Tools",
                         "pages": [
                           "user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -512,48 +512,48 @@
                         "pages": [
                           "developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "twenty-ui/introduction",
+                              "consuelo-ui/introduction",
                               {
                                 "group": "Display",
                                 "pages": [
-                                  "twenty-ui/display/checkmark",
-                                  "twenty-ui/display/chip",
-                                  "twenty-ui/display/icons",
-                                  "twenty-ui/display/soon-pill",
-                                  "twenty-ui/display/tag",
-                                  "twenty-ui/display/app-tooltip"
+                                  "consuelo-ui/display/checkmark",
+                                  "consuelo-ui/display/chip",
+                                  "consuelo-ui/display/icons",
+                                  "consuelo-ui/display/soon-pill",
+                                  "consuelo-ui/display/tag",
+                                  "consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["twenty-ui/progress-bar"]
+                                "pages": ["consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Input",
                                 "pages": [
-                                  "twenty-ui/input/buttons",
-                                  "twenty-ui/input/color-scheme",
-                                  "twenty-ui/input/text",
-                                  "twenty-ui/input/checkbox",
-                                  "twenty-ui/input/icon-picker",
-                                  "twenty-ui/input/image-input",
-                                  "twenty-ui/input/radio",
-                                  "twenty-ui/input/select",
-                                  "twenty-ui/input/toggle",
-                                  "twenty-ui/input/block-editor"
+                                  "consuelo-ui/input/buttons",
+                                  "consuelo-ui/input/color-scheme",
+                                  "consuelo-ui/input/text",
+                                  "consuelo-ui/input/checkbox",
+                                  "consuelo-ui/input/icon-picker",
+                                  "consuelo-ui/input/image-input",
+                                  "consuelo-ui/input/radio",
+                                  "consuelo-ui/input/select",
+                                  "consuelo-ui/input/toggle",
+                                  "consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigation",
                                 "pages": [
-                                  "twenty-ui/navigation",
-                                  "twenty-ui/navigation/breadcrumb",
-                                  "twenty-ui/navigation/links",
-                                  "twenty-ui/navigation/menu-item",
-                                  "twenty-ui/navigation/navigation-bar",
-                                  "twenty-ui/navigation/step-bar"
+                                  "consuelo-ui/navigation",
+                                  "consuelo-ui/navigation/breadcrumb",
+                                  "consuelo-ui/navigation/links",
+                                  "consuelo-ui/navigation/menu-item",
+                                  "consuelo-ui/navigation/navigation-bar",
+                                  "consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -593,14 +593,14 @@
             "tab": "Guide de l'utilisateur",
             "groups": [
               {
-                "group": "Découvrez Twenty",
+                "group": "Découvrez Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/fr/user-guide/introduction",
                   {
                     "group": "Capacités",
                     "pages": [
-                      "l/fr/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/fr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/fr/user-guide/getting-started/capabilities/implementation-services",
                       "l/fr/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -609,7 +609,7 @@
                     "group": "Guides pratiques",
                     "pages": [
                       "l/fr/user-guide/getting-started/how-tos/create-workspace",
-                      "l/fr/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/fr/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/fr/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -691,8 +691,8 @@
                       "l/fr/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/fr/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/fr/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/fr/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/fr/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/fr/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/fr/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/fr/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -736,10 +736,10 @@
                         "group": "Connexion à d'autres outils",
                         "pages": [
                           "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/fr/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -1034,48 +1034,48 @@
                         "pages": [
                           "l/fr/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/fr/twenty-ui/introduction",
+                              "l/fr/consuelo-ui/introduction",
                               {
                                 "group": "Afficher",
                                 "pages": [
-                                  "l/fr/twenty-ui/display/checkmark",
-                                  "l/fr/twenty-ui/display/chip",
-                                  "l/fr/twenty-ui/display/icons",
-                                  "l/fr/twenty-ui/display/soon-pill",
-                                  "l/fr/twenty-ui/display/tag",
-                                  "l/fr/twenty-ui/display/app-tooltip"
+                                  "l/fr/consuelo-ui/display/checkmark",
+                                  "l/fr/consuelo-ui/display/chip",
+                                  "l/fr/consuelo-ui/display/icons",
+                                  "l/fr/consuelo-ui/display/soon-pill",
+                                  "l/fr/consuelo-ui/display/tag",
+                                  "l/fr/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Retour d'information",
-                                "pages": ["l/fr/twenty-ui/progress-bar"]
+                                "pages": ["l/fr/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrée ",
                                 "pages": [
-                                  "l/fr/twenty-ui/input/buttons",
-                                  "l/fr/twenty-ui/input/color-scheme",
-                                  "l/fr/twenty-ui/input/text",
-                                  "l/fr/twenty-ui/input/checkbox",
-                                  "l/fr/twenty-ui/input/icon-picker",
-                                  "l/fr/twenty-ui/input/image-input",
-                                  "l/fr/twenty-ui/input/radio",
-                                  "l/fr/twenty-ui/input/select",
-                                  "l/fr/twenty-ui/input/toggle",
-                                  "l/fr/twenty-ui/input/block-editor"
+                                  "l/fr/consuelo-ui/input/buttons",
+                                  "l/fr/consuelo-ui/input/color-scheme",
+                                  "l/fr/consuelo-ui/input/text",
+                                  "l/fr/consuelo-ui/input/checkbox",
+                                  "l/fr/consuelo-ui/input/icon-picker",
+                                  "l/fr/consuelo-ui/input/image-input",
+                                  "l/fr/consuelo-ui/input/radio",
+                                  "l/fr/consuelo-ui/input/select",
+                                  "l/fr/consuelo-ui/input/toggle",
+                                  "l/fr/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigation",
                                 "pages": [
-                                  "l/fr/twenty-ui/navigation",
-                                  "l/fr/twenty-ui/navigation/breadcrumb",
-                                  "l/fr/twenty-ui/navigation/links",
-                                  "l/fr/twenty-ui/navigation/menu-item",
-                                  "l/fr/twenty-ui/navigation/navigation-bar",
-                                  "l/fr/twenty-ui/navigation/step-bar"
+                                  "l/fr/consuelo-ui/navigation",
+                                  "l/fr/consuelo-ui/navigation/breadcrumb",
+                                  "l/fr/consuelo-ui/navigation/links",
+                                  "l/fr/consuelo-ui/navigation/menu-item",
+                                  "l/fr/consuelo-ui/navigation/navigation-bar",
+                                  "l/fr/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -1115,14 +1115,14 @@
             "tab": "دليل المستخدم",
             "groups": [
               {
-                "group": "اكتشف Twenty",
+                "group": "اكتشف Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ar/user-guide/introduction",
                   {
                     "group": "القدرات",
                     "pages": [
-                      "l/ar/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/ar/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ar/user-guide/getting-started/capabilities/implementation-services",
                       "l/ar/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -1131,7 +1131,7 @@
                     "group": "الإرشادات",
                     "pages": [
                       "l/ar/user-guide/getting-started/how-tos/create-workspace",
-                      "l/ar/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/ar/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/ar/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -1213,8 +1213,8 @@
                       "l/ar/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ar/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/ar/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/ar/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/ar/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/ar/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/ar/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/ar/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -1258,10 +1258,10 @@
                         "group": "الاتصال بأدوات أخرى",
                         "pages": [
                           "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/ar/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -1556,48 +1556,48 @@
                         "pages": [
                           "l/ar/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/ar/twenty-ui/introduction",
+                              "l/ar/consuelo-ui/introduction",
                               {
                                 "group": "عرض",
                                 "pages": [
-                                  "l/ar/twenty-ui/display/checkmark",
-                                  "l/ar/twenty-ui/display/chip",
-                                  "l/ar/twenty-ui/display/icons",
-                                  "l/ar/twenty-ui/display/soon-pill",
-                                  "l/ar/twenty-ui/display/tag",
-                                  "l/ar/twenty-ui/display/app-tooltip"
+                                  "l/ar/consuelo-ui/display/checkmark",
+                                  "l/ar/consuelo-ui/display/chip",
+                                  "l/ar/consuelo-ui/display/icons",
+                                  "l/ar/consuelo-ui/display/soon-pill",
+                                  "l/ar/consuelo-ui/display/tag",
+                                  "l/ar/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "التغذية الراجعة",
-                                "pages": ["l/ar/twenty-ui/progress-bar"]
+                                "pages": ["l/ar/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "إدخال",
                                 "pages": [
-                                  "l/ar/twenty-ui/input/buttons",
-                                  "l/ar/twenty-ui/input/color-scheme",
-                                  "l/ar/twenty-ui/input/text",
-                                  "l/ar/twenty-ui/input/checkbox",
-                                  "l/ar/twenty-ui/input/icon-picker",
-                                  "l/ar/twenty-ui/input/image-input",
-                                  "l/ar/twenty-ui/input/radio",
-                                  "l/ar/twenty-ui/input/select",
-                                  "l/ar/twenty-ui/input/toggle",
-                                  "l/ar/twenty-ui/input/block-editor"
+                                  "l/ar/consuelo-ui/input/buttons",
+                                  "l/ar/consuelo-ui/input/color-scheme",
+                                  "l/ar/consuelo-ui/input/text",
+                                  "l/ar/consuelo-ui/input/checkbox",
+                                  "l/ar/consuelo-ui/input/icon-picker",
+                                  "l/ar/consuelo-ui/input/image-input",
+                                  "l/ar/consuelo-ui/input/radio",
+                                  "l/ar/consuelo-ui/input/select",
+                                  "l/ar/consuelo-ui/input/toggle",
+                                  "l/ar/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "التنقل",
                                 "pages": [
-                                  "l/ar/twenty-ui/navigation",
-                                  "l/ar/twenty-ui/navigation/breadcrumb",
-                                  "l/ar/twenty-ui/navigation/links",
-                                  "l/ar/twenty-ui/navigation/menu-item",
-                                  "l/ar/twenty-ui/navigation/navigation-bar",
-                                  "l/ar/twenty-ui/navigation/step-bar"
+                                  "l/ar/consuelo-ui/navigation",
+                                  "l/ar/consuelo-ui/navigation/breadcrumb",
+                                  "l/ar/consuelo-ui/navigation/links",
+                                  "l/ar/consuelo-ui/navigation/menu-item",
+                                  "l/ar/consuelo-ui/navigation/navigation-bar",
+                                  "l/ar/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -1637,14 +1637,14 @@
             "tab": "Uživatelská příručka",
             "groups": [
               {
-                "group": "Objevte Twenty",
+                "group": "Objevte Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/cs/user-guide/introduction",
                   {
                     "group": "Možnosti",
                     "pages": [
-                      "l/cs/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/cs/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/cs/user-guide/getting-started/capabilities/implementation-services",
                       "l/cs/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -1653,7 +1653,7 @@
                     "group": "Návody",
                     "pages": [
                       "l/cs/user-guide/getting-started/how-tos/create-workspace",
-                      "l/cs/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/cs/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/cs/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -1735,8 +1735,8 @@
                       "l/cs/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/cs/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/cs/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/cs/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/cs/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/cs/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/cs/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/cs/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -1780,10 +1780,10 @@
                         "group": "Propojení s dalšími nástroji",
                         "pages": [
                           "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/cs/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -2078,48 +2078,48 @@
                         "pages": [
                           "l/cs/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/cs/twenty-ui/introduction",
+                              "l/cs/consuelo-ui/introduction",
                               {
                                 "group": "Zobrazit",
                                 "pages": [
-                                  "l/cs/twenty-ui/display/checkmark",
-                                  "l/cs/twenty-ui/display/chip",
-                                  "l/cs/twenty-ui/display/icons",
-                                  "l/cs/twenty-ui/display/soon-pill",
-                                  "l/cs/twenty-ui/display/tag",
-                                  "l/cs/twenty-ui/display/app-tooltip"
+                                  "l/cs/consuelo-ui/display/checkmark",
+                                  "l/cs/consuelo-ui/display/chip",
+                                  "l/cs/consuelo-ui/display/icons",
+                                  "l/cs/consuelo-ui/display/soon-pill",
+                                  "l/cs/consuelo-ui/display/tag",
+                                  "l/cs/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Zpětná vazba",
-                                "pages": ["l/cs/twenty-ui/progress-bar"]
+                                "pages": ["l/cs/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Vstup",
                                 "pages": [
-                                  "l/cs/twenty-ui/input/buttons",
-                                  "l/cs/twenty-ui/input/color-scheme",
-                                  "l/cs/twenty-ui/input/text",
-                                  "l/cs/twenty-ui/input/checkbox",
-                                  "l/cs/twenty-ui/input/icon-picker",
-                                  "l/cs/twenty-ui/input/image-input",
-                                  "l/cs/twenty-ui/input/radio",
-                                  "l/cs/twenty-ui/input/select",
-                                  "l/cs/twenty-ui/input/toggle",
-                                  "l/cs/twenty-ui/input/block-editor"
+                                  "l/cs/consuelo-ui/input/buttons",
+                                  "l/cs/consuelo-ui/input/color-scheme",
+                                  "l/cs/consuelo-ui/input/text",
+                                  "l/cs/consuelo-ui/input/checkbox",
+                                  "l/cs/consuelo-ui/input/icon-picker",
+                                  "l/cs/consuelo-ui/input/image-input",
+                                  "l/cs/consuelo-ui/input/radio",
+                                  "l/cs/consuelo-ui/input/select",
+                                  "l/cs/consuelo-ui/input/toggle",
+                                  "l/cs/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigace",
                                 "pages": [
-                                  "l/cs/twenty-ui/navigation",
-                                  "l/cs/twenty-ui/navigation/breadcrumb",
-                                  "l/cs/twenty-ui/navigation/links",
-                                  "l/cs/twenty-ui/navigation/menu-item",
-                                  "l/cs/twenty-ui/navigation/navigation-bar",
-                                  "l/cs/twenty-ui/navigation/step-bar"
+                                  "l/cs/consuelo-ui/navigation",
+                                  "l/cs/consuelo-ui/navigation/breadcrumb",
+                                  "l/cs/consuelo-ui/navigation/links",
+                                  "l/cs/consuelo-ui/navigation/menu-item",
+                                  "l/cs/consuelo-ui/navigation/navigation-bar",
+                                  "l/cs/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -2159,14 +2159,14 @@
             "tab": "Benutzerhandbuch",
             "groups": [
               {
-                "group": "Entdecken Sie Twenty",
+                "group": "Entdecken Sie Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/de/user-guide/introduction",
                   {
                     "group": "Funktionen",
                     "pages": [
-                      "l/de/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/de/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/de/user-guide/getting-started/capabilities/implementation-services",
                       "l/de/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -2175,7 +2175,7 @@
                     "group": "Anleitungen",
                     "pages": [
                       "l/de/user-guide/getting-started/how-tos/create-workspace",
-                      "l/de/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/de/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/de/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -2257,8 +2257,8 @@
                       "l/de/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/de/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/de/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/de/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/de/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/de/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/de/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/de/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -2302,10 +2302,10 @@
                         "group": "Verbindung zu anderen Tools",
                         "pages": [
                           "l/de/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/de/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -2600,48 +2600,48 @@
                         "pages": [
                           "l/de/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/de/twenty-ui/introduction",
+                              "l/de/consuelo-ui/introduction",
                               {
                                 "group": "Anzeigen",
                                 "pages": [
-                                  "l/de/twenty-ui/display/checkmark",
-                                  "l/de/twenty-ui/display/chip",
-                                  "l/de/twenty-ui/display/icons",
-                                  "l/de/twenty-ui/display/soon-pill",
-                                  "l/de/twenty-ui/display/tag",
-                                  "l/de/twenty-ui/display/app-tooltip"
+                                  "l/de/consuelo-ui/display/checkmark",
+                                  "l/de/consuelo-ui/display/chip",
+                                  "l/de/consuelo-ui/display/icons",
+                                  "l/de/consuelo-ui/display/soon-pill",
+                                  "l/de/consuelo-ui/display/tag",
+                                  "l/de/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Rückmeldung",
-                                "pages": ["l/de/twenty-ui/progress-bar"]
+                                "pages": ["l/de/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Eingabe",
                                 "pages": [
-                                  "l/de/twenty-ui/input/buttons",
-                                  "l/de/twenty-ui/input/color-scheme",
-                                  "l/de/twenty-ui/input/text",
-                                  "l/de/twenty-ui/input/checkbox",
-                                  "l/de/twenty-ui/input/icon-picker",
-                                  "l/de/twenty-ui/input/image-input",
-                                  "l/de/twenty-ui/input/radio",
-                                  "l/de/twenty-ui/input/select",
-                                  "l/de/twenty-ui/input/toggle",
-                                  "l/de/twenty-ui/input/block-editor"
+                                  "l/de/consuelo-ui/input/buttons",
+                                  "l/de/consuelo-ui/input/color-scheme",
+                                  "l/de/consuelo-ui/input/text",
+                                  "l/de/consuelo-ui/input/checkbox",
+                                  "l/de/consuelo-ui/input/icon-picker",
+                                  "l/de/consuelo-ui/input/image-input",
+                                  "l/de/consuelo-ui/input/radio",
+                                  "l/de/consuelo-ui/input/select",
+                                  "l/de/consuelo-ui/input/toggle",
+                                  "l/de/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigation",
                                 "pages": [
-                                  "l/de/twenty-ui/navigation",
-                                  "l/de/twenty-ui/navigation/breadcrumb",
-                                  "l/de/twenty-ui/navigation/links",
-                                  "l/de/twenty-ui/navigation/menu-item",
-                                  "l/de/twenty-ui/navigation/navigation-bar",
-                                  "l/de/twenty-ui/navigation/step-bar"
+                                  "l/de/consuelo-ui/navigation",
+                                  "l/de/consuelo-ui/navigation/breadcrumb",
+                                  "l/de/consuelo-ui/navigation/links",
+                                  "l/de/consuelo-ui/navigation/menu-item",
+                                  "l/de/consuelo-ui/navigation/navigation-bar",
+                                  "l/de/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -2681,14 +2681,14 @@
             "tab": "Guía de usuario",
             "groups": [
               {
-                "group": "Descubre Twenty",
+                "group": "Descubre Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/es/user-guide/introduction",
                   {
                     "group": "Capacidades",
                     "pages": [
-                      "l/es/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/es/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/es/user-guide/getting-started/capabilities/implementation-services",
                       "l/es/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -2697,7 +2697,7 @@
                     "group": "Guías prácticas",
                     "pages": [
                       "l/es/user-guide/getting-started/how-tos/create-workspace",
-                      "l/es/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/es/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/es/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -2779,8 +2779,8 @@
                       "l/es/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/es/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/es/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/es/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/es/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/es/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/es/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/es/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -2824,10 +2824,10 @@
                         "group": "Conectar con otras herramientas",
                         "pages": [
                           "l/es/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/es/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -3122,48 +3122,48 @@
                         "pages": [
                           "l/es/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/es/twenty-ui/introduction",
+                              "l/es/consuelo-ui/introduction",
                               {
                                 "group": "Mostrar",
                                 "pages": [
-                                  "l/es/twenty-ui/display/checkmark",
-                                  "l/es/twenty-ui/display/chip",
-                                  "l/es/twenty-ui/display/icons",
-                                  "l/es/twenty-ui/display/soon-pill",
-                                  "l/es/twenty-ui/display/tag",
-                                  "l/es/twenty-ui/display/app-tooltip"
+                                  "l/es/consuelo-ui/display/checkmark",
+                                  "l/es/consuelo-ui/display/chip",
+                                  "l/es/consuelo-ui/display/icons",
+                                  "l/es/consuelo-ui/display/soon-pill",
+                                  "l/es/consuelo-ui/display/tag",
+                                  "l/es/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Retroalimentación",
-                                "pages": ["l/es/twenty-ui/progress-bar"]
+                                "pages": ["l/es/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrada",
                                 "pages": [
-                                  "l/es/twenty-ui/input/buttons",
-                                  "l/es/twenty-ui/input/color-scheme",
-                                  "l/es/twenty-ui/input/text",
-                                  "l/es/twenty-ui/input/checkbox",
-                                  "l/es/twenty-ui/input/icon-picker",
-                                  "l/es/twenty-ui/input/image-input",
-                                  "l/es/twenty-ui/input/radio",
-                                  "l/es/twenty-ui/input/select",
-                                  "l/es/twenty-ui/input/toggle",
-                                  "l/es/twenty-ui/input/block-editor"
+                                  "l/es/consuelo-ui/input/buttons",
+                                  "l/es/consuelo-ui/input/color-scheme",
+                                  "l/es/consuelo-ui/input/text",
+                                  "l/es/consuelo-ui/input/checkbox",
+                                  "l/es/consuelo-ui/input/icon-picker",
+                                  "l/es/consuelo-ui/input/image-input",
+                                  "l/es/consuelo-ui/input/radio",
+                                  "l/es/consuelo-ui/input/select",
+                                  "l/es/consuelo-ui/input/toggle",
+                                  "l/es/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navegación",
                                 "pages": [
-                                  "l/es/twenty-ui/navigation",
-                                  "l/es/twenty-ui/navigation/breadcrumb",
-                                  "l/es/twenty-ui/navigation/links",
-                                  "l/es/twenty-ui/navigation/menu-item",
-                                  "l/es/twenty-ui/navigation/navigation-bar",
-                                  "l/es/twenty-ui/navigation/step-bar"
+                                  "l/es/consuelo-ui/navigation",
+                                  "l/es/consuelo-ui/navigation/breadcrumb",
+                                  "l/es/consuelo-ui/navigation/links",
+                                  "l/es/consuelo-ui/navigation/menu-item",
+                                  "l/es/consuelo-ui/navigation/navigation-bar",
+                                  "l/es/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -3203,14 +3203,14 @@
             "tab": "Guida utente",
             "groups": [
               {
-                "group": "Scopri Twenty",
+                "group": "Scopri Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/it/user-guide/introduction",
                   {
                     "group": "Funzionalità",
                     "pages": [
-                      "l/it/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/it/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/it/user-guide/getting-started/capabilities/implementation-services",
                       "l/it/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -3219,7 +3219,7 @@
                     "group": "Guide pratiche",
                     "pages": [
                       "l/it/user-guide/getting-started/how-tos/create-workspace",
-                      "l/it/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/it/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/it/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -3301,8 +3301,8 @@
                       "l/it/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/it/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/it/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/it/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/it/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/it/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/it/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/it/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -3346,10 +3346,10 @@
                         "group": "Connessione ad altri strumenti",
                         "pages": [
                           "l/it/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/it/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -3644,48 +3644,48 @@
                         "pages": [
                           "l/it/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/it/twenty-ui/introduction",
+                              "l/it/consuelo-ui/introduction",
                               {
                                 "group": "Mostra",
                                 "pages": [
-                                  "l/it/twenty-ui/display/checkmark",
-                                  "l/it/twenty-ui/display/chip",
-                                  "l/it/twenty-ui/display/icons",
-                                  "l/it/twenty-ui/display/soon-pill",
-                                  "l/it/twenty-ui/display/tag",
-                                  "l/it/twenty-ui/display/app-tooltip"
+                                  "l/it/consuelo-ui/display/checkmark",
+                                  "l/it/consuelo-ui/display/chip",
+                                  "l/it/consuelo-ui/display/icons",
+                                  "l/it/consuelo-ui/display/soon-pill",
+                                  "l/it/consuelo-ui/display/tag",
+                                  "l/it/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/it/twenty-ui/progress-bar"]
+                                "pages": ["l/it/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Input",
                                 "pages": [
-                                  "l/it/twenty-ui/input/buttons",
-                                  "l/it/twenty-ui/input/color-scheme",
-                                  "l/it/twenty-ui/input/text",
-                                  "l/it/twenty-ui/input/checkbox",
-                                  "l/it/twenty-ui/input/icon-picker",
-                                  "l/it/twenty-ui/input/image-input",
-                                  "l/it/twenty-ui/input/radio",
-                                  "l/it/twenty-ui/input/select",
-                                  "l/it/twenty-ui/input/toggle",
-                                  "l/it/twenty-ui/input/block-editor"
+                                  "l/it/consuelo-ui/input/buttons",
+                                  "l/it/consuelo-ui/input/color-scheme",
+                                  "l/it/consuelo-ui/input/text",
+                                  "l/it/consuelo-ui/input/checkbox",
+                                  "l/it/consuelo-ui/input/icon-picker",
+                                  "l/it/consuelo-ui/input/image-input",
+                                  "l/it/consuelo-ui/input/radio",
+                                  "l/it/consuelo-ui/input/select",
+                                  "l/it/consuelo-ui/input/toggle",
+                                  "l/it/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigazione",
                                 "pages": [
-                                  "l/it/twenty-ui/navigation",
-                                  "l/it/twenty-ui/navigation/breadcrumb",
-                                  "l/it/twenty-ui/navigation/links",
-                                  "l/it/twenty-ui/navigation/menu-item",
-                                  "l/it/twenty-ui/navigation/navigation-bar",
-                                  "l/it/twenty-ui/navigation/step-bar"
+                                  "l/it/consuelo-ui/navigation",
+                                  "l/it/consuelo-ui/navigation/breadcrumb",
+                                  "l/it/consuelo-ui/navigation/links",
+                                  "l/it/consuelo-ui/navigation/menu-item",
+                                  "l/it/consuelo-ui/navigation/navigation-bar",
+                                  "l/it/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -3725,14 +3725,14 @@
             "tab": "ユーザーガイド",
             "groups": [
               {
-                "group": "Twenty を知る",
+                "group": "Consuelo を知る",
                 "icon": "rocket",
                 "pages": [
                   "l/ja/user-guide/introduction",
                   {
                     "group": "機能",
                     "pages": [
-                      "l/ja/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/ja/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ja/user-guide/getting-started/capabilities/implementation-services",
                       "l/ja/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -3741,7 +3741,7 @@
                     "group": "ハウツー",
                     "pages": [
                       "l/ja/user-guide/getting-started/how-tos/create-workspace",
-                      "l/ja/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/ja/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/ja/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -3823,8 +3823,8 @@
                       "l/ja/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ja/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/ja/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/ja/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/ja/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/ja/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/ja/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/ja/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -3868,10 +3868,10 @@
                         "group": "他のツールと連携",
                         "pages": [
                           "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/ja/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -4166,48 +4166,48 @@
                         "pages": [
                           "l/ja/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/ja/twenty-ui/introduction",
+                              "l/ja/consuelo-ui/introduction",
                               {
                                 "group": "表示",
                                 "pages": [
-                                  "l/ja/twenty-ui/display/checkmark",
-                                  "l/ja/twenty-ui/display/chip",
-                                  "l/ja/twenty-ui/display/icons",
-                                  "l/ja/twenty-ui/display/soon-pill",
-                                  "l/ja/twenty-ui/display/tag",
-                                  "l/ja/twenty-ui/display/app-tooltip"
+                                  "l/ja/consuelo-ui/display/checkmark",
+                                  "l/ja/consuelo-ui/display/chip",
+                                  "l/ja/consuelo-ui/display/icons",
+                                  "l/ja/consuelo-ui/display/soon-pill",
+                                  "l/ja/consuelo-ui/display/tag",
+                                  "l/ja/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "フィードバック",
-                                "pages": ["l/ja/twenty-ui/progress-bar"]
+                                "pages": ["l/ja/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "入力",
                                 "pages": [
-                                  "l/ja/twenty-ui/input/buttons",
-                                  "l/ja/twenty-ui/input/color-scheme",
-                                  "l/ja/twenty-ui/input/text",
-                                  "l/ja/twenty-ui/input/checkbox",
-                                  "l/ja/twenty-ui/input/icon-picker",
-                                  "l/ja/twenty-ui/input/image-input",
-                                  "l/ja/twenty-ui/input/radio",
-                                  "l/ja/twenty-ui/input/select",
-                                  "l/ja/twenty-ui/input/toggle",
-                                  "l/ja/twenty-ui/input/block-editor"
+                                  "l/ja/consuelo-ui/input/buttons",
+                                  "l/ja/consuelo-ui/input/color-scheme",
+                                  "l/ja/consuelo-ui/input/text",
+                                  "l/ja/consuelo-ui/input/checkbox",
+                                  "l/ja/consuelo-ui/input/icon-picker",
+                                  "l/ja/consuelo-ui/input/image-input",
+                                  "l/ja/consuelo-ui/input/radio",
+                                  "l/ja/consuelo-ui/input/select",
+                                  "l/ja/consuelo-ui/input/toggle",
+                                  "l/ja/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "ナビゲーション",
                                 "pages": [
-                                  "l/ja/twenty-ui/navigation",
-                                  "l/ja/twenty-ui/navigation/breadcrumb",
-                                  "l/ja/twenty-ui/navigation/links",
-                                  "l/ja/twenty-ui/navigation/menu-item",
-                                  "l/ja/twenty-ui/navigation/navigation-bar",
-                                  "l/ja/twenty-ui/navigation/step-bar"
+                                  "l/ja/consuelo-ui/navigation",
+                                  "l/ja/consuelo-ui/navigation/breadcrumb",
+                                  "l/ja/consuelo-ui/navigation/links",
+                                  "l/ja/consuelo-ui/navigation/menu-item",
+                                  "l/ja/consuelo-ui/navigation/navigation-bar",
+                                  "l/ja/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -4247,14 +4247,14 @@
             "tab": "사용자 안내서",
             "groups": [
               {
-                "group": "Twenty 알아보기",
+                "group": "Consuelo 알아보기",
                 "icon": "rocket",
                 "pages": [
                   "l/ko/user-guide/introduction",
                   {
                     "group": "기능",
                     "pages": [
-                      "l/ko/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/ko/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ko/user-guide/getting-started/capabilities/implementation-services",
                       "l/ko/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -4263,7 +4263,7 @@
                     "group": "사용 방법",
                     "pages": [
                       "l/ko/user-guide/getting-started/how-tos/create-workspace",
-                      "l/ko/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/ko/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/ko/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -4345,8 +4345,8 @@
                       "l/ko/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ko/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/ko/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/ko/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/ko/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/ko/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/ko/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/ko/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -4390,10 +4390,10 @@
                         "group": "다른 도구에 연결하기",
                         "pages": [
                           "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/ko/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -4688,48 +4688,48 @@
                         "pages": [
                           "l/ko/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/ko/twenty-ui/introduction",
+                              "l/ko/consuelo-ui/introduction",
                               {
                                 "group": "표시",
                                 "pages": [
-                                  "l/ko/twenty-ui/display/checkmark",
-                                  "l/ko/twenty-ui/display/chip",
-                                  "l/ko/twenty-ui/display/icons",
-                                  "l/ko/twenty-ui/display/soon-pill",
-                                  "l/ko/twenty-ui/display/tag",
-                                  "l/ko/twenty-ui/display/app-tooltip"
+                                  "l/ko/consuelo-ui/display/checkmark",
+                                  "l/ko/consuelo-ui/display/chip",
+                                  "l/ko/consuelo-ui/display/icons",
+                                  "l/ko/consuelo-ui/display/soon-pill",
+                                  "l/ko/consuelo-ui/display/tag",
+                                  "l/ko/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "피드백",
-                                "pages": ["l/ko/twenty-ui/progress-bar"]
+                                "pages": ["l/ko/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "입력",
                                 "pages": [
-                                  "l/ko/twenty-ui/input/buttons",
-                                  "l/ko/twenty-ui/input/color-scheme",
-                                  "l/ko/twenty-ui/input/text",
-                                  "l/ko/twenty-ui/input/checkbox",
-                                  "l/ko/twenty-ui/input/icon-picker",
-                                  "l/ko/twenty-ui/input/image-input",
-                                  "l/ko/twenty-ui/input/radio",
-                                  "l/ko/twenty-ui/input/select",
-                                  "l/ko/twenty-ui/input/toggle",
-                                  "l/ko/twenty-ui/input/block-editor"
+                                  "l/ko/consuelo-ui/input/buttons",
+                                  "l/ko/consuelo-ui/input/color-scheme",
+                                  "l/ko/consuelo-ui/input/text",
+                                  "l/ko/consuelo-ui/input/checkbox",
+                                  "l/ko/consuelo-ui/input/icon-picker",
+                                  "l/ko/consuelo-ui/input/image-input",
+                                  "l/ko/consuelo-ui/input/radio",
+                                  "l/ko/consuelo-ui/input/select",
+                                  "l/ko/consuelo-ui/input/toggle",
+                                  "l/ko/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "네비게이션",
                                 "pages": [
-                                  "l/ko/twenty-ui/navigation",
-                                  "l/ko/twenty-ui/navigation/breadcrumb",
-                                  "l/ko/twenty-ui/navigation/links",
-                                  "l/ko/twenty-ui/navigation/menu-item",
-                                  "l/ko/twenty-ui/navigation/navigation-bar",
-                                  "l/ko/twenty-ui/navigation/step-bar"
+                                  "l/ko/consuelo-ui/navigation",
+                                  "l/ko/consuelo-ui/navigation/breadcrumb",
+                                  "l/ko/consuelo-ui/navigation/links",
+                                  "l/ko/consuelo-ui/navigation/menu-item",
+                                  "l/ko/consuelo-ui/navigation/navigation-bar",
+                                  "l/ko/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -4769,14 +4769,14 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/pt/user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/pt/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/pt/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/pt/user-guide/getting-started/capabilities/implementation-services",
                       "l/pt/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -4785,7 +4785,7 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/pt/user-guide/getting-started/how-tos/create-workspace",
-                      "l/pt/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/pt/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/pt/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -4867,8 +4867,8 @@
                       "l/pt/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/pt/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/pt/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/pt/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/pt/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/pt/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/pt/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/pt/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -4912,10 +4912,10 @@
                         "group": "Connect to Other Tools",
                         "pages": [
                           "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/pt/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -5210,48 +5210,48 @@
                         "pages": [
                           "l/pt/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/pt/twenty-ui/introduction",
+                              "l/pt/consuelo-ui/introduction",
                               {
                                 "group": "Exibir",
                                 "pages": [
-                                  "l/pt/twenty-ui/display/checkmark",
-                                  "l/pt/twenty-ui/display/chip",
-                                  "l/pt/twenty-ui/display/icons",
-                                  "l/pt/twenty-ui/display/soon-pill",
-                                  "l/pt/twenty-ui/display/tag",
-                                  "l/pt/twenty-ui/display/app-tooltip"
+                                  "l/pt/consuelo-ui/display/checkmark",
+                                  "l/pt/consuelo-ui/display/chip",
+                                  "l/pt/consuelo-ui/display/icons",
+                                  "l/pt/consuelo-ui/display/soon-pill",
+                                  "l/pt/consuelo-ui/display/tag",
+                                  "l/pt/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/pt/twenty-ui/progress-bar"]
+                                "pages": ["l/pt/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Entrada",
                                 "pages": [
-                                  "l/pt/twenty-ui/input/buttons",
-                                  "l/pt/twenty-ui/input/color-scheme",
-                                  "l/pt/twenty-ui/input/text",
-                                  "l/pt/twenty-ui/input/checkbox",
-                                  "l/pt/twenty-ui/input/icon-picker",
-                                  "l/pt/twenty-ui/input/image-input",
-                                  "l/pt/twenty-ui/input/radio",
-                                  "l/pt/twenty-ui/input/select",
-                                  "l/pt/twenty-ui/input/toggle",
-                                  "l/pt/twenty-ui/input/block-editor"
+                                  "l/pt/consuelo-ui/input/buttons",
+                                  "l/pt/consuelo-ui/input/color-scheme",
+                                  "l/pt/consuelo-ui/input/text",
+                                  "l/pt/consuelo-ui/input/checkbox",
+                                  "l/pt/consuelo-ui/input/icon-picker",
+                                  "l/pt/consuelo-ui/input/image-input",
+                                  "l/pt/consuelo-ui/input/radio",
+                                  "l/pt/consuelo-ui/input/select",
+                                  "l/pt/consuelo-ui/input/toggle",
+                                  "l/pt/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navegação",
                                 "pages": [
-                                  "l/pt/twenty-ui/navigation",
-                                  "l/pt/twenty-ui/navigation/breadcrumb",
-                                  "l/pt/twenty-ui/navigation/links",
-                                  "l/pt/twenty-ui/navigation/menu-item",
-                                  "l/pt/twenty-ui/navigation/navigation-bar",
-                                  "l/pt/twenty-ui/navigation/step-bar"
+                                  "l/pt/consuelo-ui/navigation",
+                                  "l/pt/consuelo-ui/navigation/breadcrumb",
+                                  "l/pt/consuelo-ui/navigation/links",
+                                  "l/pt/consuelo-ui/navigation/menu-item",
+                                  "l/pt/consuelo-ui/navigation/navigation-bar",
+                                  "l/pt/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -5291,14 +5291,14 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Twenty",
+                "group": "Discover Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ro/user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ro/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/ro/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ro/user-guide/getting-started/capabilities/implementation-services",
                       "l/ro/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -5307,7 +5307,7 @@
                     "group": "How-Tos",
                     "pages": [
                       "l/ro/user-guide/getting-started/how-tos/create-workspace",
-                      "l/ro/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/ro/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/ro/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -5389,8 +5389,8 @@
                       "l/ro/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ro/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/ro/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/ro/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/ro/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/ro/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/ro/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/ro/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -5434,10 +5434,10 @@
                         "group": "Connect to Other Tools",
                         "pages": [
                           "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/ro/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -5732,48 +5732,48 @@
                         "pages": [
                           "l/ro/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/ro/twenty-ui/introduction",
+                              "l/ro/consuelo-ui/introduction",
                               {
                                 "group": "Afișare",
                                 "pages": [
-                                  "l/ro/twenty-ui/display/checkmark",
-                                  "l/ro/twenty-ui/display/chip",
-                                  "l/ro/twenty-ui/display/icons",
-                                  "l/ro/twenty-ui/display/soon-pill",
-                                  "l/ro/twenty-ui/display/tag",
-                                  "l/ro/twenty-ui/display/app-tooltip"
+                                  "l/ro/consuelo-ui/display/checkmark",
+                                  "l/ro/consuelo-ui/display/chip",
+                                  "l/ro/consuelo-ui/display/icons",
+                                  "l/ro/consuelo-ui/display/soon-pill",
+                                  "l/ro/consuelo-ui/display/tag",
+                                  "l/ro/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/ro/twenty-ui/progress-bar"]
+                                "pages": ["l/ro/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Intrare",
                                 "pages": [
-                                  "l/ro/twenty-ui/input/buttons",
-                                  "l/ro/twenty-ui/input/color-scheme",
-                                  "l/ro/twenty-ui/input/text",
-                                  "l/ro/twenty-ui/input/checkbox",
-                                  "l/ro/twenty-ui/input/icon-picker",
-                                  "l/ro/twenty-ui/input/image-input",
-                                  "l/ro/twenty-ui/input/radio",
-                                  "l/ro/twenty-ui/input/select",
-                                  "l/ro/twenty-ui/input/toggle",
-                                  "l/ro/twenty-ui/input/block-editor"
+                                  "l/ro/consuelo-ui/input/buttons",
+                                  "l/ro/consuelo-ui/input/color-scheme",
+                                  "l/ro/consuelo-ui/input/text",
+                                  "l/ro/consuelo-ui/input/checkbox",
+                                  "l/ro/consuelo-ui/input/icon-picker",
+                                  "l/ro/consuelo-ui/input/image-input",
+                                  "l/ro/consuelo-ui/input/radio",
+                                  "l/ro/consuelo-ui/input/select",
+                                  "l/ro/consuelo-ui/input/toggle",
+                                  "l/ro/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Navigare",
                                 "pages": [
-                                  "l/ro/twenty-ui/navigation",
-                                  "l/ro/twenty-ui/navigation/breadcrumb",
-                                  "l/ro/twenty-ui/navigation/links",
-                                  "l/ro/twenty-ui/navigation/menu-item",
-                                  "l/ro/twenty-ui/navigation/navigation-bar",
-                                  "l/ro/twenty-ui/navigation/step-bar"
+                                  "l/ro/consuelo-ui/navigation",
+                                  "l/ro/consuelo-ui/navigation/breadcrumb",
+                                  "l/ro/consuelo-ui/navigation/links",
+                                  "l/ro/consuelo-ui/navigation/menu-item",
+                                  "l/ro/consuelo-ui/navigation/navigation-bar",
+                                  "l/ro/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -5813,14 +5813,14 @@
             "tab": "Руководство пользователя",
             "groups": [
               {
-                "group": "Откройте Twenty",
+                "group": "Откройте Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/ru/user-guide/introduction",
                   {
                     "group": "Возможности",
                     "pages": [
-                      "l/ru/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/ru/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ru/user-guide/getting-started/capabilities/implementation-services",
                       "l/ru/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -5829,7 +5829,7 @@
                     "group": "Инструкции",
                     "pages": [
                       "l/ru/user-guide/getting-started/how-tos/create-workspace",
-                      "l/ru/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/ru/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/ru/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -5911,8 +5911,8 @@
                       "l/ru/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/ru/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/ru/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/ru/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/ru/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/ru/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/ru/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/ru/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -5956,10 +5956,10 @@
                         "group": "Подключение к другим инструментам",
                         "pages": [
                           "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/ru/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -6254,48 +6254,48 @@
                         "pages": [
                           "l/ru/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/ru/twenty-ui/introduction",
+                              "l/ru/consuelo-ui/introduction",
                               {
                                 "group": "Отображение",
                                 "pages": [
-                                  "l/ru/twenty-ui/display/checkmark",
-                                  "l/ru/twenty-ui/display/chip",
-                                  "l/ru/twenty-ui/display/icons",
-                                  "l/ru/twenty-ui/display/soon-pill",
-                                  "l/ru/twenty-ui/display/tag",
-                                  "l/ru/twenty-ui/display/app-tooltip"
+                                  "l/ru/consuelo-ui/display/checkmark",
+                                  "l/ru/consuelo-ui/display/chip",
+                                  "l/ru/consuelo-ui/display/icons",
+                                  "l/ru/consuelo-ui/display/soon-pill",
+                                  "l/ru/consuelo-ui/display/tag",
+                                  "l/ru/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Обратная связь",
-                                "pages": ["l/ru/twenty-ui/progress-bar"]
+                                "pages": ["l/ru/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Ввод",
                                 "pages": [
-                                  "l/ru/twenty-ui/input/buttons",
-                                  "l/ru/twenty-ui/input/color-scheme",
-                                  "l/ru/twenty-ui/input/text",
-                                  "l/ru/twenty-ui/input/checkbox",
-                                  "l/ru/twenty-ui/input/icon-picker",
-                                  "l/ru/twenty-ui/input/image-input",
-                                  "l/ru/twenty-ui/input/radio",
-                                  "l/ru/twenty-ui/input/select",
-                                  "l/ru/twenty-ui/input/toggle",
-                                  "l/ru/twenty-ui/input/block-editor"
+                                  "l/ru/consuelo-ui/input/buttons",
+                                  "l/ru/consuelo-ui/input/color-scheme",
+                                  "l/ru/consuelo-ui/input/text",
+                                  "l/ru/consuelo-ui/input/checkbox",
+                                  "l/ru/consuelo-ui/input/icon-picker",
+                                  "l/ru/consuelo-ui/input/image-input",
+                                  "l/ru/consuelo-ui/input/radio",
+                                  "l/ru/consuelo-ui/input/select",
+                                  "l/ru/consuelo-ui/input/toggle",
+                                  "l/ru/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Навигация",
                                 "pages": [
-                                  "l/ru/twenty-ui/navigation",
-                                  "l/ru/twenty-ui/navigation/breadcrumb",
-                                  "l/ru/twenty-ui/navigation/links",
-                                  "l/ru/twenty-ui/navigation/menu-item",
-                                  "l/ru/twenty-ui/navigation/navigation-bar",
-                                  "l/ru/twenty-ui/navigation/step-bar"
+                                  "l/ru/consuelo-ui/navigation",
+                                  "l/ru/consuelo-ui/navigation/breadcrumb",
+                                  "l/ru/consuelo-ui/navigation/links",
+                                  "l/ru/consuelo-ui/navigation/menu-item",
+                                  "l/ru/consuelo-ui/navigation/navigation-bar",
+                                  "l/ru/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -6335,14 +6335,14 @@
             "tab": "Kullanıcı Rehberi",
             "groups": [
               {
-                "group": "Twenty'yi Keşfedin",
+                "group": "Consuelo'yi Keşfedin",
                 "icon": "rocket",
                 "pages": [
                   "l/tr/user-guide/introduction",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
-                      "l/tr/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/tr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/tr/user-guide/getting-started/capabilities/implementation-services",
                       "l/tr/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -6351,7 +6351,7 @@
                     "group": "Nasıl Yapılırlar",
                     "pages": [
                       "l/tr/user-guide/getting-started/how-tos/create-workspace",
-                      "l/tr/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/tr/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/tr/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -6433,8 +6433,8 @@
                       "l/tr/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/tr/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/tr/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/tr/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/tr/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/tr/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/tr/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/tr/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -6478,10 +6478,10 @@
                         "group": "Diğer Araçlara Bağlan",
                         "pages": [
                           "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/tr/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -6776,48 +6776,48 @@
                         "pages": [
                           "l/tr/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/tr/twenty-ui/introduction",
+                              "l/tr/consuelo-ui/introduction",
                               {
                                 "group": "Görüntüle",
                                 "pages": [
-                                  "l/tr/twenty-ui/display/checkmark",
-                                  "l/tr/twenty-ui/display/chip",
-                                  "l/tr/twenty-ui/display/icons",
-                                  "l/tr/twenty-ui/display/soon-pill",
-                                  "l/tr/twenty-ui/display/tag",
-                                  "l/tr/twenty-ui/display/app-tooltip"
+                                  "l/tr/consuelo-ui/display/checkmark",
+                                  "l/tr/consuelo-ui/display/chip",
+                                  "l/tr/consuelo-ui/display/icons",
+                                  "l/tr/consuelo-ui/display/soon-pill",
+                                  "l/tr/consuelo-ui/display/tag",
+                                  "l/tr/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "Geri Bildirim",
-                                "pages": ["l/tr/twenty-ui/progress-bar"]
+                                "pages": ["l/tr/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "Girdi",
                                 "pages": [
-                                  "l/tr/twenty-ui/input/buttons",
-                                  "l/tr/twenty-ui/input/color-scheme",
-                                  "l/tr/twenty-ui/input/text",
-                                  "l/tr/twenty-ui/input/checkbox",
-                                  "l/tr/twenty-ui/input/icon-picker",
-                                  "l/tr/twenty-ui/input/image-input",
-                                  "l/tr/twenty-ui/input/radio",
-                                  "l/tr/twenty-ui/input/select",
-                                  "l/tr/twenty-ui/input/toggle",
-                                  "l/tr/twenty-ui/input/block-editor"
+                                  "l/tr/consuelo-ui/input/buttons",
+                                  "l/tr/consuelo-ui/input/color-scheme",
+                                  "l/tr/consuelo-ui/input/text",
+                                  "l/tr/consuelo-ui/input/checkbox",
+                                  "l/tr/consuelo-ui/input/icon-picker",
+                                  "l/tr/consuelo-ui/input/image-input",
+                                  "l/tr/consuelo-ui/input/radio",
+                                  "l/tr/consuelo-ui/input/select",
+                                  "l/tr/consuelo-ui/input/toggle",
+                                  "l/tr/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "Gezinme",
                                 "pages": [
-                                  "l/tr/twenty-ui/navigation",
-                                  "l/tr/twenty-ui/navigation/breadcrumb",
-                                  "l/tr/twenty-ui/navigation/links",
-                                  "l/tr/twenty-ui/navigation/menu-item",
-                                  "l/tr/twenty-ui/navigation/navigation-bar",
-                                  "l/tr/twenty-ui/navigation/step-bar"
+                                  "l/tr/consuelo-ui/navigation",
+                                  "l/tr/consuelo-ui/navigation/breadcrumb",
+                                  "l/tr/consuelo-ui/navigation/links",
+                                  "l/tr/consuelo-ui/navigation/menu-item",
+                                  "l/tr/consuelo-ui/navigation/navigation-bar",
+                                  "l/tr/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -6857,14 +6857,14 @@
             "tab": "用户指南",
             "groups": [
               {
-                "group": "发现 Twenty",
+                "group": "发现 Consuelo",
                 "icon": "rocket",
                 "pages": [
                   "l/zh/user-guide/introduction",
                   {
                     "group": "功能",
                     "pages": [
-                      "l/zh/user-guide/getting-started/capabilities/what-is-twenty",
+                      "l/zh/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/zh/user-guide/getting-started/capabilities/implementation-services",
                       "l/zh/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -6873,7 +6873,7 @@
                     "group": "操作指南",
                     "pages": [
                       "l/zh/user-guide/getting-started/how-tos/create-workspace",
-                      "l/zh/user-guide/getting-started/how-tos/navigate-around-twenty",
+                      "l/zh/user-guide/getting-started/how-tos/navigate-around-consuelo",
                       "l/zh/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
@@ -6955,8 +6955,8 @@
                       "l/zh/user-guide/calendar-emails/how-tos/connect-several-mailboxes-per-user",
                       "l/zh/user-guide/calendar-emails/how-tos/limit-emails-imported",
                       "l/zh/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects",
-                      "l/zh/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty",
-                      "l/zh/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty",
+                      "l/zh/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo",
+                      "l/zh/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo",
                       "l/zh/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
@@ -7000,10 +7000,10 @@
                         "group": "连接到其他工具",
                         "pages": [
                           "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty",
-                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty",
-                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty",
-                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty"
+                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                          "l/zh/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
                         ]
                       },
                       {
@@ -7298,48 +7298,48 @@
                         "pages": [
                           "l/zh/developers/contribute/capabilities/frontend-development/storybook",
                           {
-                            "group": "Twenty UI",
+                            "group": "Consuelo UI",
                             "pages": [
-                              "l/zh/twenty-ui/introduction",
+                              "l/zh/consuelo-ui/introduction",
                               {
                                 "group": "展示",
                                 "pages": [
-                                  "l/zh/twenty-ui/display/checkmark",
-                                  "l/zh/twenty-ui/display/chip",
-                                  "l/zh/twenty-ui/display/icons",
-                                  "l/zh/twenty-ui/display/soon-pill",
-                                  "l/zh/twenty-ui/display/tag",
-                                  "l/zh/twenty-ui/display/app-tooltip"
+                                  "l/zh/consuelo-ui/display/checkmark",
+                                  "l/zh/consuelo-ui/display/chip",
+                                  "l/zh/consuelo-ui/display/icons",
+                                  "l/zh/consuelo-ui/display/soon-pill",
+                                  "l/zh/consuelo-ui/display/tag",
+                                  "l/zh/consuelo-ui/display/app-tooltip"
                                 ]
                               },
                               {
                                 "group": "反馈",
-                                "pages": ["l/zh/twenty-ui/progress-bar"]
+                                "pages": ["l/zh/consuelo-ui/progress-bar"]
                               },
                               {
                                 "group": "输入",
                                 "pages": [
-                                  "l/zh/twenty-ui/input/buttons",
-                                  "l/zh/twenty-ui/input/color-scheme",
-                                  "l/zh/twenty-ui/input/text",
-                                  "l/zh/twenty-ui/input/checkbox",
-                                  "l/zh/twenty-ui/input/icon-picker",
-                                  "l/zh/twenty-ui/input/image-input",
-                                  "l/zh/twenty-ui/input/radio",
-                                  "l/zh/twenty-ui/input/select",
-                                  "l/zh/twenty-ui/input/toggle",
-                                  "l/zh/twenty-ui/input/block-editor"
+                                  "l/zh/consuelo-ui/input/buttons",
+                                  "l/zh/consuelo-ui/input/color-scheme",
+                                  "l/zh/consuelo-ui/input/text",
+                                  "l/zh/consuelo-ui/input/checkbox",
+                                  "l/zh/consuelo-ui/input/icon-picker",
+                                  "l/zh/consuelo-ui/input/image-input",
+                                  "l/zh/consuelo-ui/input/radio",
+                                  "l/zh/consuelo-ui/input/select",
+                                  "l/zh/consuelo-ui/input/toggle",
+                                  "l/zh/consuelo-ui/input/block-editor"
                                 ]
                               },
                               {
                                 "group": "导航",
                                 "pages": [
-                                  "l/zh/twenty-ui/navigation",
-                                  "l/zh/twenty-ui/navigation/breadcrumb",
-                                  "l/zh/twenty-ui/navigation/links",
-                                  "l/zh/twenty-ui/navigation/menu-item",
-                                  "l/zh/twenty-ui/navigation/navigation-bar",
-                                  "l/zh/twenty-ui/navigation/step-bar"
+                                  "l/zh/consuelo-ui/navigation",
+                                  "l/zh/consuelo-ui/navigation/breadcrumb",
+                                  "l/zh/consuelo-ui/navigation/links",
+                                  "l/zh/consuelo-ui/navigation/menu-item",
+                                  "l/zh/consuelo-ui/navigation/navigation-bar",
+                                  "l/zh/consuelo-ui/navigation/step-bar"
                                 ]
                               }
                             ]
@@ -7503,8 +7503,8 @@
       "destination": "/developers/contribute/capabilities/backend-development/zapier"
     },
     {
-      "source": "/user-guide/getting-started/what-is-twenty",
-      "destination": "/user-guide/getting-started/capabilities/what-is-twenty"
+      "source": "/user-guide/getting-started/what-is-consuelo",
+      "destination": "/user-guide/getting-started/capabilities/what-is-consuelo"
     },
     {
       "source": "/user-guide/getting-started/implementation-services",
@@ -7519,8 +7519,8 @@
       "destination": "/user-guide/getting-started/how-tos/create-workspace"
     },
     {
-      "source": "/user-guide/getting-started/navigate-around-twenty",
-      "destination": "/user-guide/getting-started/how-tos/navigate-around-twenty"
+      "source": "/user-guide/getting-started/navigate-around-consuelo",
+      "destination": "/user-guide/getting-started/how-tos/navigate-around-consuelo"
     },
     {
       "source": "/user-guide/getting-started/configure-your-workspace",
@@ -7639,12 +7639,12 @@
       "destination": "/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects"
     },
     {
-      "source": "/user-guide/calendar-emails/can-i-send-emails-from-twenty",
-      "destination": "/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty"
+      "source": "/user-guide/calendar-emails/can-i-send-emails-from-consuelo",
+      "destination": "/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo"
     },
     {
-      "source": "/user-guide/calendar-emails/can-i-book-meetings-from-twenty",
-      "destination": "/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty"
+      "source": "/user-guide/calendar-emails/can-i-book-meetings-from-consuelo",
+      "destination": "/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo"
     },
     {
       "source": "/user-guide/calendar-emails/i-dont-see-emails-on-records",

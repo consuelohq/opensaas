@@ -7,23 +7,23 @@ import { VimeoEmbed } from '/snippets/vimeo-embed.mdx';
 
 ## Cómo funciona la asignación de campos
 
-Cuando cargas un archivo, Twenty analiza las columnas e intenta hacerlas coincidir con los campos existentes.
+Cuando cargas un archivo, Consuelo analiza las columnas e intenta hacerlas coincidir con los campos existentes.
 
 ### Asignación automática
 
-Twenty intenta hacer coincidir las columnas en función de:
+Consuelo intenta hacer coincidir las columnas en función de:
 
 * Nombres de encabezados de columna (coincidencias exactas o similares)
 * Detección de tipo de datos (fechas, números, correos electrónicos)
 * Patrones de campo comunes
 
-<Note>**Consejo rápido:** Exporta algunas filas del objeto que quieres importar. El archivo exportado tendrá los nombres de columna exactos que Twenty espera, lo que hará que la asignación automática sea fluida durante la importación.</Note>
+<Note>**Consejo rápido:** Exporta algunas filas del objeto que quieres importar. El archivo exportado tendrá los nombres de columna exactos que Consuelo espera, lo que hará que la asignación automática sea fluida durante la importación.</Note>
 
 ### Opciones de asignación manual
 
 Para cada columna, puedes:
 
-* **Asignar a un campo**: Selecciona el campo correspondiente de Twenty desde un menú desplegable
+* **Asignar a un campo**: Selecciona el campo correspondiente de Consuelo desde un menú desplegable
 * **No asignar**: Omite la columna por completo (los datos no se importarán)
 
 <Note>**Los campos deben existir antes de la importación.** La importación crea registros, no campos. Crea campos personalizados en **Settings → Data Model** antes de importar.</Note>
@@ -99,7 +99,7 @@ Formatos admitidos:
 
 ### Campos de ID
 
-Es opcional especificar un `id` durante la importación. Twenty lo genera automáticamente si no se proporciona.
+Es opcional especificar un `id` durante la importación. Consuelo lo genera automáticamente si no se proporciona.
 
 Casos de uso para asignar una columna `id`:
 

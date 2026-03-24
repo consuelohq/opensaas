@@ -1,11 +1,11 @@
 ---
 title: Importați date prin API
-description: Când și cum să utilizați API-urile Twenty pentru importuri de date la scară mare.
+description: Când și cum să utilizați API-urile Consuelo pentru importuri de date la scară mare.
 ---
 
 ## Prezentare generală
 
-Twenty oferă atât **GraphQL**, cât și **API-uri REST** pentru importul programatic de date. Utilizați API-ul când importul CSV nu este practic pentru volumul dvs. de date sau când aveți nevoie de importuri automate, recurente.
+Consuelo oferă atât **GraphQL**, cât și **API-uri REST** pentru importul programatic de date. Utilizați API-ul când importul CSV nu este practic pentru volumul dvs. de date sau când aveți nevoie de importuri automate, recurente.
 
 ## Când să utilizați importul prin API
 
@@ -23,7 +23,7 @@ Twenty oferă atât **GraphQL**, cât și **API-uri REST** pentru importul progr
 
 ## Limitări de rată API
 
-Twenty impune limitări de rată pentru a asigura stabilitatea sistemului:
+Consuelo impune limitări de rată pentru a asigura stabilitatea sistemului:
 
 | Limită                           | Valoare                   |
 | -------------------------------- | ------------------------- |
@@ -55,7 +55,7 @@ Twenty impune limitări de rată pentru a asigura stabilitatea sistemului:
 
 ### Pasul 2: Alegeți API-ul
 
-Twenty acceptă două tipuri de API:
+Consuelo acceptă două tipuri de API:
 
 | API         | Cel mai potrivit pentru                                               | Documentație                                             |
 | ----------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -97,7 +97,7 @@ La fel ca la importurile CSV, **ordinea contează** pentru relații:
 
 * Curățați și validați datele înainte de import
 * Verificați ca câmpurile obligatorii să fie completate
-* Verificați că formatele corespund cerințelor Twenty (consultați [Maparea câmpurilor](/l/ro/user-guide/data-migration/capabilities/field-mapping))
+* Verificați că formatele corespund cerințelor Consuelo (consultați [Maparea câmpurilor](/l/ro/user-guide/data-migration/capabilities/field-mapping))
 
 ### Jurnalizați totul
 
@@ -108,7 +108,7 @@ La fel ca la importurile CSV, **ordinea contează** pentru relații:
 ### Testați mai întâi
 
 * Testați cu un lot mic (10-20 de înregistrări)
-* Verificați că datele apar corect în Twenty
+* Verificați că datele apar corect în Consuelo
 * Apoi rulați importul complet
 
 ### Upsert pentru a evita duplicatele

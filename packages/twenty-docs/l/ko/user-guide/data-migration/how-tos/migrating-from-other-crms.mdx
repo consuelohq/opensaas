@@ -1,11 +1,11 @@
 ---
 title: 다른 CRM에서 마이그레이션하기
-description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는 단계별 가이드.
+description: 어떤 CRM에서든 데이터를 Consuelo로 마이그레이션하는 단계별 가이드.
 ---
 
 ## 개요
 
-이 가이드는 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는 과정을 단계별로 안내합니다. 이 과정에는 데이터 감사, Twenty 워크스페이스 준비, 현재 시스템에서의 내보내기, Twenty로의 가져오기가 포함됩니다.
+이 가이드는 어떤 CRM에서든 데이터를 Consuelo로 마이그레이션하는 과정을 단계별로 안내합니다. 이 과정에는 데이터 감사, Consuelo 워크스페이스 준비, 현재 시스템에서의 내보내기, Consuelo로의 가져오기가 포함됩니다.
 
 <Note>마이그레이션 후에는 뷰, 워크플로우, 권한을 수동으로 다시 만들어야 합니다. 이 구성 작업에 필요한 시간을 계획하세요.</Note>
 
@@ -29,9 +29,9 @@ description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는
 
 ## 2단계: 데이터 모델 매핑
 
-현재 CRM과 Twenty 간의 매핑 문서를 만드세요:
+현재 CRM과 Consuelo 간의 매핑 문서를 만드세요:
 
-| 현재 CRM    | Twenty           |
+| 현재 CRM    | Consuelo           |
 | --------- | ---------------- |
 | 계정 / 조직   | **회사**           |
 | 연락처 / 개인  | **사람들**          |
@@ -42,14 +42,14 @@ description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는
 **각 필드에 대해 다음을 문서화합니다:**
 
 * 원본 필드 이름
-* 대상 Twenty 필드
+* 대상 Consuelo 필드
 * 필요한 형식 변환(날짜, 전화번호 등)
 
 <Note>가져오기 중에 이 매핑 문서를 가까이 두세요—열을 매핑할 때 참고하게 됩니다.</Note>
 
-## 3단계: Twenty 워크스페이스 설정
+## 3단계: Consuelo 워크스페이스 설정
 
-데이터를 가져오기 전에 Twenty 워크스페이스를 준비하세요:
+데이터를 가져오기 전에 Consuelo 워크스페이스를 준비하세요:
 
 ### 사용자 지정 개체 및 필드 만들기
 
@@ -69,7 +69,7 @@ description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는
 <Warning>
   **데이터를 가져오기 전에 사용자를 초대하세요.**
 
-  데이터에 사용자 참조(계정 소유자, 담당자 등)가 포함되어 있다면, 가져오기 전에 해당 사용자가 Twenty에 존재해야 합니다. 그렇지 않으면 해당 관계를 매핑할 수 없습니다.
+  데이터에 사용자 참조(계정 소유자, 담당자 등)가 포함되어 있다면, 가져오기 전에 해당 사용자가 Consuelo에 존재해야 합니다. 그렇지 않으면 해당 관계를 매핑할 수 없습니다.
 </Warning>
 
 1. **설정 → 구성원**으로 이동하세요.
@@ -96,13 +96,13 @@ description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는
 
 ## 5단계: 데이터 정리 및 형식 지정
 
-내보낸 각 CSV를 스프레드시트 애플리케이션에서 열고 Twenty에 맞게 준비하세요.
+내보낸 각 CSV를 스프레드시트 애플리케이션에서 열고 Consuelo에 맞게 준비하세요.
 
 ### 중복 제거
 
 1. 고유 필드(사람: 이메일, 회사: 도메인)로 정렬하세요
 2. 중복 행을 제거하거나 병합하세요
-3. Twenty에 이미 중복이 없는지 확인하세요
+3. Consuelo에 이미 중복이 없는지 확인하세요
 
 ### 필드 형식을 올바르게 지정
 
@@ -118,7 +118,7 @@ description: 어떤 CRM에서든 데이터를 Twenty로 마이그레이션하는
 <Warning>
   **도메인 형식이 중요합니다.**
 
-  `https://domain.com`을 사용하세요(`domain.com` 또는 `www.domain.com`은 사용하지 마세요). 이는 Twenty의 형식과 일치하며 이메일/캘린더 동기화를 연결할 때 중복을 방지합니다.
+  `https://domain.com`을 사용하세요(`domain.com` 또는 `www.domain.com`은 사용하지 마세요). 이는 Consuelo의 형식과 일치하며 이메일/캘린더 동기화를 연결할 때 중복을 방지합니다.
 </Warning>
 
 모든 필드 유형에 대한 전체 형식 요구 사항은 [CSV 파일 준비 방법](/l/ko/user-guide/data-migration/how-tos/prepare-your-csv-files)을 참조하세요.
@@ -142,11 +142,11 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 데이터에 사용자 할당(소유자, 담당자)이 포함된 경우:
 
 1. **사용자의 이메일**이 포함된 열을 추가하세요(이전 시스템의 ID만이 아니라)
-2. 사용자가 Twenty 워크스페이스에 참여할 때 사용한 것과 동일한 이메일 주소를 사용하세요
+2. 사용자가 Consuelo 워크스페이스에 참여할 때 사용한 것과 동일한 이메일 주소를 사용하세요
 
 전체 형식 가이드는 [CSV 파일 준비 방법](/l/ko/user-guide/data-migration/how-tos/prepare-your-csv-files)을 참조하세요.
 
-## 6단계: Twenty로 가져오기
+## 6단계: Consuelo로 가져오기
 
 <Warning>
   **가져오기 순서가 중요합니다!**
@@ -166,7 +166,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 각 CSV 파일에 대해 다음 순서로 진행하세요:
 
-1. Twenty에서 해당 객체로 이동하세요
+1. Consuelo에서 해당 객체로 이동하세요
 2. **⋮ → 레코드 가져오기**를 클릭하세요
 3. CSV 파일을 업로드하세요
 4. 열을 필드에 매핑하세요:
@@ -221,7 +221,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 ### 이메일 및 캘린더 연결
 
 * 각 사용자는 **설정 → 계정**에서 자신의 계정을 연결합니다
-* Twenty가 이메일을 연락처 레코드와 동기화하기 시작합니다
+* Consuelo가 이메일을 연락처 레코드와 동기화하기 시작합니다
 * 자세한 내용은 [이메일 및 캘린더](/l/ko/user-guide/calendar-emails/overview)를 참조하세요
 
 ### 팀 교육
@@ -267,7 +267,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 <AccordionGroup>
   <Accordion title="워크플로우를 자동으로 마이그레이션할 수 있나요?">
-    현재는 불가능합니다. 워크플로우는 Twenty에서 수동으로 다시 만들어야 합니다.
+    현재는 불가능합니다. 워크플로우는 Consuelo에서 수동으로 다시 만들어야 합니다.
   </Accordion>
 
   <Accordion title="파일 첨부는 어떻게 하나요?">

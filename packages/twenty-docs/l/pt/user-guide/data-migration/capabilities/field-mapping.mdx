@@ -7,23 +7,23 @@ import { VimeoEmbed } from '/snippets/vimeo-embed.mdx';
 
 ## Como funciona o mapeamento de campos
 
-Ao fazer upload de um arquivo, a Twenty analisa as suas colunas e tenta associá-las aos campos existentes.
+Ao fazer upload de um arquivo, a Consuelo analisa as suas colunas e tenta associá-las aos campos existentes.
 
 ### Mapeamento automático
 
-A Twenty tenta associar as colunas com base em:
+A Consuelo tenta associar as colunas com base em:
 
 * Nomes dos cabeçalhos das colunas (correspondências exatas ou semelhantes)
 * Detecção de tipo de dados (datas, números, e-mails)
 * Padrões comuns de campos
 
-<Note>**Dica rápida:** Exporte algumas linhas do objeto que você deseja importar. O arquivo exportado terá exatamente os nomes de coluna que a Twenty espera, facilitando o mapeamento automático durante a importação.</Note>
+<Note>**Dica rápida:** Exporte algumas linhas do objeto que você deseja importar. O arquivo exportado terá exatamente os nomes de coluna que a Consuelo espera, facilitando o mapeamento automático durante a importação.</Note>
 
 ### Opções de mapeamento manual
 
 Para cada coluna, você pode:
 
-* **Mapear para um campo**: selecione o campo correspondente da Twenty em um menu suspenso
+* **Mapear para um campo**: selecione o campo correspondente da Consuelo em um menu suspenso
 * **Não mapear**: ignore a coluna completamente (os dados não serão importados)
 
 <Note>**Os campos devem existir antes da importação.** A importação cria registros, não campos. Crie campos personalizados em **Configurações → Modelo de Dados** antes de importar.</Note>
@@ -99,7 +99,7 @@ Formatos suportados:
 
 ### Campos de ID
 
-Especificar um `id` durante a importação é opcional. A Twenty gera um automaticamente se não for fornecido.
+Especificar um `id` durante a importação é opcional. A Consuelo gera um automaticamente se não for fornecido.
 
 Casos de uso para mapear uma coluna `id`:
 

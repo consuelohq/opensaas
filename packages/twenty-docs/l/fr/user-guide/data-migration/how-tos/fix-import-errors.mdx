@@ -9,9 +9,9 @@ L'importation ne fonctionne pas ? Ce guide vous aide, étape par étape, à iden
 
 ## Comment fonctionne la validation de l'importation
 
-Après avoir téléversé votre fichier et fait la correspondance des colonnes, Twenty valide vos données :
+Après avoir téléversé votre fichier et fait la correspondance des colonnes, Consuelo valide vos données :
 
-1. **Exécution de la validation** — Twenty vérifie chaque ligne pour détecter des erreurs
+1. **Exécution de la validation** — Consuelo vérifie chaque ligne pour détecter des erreurs
 2. **Les erreurs sont mises en évidence** — les lignes problématiques apparaissent en **jaune**
 3. **Vous pouvez corriger sur place** — modifiez les cellules directement dans l'interface d'importation
 4. **Ou supprimer des lignes** — ignorez complètement les enregistrements problématiques
@@ -26,7 +26,7 @@ Cliquez sur une ligne surlignée pour voir le message d'erreur spécifique. Type
 
 | Message d'erreur                                                              | Ce que cela signifie                                                       |
 | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Valeurs en double surlignées en jaune                                         | La valeur existe déjà dans Twenty ou apparaît deux fois dans votre fichier |
+| Valeurs en double surlignées en jaune                                         | La valeur existe déjà dans Consuelo ou apparaît deux fois dans votre fichier |
 | `{field} is not a valid {type}` (survolez la cellule jaune)                   | Les données ne correspondent pas au format attendu                         |
 | Champ obligatoire surligné                                                    | Un champ obligatoire est vide                                              |
 | `Can't connect to {object}. No unique record found...` (l'importation échoue) | L'enregistrement référencé n'existe pas                                    |
@@ -48,7 +48,7 @@ Les lignes avec des valeurs en double sont **surlignées en jaune** dans l'inter
 
 Un champ unique (e-mail, domaine) :
 
-* Existe déjà dans Twenty
+* Existe déjà dans Consuelo
 * Apparaît deux fois dans votre fichier
 
 ### Comment corriger
@@ -64,11 +64,11 @@ Un champ unique (e-mail, domaine) :
 1. Cliquez sur le X à côté de la ligne
 2. La ligne sera ignorée pendant l'importation
 
-**Option 3 : Laisser Twenty mettre à jour l'enregistrement existant**
+**Option 3 : Laisser Consuelo mettre à jour l'enregistrement existant**
 
 1. Assurez-vous que votre fichier inclut un identifiant unique (`email`, `domain` ou `id`)
 2. Faites correspondre le champ d'identifiant unique
-3. Twenty mettra à jour l'enregistrement existant au lieu de créer un doublon
+3. Consuelo mettra à jour l'enregistrement existant au lieu de créer un doublon
 
 <Note>
   **Vous pouvez aussi mettre à jour les champs uniques.**
@@ -76,7 +76,7 @@ Un champ unique (e-mail, domaine) :
   * Si vous conservez l'`id` mais changez l'`email` → l'adresse e-mail sera mise à jour
   * Si vous conservez l'`email` mais changez l'`id` → l'id sera mis à jour
 
-  Tant qu'un identifiant unique correspond, Twenty met à jour l'enregistrement.
+  Tant qu'un identifiant unique correspond, Consuelo met à jour l'enregistrement.
 </Note>
 
 ### Comment éviter cette erreur
@@ -85,7 +85,7 @@ Avant l'importation :
 
 1. Triez votre feuille de calcul par le champ unique
 2. Supprimez les lignes en double
-3. Vérifiez si des enregistrements existent déjà dans Twenty
+3. Vérifiez si des enregistrements existent déjà dans Consuelo
 
 <Warning>
   **Les enregistrements supprimés de façon logique comptent pour l'unicité.**
@@ -256,13 +256,13 @@ Cette erreur apparaît **après le début de l'importation** — l'importation �
 Can't connect to company. No unique record found with condition: id = 7776ee49-f608-4a77-8cc8-6fe96ae1e43f
 ```
 
-Cela signifie qu'il n'existe aucune entreprise dans Twenty avec cet identifiant précis.
+Cela signifie qu'il n'existe aucune entreprise dans Consuelo avec cet identifiant précis.
 
 <Note>Contrairement aux autres erreurs, celle-ci n'est pas détectée lors de l'étape de révision des données. L'importation commencera puis échouera lorsqu'elle rencontrera la relation manquante.</Note>
 
 ### Ce que cela signifie
 
-Vous essayez de lier un enregistrement qui n'existe pas dans Twenty.
+Vous essayez de lier un enregistrement qui n'existe pas dans Consuelo.
 
 ### Comment corriger
 
@@ -339,7 +339,7 @@ Voir : [Comment importer des données via l'API](/l/fr/user-guide/data-migration
 
 ### Ce que cela signifie
 
-Une colonne de votre fichier ne peut pas être mise en correspondance car le champ n'existe pas dans Twenty.
+Une colonne de votre fichier ne peut pas être mise en correspondance car le champ n'existe pas dans Consuelo.
 
 ### Comment corriger
 
@@ -361,15 +361,15 @@ Vous essayez d'assigner un enregistrement à un utilisateur (Propriétaire, Assi
 
 ### Causes courantes
 
-1. **L'utilisateur n'a pas accepté son invitation** — l'utilisateur n'existe pas encore dans Twenty
-2. **Utilisation de l'ID utilisateur de l'ancien système** — Twenty ne peut pas faire correspondre les ID d'un autre système
-3. **Format d'e-mail incorrect** — l'adresse e-mail ne correspond pas au compte Twenty de l'utilisateur
+1. **L'utilisateur n'a pas accepté son invitation** — l'utilisateur n'existe pas encore dans Consuelo
+2. **Utilisation de l'ID utilisateur de l'ancien système** — Consuelo ne peut pas faire correspondre les ID d'un autre système
+3. **Format d'e-mail incorrect** — l'adresse e-mail ne correspond pas au compte Consuelo de l'utilisateur
 
 ### Comment corriger
 
-1. Assurez-vous que tous les utilisateurs ont **accepté leur invitation** à votre espace de travail Twenty
+1. Assurez-vous que tous les utilisateurs ont **accepté leur invitation** à votre espace de travail Consuelo
 2. Utilisez l'**adresse e-mail** de l'utilisateur (pas son nom ni l'ID de l'ancien système)
-3. Utilisez la même adresse e-mail que celle utilisée pour rejoindre Twenty
+3. Utilisez la même adresse e-mail que celle utilisée pour rejoindre Consuelo
 
 <Warning>
   **Les utilisateurs doivent accepter les invitations avant l'importation.**
@@ -407,7 +407,7 @@ Vous essayez d'assigner un enregistrement à un utilisateur (Propriétaire, Assi
 
 <Check>Enregistrements parents importés avant les enregistrements enfants</Check>
 <Check>Les colonnes de relation font référence à des enregistrements existants</Check>
-<Check>Le format de domaine correspond exactement au format de Twenty</Check>
+<Check>Le format de domaine correspond exactement au format de Consuelo</Check>
 
 ### Modèle de données
 
@@ -420,7 +420,7 @@ Vous essayez d'assigner un enregistrement à un utilisateur (Propriétaire, Assi
 
 Si vous avez essayé les solutions ci-dessus :
 
-1. **Téléchargez le fichier d'exemple** — voyez le format exact attendu par Twenty
+1. **Téléchargez le fichier d'exemple** — voyez le format exact attendu par Consuelo
 2. **Exportez les enregistrements existants** — comparez votre fichier à des données fonctionnelles
 3. **Testez avec un petit lot** — essayez d'abord 5 à 10 lignes
 4. **Consultez les articles de référence :**

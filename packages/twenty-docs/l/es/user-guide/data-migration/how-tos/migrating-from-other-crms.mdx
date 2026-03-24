@@ -1,11 +1,11 @@
 ---
 title: Migración desde otros CRM
-description: Guía paso a paso para migrar tus datos desde cualquier CRM a Twenty.
+description: Guía paso a paso para migrar tus datos desde cualquier CRM a Consuelo.
 ---
 
 ## Resumen
 
-Esta guía te lleva paso a paso para migrar tus datos desde cualquier CRM a Twenty. El proceso implica auditar tus datos, preparar tu espacio de trabajo de Twenty, exportar desde tu sistema actual e importar en Twenty.
+Esta guía te lleva paso a paso para migrar tus datos desde cualquier CRM a Consuelo. El proceso implica auditar tus datos, preparar tu espacio de trabajo de Consuelo, exportar desde tu sistema actual e importar en Consuelo.
 
 <Note>Las vistas, los flujos de trabajo y los permisos deben recrearse manualmente después de la migración. Planifica tiempo para este trabajo de configuración.</Note>
 
@@ -29,9 +29,9 @@ La migración es una oportunidad para un nuevo comienzo. No migres datos inneces
 
 ## Paso 2: Mapea tu modelo de datos
 
-Crea un documento de mapeo entre tu CRM actual y Twenty:
+Crea un documento de mapeo entre tu CRM actual y Consuelo:
 
-| Tu CRM                | Twenty                   |
+| Tu CRM                | Consuelo                   |
 | --------------------- | ------------------------ |
 | Cuenta / Organización | **Empresa**              |
 | Contacto / Persona    | **Personas**             |
@@ -42,14 +42,14 @@ Crea un documento de mapeo entre tu CRM actual y Twenty:
 **Para cada campo, documenta:**
 
 * El nombre del campo de origen
-* El campo de destino en Twenty
+* El campo de destino en Consuelo
 * Cualquier transformación de formato necesaria (fechas, números de teléfono, etc.)
 
 <Note>Mantén este documento de asignación a mano durante la importación—lo consultarás al asignar columnas.</Note>
 
-## Paso 3: Configura tu espacio de trabajo en Twenty
+## Paso 3: Configura tu espacio de trabajo en Consuelo
 
-Antes de importar datos, prepara tu espacio de trabajo en Twenty:
+Antes de importar datos, prepara tu espacio de trabajo en Consuelo:
 
 ### Crea objetos y campos personalizados
 
@@ -69,7 +69,7 @@ Antes de importar datos, prepara tu espacio de trabajo en Twenty:
 <Warning>
   **Invita a los usuarios ANTES de importar datos.**
 
-  Si tus datos incluyen referencias a usuarios (propietario de la cuenta, asignado, etc.), esos usuarios deben existir en Twenty antes de la importación. De lo contrario, esas relaciones no se podrán asignar.
+  Si tus datos incluyen referencias a usuarios (propietario de la cuenta, asignado, etc.), esos usuarios deben existir en Consuelo antes de la importación. De lo contrario, esas relaciones no se podrán asignar.
 </Warning>
 
 1. Ir a **Ajustes → Miembros**
@@ -96,13 +96,13 @@ Exporta tus datos desde tu CRM actual:
 
 ## Paso 5: Limpia y da formato a tus datos
 
-Abre cada CSV exportado en una aplicación de hojas de cálculo y prepáralo para Twenty.
+Abre cada CSV exportado en una aplicación de hojas de cálculo y prepáralo para Consuelo.
 
 ### Elimina duplicados
 
 1. Ordena por el campo único (correo electrónico para Personas, dominio para Empresas)
 2. Elimina o combina filas duplicadas
-3. Verifica que no existan duplicados ya en Twenty
+3. Verifica que no existan duplicados ya en Consuelo
 
 ### Da formato a los campos correctamente
 
@@ -118,7 +118,7 @@ Abre cada CSV exportado en una aplicación de hojas de cálculo y prepáralo par
 <Warning>
   **El formato del dominio es fundamental.**
 
-  Usa `https://domain.com` (no `domain.com` ni `www.domain.com`). Esto coincide con el formato de Twenty y evita duplicados cuando conectas la sincronización de correo/calendario.
+  Usa `https://domain.com` (no `domain.com` ni `www.domain.com`). Esto coincide con el formato de Consuelo y evita duplicados cuando conectas la sincronización de correo/calendario.
 </Warning>
 
 Consulta [Cómo preparar tus archivos CSV](/l/es/user-guide/data-migration/how-tos/prepare-your-csv-files) para conocer los requisitos de formato completos para todos los tipos de campos.
@@ -142,11 +142,11 @@ Consulta [Cómo importar relaciones](/l/es/user-guide/data-migration/how-tos/imp
 Si tus datos incluyen asignaciones de usuarios (propietario, asignado):
 
 1. Añade una columna con el **correo electrónico del usuario** (no solo su ID del sistema anterior)
-2. Usa las mismas direcciones de correo electrónico que los usuarios utilizaron para unirse a tu espacio de trabajo en Twenty
+2. Usa las mismas direcciones de correo electrónico que los usuarios utilizaron para unirse a tu espacio de trabajo en Consuelo
 
 Consulta [Cómo preparar tus archivos CSV](/l/es/user-guide/data-migration/how-tos/prepare-your-csv-files) para obtener la guía de formato completa.
 
-## Paso 6: Importa a Twenty
+## Paso 6: Importa a Consuelo
 
 <Warning>
   **¡El orden de importación importa!**
@@ -166,7 +166,7 @@ Consulta [Cómo preparar tus archivos CSV](/l/es/user-guide/data-migration/how-t
 
 Para cada archivo CSV, en orden:
 
-1. Navega hasta el objeto en Twenty
+1. Navega hasta el objeto en Consuelo
 2. Haz clic en **⋮ → Importar registros**
 3. Sube el archivo CSV
 4. Asocia las columnas a los campos:
@@ -221,7 +221,7 @@ Después de importar los datos, completa la configuración de tu espacio de trab
 ### Conecta el correo electrónico y el calendario
 
 * Cada usuario conecta su propia cuenta en **Configuración → Cuentas**
-* Twenty comenzará a sincronizar los correos electrónicos con los registros de contactos
+* Consuelo comenzará a sincronizar los correos electrónicos con los registros de contactos
 * Consulta [Correo y calendario](/l/es/user-guide/calendar-emails/overview)
 
 ### Capacita a tu equipo
@@ -267,7 +267,7 @@ Consulta [Cómo corregir errores de importación](/l/es/user-guide/data-migratio
 
 <AccordionGroup>
   <Accordion title="¿Puedo migrar los flujos de trabajo automáticamente?">
-    Actualmente no. Los flujos de trabajo deben recrearse manualmente en Twenty.
+    Actualmente no. Los flujos de trabajo deben recrearse manualmente en Consuelo.
   </Accordion>
 
   <Accordion title="¿Qué pasa con los archivos adjuntos?">

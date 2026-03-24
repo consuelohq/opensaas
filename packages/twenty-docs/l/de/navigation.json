@@ -4,7 +4,7 @@
       "label": "Benutzerhandbuch",
       "groups": {
         "discoverTwenty": {
-          "label": "Entdecken Sie Twenty",
+          "label": "Entdecken Sie Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Funktionen"
@@ -172,7 +172,7 @@
                   "label": "Frontend-Entwicklung",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "Anzeigen"

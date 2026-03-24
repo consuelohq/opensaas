@@ -5,10 +5,10 @@ title: إعداد
 # إدارة الإعدادات
 
 <Warning>
-  **هل هي المرة الأولى التي تقوم فيها بالتثبيت؟** اتبع [دليل تثبيت Docker Compose](/l/ar/developers/self-host/capabilities/docker-compose) لتشغيل Twenty، ثم عد هنا للإعداد.
+  **هل هي المرة الأولى التي تقوم فيها بالتثبيت؟** اتبع [دليل تثبيت Docker Compose](/l/ar/developers/self-host/capabilities/docker-compose) لتشغيل Consuelo، ثم عد هنا للإعداد.
 </Warning>
 
-يوفر Twenty **وضعين للإعداد** ليلائم احتياجات النشر المختلفة:
+يوفر Consuelo **وضعين للإعداد** ليلائم احتياجات النشر المختلفة:
 
 **الوصول إلى لوحة الإدارة:** يمكن للمستخدمين الذين لديهم صلاحيات المسؤول (`canAccessFullAdminPanel: true`) فقط الوصول إلى واجهة التكوين.
 
@@ -20,7 +20,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # افتراضي
 
 **يحدث أغلب التكوين عبر واجهة المستخدم** بعد التثبيت:
 
-1. الوصول إلى نسخة Twenty الخاصة بك (عادة `http://localhost:3000`)
+1. الوصول إلى نسخة Consuelo الخاصة بك (عادة `http://localhost:3000`)
 2. اذهب إلى **الإعدادات / لوحة الإدارة / متغيرات التكوين**
 3. اضبط التكاملات، والبريد الإلكتروني، والتخزين، والمزيد
 4. تسري التغييرات على الفور (خلال 15 ثانية لعمليات النشر متعددة الحاويات)
@@ -62,7 +62,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## وضع تعدد مساحات العمل
 
-افتراضيًا، تعمل Twenty في **وضع مساحة عمل واحدة** — وهو مثالي لمعظم عمليات النشر المستضافة ذاتيًا حيث تحتاج إلى مثيل واحد من نظام إدارة علاقات العملاء لمؤسستك.
+افتراضيًا، تعمل Consuelo في **وضع مساحة عمل واحدة** — وهو مثالي لمعظم عمليات النشر المستضافة ذاتيًا حيث تحتاج إلى مثيل واحد من نظام إدارة علاقات العملاء لمؤسستك.
 
 ### وضع مساحة العمل الواحدة (الافتراضي)
 
@@ -70,7 +70,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 IS_MULTIWORKSPACE_ENABLED=false  # default
 ```
 
-* مساحة عمل واحدة لكل مثيل من Twenty
+* مساحة عمل واحدة لكل مثيل من Consuelo
 * أول مستخدم يصبح تلقائيًا مشرفًا مع صلاحيات كاملة (`canImpersonate` و`canAccessFullAdminPanel`)
 * يتم تعطيل عمليات التسجيل الجديدة بعد إنشاء مساحة العمل الأولى
 * بنية URL بسيطة: `https://your-domain.com`
@@ -82,7 +82,7 @@ IS_MULTIWORKSPACE_ENABLED=true
 DEFAULT_SUBDOMAIN=app  # default value
 ```
 
-قم بتمكين وضع تعدد مساحات العمل لعمليات النشر المشابهة لـ SaaS حيث تحتاج عدة فرق مستقلة إلى مساحات عمل خاصة بها على نفس مثيل Twenty.
+قم بتمكين وضع تعدد مساحات العمل لعمليات النشر المشابهة لـ SaaS حيث تحتاج عدة فرق مستقلة إلى مساحات عمل خاصة بها على نفس مثيل Consuelo.
 
 **الاختلافات الرئيسية مقارنة بوضع مساحة العمل الواحدة:**
 
@@ -136,7 +136,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
    * `https://{your-domain}/auth/google/redirect` (لتسجيل الدخول الفردي)
    * `https://{your-domain}/auth/google-apis/get-access-token` (للتكاملات)
 
-### الإعداد في Twenty
+### الإعداد في Consuelo
 
 1. اذهب إلى **الإعدادات → لوحة الإدارة → متغيرات التكوين**
 2. ابحث بسهولة **عن قسم Google Auth**
@@ -168,7 +168,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
 ## تكامل Microsoft 365
 
 <Warning>
-  يجب على المستخدمين الحصول على [ترخيص Microsoft 365](https://admin.microsoft.com/Adminportal/Home) ليتمكنوا من استخدام تقويم API ورسائل. لن يتمكنوا من مزامنة حسابهم في Twenty دون واحد منها.
+  يجب على المستخدمين الحصول على [ترخيص Microsoft 365](https://admin.microsoft.com/Adminportal/Home) ليتمكنوا من استخدام تقويم API ورسائل. لن يتمكنوا من مزامنة حسابهم في Consuelo دون واحد منها.
 </Warning>
 
 ### إنشاء مشروع في Microsoft Azure
@@ -197,7 +197,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
 * `https://{your-domain}/auth/microsoft/redirect` إذا كنت تريد استخدام تسجيل الدخول الفردي في Microsoft
 * `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### الإعداد في Twenty
+### الإعداد في Consuelo
 
 1. اذهب إلى **الإعدادات → لوحة الإدارة → متغيرات التكوين**
 2. ابحث عن قسم **Microsoft Auth**
@@ -294,7 +294,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## الوظائف المنطقية
 
-تدعم Twenty الوظائف المنطقية لعمليات سير العمل والمنطق المخصص. يتم تكوين بيئة التنفيذ عبر متغير البيئة `SERVERLESS_TYPE`.
+تدعم Consuelo الوظائف المنطقية لعمليات سير العمل والمنطق المخصص. يتم تكوين بيئة التنفيذ عبر متغير البيئة `SERVERLESS_TYPE`.
 
 <Warning>
   **ملاحظة أمنية:** يقوم برنامج التشغيل المحلي (`SERVERLESS_TYPE=LOCAL`) بتشغيل الشيفرة مباشرةً على المضيف ضمن عملية Node.js من دون عزل. يجب استخدامه فقط للشيفرة الموثوقة أثناء التطوير. بالنسبة لعمليات النشر الإنتاجية التي تتعامل مع شيفرة غير موثوق بها، نوصي بشدة باستخدام `SERVERLESS_TYPE=LAMBDA` أو `SERVERLESS_TYPE=DISABLED`.
@@ -333,5 +333,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-  عند استخدام `SERVERLESS_TYPE=DISABLED`، ستؤدي أي محاولة لتنفيذ وظيفة منطقية إلى إرجاع خطأ. يكون هذا مفيدًا إذا كنت ترغب في تشغيل Twenty من دون إمكانات الوظائف المنطقية.
+  عند استخدام `SERVERLESS_TYPE=DISABLED`، ستؤدي أي محاولة لتنفيذ وظيفة منطقية إلى إرجاع خطأ. يكون هذا مفيدًا إذا كنت ترغب في تشغيل Consuelo من دون إمكانات الوظائف المنطقية.
 </Note>

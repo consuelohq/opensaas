@@ -1,24 +1,25 @@
-# Twenty Documentation
+# Consuelo Documentation
 
-Official documentation for Twenty CRM, powered by [Mintlify](https://mintlify.com).
+Official documentation for Consuelo, powered by [Mintlify](https://mintlify.com).
 
 ## 🌐 Live Site
 
-Visit the documentation at [docs.twenty.com](https://docs.twenty.com)
+Visit the documentation at [docs.consuelohq.com](https://docs.consuelohq.com)
 
 ## 📚 Content
 
 This repository contains:
-- **User Guide** (46 pages) - Complete guide for Twenty users
+
+- **User Guide** (46 pages) - Complete guide for Consuelo users
 - **Developers** (24 pages) - Technical documentation for developers
-- **Twenty UI** (25 pages) - UI component library documentation
+- **Consuelo UI** (25 pages) - UI component library documentation
 
 ## 🚀 Local Development
 
 To run the documentation locally:
 
 ```bash
-# From the twenty monorepo root
+# From the consuelo monorepo root
 npx nx run twenty-docs:dev
 ```
 
@@ -31,7 +32,7 @@ The documentation will be available at `http://localhost:3000`
 1. Edit MDX files in the appropriate directory:
    - `user-guide/` - User documentation
    - `developers/` - Developer documentation
-   - `twenty-ui/` - Component documentation
+   - `consuelo-ui/` - Component documentation
 
 2. Update `navigation/base-structure.json` if you need to change the tab/group hierarchy or add/remove pages. This file stays in the repo and is **not** uploaded to Crowdin.
 3. Keep the translation template (`navigation/navigation.template.json`) in sync by running `yarn docs:generate-navigation-template` after editing the base structure. This template is the only file that should be pushed to Crowdin.
@@ -57,6 +58,7 @@ Your content here...
 1. Place images in the `/images/` directory
 2. Reference them in MDX: `![Alt text](/images/your-image.png)`
 3. Or use Mintlify Frame component:
+
 ```mdx
 <Frame>
   <img src="/images/your-image.png" alt="Description" />
@@ -81,8 +83,8 @@ npx nx run twenty-docs:build
 
 ## 🔗 Links
 
-- [Twenty Website](https://twenty.com)
-- [GitHub Repository](https://github.com/twentyhq/twenty)
+- [Consuelo Website](https://consuelohq.com)
+- [GitHub Repository](https://github.com/consuelohq/opensaas)
 - [Mintlify Documentation](https://mintlify.com/docs)
 
 ## 🤝 Contributing
@@ -96,5 +98,4 @@ To contribute to the documentation:
 
 ## 📄 License
 
-This documentation is part of the Twenty project and is licensed under [AGPL-3.0](../../LICENSE).
-
+This documentation is part of the Consuelo project and is licensed under [AGPL-3.0](../../LICENSE).

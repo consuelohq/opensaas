@@ -5,10 +5,10 @@ title: Configuración
 # Gestión de Configuración
 
 <Warning>
-  **¿Instalando por primera vez?** Siga la [guía de instalación de Docker Compose](/l/es/developers/self-host/capabilities/docker-compose) para ejecutar Twenty, luego regrese aquí para la configuración.
+  **¿Instalando por primera vez?** Siga la [guía de instalación de Docker Compose](/l/es/developers/self-host/capabilities/docker-compose) para ejecutar Consuelo, luego regrese aquí para la configuración.
 </Warning>
 
-Twenty ofrece **dos modos de configuración** para adaptarse a diferentes necesidades de implementación:
+Consuelo ofrece **dos modos de configuración** para adaptarse a diferentes necesidades de implementación:
 
 **Acceso al panel de administración:** Solo los usuarios con privilegios de administrador (`canAccessFullAdminPanel: true`) pueden acceder a la interfaz de configuración.
 
@@ -20,7 +20,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # default
 
 **La mayoría de las configuraciones se realizan a través de la interfaz** después de la instalación:
 
-1. Acceda a su instancia de Twenty (normalmente `http://localhost:3000`)
+1. Acceda a su instancia de Consuelo (normalmente `http://localhost:3000`)
 2. Vaya a **Configuración / Panel de Administración / Variables de Configuración**
 3. Configure integraciones, correo electrónico, almacenamiento y más
 4. Los cambios se aplican inmediatamente (dentro de 15 segundos para implementaciones multicontenedor)
@@ -62,7 +62,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## Modo de múltiples espacios de trabajo
 
-De forma predeterminada, Twenty se ejecuta en **modo de un solo espacio de trabajo** — ideal para la mayoría de las implementaciones autoalojadas en las que necesitas una instancia de CRM para tu organización.
+De forma predeterminada, Consuelo se ejecuta en **modo de un solo espacio de trabajo** — ideal para la mayoría de las implementaciones autoalojadas en las que necesitas una instancia de CRM para tu organización.
 
 ### Modo de un solo espacio de trabajo (predeterminado)
 
@@ -70,7 +70,7 @@ De forma predeterminada, Twenty se ejecuta en **modo de un solo espacio de traba
 IS_MULTIWORKSPACE_ENABLED=false  # default
 ```
 
-* Un espacio de trabajo por instancia de Twenty
+* Un espacio de trabajo por instancia de Consuelo
 * El primer usuario se convierte automáticamente en administrador con privilegios completos (`canImpersonate` y `canAccessFullAdminPanel`)
 * Los nuevos registros se deshabilitan después de crear el primer espacio de trabajo
 * Estructura de URL simple: `https://your-domain.com`
@@ -82,7 +82,7 @@ IS_MULTIWORKSPACE_ENABLED=true
 DEFAULT_SUBDOMAIN=app  # default value
 ```
 
-Habilita el modo de múltiples espacios de trabajo para implementaciones tipo SaaS en las que varios equipos independientes necesitan sus propios espacios de trabajo en la misma instancia de Twenty.
+Habilita el modo de múltiples espacios de trabajo para implementaciones tipo SaaS en las que varios equipos independientes necesitan sus propios espacios de trabajo en la misma instancia de Consuelo.
 
 **Diferencias clave respecto al modo de un solo espacio de trabajo:**
 
@@ -136,7 +136,7 @@ Cuando está habilitado, solo los usuarios con `canAccessFullAdminPanel` pueden 
    * `https://{your-domain}/auth/google/redirect` (para SSO)
    * `https://{your-domain}/auth/google-apis/get-access-token` (para integraciones)
 
-### Configurar en Twenty
+### Configurar en Consuelo
 
 1. Vaya a **Configuración → Panel de Administración → Variables de Configuración**
 2. Encuentre la sección **Google Auth**
@@ -168,7 +168,7 @@ En [Pantalla de consentimiento OAuth](https://console.cloud.google.com/apis/cred
 ## Integración con Microsoft 365
 
 <Warning>
-  Los usuarios deben tener una [licencia de Microsoft 365](https://admin.microsoft.com/Adminportal/Home) para poder usar la API de Calendar y Messaging. No podrán sincronizar su cuenta en Twenty sin una.
+  Los usuarios deben tener una [licencia de Microsoft 365](https://admin.microsoft.com/Adminportal/Home) para poder usar la API de Calendar y Messaging. No podrán sincronizar su cuenta en Consuelo sin una.
 </Warning>
 
 ### Cree un proyecto en Microsoft Azure
@@ -197,7 +197,7 @@ Necesita agregar las siguientes URIs de redirección a su proyecto:
 * `https://{your-domain}/auth/microsoft/redirect` si quieres usar el inicio de sesión único de Microsoft
 * `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### Configurar en Twenty
+### Configurar en Consuelo
 
 1. Vaya a **Configuración → Panel de Administración → Variables de Configuración**
 2. Encuentre la sección **Microsoft Auth**
@@ -294,7 +294,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## Funciones de lógica
 
-Twenty admite funciones de lógica para flujos de trabajo y lógica personalizada. El entorno de ejecución se configura mediante la variable de entorno `SERVERLESS_TYPE`.
+Consuelo admite funciones de lógica para flujos de trabajo y lógica personalizada. El entorno de ejecución se configura mediante la variable de entorno `SERVERLESS_TYPE`.
 
 <Warning>
   **Aviso de seguridad:** El controlador local (`SERVERLESS_TYPE=LOCAL`) ejecuta código directamente en el host en un proceso de Node.js sin aislamiento. Solo debe utilizarse para código de confianza en desarrollo. Para implementaciones de producción que manejen código no confiable, recomendamos encarecidamente usar `SERVERLESS_TYPE=LAMBDA` o `SERVERLESS_TYPE=DISABLED`.
@@ -333,5 +333,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-  Al usar `SERVERLESS_TYPE=DISABLED`, cualquier intento de ejecutar una función de lógica devolverá un error. Esto es útil si desea ejecutar Twenty sin capacidades de funciones de lógica.
+  Al usar `SERVERLESS_TYPE=DISABLED`, cualquier intento de ejecutar una función de lógica devolverá un error. Esto es útil si desea ejecutar Consuelo sin capacidades de funciones de lógica.
 </Note>

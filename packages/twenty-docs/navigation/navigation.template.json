@@ -4,7 +4,7 @@
       "label": "User Guide",
       "groups": {
         "discoverTwenty": {
-          "label": "Discover Twenty",
+          "label": "Discover Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Capabilities"
@@ -186,7 +186,7 @@
                   "label": "Frontend Development",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "Display"

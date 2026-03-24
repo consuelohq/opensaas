@@ -5,7 +5,7 @@ description: Primiți notificări în timp real atunci când au loc evenimente �
 
 import { VimeoEmbed } from '/snippets/vimeo-embed.mdx';
 
-Webhook-urile trimit date către sistemele dvs. în timp real atunci când au loc evenimente în Twenty — nu este necesară interogarea periodică. Folosiți-le pentru a menține sistemele externe sincronizate, a declanșa automatizări sau a trimite alerte.
+Webhook-urile trimit date către sistemele dvs. în timp real atunci când au loc evenimente în Consuelo — nu este necesară interogarea periodică. Folosiți-le pentru a menține sistemele externe sincronizate, a declanșa automatizări sau a trimite alerte.
 
 ## Creează Webhook
 
@@ -26,7 +26,7 @@ Webhook-ul se activează imediat și începe să trimită notificări.
 
 ## Evenimente
 
-Twenty trimite webhook-uri pentru aceste tipuri de evenimente:
+Consuelo trimite webhook-uri pentru aceste tipuri de evenimente:
 
 | Eveniment                    | Exemplu                                                    |
 | ---------------------------- | ---------------------------------------------------------- |
@@ -67,7 +67,7 @@ Fiecare webhook trimite un HTTP POST cu un corp JSON:
 
 ## Validarea Webhook-ului
 
-Twenty semnează fiecare cerere webhook din motive de securitate. Validați semnăturile pentru a vă asigura că cererile sunt autentice.
+Consuelo semnează fiecare cerere webhook din motive de securitate. Validați semnăturile pentru a vă asigura că cererile sunt autentice.
 
 ### Anteturi
 
@@ -107,6 +107,6 @@ const isValid = expectedSignature === req.headers["x-twenty-webhook-signature"];
 | ------------------------------------------ | -------- | -------------------------------------------------------------------------------- |
 | **Webhook-uri**                            | OUT      | Notificați automat sistemele externe despre orice modificare a unei înregistrări |
 | **Flux de lucru + Cerere HTTP**            | OUT      | Trimiteți date în exterior cu logică personalizată (filtre, transformări)        |
-| **Declanșator webhook în fluxul de lucru** | IN       | Primiți date în Twenty din sisteme externe                                       |
+| **Declanșator webhook în fluxul de lucru** | IN       | Primiți date în Consuelo din sisteme externe                                       |
 
 Pentru a primi date externe, consultați [Configurați un declanșator Webhook](/l/ro/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger).

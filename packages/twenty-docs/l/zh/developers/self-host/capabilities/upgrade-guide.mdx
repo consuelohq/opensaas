@@ -10,11 +10,11 @@ title: 升级指南
 
 如果您使用了 Docker Compose，请按照以下步骤操作：
 
-1. 在 Twenty 运行的主机上打开终端，关闭 Twenty：`docker compose down`
+1. 在 Consuelo 运行的主机上打开终端，关闭 Consuelo：`docker compose down`
 
 2. 通过更改 docker-compose 附近 .env 文件中的 `TAG` 值来升级版本。 （我们建议使用 `major.minor` 版本，例如 `v0.53`）
 
-3. 用 `docker compose up -d` 重新启动 Twenty
+3. 用 `docker compose up -d` 重新启动 Consuelo
 
 如果您想要升级实例多个版本，例如从 v0.33.0 升级到 v0.35.0，您需要按顺序升级您的实例，例如从 v0.33.0 升级到 v0.34.0，然后从 v0.34.0 到 v0.35.0。
 
@@ -24,7 +24,7 @@ title: 升级指南
 
 ## v1.0
 
-Hello Twenty v1.0! 🎉
+Hello Consuelo v1.0! 🎉
 
 ## v0.60
 
@@ -42,7 +42,7 @@ yarn command:prod cache:flush
 
 ### v0.55
 
-升级您的 Twenty 实例以使用 v0.55 映像
+升级您的 Consuelo 实例以使用 v0.55 映像
 
 您不再需要运行任何命令，新映像将自动处理所需的所有迁移。
 
@@ -56,7 +56,7 @@ yarn command:prod cache:flush
 yarn command:prod cache:flush
 ```
 
-此问题仅适用于此 Twenty 版本，未来的升级不应需要此操作。
+此问题仅适用于此 Consuelo 版本，未来的升级不应需要此操作。
 
 ### v0.54
 
@@ -75,9 +75,9 @@ yarn command:prod cache:flush
 
 要检查是否正确迁移了工作区，您可以在数据库中查看其版本在 `core.workspace` 表中。
 
-它应始终在您当前 Twenty 实例 `major.minor` 版本的范围内，您可以在管理面板中查看您的实例版本（在 `/settings/admin-panel`，如果您的用户在数据库中设置了 `canAccessFullAdminPanel` 属性为真则可访问）或通过在 `twenty-server` 容器中运行 `echo $APP_VERSION`。
+它应始终在您当前 Consuelo 实例 `major.minor` 版本的范围内，您可以在管理面板中查看您的实例版本（在 `/settings/admin-panel`，如果您的用户在数据库中设置了 `canAccessFullAdminPanel` 属性为真则可访问）或通过在 `twenty-server` 容器中运行 `echo $APP_VERSION`。
 
-要修复不同步的工作区版本，你将需要从相应的 Twenty 版本按照相关的升级指南顺序升级，等等，直到到达所需的版本。
+要修复不同步的工作区版本，你将需要从相应的 Consuelo 版本按照相关的升级指南顺序升级，等等，直到到达所需的版本。
 
 #### `auditLog` 移除
 
@@ -85,7 +85,7 @@ yarn command:prod cache:flush
 
 ### v0.51 to v0.52
 
-升级您的 Twenty 实例以使用 v0.52 映像
+升级您的 Consuelo 实例以使用 v0.52 映像
 
 ```
 yarn database:migrate:prod
@@ -95,11 +95,11 @@ yarn command:prod upgrade
 #### 我的工作区被锁定在 `0.52.0` 和 `0.52.6` 之间的版本
 
 不幸的是，`0.52.0` 和 `0.52.6` 已从 dockerHub 完全移除。
-您将需要在数据库中手动更新工作区版本到 `0.51.0`，并使用 Twenty 版本 `0.52.11` 进行升级，按照其上方的升级指南。
+您将需要在数据库中手动更新工作区版本到 `0.51.0`，并使用 Consuelo 版本 `0.52.11` 进行升级，按照其上方的升级指南。
 
 ### v0.50 to v0.51
 
-升级您的 Twenty 实例以使用 v0.51 映像
+升级您的 Consuelo 实例以使用 v0.51 映像
 
 ```
 yarn database:migrate:prod
@@ -108,7 +108,7 @@ yarn command:prod upgrade
 
 ### v0.44.0 to v0.50.0
 
-升级您的 Twenty 实例以使用 v0.50.0 映像
+升级您的 Consuelo 实例以使用 v0.50.0 映像
 
 ```
 yarn database:migrate:prod
@@ -122,7 +122,7 @@ yarn command:prod upgrade
 
 ### v0.43.0 to v0.44.0
 
-升级您的 Twenty 实例以使用 v0.44.0 映像
+升级您的 Consuelo 实例以使用 v0.44.0 映像
 
 ```
 yarn database:migrate:prod
@@ -131,7 +131,7 @@ yarn command:prod upgrade
 
 ### v0.42.0 to v0.43.0
 
-升级您的 Twenty 实例以使用 v0.43.0 映像
+升级您的 Consuelo 实例以使用 v0.43.0 映像
 
 ```
 yarn database:migrate:prod
@@ -172,7 +172,7 @@ exit
 
 ### v0.41.0 to v0.42.0
 
-升级您的 Twenty 实例以使用 v0.42.0 映像
+升级您的 Consuelo 实例以使用 v0.42.0 映像
 
 ```
 yarn database:migrate:prod
@@ -186,7 +186,7 @@ yarn command:prod upgrade-0.42
 
 ### v0.40.0 to v0.41.0
 
-升级您的 Twenty 实例以使用 v0.41.0 映像
+升级您的 Consuelo 实例以使用 v0.41.0 映像
 
 ```
 yarn database:migrate:prod
@@ -199,7 +199,7 @@ yarn command:prod upgrade-0.41
 
 ### v0.35.0 to v0.40.0
 
-升级您的 Twenty 实例以使用 v0.40.0 映像
+升级您的 Consuelo 实例以使用 v0.40.0 映像
 
 ```
 yarn database:migrate:prod
@@ -212,7 +212,7 @@ yarn command:prod upgrade-0.40
 
 ### v0.34.0 to v0.35.0
 
-升级您的 Twenty 实例以使用 v0.35.0 映像
+升级您的 Consuelo 实例以使用 v0.35.0 映像
 
 ```
 yarn database:migrate:prod
@@ -228,7 +228,7 @@ yarn command:prod upgrade-0.35
 
 ### v0.33.0 to v0.34.0
 
-升级您的 Twenty 实例以使用 v0.34.0 映像
+升级您的 Consuelo 实例以使用 v0.34.0 映像
 
 ```
 yarn database:migrate:prod
@@ -249,7 +249,7 @@ yarn command:prod upgrade-0.34
 
 ### v0.32.0 to v0.33.0
 
-升级您的 Twenty 实例以使用 v0.33.0 映像
+升级您的 Consuelo 实例以使用 v0.33.0 映像
 
 ```
 yarn command:prod cache:flush
@@ -266,7 +266,7 @@ yarn command:prod upgrade-0.33
 
 ### v0.31.0 to v0.32.0
 
-升级您的 Twenty 实例以使用 v0.32.0 映像
+升级您的 Consuelo 实例以使用 v0.32.0 映像
 
 **模式和数据迁移**
 
@@ -300,7 +300,7 @@ yarn command:prod upgrade-0.32
 
 ### v0.30.0 to v0.31.0
 
-升级您的 Twenty 实例以使用 v0.31.0 映像
+升级您的 Consuelo 实例以使用 v0.31.0 映像
 
 **模式和数据迁移**：
 
@@ -314,10 +314,10 @@ yarn command:prod upgrade-0.31
 
 ### v0.24.0 to v0.30.0
 
-升级您的 Twenty 实例以使用 v0.30.0 映像
+升级您的 Consuelo 实例以使用 v0.30.0 映像
 
 **重大更改**：
-为了提高性能，Twenty 现在要求配置 Redis 缓存。 我们更新了我们的 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) 来反映这一点。
+为了提高性能，Consuelo 现在要求配置 Redis 缓存。 我们更新了我们的 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) 来反映这一点。
 确保更新您的配置并相应地更新您的环境变量：
 
 ```
@@ -338,7 +338,7 @@ yarn command:prod upgrade-0.30
 
 ### v0.23.0 to v0.24.0
 
-升级您的 Twenty 实例以使用 v0.24.0 映像
+升级您的 Consuelo 实例以使用 v0.24.0 映像
 
 运行以下命令：
 
@@ -352,7 +352,7 @@ yarn command:prod upgrade-0.24
 
 ### v0.22.0 to v0.23.0
 
-升级您的 Twenty 实例以使用 v0.23.0 映像
+升级您的 Consuelo 实例以使用 v0.23.0 映像
 
 运行以下命令：
 
@@ -366,7 +366,7 @@ yarn command:prod upgrade-0.23
 
 ### v0.21.0 to v0.22.0
 
-升级您的 Twenty 实例以使用 v0.22.0 映像
+升级您的 Consuelo 实例以使用 v0.22.0 映像
 
 运行以下命令：
 

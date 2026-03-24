@@ -4,7 +4,7 @@
       "label": "用户指南",
       "groups": {
         "discoverTwenty": {
-          "label": "发现 Twenty",
+          "label": "发现 Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "功能"
@@ -172,7 +172,7 @@
                   "label": "前端开发",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "展示"

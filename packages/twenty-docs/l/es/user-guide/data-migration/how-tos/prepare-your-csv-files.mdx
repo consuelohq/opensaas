@@ -1,6 +1,6 @@
 ---
 title: Prepara tus archivos CSV},{
-description: Guía completa paso a paso para dar formato a tus datos para importarlos en Twenty.
+description: Guía completa paso a paso para dar formato a tus datos para importarlos en Consuelo.
 ---
 
 ## Resumen
@@ -22,7 +22,7 @@ Antes de empezar, asegúrate de que tu archivo cumpla estos requisitos:
 
 ## Paso 2: Descarga el archivo de ejemplo
 
-**Este es el paso más importante.** El archivo de ejemplo te muestra los nombres de columna y el formato exactos que Twenty espera.
+**Este es el paso más importante.** El archivo de ejemplo te muestra los nombres de columna y el formato exactos que Consuelo espera.
 
 1. Ve a la vista del objeto (Personas, Empresas, etc.)
 2. Haz clic en **⋮** → **Importar registros**
@@ -33,7 +33,7 @@ Antes de empezar, asegúrate de que tu archivo cumpla estos requisitos:
 
 ## Paso 3: Eliminar valores duplicados
 
-Twenty exige unicidad en determinados campos. Los duplicados provocarán errores de importación.
+Consuelo exige unicidad en determinados campos. Los duplicados provocarán errores de importación.
 
 | Objeto                     | Campos únicos                                                |
 | -------------------------- | ------------------------------------------------------------ |
@@ -45,7 +45,7 @@ Twenty exige unicidad en determinados campos. Los duplicados provocarán errores
 
 1. Ordena tu hoja de cálculo por el campo único (correo electrónico o dominio)
 2. Elimina o fusiona las filas duplicadas
-3. Comprueba si hay duplicados que ya existan en Twenty
+3. Comprueba si hay duplicados que ya existan en Consuelo
 
 <Warning>**Los registros eliminados lógicamente cuentan para la unicidad.** Los registros en Menú de comandos → Ver registros eliminados provocarán errores de duplicados. Elimínalos de forma permanente o restáuralos y actualízalos.</Warning>
 
@@ -61,7 +61,7 @@ Los distintos tipos de campos requieren formatos específicos. Aquí tienes la r
 ### Campos de correo electrónico
 
 * Debe tener un formato de correo electrónico válido: `name@domain.com`
-* Debe ser único (sin duplicados en el archivo ni en Twenty)
+* Debe ser único (sin duplicados en el archivo ni en Consuelo)
 * Para correos electrónicos adicionales, utiliza este formato en la columna **Emails / Additional Emails**:
 
 ```
@@ -75,7 +75,7 @@ Los distintos tipos de campos requieren formatos específicos. Aquí tienes la r
 * Rellena ambas columnas:
   * **Domain / Domain Label**: `domain.com`
   * **Domain / Domain URL**: `https://domain.com`
-* Debe ser único dentro de tu archivo y en Twenty
+* Debe ser único dentro de tu archivo y en Consuelo
 
 ### Campos de teléfono
 
@@ -184,7 +184,7 @@ Usa un formato JSON válido:
 
 ### Campos de ID
 
-* **Opcional**: Twenty genera IDs automáticamente si no se proporcionan
+* **Opcional**: Consuelo genera IDs automáticamente si no se proporcionan
 * **Formato**: UUID (p. ej., `c776ee49-f608-4a77-8cc8-6fe96ae1e43f`)
 * **Caso de uso**: Incluye el ID para actualizar registros existentes en lugar de crear nuevos
 
@@ -204,7 +204,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 **Reglas importantes para las relaciones:**
 
-* El registro padre debe existir previamente en Twenty
+* El registro padre debe existir previamente en Consuelo
 * Usa el formato de **URL de dominio** (`https://domain.com`), no la etiqueta
 * Mapea solo UN identificador único (no incluyas `companyId` Y `companyDomain`)
 * Para los miembros del espacio de trabajo, usa su **email** (no el nombre)
@@ -223,7 +223,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 Consulta [Cómo importar relaciones](/l/es/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv) para obtener instrucciones detalladas.
 
-## Paso 6: Asegúrate de que los campos existan en Twenty
+## Paso 6: Asegúrate de que los campos existan en Consuelo
 
 La importación crea **registros**, no **campos**. Todos los campos que quieras importar deben existir ya en tu modelo de datos.
 

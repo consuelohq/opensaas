@@ -1,13 +1,13 @@
 ---
 title: Configuration Locale
-description: Le guide pour les contributeurs (ou les développeurs curieux) qui souhaitent exécuter Twenty localement.
+description: Le guide pour les contributeurs (ou les développeurs curieux) qui souhaitent exécuter Consuelo localement.
 ---
 
 ## Prérequis
 
 <Tabs>
   <Tab title="Linux et MacOS">
-    Avant de pouvoir installer et utiliser Twenty, assurez-vous d'installer ce qui suit sur votre ordinateur :
+    Avant de pouvoir installer et utiliser Consuelo, assurez-vous d'installer ce qui suit sur votre ordinateur :
 
     * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
     * [Node v24.5.0](https://nodejs.org/en/download)
@@ -210,7 +210,7 @@ Vous pouvez maintenant accéder à la base de données à [localhost:5432](local
 
 ## Étape 4 : Configuration d'une base de données Redis (cache)
 
-Twenty nécessite un cache Redis pour offrir les meilleures performances
+Consuelo nécessite un cache Redis pour offrir les meilleures performances
 
 <Tabs>
   <Tab title="Linux">
@@ -267,12 +267,12 @@ cp ./packages/twenty-server/.env.example ./packages/twenty-server/.env
 ```
 
 <Info>
-  **Mode multi-espaces de travail:** Par défaut, Twenty s'exécute en mode mono-espace de travail, où un seul espace de travail peut être créé. Pour activer la prise en charge multi-espaces de travail (utile pour tester des fonctionnalités basées sur des sous-domaines), définissez `IS_MULTIWORKSPACE_ENABLED=true` dans le fichier `.env` de votre serveur. Voir [Mode multi-espaces de travail](/l/fr/developers/self-host/capabilities/setup#multi-workspace-mode) pour plus de détails.
+  **Mode multi-espaces de travail:** Par défaut, Consuelo s'exécute en mode mono-espace de travail, où un seul espace de travail peut être créé. Pour activer la prise en charge multi-espaces de travail (utile pour tester des fonctionnalités basées sur des sous-domaines), définissez `IS_MULTIWORKSPACE_ENABLED=true` dans le fichier `.env` de votre serveur. Voir [Mode multi-espaces de travail](/l/fr/developers/self-host/capabilities/setup#multi-workspace-mode) pour plus de détails.
 </Info>
 
 ## Étape 6 : Installation des dépendances
 
-Pour construire le serveur Twenty et injecter des données dans votre base de données, exécutez la commande suivante :
+Pour construire le serveur Consuelo et injecter des données dans votre base de données, exécutez la commande suivante :
 
 ```bash
 yarn
@@ -322,16 +322,16 @@ Alternativement, vous pouvez démarrer tous les services en même temps :
 npx nx start
 ```
 
-## Étape 8 : Utiliser Twenty
+## Étape 8 : Utiliser Consuelo
 
 **Frontend**
 
-Le frontend de Twenty sera en cours d'exécution à [http://localhost:3001](http://localhost:3001).
+Le frontend de Consuelo sera en cours d'exécution à [http://localhost:3001](http://localhost:3001).
 Vous pouvez vous connecter en utilisant le compte démo par défaut : `tim@apple.dev` (mot de passe : `tim@apple.dev`)
 
 **Backend**
 
-* Le serveur de Twenty sera en fonctionnement à [http://localhost:3000](http://localhost:3000)
+* Le serveur de Consuelo sera en fonctionnement à [http://localhost:3000](http://localhost:3000)
 * L'API GraphQL est accessible à [http://localhost:3000/graphql](http://localhost:3000/graphql)
 * L'API REST est joignable à [http://localhost:3000/rest](http://localhost:3000/rest)
 

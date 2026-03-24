@@ -5,10 +5,10 @@ title: Kurulum
 # Konfigürasyon Yönetimi
 
 <Warning>
-  **İlk kez mi kuruyorsunuz?** Twenty'yi çalıştırmak için [Docker Compose kurulum kılavuzunu](/l/tr/developers/self-host/capabilities/docker-compose) izleyin, ardından yapılandırma için buraya dönün.
+  **İlk kez mi kuruyorsunuz?** Consuelo'yi çalıştırmak için [Docker Compose kurulum kılavuzunu](/l/tr/developers/self-host/capabilities/docker-compose) izleyin, ardından yapılandırma için buraya dönün.
 </Warning>
 
-Twenty, farklı dağıtım ihtiyaçlarına uygun **iki yapılandırma modu** sunar:
+Consuelo, farklı dağıtım ihtiyaçlarına uygun **iki yapılandırma modu** sunar:
 
 **Yönetici paneli erişimi:** Yalnızca yönetici ayrıcalıklarına sahip kullanıcılar (`canAccessFullAdminPanel: true`) konfigürasyon arayüzüne erişebilir.
 
@@ -20,7 +20,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # varsayılan
 
 **Çoğu konfigürasyon, kurulumdan sonra arayüz üzerinden gerçekleştirilir**:
 
-1. Twenty örneğinize erişin (genellikle `http://localhost:3000`)
+1. Consuelo örneğinize erişin (genellikle `http://localhost:3000`)
 2. **Ayarlar / Yönetici Paneli / Konfigürasyon Değişkenleri** yoluna gidin
 3. Entegrasyonları, e-postayı, depolamayı ve daha fazlasını yapılandırın
 4. Değişiklikler hemen yürürlüğe girer (çok konteynerli dağıtımlarda 15 saniye içinde)
@@ -62,7 +62,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## Çoklu Çalışma Alanı Modu
 
-Varsayılan olarak, Twenty **tek çalışma alanı modunda** çalışır — kuruluşunuz için tek bir CRM örneğine ihtiyaç duyulan çoğu kendi barındırmalı dağıtım için idealdir.
+Varsayılan olarak, Consuelo **tek çalışma alanı modunda** çalışır — kuruluşunuz için tek bir CRM örneğine ihtiyaç duyulan çoğu kendi barındırmalı dağıtım için idealdir.
 
 ### Tek Çalışma Alanı Modu (Varsayılan)
 
@@ -70,7 +70,7 @@ Varsayılan olarak, Twenty **tek çalışma alanı modunda** çalışır — kur
 IS_MULTIWORKSPACE_ENABLED=false  # default
 ```
 
-* Her Twenty örneği başına bir çalışma alanı
+* Her Consuelo örneği başına bir çalışma alanı
 * İlk kullanıcı otomatik olarak tam ayrıcalıklara sahip yönetici olur (`canImpersonate` ve `canAccessFullAdminPanel`)
 * İlk çalışma alanı oluşturulduktan sonra yeni kayıtlar devre dışı bırakılır
 * Basit URL yapısı: `https://your-domain.com`
@@ -82,7 +82,7 @@ IS_MULTIWORKSPACE_ENABLED=true
 DEFAULT_SUBDOMAIN=app  # default value
 ```
 
-Aynı Twenty örneği üzerinde birden fazla bağımsız ekibin kendi çalışma alanlarına ihtiyaç duyduğu SaaS benzeri dağıtımlar için çoklu çalışma alanı modunu etkinleştirin.
+Aynı Consuelo örneği üzerinde birden fazla bağımsız ekibin kendi çalışma alanlarına ihtiyaç duyduğu SaaS benzeri dağıtımlar için çoklu çalışma alanı modunu etkinleştirin.
 
 **Tek çalışma alanı modundan temel farklar:**
 
@@ -136,7 +136,7 @@ Etkinleştirildiğinde, yalnızca `canAccessFullAdminPanel` yetkisine sahip kull
    * `https://{your-domain}/auth/google/redirect` (SSO için)
    * `https://{your-domain}/auth/google-apis/get-access-token` (entegrasyonlar için)
 
-### Twenty'de Yapılandır
+### Consuelo'de Yapılandır
 
 1. **Ayarlar → Yönetici Paneli → Konfigürasyon Değişkenleri** bölümüne gidin
 2. **Google Auth** bölümünü bulun
@@ -168,7 +168,7 @@ Uygulamanız test modunda ise, projenize test kullanıcıları eklemeniz gerekec
 ## Microsoft 365 Entegrasyonu
 
 <Warning>
-  Kullanıcıların Takvim ve Mesajlaşma API'sini kullanabilmesi için bir [Microsoft 365 Lisansı](https://admin.microsoft.com/Adminportal/Home) olması gerekir. Biri olmadan hesaplarını Twenty'de eşitleyemeyecekler.
+  Kullanıcıların Takvim ve Mesajlaşma API'sini kullanabilmesi için bir [Microsoft 365 Lisansı](https://admin.microsoft.com/Adminportal/Home) olması gerekir. Biri olmadan hesaplarını Consuelo'de eşitleyemeyecekler.
 </Warning>
 
 ### Microsoft Azure'da bir proje oluştur
@@ -197,7 +197,7 @@ Projenize aşağıdaki yönlendirme URI'lerini eklemeniz gerekir:
 * `https://{your-domain}/auth/microsoft/redirect` Microsoft SSO kullanmak istiyorsanız
 * `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### Twenty'de Yapılandır
+### Consuelo'de Yapılandır
 
 1. **Ayarlar → Yönetici Paneli → Konfigürasyon Değişkenleri** bölümüne gidin
 2. **Microsoft Auth** bölümünü bulun
@@ -294,7 +294,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## Mantıksal işlevler
 
-Twenty, iş akışları ve özel mantık için mantıksal işlevleri destekler. Yürütme ortamı, `SERVERLESS_TYPE` ortam değişkeni aracılığıyla yapılandırılır.
+Consuelo, iş akışları ve özel mantık için mantıksal işlevleri destekler. Yürütme ortamı, `SERVERLESS_TYPE` ortam değişkeni aracılığıyla yapılandırılır.
 
 <Warning>
   **Güvenlik Notu:** Yerel sürücü (`SERVERLESS_TYPE=LOCAL`), herhangi bir sandbox olmadan kodu ana makinede doğrudan bir Node.js sürecinde çalıştırır. Yalnızca geliştirirken güvenilen kod için kullanılmalıdır. Güvenilmeyen kodu işleyen üretim dağıtımları için `SERVERLESS_TYPE=LAMBDA` veya `SERVERLESS_TYPE=DISABLED` kullanmanızı şiddetle öneririz.
@@ -333,5 +333,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-  `SERVERLESS_TYPE=DISABLED` kullanıldığında, bir mantıksal işlevi yürütmeye yönelik herhangi bir girişim bir hata döndürür. Bu, Twenty'yi mantıksal işlev yetenekleri olmadan çalıştırmak istiyorsanız kullanışlıdır.
+  `SERVERLESS_TYPE=DISABLED` kullanıldığında, bir mantıksal işlevi yürütmeye yönelik herhangi bir girişim bir hata döndürür. Bu, Consuelo'yi mantıksal işlev yetenekleri olmadan çalıştırmak istiyorsanız kullanışlıdır.
 </Note>

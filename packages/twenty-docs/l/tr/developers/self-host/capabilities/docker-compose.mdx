@@ -8,7 +8,7 @@ title: 1-Tıklama ile Docker Compose
 
 ## Genel Bakış
 
-Bu kılavuz, Docker Compose kullanarak Twenty uygulamasını kurmak ve yapılandırmak için adım adım yönergeler sunar. Amaç, süreci sadeleştirmek ve kurulumunuzu bozabilecek yaygın sorunları önlemektir.
+Bu kılavuz, Docker Compose kullanarak Consuelo uygulamasını kurmak ve yapılandırmak için adım adım yönergeler sunar. Amaç, süreci sadeleştirmek ve kurulumunuzu bozabilecek yaygın sorunları önlemektir.
 
 **Önemli:** Yalnızca bu kılavuzda açıkça belirtilen ayarları değiştirin. Diğer yapılandırmaları değiştirmek sorunlara yol açabilir.
 
@@ -21,7 +21,7 @@ Bu kılavuz, Docker Compose kullanarak Twenty uygulamasını kurmak ve yapıland
 
 ## Seçenek 1: Tek satırlık komut dosyası
 
-Tek bir komutla en son kararlı Twenty sürümünü yükleyin:
+Tek bir komutla en son kararlı Consuelo sürümünü yükleyin:
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
@@ -104,9 +104,9 @@ curl http://localhost:3000
 
 ## Yapılandırma
 
-### Twenty'yi Dış Erişime Açma
+### Consuelo'yi Dış Erişime Açma
 
-Varsayılan olarak, Twenty `localhost` üzerinde `3000` portunda çalışır. Harici bir alan adı veya IP adresi aracılığıyla erişim sağlamak için `.env` dosyanızda `SERVER_URL`'i yapılandırmanız gerekir.
+Varsayılan olarak, Consuelo `localhost` üzerinde `3000` portunda çalışır. Harici bir alan adı veya IP adresi aracılığıyla erişim sağlamak için `.env` dosyanızda `SERVER_URL`'i yapılandırmanız gerekir.
 
 #### `SERVER_URL`'a Genel Bakış
 
@@ -118,11 +118,11 @@ Varsayılan olarak, Twenty `localhost` üzerinde `3000` portunda çalışır. Ha
 
 ### SSL Gereksinimleri
 
-Belirli tarayıcı özelliklerinin düzgün çalışabilmesi için SSL (HTTPS) gereklidir. Bu özellikler yerel geliştirme sırasında çalışabilirken (tarayıcılar localhost'u farklı şekilde ele alır), Twenty'yi düzenli bir alanda barındırırken uygun bir SSL kurulumu gereklidir.
+Belirli tarayıcı özelliklerinin düzgün çalışabilmesi için SSL (HTTPS) gereklidir. Bu özellikler yerel geliştirme sırasında çalışabilirken (tarayıcılar localhost'u farklı şekilde ele alır), Consuelo'yi düzenli bir alanda barındırırken uygun bir SSL kurulumu gereklidir.
 
 Örneğin, panoya kopyalama API'si güvenli bir bağlam gerektirebilir - uygulama boyunca kopyalama düğmeleri gibi bazı özellikler HTTPS etkinleştirilmediğinde çalışmayabilir.
 
-Optimum güvenlik ve işlevsellik için Twenty'nin SSL sonlandırma ile bir ters proxy arkasında ayarlanmasını şiddetle öneririz.
+Optimum güvenlik ve işlevsellik için Consuelo'nin SSL sonlandırma ile bir ters proxy arkasında ayarlanmasını şiddetle öneririz.
 
 #### `SERVER_URL`'ı Yapılandırma
 

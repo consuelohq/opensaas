@@ -8,7 +8,7 @@ title: 1-Clic avec Docker Compose
 
 ## Vue d'ensemble
 
-Ce guide fournit des instructions pas-à-pas pour installer et configurer l'application Twenty à l'aide de Docker Compose. L'objectif est de simplifier le processus et d'éviter les erreurs courantes qui pourraient compromettre votre configuration.
+Ce guide fournit des instructions pas-à-pas pour installer et configurer l'application Consuelo à l'aide de Docker Compose. L'objectif est de simplifier le processus et d'éviter les erreurs courantes qui pourraient compromettre votre configuration.
 
 **Important :** Modifiez uniquement les paramètres explicitement mentionnés dans ce guide. Modifier d'autres configurations peut entraîner des problèmes.
 
@@ -21,7 +21,7 @@ Consultez les documents [Configurer les Variables d’Environnement](/l/fr/devel
 
 ## Option 1 : Script en une seule ligne
 
-Installez la dernière version stable de Twenty avec une seule commande :
+Installez la dernière version stable de Consuelo avec une seule commande :
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
@@ -104,9 +104,9 @@ curl http://localhost:3000
 
 ## Configuration
 
-### Exposer Twenty à un Accès Externe
+### Exposer Consuelo à un Accès Externe
 
-Par défaut, Twenty fonctionne sur `localhost` au port `3000`. Pour y accéder via un domaine externe ou une adresse IP, vous devez configurer le `SERVER_URL` dans votre fichier `.env`.
+Par défaut, Consuelo fonctionne sur `localhost` au port `3000`. Pour y accéder via un domaine externe ou une adresse IP, vous devez configurer le `SERVER_URL` dans votre fichier `.env`.
 
 #### Comprendre `SERVER_URL`
 
@@ -118,11 +118,11 @@ Par défaut, Twenty fonctionne sur `localhost` au port `3000`. Pour y accéder v
 
 ### Exigences SSL
 
-Le SSL (HTTPS) est requis pour que certaines fonctionnalités des navigateurs fonctionnent correctement. Bien que ces fonctionnalités puissent fonctionner lors du développement local (car les navigateurs traitent localhost différemment), une configuration SSL appropriée est nécessaire lors de l'hébergement de Twenty sur un domaine régulier.
+Le SSL (HTTPS) est requis pour que certaines fonctionnalités des navigateurs fonctionnent correctement. Bien que ces fonctionnalités puissent fonctionner lors du développement local (car les navigateurs traitent localhost différemment), une configuration SSL appropriée est nécessaire lors de l'hébergement de Consuelo sur un domaine régulier.
 
 Par exemple, l'API du presse-papiers pourrait nécessiter un contexte sécurisé - certaines fonctionnalités comme les boutons de copie dans toute l'application pourraient ne pas fonctionner sans HTTPS activé.
 
-Nous vous recommandons vivement de mettre en place Twenty derrière un proxy inverse avec terminaison SSL pour une sécurité et une fonctionnalité optimales.
+Nous vous recommandons vivement de mettre en place Consuelo derrière un proxy inverse avec terminaison SSL pour une sécurité et une fonctionnalité optimales.
 
 #### Configurer `SERVER_URL`
 

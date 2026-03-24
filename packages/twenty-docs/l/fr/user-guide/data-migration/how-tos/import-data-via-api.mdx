@@ -1,11 +1,11 @@
 ---
 title: Importer des données via l'API
-description: Quand et comment utiliser les API de Twenty pour des importations de données à grande échelle.
+description: Quand et comment utiliser les API de Consuelo pour des importations de données à grande échelle.
 ---
 
 ## Vue d'ensemble
 
-Twenty propose des **API GraphQL** et **REST** pour l'importation programmatique de données. Utilisez l'API lorsque l'importation CSV n'est pas pratique pour votre volume de données ou lorsque vous avez besoin d'importations automatisées et récurrentes.
+Consuelo propose des **API GraphQL** et **REST** pour l'importation programmatique de données. Utilisez l'API lorsque l'importation CSV n'est pas pratique pour votre volume de données ou lorsque vous avez besoin d'importations automatisées et récurrentes.
 
 ## Quand utiliser l'importation via l'API
 
@@ -23,7 +23,7 @@ Twenty propose des **API GraphQL** et **REST** pour l'importation programmatique
 
 ## Limites de débit de l'API
 
-Twenty applique des limites de débit pour garantir la stabilité du système :
+Consuelo applique des limites de débit pour garantir la stabilité du système :
 
 | Limite                                 | Valeur                        |
 | -------------------------------------- | ----------------------------- |
@@ -55,7 +55,7 @@ Twenty applique des limites de débit pour garantir la stabilité du système :
 
 ### Étape 2 : Choisissez votre API
 
-Twenty prend en charge deux types d'API :
+Consuelo prend en charge deux types d'API :
 
 | API         | Idéal pour                                                              | Documentation                                                  |
 | ----------- | ----------------------------------------------------------------------- | -------------------------------------------------------------- |
@@ -97,7 +97,7 @@ Comme pour les importations CSV, **l'ordre compte** pour les relations :
 
 * Nettoyez et validez vos données avant l'importation
 * Vérifiez que les champs obligatoires sont renseignés
-* Vérifiez que les formats correspondent aux exigences de Twenty (voir [Correspondance des champs](/l/fr/user-guide/data-migration/capabilities/field-mapping))
+* Vérifiez que les formats correspondent aux exigences de Consuelo (voir [Correspondance des champs](/l/fr/user-guide/data-migration/capabilities/field-mapping))
 
 ### Consignez tout
 
@@ -108,7 +108,7 @@ Comme pour les importations CSV, **l'ordre compte** pour les relations :
 ### Testez d'abord
 
 * Testez avec un petit lot (10 à 20 enregistrements)
-* Vérifiez que les données s'affichent correctement dans Twenty
+* Vérifiez que les données s'affichent correctement dans Consuelo
 * Exécutez ensuite l'importation complète
 
 ### Upsert pour éviter les doublons

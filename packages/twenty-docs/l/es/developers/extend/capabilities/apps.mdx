@@ -1,6 +1,6 @@
 ---
-title: Aplicaciones de Twenty
-description: Crea y gestiona personalizaciones de Twenty como código.
+title: Aplicaciones de Consuelo
+description: Crea y gestiona personalizaciones de Consuelo como código.
 ---
 
 <Warning>
@@ -9,7 +9,7 @@ description: Crea y gestiona personalizaciones de Twenty como código.
 
 ## ¿Qué son las aplicaciones?
 
-Las aplicaciones te permiten crear y administrar personalizaciones de Twenty **como código**. En lugar de configurar todo a través de la interfaz de usuario, defines tu modelo de datos y funciones de lógica en código, lo que hace más rápido crear, mantener y desplegar en múltiples espacios de trabajo.
+Las aplicaciones te permiten crear y administrar personalizaciones de Consuelo **como código**. En lugar de configurar todo a través de la interfaz de usuario, defines tu modelo de datos y funciones de lógica en código, lo que hace más rápido crear, mantener y desplegar en múltiples espacios de trabajo.
 
 **Lo que puedes hacer hoy:**
 
@@ -24,7 +24,7 @@ Las aplicaciones te permiten crear y administrar personalizaciones de Twenty **c
 ## Prerrequisitos
 
 * Node.js 24+ y Yarn 4
-* Un espacio de trabajo de Twenty y una clave de API (créala en https://app.twenty.com/settings/api-webhooks)
+* Un espacio de trabajo de Consuelo y una clave de API (créala en https://app.twenty.com/settings/api-webhooks)
 
 ## Primeros pasos
 
@@ -173,7 +173,7 @@ A grandes rasgos:
 
 Comandos posteriores añadirán más archivos y carpetas:
 
-* `yarn app:generate` creará una carpeta `generated/` (cliente tipado de Twenty + tipos del espacio de trabajo).
+* `yarn app:generate` creará una carpeta `generated/` (cliente tipado de Consuelo + tipos del espacio de trabajo).
 * `yarn entity:add` añadirá archivos de definición de entidades en `src/` para tus objetos, funciones, componentes de interfaz o roles personalizados.
 
 ## Autenticación
@@ -308,7 +308,7 @@ Puntos clave:
 * Puedes generar nuevos objetos usando `yarn entity:add`, que te guía por el nombrado, los campos y las relaciones.
 
 <Note>
-  **Los campos base se crean automáticamente.** Cuando defines un objeto personalizado, Twenty añade automáticamente campos estándar como `name`, `createdAt`, `updatedAt`, `createdBy`, `position` y `deletedAt`. No necesitas definir estos en tu matriz `fields` — solo agrega tus campos personalizados.
+  **Los campos base se crean automáticamente.** Cuando defines un objeto personalizado, Consuelo añade automáticamente campos estándar como `name`, `createdAt`, `updatedAt`, `createdBy`, `position` y `deletedAt`. No necesitas definir estos en tu matriz `fields` — solo agrega tus campos personalizados.
 </Note>
 
 ### Configuración de la aplicación (application.config.ts)
@@ -598,9 +598,9 @@ El cliente se vuelve a generar con `yarn app:generate`. Vuelve a ejecutarlo desp
 
 #### Credenciales en tiempo de ejecución en funciones de lógica
 
-Cuando tu función se ejecuta en Twenty, la plataforma inyecta credenciales como variables de entorno antes de que tu código se ejecute:
+Cuando tu función se ejecuta en Consuelo, la plataforma inyecta credenciales como variables de entorno antes de que tu código se ejecute:
 
-* `TWENTY_API_URL`: URL base de la API de Twenty a la que apunta tu aplicación.
+* `TWENTY_API_URL`: URL base de la API de Consuelo a la que apunta tu aplicación.
 * `TWENTY_API_KEY`: Clave de corta duración con alcance al rol de función predeterminado de tu aplicación.
 
 Notas:
@@ -647,7 +647,7 @@ Ahora puedes ejecutar los mismos comandos mediante Yarn, p. ej., `yarn app:dev`,
 ## Solución de problemas
 
 * Errores de autenticación: ejecuta `yarn auth:login` y asegúrate de que tu clave de API tenga los permisos necesarios.
-* No se puede conectar al servidor: verifica la URL de la API y que el servidor de Twenty sea accesible.
+* No se puede conectar al servidor: verifica la URL de la API y que el servidor de Consuelo sea accesible.
 * Tipos o cliente faltantes/obsoletos: ejecuta `yarn app:generate`.
 * El modo de desarrollo no sincroniza: asegúrate de que `yarn app:dev` esté ejecutándose y de que los cambios no sean ignorados por tu entorno.
 

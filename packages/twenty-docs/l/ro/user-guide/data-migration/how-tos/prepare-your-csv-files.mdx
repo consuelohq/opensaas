@@ -1,6 +1,6 @@
 ---
 title: "Pregătiți fișierele CSV "
-description: Ghid complet, pas cu pas, pentru a formata datele pentru import în Twenty.
+description: Ghid complet, pas cu pas, pentru a formata datele pentru import în Consuelo.
 ---
 
 ## Prezentare generală
@@ -22,7 +22,7 @@ Acest ghid vă ghidează în pregătirea fișierului CSV pentru un import reuși
 
 ## Pasul 2: Descărcați fișierul de mostră
 
-**Acesta este cel mai important pas.** Fișierul de mostră vă arată exact denumirile de coloane și formatul pe care îl așteaptă Twenty.
+**Acesta este cel mai important pas.** Fișierul de mostră vă arată exact denumirile de coloane și formatul pe care îl așteaptă Consuelo.
 
 1. Accesați vizualizarea obiectului (Persoane, Companii etc.)
 2. Faceți clic pe **⋮** → **Importați înregistrări**
@@ -33,7 +33,7 @@ Acest ghid vă ghidează în pregătirea fișierului CSV pentru un import reuși
 
 ## Pasul 3: Eliminați valorile duplicate
 
-Twenty impune unicitatea pentru anumite câmpuri. Valorile duplicate vor provoca erori la import.
+Consuelo impune unicitatea pentru anumite câmpuri. Valorile duplicate vor provoca erori la import.
 
 | Obiect                    | Câmpuri unice                                           |
 | ------------------------- | ------------------------------------------------------- |
@@ -45,7 +45,7 @@ Twenty impune unicitatea pentru anumite câmpuri. Valorile duplicate vor provoca
 
 1. Sortați foaia de calcul după câmpul unic (email sau domeniu)
 2. Eliminați sau îmbinați rândurile duplicate
-3. Verificați duplicatele care există deja în Twenty
+3. Verificați duplicatele care există deja în Consuelo
 
 <Warning>**Înregistrările șterse temporar se iau în calcul pentru unicitate.** Înregistrările din Meniul Comenzi → Vezi înregistrările șterse vor provoca erori de duplicat. Ștergeți-le definitiv sau restaurați-le și actualizați-le.</Warning>
 
@@ -61,7 +61,7 @@ Tipurile de câmpuri diferite necesită formate specifice. Iată referința comp
 ### Câmpuri e-mail
 
 * Trebuie să fie într-un format de e-mail valid: `name@domain.com`
-* Trebuie să fie unic (fără duplicate în fișier sau în Twenty)
+* Trebuie să fie unic (fără duplicate în fișier sau în Consuelo)
 * Pentru adresele e-mail suplimentare, folosiți acest format în coloana **Emails / Additional Emails**:
 
 ```
@@ -75,7 +75,7 @@ Tipurile de câmpuri diferite necesită formate specifice. Iată referința comp
 * Completați ambele coloane:
   * **Domain / Domain Label**: `domain.com`
   * **Domain / Domain URL**: `https://domain.com`
-* Trebuie să fie unic în fișierul dvs. și în Twenty
+* Trebuie să fie unic în fișierul dvs. și în Consuelo
 
 ### Câmpuri telefon
 
@@ -184,7 +184,7 @@ Folosiți un format JSON valid:
 
 ### Câmpuri ID
 
-* **Opțional**: Twenty generează automat ID-uri dacă nu sunt furnizate
+* **Opțional**: Consuelo generează automat ID-uri dacă nu sunt furnizate
 * **Format**: UUID (de ex., `c776ee49-f608-4a77-8cc8-6fe96ae1e43f`)
 * **Caz de utilizare**: Includeți ID-ul pentru a actualiza înregistrările existente în loc să creați altele noi
 
@@ -204,7 +204,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 **Reguli importante pentru relații:**
 
-* Înregistrarea părinte trebuie să existe deja în Twenty
+* Înregistrarea părinte trebuie să existe deja în Consuelo
 * Folosiți formatul **URL de domeniu** (`https://domain.com`), nu eticheta
 * Mapați doar UN identificator unic (nu includeți atât `companyId` cât și `companyDomain`)
 * Pentru membrii spațiului de lucru, folosiți **emailul** (nu numele)
@@ -223,7 +223,7 @@ Jane,Doe,jane@widgets.co,https://widgets.co
 
 Consultați [Cum să importați relații](/l/ro/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv) pentru instrucțiuni detaliate.
 
-## Pasul 6: Asigurați-vă că câmpurile există în Twenty
+## Pasul 6: Asigurați-vă că câmpurile există în Consuelo
 
 Importul creează **înregistrări**, nu **câmpuri**. Toate câmpurile pe care doriți să le importați trebuie să existe deja în modelul de date.
 

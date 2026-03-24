@@ -1,13 +1,13 @@
 ---
 title: الإعداد المحلي
-description: الدليل للمساهمين (أو المطورين الفضوليين) الذين يرغبون في تشغيل Twenty محلياً.
+description: الدليل للمساهمين (أو المطورين الفضوليين) الذين يرغبون في تشغيل Consuelo محلياً.
 ---
 
 ## المتطلبات الأساسية
 
 <Tabs>
   <Tab title="Linux و MacOS">
-    قبل أن تتمكن من تثبيت واستخدام Twenty، تأكد من تثبيت الأمور التالية على جهاز الكمبيوتر الخاص بك:
+    قبل أن تتمكن من تثبيت واستخدام Consuelo، تأكد من تثبيت الأمور التالية على جهاز الكمبيوتر الخاص بك:
 
     * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
     * [Node v24.5.0](https://nodejs.org/en/download)
@@ -210,7 +210,7 @@ cd twenty
 
 ## الخطوة 4: إعداد قاعدة بيانات Redis (للتخزين المؤقت)
 
-يتطلب Twenty مخزن بيانات Redis لتقديم أفضل أداء
+يتطلب Consuelo مخزن بيانات Redis لتقديم أفضل أداء
 
 <Tabs>
   <Tab title="Linux">
@@ -267,12 +267,12 @@ cp ./packages/twenty-server/.env.example ./packages/twenty-server/.env
 ```
 
 <Info>
-  **وضع تعدد مساحات العمل:** بشكل افتراضي، يعمل Twenty في وضع مساحة عمل واحدة حيث يمكن إنشاء مساحة عمل واحدة فقط. لتمكين دعم تعدد مساحات العمل (مفيد لاختبار الميزات المعتمدة على النطاقات الفرعية)، عيّن `IS_MULTIWORKSPACE_ENABLED=true` في ملف الخادم `.env`. راجع [وضع تعدد مساحات العمل](/l/ar/developers/self-host/capabilities/setup#multi-workspace-mode) للحصول على التفاصيل.
+  **وضع تعدد مساحات العمل:** بشكل افتراضي، يعمل Consuelo في وضع مساحة عمل واحدة حيث يمكن إنشاء مساحة عمل واحدة فقط. لتمكين دعم تعدد مساحات العمل (مفيد لاختبار الميزات المعتمدة على النطاقات الفرعية)، عيّن `IS_MULTIWORKSPACE_ENABLED=true` في ملف الخادم `.env`. راجع [وضع تعدد مساحات العمل](/l/ar/developers/self-host/capabilities/setup#multi-workspace-mode) للحصول على التفاصيل.
 </Info>
 
 ## الخطوة 6: تثبيت التبعيات
 
-لبناء خادم Twenty وزرع بعض البيانات في قاعدة البيانات الخاصة بك، قم بتشغيل الأمر التالي:
+لبناء خادم Consuelo وزرع بعض البيانات في قاعدة البيانات الخاصة بك، قم بتشغيل الأمر التالي:
 
 ```bash
 yarn
@@ -322,16 +322,16 @@ npx nx start twenty-front
 npx nx start
 ```
 
-## الخطوة الثامنة: استخدم Twenty
+## الخطوة الثامنة: استخدم Consuelo
 
 **الواجهة الأمامية**
 
-ستكون واجهة Twenty الأمامية تعمل على  [http://localhost:3001](http://localhost:3001).
+ستكون واجهة Consuelo الأمامية تعمل على  [http://localhost:3001](http://localhost:3001).
 يمكنك تسجيل الدخول باستخدام حساب العرض التوضيحي الافتراضي: `tim@apple.dev` (كلمة المرور: `tim@apple.dev`)
 
 **الخلفية**
 
-* سيكون خادم Twenty متصلاً ويعمل على [http://localhost:3000](http://localhost:3000)
+* سيكون خادم Consuelo متصلاً ويعمل على [http://localhost:3000](http://localhost:3000)
 * يمكن الوصول إلى واجهة برمجة التطبيقات GraphQL في [http://localhost:3000/graphql](http://localhost:3000/graphql)
 * يمكن الوصول إلى واجهة برمجة التطبيقات REST في [http://localhost:3000/rest](http://localhost:3000/rest)
 

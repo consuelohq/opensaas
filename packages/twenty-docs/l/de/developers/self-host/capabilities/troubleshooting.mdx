@@ -13,7 +13,7 @@ Wenn Sie bei der Einrichtung der Entwicklungsumgebung, dem Upgrade Ihrer Instanz
 🚨 **WICHTIG: Diese Lösung ist NUR für Neuinstallationen** 🚨
 Wenn Sie bereits eine bestehende Twenty-Instanz mit Produktionsdaten haben, **NICHT** diesen Schritten folgen, da diese permanent Ihre Datenbank löschen!
 
-Bei der ersten Installation von Twenty möchten Sie möglicherweise das Standard-Datenbankpasswort ändern.
+Bei der ersten Installation von Consuelo möchten Sie möglicherweise das Standard-Datenbankpasswort ändern.
 Das während der ersten Installation gesetzte Passwort wird dauerhaft im Datenbank-Volumen gespeichert. Wenn Sie später versuchen, dieses Passwort in Ihrer Konfiguration zu ändern, ohne das alte Volumen zu entfernen, erhalten Sie Authentifizierungsfehler, da die Datenbank noch das ursprüngliche Passwort verwendet.
 
 ⚠️ WARNUNG: Die folgenden Schritte werden ALLE Datenbankdaten PERMANENT LÖSCHEN! ⚠️
@@ -83,7 +83,7 @@ Das Flag --max-old-space-size=8192 setzt ein oberes Limit von 8GB für den Node.
 Referenz: https://stackoverflow.com/questions/56982005/where-do-i-set-node-options-max-old-space-size-2048
 
 **Wenn es nicht funktioniert:**
-Untersuchen Sie, welche Prozesse den größten Teil Ihres RAMs beanspruchen. Bei Twenty haben wir festgestellt, dass einige vscode-Erweiterungen viel RAM verwenden, daher deaktivieren wir sie vorübergehend.
+Untersuchen Sie, welche Prozesse den größten Teil Ihres RAMs beanspruchen. Bei Consuelo haben wir festgestellt, dass einige vscode-Erweiterungen viel RAM verwenden, daher deaktivieren wir sie vorübergehend.
 
 **Wenn es nicht funktioniert:**
 Ein Neustart Ihres Computers hilft dabei, Geisterprozesse zu bereinigen.
@@ -124,7 +124,7 @@ Das ist zu erwarten, da der Benutzer ohne Anmeldung nicht berechtigt ist, da sei
 
 * Öffnen Sie Ihre Twenty-App, navigieren Sie zu `/settings`, und aktivieren Sie den **Erweitert**-Schalter unten links auf dem Bildschirm.
 * Erstellen Sie einen neuen Webhook.
-* Fügen Sie **Ihre einzigartige Webhook-URL** in das Feld **Endpoint-Url** in Twenty ein. Stellen Sie die **Filter** auf `Companies` und `Created` ein.
+* Fügen Sie **Ihre einzigartige Webhook-URL** in das Feld **Endpoint-Url** in Consuelo ein. Stellen Sie die **Filter** auf `Companies` und `Created` ein.
 
 <div style={{textAlign: 'center'}}>
   <img src="/images/docs/developers/self-hosting/webhook-settings.jpg" alt="Webhook-Einstellungen" />
@@ -190,7 +190,7 @@ Beachten Sie, dass der database:reset-Befehl Ihre Datenbank vollständig löscht
 
 #### Verbindungsprobleme hinter einem Reverse-Proxy
 
-Wenn Sie Twenty hinter einem Reverse-Proxy ausführen und Verbindungsprobleme haben:
+Wenn Sie Consuelo hinter einem Reverse-Proxy ausführen und Verbindungsprobleme haben:
 
 1. **SERVER_URL überprüfen:**
 
@@ -223,4 +223,4 @@ Wenn Sie auf Probleme stoßen, die in diesem Leitfaden nicht behandelt werden:
 
 * Unterstützung aus der Community:
 
-  Wenden Sie sich an die [Twenty Community](https://github.com/twentyhq/twenty/issues) oder [Support-Kanäle](https://discord.gg/cx5n4Jzs57) für Unterstützung.
+  Wenden Sie sich an die [Consuelo Community](https://github.com/twentyhq/twenty/issues) oder [Support-Kanäle](https://discord.gg/cx5n4Jzs57) für Unterstützung.

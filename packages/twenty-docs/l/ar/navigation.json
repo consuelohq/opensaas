@@ -4,7 +4,7 @@
       "label": "دليل المستخدم",
       "groups": {
         "discoverTwenty": {
-          "label": "اكتشف Twenty",
+          "label": "اكتشف Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "القدرات"
@@ -172,7 +172,7 @@
                   "label": "تطوير الواجهة الأمامية",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "عرض"

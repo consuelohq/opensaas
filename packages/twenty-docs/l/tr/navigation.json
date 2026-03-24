@@ -4,7 +4,7 @@
       "label": "Kullanıcı Rehberi",
       "groups": {
         "discoverTwenty": {
-          "label": "Twenty'yi Keşfedin",
+          "label": "Consuelo'yi Keşfedin",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Yetkinlikler"
@@ -172,7 +172,7 @@
                   "label": "Frontend Geliştirme",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "Görüntüle"

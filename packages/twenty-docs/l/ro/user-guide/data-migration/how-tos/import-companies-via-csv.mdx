@@ -1,11 +1,11 @@
 ---
 title: Importați companii via CSV
-description: Ghid complet, pas cu pas, pentru importul companiilor în Twenty.
+description: Ghid complet, pas cu pas, pentru importul companiilor în Consuelo.
 ---
 
 ## Prezentare generală
 
-Acest ghid vă arată cum să importați companiile în Twenty. **Companiile ar trebui importate mai întâi** deoarece Persoanele și Oportunitățile se leagă de Companii.
+Acest ghid vă arată cum să importați companiile în Consuelo. **Companiile ar trebui importate mai întâi** deoarece Persoanele și Oportunitățile se leagă de Companii.
 
 ## Înainte de a începe
 
@@ -74,7 +74,7 @@ Widget Co,https://widgets.co,widgets.co,New York,USA,50
 ```
 
 <Note>
-  **Sfat profesional:** Faceți clic pe **Download sample file** în timpul importului pentru a vedea denumirile exacte ale coloanelor pe care le așteaptă Twenty.
+  **Sfat profesional:** Faceți clic pe **Download sample file** în timpul importului pentru a vedea denumirile exacte ale coloanelor pe care le așteaptă Consuelo.
 </Note>
 
 ## Pasul 2: Accesați funcția de import
@@ -96,11 +96,11 @@ Widget Co,https://widgets.co,widgets.co,New York,USA,50
 
 1. Faceți clic pe **Select file**
 2. Alegeți fișierul CSV, XLSX sau XLS
-3. Așteptați ca Twenty să analizeze fișierul
+3. Așteptați ca Consuelo să analizeze fișierul
 
 ## Pasul 4: Mapați coloanele
 
-Twenty încearcă automat să potrivească coloanele cu câmpurile. Revizuiți și ajustați:
+Consuelo încearcă automat să potrivească coloanele cu câmpurile. Revizuiți și ajustați:
 
 1. **Verificați mapările automate** — confirmați că sunt corecte
 2. **Corectați mapările incorecte** — faceți clic pe lista derulantă pentru a selecta câmpul corect
@@ -118,8 +118,8 @@ Twenty încearcă automat să potrivească coloanele cu câmpurile. Revizuiți �
 
 Dacă aveți câmpuri Select sau Multi-Select:
 
-1. Twenty afișează valorile dvs. alături de opțiunile existente
-2. Asociați fiecare valoare din fișierul dvs. cu o opțiune Twenty
+1. Consuelo afișează valorile dvs. alături de opțiunile existente
+2. Asociați fiecare valoare din fișierul dvs. cu o opțiune Consuelo
 3. Sau creați opțiuni noi, dacă este necesar
 
 <Note>
@@ -128,7 +128,7 @@ Dacă aveți câmpuri Select sau Multi-Select:
 
 ## Pasul 6: Revizuiți și remediați erorile
 
-Înainte de a finaliza importul, Twenty vă validează datele:
+Înainte de a finaliza importul, Consuelo vă validează datele:
 
 1. Faceți clic pe **Pașii următori**
 2. Rândurile cu erori sunt evidențiate cu **galben**
@@ -139,7 +139,7 @@ Dacă aveți câmpuri Select sau Multi-Select:
 
 | Eroare                        | Cauză                          | Soluție                                                      |
 | ----------------------------- | ------------------------------ | ------------------------------------------------------------ |
-| **Domeniu duplicat**          | Domeniul există deja în Twenty | Eliminați din fișier sau actualizați înregistrarea existentă |
+| **Domeniu duplicat**          | Domeniul există deja în Consuelo | Eliminați din fișier sau actualizați înregistrarea existentă |
 | **Format de domeniu invalid** | Format greșit                  | Folosiți `https://domain.com`                                |
 | **Câmp obligatoriu lipsă**    | Câmpul obligatoriu este gol    | Completați valoarea sau eliminați rândul                     |
 
@@ -163,7 +163,7 @@ Acum puteți importa înregistrări care se leagă de Companii:
 Pentru a actualiza companiile în loc să creați unele noi:
 
 1. Includeți coloana `domain` sau `id` în fișierul dvs.
-2. Twenty potrivește înregistrările după acest identificator unic
+2. Consuelo potrivește înregistrările după acest identificator unic
 3. Companiile existente sunt actualizate; cele noi sunt create
 
 Consultați [Cum să actualizați înregistrările existente](/l/ro/user-guide/data-migration/how-tos/update-existing-records-via-import) pentru detalii.
@@ -172,7 +172,7 @@ Consultați [Cum să actualizați înregistrările existente](/l/ro/user-guide/d
 
 <AccordionGroup>
   <Accordion title="De ce nu pot două companii să aibă același domeniu?">
-    Domeniul este un identificator unic în Twenty. Acest lucru previne companiile duplicate și asigură că sincronizarea emailului leagă corect emailurile de compania potrivită.
+    Domeniul este un identificator unic în Consuelo. Acest lucru previne companiile duplicate și asigură că sincronizarea emailului leagă corect emailurile de compania potrivită.
   </Accordion>
 
   <Accordion title="Ce fac dacă am companii fără domeniu?">
@@ -184,7 +184,7 @@ Consultați [Cum să actualizați înregistrările existente](/l/ro/user-guide/d
   </Accordion>
 
   <Accordion title="Ce se întâmplă dacă import un domeniu care există deja?">
-    Dacă includeți un identificator unic (domeniu sau id) care se potrivește unei companii existente, Twenty actualizează acea companie în loc să creeze un duplicat.
+    Dacă includeți un identificator unic (domeniu sau id) care se potrivește unei companii existente, Consuelo actualizează acea companie în loc să creeze un duplicat.
   </Accordion>
 
   <Accordion title="Cum remediez erorile 'duplicate domain'?">

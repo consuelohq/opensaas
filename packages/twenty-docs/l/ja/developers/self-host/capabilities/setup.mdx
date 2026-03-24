@@ -5,10 +5,10 @@ title: セットアップ
 # 構成管理
 
 <Warning>
-  **初めてインストールしますか？** [Docker Compose インストールガイド](/l/ja/developers/self-host/capabilities/docker-compose)に従ってTwentyを起動し、その後はここに戻り構成してください。
+  **初めてインストールしますか？** [Docker Compose インストールガイド](/l/ja/developers/self-host/capabilities/docker-compose)に従ってConsueloを起動し、その後はここに戻り構成してください。
 </Warning>
 
-Twentyは、異なる展開ニーズに合わせて**2つの構成モード**を提供します:
+Consueloは、異なる展開ニーズに合わせて**2つの構成モード**を提供します:
 
 **管理パネルアクセス:** 管理者権限を持つユーザーだけが (`canAccessFullAdminPanel: true`) 構成インターフェースにアクセスできます。
 
@@ -20,7 +20,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # default
 
 **ほとんどの構成は、インストール後にUIを通じて行われます。**
 
-1. Twentyインスタンスにアクセスしてください (通常は `http://localhost:3000`)
+1. Consueloインスタンスにアクセスしてください (通常は `http://localhost:3000`)
 2. **設定 / 管理パネル / 構成変数**に移動
 3. 統合、メール、ストレージなどを構成します
 4. 変更はすぐに（マルチコンテナ展開の場合、15秒以内に）効果が出ます。
@@ -64,7 +64,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 
 ## マルチワークスペースモード
 
-デフォルトでは、Twenty は**シングルワークスペースモード**で動作します—組織向けに 1 つの CRM インスタンスが必要な多くのセルフホスト型デプロイメントに最適です。
+デフォルトでは、Consuelo は**シングルワークスペースモード**で動作します—組織向けに 1 つの CRM インスタンスが必要な多くのセルフホスト型デプロイメントに最適です。
 
 ### シングルワークスペースモード（デフォルト）
 
@@ -72,7 +72,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=false
 IS_MULTIWORKSPACE_ENABLED=false  # default
 ```
 
-* Twenty の各インスタンスにつき 1 つのワークスペース
+* Consuelo の各インスタンスにつき 1 つのワークスペース
 * 最初のユーザーは自動的にフル権限の管理者になります（`canImpersonate` と `canAccessFullAdminPanel`）
 * 最初のワークスペース作成後は新規サインアップが無効になります
 * シンプルな URL 構造: `https://your-domain.com`
@@ -84,7 +84,7 @@ IS_MULTIWORKSPACE_ENABLED=true
 DEFAULT_SUBDOMAIN=app  # default value
 ```
 
-同一の Twenty インスタンス上で複数の独立したチームがそれぞれのワークスペースを必要とする、SaaS のようなデプロイメント向けにマルチワークスペースモードを有効にします。
+同一の Consuelo インスタンス上で複数の独立したチームがそれぞれのワークスペースを必要とする、SaaS のようなデプロイメント向けにマルチワークスペースモードを有効にします。
 
 **シングルワークスペースモードとの主な違い:**
 
@@ -138,7 +138,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
    * `https://{your-domain}/auth/google/redirect` (SSO用)
    * `https://{your-domain}/auth/google-apis/get-access-token` (統合用)
 
-### Twentyで構成
+### Consueloで構成
 
 1. **設定 → 管理パネル → 構成変数** に移動
 2. **Google Auth** セクションを見つけます
@@ -170,7 +170,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
 ## Microsoft 365 統合
 
 <Warning>
-  カレンダーおよびメッセージングAPIを使用するためには、[Microsoft 365 ライセンス](https://admin.microsoft.com/Adminportal/Home)が必要です。 They will not be able to sync their account on Twenty without one. それがない場合、Twenty でアカウントを同期できません。
+  カレンダーおよびメッセージングAPIを使用するためには、[Microsoft 365 ライセンス](https://admin.microsoft.com/Adminportal/Home)が必要です。 They will not be able to sync their account on Consuelo without one. それがない場合、Consuelo でアカウントを同期できません。
 </Warning>
 
 ### Microsoft Azureでプロジェクトを作成
@@ -199,7 +199,7 @@ Microsoft Azureコンソールで"権限"の欄で以下のAPIを有効にしま
 * `https://{your-domain}/auth/microsoft/redirect` マイクロソフトSSO を使用する場合
 * `https://{your-domain}/auth/microsoft-apis/get-access-token`
 
-### Twentyで構成
+### Consueloで構成
 
 1. **設定 → 管理パネル → 構成変数** に移動
 2. **Microsoft Auth** セクションを見つけます
@@ -296,7 +296,7 @@ yarn command:prod cron:workflow:automated-cron-trigger
 
 ## Logic Functions
 
-Twenty supports logic functions for workflows and custom logic. 実行環境は、`SERVERLESS_TYPE` 環境変数で設定されます。
+Consuelo supports logic functions for workflows and custom logic. 実行環境は、`SERVERLESS_TYPE` 環境変数で設定されます。
 
 <Warning>
   **Security Notice:** The local driver (`SERVERLESS_TYPE=LOCAL`) runs code directly on the host in a Node.js process with no sandboxing. 開発では、信頼できるコードにのみ使用してください。 信頼できないコードを扱う本番デプロイでは、`SERVERLESS_TYPE=LAMBDA` または `SERVERLESS_TYPE=DISABLED` の使用を強く推奨します。
@@ -335,5 +335,5 @@ SERVERLESS_TYPE=DISABLED
 ```
 
 <Note>
-  When using `SERVERLESS_TYPE=DISABLED`, any attempt to execute a logic function will return an error. This is useful if you want to run Twenty without logic function capabilities.
+  When using `SERVERLESS_TYPE=DISABLED`, any attempt to execute a logic function will return an error. This is useful if you want to run Consuelo without logic function capabilities.
 </Note>

@@ -4,7 +4,7 @@
       "label": "사용자 안내서",
       "groups": {
         "discoverTwenty": {
-          "label": "Twenty 알아보기",
+          "label": "Consuelo 알아보기",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "기능"
@@ -172,7 +172,7 @@
                   "label": "프론트엔드 개발",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "표시"

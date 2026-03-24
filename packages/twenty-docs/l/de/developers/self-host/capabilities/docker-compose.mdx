@@ -21,7 +21,7 @@ Siehe die Dokumentation [Umgebungsvariablen einrichten](/l/de/developers/self-ho
 
 ## Option 1: Einzeiliges Skript
 
-Installieren Sie die neueste stabile Version von Twenty mit einem einzigen Befehl:
+Installieren Sie die neueste stabile Version von Consuelo mit einem einzigen Befehl:
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
@@ -104,9 +104,9 @@ curl http://localhost:3000
 
 ## Konfiguration
 
-### Twenty für externen Zugriff freigeben
+### Consuelo für externen Zugriff freigeben
 
-Standardmäßig läuft Twenty auf `localhost` an Port `3000`. Um über eine externe Domain oder IP-Adresse darauf zuzugreifen, müssen Sie die `SERVER_URL` in Ihrer `.env`-Datei konfigurieren.
+Standardmäßig läuft Consuelo auf `localhost` an Port `3000`. Um über eine externe Domain oder IP-Adresse darauf zuzugreifen, müssen Sie die `SERVER_URL` in Ihrer `.env`-Datei konfigurieren.
 
 #### Erläuterung von `SERVER_URL`
 
@@ -118,11 +118,11 @@ Standardmäßig läuft Twenty auf `localhost` an Port `3000`. Um über eine exte
 
 ### SSL-Anforderungen
 
-SSL (HTTPS) ist erforderlich, damit bestimmte Browserfunktionen ordnungsgemäß funktionieren. Obwohl diese Funktionen möglicherweise während der lokalen Entwicklung funktionieren (da Browser localhost anders behandeln), ist eine ordnungsgemäße SSL-Einrichtung erforderlich, wenn Twenty auf einer regulären Domain gehostet wird.
+SSL (HTTPS) ist erforderlich, damit bestimmte Browserfunktionen ordnungsgemäß funktionieren. Obwohl diese Funktionen möglicherweise während der lokalen Entwicklung funktionieren (da Browser localhost anders behandeln), ist eine ordnungsgemäße SSL-Einrichtung erforderlich, wenn Consuelo auf einer regulären Domain gehostet wird.
 
 Zum Beispiel erfordert die Clipboard-API möglicherweise einen sicheren Kontext - einige Funktionen wie Kopierknöpfe in der gesamten Anwendung funktionieren möglicherweise nicht ohne aktiviertes HTTPS.
 
-Wir empfehlen dringend, Twenty hinter einem Reverse-Proxy mit SSL-Beendigung für optimale Sicherheit und Funktionalität zu konfigurieren.
+Wir empfehlen dringend, Consuelo hinter einem Reverse-Proxy mit SSL-Beendigung für optimale Sicherheit und Funktionalität zu konfigurieren.
 
 #### Konfiguration der `SERVER_URL`
 

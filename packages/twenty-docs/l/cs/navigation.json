@@ -4,7 +4,7 @@
       "label": "Uživatelská příručka",
       "groups": {
         "discoverTwenty": {
-          "label": "Objevte Twenty",
+          "label": "Objevte Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Možnosti"
@@ -172,7 +172,7 @@
                   "label": "Vývoj frontendu",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "Zobrazit"

@@ -10,11 +10,11 @@ title: 업그레이드 가이드
 
 Docker Compose를 사용한 경우, 다음 단계를 따르십시오:
 
-1. Twenty가 실행되고 있는 호스트의 터미널에서 Twenty를 종료하십시오: `docker compose down`
+1. Consuelo가 실행되고 있는 호스트의 터미널에서 Consuelo를 종료하십시오: `docker compose down`
 
 2. `TAG` 값을 docker-compose와 가까운 .env 파일에 변경하여 버전을 업그레이드하십시오. ( `v0.53`과 같은 `major.minor` 버전 사용을 권장합니다 )
 
-3. `docker compose up -d`로 Twenty를 다시 온라인 상태로 전환하십시오.
+3. `docker compose up -d`로 Consuelo를 다시 온라인 상태로 전환하십시오.
 
 여러 버전으로 인스턴스를 업그레이드하려는 경우, 예를 들어 v0.33.0에서 v0.35.0으로 업그레이드하려면 v0.33.0에서 v0.34.0으로, 그런 다음 v0.34.0에서 v0.35.0으로 업그레이드하십시오.
 
@@ -24,7 +24,7 @@ Docker Compose를 사용한 경우, 다음 단계를 따르십시오:
 
 ## v1.0
 
-안녕하세요 Twenty v1.0! 🎉
+안녕하세요 Consuelo v1.0! 🎉
 
 ## v0.60
 
@@ -42,7 +42,7 @@ yarn command:prod cache:flush
 
 ### v0.55
 
-Twenty 인스턴스를 v0.55 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.55 이미지로 업그레이드하십시오.
 
 이제 명령어를 실행할 필요가 없으며, 새로운 이미지는 모든 필요한 마이그레이션을 자동으로 처리할 것입니다.
 
@@ -56,7 +56,7 @@ Twenty 인스턴스를 v0.55 이미지로 업그레이드하십시오.
 yarn command:prod cache:flush
 ```
 
-이 문제는 이 Twenty 버전에만 해당하며, 향후 업그레이드에서는 필요하지 않을 것입니다.
+이 문제는 이 Consuelo 버전에만 해당하며, 향후 업그레이드에서는 필요하지 않을 것입니다.
 
 ### v0.54
 
@@ -75,9 +75,9 @@ yarn command:prod cache:flush
 
 워크스페이스가 올바르게 마이그레이션되었는지 확인하려면 `core.workspace` 테이블에서 데이터베이스의 버전을 검토할 수 있습니다.
 
-항상 현재 Twenty 인스턴스의 `주.소` 버전 범위 내에 있어야 하며, 인스턴스 버전은 admin 패널에서 볼 수 있습니다(`/설정/admin-panel`, 사용자가 데이터베이스에서 `canAccessFullAdminPanel` 속성이 true로 설정된 경우 접근 가능) 또는 `twenty-server` 컨테이너에서 `echo $APP_VERSION`을 실행하여 확인할 수 있습니다.
+항상 현재 Consuelo 인스턴스의 `주.소` 버전 범위 내에 있어야 하며, 인스턴스 버전은 admin 패널에서 볼 수 있습니다(`/설정/admin-panel`, 사용자가 데이터베이스에서 `canAccessFullAdminPanel` 속성이 true로 설정된 경우 접근 가능) 또는 `twenty-server` 컨테이너에서 `echo $APP_VERSION`을 실행하여 확인할 수 있습니다.
 
-비동기화된 워크스페이스 버전을 수정하려면 해당 Twenty 버전의 관련 업그레이드 가이드를 따르고 원하는 버전에 도달할 때까지 순차적으로 업그레이드해야 합니다.
+비동기화된 워크스페이스 버전을 수정하려면 해당 Consuelo 버전의 관련 업그레이드 가이드를 따르고 원하는 버전에 도달할 때까지 순차적으로 업그레이드해야 합니다.
 
 #### `auditLog` 제거
 
@@ -85,7 +85,7 @@ auditLog 표준 객체를 제거했으며, 이로 인해 이 마이그레이션 
 
 ### v0.51 to v0.52
 
-Twenty 인스턴스를 v0.52 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.52 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -95,11 +95,11 @@ yarn command:prod upgrade
 #### 버전이 `0.52.0`과 `0.52.6` 사이에 차단된 워크스페이스가 있습니다.
 
 불행히도 `0.52.0` 및 `0.52.6`은 dockerHub에서 완전히 삭제되었습니다.
-데이터베이스의 워크스페이스 버전을 `0.51.0`으로 수동 업데이트하고 바로 위 업그레이드 가이드를 따라 Twenty 버전 `0.52.11`로 업그레이드해야 합니다.
+데이터베이스의 워크스페이스 버전을 `0.51.0`으로 수동 업데이트하고 바로 위 업그레이드 가이드를 따라 Consuelo 버전 `0.52.11`로 업그레이드해야 합니다.
 
 ### v0.50 to v0.51
 
-Twenty 인스턴스를 v0.51 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.51 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -108,7 +108,7 @@ yarn command:prod upgrade
 
 ### v0.44.0 to v0.50.0
 
-Twenty 인스턴스를 v0.50.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.50.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -122,7 +122,7 @@ yarn command:prod upgrade
 
 ### v0.43.0 to v0.44.0
 
-Twenty 인스턴스를 v0.44.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.44.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -131,7 +131,7 @@ yarn command:prod upgrade
 
 ### v0.42.0 to v0.43.0
 
-Twenty 인스턴스를 v0.43.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.43.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -172,7 +172,7 @@ exit
 
 ### v0.41.0 to v0.42.0
 
-Twenty 인스턴스를 v0.42.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.42.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -186,7 +186,7 @@ yarn command:prod upgrade-0.42
 
 ### v0.40.0 to v0.41.0
 
-Twenty 인스턴스를 v0.41.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.41.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -199,7 +199,7 @@ yarn command:prod upgrade-0.41
 
 ### v0.35.0 to v0.40.0
 
-Twenty 인스턴스를 v0.40.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.40.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -212,7 +212,7 @@ yarn command:prod upgrade-0.40
 
 ### v0.34.0 to v0.35.0
 
-Twenty 인스턴스를 v0.35.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.35.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -227,7 +227,7 @@ yarn command:prod upgrade-0.35
 
 ### v0.33.0 to v0.34.0
 
-Twenty 인스턴스를 v0.34.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.34.0 이미지로 업그레이드하십시오.
 
 ```
 yarn database:migrate:prod
@@ -247,7 +247,7 @@ yarn command:prod upgrade-0.34
 
 ### v0.32.0 to v0.33.0
 
-Twenty 인스턴스를 v0.33.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.33.0 이미지로 업그레이드하십시오.
 
 ```
 yarn command:prod cache:flush
@@ -263,7 +263,7 @@ twenty-postgres 이미지를 계속 사용하려면, docker-compose.yml에서 `t
 
 ### v0.31.0 to v0.32.0
 
-Twenty 인스턴스를 v0.32.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.32.0 이미지로 업그레이드하십시오.
 
 **스키마 및 데이터 마이그레이션**
 
@@ -296,7 +296,7 @@ Google 이메일 및 캘린더 동기화를 위해 연결된 계정을 사용하
 
 ### v0.30.0 to v0.31.0
 
-Twenty 인스턴스를 v0.31.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.31.0 이미지로 업그레이드하십시오.
 
 **스키마 및 데이터 마이그레이션**:
 
@@ -309,10 +309,10 @@ yarn command:prod upgrade-0.31
 
 ### v0.24.0 to v0.30.0
 
-Twenty 인스턴스를 v0.30.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.30.0 이미지로 업그레이드하십시오.
 
 **중대한 변경 사항**:
-성능을 개선하기 위해, 이제 Twenty는 redis 캐시 구성이 필요합니다. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)을 업데이트하여 이를 반영했습니다.
+성능을 개선하기 위해, 이제 Consuelo는 redis 캐시 구성이 필요합니다. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)을 업데이트하여 이를 반영했습니다.
 구성을 업데이트하고 환경 변수를 적절히 업데이트하십시오:
 
 ```
@@ -332,7 +332,7 @@ yarn command:prod upgrade-0.30
 
 ### v0.23.0 to v0.24.0
 
-Twenty 인스턴스를 v0.24.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.24.0 이미지로 업그레이드하십시오.
 
 다음 명령어를 실행하십시오:
 
@@ -345,7 +345,7 @@ yarn command:prod upgrade-0.24
 
 ### v0.22.0 to v0.23.0
 
-Twenty 인스턴스를 v0.23.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.23.0 이미지로 업그레이드하십시오.
 
 다음 명령어를 실행하십시오:
 
@@ -359,7 +359,7 @@ yarn command:prod upgrade-0.23
 
 ### v0.21.0 to v0.22.0
 
-Twenty 인스턴스를 v0.22.0 이미지로 업그레이드하십시오.
+Consuelo 인스턴스를 v0.22.0 이미지로 업그레이드하십시오.
 
 다음 명령어를 실행하십시오:
 

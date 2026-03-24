@@ -7,23 +7,23 @@ import { VimeoEmbed } from '/snippets/vimeo-embed.mdx';
 
 ## Cum funcționează maparea câmpurilor
 
-Când încărcați un fișier, Twenty analizează coloanele și încearcă să le potrivească cu câmpurile existente.
+Când încărcați un fișier, Consuelo analizează coloanele și încearcă să le potrivească cu câmpurile existente.
 
 ### Mapare automată
 
-Twenty încearcă să potrivească coloanele pe baza:
+Consuelo încearcă să potrivească coloanele pe baza:
 
 * Numele antetelor de coloană (potriviri exacte sau similare)
 * Detecția tipului de date (date, numere, e-mailuri)
 * Tipare comune de câmp
 
-<Note>**Sfat rapid:** Exportați câteva rânduri din obiectul pe care doriți să-l importați. Fișierul exportat va avea exact numele de coloane pe care Twenty le așteaptă, ceea ce face ca maparea automată să fie fără probleme în timpul importului.</Note>
+<Note>**Sfat rapid:** Exportați câteva rânduri din obiectul pe care doriți să-l importați. Fișierul exportat va avea exact numele de coloane pe care Consuelo le așteaptă, ceea ce face ca maparea automată să fie fără probleme în timpul importului.</Note>
 
 ### Opțiuni de mapare manuală
 
 Pentru fiecare coloană, puteți:
 
-* **Mapați la un câmp**: Selectați câmpul Twenty corespunzător dintr-un meniu derulant
+* **Mapați la un câmp**: Selectați câmpul Consuelo corespunzător dintr-un meniu derulant
 * **Nu mapați**: Omiteți complet coloana (datele nu vor fi importate)
 
 <Note>**Câmpurile trebuie să existe înainte de import.** Importul creează înregistrări, nu câmpuri. Creați câmpuri personalizate în **Setări → Model de date** înainte de import.</Note>
@@ -99,7 +99,7 @@ Formate acceptate:
 
 ### Câmpuri ID
 
-Specificarea unui `id` în timpul importului este opțională. Twenty generează automat unul dacă nu este furnizat.
+Specificarea unui `id` în timpul importului este opțională. Consuelo generează automat unul dacă nu este furnizat.
 
 Cazuri de utilizare pentru maparea unei coloane `id`:
 

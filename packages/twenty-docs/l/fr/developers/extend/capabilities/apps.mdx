@@ -1,6 +1,6 @@
 ---
-title: Applications Twenty
-description: Créez et gérez les personnalisations Twenty sous forme de code.
+title: Applications Consuelo
+description: Créez et gérez les personnalisations Consuelo sous forme de code.
 ---
 
 <Warning>
@@ -9,7 +9,7 @@ description: Créez et gérez les personnalisations Twenty sous forme de code.
 
 ## Que sont les applications ?
 
-Les applications vous permettent de créer et de gérer des personnalisations Twenty **sous forme de code**. Au lieu de tout configurer via l’interface utilisateur, vous définissez votre modèle de données et vos fonctions logiques dans le code — ce qui accélère la création, la maintenance et le déploiement sur plusieurs espaces de travail.
+Les applications vous permettent de créer et de gérer des personnalisations Consuelo **sous forme de code**. Au lieu de tout configurer via l’interface utilisateur, vous définissez votre modèle de données et vos fonctions logiques dans le code — ce qui accélère la création, la maintenance et le déploiement sur plusieurs espaces de travail.
 
 **Ce que vous pouvez faire aujourd'hui:**
 
@@ -24,7 +24,7 @@ Les applications vous permettent de créer et de gérer des personnalisations Tw
 ## Prérequis
 
 * Node.js 24+ et Yarn 4
-* Un espace de travail Twenty et une clé API (créez-en une sur https://app.twenty.com/settings/api-webhooks)
+* Un espace de travail Consuelo et une clé API (créez-en une sur https://app.twenty.com/settings/api-webhooks)
 
 ## Prise en main
 
@@ -173,7 +173,7 @@ Dans les grandes lignes :
 
 Des commandes ultérieures ajouteront d’autres fichiers et dossiers :
 
-* `yarn app:generate` créera un dossier `generated/` (client Twenty typé + types de l’espace de travail).
+* `yarn app:generate` créera un dossier `generated/` (client Consuelo typé + types de l’espace de travail).
 * `yarn entity:add` ajoutera des fichiers de définition d’entité sous `src/` pour vos objets, fonctions, composants front-end ou rôles personnalisés.
 
 ## Authentification
@@ -308,7 +308,7 @@ Points clés :
 * Vous pouvez générer de nouveaux objets avec `yarn entity:add`, qui vous guide à travers le nommage, les champs et les relations.
 
 <Note>
-  **Les champs de base sont créés automatiquement.** Lorsque vous définissez un objet personnalisé, Twenty ajoute automatiquement des champs standard tels que `name`, `createdAt`, `updatedAt`, `createdBy`, `position` et `deletedAt`. Vous n'avez pas besoin de les définir dans votre tableau `fields` — ajoutez uniquement vos champs personnalisés.
+  **Les champs de base sont créés automatiquement.** Lorsque vous définissez un objet personnalisé, Consuelo ajoute automatiquement des champs standard tels que `name`, `createdAt`, `updatedAt`, `createdBy`, `position` et `deletedAt`. Vous n'avez pas besoin de les définir dans votre tableau `fields` — ajoutez uniquement vos champs personnalisés.
 </Note>
 
 ### Configuration de l’application (application.config.ts)
@@ -598,9 +598,9 @@ Le client est régénéré par `yarn app:generate`. Relancez après avoir modifi
 
 #### Identifiants d’exécution dans les fonctions logiques
 
-Lorsque votre fonction s’exécute sur Twenty, la plateforme injecte des identifiants sous forme de variables d’environnement avant l’exécution de votre code :
+Lorsque votre fonction s’exécute sur Consuelo, la plateforme injecte des identifiants sous forme de variables d’environnement avant l’exécution de votre code :
 
-* `TWENTY_API_URL` : URL de base de l’API Twenty ciblée par votre application.
+* `TWENTY_API_URL` : URL de base de l’API Consuelo ciblée par votre application.
 * `TWENTY_API_KEY` : Clé de courte durée limitée au rôle de fonction par défaut de votre application.
 
 Notes:
@@ -647,7 +647,7 @@ Vous pouvez désormais exécuter les mêmes commandes via Yarn, par exemple `yar
 ## Résolution des problèmes
 
 * Erreurs d’authentification : exécutez `yarn auth:login` et assurez-vous que votre clé API dispose des autorisations requises.
-* Impossible de se connecter au serveur : vérifiez l’URL de l’API et que le serveur Twenty est accessible.
+* Impossible de se connecter au serveur : vérifiez l’URL de l’API et que le serveur Consuelo est accessible.
 * Types ou client manquants/obsolètes : exécutez `yarn app:generate`.
 * Le mode dev ne se synchronise pas : assurez-vous que `yarn app:dev` est en cours d’exécution et que les modifications ne sont pas ignorées par votre environnement.
 

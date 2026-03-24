@@ -4,7 +4,7 @@
       "label": "ユーザーガイド",
       "groups": {
         "discoverTwenty": {
-          "label": "Twenty を知る",
+          "label": "Consuelo を知る",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "機能"
@@ -172,7 +172,7 @@
                   "label": "フロントエンド開発",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "表示"

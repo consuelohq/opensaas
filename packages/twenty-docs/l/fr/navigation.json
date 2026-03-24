@@ -4,7 +4,7 @@
       "label": "Guide de l'utilisateur",
       "groups": {
         "discoverTwenty": {
-          "label": "Découvrez Twenty",
+          "label": "Découvrez Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
               "label": "Capacités"
@@ -172,7 +172,7 @@
                   "label": "Développement frontend",
                   "groups": {
                     "twentyUi": {
-                      "label": "Twenty UI",
+                      "label": "Consuelo UI",
                       "groups": {
                         "display": {
                           "label": "Afficher"
