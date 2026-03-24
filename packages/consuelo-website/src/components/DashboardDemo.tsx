@@ -202,7 +202,7 @@ function TabBar({
             onClick={() => onNavigate(v)}
             className={`flex items-center gap-2 px-4 py-3 text-[13px] font-medium transition-colors ${
               isActive
-                ? "border-b-2 border-[#3b82f6] text-[#e8e8e8]"
+                ? "border-b-2 border-dotted border-[#3b82f6] text-[#e8e8e8]"
                 : "text-[#666] hover:text-[#999]"
             }`}
           >
@@ -235,7 +235,7 @@ function MobileTabs({
             onClick={() => onNavigate(v)}
             className={`flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium whitespace-nowrap transition-colors ${
               isActive
-                ? "border-b-2 border-[#3b82f6] text-[#e8e8e8]"
+                ? "border-b-2 border-dotted border-[#3b82f6] text-[#e8e8e8]"
                 : "text-[#666]"
             }`}
           >

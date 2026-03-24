@@ -206,7 +206,7 @@ const { sectionId } = Astro.props as Props;
   .launch-hero__tab.is-active {
     background: transparent;
     color: var(--launch-fg);
-    border-bottom: 2px solid var(--launch-fg);
+    border-bottom: 2px dotted var(--launch-fg);
     margin-bottom: -1px;
   }
 
@@ -238,7 +238,8 @@ const { sectionId } = Astro.props as Props;
 
   .launch-hero__snippet-value.is-link:hover {
     text-decoration: underline;
-    text-underline-offset: 0.15em;
+    text-decoration-style: dotted;
+    text-underline-offset: 4px;
   }
 
   .launch-hero__snippet-action {

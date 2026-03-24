@@ -47,13 +47,13 @@
 		@apply relative only:-mx-4;
 	}
 	.toast__body {
-		@apply text-xs text-white/80 [&_a]:font-bold [&_a]:text-white [&_a]:underline [&_p]:mb-0;
+		@apply text-xs text-white/80 [&_a]:font-bold [&_a]:text-white [&_a]:underline [&_a]:decoration-dotted [&_a]:underline-offset-4 [&_p]:mb-0;
 	}
 	.toast__actions {
 		@apply mt-2 flex justify-between pb-1 empty:hidden;
 	}
 	.toast__text-button {
-		@apply text-xs font-medium text-white underline transition duration-300 hover:text-white/70;
+		@apply text-xs font-medium text-white underline decoration-dotted underline-offset-4 transition duration-300 hover:text-white/70;
 	}
 </style>
 
