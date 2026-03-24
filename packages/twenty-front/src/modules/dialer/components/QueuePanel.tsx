@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
@@ -343,6 +344,7 @@ const ParallelDialingStatus = () => {
 // main component
 
 export const QueuePanel = () => {
+  const { t } = useLingui();
   const queue = useRecoilValue(activeQueueState);
   const currentItem = useRecoilValue(currentQueueItemSelector);
   const nextItem = useRecoilValue(nextQueueItemSelector);
@@ -391,7 +393,7 @@ export const QueuePanel = () => {
         {/* current contact */}
         {currentItem ? (
           <>
-            <StyledSectionLabel>Now Calling</StyledSectionLabel>
+            <StyledSectionLabel>{t`Now Calling`}</StyledSectionLabel>
             <StyledContactCard>
               <StyledContactName>
                 <IconUser size={14} />
@@ -432,7 +434,7 @@ export const QueuePanel = () => {
         {/* next contact */}
         {nextItem && (
           <>
-            <StyledSectionLabel>Up Next</StyledSectionLabel>
+            <StyledSectionLabel>{t`Up Next`}</StyledSectionLabel>
             <StyledContactCard compact>
               <StyledContactName>
                 <IconUser size={14} />

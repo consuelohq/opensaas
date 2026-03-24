@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { useCallback, useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import {
@@ -163,6 +164,7 @@ const StyledErrorDismiss = styled.button`
 `;
 
 export const InCallControls = () => {
+  const { t } = useLingui();
   const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const [callError, setCallError] = useRecoilState(callErrorState);
@@ -265,7 +267,7 @@ export const InCallControls = () => {
     <StyledContainer>
       {isConsulting && (
         <StyledWarmBar>
-          <StyledWarmLabel>Consulting with transfer target...</StyledWarmLabel>
+          <StyledWarmLabel>{t`Consulting with transfer target...`}</StyledWarmLabel>
           <StyledSmallButton onClick={completeTransfer}>
             <IconCheck size={14} />
             Complete
@@ -304,7 +306,7 @@ export const InCallControls = () => {
               <IconMicrophone size={20} />
             )}
           </StyledButton>
-          <StyledLabel>Mute</StyledLabel>
+          <StyledLabel>{t`Mute`}</StyledLabel>
         </StyledButtonGroup>
 
         <StyledButtonGroup>
@@ -321,14 +323,14 @@ export const InCallControls = () => {
               <IconPlayerPause size={20} />
             )}
           </StyledButton>
-          <StyledLabel>Hold</StyledLabel>
+          <StyledLabel>{t`Hold`}</StyledLabel>
         </StyledButtonGroup>
 
         <StyledButtonGroup>
           <StyledButton danger onClick={handleEndCall} aria-label="End call">
             <IconPhoneOff size={20} />
           </StyledButton>
-          <StyledLabel>End</StyledLabel>
+          <StyledLabel>{t`End`}</StyledLabel>
         </StyledButtonGroup>
 
         <StyledButtonGroup>
@@ -341,7 +343,7 @@ export const InCallControls = () => {
           >
             <IconHash size={20} />
           </StyledButton>
-          <StyledLabel>Keypad</StyledLabel>
+          <StyledLabel>{t`Keypad`}</StyledLabel>
         </StyledButtonGroup>
 
         <StyledButtonGroup>
@@ -354,7 +356,7 @@ export const InCallControls = () => {
           >
             <IconSwitchHorizontal size={20} />
           </StyledButton>
-          <StyledLabel>Transfer</StyledLabel>
+          <StyledLabel>{t`Transfer`}</StyledLabel>
         </StyledButtonGroup>
       </StyledBar>
 

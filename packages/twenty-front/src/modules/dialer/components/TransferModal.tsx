@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { useCallback, useState } from 'react';
 import { IconPhone, IconX } from '@tabler/icons-react';
 
@@ -137,6 +138,7 @@ export const TransferModal = ({
   isTransferring,
   error,
 }: TransferModalProps) => {
+  const { t } = useLingui();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [transferType, setTransferType] = useState<TransferType>('warm');
 
@@ -171,7 +173,7 @@ export const TransferModal = ({
   return (
     <StyledOverlay>
       <StyledHeader>
-        <StyledTitle>Transfer Call</StyledTitle>
+        <StyledTitle>{t`Transfer Call`}</StyledTitle>
         <StyledCloseButton onClick={onClose} aria-label="Close transfer">
           <IconX size={18} />
         </StyledCloseButton>

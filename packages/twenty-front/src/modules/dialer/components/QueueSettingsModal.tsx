@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useRecoilState } from 'recoil';
+import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { IconX } from '@tabler/icons-react';
 
@@ -93,6 +94,7 @@ export const QueueSettingsModal = ({
   queue,
   onClose,
 }: QueueSettingsModalProps) => {
+  const { t } = useLingui();
   const [settings, setSettings] = useState<QueueSettings>(queue.settings);
   const [, setQueue] = useRecoilState(activeQueueState);
 
@@ -114,7 +116,7 @@ export const QueueSettingsModal = ({
   return (
     <StyledOverlay onClick={onClose}>
       <StyledModal onClick={(e) => e.stopPropagation()}>
-        <StyledModalHeader>Queue Settings</StyledModalHeader>
+        <StyledModalHeader>{t`Queue Settings`}</StyledModalHeader>
         <StyledModalBody>
           <StyledSettingRow>
             Auto-advance
@@ -214,7 +216,7 @@ export const QueueSettingsModal = ({
           )}
         </StyledModalBody>
         <StyledModalActions>
-          <StyledModalButton onClick={onClose}>Cancel</StyledModalButton>
+          <StyledModalButton onClick={onClose}>{t`Cancel`}</StyledModalButton>
           <StyledModalButton accent onClick={handleSave}>
             Save
           </StyledModalButton>

@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { IconChartBar } from '@tabler/icons-react';
@@ -122,6 +123,7 @@ const OUTCOME_COLORS: Record<string, string> = {
 const DEFAULT_COLOR = '#6b7280';
 
 export const AnalyticsDashboard = () => {
+  const { t } = useLingui();
   const { metrics, loading, fetchMetrics } = useCallAnalytics();
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
 
@@ -156,7 +158,7 @@ export const AnalyticsDashboard = () => {
       {loading && <StyledLoading>Loading metrics…</StyledLoading>}
 
       {!loading && !metrics && (
-        <StyledLoading>No analytics data available</StyledLoading>
+        <StyledLoading>{t`No analytics data available`}</StyledLoading>
       )}
 
       {!loading && metrics && (
@@ -164,29 +166,29 @@ export const AnalyticsDashboard = () => {
           <StyledCards>
             <StyledCard>
               <StyledCardValue>{metrics.totalCalls}</StyledCardValue>
-              <StyledCardLabel>Total Calls</StyledCardLabel>
+              <StyledCardLabel>{t`Total Calls`}</StyledCardLabel>
             </StyledCard>
             <StyledCard>
               <StyledCardValue>
                 {Math.round(metrics.answerRate * 100)}%
               </StyledCardValue>
-              <StyledCardLabel>Answer Rate</StyledCardLabel>
+              <StyledCardLabel>{t`Answer Rate`}</StyledCardLabel>
             </StyledCard>
             <StyledCard>
               <StyledCardValue>
                 {formatDurationTimer(metrics.avgDuration)}
               </StyledCardValue>
-              <StyledCardLabel>Avg Duration</StyledCardLabel>
+              <StyledCardLabel>{t`Avg Duration`}</StyledCardLabel>
             </StyledCard>
             <StyledCard>
               <StyledCardValue>{metrics.callsToday}</StyledCardValue>
-              <StyledCardLabel>Today</StyledCardLabel>
+              <StyledCardLabel>{t`Today`}</StyledCardLabel>
             </StyledCard>
           </StyledCards>
 
           {outcomeTotal > 0 && (
             <StyledBars>
-              <StyledCardLabel>Outcome Distribution</StyledCardLabel>
+              <StyledCardLabel>{t`Outcome Distribution`}</StyledCardLabel>
               {Object.entries(metrics.outcomeDistribution).map(
                 ([label, count]) => (
                   <StyledBarRow key={label}>

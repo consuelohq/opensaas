@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports — DEV-788: twenty-ui module resolution conflict
@@ -112,6 +113,7 @@ export const TranscriptView = ({
   callId,
   hasTranscript,
 }: TranscriptViewProps) => {
+  const { t } = useLingui();
   const [expanded, setExpanded] = useState(false);
   const [entries, setEntries] = useState<TranscriptEntry[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -156,7 +158,7 @@ export const TranscriptView = ({
   }, [entries]);
 
   if (!hasTranscript) {
-    return <StyledEmpty>No transcript available</StyledEmpty>;
+    return <StyledEmpty>{t`No transcript available`}</StyledEmpty>;
   }
 
   return (
@@ -171,7 +173,7 @@ export const TranscriptView = ({
           {loading && <StyledEmpty>Loading transcript…</StyledEmpty>}
 
           {!loading && entries?.length === 0 && (
-            <StyledEmpty>No transcript available</StyledEmpty>
+            <StyledEmpty>{t`No transcript available`}</StyledEmpty>
           )}
 
           {!loading && entries && entries.length > 0 && (

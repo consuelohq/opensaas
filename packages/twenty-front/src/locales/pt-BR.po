@@ -1584,6 +1584,11 @@ msgstr "e"
 msgid "And"
 msgstr "E"
 
+#. js-lingui-id: BxsPgw
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
+msgid "Answer Rate"
+msgstr ""
+
 #. js-lingui-id: KYvJeB
 #: src/modules/object-record/advanced-filter/components/AdvancedFilterSubFieldSelectMenu.tsx
 msgid "Any {fieldLabel} field"
@@ -2133,6 +2138,11 @@ msgstr ""
 msgid "Average"
 msgstr "Média"
 
+#. js-lingui-id: BdnYlL
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
+msgid "Avg Duration"
+msgstr ""
+
 #. js-lingui-id: li9In6
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Axis name"
@@ -2413,6 +2423,11 @@ msgstr "Visão de calendário"
 msgid "Calendars"
 msgstr "Calendários"
 
+#. js-lingui-id: KH43tV
+#: src/modules/dialer/components/DialConfirmationModal.tsx
+msgid "Caller ID"
+msgstr ""
+
 #. js-lingui-id: saW1OG
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "Calling & Presence"
@@ -2431,6 +2446,8 @@ msgstr "Não consegue escanear? Copie o"
 #. js-lingui-id: dEgA5A
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
+#: src/modules/dialer/components/DialConfirmationModal.tsx
+#: src/modules/dialer/components/QueueSettingsModal.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
@@ -3039,6 +3056,11 @@ msgstr "Configure suas configurações de e-mail e calendário."
 msgid "Confirm"
 msgstr "Confirmar"
 
+#. js-lingui-id: fyh7GG
+#: src/modules/dialer/components/DialConfirmationModal.tsx
+msgid "Confirm Call"
+msgstr ""
+
 #. js-lingui-id: qmnX/6
 #: src/modules/billing/components/internal/MeteredPriceSelector.tsx
 msgid "Confirm changing your current credit plan."
@@ -3117,6 +3139,11 @@ msgstr ""
 #. js-lingui-id: yvKAMB
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/components/ColumnGrid.tsx
 msgid "Consuelo fields"
+msgstr ""
+
+#. js-lingui-id: FbW/oJ
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Consulting with transfer target..."
 msgstr ""
 
 #. js-lingui-id: Y2y0mC
@@ -5042,6 +5069,11 @@ msgstr "Ativar opções de contorno"
 msgid "Enable model-specific features"
 msgstr "Habilitar recursos específicos do modelo"
 
+#. js-lingui-id: xDr/ct
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "End"
+msgstr ""
+
 #. js-lingui-id: VFv2ZC
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "End Date"
@@ -6776,6 +6808,11 @@ msgstr "Ocultar grupos ocultos"
 msgid "History"
 msgstr ""
 
+#. js-lingui-id: YJMNeo
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Hold"
+msgstr ""
+
 #. js-lingui-id: Xkd22/
 #: src/modules/command-menu/pages/page-layout/constants/GraphTypeInformation.ts
 #: src/modules/page-layout/utils/getWidgetTitle.ts
@@ -7542,6 +7579,11 @@ msgstr "Chave/Valor"
 #: src/modules/keyboard-shortcut-menu/components/KeyboardShortcutMenuDialog.tsx
 msgid "Keyboard shortcuts"
 msgstr "Atalhos de teclado"
+
+#. js-lingui-id: jw/t1m
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Keypad"
+msgstr ""
 
 #. js-lingui-id: h6S9Yz
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
@@ -8499,6 +8541,11 @@ msgstr "deve ser um array de objetos com url e rótulo válidos (formato: '[{\"u
 msgid "must be an array of valid emails"
 msgstr "deve ser um array de emails válidos"
 
+#. js-lingui-id: R7SsBE
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Mute"
+msgstr ""
+
 #. js-lingui-id: XTGSZU
 #: src/modules/views/view-picker/components/ViewPickerListContent.tsx
 msgid "My unlisted views"
@@ -8855,6 +8902,11 @@ msgstr "Nenhum agente disponível"
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentEntityPickerDropdown.tsx
 msgid "No agents match your search"
 msgstr "Nenhum agente corresponde à sua pesquisa"
+
+#. js-lingui-id: SJ/b9o
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
+msgid "No analytics data available"
+msgstr ""
 
 #. js-lingui-id: 9mx36q
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentTable.tsx
@@ -9275,6 +9327,12 @@ msgstr ""
 msgid "No system objects with views found"
 msgstr ""
 
+#. js-lingui-id: LylDpi
+#: src/modules/dialer/components/TranscriptView.tsx
+#: src/modules/dialer/components/TranscriptView.tsx
+msgid "No transcript available"
+msgstr ""
+
 #. js-lingui-id: fBsRs5
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionTriggersTab.tsx
 msgid "No triggers configured for this function."
@@ -9393,6 +9451,11 @@ msgstr ""
 #: src/utils/date-utils.ts
 msgid "now"
 msgstr "agora"
+
+#. js-lingui-id: CqmXjL
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Now Calling"
+msgstr ""
 
 #. js-lingui-id: VVexZo
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
@@ -9815,6 +9878,11 @@ msgstr "Nossa equipe pode ajudar você a configurar seu espaço de trabalho para
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminHealthStatusRightContainer.tsx
 msgid "Outage"
 msgstr "Interrupção"
+
+#. js-lingui-id: g6zGjM
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
+msgid "Outcome Distribution"
+msgstr ""
 
 #. js-lingui-id: gh06VD
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
@@ -10463,6 +10531,11 @@ msgstr "Informações da fila não estão disponíveis porque o trabalhador est�
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminWorkerQueueMetricsSection.tsx
 msgid "Queue performance"
 msgstr "Desempenho da fila"
+
+#. js-lingui-id: 37XBQr
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Queue Settings"
+msgstr ""
 
 #. js-lingui-id: Qsq82i
 #: src/pages/settings/admin-panel/SettingsAdminQueueDetail.tsx
@@ -13195,6 +13268,7 @@ msgid "To"
 msgstr ""
 
 #. js-lingui-id: ecUA8p
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
 #: src/modules/localization/utils/formatDateISOStringToRelativeDate.ts
 #: src/modules/object-record/record-calendar/components/RecordCalendarTopBar.tsx
 #: src/modules/settings/admin-panel/health-status/constants/WorkerQueueMetricsSelectOptions.ts
@@ -13273,6 +13347,11 @@ msgstr ""
 msgid "Total Available"
 msgstr ""
 
+#. js-lingui-id: DlEgsQ
+#: src/modules/dialer/components/AnalyticsDashboard.tsx
+msgid "Total Calls"
+msgstr ""
+
 #. js-lingui-id: hg5QeV
 #: src/modules/ai/components/internal/AIChatContextUsageButton.tsx
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -13293,6 +13372,16 @@ msgstr "Tempo total"
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Track your {intervalLabel} workflow credit consumption."
 msgstr "Acompanhe seu consumo {intervalLabel} de créditos de workflows."
+
+#. js-lingui-id: zPGNJm
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Transfer"
+msgstr ""
+
+#. js-lingui-id: BD6DfP
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Transfer Call"
+msgstr ""
 
 #. js-lingui-id: lhkaAC
 #: src/modules/billing/components/internal/PlansTags.tsx
@@ -13679,6 +13768,11 @@ msgstr "Papel sem título"
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx
 msgid "Untitled Workflow"
 msgstr "Workflow Sem Título"
+
+#. js-lingui-id: bf8hei
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Up Next"
+msgstr ""
 
 #. js-lingui-id: hmc//6
 #: src/modules/workflow/workflow-trigger/components/CronExpressionHelper.tsx

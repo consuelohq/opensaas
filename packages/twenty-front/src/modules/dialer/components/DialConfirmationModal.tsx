@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
@@ -166,6 +167,7 @@ export const DialConfirmationModal = ({
   onClose,
   onConfirm,
 }: DialConfirmationModalProps) => {
+  const { t } = useLingui();
   const contact = useRecoilValue(selectedContactState);
   const phoneNumber = useRecoilValue(phoneNumberState);
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
@@ -197,7 +199,7 @@ export const DialConfirmationModal = ({
   return (
     <StyledOverlay>
       <StyledHeader>
-        <StyledTitle>Confirm Call</StyledTitle>
+        <StyledTitle>{t`Confirm Call`}</StyledTitle>
         <StyledCloseButton onClick={onClose} aria-label="Close">
           <IconX size={18} />
         </StyledCloseButton>
@@ -215,7 +217,7 @@ export const DialConfirmationModal = ({
       <StyledDivider />
 
       <div>
-        <StyledLabel>Caller ID</StyledLabel>
+        <StyledLabel>{t`Caller ID`}</StyledLabel>
         {availableCallerIds.length <= 1 ? (
           <StyledDetail>
             {availableCallerIds[0]
@@ -237,7 +239,7 @@ export const DialConfirmationModal = ({
       </div>
 
       <StyledActions>
-        <StyledCancelButton onClick={onClose}>Cancel</StyledCancelButton>
+        <StyledCancelButton onClick={onClose}>{t`Cancel`}</StyledCancelButton>
         <StyledConfirmButton
           isDisabled={!callerId}
           disabled={!callerId}

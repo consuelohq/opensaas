@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
@@ -161,6 +162,7 @@ const SkipReasonModal = ({
   onSkip: (reason: string) => void;
   onClose: () => void;
 }) => {
+  const { t } = useLingui();
   const [selected, setSelected] = useState<string | null>(null);
   const [customReason, setCustomReason] = useState('');
 
@@ -172,7 +174,7 @@ const SkipReasonModal = ({
   return (
     <StyledOverlay onClick={onClose}>
       <StyledModal onClick={(e) => e.stopPropagation()}>
-        <StyledModalHeader>Skip Reason</StyledModalHeader>
+        <StyledModalHeader>{t`Skip Reason`}</StyledModalHeader>
         <StyledModalBody>
           {SKIP_REASONS.map(({ value, label, Icon }) => (
             <StyledReasonButton
@@ -194,7 +196,7 @@ const SkipReasonModal = ({
           )}
         </StyledModalBody>
         <StyledModalActions>
-          <StyledModalButton onClick={onClose}>Cancel</StyledModalButton>
+          <StyledModalButton onClick={onClose}>{t`Cancel`}</StyledModalButton>
           <StyledModalButton accent onClick={handleSkip} disabled={!selected}>
             Skip
           </StyledModalButton>
@@ -207,6 +209,7 @@ const SkipReasonModal = ({
 // main component
 
 export const QueueControls = () => {
+  const { t } = useLingui();
   const queue = useRecoilValue(activeQueueState);
   const {
     startQueue,
