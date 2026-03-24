@@ -161,7 +161,7 @@ export const launchPageSections: LaunchPageSection[] = [
 ];
 
 export const launchAnnouncement: LaunchAnnouncement = {
-  badge: 'new',
+  badge: 'New',
   text: 'app available in beta for chrome, safari, and firefox.',
   linkLabel: 'sign up now',
   linkHref: siteLinks.app,
@@ -192,13 +192,20 @@ export const launchTabs: LaunchTab[] = [
     imageAlt: 'Consuelo embedded dialer preview',
   },
   {
-    id: 'slack',
-    label: 'slack',
-    kind: 'link',
-    value: siteLinks.slackDocs,
-    href: siteLinks.slackDocs,
-    imageSrc: '/previews/analytics.webp',
-    imageAlt: 'Consuelo work channel preview',
+    id: 'chatgpt',
+    label: 'chatgpt',
+    kind: 'command',
+    value: 'npm install -g @consuelo/cli',
+    imageSrc: '/previews/coaching.webp',
+    imageAlt: 'Consuelo assistant preview',
+  },
+  {
+    id: 'claude',
+    label: 'claude',
+    kind: 'command',
+    value: 'npm install -g @consuelo/cli',
+    imageSrc: '/previews/ai-crm.webp',
+    imageAlt: 'Consuelo agent workflow preview',
   },
   {
     id: 'discord',
@@ -210,20 +217,22 @@ export const launchTabs: LaunchTab[] = [
     imageAlt: 'Consuelo discord workflow preview',
   },
   {
-    id: 'claude-code',
-    label: 'claude code',
-    kind: 'command',
-    value: 'npm install -g @consuelo/cli',
-    imageSrc: '/previews/ai-crm.webp',
-    imageAlt: 'Consuelo agent workflow preview',
+    id: 'slack',
+    label: 'slack',
+    kind: 'link',
+    value: siteLinks.slackDocs,
+    href: siteLinks.slackDocs,
+    imageSrc: '/previews/analytics.webp',
+    imageAlt: 'Consuelo work channel preview',
   },
   {
-    id: 'chatgpt',
-    label: 'chatgpt',
-    kind: 'command',
-    value: 'npm install -g @consuelo/cli',
-    imageSrc: '/previews/coaching.webp',
-    imageAlt: 'Consuelo assistant preview',
+    id: 'chrome',
+    label: 'Chrome',
+    kind: 'link',
+    value: 'https://chromewebstore.google.com/detail/consuelo-dialer',
+    href: 'https://chromewebstore.google.com/detail/consuelo-dialer',
+    imageSrc: '/previews/power-dialer.webp',
+    imageAlt: 'Consuelo chrome extension preview',
   },
   {
     id: 'cli',
@@ -238,42 +247,42 @@ export const launchTabs: LaunchTab[] = [
 export const launchOverview: LaunchOverviewContent = {
   eyebrow: 'what is consuelo?',
   title: '',
-  intro: 'open-source platform that helps you run your crm, dialer, coaching, and workflows from one system.',
+  intro: 'the unified sales platform where reps work alongside ai agents to run outbound, automate workflows, and scale pipeline.',
   ctaLabel: 'read docs',
   ctaHref: siteLinks.docs,
 };
 
 export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   {
-    title: 'browser crm',
-    text: 'work contacts, queue state, and call controls in one workspace.',
+    title: 'power dialer',
+    text: 'parallel dial your lists with spam protection, local presence, and zero latency.',
   },
   {
-    title: 'conference dialing',
-    text: 'use warm transfer, hold, mute, dtmf, and local presence in the same call flow.',
+    title: 'signals & intelligence',
+    text: 'prioritize leads and trigger workflows automatically based on real-time intent signals.',
   },
   {
-    title: 'multi-surface',
-    text: 'run the same workflow in the browser, in ghl, and in work channels.',
+    title: 'crm',
+    text: 'manage contacts, queue states, and call controls together in one workspace.',
   },
   {
-    title: 'queue + history',
-    text: 'keep contacts, queue state, and activity history in one system.',
+    title: 'automations',
+    text: 'orchestrate complex outbound sequences and let agents handle the manual busywork.',
   },
   {
-    title: 'assistant hooks',
-    text: 'give internal tools and agents one clean cli entry point into the platform.',
+    title: 'agentic coaching',
+    text: 'train ai agents to roleplay, surface battlecards, and score calls like your best managers.',
   },
   {
-    title: 'open deployment',
-    text: 'self-host when you want control or use mercury when you want the hosted path.',
+    title: 'secure integrations',
+    text: 'enterprise-grade sync with your existing stack, built from day one for privacy and compliance.',
   },
 ];
 
 export const launchStats: LaunchStatsContent = {
   eyebrow: 'the open sales infrastructure layer',
   title: 'built for teams that need throughput, traceability, and one system across every surface.',
-  intro: 'with over 18,000 weekly dials routed, 41 teams operating live, and 2.7 million call minutes tracked, consuelo is built for real sales volume.',
+  intro: '',
 };
 
 export const launchMetrics: LaunchMetric[] = [
@@ -432,7 +441,7 @@ export const footerLinks: LaunchLink[] = [
   { label: 'github', href: siteLinks.github },
   { label: 'docs', href: siteLinks.docs },
   { label: 'changelog', href: siteLinks.changelog },
-  { label: 'ghl', href: '/ghl' },
+  { label: 'blog', href: '/blog' },
 ];
 
 export { launchDocsMenuTabs };
