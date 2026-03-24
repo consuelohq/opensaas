@@ -164,7 +164,7 @@ export const launchPageSections: LaunchPageSection[] = [
 
 export const launchAnnouncement: LaunchAnnouncement = {
   badge: 'New',
-  text: 'app available in beta for chrome, safari, and firefox.',
+  text: 'app in beta for chrome, safari, and firefox.',
   linkLabel: 'sign up now',
   linkHref: siteLinks.app,
 };
