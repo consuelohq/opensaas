@@ -1,35 +1,92 @@
 ---
-// Blog Index Page
-// ------------
-// Description: The blog index page.
+import LaunchFooter from '../../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../../components/launch/LaunchHeader.astro';
+import LaunchLayout from '../../layouts/LaunchLayout.astro';
+import { getCollection } from 'astro:content';
 
-// Components
-// - Layout
-import Layout from '../../layouts/Layout.astro'
-// - UI
-import Hero from '../../components/blocks/hero/PageHeader.astro'
-import BlogPosts from '../../components/blocks/blog/BlogPosts.astro'
+const description = 'Tips, updates, stories, and the latest news from the world of Consuelo.';
+const allPosts = await getCollection('blog');
 
-// Data
-import { getCollection } from 'astro:content'
+// Sort posts by date, newest first
+const sortedPosts = allPosts.sort((a, b) => {
+  return new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime();
+});
 
-// Content
-// - SEO
-const SEO = {
-	title: 'Consuelo | Latest Consuelo News and updates',
-	description:
-		"Explore Consuelo's latest news designed to enhance productivity, ensure top-notch security, and integrate seamlessly with your favorite tools. Join thousands of satisfied users and transform your workflow with Consuelo today!"
-}
-// - Page Header
-const header = {
-	title: 'The <strong>Consuelo</strong> Blog. Tips, Updates & Stories',
-	text: 'Stay informed, stay productive. All the latest from the world of Consuelo.'
-}
-
-const allPosts = await getCollection('blog')
+// Format date to look like the changelog/launch-mono aesthetic
+const formatDate = (date: Date) => {
+  return date.toISOString().split('T')[0];
+};
 ---
 
-<Layout title={SEO.title} description={SEO.description}>
-	<Hero title={header.title} text={header.text} />
-	<BlogPosts data={allPosts} />
-</Layout>
+<LaunchLayout title="Blog" description={description}>
+  <LaunchHeader />
+  
+  <main class="launch-main">
+    <section class="launch-section">
+      <div class="launch-content launch-content--wide">
+        
+        <div class="mercury-hero">
+          <h1 class="mercury-hero__logo">Blog</h1>
+          <p class="mercury-hero__subtitle">Tips, Updates & Stories</p>
+          <p class="launch-copy" style="max-width: 600px; margin-top: 1rem;">{description}</p>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          {sortedPosts.map((post) => (
+            <a href={`/blog/${post.id}`} class="mercury-expandable blog-link" style="padding: 1.5rem 0; display: grid; grid-template-columns: 120px 1fr; gap: 2rem; align-items: baseline; text-decoration: none;">
+              <span class="launch-mono" style="color: var(--launch-muted); font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">{formatDate(post.data.pubDate)} • {post.data.author}</span>
+              <div>
+                <h3 class="mercury-hero__subtitle" style="font-size: 1.1rem; margin-bottom: 0.5rem; transition: color 0.2s ease;">{post.data.title}</h3>
+                <p class="launch-copy" style="max-width: 65ch; line-height: 1.6; margin: 0; color: var(--launch-muted);">{post.data.description}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+        
+      </div>
+    </section>
+  </main>
+
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .mercury-hero {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+
+  .mercury-hero__logo {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .mercury-hero__subtitle {
+    margin: 0;
+    font-family: var(--launch-mono-font);
+    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .mercury-expandable {
+    border-top: 1px solid var(--launch-line);
+  }
+  
+  .blog-link:hover .mercury-hero__subtitle {
+    color: var(--color-primary, #fff);
+  }
+  
+  @media (max-width: 768px) {
+    .mercury-expandable {
+      grid-template-columns: 1fr !important;
+      gap: 0.5rem !important;
+    }
+  }
+</style>

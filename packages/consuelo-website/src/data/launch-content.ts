@@ -255,11 +255,11 @@ export const launchOverview: LaunchOverviewContent = {
 export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   {
     title: 'power dialer',
-    text: 'parallel dial your lists with spam protection, local presence, and zero latency.',
+    text: 'parallel dial with spam protection, local presence, and zero latency.',
   },
   {
     title: 'signals & intelligence',
-    text: 'prioritize leads and trigger workflows automatically based on real-time intent signals.',
+    text: 'prioritize leads automatically based on real-time intent signals.',
   },
   {
     title: 'crm',
@@ -267,15 +267,15 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   },
   {
     title: 'automations',
-    text: 'orchestrate complex outbound sequences and let agents handle the manual busywork.',
+    text: 'let agents handle the manual busywork.',
   },
   {
     title: 'ai whisper',
-    text: 'surfaces live context and tells you what to say. it whispers in your ear while you\'re on the call.',
+    text: 'surfaces live context and tells you what to say.',
   },
   {
     title: 'secure integrations',
-    text: 'enterprise-grade sync with your existing stack, built from day one for privacy and compliance.',
+    text: 'enterprise-grade sync with your existing stack.',
   },
 ];
 

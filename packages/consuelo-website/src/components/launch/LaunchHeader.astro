@@ -32,7 +32,14 @@ const hasPageSections = pageSections.length > 0;
 
       <div class="launch-header__actions launch-mono">
         <a class="launch-header__login" href={siteLinks.login}>login</a>
-        <a class="launch-button" href={siteLinks.free}>free</a>
+        <a class="launch-button" href={siteLinks.free} style="font-size: 1.1rem; padding: 0.4rem 1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.2rem;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Free
+        </a>
       </div>
     </div>
 
@@ -279,11 +286,11 @@ const hasPageSections = pageSections.length > 0;
   }
 
   .launch-header__nav {
-    justify-content: flex-end;
-    gap: 0.95rem;
-    color: var(--launch-muted);
-    font-size: 0.82rem;
-  }
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 1.1rem;
+    }
 
   .launch-header__actions {
     gap: 0.72rem;
@@ -298,8 +305,10 @@ const hasPageSections = pageSections.length > 0;
   }
 
   .launch-header__login {
-    font-size: 0.82rem;
-    color: var(--launch-muted);
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .launch-header__menu-toggle,
@@ -367,15 +376,15 @@ const hasPageSections = pageSections.length > 0;
     color: var(--launch-muted);
     font-size: 0.68rem;
     padding: 0.38rem 0.6rem;
-    border: 1px solid transparent;
+    
     white-space: nowrap;
   }
 
   .launch-header__page-link.is-active {
     color: var(--launch-fg);
-    border-color: var(--launch-line);
-    border-style: dotted;
-    background: var(--launch-panel);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 4px;
   }
 
   .launch-header__mobile-menu {

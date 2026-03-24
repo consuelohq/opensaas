@@ -1,31 +1,77 @@
 ---
-// Components
-// - Layout
-import Layout from '../layouts/Layout.astro'
-// - UI
-import Hero from '../components/blocks/hero/PageHeader.astro'
-import SimpleFeed from '../components/blocks/feeds/BasicFeed.astro'
-import CTA from '../components/blocks/CTA/BasicLight.astro'
+import LaunchFooter from '../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../components/launch/LaunchHeader.astro';
+import LaunchLayout from '../layouts/LaunchLayout.astro';
+import feedData from '../data/json-files/changelogData.json';
 
-// Data
-import feedData from '../data/json-files/changelogData.json'
-
-// Content
-// - SEO
-const SEO = {
-	title: 'Consuelo | Version Updates and Improvements',
-	description:
-		"Explore Consuelo's powerful features designed to enhance productivity, ensure top-notch security, and integrate seamlessly with your favorite tools. Join thousands of satisfied users and transform your workflow with Consuelo today!"
-}
-// - Page Header
-const header = {
-	title: 'Consuelo Version Updates and <strong>Enhancements</strong>',
-	text: 'Stay informed about all the new updates and improvements in Consuelo.'
-}
+const description = 'Version updates, improvements, and new features for Consuelo.';
 ---
 
-<Layout title={SEO.title} description={SEO.description}>
-	<Hero title={header.title} text={header.text} />
-	<SimpleFeed data={feedData} />
-	<CTA />
-</Layout>
+<LaunchLayout title="Changelog" description={description}>
+  <LaunchHeader />
+  
+  <main class="launch-main">
+    <section class="launch-section">
+      <div class="launch-content launch-content--wide">
+        
+        <div class="mercury-hero">
+          <h1 class="mercury-hero__logo">Changelog</h1>
+          <p class="mercury-hero__subtitle">Updates & Improvements</p>
+          <p class="launch-copy" style="max-width: 600px; margin-top: 1rem;">Stay informed about all the new updates and improvements in Consuelo.</p>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          {feedData.map((item) => (
+            <div class="mercury-expandable" style="padding: 1.5rem 0; display: grid; grid-template-columns: 120px 1fr; gap: 2rem; align-items: baseline;">
+              <span class="launch-mono" style="color: var(--launch-muted); font-size: 0.85rem;">{item.date}</span>
+              <div>
+                <h3 class="mercury-hero__subtitle" style="font-size: 1.1rem; margin-bottom: 0.75rem;">{item.title}</h3>
+                <div class="launch-copy prose prose-invert prose-p:text-neutral-400 prose-ul:text-neutral-400 prose-li:marker:text-neutral-600" style="max-width: 65ch; line-height: 1.6;" set:html={item.text} />
+              </div>
+            </div>
+          ))}
+        </div>
+        
+      </div>
+    </section>
+  </main>
+
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .mercury-hero {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(1.5rem, 1rem + 2vw, 3rem);
+  }
+
+  .mercury-hero__logo {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .mercury-hero__subtitle {
+    margin: 0;
+    font-family: var(--launch-mono-font);
+    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .mercury-expandable {
+    border-top: 1px solid var(--launch-line);
+  }
+  
+  @media (max-width: 768px) {
+    .mercury-expandable {
+      grid-template-columns: 1fr !important;
+      gap: 0.5rem !important;
+    }
+  }
+</style>

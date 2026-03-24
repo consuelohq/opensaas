@@ -11,10 +11,6 @@ const icons = [
   { src: '/icons/anthropic.svg', alt: 'Anthropic' },
   { src: '/icons/openai.svg', alt: 'OpenAI' },
   { src: '/icons/groq.svg', alt: 'Groq' },
-  { src: '/icons/gemini.svg', alt: 'Gemini' },
-  { src: '/icons/deepseek.svg', alt: 'DeepSeek' },
-  { src: '/icons/aws.svg', alt: 'AWS' },
-  { src: '/icons/cloudflare.svg', alt: 'Cloudflare' },
   { src: '/icons/railway.svg', alt: 'Railway' },
 ];
 
@@ -86,7 +82,7 @@ const steps = [
     <div class="launch-content launch-content--wide mercury-block">
       <p class="mercury-block__eyebrow launch-mono">your privacy is important to us</p>
       <details class="mercury-expandable">
-        <summary class="mercury-expandable__trigger launch-mono">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
+        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
       </details>
     </div>
   </section>
@@ -176,7 +172,7 @@ const steps = [
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--launch-muted);
+    color: var(--launch-fg);
     font-weight: 700;
   }
 
@@ -221,6 +217,7 @@ const steps = [
     gap: 0.5rem;
     border-top: 1px solid var(--launch-line);
     padding-top: 0.75rem;
+    color: var(--launch-fg);
   }
 
   .mercury-step__n {
