@@ -26,7 +26,7 @@ const { sectionId } = Astro.props as Props;
             <span class="launch-overview__marker launch-mono" aria-hidden="true">[*]</span>
             <p class="launch-copy">
               <strong>{feature.title}</strong>
-              <span>{feature.text}</span>
+              <span class="launch-overview__text">{feature.text}</span>
             </p>
           </div>
         ))}
@@ -76,17 +76,24 @@ const { sectionId } = Astro.props as Props;
   }
 
   .launch-overview__item p {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
+    /* normal inline flow */
   }
 
   .launch-overview__item strong {
     color: var(--launch-fg);
     font-weight: 700;
+    margin-right: 0.35rem;
   }
 
   .launch-overview__cta {
     width: fit-content;
+  }
+</style>
+
+<style>
+  @media (max-width: 760px) {
+    .launch-overview__text {
+      display: none;
+    }
   }
 </style>

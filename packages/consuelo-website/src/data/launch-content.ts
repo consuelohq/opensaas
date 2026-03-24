@@ -270,8 +270,8 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
     text: 'orchestrate complex outbound sequences and let agents handle the manual busywork.',
   },
   {
-    title: 'agentic coaching',
-    text: 'train ai agents to roleplay, surface battlecards, and score calls like your best managers.',
+    title: 'ai whisper',
+    text: 'surfaces live context and tells you what to say. it whispers in your ear while you\'re on the call.',
   },
   {
     title: 'secure integrations',
