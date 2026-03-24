@@ -92,41 +92,33 @@ const hasPageSections = pageSections.length > 0;
     <div class="launch-header__mobile-scroll launch-mono">
       <section class="launch-header__mobile-section">
         <p class="launch-eyebrow">menu</p>
-        <div class="launch-header__mobile-links">
+        <nav class="launch-header__mobile-links" aria-label="mobile navigation">
           {launchMobileMenuLinks.map((link) => (
-            <a href={link.href} data-mobile-link>{link.label}</a>
+            <a class="launch-header__mobile-link" href={link.href} data-mobile-link>{link.label}</a>
           ))}
-        </div>
+        </nav>
       </section>
 
       <section class="launch-header__mobile-section">
         <p class="launch-eyebrow">docs</p>
 
-        <div class="launch-header__docs-tabs">
-          {launchDocsMenuTabs.map((tab) => (
-            <section class="launch-header__docs-tab">
-              <p class="launch-header__docs-tab-title">{tab.label}</p>
+        <div class="launch-header__docs-groups">
+          {launchDocsMenuTabs.flatMap((tab) => tab.groups).map((group) => (
+            <details class="launch-header__docs-group">
+              <summary class="launch-header__docs-summary">
+                <span>{group.label}</span>
+                <span class="launch-header__summary-icon" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                </span>
+              </summary>
 
-              <div class="launch-header__docs-groups">
-                {tab.groups.map((group) => (
-                  <details class="launch-header__docs-group">
-                    <summary>
-                      <span>{group.label}</span>
-                      <span class="launch-header__summary-icon" aria-hidden="true">
-                        <span></span>
-                        <span></span>
-                      </span>
-                    </summary>
-
-                    <div class="launch-header__docs-links">
-                      {group.links.map((link) => (
-                        <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
-                      ))}
-                    </div>
-                  </details>
+              <div class="launch-header__docs-links">
+                {group.links.map((link) => (
+                  <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
                 ))}
               </div>
-            </section>
+            </details>
           ))}
         </div>
       </section>
@@ -412,6 +404,7 @@ const hasPageSections = pageSections.length > 0;
     position: absolute;
     inset: 0 0 0 auto;
     width: min(100%, 28rem);
+    height: 100dvh;
     background: var(--launch-bg);
     border-left: 1px solid var(--launch-line);
     transform: translateX(100%);
@@ -435,67 +428,66 @@ const hasPageSections = pageSections.length > 0;
 
   .launch-header__mobile-scroll {
     overflow-y: auto;
-    padding: 1rem;
+    min-height: 0;
+    padding: 0 1rem 1.5rem;
     display: grid;
     gap: 1.35rem;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .launch-header__mobile-section,
-  .launch-header__docs-tab {
+  .launch-header__mobile-section {
     display: grid;
-    gap: 0.8rem;
+    gap: 0.7rem;
+  }
+
+  .launch-header__mobile-section {
+    padding-top: 1rem;
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-header__mobile-section:first-child {
+    border-top: 0;
   }
 
   .launch-header__mobile-links {
     display: grid;
-    border: 1px solid var(--launch-line);
-    background: var(--launch-panel);
   }
 
-  .launch-header__mobile-links a,
+  .launch-header__mobile-link,
   .launch-header__docs-links a {
-    padding: 0.9rem 1rem;
+    padding: 0.95rem 0;
     border-top: 1px solid var(--launch-line);
-    font-size: 0.76rem;
+    font-size: 0.84rem;
     color: var(--launch-muted);
   }
 
-  .launch-header__mobile-links a:first-child,
+  .launch-header__mobile-link:first-child,
   .launch-header__docs-links a:first-child {
     border-top: 0;
   }
 
-  .launch-header__docs-tabs,
   .launch-header__docs-groups {
     display: grid;
-    gap: 0.75rem;
-  }
-
-  .launch-header__docs-tab-title {
-    margin: 0;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--launch-muted);
+    gap: 0;
   }
 
   .launch-header__docs-group {
-    border: 1px solid var(--launch-line);
-    background: var(--launch-panel);
-    overflow: hidden;
+    border-top: 1px solid var(--launch-line);
   }
 
-  .launch-header__docs-group summary {
+  .launch-header__docs-summary {
     list-style: none;
-    padding: 0.9rem 1rem;
+    padding: 0.95rem 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    font-size: 0.76rem;
+    font-size: 0.84rem;
+    color: var(--launch-fg);
   }
 
-  .launch-header__docs-group summary::-webkit-details-marker {
+  .launch-header__docs-summary::-webkit-details-marker {
     display: none;
   }
 
@@ -527,7 +519,21 @@ const hasPageSections = pageSections.length > 0;
 
   .launch-header__docs-links {
     display: grid;
-    border-top: 1px solid var(--launch-line);
+    gap: 0.55rem;
+    padding: 0 0 1rem 1rem;
+  }
+
+  .launch-header__docs-links a {
+    padding: 0;
+    border-top: 0;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+
+  .launch-header__docs-links a:hover,
+  .launch-header__mobile-link:hover,
+  .launch-header__docs-summary:hover {
+    color: var(--launch-fg);
   }
 
   @media (max-width: 980px) {

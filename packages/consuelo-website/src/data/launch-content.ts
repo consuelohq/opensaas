@@ -133,6 +133,8 @@ export const siteLinks = {
   slackDocs: 'https://docs.consuelohq.com',
   privacy: '/privacy',
   terms: '/terms',
+  discord: 'https://discord.gg/87YtkVUBvc',
+  x: 'https://x.com/consuelohq_?s=21',
 };
 
 export const ghlMarketplaceUrl =
@@ -145,7 +147,7 @@ export const launchHeaderLinks: LaunchNavLink[] = [
 ];
 
 export const launchMobileMenuLinks: LaunchNavLink[] = [
-  ...launchHeaderLinks,
+  ...launchHeaderLinks.filter((link) => link.label !== 'docs'),
   { label: 'login', href: siteLinks.login },
   { label: 'free', href: siteLinks.free },
 ];
@@ -227,7 +229,7 @@ export const launchTabs: LaunchTab[] = [
   },
   {
     id: 'chrome',
-    label: 'Chrome',
+    label: 'chrome',
     kind: 'link',
     value: 'https://chromewebstore.google.com/detail/consuelo-dialer',
     href: 'https://chromewebstore.google.com/detail/consuelo-dialer',
@@ -259,7 +261,7 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   },
   {
     title: 'signals & intelligence',
-    text: 'prioritize leads automatically based on real-time intent signals.',
+    text: 'prioritize leads based on real-time intent signals.',
   },
   {
     title: 'crm',
@@ -441,7 +443,8 @@ export const footerLinks: LaunchLink[] = [
   { label: 'github', href: siteLinks.github },
   { label: 'docs', href: siteLinks.docs },
   { label: 'changelog', href: siteLinks.changelog },
-  { label: 'blog', href: '/blog' },
+  { label: 'discord', href: siteLinks.discord },
+  { label: 'x', href: siteLinks.x },
 ];
 
 export { launchDocsMenuTabs };

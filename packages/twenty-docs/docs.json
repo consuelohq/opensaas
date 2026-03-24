@@ -120,6 +120,127 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "user-guide/dialer/overview",
+                  "user-guide/dialer/making-calls",
+                  "user-guide/dialer/transfers",
+                  "user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "GoHighLevel",
+                "icon": "plug",
+                "pages": [
+                  "user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "user-guide/ghl/embedded/overview",
+                      "user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "user-guide/ghl/embedded/capabilities/call-logging",
+                          "user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "user-guide/ghl/integration/overview",
+                      "user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "user-guide/ghl/integration/capabilities/field-mapping",
+                          "user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "CLI",
+                "icon": "terminal",
+                "pages": [
+                  "user-guide/cli/overview",
+                  "user-guide/cli/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/cli/capabilities/configuration",
+                      "user-guide/cli/capabilities/contacts-management",
+                      "user-guide/cli/capabilities/call-operations",
+                      "user-guide/cli/capabilities/queue-management",
+                      "user-guide/cli/capabilities/knowledge-base",
+                      "user-guide/cli/capabilities/file-management",
+                      "user-guide/cli/capabilities/analytics-history",
+                      "user-guide/cli/capabilities/deployment"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/cli/how-tos/set-up-twilio",
+                      "user-guide/cli/how-tos/import-contacts-csv",
+                      "user-guide/cli/how-tos/use-local-presence",
+                      "user-guide/cli/how-tos/deploy-to-railway",
+                      "user-guide/cli/how-tos/troubleshoot-auth",
+                      "user-guide/cli/how-tos/cli-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "user-guide/discord-bot/overview",
+                  "user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/discord-bot/capabilities/queue-management",
+                      "user-guide/discord-bot/capabilities/call-controls",
+                      "user-guide/discord-bot/capabilities/contact-search",
+                      "user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendar & Emails",
                 "icon": "envelope",
                 "pages": [
@@ -221,7 +342,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -311,126 +434,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "user-guide/dialer/overview",
-                  "user-guide/dialer/making-calls",
-                  "user-guide/dialer/transfers",
-                  "user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-          "group": "GoHighLevel",
-          "icon": "plug",
-          "pages": [
-            "user-guide/ghl/overview",
-            {
-              "group": "Embedded Dialer",
                     "pages": [
-                      "user-guide/ghl/embedded/overview",
-                      "user-guide/ghl/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/ghl/embedded/capabilities/click-to-dial",
-                          "user-guide/ghl/embedded/capabilities/dialer-controls",
-                          "user-guide/ghl/embedded/capabilities/call-logging",
-                          "user-guide/ghl/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/ghl/embedded/how-tos/install-in-ghl",
-                          "user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                          "user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
+                      "user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "user-guide/ghl/integration/overview",
-                      "user-guide/ghl/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/ghl/integration/capabilities/bidirectional-sync",
-                          "user-guide/ghl/integration/capabilities/pipeline-mapping",
-                          "user-guide/ghl/integration/capabilities/field-mapping",
-                          "user-guide/ghl/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/ghl/integration/how-tos/configure-field-mapping",
-                          "user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                          "user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                          "user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "CLI",
-                "icon": "terminal",
-                "pages": [
-                  "user-guide/cli/overview",
-                  "user-guide/cli/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/cli/capabilities/configuration",
-                      "user-guide/cli/capabilities/contacts-management",
-                      "user-guide/cli/capabilities/call-operations",
-                      "user-guide/cli/capabilities/queue-management",
-                      "user-guide/cli/capabilities/knowledge-base",
-                      "user-guide/cli/capabilities/file-management",
-                      "user-guide/cli/capabilities/analytics-history",
-                      "user-guide/cli/capabilities/deployment"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/cli/how-tos/set-up-twilio",
-                      "user-guide/cli/how-tos/import-contacts-csv",
-                      "user-guide/cli/how-tos/use-local-presence",
-                      "user-guide/cli/how-tos/deploy-to-railway",
-                      "user-guide/cli/how-tos/troubleshoot-auth",
-                      "user-guide/cli/how-tos/cli-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "user-guide/discord-bot/overview",
-                  "user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/discord-bot/capabilities/queue-management",
-                      "user-guide/discord-bot/capabilities/call-controls",
-                      "user-guide/discord-bot/capabilities/contact-search",
-                      "user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -452,7 +458,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -463,7 +471,9 @@
             "groups": [
               {
                 "group": "Developers",
-                "pages": ["developers/introduction"]
+                "pages": [
+                  "developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -528,7 +538,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -674,6 +686,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/fr/user-guide/dialer/overview",
+                  "l/fr/user-guide/dialer/making-calls",
+                  "l/fr/user-guide/dialer/transfers",
+                  "l/fr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/fr/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/fr/user-guide/ghl/embedded/overview",
+                      "l/fr/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/fr/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/fr/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/fr/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/fr/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/fr/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/fr/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/fr/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/fr/user-guide/ghl/integration/overview",
+                      "l/fr/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/fr/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/fr/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/fr/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/fr/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/fr/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/fr/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/fr/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/fr/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/fr/user-guide/discord-bot/overview",
+                  "l/fr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/fr/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendrier et e-mails",
                 "icon": "envelope",
                 "pages": [
@@ -775,7 +876,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/fr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -865,94 +968,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/fr/user-guide/dialer/overview",
-                  "l/fr/user-guide/dialer/making-calls",
-                  "l/fr/user-guide/dialer/transfers",
-                  "l/fr/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/fr/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/fr/user-guide/ghl/embedded/overview",
-              "l/fr/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/fr/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/fr/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/fr/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/fr/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/fr/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/fr/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/fr/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/fr/user-guide/ghl/integration/overview",
-              "l/fr/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/fr/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/fr/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/fr/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/fr/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/fr/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/fr/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/fr/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/fr/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/fr/user-guide/discord-bot/overview",
-                  "l/fr/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
-                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
-                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
-                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/fr/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/fr/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -974,7 +992,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/fr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -985,7 +1005,9 @@
             "groups": [
               {
                 "group": "Développeurs",
-                "pages": ["l/fr/developers/introduction"]
+                "pages": [
+                  "l/fr/developers/introduction"
+                ]
               },
               {
                 "group": "Étendre",
@@ -1050,7 +1072,9 @@
                               },
                               {
                                 "group": "Retour d'information",
-                                "pages": ["l/fr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/fr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrée ",
@@ -1196,6 +1220,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ar/user-guide/dialer/overview",
+                  "l/ar/user-guide/dialer/making-calls",
+                  "l/ar/user-guide/dialer/transfers",
+                  "l/ar/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/ar/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/ar/user-guide/ghl/embedded/overview",
+                      "l/ar/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ar/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/ar/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/ar/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/ar/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ar/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/ar/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/ar/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/ar/user-guide/ghl/integration/overview",
+                      "l/ar/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ar/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/ar/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/ar/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/ar/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ar/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/ar/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/ar/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/ar/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/ar/user-guide/discord-bot/overview",
+                  "l/ar/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ar/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "التقويم والبريد الإلكتروني",
                 "icon": "envelope",
                 "pages": [
@@ -1297,7 +1410,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ar/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1387,94 +1502,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ar/user-guide/dialer/overview",
-                  "l/ar/user-guide/dialer/making-calls",
-                  "l/ar/user-guide/dialer/transfers",
-                  "l/ar/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/ar/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/ar/user-guide/ghl/embedded/overview",
-              "l/ar/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ar/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/ar/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/ar/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/ar/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ar/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/ar/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/ar/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/ar/user-guide/ghl/integration/overview",
-              "l/ar/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ar/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/ar/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/ar/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/ar/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ar/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/ar/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/ar/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/ar/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/ar/user-guide/discord-bot/overview",
-                  "l/ar/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/ar/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ar/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -1496,7 +1526,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ar/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -1507,7 +1539,9 @@
             "groups": [
               {
                 "group": "المطورون",
-                "pages": ["l/ar/developers/introduction"]
+                "pages": [
+                  "l/ar/developers/introduction"
+                ]
               },
               {
                 "group": "التوسيع",
@@ -1572,7 +1606,9 @@
                               },
                               {
                                 "group": "التغذية الراجعة",
-                                "pages": ["l/ar/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ar/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "إدخال",
@@ -1718,6 +1754,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/cs/user-guide/dialer/overview",
+                  "l/cs/user-guide/dialer/making-calls",
+                  "l/cs/user-guide/dialer/transfers",
+                  "l/cs/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/cs/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/cs/user-guide/ghl/embedded/overview",
+                      "l/cs/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/cs/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/cs/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/cs/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/cs/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/cs/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/cs/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/cs/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/cs/user-guide/ghl/integration/overview",
+                      "l/cs/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/cs/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/cs/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/cs/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/cs/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/cs/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/cs/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/cs/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/cs/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/cs/user-guide/discord-bot/overview",
+                  "l/cs/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
+                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
+                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
+                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/cs/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Kalendář a e-maily",
                 "icon": "envelope",
                 "pages": [
@@ -1819,7 +1944,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/cs/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1909,94 +2036,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/cs/user-guide/dialer/overview",
-                  "l/cs/user-guide/dialer/making-calls",
-                  "l/cs/user-guide/dialer/transfers",
-                  "l/cs/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/cs/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/cs/user-guide/ghl/embedded/overview",
-              "l/cs/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/cs/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/cs/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/cs/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/cs/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/cs/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/cs/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/cs/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/cs/user-guide/ghl/integration/overview",
-              "l/cs/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/cs/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/cs/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/cs/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/cs/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/cs/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/cs/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/cs/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/cs/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/cs/user-guide/discord-bot/overview",
-                  "l/cs/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
-                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
-                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
-                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/cs/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/cs/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -2018,7 +2060,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/cs/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2029,7 +2073,9 @@
             "groups": [
               {
                 "group": "Vývojáři",
-                "pages": ["l/cs/developers/introduction"]
+                "pages": [
+                  "l/cs/developers/introduction"
+                ]
               },
               {
                 "group": "Rozšíření",
@@ -2094,7 +2140,9 @@
                               },
                               {
                                 "group": "Zpětná vazba",
-                                "pages": ["l/cs/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/cs/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Vstup",
@@ -2240,6 +2288,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/de/user-guide/dialer/overview",
+                  "l/de/user-guide/dialer/making-calls",
+                  "l/de/user-guide/dialer/transfers",
+                  "l/de/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/de/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/de/user-guide/ghl/embedded/overview",
+                      "l/de/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/de/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/de/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/de/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/de/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/de/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/de/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/de/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/de/user-guide/ghl/integration/overview",
+                      "l/de/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/de/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/de/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/de/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/de/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/de/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/de/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/de/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/de/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/de/user-guide/discord-bot/overview",
+                  "l/de/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/de/user-guide/discord-bot/capabilities/queue-management",
+                      "l/de/user-guide/discord-bot/capabilities/call-controls",
+                      "l/de/user-guide/discord-bot/capabilities/contact-search",
+                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/de/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Kalender & E-Mails",
                 "icon": "envelope",
                 "pages": [
@@ -2341,7 +2478,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/de/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -2431,94 +2570,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/de/user-guide/dialer/overview",
-                  "l/de/user-guide/dialer/making-calls",
-                  "l/de/user-guide/dialer/transfers",
-                  "l/de/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/de/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/de/user-guide/ghl/embedded/overview",
-              "l/de/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/de/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/de/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/de/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/de/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/de/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/de/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/de/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/de/user-guide/ghl/integration/overview",
-              "l/de/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/de/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/de/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/de/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/de/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/de/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/de/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/de/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/de/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/de/user-guide/discord-bot/overview",
-                  "l/de/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/de/user-guide/discord-bot/capabilities/queue-management",
-                      "l/de/user-guide/discord-bot/capabilities/call-controls",
-                      "l/de/user-guide/discord-bot/capabilities/contact-search",
-                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/de/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/de/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -2540,7 +2594,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/de/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2551,7 +2607,9 @@
             "groups": [
               {
                 "group": "Entwickler",
-                "pages": ["l/de/developers/introduction"]
+                "pages": [
+                  "l/de/developers/introduction"
+                ]
               },
               {
                 "group": "Erweitern",
@@ -2616,7 +2674,9 @@
                               },
                               {
                                 "group": "Rückmeldung",
-                                "pages": ["l/de/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/de/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Eingabe",
@@ -2762,6 +2822,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/es/user-guide/dialer/overview",
+                  "l/es/user-guide/dialer/making-calls",
+                  "l/es/user-guide/dialer/transfers",
+                  "l/es/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/es/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/es/user-guide/ghl/embedded/overview",
+                      "l/es/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/es/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/es/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/es/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/es/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/es/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/es/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/es/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/es/user-guide/ghl/integration/overview",
+                      "l/es/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/es/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/es/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/es/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/es/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/es/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/es/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/es/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/es/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/es/user-guide/discord-bot/overview",
+                  "l/es/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/es/user-guide/discord-bot/capabilities/queue-management",
+                      "l/es/user-guide/discord-bot/capabilities/call-controls",
+                      "l/es/user-guide/discord-bot/capabilities/contact-search",
+                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/es/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendario y correos electrónicos",
                 "icon": "envelope",
                 "pages": [
@@ -2863,7 +3012,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/es/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -2953,94 +3104,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/es/user-guide/dialer/overview",
-                  "l/es/user-guide/dialer/making-calls",
-                  "l/es/user-guide/dialer/transfers",
-                  "l/es/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/es/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/es/user-guide/ghl/embedded/overview",
-              "l/es/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/es/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/es/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/es/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/es/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/es/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/es/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/es/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/es/user-guide/ghl/integration/overview",
-              "l/es/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/es/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/es/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/es/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/es/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/es/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/es/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/es/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/es/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/es/user-guide/discord-bot/overview",
-                  "l/es/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/es/user-guide/discord-bot/capabilities/queue-management",
-                      "l/es/user-guide/discord-bot/capabilities/call-controls",
-                      "l/es/user-guide/discord-bot/capabilities/contact-search",
-                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/es/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/es/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -3062,7 +3128,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/es/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3073,7 +3141,9 @@
             "groups": [
               {
                 "group": "Desarrolladores",
-                "pages": ["l/es/developers/introduction"]
+                "pages": [
+                  "l/es/developers/introduction"
+                ]
               },
               {
                 "group": "Ampliar",
@@ -3138,7 +3208,9 @@
                               },
                               {
                                 "group": "Retroalimentación",
-                                "pages": ["l/es/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/es/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -3284,6 +3356,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/it/user-guide/dialer/overview",
+                  "l/it/user-guide/dialer/making-calls",
+                  "l/it/user-guide/dialer/transfers",
+                  "l/it/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/it/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/it/user-guide/ghl/embedded/overview",
+                      "l/it/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/it/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/it/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/it/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/it/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/it/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/it/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/it/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/it/user-guide/ghl/integration/overview",
+                      "l/it/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/it/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/it/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/it/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/it/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/it/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/it/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/it/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/it/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/it/user-guide/discord-bot/overview",
+                  "l/it/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/it/user-guide/discord-bot/capabilities/queue-management",
+                      "l/it/user-guide/discord-bot/capabilities/call-controls",
+                      "l/it/user-guide/discord-bot/capabilities/contact-search",
+                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/it/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendario & Email",
                 "icon": "envelope",
                 "pages": [
@@ -3385,7 +3546,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/it/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3475,94 +3638,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/it/user-guide/dialer/overview",
-                  "l/it/user-guide/dialer/making-calls",
-                  "l/it/user-guide/dialer/transfers",
-                  "l/it/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/it/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/it/user-guide/ghl/embedded/overview",
-              "l/it/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/it/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/it/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/it/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/it/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/it/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/it/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/it/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/it/user-guide/ghl/integration/overview",
-              "l/it/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/it/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/it/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/it/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/it/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/it/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/it/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/it/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/it/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/it/user-guide/discord-bot/overview",
-                  "l/it/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/it/user-guide/discord-bot/capabilities/queue-management",
-                      "l/it/user-guide/discord-bot/capabilities/call-controls",
-                      "l/it/user-guide/discord-bot/capabilities/contact-search",
-                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/it/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/it/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -3584,7 +3662,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/it/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3595,7 +3675,9 @@
             "groups": [
               {
                 "group": "Sviluppatori",
-                "pages": ["l/it/developers/introduction"]
+                "pages": [
+                  "l/it/developers/introduction"
+                ]
               },
               {
                 "group": "Estendi",
@@ -3660,7 +3742,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/it/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/it/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -3806,6 +3890,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ja/user-guide/dialer/overview",
+                  "l/ja/user-guide/dialer/making-calls",
+                  "l/ja/user-guide/dialer/transfers",
+                  "l/ja/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/ja/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/ja/user-guide/ghl/embedded/overview",
+                      "l/ja/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ja/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/ja/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/ja/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/ja/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ja/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/ja/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/ja/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/ja/user-guide/ghl/integration/overview",
+                      "l/ja/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ja/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/ja/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/ja/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/ja/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ja/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/ja/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/ja/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/ja/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/ja/user-guide/discord-bot/overview",
+                  "l/ja/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ja/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "カレンダーとメール",
                 "icon": "envelope",
                 "pages": [
@@ -3907,7 +4080,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ja/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3997,94 +4172,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ja/user-guide/dialer/overview",
-                  "l/ja/user-guide/dialer/making-calls",
-                  "l/ja/user-guide/dialer/transfers",
-                  "l/ja/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/ja/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/ja/user-guide/ghl/embedded/overview",
-              "l/ja/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ja/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/ja/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/ja/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/ja/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ja/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/ja/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/ja/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/ja/user-guide/ghl/integration/overview",
-              "l/ja/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ja/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/ja/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/ja/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/ja/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ja/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/ja/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/ja/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/ja/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/ja/user-guide/discord-bot/overview",
-                  "l/ja/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/ja/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ja/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -4106,7 +4196,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ja/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4117,7 +4209,9 @@
             "groups": [
               {
                 "group": "開発者",
-                "pages": ["l/ja/developers/introduction"]
+                "pages": [
+                  "l/ja/developers/introduction"
+                ]
               },
               {
                 "group": "拡張",
@@ -4182,7 +4276,9 @@
                               },
                               {
                                 "group": "フィードバック",
-                                "pages": ["l/ja/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ja/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "入力",
@@ -4328,6 +4424,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ko/user-guide/dialer/overview",
+                  "l/ko/user-guide/dialer/making-calls",
+                  "l/ko/user-guide/dialer/transfers",
+                  "l/ko/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/ko/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/ko/user-guide/ghl/embedded/overview",
+                      "l/ko/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ko/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/ko/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/ko/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/ko/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ko/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/ko/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/ko/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/ko/user-guide/ghl/integration/overview",
+                      "l/ko/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ko/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/ko/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/ko/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/ko/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ko/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/ko/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/ko/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/ko/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/ko/user-guide/discord-bot/overview",
+                  "l/ko/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ko/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "캘린더 및 이메일",
                 "icon": "envelope",
                 "pages": [
@@ -4429,7 +4614,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ko/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -4519,94 +4706,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ko/user-guide/dialer/overview",
-                  "l/ko/user-guide/dialer/making-calls",
-                  "l/ko/user-guide/dialer/transfers",
-                  "l/ko/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/ko/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/ko/user-guide/ghl/embedded/overview",
-              "l/ko/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ko/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/ko/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/ko/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/ko/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ko/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/ko/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/ko/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/ko/user-guide/ghl/integration/overview",
-              "l/ko/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ko/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/ko/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/ko/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/ko/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ko/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/ko/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/ko/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/ko/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/ko/user-guide/discord-bot/overview",
-                  "l/ko/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/ko/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ko/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -4628,7 +4730,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ko/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4639,7 +4743,9 @@
             "groups": [
               {
                 "group": "개발자",
-                "pages": ["l/ko/developers/introduction"]
+                "pages": [
+                  "l/ko/developers/introduction"
+                ]
               },
               {
                 "group": "확장",
@@ -4704,7 +4810,9 @@
                               },
                               {
                                 "group": "피드백",
-                                "pages": ["l/ko/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ko/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "입력",
@@ -4850,6 +4958,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/pt/user-guide/dialer/overview",
+                  "l/pt/user-guide/dialer/making-calls",
+                  "l/pt/user-guide/dialer/transfers",
+                  "l/pt/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/pt/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/pt/user-guide/ghl/embedded/overview",
+                      "l/pt/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/pt/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/pt/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/pt/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/pt/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/pt/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/pt/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/pt/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/pt/user-guide/ghl/integration/overview",
+                      "l/pt/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/pt/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/pt/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/pt/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/pt/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/pt/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/pt/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/pt/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/pt/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/pt/user-guide/discord-bot/overview",
+                  "l/pt/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
+                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
+                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
+                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/pt/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendar & Emails",
                 "icon": "envelope",
                 "pages": [
@@ -4951,7 +5148,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/pt/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5041,94 +5240,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/pt/user-guide/dialer/overview",
-                  "l/pt/user-guide/dialer/making-calls",
-                  "l/pt/user-guide/dialer/transfers",
-                  "l/pt/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/pt/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/pt/user-guide/ghl/embedded/overview",
-              "l/pt/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/pt/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/pt/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/pt/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/pt/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/pt/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/pt/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/pt/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/pt/user-guide/ghl/integration/overview",
-              "l/pt/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/pt/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/pt/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/pt/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/pt/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/pt/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/pt/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/pt/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/pt/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/pt/user-guide/discord-bot/overview",
-                  "l/pt/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
-                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
-                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
-                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/pt/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -5150,7 +5264,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/pt/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5161,7 +5277,9 @@
             "groups": [
               {
                 "group": "Programadores",
-                "pages": ["l/pt/developers/introduction"]
+                "pages": [
+                  "l/pt/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5226,7 +5344,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/pt/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/pt/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -5372,6 +5492,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ro/user-guide/dialer/overview",
+                  "l/ro/user-guide/dialer/making-calls",
+                  "l/ro/user-guide/dialer/transfers",
+                  "l/ro/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/ro/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/ro/user-guide/ghl/embedded/overview",
+                      "l/ro/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ro/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/ro/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/ro/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/ro/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ro/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/ro/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/ro/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/ro/user-guide/ghl/integration/overview",
+                      "l/ro/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ro/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/ro/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/ro/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/ro/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ro/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/ro/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/ro/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/ro/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/ro/user-guide/discord-bot/overview",
+                  "l/ro/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ro/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Calendar & Emails",
                 "icon": "envelope",
                 "pages": [
@@ -5473,7 +5682,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ro/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5563,94 +5774,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ro/user-guide/dialer/overview",
-                  "l/ro/user-guide/dialer/making-calls",
-                  "l/ro/user-guide/dialer/transfers",
-                  "l/ro/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/ro/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/ro/user-guide/ghl/embedded/overview",
-              "l/ro/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ro/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/ro/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/ro/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/ro/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ro/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/ro/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/ro/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/ro/user-guide/ghl/integration/overview",
-              "l/ro/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ro/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/ro/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/ro/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/ro/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ro/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/ro/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/ro/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/ro/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/ro/user-guide/discord-bot/overview",
-                  "l/ro/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/ro/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -5672,7 +5798,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ro/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5683,7 +5811,9 @@
             "groups": [
               {
                 "group": "Dezvoltatori",
-                "pages": ["l/ro/developers/introduction"]
+                "pages": [
+                  "l/ro/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5748,7 +5878,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/ro/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ro/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Intrare",
@@ -5894,6 +6026,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ru/user-guide/dialer/overview",
+                  "l/ru/user-guide/dialer/making-calls",
+                  "l/ru/user-guide/dialer/transfers",
+                  "l/ru/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/ru/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/ru/user-guide/ghl/embedded/overview",
+                      "l/ru/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ru/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/ru/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/ru/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/ru/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ru/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/ru/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/ru/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/ru/user-guide/ghl/integration/overview",
+                      "l/ru/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/ru/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/ru/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/ru/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/ru/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/ru/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/ru/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/ru/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/ru/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/ru/user-guide/discord-bot/overview",
+                  "l/ru/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ru/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Календарь и электронная почта",
                 "icon": "envelope",
                 "pages": [
@@ -5995,7 +6216,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ru/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6085,94 +6308,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ru/user-guide/dialer/overview",
-                  "l/ru/user-guide/dialer/making-calls",
-                  "l/ru/user-guide/dialer/transfers",
-                  "l/ru/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/ru/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/ru/user-guide/ghl/embedded/overview",
-              "l/ru/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ru/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/ru/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/ru/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/ru/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ru/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/ru/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/ru/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/ru/user-guide/ghl/integration/overview",
-              "l/ru/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/ru/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/ru/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/ru/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/ru/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/ru/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/ru/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/ru/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/ru/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/ru/user-guide/discord-bot/overview",
-                  "l/ru/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/ru/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ru/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -6194,7 +6332,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ru/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6205,7 +6345,9 @@
             "groups": [
               {
                 "group": "Разработчики",
-                "pages": ["l/ru/developers/introduction"]
+                "pages": [
+                  "l/ru/developers/introduction"
+                ]
               },
               {
                 "group": "Расширяйте",
@@ -6270,7 +6412,9 @@
                               },
                               {
                                 "group": "Обратная связь",
-                                "pages": ["l/ru/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ru/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Ввод",
@@ -6416,6 +6560,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/tr/user-guide/dialer/overview",
+                  "l/tr/user-guide/dialer/making-calls",
+                  "l/tr/user-guide/dialer/transfers",
+                  "l/tr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/tr/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/tr/user-guide/ghl/embedded/overview",
+                      "l/tr/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/tr/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/tr/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/tr/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/tr/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/tr/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/tr/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/tr/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/tr/user-guide/ghl/integration/overview",
+                      "l/tr/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/tr/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/tr/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/tr/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/tr/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/tr/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/tr/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/tr/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/tr/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/tr/user-guide/discord-bot/overview",
+                  "l/tr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/tr/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "Takvim ve E-postalar",
                 "icon": "envelope",
                 "pages": [
@@ -6517,7 +6750,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/tr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6607,94 +6842,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/tr/user-guide/dialer/overview",
-                  "l/tr/user-guide/dialer/making-calls",
-                  "l/tr/user-guide/dialer/transfers",
-                  "l/tr/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/tr/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/tr/user-guide/ghl/embedded/overview",
-              "l/tr/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/tr/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/tr/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/tr/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/tr/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/tr/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/tr/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/tr/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/tr/user-guide/ghl/integration/overview",
-              "l/tr/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/tr/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/tr/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/tr/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/tr/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/tr/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/tr/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/tr/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/tr/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/tr/user-guide/discord-bot/overview",
-                  "l/tr/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
-                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
-                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
-                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/tr/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/tr/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -6716,7 +6866,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/tr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6727,7 +6879,9 @@
             "groups": [
               {
                 "group": "Geliştiriciler",
-                "pages": ["l/tr/developers/introduction"]
+                "pages": [
+                  "l/tr/developers/introduction"
+                ]
               },
               {
                 "group": "Genişlet",
@@ -6792,7 +6946,9 @@
                               },
                               {
                                 "group": "Geri Bildirim",
-                                "pages": ["l/tr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/tr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Girdi",
@@ -6938,6 +7094,95 @@
                 ]
               },
               {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/zh/user-guide/dialer/overview",
+                  "l/zh/user-guide/dialer/making-calls",
+                  "l/zh/user-guide/dialer/transfers",
+                  "l/zh/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Overview",
+                "icon": "plug",
+                "pages": [
+                  "l/zh/user-guide/ghl/overview",
+                  {
+                    "group": "Embedded Dialer",
+                    "pages": [
+                      "l/zh/user-guide/ghl/embedded/overview",
+                      "l/zh/user-guide/ghl/embedded/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/zh/user-guide/ghl/embedded/capabilities/click-to-dial",
+                          "l/zh/user-guide/ghl/embedded/capabilities/dialer-controls",
+                          "l/zh/user-guide/ghl/embedded/capabilities/call-logging",
+                          "l/zh/user-guide/ghl/embedded/capabilities/sso-auth"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/zh/user-guide/ghl/embedded/how-tos/install-in-ghl",
+                          "l/zh/user-guide/ghl/embedded/how-tos/configure-custom-menu",
+                          "l/zh/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Integration",
+                    "pages": [
+                      "l/zh/user-guide/ghl/integration/overview",
+                      "l/zh/user-guide/ghl/integration/getting-started",
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "l/zh/user-guide/ghl/integration/capabilities/bidirectional-sync",
+                          "l/zh/user-guide/ghl/integration/capabilities/pipeline-mapping",
+                          "l/zh/user-guide/ghl/integration/capabilities/field-mapping",
+                          "l/zh/user-guide/ghl/integration/capabilities/call-logging"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "l/zh/user-guide/ghl/integration/how-tos/configure-field-mapping",
+                          "l/zh/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
+                          "l/zh/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
+                          "l/zh/user-guide/ghl/integration/how-tos/troubleshoot-sync"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Discord",
+                "icon": "discord",
+                "pages": [
+                  "l/zh/user-guide/discord-bot/overview",
+                  "l/zh/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
+                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
+                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
+                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/zh/user-guide/dialer/how-tos/discord-setup"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "日历与电子邮件",
                 "icon": "envelope",
                 "pages": [
@@ -7039,7 +7284,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/zh/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -7129,94 +7376,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/billing/how-tos/billing-faq"]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/zh/user-guide/dialer/overview",
-                  "l/zh/user-guide/dialer/making-calls",
-                  "l/zh/user-guide/dialer/transfers",
-                  "l/zh/user-guide/dialer/hold-mute"
-        ]
-      },
-      {
-          "group": "Overview",
-          "icon": "plug",
-          "pages": [
-          "l/zh/user-guide/ghl/overview",
-          {
-            "group": "Embedded Dialer",
-            "pages": [
-              "l/zh/user-guide/ghl/embedded/overview",
-              "l/zh/user-guide/ghl/embedded/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/zh/user-guide/ghl/embedded/capabilities/click-to-dial",
-                  "l/zh/user-guide/ghl/embedded/capabilities/dialer-controls",
-                  "l/zh/user-guide/ghl/embedded/capabilities/call-logging",
-                  "l/zh/user-guide/ghl/embedded/capabilities/sso-auth"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/zh/user-guide/ghl/embedded/how-tos/install-in-ghl",
-                  "l/zh/user-guide/ghl/embedded/how-tos/configure-custom-menu",
-                  "l/zh/user-guide/ghl/embedded/how-tos/troubleshoot-embed"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Integration",
-            "pages": [
-              "l/zh/user-guide/ghl/integration/overview",
-              "l/zh/user-guide/ghl/integration/getting-started",
-              {
-                "group": "Capabilities",
-                "pages": [
-                  "l/zh/user-guide/ghl/integration/capabilities/bidirectional-sync",
-                  "l/zh/user-guide/ghl/integration/capabilities/pipeline-mapping",
-                  "l/zh/user-guide/ghl/integration/capabilities/field-mapping",
-                  "l/zh/user-guide/ghl/integration/capabilities/call-logging"
-                ]
-              },
-              {
-                "group": "How-Tos",
-                "pages": [
-                  "l/zh/user-guide/ghl/integration/how-tos/configure-field-mapping",
-                  "l/zh/user-guide/ghl/integration/how-tos/import-contacts-from-ghl",
-                  "l/zh/user-guide/ghl/integration/how-tos/set-up-pipeline-sync",
-                  "l/zh/user-guide/ghl/integration/how-tos/troubleshoot-sync"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "group": "Discord Bot",
-                "icon": "discord",
-                "pages": [
-                  "l/zh/user-guide/discord-bot/overview",
-                  "l/zh/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
                     "pages": [
-                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
-                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
-                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
-                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
+                      "l/zh/user-guide/billing/how-tos/billing-faq"
                     ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/zh/user-guide/dialer/how-tos/discord-setup"]
                   }
                 ]
               },
@@ -7238,7 +7400,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/zh/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -7249,7 +7413,9 @@
             "groups": [
               {
                 "group": "开发者",
-                "pages": ["l/zh/developers/introduction"]
+                "pages": [
+                  "l/zh/developers/introduction"
+                ]
               },
               {
                 "group": "扩展",
@@ -7314,7 +7480,9 @@
                               },
                               {
                                 "group": "反馈",
-                                "pages": ["l/zh/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/zh/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "输入",

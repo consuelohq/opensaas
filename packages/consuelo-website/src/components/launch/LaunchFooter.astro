@@ -4,6 +4,7 @@ import {
   launchFooterSignup,
   siteLinks,
 } from '../../data/launch-content';
+import LanguageSelector from './LanguageSelector.astro';
 
 type Props = {
   sectionId?: string;
@@ -30,18 +31,17 @@ const { sectionId } = Astro.props as Props;
 </section>
 
 <footer class="launch-section">
-  <div class="launch-content launch-content--wide launch-footer-links launch-mono">
+  <div class="launch-footer-links launch-mono">
     {footerLinks.map((link) => (
       <a href={link.href}>{link.label}</a>
     ))}
   </div>
   <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
     <span>©2026 consuelo</span>
-    <div>
-      <a href={siteLinks.privacy}>privacy</a>
-      <a href={siteLinks.terms}>terms</a>
-      <a href={siteLinks.docs}>docs</a>
-    </div>
+    <a href="/blog">blog</a>
+    <a href={siteLinks.privacy}>privacy</a>
+    <a href={siteLinks.terms}>terms</a>
+    <LanguageSelector />
   </div>
 </footer>
 
@@ -106,7 +106,8 @@ const { sectionId } = Astro.props as Props;
   }
 
   .launch-footer-links {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 0;
   }
 
@@ -118,22 +119,29 @@ const { sectionId } = Astro.props as Props;
     font-size: 0.82rem;
   }
 
-  .launch-footer-links a + a {
+  .launch-footer-links a {
+    display: flex;
+    flex: 1 1 20%;
+    align-items: center;
+    min-height: 4.5rem;
+    min-width: 9rem;
+    padding: 1rem 1.1rem;
     border-top: 1px solid var(--launch-line);
+  }
+
+  .launch-footer-links a + a {
+    border-left: 1px solid var(--launch-line);
   }
 
   .launch-footer-meta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    gap: 1.25rem;
     border-top: 1px solid var(--launch-line);
-  }
-
-  .launch-footer-meta div {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    padding: 0.9rem 0;
+    text-align: center;
   }
 
   @media (min-width: 980px) {
@@ -142,13 +150,11 @@ const { sectionId } = Astro.props as Props;
     }
 
     .launch-footer-links {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      flex-wrap: nowrap;
     }
 
-    .launch-footer-links a + a {
-      border-top: 0;
-      border-left: 1px solid var(--launch-line);
-      padding-left: 1rem;
+    .launch-footer-links a {
+      min-width: 0;
     }
   }
 
@@ -159,6 +165,20 @@ const { sectionId } = Astro.props as Props;
 
     .launch-footer-signup__field .launch-button {
       width: calc(100% - 0.52rem);
+    }
+
+    .launch-footer-links a {
+      flex-basis: 100%;
+      min-width: 0;
+      border-left: 0;
+    }
+
+    .launch-footer-links a + a {
+      border-top: 1px solid var(--launch-line);
+    }
+
+    .launch-footer-meta {
+      gap: 0.85rem;
     }
   }
 </style>

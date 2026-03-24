@@ -1,3 +1,4 @@
+import docsConfigJson from './launch-docs-source.json';
 
 type DocsPage =
   | string
@@ -43,30 +44,59 @@ export type LaunchDocMenuTab = {
 };
 
 const docsBaseUrl = 'https://docs.consuelohq.com';
+const docsConfig = docsConfigJson as DocsConfig;
 
-// For Cloudflare deployment, we either need to import this statically or provide a fallback
-// For now, we'll use a static fallback to avoid node:fs dependency issues in the Cloudflare edge runtime
-export const launchDocsMenuTabs: LaunchDocMenuTab[] = [
-  {
-    label: "user guide",
-    groups: [
-      {
-        label: "introduction",
-        links: [
-          { label: "introduction", href: "https://docs.consuelohq.com/user-guide/introduction" }
-        ]
-      }
-    ]
-  },
-  {
-    label: "developers",
-    groups: [
-      {
-        label: "introduction",
-        links: [
-          { label: "introduction", href: "https://docs.consuelohq.com/developers/introduction" }
-        ]
-      }
-    ]
+const englishNavigation = docsConfig.navigation.languages.find(
+  (language) => language.language === 'en',
+);
+
+const groupLabelOverrides: Record<string, string> = {
+  'Discover Twenty': 'discover consuelo',
+  'Discover Consuelo': 'discover consuelo',
+};
+
+const docLabelOverrides: Record<string, string> = {
+  'developers/introduction': 'introduction',
+  'user-guide/introduction': 'introduction',
+};
+
+const flattenPages = (pages: DocsPage[]): string[] => {
+  return pages.flatMap((page) => {
+    if (typeof page === 'string') {
+      return [page];
+    }
+
+    return flattenPages(page.pages);
+  });
+};
+
+const formatDocLabel = (slug: string) => {
+  const override = docLabelOverrides[slug];
+
+  if (override) {
+    return override;
   }
-];
+
+  const segments = slug.split('/');
+  const lastSegment = segments.at(-1) ?? slug;
+  const labelSource =
+    lastSegment === 'overview' ? segments.at(-2) ?? lastSegment : lastSegment;
+
+  return labelSource.replace(/-/g, ' ');
+};
+
+export const launchDocsMenuTabs: LaunchDocMenuTab[] =
+  englishNavigation?.tabs.map((tab) => ({
+    label: tab.tab.toLowerCase(),
+    groups: tab.groups.map((group) => {
+      const slugs = [...new Set(flattenPages(group.pages))];
+
+      return {
+        label: groupLabelOverrides[group.group] ?? group.group.toLowerCase(),
+        links: slugs.map((slug) => ({
+          label: formatDocLabel(slug),
+          href: docsBaseUrl + '/' + slug,
+        })),
+      };
+    }),
+  })) ?? [];
