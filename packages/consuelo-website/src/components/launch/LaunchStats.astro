@@ -7,36 +7,74 @@ type Props = {
 
 const { sectionId } = Astro.props as Props;
 
-const getLinePoints = (points: number[]) => {
-  const maxValue = Math.max(...points);
-  const minValue = Math.min(...points);
-  const range = Math.max(maxValue - minValue, 1);
+// 1. Joyplot (Multi-line)
+const numLines = 28;
+const joyplotLines = Array.from({ length: numLines }).map((_, i) => {
+  const progress = i / (numLines - 1);
+  const baseOffset = progress * 90; // vertical spread
+  let points = [];
+  for (let x = 10; x <= 170; x += 2) {
+    // Mountain shape towards the right
+    const peak = 60 * Math.exp(-Math.pow(x - 120, 2) / 600);
+    const secondaryPeak = 25 * Math.exp(-Math.pow(x - 80, 2) / 800);
+    const noise = Math.sin(x * 0.15 + i) * 1.5;
+    
+    // Scale down peaks for front lines
+    const scale = 1 - (progress * 0.3);
+    
+    const y = 135 - baseOffset - ((peak + secondaryPeak) * scale) + noise;
+    points.push(`${x},${y.toFixed(2)}`);
+  }
+  // Fade out back lines
+  const opacity = 0.15 + (1 - progress) * 0.7;
+  return { points: points.join(' '), opacity };
+});
 
-  return points
-    .map((point, index) => {
-      const x = 14 + (index / Math.max(points.length - 1, 1)) * 152;
-      const y = 90 - ((point - minValue) / range) * 68;
+// 2. Heatmap (Squares)
+const gridSize = 16;
+const squares: { x: number; y: number; opacity: number }[] = [];
+for (let row = 0; row < gridSize; row++) {
+  for (let col = 0; col < gridSize; col++) {
+    const x = 34 + col * 7;
+    const y = 14 + row * 7;
+    
+    // Pseudo-random opacity based on coordinates
+    const hash = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
+    let rawOpacity = Math.abs(hash - Math.floor(hash));
+    
+    // Create clustering/heatmap effect (more dense in center)
+    const distFromCenter = Math.sqrt(Math.pow(col - 7.5, 2) + Math.pow(row - 7.5, 2));
+    const centerBoost = Math.max(0, 1 - distFromCenter / 10);
+    rawOpacity = (rawOpacity + centerBoost) / 2;
+    
+    let opacity = 0.05;
+    if (rawOpacity > 0.7) opacity = 0.8;
+    else if (rawOpacity > 0.4) opacity = 0.4;
+    else opacity = 0.1;
+    
+    squares.push({ x, y, opacity });
+  }
+}
 
-      return x.toFixed(2) + ',' + y.toFixed(2);
-    })
-    .join(' ');
-};
-
-const getBars = (bars: number[]) => {
-  const maxValue = Math.max(...bars, 1);
-
-  return bars.map((bar, index) => {
-    const height = (bar / maxValue) * 72;
-
-    return {
-      x: 14 + index * 13,
-      y: 92 - height,
-      height,
-    };
-  });
-};
-
-const dotSlots = Array.from({ length: 64 }, (_, index) => index);
+// 3. Thin Bars
+const numBars = 55;
+const thinBars = Array.from({ length: numBars }).map((_, i) => {
+  const x = 10 + i * 3;
+  
+  // Pseudo-random height
+  const hash = Math.sin(i * 12.9898) * 43758.5453;
+  const rand = Math.abs(hash - Math.floor(hash));
+  
+  // Bell curve shape
+  const bell = Math.sin((i / (numBars - 1)) * Math.PI);
+  
+  const height = 20 + bell * 60 + rand * 45;
+  const y = 135 - height;
+  
+  const opacity = 0.2 + rand * 0.6;
+  
+  return { x, y, height, opacity };
+});
 ---
 
 <section class="launch-section" id={sectionId}>
@@ -44,45 +82,41 @@ const dotSlots = Array.from({ length: 64 }, (_, index) => index);
     <div class="launch-stats__intro">
       <p class="launch-eyebrow">{launchStats.eyebrow}</p>
       <h2 class="launch-stats__title">{launchStats.title}</h2>
-      <p class="launch-copy">{launchStats.intro}</p>
+      {launchStats.intro && <p class="launch-copy">{launchStats.intro}</p>}
     </div>
 
     <div class="launch-stats__grid">
-      {launchMetrics.map((metric) => (
+      {launchMetrics.map((metric, index) => (
         <article class="launch-stats__metric">
           <div class="launch-stats__chart" aria-hidden="true">
-            {metric.chart === 'line' && metric.points && (
-              <svg viewBox="0 0 180 104" role="presentation">
-                <polyline points={getLinePoints(metric.points)} />
+            {metric.chart === 'line' && (
+              <svg viewBox="0 0 180 140" role="presentation">
+                {joyplotLines.map((line) => (
+                  <polyline points={line.points} style={`opacity: ${line.opacity}`} />
+                ))}
               </svg>
             )}
 
             {metric.chart === 'dots' && (
-              <svg viewBox="0 0 180 104" role="presentation">
-                {dotSlots.map((slot) => {
-                  const column = slot % 8;
-                  const row = Math.floor(slot / 8);
-                  const isFilled = slot < (metric.filledDots ?? 0);
-                  const x = 24 + column * 17;
-                  const y = 16 + row * 11;
-
-                  return <circle cx={x} cy={y} r="1.6" class:list={{ 'is-filled': isFilled }} />;
-                })}
+              <svg viewBox="0 0 180 140" role="presentation">
+                {squares.map((sq) => (
+                  <rect x={sq.x} y={sq.y} width="3.5" height="3.5" class="is-filled" style={`opacity: ${sq.opacity}`} />
+                ))}
               </svg>
             )}
 
-            {metric.chart === 'bars' && metric.bars && (
-              <svg viewBox="0 0 180 104" role="presentation">
-                {getBars(metric.bars).map((bar) => (
-                  <rect x={bar.x} y={bar.y} width="5" height={bar.height} />
+            {metric.chart === 'bars' && (
+              <svg viewBox="0 0 180 140" role="presentation">
+                {thinBars.map((bar) => (
+                  <rect x={bar.x} y={bar.y} width="1" height={bar.height} class="is-filled" style={`opacity: ${bar.opacity}`} />
                 ))}
               </svg>
             )}
           </div>
 
-          <p class="launch-stats__value launch-mono">{metric.value}</p>
-          <p class="launch-stats__label">{metric.label}</p>
-          <p class="launch-stats__caption launch-mono">{metric.caption}</p>
+          <p class="launch-stats__caption launch-mono">
+            Fig {index + 1}. <strong class="launch-stats__value">{metric.value}</strong> <span class="launch-stats__label-text">{metric.label}</span>
+          </p>
         </article>
       ))}
     </div>
@@ -106,20 +140,27 @@ const dotSlots = Array.from({ length: 64 }, (_, index) => index);
     font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
     line-height: 1.08;
     letter-spacing: -0.06em;
+    color: var(--launch-muted);
   }
 
   .launch-stats__grid {
     display: grid;
-    gap: 1rem;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--launch-line);
+    margin-top: 1.5rem;
   }
 
   .launch-stats__metric {
     display: grid;
-    gap: 0.45rem;
+    gap: 1.2rem;
   }
 
   .launch-stats__chart {
-    min-height: 6rem;
+    min-height: 10rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .launch-stats__chart svg {
@@ -128,52 +169,42 @@ const dotSlots = Array.from({ length: 64 }, (_, index) => index);
     color: var(--launch-muted);
   }
 
-  .launch-stats__chart polyline,
-  .launch-stats__chart rect,
-  .launch-stats__chart circle {
+  .launch-stats__chart polyline {
     fill: none;
     stroke: currentColor;
-    stroke-width: 1;
-    opacity: 0.88;
+    stroke-width: 0.75;
   }
 
-  .launch-stats__chart rect,
-  .launch-stats__chart circle.is-filled {
+  .launch-stats__chart rect.is-filled {
     fill: currentColor;
     stroke: none;
   }
 
-  .launch-stats__chart circle {
-    opacity: 0.24;
-    fill: currentColor;
-    stroke: none;
-  }
-
-  .launch-stats__value,
-  .launch-stats__label,
   .launch-stats__caption {
     margin: 0;
+    font-size: 0.76rem;
+    color: var(--launch-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
   }
 
   .launch-stats__value {
-    font-size: 0.68rem;
-    color: var(--launch-muted);
-  }
-
-  .launch-stats__label {
-    font-size: 0.84rem;
     color: var(--launch-fg);
+    font-weight: 600;
   }
-
-  .launch-stats__caption {
-    font-size: 0.66rem;
-    color: var(--launch-muted);
+  
+  .launch-stats__label-text {
+    text-transform: capitalize;
   }
 
   @media (min-width: 980px) {
     .launch-stats__grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 1.6rem;
+      gap: 2rem;
+      border-top: 0;
+      margin-top: 0;
+      padding-top: 0;
     }
   }
 </style>
