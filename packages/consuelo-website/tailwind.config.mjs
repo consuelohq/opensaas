@@ -34,7 +34,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        
         transparent: "transparent",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        accent: "var(--accent)",
+        muted: "var(--muted)",
+        border: "var(--border)",
+
         primary: {
           50: "#fdf2f8",
           100: "#fce7f3",

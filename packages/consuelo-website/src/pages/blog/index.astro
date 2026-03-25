@@ -1,92 +1,110 @@
 ---
-import LaunchFooter from '../../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../../components/launch/LaunchHeader.astro';
-import LaunchLayout from '../../layouts/LaunchLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Socials from "@/components/Socials.astro";
+import LinkButton from "@/components/LinkButton.astro";
+import Card from "@/components/Card.astro";
+import getSortedPosts from "@/utils/getSortedPosts";
+import IconRss from "@/assets/icons/IconRss.svg";
+import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
+import { SITE } from "@/config";
+import { SOCIALS } from "@/constants";
 
-const description = 'Tips, updates, stories, and the latest news from the world of Consuelo.';
-const allPosts = await getCollection('blog');
+const posts = await getCollection("blog");
 
-// Sort posts by date, newest first
-const sortedPosts = allPosts.sort((a, b) => {
-  return new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime();
-});
-
-// Format date to look like the changelog/launch-mono aesthetic
-const formatDate = (date: Date) => {
-  return date.toISOString().split('T')[0];
-};
+const sortedPosts = getSortedPosts(posts);
+const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
+const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 ---
 
-<LaunchLayout title="Blog" description={description}>
-  <LaunchHeader />
-  
-  <main class="launch-main">
-    <section class="launch-section">
-      <div class="launch-content launch-content--wide">
-        
-        <div class="mercury-hero">
-          <h1 class="mercury-hero__logo">Blog</h1>
-          <p class="mercury-hero__subtitle">Tips, Updates & Stories</p>
-          <p class="launch-copy" style="max-width: 600px; margin-top: 1rem;">{description}</p>
-        </div>
+<Layout>
+  <Header />
+  <main id="main-content" data-layout="index" class="app-layout">
+    <section id="hero" class:list={["pt-8 pb-6", "border-b border-border"]}>
+      <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
+        Blog
+      </h1>
+      <a
+        target="_blank"
+        href="/rss.xml"
+        class="inline-block"
+        aria-label="rss feed"
+        title="RSS Feed"
+      >
+        <IconRss
+          width={20}
+          height={20}
+          class="scale-125 stroke-accent stroke-3 rtl:-rotate-90"
+        />
+        <span class="sr-only">RSS Feed</span>
+      </a>
 
-        <div style="margin-top: 2rem;">
-          {sortedPosts.map((post) => (
-            <a href={`/blog/${post.id}`} class="mercury-expandable blog-link" style="padding: 1.5rem 0; display: grid; grid-template-columns: 120px 1fr; gap: 2rem; align-items: baseline; text-decoration: none;">
-              <span class="launch-mono" style="color: var(--launch-muted); font-size: 0.85rem; display: block; margin-bottom: 0.5rem;">{formatDate(post.data.pubDate)} • {post.data.author}</span>
-              <div>
-                <h3 class="mercury-hero__subtitle" style="font-size: 1.1rem; margin-bottom: 0.5rem; transition: color 0.2s ease;">{post.data.title}</h3>
-                <p class="launch-copy" style="max-width: 65ch; line-height: 1.6; margin: 0; color: var(--launch-muted);">{post.data.description}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-        
-      </div>
+      <p>
+        Tips, updates, stories, and the latest news\n        from the world of Consuelo.
+      </p>
+      
+      {
+        // only display if at least one social link is enabled
+        SOCIALS.length > 0 && (
+          <div class="mt-4 flex max-sm:flex-col sm:items-center">
+            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">Social Links:</div>
+            <Socials />
+          </div>
+        )
+      }
     </section>
-  </main>
 
-  <LaunchFooter />
-</LaunchLayout>
-
-<style>
-  .mercury-hero {
-    display: grid;
-    gap: 0.75rem;
-    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
-    padding-bottom: clamp(1.5rem, 1rem + 2vw, 3rem);
-  }
-
-  .mercury-hero__logo {
-    margin: 0;
-    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
-    font-weight: 700;
-    letter-spacing: -0.06em;
-    line-height: 1;
-  }
-
-  .mercury-hero__subtitle {
-    margin: 0;
-    font-family: var(--launch-mono-font);
-    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.3;
-  }
-
-  .mercury-expandable {
-    border-top: 1px solid var(--launch-line);
-  }
-  
-  .blog-link:hover .mercury-hero__subtitle {
-    color: var(--color-primary, #fff);
-  }
-  
-  @media (max-width: 768px) {
-    .mercury-expandable {
-      grid-template-columns: 1fr !important;
-      gap: 0.5rem !important;
+    {
+      featuredPosts.length > 0 && (
+        <section
+          id="featured"
+          class:list={[
+            "pt-12 pb-6",
+            { "border-b border-border": recentPosts.length > 0 },
+          ]}
+        >
+          <h2 class="text-2xl font-semibold tracking-wide">Featured</h2>
+          <ul>
+            {featuredPosts.map(data => (
+              <Card variant="h3" {...data} />
+            ))}
+          </ul>
+        </section>
+      )
     }
-  }
-</style>
+
+    {
+      recentPosts.length > 0 && (
+        <section id="recent-posts" class="pt-12 pb-6">
+          <h2 class="text-2xl font-semibold tracking-wide">Recent Posts</h2>
+          <ul>
+            {recentPosts.map(
+              (data, index) =>
+                index < SITE.postPerIndex && <Card variant="h3" {...data} />
+            )}
+          </ul>
+        </section>
+      )
+    }
+
+    <div class="my-8 text-center">
+      <LinkButton href="/blog/">
+        All Posts
+        <IconArrowRight class="inline-block rtl:-rotate-180" />
+      </LinkButton>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
+      ?.dataset?.layout;
+    if (indexLayout) {
+      sessionStorage.setItem("backUrl", "/");
+    }
+  });
+</script>

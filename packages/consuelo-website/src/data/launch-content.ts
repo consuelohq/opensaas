@@ -457,7 +457,7 @@ export const launchFooterSignup: LaunchFooterSignup = {
 };
 
 export const footerLinks: LaunchLink[] = [
-  { label: 'github', href: siteLinks.github },
+  { label: 'blog', href: '/blog' },
   { label: 'docs', href: siteLinks.docs },
   { label: 'changelog', href: siteLinks.changelog },
   { label: 'discord', href: siteLinks.discord },

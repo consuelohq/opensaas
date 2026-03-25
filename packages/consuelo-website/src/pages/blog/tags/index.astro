@@ -1,21 +1,24 @@
 ---
-// Blog Tags Page
-// ------------
-// Description: The blog tags page.
+import { getCollection } from "astro:content";
+import Main from "@/layouts/Main.astro";
+import Layout from "@/layouts/Layout.astro";
+import Tag from "@/components/Tag.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import getUniqueTags from "@/utils/getUniqueTags";
+import { SITE } from "@/config";
 
-// Components
-// - Layout
-import Layout from '../../../layouts/Layout.astro'
-// - UI
-import Hero from '../../../components/blocks/hero/PageHeader.astro'
-import BlogPosts from '../../../components/blocks/blog/BlogPosts.astro'
+const posts = await getCollection("blog");
 
-// Data
-import { getCollection } from 'astro:content'
-const allPosts = await getCollection('blog')
+let tags = getUniqueTags(posts);
 ---
 
-<Layout>
-	<Hero title="Tags" />
-	<BlogPosts data={allPosts} />
+<Layout title={`Tags | ${SITE.title}`}>
+  <Header />
+  <Main pageTitle="Tags" pageDesc="All the tags used in posts.">
+    <ul class="flex flex-wrap gap-6">
+      {tags.map(({ tag, tagName }) => <Tag {tag} {tagName} />)}
+    </ul>
+  </Main>
+  <Footer />
 </Layout>

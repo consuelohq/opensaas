@@ -1,20 +1,29 @@
-import { defineCollection } from 'astro:content'
-import { glob } from 'astro/loaders'
-import { z } from 'astro/zod'
+import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
+import { SITE } from "@/config";
+
+export const BLOG_PATH = "src/content/blog";
 
 const blog = defineCollection({
-	loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
-	schema: () =>
-		z.object({
-			title: z.string(),
-			description: z.string(),
-			pubDate: z.date(),
-			image: z.string(),
-			author: z.string(),
-			tags: z.array(z.string())
-		})
-})
+  loader: glob({ pattern: "**/[^_]*.md", base: `./${BLOG_PATH}` }),
+  schema: ({ image }) =>
+    z.object({
+      author: z.string().default(SITE.author),
+      pubDatetime: z.date().optional(),
+      modDatetime: z.date().optional().nullable(),
+      title: z.string(),
+      featured: z.boolean().optional(),
+      draft: z.boolean().optional(),
+      tags: z.array(z.string()).default(["others"]),
+      ogImage: image().or(z.string()).optional(),
+      description: z.string(),
+      canonicalURL: z.string().optional(),
+      hideEditPost: z.boolean().optional(),
+      timezone: z.string().optional(),
+      // Adding legacy fields from consuelo-website to not break immediately
+      pubDate: z.date().optional(),
+      image: z.string().optional(),
+    }),
+});
 
-export const collections = {
-	blog
-}
+export const collections = { blog };

@@ -1,0 +1,62 @@
+
+:root,
+html[data-theme="light"] {
+  --background: #fdfdfd;
+  --foreground: #282728;
+  --accent: #006cac;
+  --muted: #e6e6e6;
+  --border: #ece9e9;
+}
+
+/* Force dark mode */
+html[data-theme="dark"], html {
+  --background: #020617; /* Slate 950 */
+  --foreground: #fafafa; /* Stark white */
+  --accent: #E2187D; /* Primary 500 */
+  --muted: #475569; /* Slate 600 */
+  --border: #1e293b; /* Slate 800 */
+}
+
+/* Custom AstroPaper styles */
+.font-app {
+  font-family: inherit;
+}
+.max-w-app {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#skip-to-content:focus {
+  top: 1rem;
+}
+
+/* active nav links */
+.active-nav {
+  color: var(--accent);
+}
+
+.focus-outline {
+  @apply outline-2 outline-offset-1 outline-accent focus-visible:no-underline focus-visible:outline-dashed;
+}
+
+svg.icon-tabler {
+  @apply inline-block h-6 w-6 scale-125 fill-transparent stroke-current stroke-2 opacity-90 group-hover:fill-transparent sm:scale-110;
+}
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--muted);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: rgba(0,0,0,0.5);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}

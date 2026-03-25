@@ -82,7 +82,7 @@ const steps = [
     <div class="launch-content launch-content--wide mercury-block">
       <p class="mercury-block__eyebrow launch-mono">your privacy is important to us</p>
       <details class="mercury-expandable">
-        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
+        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, <span style="white-space: nowrap">with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</span></summary>
       </details>
     </div>
   </section>
@@ -187,6 +187,7 @@ const steps = [
     cursor: pointer;
     list-style: none;
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 0.6rem;
   }

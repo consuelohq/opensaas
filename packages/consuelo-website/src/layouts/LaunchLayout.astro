@@ -88,6 +88,11 @@ const structuredData = {
     --launch-line: rgba(0, 0, 0, 0.12);
     --launch-panel: rgba(0, 0, 0, 0.03);
     --launch-panel-strong: rgba(0, 0, 0, 0.06);
+    --launch-dropdown-bg: #fbfbfa;
+    --launch-dropdown-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+    --launch-shimmer-stop-1: rgba(0, 0, 0, 0.18);
+    --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
+    --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
     --launch-success: #6fdd92;
     --launch-mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
@@ -102,6 +107,11 @@ const structuredData = {
       --launch-line: rgba(255, 255, 255, 0.1);
       --launch-panel: #0e0e10;
       --launch-panel-strong: rgba(255, 255, 255, 0.08);
+      --launch-dropdown-bg: #111111;
+      --launch-dropdown-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      --launch-shimmer-stop-1: rgba(255, 255, 255, 0.22);
+      --launch-shimmer-stop-2: rgba(255, 255, 255, 0.52);
+      --launch-shimmer-stop-3: rgba(255, 255, 255, 0.88);
       --launch-success: #82e8a4;
     }
   }
@@ -128,6 +138,62 @@ const structuredData = {
     line-height: 1.55;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  @keyframes launch-translation-shimmer {
+    0% {
+      background-position: 200% 50%;
+    }
+
+    100% {
+      background-position: -200% 50%;
+    }
+  }
+
+  body[data-language-translating] .launch-shell :is(h1, h2, h3, h4, h5, h6, p, a, span, strong, em, li, dt, dd, summary, button, label) {
+    color: transparent !important;
+    background-image: linear-gradient(
+      90deg,
+      var(--launch-shimmer-stop-1) 0%,
+      var(--launch-shimmer-stop-2) 30%,
+      var(--launch-shimmer-stop-3) 50%,
+      var(--launch-shimmer-stop-2) 70%,
+      var(--launch-shimmer-stop-1) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 200% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: launch-translation-shimmer 2.1s linear infinite;
+  }
+
+  body[data-language-translating] .launch-shell input::placeholder,
+  body[data-language-translating] .launch-shell textarea::placeholder {
+    color: transparent !important;
+    background-image: linear-gradient(
+      90deg,
+      var(--launch-shimmer-stop-1) 0%,
+      var(--launch-shimmer-stop-2) 30%,
+      var(--launch-shimmer-stop-3) 50%,
+      var(--launch-shimmer-stop-2) 70%,
+      var(--launch-shimmer-stop-1) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 200% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: launch-translation-shimmer 2.1s linear infinite;
+  }
+
+  body[data-language-translating] .language-selector,
+  body[data-language-translating] [data-translate-ignore],
+  body[data-language-translating] [data-translate-ignore] :is(h1, h2, h3, h4, h5, h6, p, a, span, strong, em, li, dt, dd, summary, button, label) {
+    color: inherit !important;
+    background-image: none !important;
+    -webkit-text-fill-color: currentColor !important;
+    animation: none !important;
   }
 
   a,

@@ -31,20 +31,21 @@ const joyplotLines = Array.from({ length: numLines }).map((_, i) => {
 });
 
 // 2. Heatmap (Squares)
-const gridSize = 16;
+const cols = 23;
+const rows = 18;
 const squares: { x: number; y: number; opacity: number }[] = [];
-for (let row = 0; row < gridSize; row++) {
-  for (let col = 0; col < gridSize; col++) {
-    const x = 34 + col * 7;
-    const y = 14 + row * 7;
+for (let row = 0; row < rows; row++) {
+  for (let col = 0; col < cols; col++) {
+    const x = 11 + col * 7;
+    const y = 16 + row * 7;
     
     // Pseudo-random opacity based on coordinates
     const hash = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
     let rawOpacity = Math.abs(hash - Math.floor(hash));
     
     // Create clustering/heatmap effect (more dense in center)
-    const distFromCenter = Math.sqrt(Math.pow(col - 7.5, 2) + Math.pow(row - 7.5, 2));
-    const centerBoost = Math.max(0, 1 - distFromCenter / 10);
+    const distFromCenter = Math.sqrt(Math.pow(col - 11, 2) + Math.pow(row - 8.5, 2));
+    const centerBoost = Math.max(0, 1 - distFromCenter / 12);
     rawOpacity = (rawOpacity + centerBoost) / 2;
     
     let opacity = 0.05;
@@ -100,7 +101,7 @@ const thinBars = Array.from({ length: numBars }).map((_, i) => {
             {metric.chart === 'dots' && (
               <svg viewBox="0 0 180 140" role="presentation">
                 {squares.map((sq) => (
-                  <rect x={sq.x} y={sq.y} width="3.5" height="3.5" class="is-filled" style={`opacity: ${sq.opacity}`} />
+                  <rect x={sq.x} y={sq.y} width="4" height="4" class="is-filled" style={`opacity: ${sq.opacity}`} />
                 ))}
               </svg>
             )}

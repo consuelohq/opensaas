@@ -63,10 +63,13 @@ const languages = [
   type TranslateWindow = Window & {
     __consueloTranslateTextCache?: WeakMap<Text, string>;
     __consueloTranslateAttributeCache?: WeakMap<HTMLElement, CachedAttributes>;
+    __consueloTranslationCache?: Record<string, string>;
   };
 
   const STORAGE_KEY = 'consuelo-language';
+  const TRANSLATION_CACHE_KEY = 'consuelo-language-cache-v1';
   const GOOGLE_TRANSLATE_ENDPOINT = 'https://translate.googleapis.com/translate_a/single';
+  const MAX_CACHED_TRANSLATIONS = 1500;
   const MAX_BATCH_CHARACTERS = 3500;
   const SPLIT_TOKEN = '[[[consuelo-split-9b1c]]]';
   const IGNORED_TAGS = new Set(['CODE', 'NOSCRIPT', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA']);
@@ -79,6 +82,74 @@ const languages = [
 
   translateWindow.__consueloTranslateTextCache = textCache;
   translateWindow.__consueloTranslateAttributeCache = attributeCache;
+
+  const readTranslationCache = (): Record<string, string> => {
+    if (translateWindow.__consueloTranslationCache) {
+      return translateWindow.__consueloTranslationCache;
+    }
+
+    try {
+      const rawCache = window.localStorage.getItem(TRANSLATION_CACHE_KEY);
+
+      if (!rawCache) {
+        translateWindow.__consueloTranslationCache = {};
+
+        return translateWindow.__consueloTranslationCache;
+      }
+
+      const parsedCache = JSON.parse(rawCache) as unknown;
+      translateWindow.__consueloTranslationCache =
+        parsedCache && typeof parsedCache === 'object' ? (parsedCache as Record<string, string>) : {};
+    } catch {
+      translateWindow.__consueloTranslationCache = {};
+    }
+
+    return translateWindow.__consueloTranslationCache;
+  };
+
+  const writeTranslationCache = (cache: Record<string, string>) => {
+    const cacheEntries = Object.entries(cache);
+    const trimmedCache =
+      cacheEntries.length > MAX_CACHED_TRANSLATIONS
+        ? Object.fromEntries(cacheEntries.slice(-MAX_CACHED_TRANSLATIONS))
+        : cache;
+
+    translateWindow.__consueloTranslationCache = trimmedCache;
+
+    try {
+      window.localStorage.setItem(TRANSLATION_CACHE_KEY, JSON.stringify(trimmedCache));
+    } catch {
+      translateWindow.__consueloTranslationCache = trimmedCache;
+    }
+  };
+
+  const getTranslationCacheKey = (languageCode: string, text: string) => {
+    return `${languageCode}::${text}`;
+  };
+
+  const wait = (duration: number) => {
+    return new Promise<void>((resolve) => {
+      window.setTimeout(resolve, duration);
+    });
+  };
+
+  const smoothScrollToTop = async () => {
+    const currentScroll = window.scrollY;
+
+    if (currentScroll <= 16) {
+      return;
+    }
+
+    const duration = Math.min(900, Math.max(250, Math.round(currentScroll * 0.35)));
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    await wait(duration);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
+
+  const setTranslationLoadingState = (isLoading: boolean) => {
+    document.body.toggleAttribute('data-language-translating', isLoading);
+  };
 
   const getStoredLanguage = () => {
     return window.localStorage.getItem(STORAGE_KEY) ?? 'en';
@@ -257,23 +328,48 @@ const languages = [
     return translatedText.split(SPLIT_TOKEN);
   };
 
-  const translateTargets = async (
-    targets: TranslateTarget[],
-    languageCode: string,
-  ) => {
-    const translatedTexts: string[] = [];
-    const originalTexts = targets.map((target: TranslateTarget) => target.originalText);
+  const getTranslatedTexts = async (texts: string[], languageCode: string) => {
+    const translationCache = readTranslationCache();
+    const translatedTexts = new Array<string>(texts.length);
+    const missingTexts: string[] = [];
+    const missingIndexes: number[] = [];
 
-    for (const batch of chunkTexts(originalTexts)) {
-      const translatedBatch = await translateBatch(batch, languageCode);
-      translatedTexts.push(...translatedBatch);
+    texts.forEach((text, index) => {
+      const cachedText = translationCache[getTranslationCacheKey(languageCode, text)];
+
+      if (typeof cachedText === 'string') {
+        translatedTexts[index] = cachedText;
+        return;
+      }
+
+      missingTexts.push(text);
+      missingIndexes.push(index);
+    });
+
+    if (missingTexts.length > 0) {
+      const fetchedTranslations: string[] = [];
+
+      for (const batch of chunkTexts(missingTexts)) {
+        const translatedBatch = await translateBatch(batch, languageCode);
+        fetchedTranslations.push(...translatedBatch);
+      }
+
+      if (fetchedTranslations.length !== missingTexts.length) {
+        throw new Error('translation response invalid');
+      }
+
+      fetchedTranslations.forEach((translatedText, index) => {
+        const originalText = missingTexts[index];
+        const targetIndex = missingIndexes[index];
+
+        translationCache[getTranslationCacheKey(languageCode, originalText)] = translatedText;
+        translatedTexts[targetIndex] = translatedText;
+      });
+
+      writeTranslationCache(translationCache);
     }
 
-    if (translatedTexts.length !== targets.length) {
-      throw new Error('translation response invalid');
-    }
-
-    applyTranslatedContent(targets, translatedTexts);
+    return translatedTexts;
   };
 
   const initializeLanguageSelector = () => {
@@ -298,6 +394,7 @@ const languages = [
     }
 
     root.dataset.initialized = 'true';
+    let activeTranslationRequest = 0;
 
     const updateLabel = (languageCode: string) => {
       currentLabel.textContent = getLanguageLabel(languageCode);
@@ -308,20 +405,57 @@ const languages = [
       menu.classList.remove('language-selector__menu--open');
     };
 
-    const runTranslation = async (languageCode: string) => {
+    const runTranslation = async (
+      languageCode: string,
+      options: { shouldScrollToTop: boolean },
+    ) => {
+      const requestId = ++activeTranslationRequest;
       const targets = collectTranslateTargets();
+      const scrollPromise = options.shouldScrollToTop ? smoothScrollToTop() : Promise.resolve();
 
-      restoreOriginalContent(targets);
+      setTranslationLoadingState(true);
 
       if (languageCode === 'en') {
-        setStoredLanguage('en');
-        updateLabel('en');
+        try {
+          await scrollPromise;
+
+          if (requestId !== activeTranslationRequest) {
+            return;
+          }
+
+          restoreOriginalContent(targets);
+          setStoredLanguage('en');
+          updateLabel('en');
+        } finally {
+          if (requestId === activeTranslationRequest) {
+            setTranslationLoadingState(false);
+          }
+        }
+
         return;
       }
 
-      await translateTargets(targets, languageCode);
-      setStoredLanguage(languageCode);
-      updateLabel(languageCode);
+      try {
+        const translationPromise = getTranslatedTexts(
+          targets.map((target: TranslateTarget) => target.originalText),
+          languageCode,
+        );
+
+        const [translatedTexts] = await Promise.all([translationPromise, scrollPromise]);
+
+        if (requestId !== activeTranslationRequest) {
+          return;
+        }
+
+        restoreOriginalContent(targets);
+        applyTranslatedContent(targets, translatedTexts);
+        setStoredLanguage(languageCode);
+        updateLabel(languageCode);
+      } finally {
+        if (requestId === activeTranslationRequest) {
+          setTranslationLoadingState(false);
+        }
+      }
     };
 
     trigger.addEventListener('click', (event) => {
@@ -352,7 +486,7 @@ const languages = [
         closeMenu();
 
         try {
-          await runTranslation(languageCode);
+          await runTranslation(languageCode, { shouldScrollToTop: true });
         } catch {
           updateLabel(getStoredLanguage());
         }
@@ -363,7 +497,7 @@ const languages = [
     updateLabel(initialLanguage);
 
     if (initialLanguage !== 'en') {
-      runTranslation(initialLanguage).catch(() => {
+      runTranslation(initialLanguage, { shouldScrollToTop: false }).catch(() => {
         setStoredLanguage('en');
         updateLabel('en');
       });
@@ -408,8 +542,9 @@ const languages = [
     min-width: 10rem;
     padding: 0.4rem 0;
     border: 1px solid var(--launch-line);
-    background: #111;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    background: var(--launch-dropdown-bg);
+    box-shadow: var(--launch-dropdown-shadow);
+    backdrop-filter: blur(10px);
     z-index: 50;
   }
 
