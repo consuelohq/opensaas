@@ -2014,6 +2014,11 @@ msgstr ""
 msgid "Attachments"
 msgstr "Bilagor"
 
+#. js-lingui-id: FH8ED9
+#: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
+msgid "Audio Devices"
+msgstr ""
+
 #. js-lingui-id: EPEFrH
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -2421,6 +2426,11 @@ msgstr "Kalendrar"
 #. js-lingui-id: KH43tV
 #: src/modules/dialer/components/DialConfirmationModal.tsx
 msgid "Caller ID"
+msgstr ""
+
+#. js-lingui-id: saW1OG
+#: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
+msgid "Calling & Presence"
 msgstr ""
 
 #. js-lingui-id: msssZq
@@ -9427,6 +9437,8 @@ msgstr "Anteckningar"
 
 #. js-lingui-id: iDNBZe
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/SettingsNotifications.tsx
+#: src/pages/settings/SettingsNotifications.tsx
 msgid "Notifications"
 msgstr ""
 
@@ -9822,6 +9834,7 @@ msgstr ""
 #: src/pages/settings/admin-panel/SettingsAdminConfigVariableDetails.tsx
 #: src/pages/settings/admin-panel/SettingsAdminIndicatorHealthStatus.tsx
 #: src/pages/settings/security/SettingsSecurity.tsx
+#: src/pages/settings/SettingsNotifications.tsx
 #: src/pages/settings/updates/SettingsUpdates.tsx
 msgid "Other"
 msgstr "Annat"
@@ -10123,7 +10136,10 @@ msgid "Phone number copied to clipboard"
 msgstr "Telefonnummer kopierat till urklipp"
 
 #. js-lingui-id: HRghyD
+#: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/accounts/SettingsAccountsPhoneNumbers.tsx
+#: src/pages/settings/accounts/SettingsAccountsPhoneNumbers.tsx
 msgid "Phone Numbers"
 msgstr ""
 
@@ -13936,6 +13952,7 @@ msgstr ""
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
 #: src/pages/settings/accounts/SettingsAccountsEmails.tsx
+#: src/pages/settings/accounts/SettingsAccountsPhoneNumbers.tsx
 #: src/pages/settings/accounts/SettingsNewAccount.tsx
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
