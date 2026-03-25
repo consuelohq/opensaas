@@ -75,7 +75,10 @@ const { sectionId } = Astro.props as Props;
     <div class="launch-hero__media launch-card" data-launch-media>
       {launchTabs.map((tab, index) => (
         <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
-          <img src={tab.imageSrc} alt={tab.imageAlt} loading={index === 0 ? 'eager' : 'lazy'} />
+          <picture>
+            {tab.darkImageSrc && <source srcset={tab.darkImageSrc} media="(prefers-color-scheme: dark)" />}
+            <img src={tab.imageSrc} alt={tab.imageAlt} loading={index === 0 ? 'eager' : 'lazy'} />
+          </picture>
         </figure>
       ))}
     </div>
@@ -319,6 +322,10 @@ const { sectionId } = Astro.props as Props;
     height: 100%;
     object-fit: cover;
     object-position: top center;
+  }
+
+  .launch-hero__media-panel picture {
+    display: contents;
   }
 
   @media (max-width: 720px) {

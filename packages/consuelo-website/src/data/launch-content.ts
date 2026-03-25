@@ -34,6 +34,7 @@ export type LaunchTab = {
   value: string;
   href?: string;
   imageSrc: string;
+  darkImageSrc?: string;
   imageAlt: string;
 };
 
@@ -182,6 +183,7 @@ export const launchTabs: LaunchTab[] = [
     value: siteLinks.app,
     href: siteLinks.app,
     imageSrc: '/previews/ai-crm.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo browser workspace preview',
   },
   {
@@ -191,6 +193,7 @@ export const launchTabs: LaunchTab[] = [
     value: 'https://www.consuelohq.com/ghl',
     href: '/ghl',
     imageSrc: '/previews/power-dialer.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo embedded dialer preview',
   },
   {
@@ -199,6 +202,7 @@ export const launchTabs: LaunchTab[] = [
     kind: 'command',
     value: 'npm install -g @consuelo/cli',
     imageSrc: '/previews/coaching.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo assistant preview',
   },
   {
@@ -207,6 +211,7 @@ export const launchTabs: LaunchTab[] = [
     kind: 'command',
     value: 'npm install -g @consuelo/cli',
     imageSrc: '/previews/ai-crm.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo agent workflow preview',
   },
   {
@@ -216,6 +221,7 @@ export const launchTabs: LaunchTab[] = [
     value: siteLinks.discordDocs,
     href: siteLinks.discordDocs,
     imageSrc: '/previews/coaching.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo discord workflow preview',
   },
   {
@@ -225,6 +231,7 @@ export const launchTabs: LaunchTab[] = [
     value: siteLinks.slackDocs,
     href: siteLinks.slackDocs,
     imageSrc: '/previews/analytics.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo work channel preview',
   },
   {
@@ -234,6 +241,7 @@ export const launchTabs: LaunchTab[] = [
     value: 'https://chromewebstore.google.com/detail/consuelo-dialer',
     href: 'https://chromewebstore.google.com/detail/consuelo-dialer',
     imageSrc: '/previews/power-dialer.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo chrome extension preview',
   },
   {
@@ -242,6 +250,7 @@ export const launchTabs: LaunchTab[] = [
     kind: 'command',
     value: 'npm install -g @consuelo/cli',
     imageSrc: '/previews/power-dialer.webp',
+    darkImageSrc: '/previews/dark-preview.webp',
     imageAlt: 'Consuelo cli preview',
   },
 ];
