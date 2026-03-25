@@ -5,6 +5,7 @@ export enum SettingsPath {
   Accounts = 'accounts',
   NewAccount = 'accounts/new',
   AccountsConfiguration = 'accounts/configuration/:connectedAccountId',
+  AccountsPhoneNumbers = 'accounts/phone-numbers',
   AccountsCalendars = 'accounts/calendars',
   AccountsEmails = 'accounts/emails',
   NewImapSmtpCaldavConnection = 'accounts/new-imap-smtp-caldav-connection',
@@ -58,6 +59,8 @@ export enum SettingsPath {
   AdminPanelIndicatorHealthStatus = 'admin-panel/health-status/:indicatorId',
   AdminPanelQueueDetail = 'admin-panel/health-status/queue/:queueName',
   AdminPanelConfigVariableDetails = 'admin-panel/config-variables/:variableName',
+
+  Notifications = 'notifications',
 
   Roles = 'roles',
   RoleCreate = 'roles/create',

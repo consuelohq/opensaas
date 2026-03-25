@@ -23,7 +23,6 @@ import {
   IconCreditCard,
   IconCurrencyDollar,
   IconDoorEnter,
-  IconHeadphones,
   IconHelpCircle,
   IconHierarchy2,
   IconKey,
@@ -36,7 +35,6 @@ import {
   IconServer,
   IconSettings,
   IconSparkles,
-  IconToggleRight,
   IconUserCircle,
   IconUsers,
   IconWorld,
@@ -108,6 +106,12 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           Icon: IconAt,
           subItems: [
             {
+              label: t`Phone Numbers`,
+              path: SettingsPath.AccountsPhoneNumbers,
+              Icon: IconPhone,
+              indentationLevel: 2,
+            },
+            {
               label: t`Emails`,
               path: SettingsPath.AccountsEmails,
               Icon: IconMail,
@@ -131,43 +135,6 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           path: SettingsPath.Workspace,
           Icon: IconSettings,
           isHidden: !permissionMap[PermissionFlagType.WORKSPACE],
-        },
-        {
-          label: t`Dialer`,
-          path: SettingsPath.Dialer,
-          Icon: IconPhone,
-          subItems: [
-            {
-              label: t`Config`,
-              path: SettingsPath.DialerProfile,
-              Icon: IconSettings,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Phone Numbers`,
-              path: SettingsPath.DialerPhoneNumbers,
-              Icon: IconPhone,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Calling & Presence`,
-              path: SettingsPath.DialerCalling,
-              Icon: IconToggleRight,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Audio Devices`,
-              path: SettingsPath.DialerAudio,
-              Icon: IconHeadphones,
-              indentationLevel: 2,
-            },
-            {
-              label: t`Notifications`,
-              path: SettingsPath.DialerNotifications,
-              Icon: IconBell,
-              indentationLevel: 2,
-            },
-          ],
         },
         {
           label: t`Data model`,
@@ -255,6 +222,11 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           path: SettingsPath.AdminPanel,
           Icon: IconServer,
           isHidden: !isAdminEnabled,
+        },
+        {
+          label: t`Notifications`,
+          path: SettingsPath.Notifications,
+          Icon: IconBell,
         },
         {
           label: t`Updates`,

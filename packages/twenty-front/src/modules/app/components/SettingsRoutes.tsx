@@ -1,10 +1,11 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { SettingsProtectedRouteWrapper } from '@/settings/components/SettingsProtectedRouteWrapper';
 import { SettingsSkeletonLoader } from '@/settings/components/SettingsSkeletonLoader';
 import { SettingPublicDomain } from '@/settings/domains/components/SettingPublicDomain';
 import { SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 import {
   FeatureFlagKey,
   PermissionFlagType,
@@ -401,35 +402,17 @@ const SettingsRoleAddObjectLevel = lazy(() =>
   ),
 );
 
-const SettingsDialer = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialer').then((module) => ({
-    default: module.SettingsDialer,
+const SettingsAccountsPhoneNumbers = lazy(() =>
+  import(
+    '~/pages/settings/accounts/SettingsAccountsPhoneNumbers'
+  ).then((module) => ({
+    default: module.SettingsAccountsPhoneNumbers,
   })),
 );
 
-const SettingsDialerProfile = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerProfile').then((module) => ({
-    default: module.SettingsDialerProfile,
-  })),
-);
-
-const SettingsDialerPhoneNumbers = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerPhoneNumbers').then(
-    (module) => ({
-      default: module.SettingsDialerPhoneNumbers,
-    }),
-  ),
-);
-
-const SettingsDialerCalling = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerCalling').then((module) => ({
-    default: module.SettingsDialerCalling,
-  })),
-);
-
-const SettingsDialerAudio = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerAudio').then((module) => ({
-    default: module.SettingsDialerAudio,
+const SettingsNotifications = lazy(() =>
+  import('~/pages/settings/SettingsNotifications').then((module) => ({
+    default: module.SettingsNotifications,
   })),
 );
 
@@ -443,14 +426,6 @@ const SettingsDialerSubscription = lazy(() =>
   import('~/pages/settings/dialer/SettingsDialerSubscription').then(
     (module) => ({
       default: module.SettingsDialerSubscription,
-    }),
-  ),
-);
-
-const SettingsDialerNotifications = lazy(() =>
-  import('~/pages/settings/dialer/SettingsDialerNotifications').then(
-    (module) => ({
-      default: module.SettingsDialerNotifications,
     }),
   ),
 );
@@ -714,31 +689,57 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         <Route path={SettingsPath.EventLogs} element={<SettingsEventLogs />} />
       </Route>
 
-      <Route path={SettingsPath.Dialer} element={<SettingsDialer />} />
+      <Route
+        path={SettingsPath.AccountsPhoneNumbers}
+        element={<SettingsAccountsPhoneNumbers />}
+      />
+      <Route
+        path={SettingsPath.Notifications}
+        element={<SettingsNotifications />}
+      />
+
+      {/* redirects from old dialer paths */}
+      <Route
+        path={SettingsPath.Dialer}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+        }
+      />
       <Route
         path={SettingsPath.DialerProfile}
-        element={<SettingsDialerProfile />}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.ProfilePage)} replace />
+        }
       />
       <Route
         path={SettingsPath.DialerPhoneNumbers}
-        element={<SettingsDialerPhoneNumbers />}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+        }
       />
       <Route
         path={SettingsPath.DialerCalling}
-        element={<SettingsDialerCalling />}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+        }
       />
       <Route
         path={SettingsPath.DialerAudio}
-        element={<SettingsDialerAudio />}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+        }
       />
+      <Route
+        path={SettingsPath.DialerNotifications}
+        element={
+          <Navigate to={getSettingsPath(SettingsPath.Notifications)} replace />
+        }
+      />
+
       <Route path={SettingsPath.DialerAI} element={<SettingsDialerAI />} />
       <Route
         path={SettingsPath.DialerSubscription}
         element={<SettingsDialerSubscription />}
-      />
-      <Route
-        path={SettingsPath.DialerNotifications}
-        element={<SettingsDialerNotifications />}
       />
       <Route
         path={SettingsPath.DialerWorkspace}

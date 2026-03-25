@@ -16,6 +16,7 @@ import { getSettingsPath } from 'twenty-shared/utils';
 import { H2Title, IconShield, Status } from 'twenty-ui/display';
 import { Section } from 'twenty-ui/layout';
 import { UndecoratedLink } from 'twenty-ui/navigation';
+import { ProfileSettings } from '~/pages/settings/consuelo/ProfileSettings';
 
 export const SettingsProfile = () => {
   const { t } = useLingui();
@@ -95,6 +96,7 @@ export const SettingsProfile = () => {
             <SetOrChangePassword />
           </Section>
         )}
+        <ProfileSettings />
         <Section>
           <DeleteAccount />
         </Section>
