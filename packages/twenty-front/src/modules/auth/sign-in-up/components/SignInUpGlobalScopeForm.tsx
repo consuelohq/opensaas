@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 import { Trans, useLingui } from '@lingui/react/macro';
 import { motion } from 'framer-motion';
 import { FormProvider } from 'react-hook-form';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { ClickToActionLink, UndecoratedLink } from 'twenty-ui/navigation';
 
 import { useAuth } from '@/auth/hooks/useAuth';
@@ -126,7 +126,7 @@ const StyledActionLinkContainer = styled.div`
 
 export const SignInUpGlobalScopeForm = () => {
   const authProviders = useRecoilValueV2(authProvidersState);
-  const signInUpStep = useRecoilValue(signInUpStepState);
+  const [signInUpStep, setSignInUpStep] = useRecoilState(signInUpStepState);
   const { buildWorkspaceUrl } = useBuildWorkspaceUrl();
   const { signOut } = useAuth();
 
@@ -235,6 +235,15 @@ export const SignInUpGlobalScopeForm = () => {
             <SignInUpWithCredentials isGlobalScope />
           </FormProvider>
         </StyledContentContainer>
+      )}
+      {signInUpStep === SignInUpStep.Init && (
+        <StyledActionLinkContainer>
+          <ClickToActionLink
+            onClick={() => setSignInUpStep(SignInUpStep.Email)}
+          >
+            <Trans>Create an account</Trans>
+          </ClickToActionLink>
+        </StyledActionLinkContainer>
       )}
     </>
   );
