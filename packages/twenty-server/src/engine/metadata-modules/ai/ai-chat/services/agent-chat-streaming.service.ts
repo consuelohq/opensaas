@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { createUIMessageStream, pipeUIMessageStreamToResponse } from 'ai';
 import { type Response } from 'express';
-import {
-  type CodeExecutionData,
-  type ExtendedUIMessage,
-} from 'twenty-shared/ai';
+import { type ExtendedUIMessage } from 'twenty-shared/ai';
 import { type Repository } from 'typeorm';
 
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
@@ -16,9 +12,8 @@ import {
   AgentExceptionCode,
 } from 'src/engine/metadata-modules/ai/ai-agent/agent.exception';
 import { type BrowsingContextType } from 'src/engine/metadata-modules/ai/ai-agent/types/browsingContext.type';
-import { convertCentsToBillingCredits } from 'src/engine/metadata-modules/ai/ai-billing/utils/convert-cents-to-billing-credits.util';
-import { toDisplayCredits } from 'src/engine/core-modules/billing/utils/to-display-credits.util';
 import { AgentChatThreadEntity } from 'src/engine/metadata-modules/ai/ai-chat/entities/agent-chat-thread.entity';
+import { PiAgentService } from 'src/engine/metadata-modules/pi-agent/pi-agent.service';
 
 import { AgentChatService } from './agent-chat.service';
 import { ChatExecutionService } from './chat-execution.service';
@@ -39,6 +34,7 @@ export class AgentChatStreamingService {
     private readonly threadRepository: Repository<AgentChatThreadEntity>,
     private readonly agentChatService: AgentChatService,
     private readonly chatExecutionService: ChatExecutionService,
+    private readonly piAgentService: PiAgentService,
   ) {}
 
   async streamAgentChat({
@@ -63,8 +59,7 @@ export class AgentChatStreamingService {
       );
     }
 
-    // Fire user-message save without awaiting to avoid delaying time-to-first-letter.
-    // The promise is awaited inside onFinish where we need the turnId.
+    // save user message (fire-and-forget for faster time-to-first-letter)
     const lastUserText =
       messages[messages.length - 1]?.parts.find((part) => part.type === 'text')
         ?.text ?? '';
@@ -77,159 +72,79 @@ export class AgentChatStreamingService {
       },
     });
 
-    // Prevent unhandled rejection if onFinish never runs (e.g. stream
-    // setup error or empty response early-return). The real error still
-    // surfaces when awaited in onFinish.
     userMessagePromise.catch(() => {});
 
     try {
-      const uiStream = createUIMessageStream<ExtendedUIMessage>({
-        execute: async ({ writer }) => {
-          const onCodeExecutionUpdate = (data: CodeExecutionData) => {
-            writer.write({
-              type: 'data-code-execution' as const,
-              id: `code-execution-${data.executionId}`,
-              data,
-            });
-          };
-
-          const { stream, modelConfig } =
-            await this.chatExecutionService.streamChat({
-              workspace,
-              userWorkspaceId,
-              messages,
-              browsingContext,
-              onCodeExecutionUpdate,
-            });
-
-          let streamUsage = {
-            inputTokens: 0,
-            outputTokens: 0,
-            inputCredits: 0,
-            outputCredits: 0,
-          };
-          let lastStepConversationSize = 0;
-          let totalCacheCreationTokens = 0;
-
-          writer.merge(
-            stream.toUIMessageStream({
-              onError: (error) => {
-                return error instanceof Error ? error.message : String(error);
-              },
-              sendStart: false,
-              messageMetadata: ({ part }) => {
-                if (part.type === 'finish-step') {
-                  const stepInput = part.usage?.inputTokens ?? 0;
-                  const stepCached = part.usage?.cachedInputTokens ?? 0;
-
-                  // Anthropic excludes cached/created tokens from input_tokens,
-                  // reporting them separately as cache_creation_input_tokens
-                  const anthropicUsage = (
-                    part as {
-                      providerMetadata?: {
-                        anthropic?: {
-                          usage?: { cache_creation_input_tokens?: number };
-                        };
-                      };
-                    }
-                  ).providerMetadata?.anthropic?.usage;
-                  const stepCacheCreation =
-                    anthropicUsage?.cache_creation_input_tokens ?? 0;
-
-                  totalCacheCreationTokens += stepCacheCreation;
-                  lastStepConversationSize =
-                    stepInput + stepCached + stepCacheCreation;
-                }
-
-                if (part.type === 'finish') {
-                  const inputTokens =
-                    (part.totalUsage?.inputTokens ?? 0) +
-                    (part.totalUsage?.cachedInputTokens ?? 0) +
-                    totalCacheCreationTokens;
-                  const outputTokens = part.totalUsage?.outputTokens ?? 0;
-                  const cachedInputTokens =
-                    part.totalUsage?.cachedInputTokens ?? 0;
-
-                  const inputCostInCents =
-                    (inputTokens / 1000) *
-                    modelConfig.inputCostPer1kTokensInCents;
-                  const outputCostInCents =
-                    (outputTokens / 1000) *
-                    modelConfig.outputCostPer1kTokensInCents;
-
-                  const inputCredits = Math.round(
-                    convertCentsToBillingCredits(inputCostInCents),
-                  );
-                  const outputCredits = Math.round(
-                    convertCentsToBillingCredits(outputCostInCents),
-                  );
-
-                  streamUsage = {
-                    inputTokens,
-                    outputTokens,
-                    inputCredits,
-                    outputCredits,
-                  };
-
-                  return {
-                    createdAt: new Date().toISOString(),
-                    usage: {
-                      inputTokens,
-                      outputTokens,
-                      cachedInputTokens,
-                      inputCredits: toDisplayCredits(inputCredits),
-                      outputCredits: toDisplayCredits(outputCredits),
-                      conversationSize: lastStepConversationSize,
-                    },
-                    model: {
-                      contextWindowTokens: modelConfig.contextWindowTokens,
-                    },
-                  };
-                }
-
-                return undefined;
-              },
-              onFinish: async ({ responseMessage }) => {
-                if (responseMessage.parts.length === 0) {
-                  return;
-                }
-
-                const userMessage = await userMessagePromise;
-
-                await this.agentChatService.addMessage({
-                  threadId: thread.id,
-                  uiMessage: responseMessage,
-                  turnId: userMessage.turnId,
-                });
-
-                await this.threadRepository.update(thread.id, {
-                  totalInputTokens: () =>
-                    `"totalInputTokens" + ${streamUsage.inputTokens}`,
-                  totalOutputTokens: () =>
-                    `"totalOutputTokens" + ${streamUsage.outputTokens}`,
-                  totalInputCredits: () =>
-                    `"totalInputCredits" + ${streamUsage.inputCredits}`,
-                  totalOutputCredits: () =>
-                    `"totalOutputCredits" + ${streamUsage.outputCredits}`,
-                  contextWindowTokens: modelConfig.contextWindowTokens,
-                  conversationSize: lastStepConversationSize,
-                });
-              },
-              sendReasoning: true,
-            }),
-          );
+      // stream via piagent — returns pi-format SSE ReadableStream
+      const { stream } = await this.piAgentService.streamChat(
+        {
+          workspace,
+          userWorkspaceId,
+          messages,
+          browsingContext,
         },
-      });
+        threadId,
+      );
 
-      pipeUIMessageStreamToResponse({
-        stream: uiStream,
-        response,
-        // Consume the stream independently so onFinish fires even if
-        // the client disconnects (e.g., page refresh mid-stream)
-        consumeSseStream: ({ stream }) => {
-          stream.pipeTo(new WritableStream()).catch(() => {});
-        },
-      });
+      // set SSE headers
+      response.setHeader('Content-Type', 'text/event-stream');
+      response.setHeader('Cache-Control', 'no-cache');
+      response.setHeader('Connection', 'keep-alive');
+
+      // pipe the SSE stream to the response, collecting text for persistence
+      const reader = stream.getReader();
+      let fullText = '';
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          // write raw SSE bytes to response
+          response.write(value);
+
+          // parse SSE events to collect assistant text for DB persistence
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+
+            try {
+              const event = JSON.parse(line.slice(6)) as {
+                type: string;
+                content?: string;
+              };
+
+              if (event.type === 'text' && event.content) {
+                fullText += event.content;
+              }
+            } catch {
+              // skip malformed SSE lines
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
+
+      // persist assistant message
+      if (fullText.length > 0) {
+        const userMessage = await userMessagePromise;
+
+        await this.agentChatService.addMessage({
+          threadId: thread.id,
+          uiMessage: {
+            role: AgentMessageRole.ASSISTANT,
+            parts: [{ type: 'text', text: fullText }],
+          } as ExtendedUIMessage,
+          turnId: userMessage.turnId,
+        });
+      }
+
+      response.end();
     } catch (error) {
       response.end();
       throw error;

@@ -32,12 +32,13 @@ import { filterWorkspaceNavigationMenuItems } from '@/navigation-menu-item/utils
 import { openNavigationMenuItemFolderIdsState } from '@/navigation-menu-item/states/openNavigationMenuItemFolderIdsState';
 import { selectedNavigationMenuItemInEditModeState } from '@/navigation-menu-item/states/selectedNavigationMenuItemInEditModeState';
 import { NavigationDrawerSectionForObjectMetadataItemsSkeletonLoader } from '@/object-metadata/components/NavigationDrawerSectionForObjectMetadataItemsSkeletonLoader';
+import { NavigationDrawerItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerItem';
 import { NavigationDrawerSectionForWorkspaceItems } from '@/object-metadata/components/NavigationDrawerSectionForWorkspaceItems';
 import { type ObjectMetadataItem } from '@/object-metadata/types/ObjectMetadataItem';
 import { useIsPrefetchLoading } from '@/prefetch/hooks/useIsPrefetchLoading';
 import { prefetchNavigationMenuItemsState } from '@/prefetch/states/prefetchNavigationMenuItemsState';
-import { NavigationDrawerSubItem } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerSubItem';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { useLocation } from 'react-router-dom';
 import { isDefined } from 'twenty-shared/utils';
 import { AppPath } from 'twenty-shared/types';
 
@@ -49,6 +50,7 @@ const StyledRightIconsContainer = styled.div`
 
 export const WorkspaceNavigationMenuItems = () => {
   const items = useWorkspaceSectionItems();
+  const location = useLocation();
   const enterEditMode = useRecoilCallback(
     ({ set, snapshot }) =>
       () => {
@@ -148,10 +150,11 @@ export const WorkspaceNavigationMenuItems = () => {
   }
 
   const agentFooterContent = (
-    <NavigationDrawerSubItem
+    <NavigationDrawerItem
       label={t`Computer`}
       Icon={IconComment}
       to={AppPath.Agent}
+      active={location.pathname === AppPath.Agent}
     />
   );
 

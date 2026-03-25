@@ -39,7 +39,6 @@ const StyledViewport = styled.div`
 
 const StyledMessageList = styled.div`
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
   padding: ${({ theme }) => theme.spacing(4)} ${({ theme }) => theme.spacing(6)};

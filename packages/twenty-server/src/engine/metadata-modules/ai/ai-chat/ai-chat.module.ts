@@ -21,6 +21,7 @@ import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/
 import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache.module';
 import { DashboardToolsModule } from 'src/modules/dashboard/tools/dashboard-tools.module';
 import { WorkflowToolsModule } from 'src/modules/workflow/workflow-tools/workflow-tools.module';
+import { PiAgentService } from 'src/engine/metadata-modules/pi-agent/pi-agent.service';
 
 import { AgentChatController } from './controllers/agent-chat.controller';
 import { AgentChatThreadEntity } from './entities/agent-chat-thread.entity';
@@ -64,12 +65,14 @@ import { SystemPromptBuilderService } from './services/system-prompt-builder.ser
     AgentChatStreamingService,
     AgentTitleGenerationService,
     ChatExecutionService,
+    PiAgentService,
     SystemPromptBuilderService,
   ],
   exports: [
     AgentChatService,
     AgentChatStreamingService,
     ChatExecutionService,
+    PiAgentService,
     TypeOrmModule.forFeature([AgentChatThreadEntity]),
   ],
 })
