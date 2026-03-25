@@ -3231,6 +3231,11 @@ msgstr "Kontroller hvilke typer enheter denne rollen kan tildeles til"
 msgid "Conversation"
 msgstr ""
 
+#. js-lingui-id: EnJuK0
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Conversations"
+msgstr ""
+
 #. js-lingui-id: HRGl1X
 #: src/modules/settings/members/components/MemberNameFields.tsx
 #: src/modules/settings/profile/components/NameFields.tsx
@@ -8006,6 +8011,11 @@ msgstr "Laster tråd"
 msgid "Loading..."
 msgstr "Laster inn..."
 
+#. js-lingui-id: Pwqkdw
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Loading…"
+msgstr ""
+
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Locale"
@@ -8323,6 +8333,11 @@ msgstr "Meldingssynk og kalendersynk er ikke tilgjengelige fordi tjenesten er ne
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminConnectedAccountHealthStatus.tsx
 msgid "Message Sync is not available because the service is down"
 msgstr "Meldingssynk er ikke tilgjengelig fordi tjenesten er nede"
+
+#. js-lingui-id: rWivAE
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Message the Agent..."
+msgstr ""
 
 #. js-lingui-id: tLtgGh
 #: src/modules/agent/components/AgentComposer.tsx
@@ -8722,6 +8737,7 @@ msgid "New Approved Access Domain"
 msgstr "Nytt godkjent tilgangsdomene"
 
 #. js-lingui-id: hIQkLb
+#: src/modules/agent/components/ConversationList.tsx
 #: src/modules/ai/components/AIChatThreadsList.tsx
 msgid "New chat"
 msgstr "Ny chat"
@@ -8958,6 +8974,11 @@ msgstr "Ingen konfigurasjonsvariabler samsvarer med dine gjeldende filtre. Prøv
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
 msgid "No context was provided for this request"
 msgstr "Ingen kontekst ble oppgitt for denne forespørselen"
+
+#. js-lingui-id: meAa31
+#: src/modules/agent/components/ConversationList.tsx
+msgid "No conversations yet"
+msgstr ""
 
 #. js-lingui-id: 4BSfjK
 #: src/modules/object-record/record-field/ui/form-types/components/FormCountryCodeSelectInput.tsx

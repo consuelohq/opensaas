@@ -3231,6 +3231,11 @@ msgstr "控制此角色可指派於哪些實體類型"
 msgid "Conversation"
 msgstr ""
 
+#. js-lingui-id: EnJuK0
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Conversations"
+msgstr ""
+
 #. js-lingui-id: HRGl1X
 #: src/modules/settings/members/components/MemberNameFields.tsx
 #: src/modules/settings/profile/components/NameFields.tsx
@@ -8006,6 +8011,11 @@ msgstr "正在載入郵件串"
 msgid "Loading..."
 msgstr "載入中……"
 
+#. js-lingui-id: Pwqkdw
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Loading…"
+msgstr ""
+
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Locale"
@@ -8323,6 +8333,11 @@ msgstr "消息同步和日曆同步不可用，因為服務已關閉"
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminConnectedAccountHealthStatus.tsx
 msgid "Message Sync is not available because the service is down"
 msgstr "消息同步不可用，因為服務已關閉"
+
+#. js-lingui-id: rWivAE
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Message the Agent..."
+msgstr ""
 
 #. js-lingui-id: tLtgGh
 #: src/modules/agent/components/AgentComposer.tsx
@@ -8722,6 +8737,7 @@ msgid "New Approved Access Domain"
 msgstr "新增已批准的訪問域"
 
 #. js-lingui-id: hIQkLb
+#: src/modules/agent/components/ConversationList.tsx
 #: src/modules/ai/components/AIChatThreadsList.tsx
 msgid "New chat"
 msgstr "新聊天"
@@ -8958,6 +8974,11 @@ msgstr "沒有配置變量符合您當前的篩選條件。嘗試調整您的篩
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
 msgid "No context was provided for this request"
 msgstr "此請求未提供任何上下文"
+
+#. js-lingui-id: meAa31
+#: src/modules/agent/components/ConversationList.tsx
+msgid "No conversations yet"
+msgstr ""
 
 #. js-lingui-id: 4BSfjK
 #: src/modules/object-record/record-field/ui/form-types/components/FormCountryCodeSelectInput.tsx

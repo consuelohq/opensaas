@@ -3231,6 +3231,11 @@ msgstr "Bepaal welke typen entiteiten deze rol kan worden toegewezen"
 msgid "Conversation"
 msgstr ""
 
+#. js-lingui-id: EnJuK0
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Conversations"
+msgstr ""
+
 #. js-lingui-id: HRGl1X
 #: src/modules/settings/members/components/MemberNameFields.tsx
 #: src/modules/settings/profile/components/NameFields.tsx
@@ -8006,6 +8011,11 @@ msgstr "Conversatie laden"
 msgid "Loading..."
 msgstr "Laden..."
 
+#. js-lingui-id: Pwqkdw
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Loading…"
+msgstr ""
+
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Locale"
@@ -8323,6 +8333,11 @@ msgstr "Berichtensynchronisatie en agendasyndonisatie zijn niet beschikbaar omda
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminConnectedAccountHealthStatus.tsx
 msgid "Message Sync is not available because the service is down"
 msgstr "Berichtensynchronisatie is niet beschikbaar omdat de dienst niet actief is"
+
+#. js-lingui-id: rWivAE
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Message the Agent..."
+msgstr ""
 
 #. js-lingui-id: tLtgGh
 #: src/modules/agent/components/AgentComposer.tsx
@@ -8722,6 +8737,7 @@ msgid "New Approved Access Domain"
 msgstr "Nieuw goedgekeurd toegangsdomoen"
 
 #. js-lingui-id: hIQkLb
+#: src/modules/agent/components/ConversationList.tsx
 #: src/modules/ai/components/AIChatThreadsList.tsx
 msgid "New chat"
 msgstr "Nieuw gesprek"
@@ -8958,6 +8974,11 @@ msgstr "Geen configuratievariabelen die overeenkomen met je huidige filters. Pro
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
 msgid "No context was provided for this request"
 msgstr "Er is geen context opgegeven voor dit verzoek"
+
+#. js-lingui-id: meAa31
+#: src/modules/agent/components/ConversationList.tsx
+msgid "No conversations yet"
+msgstr ""
 
 #. js-lingui-id: 4BSfjK
 #: src/modules/object-record/record-field/ui/form-types/components/FormCountryCodeSelectInput.tsx

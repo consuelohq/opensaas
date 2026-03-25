@@ -3231,6 +3231,11 @@ msgstr "Controlar quais tipos de entidades este papel pode ser atribuído"
 msgid "Conversation"
 msgstr ""
 
+#. js-lingui-id: EnJuK0
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Conversations"
+msgstr ""
+
 #. js-lingui-id: HRGl1X
 #: src/modules/settings/members/components/MemberNameFields.tsx
 #: src/modules/settings/profile/components/NameFields.tsx
@@ -8006,6 +8011,11 @@ msgstr "A carregar a conversa"
 msgid "Loading..."
 msgstr "Carregando..."
 
+#. js-lingui-id: Pwqkdw
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Loading…"
+msgstr ""
+
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Locale"
@@ -8323,6 +8333,11 @@ msgstr "Sincronização de mensagens e sincronização de calendário não estã
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminConnectedAccountHealthStatus.tsx
 msgid "Message Sync is not available because the service is down"
 msgstr "Sincronização de mensagens não está disponível porque o serviço está inativo"
+
+#. js-lingui-id: rWivAE
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Message the Agent..."
+msgstr ""
 
 #. js-lingui-id: tLtgGh
 #: src/modules/agent/components/AgentComposer.tsx
@@ -8722,6 +8737,7 @@ msgid "New Approved Access Domain"
 msgstr "Novo Domínio de Acesso Aprovado"
 
 #. js-lingui-id: hIQkLb
+#: src/modules/agent/components/ConversationList.tsx
 #: src/modules/ai/components/AIChatThreadsList.tsx
 msgid "New chat"
 msgstr "Nova conversa"
@@ -8958,6 +8974,11 @@ msgstr "Nenhuma variável de configuração corresponde aos seus filtros atuais.
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
 msgid "No context was provided for this request"
 msgstr "Não foi fornecido contexto para este pedido"
+
+#. js-lingui-id: meAa31
+#: src/modules/agent/components/ConversationList.tsx
+msgid "No conversations yet"
+msgstr ""
 
 #. js-lingui-id: 4BSfjK
 #: src/modules/object-record/record-field/ui/form-types/components/FormCountryCodeSelectInput.tsx

@@ -3231,6 +3231,11 @@ msgstr "Ohjaa, minkä tyyppisille yksiköille tämä rooli voidaan määrittää
 msgid "Conversation"
 msgstr ""
 
+#. js-lingui-id: EnJuK0
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Conversations"
+msgstr ""
+
 #. js-lingui-id: HRGl1X
 #: src/modules/settings/members/components/MemberNameFields.tsx
 #: src/modules/settings/profile/components/NameFields.tsx
@@ -8006,6 +8011,11 @@ msgstr "Ladataan ketjua"
 msgid "Loading..."
 msgstr "Ladataan..."
 
+#. js-lingui-id: Pwqkdw
+#: src/modules/agent/components/ConversationList.tsx
+msgid "Loading…"
+msgstr ""
+
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Locale"
@@ -8323,6 +8333,11 @@ msgstr "Viestisynkronointi ja kalenterisynkronointi eivät ole käytettävissä,
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminConnectedAccountHealthStatus.tsx
 msgid "Message Sync is not available because the service is down"
 msgstr "Viestisynkronointi ei ole käytettävissä, koska palvelu on poissa käytöstä"
+
+#. js-lingui-id: rWivAE
+#: src/modules/agent/components/AgentChatPanel.tsx
+msgid "Message the Agent..."
+msgstr ""
 
 #. js-lingui-id: tLtgGh
 #: src/modules/agent/components/AgentComposer.tsx
@@ -8722,6 +8737,7 @@ msgid "New Approved Access Domain"
 msgstr "Uusi Hyväksytty Pääsytunnusalue"
 
 #. js-lingui-id: hIQkLb
+#: src/modules/agent/components/ConversationList.tsx
 #: src/modules/ai/components/AIChatThreadsList.tsx
 msgid "New chat"
 msgstr "Uusi keskustelu"
@@ -8958,6 +8974,11 @@ msgstr "Mikään määritysmuuttuja ei vastaa nykyisiä suodattimiasi. Yritä mu
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
 msgid "No context was provided for this request"
 msgstr "Tälle pyynnölle ei annettu kontekstia"
+
+#. js-lingui-id: meAa31
+#: src/modules/agent/components/ConversationList.tsx
+msgid "No conversations yet"
+msgstr ""
 
 #. js-lingui-id: 4BSfjK
 #: src/modules/object-record/record-field/ui/form-types/components/FormCountryCodeSelectInput.tsx

@@ -1,103 +1,50 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
-import { getTokenPair } from '@/apollo/utils/getTokenPair';
-
-import { REACT_APP_SERVER_BASE_URL } from '~/config';
-
-type Conversation = {
-  id: string;
-  title: string;
-  messageCount: number;
-  pinned: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-const authHeaders = (): Record<string, string> => ({
-  Authorization: `Bearer ${getTokenPair()?.accessOrWorkspaceAgnosticToken.token}`,
-  'Content-Type': 'application/json',
-});
+import { currentAIChatThreadState } from '@/ai/states/currentAIChatThreadState';
+import { useRecoilState } from 'recoil';
+import {
+  useCreateChatThreadMutation,
+  useGetChatThreadsQuery,
+} from '~/generated-metadata/graphql';
 
 export const useAgentConversations = () => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<
-    string | null
-  >(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const fetchConversations = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/agent/conversations`,
-        { headers: authHeaders() },
-      );
-
-      if (response.ok) {
-        const data = (await response.json()) as {
-          conversations: Conversation[];
-        };
-
-        setConversations(data.conversations);
-      }
-    } catch {
-      // silently fail — conversations list is non-critical
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchConversations();
-  }, [fetchConversations]);
-
-  const selectConversation = useCallback((id: string | null) => {
-    setSelectedConversationId(id);
-  }, []);
-
-  const togglePin = useCallback(
-    async (id: string) => {
-      try {
-        await fetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/agent/conversations/${id}/pin`,
-          { method: 'POST', headers: authHeaders() },
-        );
-        await fetchConversations();
-      } catch {
-        // silent
-      }
-    },
-    [fetchConversations],
+  const [currentThreadId, setCurrentThreadId] = useRecoilState(
+    currentAIChatThreadState,
   );
 
-  const deleteConversation = useCallback(
-    async (id: string) => {
-      try {
-        await fetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/agent/conversations/${id}`,
-          { method: 'DELETE', headers: authHeaders() },
-        );
+  const { data, loading, refetch } = useGetChatThreadsQuery();
 
-        if (selectedConversationId === id) {
-          setSelectedConversationId(null);
-        }
-
-        await fetchConversations();
-      } catch {
-        // silent
-      }
+  const [createThread] = useCreateChatThreadMutation({
+    onCompleted: (result) => {
+      setCurrentThreadId(result.createChatThread.id);
+      void refetch();
     },
-    [fetchConversations, selectedConversationId],
+  });
+
+  const conversations = (data?.chatThreads ?? []).map((thread) => ({
+    id: thread.id,
+    title: thread.title ?? 'New conversation',
+    createdAt: thread.createdAt,
+    updatedAt: thread.updatedAt,
+  }));
+
+  const selectConversation = useCallback(
+    (id: string | null) => {
+      setCurrentThreadId(id);
+    },
+    [setCurrentThreadId],
   );
+
+  const createNewConversation = useCallback(() => {
+    void createThread();
+  }, [createThread]);
 
   return {
     conversations,
-    selectedConversationId,
+    selectedConversationId: currentThreadId,
     selectConversation,
-    togglePin,
-    deleteConversation,
-    isLoading,
-    refetch: fetchConversations,
+    createNewConversation,
+    isLoading: loading,
+    refetch,
   };
 };

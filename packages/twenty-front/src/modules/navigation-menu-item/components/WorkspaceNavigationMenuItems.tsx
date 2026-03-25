@@ -150,11 +150,18 @@ export const WorkspaceNavigationMenuItems = () => {
   }
 
   return (
-    <>
-      <NavigationDrawerSectionForWorkspaceItems
-        sectionTitle={t`Workspace`}
-        items={items}
-        rightIcon={
+    <NavigationDrawerSectionForWorkspaceItems
+      sectionTitle={t`Workspace`}
+      items={items}
+      footerContent={
+        <NavigationDrawerItem
+          label={t`Computer`}
+          Icon={IconComment}
+          to={AppPath.Agent}
+          active={location.pathname === AppPath.Agent}
+        />
+      }
+      rightIcon={
         isNavigationMenuItemEditingEnabled ? (
           <StyledRightIconsContainer>
             {isEditMode ? (
@@ -191,12 +198,5 @@ export const WorkspaceNavigationMenuItems = () => {
           : undefined
       }
     />
-      <NavigationDrawerItem
-        label={t`Computer`}
-        Icon={IconComment}
-        to={AppPath.Agent}
-        active={location.pathname === AppPath.Agent}
-      />
-    </>
   );
 };
