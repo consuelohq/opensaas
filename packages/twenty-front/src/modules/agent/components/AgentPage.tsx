@@ -4,7 +4,6 @@ import { IconRobot } from 'twenty-ui/display';
 
 import { AgentChatPanel } from '@/agent/components/AgentChatPanel';
 import { AgentContextPanel } from '@/agent/components/AgentContextPanel';
-import { AgentRuntimeProviderWrapper } from '@/agent/components/AgentRuntimeProvider';
 import { useAgentHotkeys } from '@/agent/hooks/useAgentHotkeys';
 import { PageBody } from '@/ui/layout/page/components/PageBody';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
@@ -32,12 +31,10 @@ export const AgentPage = () => {
     <PageContainer>
       <PageHeader title={t`Agent`} Icon={IconRobot} />
       <StyledPageBody>
-        <AgentRuntimeProviderWrapper>
-          <StyledContent>
-            <AgentChatPanel />
-            <AgentContextPanel />
-          </StyledContent>
-        </AgentRuntimeProviderWrapper>
+        <StyledContent>
+          <AgentChatPanel />
+          <AgentContextPanel />
+        </StyledContent>
       </StyledPageBody>
     </PageContainer>
   );

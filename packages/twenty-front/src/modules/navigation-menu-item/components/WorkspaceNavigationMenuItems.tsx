@@ -149,21 +149,12 @@ export const WorkspaceNavigationMenuItems = () => {
     return <NavigationDrawerSectionForObjectMetadataItemsSkeletonLoader />;
   }
 
-  const agentFooterContent = (
-    <NavigationDrawerItem
-      label={t`Computer`}
-      Icon={IconComment}
-      to={AppPath.Agent}
-      active={location.pathname === AppPath.Agent}
-    />
-  );
-
   return (
-    <NavigationDrawerSectionForWorkspaceItems
-      sectionTitle={t`Workspace`}
-      items={items}
-      footerContent={agentFooterContent}
-      rightIcon={
+    <>
+      <NavigationDrawerSectionForWorkspaceItems
+        sectionTitle={t`Workspace`}
+        items={items}
+        rightIcon={
         isNavigationMenuItemEditingEnabled ? (
           <StyledRightIconsContainer>
             {isEditMode ? (
@@ -200,5 +191,12 @@ export const WorkspaceNavigationMenuItems = () => {
           : undefined
       }
     />
+      <NavigationDrawerItem
+        label={t`Computer`}
+        Icon={IconComment}
+        to={AppPath.Agent}
+        active={location.pathname === AppPath.Agent}
+      />
+    </>
   );
 };

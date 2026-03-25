@@ -1,26 +1,10 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
-import { lazy, Suspense } from 'react';
-import type { ComponentProps } from 'react';
-import type { Streamdown } from 'streamdown';
+import { useRef, useEffect } from 'react';
 
-import { AgentComposer } from '@/agent/components/AgentComposer';
-import {
-  ExecuteToolToolUI,
-  FindPeopleToolUI,
-  LearnToolsToolUI,
-  LoadSkillToolUI,
-} from '@/agent/components/AgentToolUIs';
-import {
-  MessagePrimitive,
-  ThreadPrimitive,
-} from '@assistant-ui/react';
-
-type StreamdownProps = ComponentProps<typeof Streamdown>;
-
-const LazyStreamdown = lazy(() =>
-  import('streamdown').then((mod) => ({ default: mod.Streamdown })),
-);
+import { useAgentChatContextOrThrow } from '@/ai/hooks/useAgentChatContextOrThrow';
+import { agentChatInputState } from '@/ai/states/agentChatInputState';
+import { useRecoilState } from 'recoil';
 
 const StyledContainer = styled.div`
   display: flex;
@@ -59,99 +43,11 @@ const StyledMessageText = styled.div<{ isUser: boolean }>`
   color: ${({ theme, isUser }) =>
     isUser ? theme.font.color.secondary : theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
-  font-weight: ${({ isUser }) => (isUser ? 500 : 400)};
   line-height: 1.5;
   max-width: 100%;
   padding: ${({ theme, isUser }) => (isUser ? theme.spacing(1, 2) : '0')};
+  white-space: pre-wrap;
   width: fit-content;
-
-  .streamdown {
-    font-size: inherit;
-    line-height: inherit;
-
-    p {
-      margin: 0 0 0.75em 0;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    code {
-      background: ${({ theme }) => theme.background.tertiary};
-      border-radius: ${({ theme }) => theme.border.radius.sm};
-      padding: ${({ theme }) => theme.spacing(0.5, 1)};
-      font-size: 0.9em;
-    }
-
-    pre {
-      background: ${({ theme }) => theme.background.tertiary};
-      border-radius: ${({ theme }) => theme.border.radius.sm};
-      margin: 0.75em 0;
-      overflow-x: auto;
-      padding: ${({ theme }) => theme.spacing(2)};
-
-      code {
-        background: transparent;
-        padding: 0;
-      }
-    }
-
-    ul,
-    ol {
-      margin: 0.5em 0;
-      padding-left: 1.5em;
-    }
-
-    li {
-      margin: 0.25em 0;
-    }
-
-    blockquote {
-      border-left: 3px solid ${({ theme }) => theme.border.color.light};
-      margin: 0.75em 0;
-      padding-left: ${({ theme }) => theme.spacing(2)};
-      color: ${({ theme }) => theme.font.color.secondary};
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      margin: 1em 0 0.5em;
-      font-weight: ${({ theme }) => theme.font.weight.semiBold};
-    }
-
-    a {
-      color: ${({ theme }) => theme.font.color.primary};
-      text-decoration: underline;
-    }
-
-    table {
-      border-collapse: collapse;
-      margin: 0.75em 0;
-      width: 100%;
-
-      th,
-      td {
-        border: 1px solid ${({ theme }) => theme.border.color.light};
-        padding: ${({ theme }) => theme.spacing(1, 2)};
-      }
-
-      th {
-        background: ${({ theme }) => theme.background.secondary};
-        font-weight: ${({ theme }) => theme.font.weight.medium};
-      }
-    }
-
-    .shiki {
-      background: ${({ theme }) => theme.background.secondary};
-      border-radius: ${({ theme }) => theme.border.radius.sm};
-      padding: ${({ theme }) => theme.spacing(2)};
-    }
-  }
 `;
 
 const StyledEmpty = styled.div`
@@ -163,67 +59,109 @@ const StyledEmpty = styled.div`
   justify-content: center;
 `;
 
-const StyledLoadingSkeleton = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.md};
+const StyledComposer = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
-const UserMessage = () => (
-  <StyledMessageBubble isUser={true}>
-    <StyledMessageText isUser={true}>
-      <MessagePrimitive.Content />
-    </StyledMessageText>
-  </StyledMessageBubble>
-);
+const StyledInput = styled.input`
+  background: ${({ theme }) => theme.background.transparent.lighter};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ theme }) => theme.font.color.primary};
+  flex: 1;
+  font-size: ${({ theme }) => theme.font.size.md};
+  outline: none;
+  padding: ${({ theme }) => theme.spacing(2)};
 
-const AssistantMessage = () => (
-  <StyledMessageBubble isUser={false}>
-    <StyledMessageText isUser={false}>
-      <Suspense
-        fallback={<StyledLoadingSkeleton>Loading…</StyledLoadingSkeleton>}
-      >
-        <MessagePrimitive.Content
-          components={{
-            Text: ({ text }) => (
-              <LazyStreamdown
-                mode="streaming"
-                shikiTheme={['github-light', 'github-dark']}
-              >
-                {text}
-              </LazyStreamdown>
-            ),
-          }}
-        />
-      </Suspense>
-    </StyledMessageText>
-  </StyledMessageBubble>
-);
+  &::placeholder {
+    color: ${({ theme }) => theme.font.color.tertiary};
+  }
+`;
+
+const StyledSendButton = styled.button`
+  background: ${({ theme }) => theme.color.blue};
+  border: none;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: white;
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.font.size.md};
+  padding: ${({ theme }) => theme.spacing(2, 3)};
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
 
 export const AgentChatPanel = () => {
   const { t } = useLingui();
+  const { messages, handleSendMessage, isLoading } =
+    useAgentChatContextOrThrow();
+  const [input, setInput] = useRecoilState(agentChatInputState);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const onSubmit = () => {
+    if (input.trim() && !isLoading) {
+      handleSendMessage();
+    }
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
 
   return (
     <StyledContainer>
-      <LearnToolsToolUI />
-      <LoadSkillToolUI />
-      <ExecuteToolToolUI />
-      <FindPeopleToolUI />
-      <ThreadPrimitive.Root>
-        <StyledViewport>
-          <ThreadPrimitive.Empty>
-            <StyledEmpty>{t`Ask the Agent anything`}</StyledEmpty>
-          </ThreadPrimitive.Empty>
+      <StyledViewport ref={viewportRef}>
+        {messages.length === 0 ? (
+          <StyledEmpty>{t`Ask the Agent anything`}</StyledEmpty>
+        ) : (
           <StyledMessageList>
-            <ThreadPrimitive.Messages
-              components={{
-                UserMessage,
-                AssistantMessage,
-              }}
-            />
+            {messages.map((msg) => {
+              const textPart = msg.parts?.find(
+                (p: { type: string }) => p.type === 'text',
+              ) as { type: 'text'; text: string } | undefined;
+
+              if (!textPart?.text) return null;
+
+              return (
+                <StyledMessageBubble
+                  key={msg.id}
+                  isUser={msg.role === 'user'}
+                >
+                  <StyledMessageText isUser={msg.role === 'user'}>
+                    {textPart.text}
+                  </StyledMessageText>
+                </StyledMessageBubble>
+              );
+            })}
           </StyledMessageList>
-        </StyledViewport>
-        <AgentComposer />
-      </ThreadPrimitive.Root>
+        )}
+      </StyledViewport>
+      <StyledComposer>
+        <StyledInput
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={t`Message the Agent...`}
+          disabled={isLoading}
+        />
+        <StyledSendButton onClick={onSubmit} disabled={isLoading || !input.trim()}>
+          ↑
+        </StyledSendButton>
+      </StyledComposer>
     </StyledContainer>
   );
 };
