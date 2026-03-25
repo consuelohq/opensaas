@@ -4,7 +4,7 @@ import LaunchHeader from '../components/launch/LaunchHeader.astro';
 import LaunchLayout from '../layouts/LaunchLayout.astro';
 import feedData from '../data/json-files/changelogData.json';
 
-const description = 'Version updates, improvements, and new features for Consuelo.';
+const description = "See what's new in Consuelo — latest updates, features, and improvements.";
 
 const parseVersion = (title: string) => {
   const match = title.match(/^(v[\d.]+)/);
@@ -21,7 +21,7 @@ const formatDate = (date: string) => {
 };
 ---
 
-<LaunchLayout title="Changelog" description={description}>
+<LaunchLayout title="Changelog" description={description} image="/changelog-og.png">
   <LaunchHeader />
   
   <main class="launch-main">
