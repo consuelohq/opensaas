@@ -2014,11 +2014,6 @@ msgstr ""
 msgid "Attachments"
 msgstr "Csatolmányok"
 
-#. js-lingui-id: FH8ED9
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-msgid "Audio Devices"
-msgstr ""
-
 #. js-lingui-id: EPEFrH
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -2328,10 +2323,10 @@ msgstr ""
 msgid "by {author}"
 msgstr ""
 
-#. js-lingui-id: 8Pfllj
+#. js-lingui-id: S5+lJv
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
-msgid "By using Twenty, you agree to the"
-msgstr "A Twenty használatával elfogadja a"
+msgid "By using Consuelo, you agree to the"
+msgstr ""
 
 #. js-lingui-id: Yx41df
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
@@ -2428,11 +2423,6 @@ msgstr "Naptárak"
 msgid "Caller ID"
 msgstr ""
 
-#. js-lingui-id: saW1OG
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-msgid "Calling & Presence"
-msgstr ""
-
 #. js-lingui-id: msssZq
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
 msgid "Can't change API names for standard objects"
@@ -2447,6 +2437,7 @@ msgstr "Nem tud beolvasni? Másolja a"
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/dialer/components/DialConfirmationModal.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/dialer/components/QueueSettingsModal.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
@@ -2607,11 +2598,6 @@ msgstr "Váltás évesre?"
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutWidgetTypeSelect.tsx
 msgid "Chart"
 msgstr "Diagram"
-
-#. js-lingui-id: AHZflp
-#: src/modules/navigation-menu-item/components/WorkspaceNavigationMenuItems.tsx
-#~ msgid "Chat"
-#~ msgstr ""
 
 #. js-lingui-id: UxeiNP
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
@@ -2940,11 +2926,6 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/if-else-action/components/WorkflowEditActionIfElseBody.tsx
 msgid "Conditions"
 msgstr "Feltételek"
-
-#. js-lingui-id: 14PdY0
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-msgid "Config"
-msgstr ""
 
 #. js-lingui-id: Vj43Y/
 #: src/modules/settings/admin-panel/components/SettingsAdminContent.tsx
@@ -3481,6 +3462,11 @@ msgstr "Hozzon létre egy munkafolyamatot, majd térjen vissza ide a verziók me
 #: src/modules/auth/sign-in-up/components/SignInUpGlobalScopeForm.tsx
 msgid "Create a workspace"
 msgstr "Hozzon létre munkaterületet"
+
+#. js-lingui-id: 3T8ziB
+#: src/modules/auth/sign-in-up/components/SignInUpGlobalScopeForm.tsx
+msgid "Create an account"
+msgstr ""
 
 #. js-lingui-id: f1uv2a
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -4457,11 +4443,6 @@ msgstr "Részletek"
 #. js-lingui-id: irW7LP
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 msgid "Developers links"
-msgstr ""
-
-#. js-lingui-id: ErTdky
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
-msgid "Dialer"
 msgstr ""
 
 #. js-lingui-id: zAg2B9
@@ -11709,11 +11690,6 @@ msgstr ""
 msgid "Select a navigation item to edit"
 msgstr ""
 
-#. js-lingui-id: 7v7oax
-#: src/modules/agent/components/AgentContextPanel.tsx
-#~ msgid "Select a skill or start a conversation"
-#~ msgstr ""
-
 #. js-lingui-id: jL3gox
 #: src/modules/object-record/record-field/ui/form-types/components/FormBooleanFieldInput.tsx
 msgid "Select a value"
@@ -11854,11 +11830,6 @@ msgstr "Érték kiválasztása"
 #: src/pages/settings/profile/appearance/components/SettingsExperience.tsx
 msgid "Select your preferred language"
 msgstr "Válassza ki a preferált nyelvet"
-
-#. js-lingui-id: FpxquU
-#: src/modules/agent/components/AgentContextPanel.tsx
-#~ msgid "Selected Skill"
-#~ msgstr ""
 
 #. js-lingui-id: mjK8F3
 #: src/pages/settings/members/SettingsWorkspaceMembers.tsx
@@ -12191,6 +12162,11 @@ msgstr "Átugrás"
 #. js-lingui-id: TyudBs
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
 msgid "Skip creating a Name field "
+msgstr ""
+
+#. js-lingui-id: e1zVP1
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Skip Reason"
 msgstr ""
 
 #. js-lingui-id: PlF+NA
@@ -13256,11 +13232,6 @@ msgstr "Időzítés"
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
 msgid "title"
 msgstr "cím"
-
-#. js-lingui-id: MHrjPM
-#: src/modules/agent/components/AgentContextPanel.tsx
-#~ msgid "Title"
-#~ msgstr ""
 
 #. js-lingui-id: /jQctM
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx
