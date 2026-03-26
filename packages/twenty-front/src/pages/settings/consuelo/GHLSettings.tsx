@@ -9,6 +9,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
+import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -193,6 +194,21 @@ const StyledError = styled.div`
   padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(4)}`};
 `;
 
+const StyledTitleRow = styled.div`
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const StyledDocLink = styled.a`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 // -- helpers --
 
 const loadSyncConfig = (): SyncConfig => {
@@ -312,10 +328,19 @@ export const GHLSettings = () => {
     <>
       {/* connection status */}
       <Section>
-        <H2Title
-          title="Go High Level"
-          description="Connect your GHL account to sync contacts and push call outcomes"
-        />
+        <StyledTitleRow>
+          <H2Title
+            title="Go High Level"
+            description="Connect your GHL account to sync contacts and push call outcomes"
+          />
+          <StyledDocLink
+            href={getDocumentationUrl({ path: '/user-guide/highlevel/overview' })}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </StyledDocLink>
+        </StyledTitleRow>
         <Card rounded>
           <StyledStatusRow>
             <StyledStatusDot connected={status?.connected ?? false} />

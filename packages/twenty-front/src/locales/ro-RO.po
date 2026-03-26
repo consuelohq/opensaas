@@ -4531,6 +4531,7 @@ msgstr "Nu importa"
 #. js-lingui-id: TvY/XA
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/modules/ui/navigation/navigation-drawer/components/MultiWorkspaceDropdown/internal/MultiWorkspaceDropdownDefaultComponents.tsx
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
 #: src/pages/settings/developers/api-keys/SettingsApiKeys.tsx
 #: src/pages/settings/workspace/SettingsApiWebhooks.tsx
 msgid "Documentation"

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { t } from '@lingui/core/macro';
 import { IconBrandChrome } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
+import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 
@@ -29,6 +30,21 @@ const StyledStatusText = styled.span`
   color: ${({ theme }) => theme.font.color.primary};
   flex: 1;
   font-size: ${({ theme }) => theme.font.size.md};
+`;
+
+const StyledTitleRow = styled.div`
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const StyledDocLink = styled.a`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const StyledButtonRow = styled.div`
@@ -60,10 +76,19 @@ export const ChromeExtensionSettings = () => {
 
   return (
     <Section>
-      <H2Title
-        title={t`Chrome Extension`}
-        description={t`Install the Consuelo Chrome Extension to use the dialer from any browser tab`}
-      />
+      <StyledTitleRow>
+        <H2Title
+          title={t`Chrome Extension`}
+          description={t`Install the Consuelo Chrome Extension to use the dialer from any browser tab`}
+        />
+        <StyledDocLink
+          href={getDocumentationUrl({ path: '/user-guide/chrome-extension/overview' })}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t`Documentation`}
+        </StyledDocLink>
+      </StyledTitleRow>
       <Card rounded>
         <StyledStatusRow>
           <StyledStatusDot connected={connected} />

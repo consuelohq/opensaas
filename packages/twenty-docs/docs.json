@@ -235,8 +235,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "user-guide/chrome-extension/overview",
+                  "user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -341,7 +351,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -431,7 +443,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -453,7 +467,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -464,7 +480,9 @@
             "groups": [
               {
                 "group": "Developers",
-                "pages": ["developers/introduction"]
+                "pages": [
+                  "developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -529,7 +547,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -757,8 +777,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/fr/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/fr/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/fr/user-guide/chrome-extension/overview",
+                  "l/fr/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -863,7 +893,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/fr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -953,7 +985,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/fr/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -975,7 +1009,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/fr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -986,7 +1022,9 @@
             "groups": [
               {
                 "group": "Développeurs",
-                "pages": ["l/fr/developers/introduction"]
+                "pages": [
+                  "l/fr/developers/introduction"
+                ]
               },
               {
                 "group": "Étendre",
@@ -1051,7 +1089,9 @@
                               },
                               {
                                 "group": "Retour d'information",
-                                "pages": ["l/fr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/fr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrée ",
@@ -1279,8 +1319,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ar/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/ar/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/ar/user-guide/chrome-extension/overview",
+                  "l/ar/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -1385,7 +1435,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ar/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1475,7 +1527,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ar/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -1497,7 +1551,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ar/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -1508,7 +1564,9 @@
             "groups": [
               {
                 "group": "المطورون",
-                "pages": ["l/ar/developers/introduction"]
+                "pages": [
+                  "l/ar/developers/introduction"
+                ]
               },
               {
                 "group": "التوسيع",
@@ -1573,7 +1631,9 @@
                               },
                               {
                                 "group": "التغذية الراجعة",
-                                "pages": ["l/ar/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ar/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "إدخال",
@@ -1801,8 +1861,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/cs/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/cs/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/cs/user-guide/chrome-extension/overview",
+                  "l/cs/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -1907,7 +1977,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/cs/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1997,7 +2069,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/cs/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -2019,7 +2093,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/cs/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2030,7 +2106,9 @@
             "groups": [
               {
                 "group": "Vývojáři",
-                "pages": ["l/cs/developers/introduction"]
+                "pages": [
+                  "l/cs/developers/introduction"
+                ]
               },
               {
                 "group": "Rozšíření",
@@ -2095,7 +2173,9 @@
                               },
                               {
                                 "group": "Zpětná vazba",
-                                "pages": ["l/cs/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/cs/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Vstup",
@@ -2323,8 +2403,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/de/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/de/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/de/user-guide/chrome-extension/overview",
+                  "l/de/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -2429,7 +2519,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/de/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -2519,7 +2611,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/de/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -2541,7 +2635,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/de/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2552,7 +2648,9 @@
             "groups": [
               {
                 "group": "Entwickler",
-                "pages": ["l/de/developers/introduction"]
+                "pages": [
+                  "l/de/developers/introduction"
+                ]
               },
               {
                 "group": "Erweitern",
@@ -2617,7 +2715,9 @@
                               },
                               {
                                 "group": "Rückmeldung",
-                                "pages": ["l/de/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/de/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Eingabe",
@@ -2845,8 +2945,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/es/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/es/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/es/user-guide/chrome-extension/overview",
+                  "l/es/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -2951,7 +3061,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/es/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3041,7 +3153,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/es/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -3063,7 +3177,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/es/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3074,7 +3190,9 @@
             "groups": [
               {
                 "group": "Desarrolladores",
-                "pages": ["l/es/developers/introduction"]
+                "pages": [
+                  "l/es/developers/introduction"
+                ]
               },
               {
                 "group": "Ampliar",
@@ -3139,7 +3257,9 @@
                               },
                               {
                                 "group": "Retroalimentación",
-                                "pages": ["l/es/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/es/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -3367,8 +3487,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/it/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/it/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/it/user-guide/chrome-extension/overview",
+                  "l/it/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -3473,7 +3603,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/it/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3563,7 +3695,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/it/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -3585,7 +3719,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/it/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3596,7 +3732,9 @@
             "groups": [
               {
                 "group": "Sviluppatori",
-                "pages": ["l/it/developers/introduction"]
+                "pages": [
+                  "l/it/developers/introduction"
+                ]
               },
               {
                 "group": "Estendi",
@@ -3661,7 +3799,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/it/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/it/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -3889,8 +4029,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ja/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/ja/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/ja/user-guide/chrome-extension/overview",
+                  "l/ja/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -3995,7 +4145,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ja/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -4085,7 +4237,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ja/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -4107,7 +4261,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ja/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4118,7 +4274,9 @@
             "groups": [
               {
                 "group": "開発者",
-                "pages": ["l/ja/developers/introduction"]
+                "pages": [
+                  "l/ja/developers/introduction"
+                ]
               },
               {
                 "group": "拡張",
@@ -4183,7 +4341,9 @@
                               },
                               {
                                 "group": "フィードバック",
-                                "pages": ["l/ja/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ja/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "入力",
@@ -4411,8 +4571,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ko/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/ko/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/ko/user-guide/chrome-extension/overview",
+                  "l/ko/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -4517,7 +4687,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ko/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -4607,7 +4779,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ko/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -4629,7 +4803,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ko/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4640,7 +4816,9 @@
             "groups": [
               {
                 "group": "개발자",
-                "pages": ["l/ko/developers/introduction"]
+                "pages": [
+                  "l/ko/developers/introduction"
+                ]
               },
               {
                 "group": "확장",
@@ -4705,7 +4883,9 @@
                               },
                               {
                                 "group": "피드백",
-                                "pages": ["l/ko/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ko/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "입력",
@@ -4933,8 +5113,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/pt/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/pt/user-guide/chrome-extension/overview",
+                  "l/pt/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -5039,7 +5229,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/pt/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5129,7 +5321,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/pt/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -5151,7 +5345,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/pt/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5162,7 +5358,9 @@
             "groups": [
               {
                 "group": "Programadores",
-                "pages": ["l/pt/developers/introduction"]
+                "pages": [
+                  "l/pt/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5227,7 +5425,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/pt/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/pt/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -5455,8 +5655,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/ro/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/ro/user-guide/chrome-extension/overview",
+                  "l/ro/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -5561,7 +5771,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ro/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5651,7 +5863,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ro/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -5673,7 +5887,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ro/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5684,7 +5900,9 @@
             "groups": [
               {
                 "group": "Dezvoltatori",
-                "pages": ["l/ro/developers/introduction"]
+                "pages": [
+                  "l/ro/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5749,7 +5967,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/ro/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ro/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Intrare",
@@ -5977,8 +6197,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ru/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/ru/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/ru/user-guide/chrome-extension/overview",
+                  "l/ru/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -6083,7 +6313,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ru/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6173,7 +6405,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ru/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -6195,7 +6429,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ru/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6206,7 +6442,9 @@
             "groups": [
               {
                 "group": "Разработчики",
-                "pages": ["l/ru/developers/introduction"]
+                "pages": [
+                  "l/ru/developers/introduction"
+                ]
               },
               {
                 "group": "Расширяйте",
@@ -6271,7 +6509,9 @@
                               },
                               {
                                 "group": "Обратная связь",
-                                "pages": ["l/ru/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ru/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Ввод",
@@ -6499,8 +6739,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/tr/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/tr/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/tr/user-guide/chrome-extension/overview",
+                  "l/tr/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -6605,7 +6855,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/tr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6695,7 +6947,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/tr/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -6717,7 +6971,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/tr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6728,7 +6984,9 @@
             "groups": [
               {
                 "group": "Geliştiriciler",
-                "pages": ["l/tr/developers/introduction"]
+                "pages": [
+                  "l/tr/developers/introduction"
+                ]
               },
               {
                 "group": "Genişlet",
@@ -6793,7 +7051,9 @@
                               },
                               {
                                 "group": "Geri Bildirim",
-                                "pages": ["l/tr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/tr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Girdi",
@@ -7021,8 +7281,18 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/zh/user-guide/dialer/how-tos/discord-setup"]
+                    "pages": [
+                      "l/zh/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
+                ]
+              },
+              {
+                "group": "Chrome Extension",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "l/zh/user-guide/chrome-extension/overview",
+                  "l/zh/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -7127,7 +7397,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/zh/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -7217,7 +7489,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/zh/user-guide/billing/how-tos/billing-faq"
+                    ]
                   }
                 ]
               },
@@ -7239,7 +7513,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/zh/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -7250,7 +7526,9 @@
             "groups": [
               {
                 "group": "开发者",
-                "pages": ["l/zh/developers/introduction"]
+                "pages": [
+                  "l/zh/developers/introduction"
+                ]
               },
               {
                 "group": "扩展",
@@ -7315,7 +7593,9 @@
                               },
                               {
                                 "group": "反馈",
-                                "pages": ["l/zh/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/zh/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "输入",

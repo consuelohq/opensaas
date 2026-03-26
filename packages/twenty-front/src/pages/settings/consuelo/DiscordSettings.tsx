@@ -8,10 +8,26 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
+import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
+
+const StyledTitleRow = styled.div`
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const StyledDocLink = styled.a`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 // -- types --
 
@@ -315,10 +331,19 @@ export const DiscordSettings = () => {
     <StyledContainer>
       {/* Bot Configuration */}
       <Section>
-        <H2Title
-          title="Bot Configuration"
-          description="Configure your Discord bot credentials from the Discord Developer Portal"
-        />
+        <StyledTitleRow>
+          <H2Title
+            title="Bot Configuration"
+            description="Configure your Discord bot credentials from the Discord Developer Portal"
+          />
+          <StyledDocLink
+            href={getDocumentationUrl({ path: '/user-guide/discord-bot/overview' })}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </StyledDocLink>
+        </StyledTitleRow>
         <Card rounded>
           <StyledFieldRow>
             <StyledLabel htmlFor="applicationId">Application ID *</StyledLabel>
