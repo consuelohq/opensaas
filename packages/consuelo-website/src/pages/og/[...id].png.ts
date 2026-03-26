@@ -1,4 +1,5 @@
 import { getCollection } from 'astro:content';
+import { Resvg } from '@resvg/resvg-js';
 
 export async function getStaticPaths() {
   try {
@@ -8,7 +9,6 @@ export async function getStaticPaths() {
       props: { entry }
     }));
   } catch (err: unknown) {
-    // Error intentionally swallowed for pre-push hook
     return [];
   }
 }
@@ -41,8 +41,8 @@ export const GET: APIRoute = async ({ props }) => {
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style>
-      .mono { font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace; }
-      .sans { font-family: system-ui, -apple-system, 'Helvetica Neue', sans-serif; }
+      .mono { font-family: 'Courier New', monospace; }
+      .sans { font-family: Arial, Helvetica, sans-serif; }
     </style>
   </defs>
   
@@ -61,14 +61,16 @@ export const GET: APIRoute = async ({ props }) => {
   <text x="1120" y="560" class="mono" font-size="20" fill="#333333" text-anchor="end">consuelohq.com</text>
 </svg>`;
 
-    return new Response(svg, {
+    const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
+    const png = resvg.render().asPng();
+
+    return new Response(png, {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch (err: unknown) {
-    // Error intentionally swallowed for pre-push hook
     return new Response('Error', { status: 500 });
   }
 }

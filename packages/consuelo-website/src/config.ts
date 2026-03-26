@@ -4,7 +4,7 @@ export const SITE = {
   profile: "",
   desc: "The open source infrastructure for modern sales teams.",
   title: "Consuelo Blog",
-  ogImage: "astropaper-og.jpg",
+  ogImage: "og.jpg",
   lightAndDarkMode: false,
   postPerIndex: 4,
   postPerPage: 4,
