@@ -9,7 +9,7 @@ const blog = defineCollection({
   schema: ({ image }) =>
     z.object({
       author: z.string().default(SITE.author),
-      pubDatetime: z.date().optional(),
+      pubDatetime: z.date(),
       modDatetime: z.date().optional().nullable(),
       title: z.string(),
       featured: z.boolean().optional(),
@@ -20,9 +20,6 @@ const blog = defineCollection({
       canonicalURL: z.string().optional(),
       hideEditPost: z.boolean().optional(),
       timezone: z.string().optional(),
-      // Adding legacy fields from consuelo-website to not break immediately
-      pubDate: z.date().optional(),
-      image: z.string().optional(),
     }),
 });
 

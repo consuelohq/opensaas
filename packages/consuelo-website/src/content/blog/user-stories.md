@@ -1,9 +1,8 @@
 ---
 title: 'Insurance Sales Productivity: The Metrics That Matter and How to Improve Them'
-pubDate: 2026-03-18T05:00:00Z
+pubDatetime: 2026-03-18T05:00:00Z
 description: "Insurance agencies track many metrics—but which ones actually drive revenue? This is a framework for measuring and improving sales productivity in 2026."
 author: 'Consuelo Team'
-image: '/blog/post-06-cover.png'
 tags: ['productivity', 'insurance sales', 'metrics']
 ---
 

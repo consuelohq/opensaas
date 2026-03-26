@@ -1,9 +1,8 @@
 ---
 title: 'Sales Agent Onboarding: Reducing Ramp-Up Time from Months to Weeks'
-pubDate: 2026-02-24T05:00:00Z
+pubDatetime: 2026-02-24T05:00:00Z
 description: "New insurance agents typically take 6 months to become productive. Here is how technology and modern onboarding practices can shrink that timeline dramatically."
 author: 'Consuelo Team'
-image: '/blog/post-04-cover.png'
 tags: ['onboarding', 'sales training']
 ---
 

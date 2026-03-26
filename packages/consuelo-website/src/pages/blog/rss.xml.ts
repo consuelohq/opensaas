@@ -1,3 +1,5 @@
+export const prerender = true;
+
 import type { APIContext } from "astro";
 import { getCollection } from "astro:content";
 import rss from "@astrojs/rss";
@@ -19,7 +21,7 @@ export async function GET(context: APIContext) {
       items: sortedPosts.map(post => ({
         title: post.data.title,
         description: post.data.description,
-        link: `/blog/${post.slug}/`,
+        link: `/blog/${post.id}/`,
         pubDate: post.data.pubDatetime,
       })),
     });

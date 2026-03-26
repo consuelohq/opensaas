@@ -1,9 +1,8 @@
 ---
 title: 'Why Insurance Agencies Are Switching to Open-Source Sales Infrastructure'
-pubDate: 2026-01-15T05:00:00Z
+pubDatetime: 2026-01-15T05:00:00Z
 description: 'Insurance sales teams are replacing expensive $500/seat stacks with open-source alternatives. Learn why AI sales coaching software and power dialers are transforming the industry.'
 author: 'Ko Aoki'
-image: '/blog/post-01-cover.png'
 tags: ['sales infrastructure', 'insurance sales']
 ---
 

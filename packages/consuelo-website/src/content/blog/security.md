@@ -1,9 +1,8 @@
 ---
 title: 'Power Dialer for Insurance Agents: Maximizing Talk Time and Conversions'
-pubDate: 2026-02-10T05:00:00Z
+pubDatetime: 2026-02-10T05:00:00Z
 description: 'Learn how insurance sales teams use power dialers with local presence to triple live conversations and dramatically increase appointments booked per hour.'
 author: 'Ko Aoki'
-image: '/blog/post-03-cover.png'
 tags: ['power dialer', 'insurance sales']
 ---
 

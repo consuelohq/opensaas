@@ -1,9 +1,8 @@
 ---
 title: 'Open Source CRM for Sales Teams: Why Insurance Agencies Are Making the Switch'
-pubDate: 2026-03-05T05:00:00Z
+pubDatetime: 2026-03-05T05:00:00Z
 description: 'Insurance agencies are moving away from proprietary CRM systems. Learn why open source options offer better customization, cost savings, and data ownership.'
 author: 'Ko Aoki'
-image: '/blog/post-05-cover.png'
 tags: ['CRM', 'open source']
 ---
 
