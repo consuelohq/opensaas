@@ -11,10 +11,6 @@ const parseVersion = (title: string) => {
   return match ? match[1] : title;
 };
 
-const parseTitle = (title: string) => {
-  return title.replace(/^v[\d.]+:\s*/, '');
-};
-
 const formatDate = (date: string) => {
   const d = new Date(date + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -41,7 +37,6 @@ const formatDate = (date: string) => {
                 <span class="cl-entry__date">{formatDate(item.date)}</span>
               </div>
               <div class="cl-entry__body">
-                <h3 class="cl-entry__heading">{parseTitle(item.title)}</h3>
                 <div class="cl-entry__content" set:html={item.text} />
               </div>
             </article>
@@ -116,20 +111,23 @@ const formatDate = (date: string) => {
     min-width: 0;
   }
 
-  .cl-entry__heading {
-    margin: 0 0 1rem;
-    font-family: var(--launch-mono-font);
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--launch-fg);
-  }
-
   .cl-entry__content {
     font-family: var(--launch-mono-font);
     font-size: 0.85rem;
     line-height: 1.7;
     color: var(--launch-muted);
+  }
+
+  .cl-entry__content :global(h4) {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--launch-fg);
+    letter-spacing: -0.01em;
+  }
+
+  .cl-entry__content :global(h4:first-child) {
+    margin-top: 0;
   }
 
   .cl-entry__content :global(p) {
