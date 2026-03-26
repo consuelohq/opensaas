@@ -1,19 +1,21 @@
 ---
 import LinkButton from "./LinkButton.astro";
+import LanguageSelector from "./launch/LanguageSelector.astro";
 import { SITE } from "@/config";
 ---
 
 {
   SITE.showBackButton && (
-    <div class="app-layout">
+    <div class="app-layout flex items-center gap-4 mt-8 mb-1">
       <LinkButton
         id="back-button"
         href="/blog"
-        class="focus-outline mt-8 mb-1 text-sm hover:opacity-75"
+        class="focus-outline text-sm hover:opacity-75"
         style="color: #B3B3B3;"
       >
         <span>home</span>
       </LinkButton>
+      <LanguageSelector />
     </div>
   )
 }

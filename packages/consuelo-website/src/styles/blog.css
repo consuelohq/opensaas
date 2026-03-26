@@ -205,3 +205,19 @@ svg.icon-tabler {
     display: none;
   }
 }
+
+/* language selector vars (from LaunchLayout) */
+:root {
+  --launch-muted: #B3B3B3;
+  --launch-fg: var(--foreground);
+  --launch-line: var(--border);
+  --launch-dropdown-bg: var(--background);
+  --launch-dropdown-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  --launch-mono-font: var(--mono-font);
+}
+
+/* override: menu drops DOWN on blog post pages */
+.language-selector__menu {
+  bottom: auto !important;
+  top: calc(100% + 0.5rem) !important;
+}
