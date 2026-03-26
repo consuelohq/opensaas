@@ -10,10 +10,10 @@ import LaunchStats from '../components/launch/LaunchStats.astro';
 import { launchFaqItems, launchPageSections } from '../data/launch-content';
 import LaunchLayout from '../layouts/LaunchLayout.astro';
 
-const description = 'Sales infrastructure that integrates everywhere. Browser app, embed, work channels, and assistant-ready workflows in one Consuelo platform.';
+const description = 'Software that shows up in the browser, inside your CRM, in work channels, and in agent workflows.';
 ---
 
-<LaunchLayout title="Consuelo" description={description} canonicalPath="/">
+<LaunchLayout title="Consuelo" description={description} canonicalPath="/" image="/og.png">
   <LaunchHeader pageSections={launchPageSections} />
   <LaunchHero sectionId="intro" />
   <LaunchOverview sectionId="overview" />
