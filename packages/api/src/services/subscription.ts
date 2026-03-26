@@ -1,14 +1,20 @@
 import * as Sentry from '@sentry/node';
 import { getSharedPool } from '../shared/db.js';
-import {
-  getWorkspaceTwilioConfig,
-  type TwilioMode,
-} from './twilio-config.js';
-import { createLogger } from '@consuelo/logger';
+import { getWorkspaceTwilioConfig, type TwilioMode } from './twilio-config.js';
+import { addNumberPack, removeNumberPack } from './number-packs.js';
 
-const logger = createLogger('subscription');
+const getStripe = async () => {
+  const { default: Stripe } = await import('stripe');
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+  return new Stripe(key);
+};
 
-// stripe price IDs — set via env, $0 placeholders until pricing finalized
+const getLogger = async () => {
+  const { createLogger } = await import('@consuelo/logger');
+  return createLogger('subscription');
+};
+
 const PRICE_IDS = {
   baseMonthly: process.env.STRIPE_PRICE_BASE_MONTHLY ?? '',
   baseAnnual: process.env.STRIPE_PRICE_BASE_ANNUAL ?? '',
@@ -56,18 +62,9 @@ const SQL_GET_USAGE =
 const SQL_RECORD_USAGE =
   'INSERT INTO workspace_usage (workspace_id, metric, amount, period_start) VALUES ($1, $2, $3, NOW())';
 
-async function getStripe(): Promise<
-  import('stripe').default
-> {
-  const { default: Stripe } = await import('stripe');
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
-  return new Stripe(key);
-}
-
-export async function getBillingMode(
+export const getBillingMode = async (
   workspaceId: string,
-): Promise<BillingMode> {
+): Promise<BillingMode> => {
   try {
     const config = await getWorkspaceTwilioConfig(workspaceId);
     return config?.mode ?? 'hosted';
@@ -75,11 +72,11 @@ export async function getBillingMode(
     Sentry.captureException(err);
     return 'hosted';
   }
-}
+};
 
-export async function getSubscriptionStatus(
+export const getSubscriptionStatus = async (
   workspaceId: string,
-): Promise<SubscriptionStatus> {
+): Promise<SubscriptionStatus> => {
   try {
     const pool = await getSharedPool();
     const mode = await getBillingMode(workspaceId);
@@ -109,12 +106,11 @@ export async function getSubscriptionStatus(
       (aiTokensResult.rows[0] as Record<string, unknown>)?.total ?? 0,
     );
 
-    // byok keys detection
     let byokKeys: SubscriptionStatus['byokKeys'] = null;
     if (mode === 'byok') {
       const config = await getWorkspaceTwilioConfig(workspaceId);
       byokKeys = {
-        twilio: !!(config?.byokAccountSidEncrypted),
+        twilio: !!config?.byokAccountSidEncrypted,
         groq: !!process.env.GROQ_API_KEY,
         openai: !!process.env.OPENAI_API_KEY,
       };
@@ -149,19 +145,19 @@ export async function getSubscriptionStatus(
     Sentry.captureException(err);
     throw err;
   }
-}
+};
 
-export async function createCheckoutSession(
+export const createCheckoutSession = async (
   workspaceId: string,
   priceIds: string[],
   successUrl: string,
   cancelUrl: string,
-): Promise<{ url: string }> {
+): Promise<{ url: string }> => {
   try {
     const stripe = await getStripe();
     const pool = await getSharedPool();
+    const logger = await getLogger();
 
-    // find or create stripe customer
     const { rows } = await pool.query(SQL_GET_SUBSCRIPTION, [workspaceId]);
     let customerId = (rows[0] as Record<string, unknown>)
       ?.stripe_customer_id as string | undefined;
@@ -199,12 +195,12 @@ export async function createCheckoutSession(
     Sentry.captureException(err);
     throw err;
   }
-}
+};
 
-export async function createPortalSession(
+export const createPortalSession = async (
   workspaceId: string,
   returnUrl: string,
-): Promise<{ url: string }> {
+): Promise<{ url: string }> => {
   try {
     const stripe = await getStripe();
     const pool = await getSharedPool();
@@ -227,14 +223,15 @@ export async function createPortalSession(
     Sentry.captureException(err);
     throw err;
   }
-}
+};
 
-export async function handleWebhookEvent(
+export const handleWebhookEvent = async (
   rawBody: string,
   signature: string,
-): Promise<void> {
+): Promise<void> => {
   try {
     const stripe = await getStripe();
+    const logger = await getLogger();
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) throw new Error('STRIPE_WEBHOOK_SECRET not configured');
 
@@ -252,11 +249,33 @@ export async function handleWebhookEvent(
         const workspaceId = session.metadata?.workspaceId;
         if (!workspaceId || !session.subscription) break;
 
+        if (session.metadata?.type === 'number_pack') {
+          const packSize = parseInt(session.metadata.packSize as string, 10) as
+            | 5
+            | 10
+            | 50;
+          if (packSize && [5, 10, 50].includes(packSize)) {
+            await addNumberPack(
+              workspaceId,
+              packSize,
+              session.subscription as string,
+            );
+            logger.info('webhook.number_pack_purchased', {
+              workspaceId,
+              packSize,
+              subscriptionId: session.subscription,
+            });
+          }
+          break;
+        }
+
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
         );
         const addOns = extractAddOns(subscription);
-        const periodEnd = getSubscriptionPeriodEnd(subscription.billing_cycle_anchor);
+        const periodEnd = getSubscriptionPeriodEnd(
+          subscription.billing_cycle_anchor,
+        );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
           workspaceId,
@@ -279,7 +298,9 @@ export async function handleWebhookEvent(
         if (!workspaceId) break;
 
         const addOns = extractAddOns(subscription);
-        const periodEnd = getSubscriptionPeriodEnd(subscription.billing_cycle_anchor);
+        const periodEnd = getSubscriptionPeriodEnd(
+          subscription.billing_cycle_anchor,
+        );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
           workspaceId,
@@ -304,6 +325,15 @@ export async function handleWebhookEvent(
         const workspaceId = subscription.metadata?.workspaceId;
         if (!workspaceId) break;
 
+        if (subscription.metadata?.type === 'number_pack') {
+          await removeNumberPack(workspaceId, subscription.id);
+          logger.info('webhook.number_pack_deleted', {
+            workspaceId,
+            subscriptionId: subscription.id,
+          });
+          break;
+        }
+
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
           workspaceId,
           subscription.customer as string,
@@ -326,7 +356,7 @@ export async function handleWebhookEvent(
         const subscriptionId =
           typeof subscriptionRef === 'string'
             ? subscriptionRef
-            : subscriptionRef?.id ?? null;
+            : (subscriptionRef?.id ?? null);
         if (!subscriptionId) break;
 
         const subscription =
@@ -334,7 +364,9 @@ export async function handleWebhookEvent(
         const workspaceId = subscription.metadata?.workspaceId;
         if (!workspaceId) break;
 
-        const periodEnd = getSubscriptionPeriodEnd(subscription.billing_cycle_anchor);
+        const periodEnd = getSubscriptionPeriodEnd(
+          subscription.billing_cycle_anchor,
+        );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
           workspaceId,
@@ -358,32 +390,32 @@ export async function handleWebhookEvent(
     Sentry.captureException(err);
     throw err;
   }
-}
+};
 
-export async function recordUsage(
+export const recordUsage = async (
   workspaceId: string,
   metric: 'call_minutes' | 'ai_tokens',
   amount: number,
-): Promise<void> {
+): Promise<void> => {
   try {
     const mode = await getBillingMode(workspaceId);
-    // byok users: no metering
     if (mode === 'byok') return;
 
     const pool = await getSharedPool();
     await pool.query(SQL_RECORD_USAGE, [workspaceId, metric, amount]);
 
+    const logger = await getLogger();
     logger.info('usage.recorded', { workspaceId, metric, amount });
   } catch (err: unknown) {
     Sentry.captureException(err);
     throw err;
   }
-}
+};
 
-export async function hasAddOn(
+export const hasAddOn = async (
   workspaceId: string,
   addOn: AddOnKey,
-): Promise<boolean> {
+): Promise<boolean> => {
   try {
     const status = await getSubscriptionStatus(workspaceId);
     return status.addOns.includes(addOn);
@@ -391,19 +423,15 @@ export async function hasAddOn(
     Sentry.captureException(err);
     return false;
   }
-}
+};
 
-// extract period end from subscription — use billing_cycle_anchor as the reference point
-function getSubscriptionPeriodEnd(
-  billingCycleAnchor: number,
-): string {
+const getSubscriptionPeriodEnd = (billingCycleAnchor: number): string => {
   return new Date(billingCycleAnchor * 1000).toISOString();
-}
+};
 
-// extract add-on keys from stripe subscription items by matching price IDs
-function extractAddOns(
-  subscription: { items: { data: Array<{ price: { id: string } }> } },
-): AddOnKey[] {
+const extractAddOns = (subscription: {
+  items: { data: Array<{ price: { id: string } }> };
+}): AddOnKey[] => {
   const addOns: AddOnKey[] = [];
   const priceIds = subscription.items.data.map((item) => item.price.id);
 
@@ -422,6 +450,6 @@ function extractAddOns(
   }
 
   return addOns;
-}
+};
 
 export { PRICE_IDS };

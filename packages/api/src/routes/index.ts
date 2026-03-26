@@ -28,6 +28,7 @@ import { twilioSettingsRoutes } from './twilio-settings.js';
 import { discordAuthRoutes } from './discord-auth.js';
 import { subscriptionRoutes } from './subscription.js';
 import { stripeWebhookRoutes } from './webhooks/stripe.js';
+import { numberPacksRoutes } from './number-packs.js';
 export {
   analyticsRoutes,
   assistantRoutes,
@@ -47,6 +48,7 @@ export {
   twilioSettingsRoutes,
   subscriptionRoutes,
   stripeWebhookRoutes,
+  numberPacksRoutes,
 };
 export { setupCoachingWebSocket, broadcastTranscript } from './coaching.js';
 
@@ -57,14 +59,12 @@ export const webhookRoutes = (): RouteDefinition[] => [
     path: '/v1/webhooks/transcription',
     handler: errorHandler(async (_req, res) => {
       // STUB: implement with processTranscriptionEvent() (DEV-698)
-      res
-        .status(501)
-        .json({
-          error: {
-            code: 'NOT_IMPLEMENTED',
-            message: 'Transcription webhook not yet implemented (DEV-698)',
-          },
-        });
+      res.status(501).json({
+        error: {
+          code: 'NOT_IMPLEMENTED',
+          message: 'Transcription webhook not yet implemented (DEV-698)',
+        },
+      });
     }),
   },
   // status webhook moved to voiceRoutes (DEV-816)
@@ -105,6 +105,7 @@ export const allRoutes = (): RouteDefinition[] => [
   ...ghlRoutes(),
   ...twilioSettingsRoutes(),
   ...subscriptionRoutes(),
+  ...numberPacksRoutes(),
   ...stripeWebhookRoutes(),
   ...webhookRoutes(),
 ];

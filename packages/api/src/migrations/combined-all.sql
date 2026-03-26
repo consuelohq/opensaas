@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS workspace_subscriptions (
   interval VARCHAR(16),
   current_period_end TIMESTAMPTZ,
   add_ons JSONB DEFAULT '[]'::jsonb,
+  number_packs JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
