@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1600" viewBox="0 0 1600 1600" fill="none">
+  <path
+    d="M654 270C684 430 766 512 926 542C766 572 684 654 654 814C624 654 542 572 382 542C542 512 624 430 654 270Z"
+    stroke="#141414"
+    stroke-width="56"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M1048 556C1092 792 1214 914 1450 958C1214 1002 1092 1124 1048 1360C1004 1124 882 1002 646 958C882 914 1004 792 1048 556Z"
+    stroke="#141414"
+    stroke-width="64"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M522 892C554 1060 642 1148 810 1180C642 1212 554 1300 522 1468C490 1300 402 1212 234 1180C402 1148 490 1060 522 892Z"
+    stroke="#141414"
+    stroke-width="56"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
