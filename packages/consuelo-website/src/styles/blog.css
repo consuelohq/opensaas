@@ -270,3 +270,70 @@ lite-youtube iframe {
   height: 100%;
   border: 0;
 }
+
+/* shimmer animation for translation loading */
+@keyframes launch-translation-shimmer {
+  0% { background-position: 200% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
+body[data-language-translating] :is(h1, h2, h3, h4, h5, h6, p, a, span, strong, em, li, dt, dd, summary, button, label, time, td, th) {
+  color: transparent !important;
+  background-image: linear-gradient(
+    90deg,
+    var(--launch-shimmer-stop-1) 0%,
+    var(--launch-shimmer-stop-2) 30%,
+    var(--launch-shimmer-stop-3) 50%,
+    var(--launch-shimmer-stop-2) 70%,
+    var(--launch-shimmer-stop-1) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 200% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: launch-translation-shimmer 2.1s linear infinite;
+}
+
+body[data-language-translating] .language-selector,
+body[data-language-translating] [data-translate-ignore],
+body[data-language-translating] [data-translate-ignore] * {
+  color: inherit !important;
+  background-image: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  animation: none !important;
+}
+
+/* shimmer vars for dark mode */
+:root {
+  --launch-shimmer-stop-1: rgba(255, 255, 255, 0.22);
+  --launch-shimmer-stop-2: rgba(255, 255, 255, 0.52);
+  --launch-shimmer-stop-3: rgba(255, 255, 255, 0.88);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --launch-shimmer-stop-1: rgba(0, 0, 0, 0.18);
+    --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
+    --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
+  }
+}
+
+/* mobile-responsive language selector */
+@media (max-width: 639px) {
+  .language-selector__menu {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    min-width: 100% !important;
+    max-height: 60vh;
+    overflow-y: auto;
+    border-radius: 12px 12px 0 0;
+    padding: 0.75rem 0;
+  }
+  .language-selector__option {
+    padding: 0.75rem 1.25rem !important;
+    font-size: 1rem !important;
+  }
+}
