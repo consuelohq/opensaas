@@ -59,7 +59,8 @@ const socialImageURL = new URL(ogImage ?? SITE.ogImage, siteUrl).href;
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
 
-    <meta name="theme-color" content="#020617" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
   </head>
   <body class="bg-background text-foreground">
     <slot />
