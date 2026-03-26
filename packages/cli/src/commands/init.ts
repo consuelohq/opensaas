@@ -15,11 +15,12 @@ import {
   success,
   stepComplete,
 } from '../utils/ui.js';
-import { saveConfig } from '../config.js';
+import { saveConfig, loadConfig } from '../config.js';
 import { captureError } from '../sentry.js';
 import { validateTwilio, validateGroq } from '../validators/index.js';
 import { generateEnv } from '../generators/env.js';
 import { generateDockerCompose } from '../generators/docker.js';
+import { authenticateHosted } from '../auth.js';
 
 import {
   provisionDockerPostgres,
@@ -184,29 +185,51 @@ async function runNonInteractive(template: Template): Promise<void> {
   }
 }
 
-async function handleHostedSetup(template: Template): Promise<void> {
+const handleHostedSetup = async (template: Template): Promise<void> => {
+  log.info('hosted mode requires authentication with consuelo');
+  log.info(
+    'you can create an API key in Settings → Developers after signing in',
+  );
+  log.info('');
+
+  const shouldAuth = await confirm({
+    message: 'authenticate now?',
+    initialValue: true,
+  });
+
+  if (isCancel(shouldAuth) || !shouldAuth) {
+    generateEnv({ deploymentType: 'hosted', template });
+    success('configured for hosted mode');
+    log.info('run `consuelo auth:login` later to connect your workspace');
+    return;
+  }
+
+  const spin = spinner('opening browser for authentication...').start();
+
   try {
-    log.info('hosted mode requires authentication with consuelo (twenty CRM)');
-    log.info(
-      'you can create an API key in Settings → Developers after signing in',
-    );
-    log.info('');
+    const result = await authenticateHosted({ scope: 'full' });
+    spin.stop();
 
-    const { registerCommands } = await import('twenty-sdk/cli');
-    const { Command } = await import('commander');
-    const sub = new Command();
-    registerCommands(sub);
-    await sub.parseAsync(['node', 'consuelo', 'auth:login']);
+    const config = loadConfig();
+    saveConfig({
+      ...config,
+      apiKey: result.apiKey,
+      workspaceId: result.workspaceId,
+      managed: true,
+    });
 
+    success(`authenticated as ${result.email}`);
     generateEnv({ deploymentType: 'hosted', template });
     success('configured for hosted mode');
   } catch (err: unknown) {
-    log.warn('authentication skipped (twenty-sdk not available)');
-    log.info('run `consuelo auth:login` manually after installing twenty-sdk');
+    spin.fail('authentication failed');
     generateEnv({ deploymentType: 'hosted', template });
+    const message = err instanceof Error ? err.message : 'unknown error';
+    log.warn(`could not authenticate: ${message}`);
+    log.info('run `consuelo auth:login` later to connect your workspace');
     captureError(err, { command: 'init' });
   }
-}
+};
 
 async function handleSelfHostedSetup(template: Template): Promise<void> {
   try {
@@ -389,25 +412,34 @@ async function handleSelfHostedSetup(template: Template): Promise<void> {
   }
 }
 
-async function promptAuthLogin(): Promise<void> {
+const promptAuthLogin = async (): Promise<void> => {
+  const shouldAuth = await confirm({
+    message: 'authenticate with consuelo now?',
+    initialValue: false,
+  });
+
+  if (isCancel(shouldAuth) || !shouldAuth) return;
+
+  const spin = spinner('opening browser for authentication...').start();
+
   try {
-    const shouldAuth = await confirm({
-      message: 'authenticate with twenty CRM now?',
-      initialValue: false,
+    const result = await authenticateHosted({ scope: 'full' });
+    spin.stop();
+
+    const config = loadConfig();
+    saveConfig({
+      ...config,
+      apiKey: result.apiKey,
+      workspaceId: result.workspaceId,
     });
 
-    if (isCancel(shouldAuth) || !shouldAuth) return;
-
-    const { registerCommands } = await import('twenty-sdk/cli');
-    const { Command } = await import('commander');
-    const sub = new Command();
-    registerCommands(sub);
-    await sub.parseAsync(['node', 'consuelo', 'auth:login']);
-  } catch (_err: unknown) {
-    // auth optional — intentional: optional dep
-    log.warn('workspace auth skipped (twenty-sdk not available)');
+    success(`authenticated as ${result.email}`);
+  } catch (err: unknown) {
+    spin.fail('authentication failed');
+    const message = err instanceof Error ? err.message : 'unknown error';
+    log.warn(`could not authenticate: ${message}`);
   }
-}
+};
 
 function printNextSteps(deploymentType: 'hosted' | 'self-hosted'): void {
   log.step('next steps:');
