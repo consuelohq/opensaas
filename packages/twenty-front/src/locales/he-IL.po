@@ -1282,7 +1282,6 @@ msgid "AI not configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or XAI_API_KEY 
 msgstr "ה-AI אינו מוגדר. הגדר את OPENAI_API_KEY, ANTHROPIC_API_KEY או XAI_API_KEY בסביבה שלך."
 
 #. js-lingui-id: Hru7Ws
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/dialer/SettingsDialerAI.tsx
 msgid "AI Provider"
 msgstr ""
@@ -4458,6 +4457,11 @@ msgstr "פרטים"
 #. js-lingui-id: irW7LP
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 msgid "Developers links"
+msgstr ""
+
+#. js-lingui-id: ErTdky
+#: src/pages/settings/ai/SettingsAI.tsx
+msgid "Dialer"
 msgstr ""
 
 #. js-lingui-id: zAg2B9

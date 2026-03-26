@@ -1277,7 +1277,6 @@ msgid "AI not configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or XAI_API_KEY 
 msgstr "AI not configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or XAI_API_KEY in your environment."
 
 #. js-lingui-id: Hru7Ws
-#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/dialer/SettingsDialerAI.tsx
 msgid "AI Provider"
 msgstr "AI Provider"
@@ -4454,6 +4453,11 @@ msgstr "Details"
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 msgid "Developers links"
 msgstr "Developers links"
+
+#. js-lingui-id: ErTdky
+#: src/pages/settings/ai/SettingsAI.tsx
+msgid "Dialer"
+msgstr "Dialer"
 
 #. js-lingui-id: zAg2B9
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowActionsConfig.tsx
