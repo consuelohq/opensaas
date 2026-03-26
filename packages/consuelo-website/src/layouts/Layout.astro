@@ -69,5 +69,27 @@ const socialImageURL = new URL(ogImage ?? SITE.ogImage, siteUrl).href;
       // force dark mode
       document.documentElement.setAttribute("data-theme", "dark");
     </script>
+  
+    <script>
+      class LiteYouTube extends HTMLElement {
+        connectedCallback() {
+          const id = this.getAttribute('videoid');
+          if (!id) return;
+          this.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
+          this.addEventListener('click', () => {
+            if (this.classList.contains('activated')) return;
+            this.classList.add('activated');
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+            iframe.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            this.appendChild(iframe);
+          }, { once: true });
+        }
+      }
+      if (!customElements.get('lite-youtube')) {
+        customElements.define('lite-youtube', LiteYouTube);
+      }
+    </script>
   </body>
 </html>

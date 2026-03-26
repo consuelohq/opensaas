@@ -14,7 +14,7 @@ description: 51% of SaaS licenses go unused. here's what that actually costs.
 
 in february 2026, software stocks lost [$285 billion in a single day](https://www.forbes.com/sites/jemmagreen/2026/02/12/did-artificial-intelligence-really-kill-saas/). forrester called it the ["SaaS-pocalypse."](https://www.forrester.com/blogs/saas-as-we-know-it-is-dead-how-to-survive-the-saas-pocalypse/) the klarna CEO went further — calling the entire SaaS model dead:
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/P7vIRAFSXmk" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="P7vIRAFSXmk"></lite-youtube>
 
 the market is catching up to what sales teams already know: we're paying too much for software we barely use.
 
@@ -59,7 +59,7 @@ the real killer isn't any single tool being expensive. it's that 3-4 tools are d
 
 the per-seat model punishes growth. every new hire adds $500-800/month in software costs before they've closed a single deal. the SaaS index fell 6.5% in 2025 while the S&P 500 climbed 18%.
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/rvAUupZ_Pdc" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="rvAUupZ_Pdc"></lite-youtube>
 
 > "a competent engineer with AI assistance can build in weeks what used to take a team months. the barriers that once justified paying for software have collapsed." — [Greg Herlein](https://blog.herlein.com/post/saas-dead-long-live-platforms/)
 

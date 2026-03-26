@@ -41,7 +41,7 @@ the agencies seeing real returns aren't buying 10 AI tools. they're picking one 
 
 when an agent stumbles on an objection, the prompt appears immediately. when they talk too much, the ratio updates live. when they say something that could trigger a compliance issue, the alert fires before the sentence is finished.
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/wZuypEFt7uw" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="wZuypEFt7uw"></lite-youtube>
 
 ## AI roleplay changed onboarding
 

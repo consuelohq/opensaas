@@ -41,7 +41,7 @@ take 20 agents making 200 dials/day each — 4,000 total dials daily.
 
 same team. same hours. **3x more conversations.**
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/pjf5uhOMcTc" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="pjf5uhOMcTc"></lite-youtube>
 
 ## Cold calling in 2026
 

@@ -16,7 +16,7 @@ the average sales team spends [$690/seat/month](https://zylo.com/blog/saas-stati
 
 after talking to dozens of insurance agencies, the pattern is clear: you need exactly three things, and everything else is optional.
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/rTQ_5vYE45E" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="rTQ_5vYE45E"></lite-youtube>
 
 ## Table of contents
 
@@ -70,7 +70,7 @@ after the break-even point, open source is cheaper every month.
 | **total** | **$141,600/yr** | **~$7,200/yr** |
 | **annual savings** | — | **$134,400** |
 
-<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/FqfTQFuSalY" frameborder="0" allowfullscreen></iframe>
+<lite-youtube videoid="FqfTQFuSalY"></lite-youtube>
 
 ## Implementation timeline
 
