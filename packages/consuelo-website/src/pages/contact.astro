@@ -11,39 +11,48 @@ const description = 'Contact the Consuelo team for support or inquiries.';
   <LaunchHeader />
 
   <section class="launch-section">
-    <div class="launch-content launch-content--wide contact-hero">
-      <h1 class="contact-hero__title launch-mono">Contact Us</h1>
-      <p class="launch-copy">Whether you need help setting up, have questions, or want to share feedback — we're here for you.</p>
-    </div>
-  </section>
+    <div class="launch-content launch-content--wide contact-split">
+      <!-- Left side: Text -->
+      <div class="contact-split__text">
+        <h1 class="contact-hero__title launch-mono">Your infrastructure is yours</h1>
+        <p class="launch-copy">
+          Consuelo operates securely inside your organization with no data or context stored and no licensing restrictions or ownership claims. Start a trial with your team, then deploy it across your organization by integrating it with your SSO and internal AI gateway.
+        </p>
+        <p class="launch-copy">
+          Let us know how we can help.
+        </p>
+      </div>
 
-  <section class="launch-section">
-    <div class="launch-content launch-content--wide contact-block">
-      <form class="launch-form">
-        <div class="launch-form__row">
+      <!-- Right side: Form -->
+      <div class="contact-split__form">
+        <form class="launch-form">
           <div class="launch-form__field">
-            <label class="launch-mono" for="firstName">First Name</label>
-            <input type="text" id="firstName" name="firstName" />
+            <label class="launch-mono" for="fullName">Full name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Jeff Bezos" />
           </div>
           <div class="launch-form__field">
-            <label class="launch-mono" for="lastName">Last Name</label>
-            <input type="text" id="lastName" name="lastName" />
+            <label class="launch-mono" for="role">Role</label>
+            <input type="text" id="role" name="role" placeholder="Executive Chairman" />
           </div>
-        </div>
-        <div class="launch-form__field">
-          <label class="launch-mono" for="email">Email</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-        <div class="launch-form__field">
-          <label class="launch-mono" for="phone">Phone Number</label>
-          <input type="tel" id="phone" name="phone" />
-        </div>
-        <div class="launch-form__field">
-          <label class="launch-mono" for="message">Message</label>
-          <textarea id="message" name="message" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="launch-button launch-button--sm launch-mono">Send Message ↗</button>
-      </form>
+          <div class="launch-form__field">
+            <label class="launch-mono" for="company">Company</label>
+            <input type="text" id="company" name="company" placeholder="Acme Inc" />
+          </div>
+          <div class="launch-form__field">
+            <label class="launch-mono" for="email">Company email</label>
+            <input type="email" id="email" name="email" placeholder="jeff@amazon.com" required />
+          </div>
+          <div class="launch-form__field">
+            <label class="launch-mono" for="phone">Phone number</label>
+            <input type="tel" id="phone" name="phone" placeholder="+1 234 567 8900" />
+          </div>
+          <div class="launch-form__field">
+            <label class="launch-mono" for="message">What problem are you trying to solve?</label>
+            <textarea id="message" name="message" rows="4" placeholder="We need help with..." required></textarea>
+          </div>
+          <button type="submit" class="launch-button launch-button--sm launch-mono">Send Message ↗</button>
+        </form>
+      </div>
     </div>
   </section>
 
@@ -63,19 +72,114 @@ const description = 'Contact the Consuelo team for support or inquiries.';
 </LaunchLayout>
 
 <style>
-  .contact-hero {
+  .contact-split {
     display: grid;
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 3rem;
     padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
-    padding-bottom: clamp(1rem, 1rem + 1vw, 2rem);
+    padding-bottom: clamp(2.5rem, 2rem + 2vw, 5rem);
+  }
+
+  @media (min-width: 768px) {
+    .contact-split {
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+    }
+  }
+
+  .contact-split__text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
 
   .contact-hero__title {
     margin: 0;
     font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
     font-weight: 700;
-    letter-spacing: -0.06em;
-    line-height: 1;
+    line-height: 1.2;
+  }
+
+  .contact-split__text .launch-copy {
+    font-family: var(--launch-mono-font);
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+
+  /* Form Styles */
+  .launch-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .launch-form__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .launch-form__field label {
+    font-size: 0.85rem;
+    color: var(--launch-fg);
+    opacity: 0.8;
+    text-transform: none; /* remove uppercase to match opencode screenshot */
+  }
+
+  .launch-form__field input,
+  .launch-form__field textarea {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--launch-fg);
+    padding: 0.8rem 1rem;
+    font-family: var(--launch-mono-font);
+    font-size: 0.9rem;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  
+  @media (prefers-color-scheme: light) {
+    .launch-form__field input,
+    .launch-form__field textarea {
+      background: rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .launch-form__field input:focus,
+  .launch-form__field textarea:focus {
+    border-color: var(--launch-fg);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  @media (prefers-color-scheme: light) {
+    .launch-form__field input:focus,
+    .launch-form__field textarea:focus {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  .launch-form__field input::placeholder,
+  .launch-form__field textarea::placeholder {
+    color: var(--launch-muted);
+    opacity: 0.5;
+  }
+
+  .launch-form .launch-button {
+    align-self: flex-start;
+    margin-top: 0.5rem;
+    cursor: pointer;
+    background: var(--launch-fg);
+    color: var(--launch-bg);
+    border: none;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .launch-form .launch-button {
+      background: white;
+      color: black;
+    }
   }
 
   /* shared block */
@@ -134,68 +238,5 @@ const description = 'Contact the Consuelo team for support or inquiries.';
 
   .contact-expandable__body {
     padding: 0.5rem 0 0 1.6rem;
-  }
-
-  /* form styles */
-  .launch-form {
-    display: grid;
-    gap: 1.5rem;
-    max-width: 800px;
-  }
-  
-  .launch-form__row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  @media (min-width: 640px) {
-    .launch-form__row {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .launch-form__field {
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .launch-form__field label {
-    font-size: 0.75rem;
-    color: var(--launch-fg);
-    text-transform: uppercase;
-  }
-
-  .launch-form__field input,
-  .launch-form__field textarea {
-    background: transparent;
-    border: 1px solid var(--launch-line);
-    color: var(--launch-fg);
-    padding: 0.75rem;
-    font-family: inherit;
-    font-size: 1rem;
-    border-radius: 0;
-    outline: none;
-    transition: border-color 0.2s ease;
-  }
-
-  .launch-form__field input:focus,
-  .launch-form__field textarea:focus {
-    border-color: var(--launch-fg);
-  }
-
-  .launch-form .launch-button {
-    justify-self: start;
-    cursor: pointer;
-    background: var(--launch-fg);
-    color: var(--launch-bg);
-    border: none;
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    .launch-form .launch-button {
-      background: white;
-      color: black;
-    }
   }
 </style>
