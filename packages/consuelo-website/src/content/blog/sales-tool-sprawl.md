@@ -12,85 +12,56 @@ tags:
 description: 51% of SaaS licenses go unused. here's what that actually costs.
 ---
 
+in february 2026, software stocks lost [$285 billion in a single day](https://www.forbes.com/sites/jemmagreen/2026/02/12/did-artificial-intelligence-really-kill-saas/). forrester called it the ["SaaS-pocalypse."](https://www.forrester.com/blogs/saas-as-we-know-it-is-dead-how-to-survive-the-saas-pocalypse/) the klarna CEO went on a 90-minute rant about why traditional SaaS is finished:
+
+<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/P7vIRAFSXmk" frameborder="0" allowfullscreen></iframe>
+
+the market is finally catching up to what sales teams already know: we're paying too much for software we barely use.
+
 ## Table of contents
 
-## The $285 billion wake-up call
+## The waste is staggering
 
-in february 2026, software stocks lost [$285 billion in a single day](https://www.forbes.com/sites/jemmagreen/2026/02/12/did-artificial-intelligence-really-kill-saas/). forrester called it the ["SaaS-pocalypse."](https://www.forrester.com/blogs/saas-as-we-know-it-is-dead-how-to-survive-the-saas-pocalypse/)
+[zylo's 2026 SaaS management index](https://zylo.com/blog/saas-statistics/) found that **51% of enterprise SaaS licenses go unused.** not underused — completely unused. nobody logging in. nobody opening the app. just money leaving your account every month.
 
-the market is finally catching up to what sales teams already know:
+the average organization now spends [$55.7 million annually on SaaS](https://zylo.com/blog/saas-statistics/). enterprises waste an estimated [$21 million per year](https://www.certero.com/blog/five-surprising-stats-about-saas-waste-in-enterprise-it/) on licenses that nobody touches. and [gartner estimates](https://www.cloudnuro.ai/blog/saas-spend-management-platform) that 30% of total SaaS budgets are pure waste — globally, that's roughly **$47 billion in avoidable spend** every year.
 
-> we're paying too much for software we barely use.
+for a 20-person insurance sales team, the typical stack looks something like this: salesforce at $165/seat, a dialer like orum or salesloft at $200/seat, gong for coaching at $150/seat, some data enrichment tool at $75/seat, and an engagement platform at $100/seat. that's **$690 per agent per month** — or $165,600 a year — before anyone has made a single call.
 
-## The numbers are brutal
-
-| stat | source |
-|---|---|
-| **51%** of enterprise SaaS licenses go unused | [Zylo 2025 SaaS Management Index](https://zylo.com/blog/saas-statistics/) |
-| **$21M** wasted annually per enterprise on unused licenses | [Certero](https://www.certero.com/blog/five-surprising-stats-about-saas-waste-in-enterprise-it/) |
-| **130+** SaaS apps per organization on average | [CloudThrottle](https://www.cloudthrottle.com/articles/the-silent-budget-killer-saas-sprawl-and-how-to-contain-it) |
-| **30%** of total SaaS budget is waste | [Gartner via CloudNuro](https://www.cloudnuro.ai/blog/saas-spend-management-platform) |
-| **$4,830** spent per employee on SaaS annually | [Zylo](https://zylo.com/blog/saas-statistics/) |
-
-for a 20-person sales team, that's **$96,600/year** in SaaS alone.
-
-## What a typical insurance sales stack costs
-
-| tool | monthly/seat | 20 agents/year |
-|---|---|---|
-| CRM (Salesforce) | $165 | $39,600 |
-| dialer (Orum, Salesloft) | $200 | $48,000 |
-| coaching (Gong) | $150 | $36,000 |
-| data enrichment | $75 | $18,000 |
-| engagement platform | $100 | $24,000 |
-| **total** | **$690** | **$165,600** |
-
-> that's $165K before you've made a single call.
-
-and according to [Zylo's research](https://zylo.com/blog/saas-statistics/), you're probably only using half of it.
+and you're probably only using half of it.
 
 ## The overlap problem
 
-most sales teams have **3-4 tools doing the same thing.**
+the real killer isn't any single tool being expensive. it's that **3-4 tools are doing the same thing.**
 
-| function | tools that do it |
-|---|---|
-| call recording | CRM, dialer, coaching tool |
-| contact management | CRM, engagement platform, data tool |
-| analytics | CRM, coaching tool, dialer |
-| email sequences | CRM, engagement platform |
+your CRM records calls. your dialer records calls. your coaching tool records calls. you're paying three vendors for the same feature. your CRM manages contacts. your engagement platform manages contacts. your data tool manages contacts. three databases, three monthly bills, one function.
 
-you're paying 3x for features you need once.
+[82% of top-performing sales professionals](https://www.netguru.com/blog/sales-tech-stack) credit their tech stack for their success. but the winning stacks in 2026 aren't the biggest — they're the ones where every tool earns its place.
 
-## The SaaS-pocalypse is real
+## The per-seat trap
 
-[forrester's analysis](https://www.forrester.com/blogs/saas-as-we-know-it-is-dead-how-to-survive-the-saas-pocalypse/) is blunt: traditional SaaS pricing is broken. the per-seat model punishes growth — every new hire adds $500-800/month in software costs.
+the per-seat model punishes growth. every new hire adds $500-800/month in software costs before they've closed a single deal. want to scale from 20 agents to 40? that's not just salaries and training — it's another $165K in software.
 
-the SaaS index fell 6.5% in 2025 while the S&P 500 climbed 18%. investors see the writing on the wall.
+the SaaS index fell 6.5% in 2025 while the S&P 500 climbed 18%. investors see the writing on the wall. as [greg herlein wrote](https://blog.herlein.com/post/saas-dead-long-live-platforms/): "a competent engineer with AI assistance can build in weeks what used to take a team months. the barriers that once justified paying for software have collapsed."
 
-> "a competent engineer with AI assistance can build in weeks what used to take a team months. the barriers that once justified paying for software have collapsed."
-> — [Greg Herlein](https://blog.herlein.com/post/saas-dead-long-live-platforms/)
+<iframe width="100%" style="aspect-ratio:16/9" src="https://www.youtube.com/embed/rvAUupZ_Pdc" frameborder="0" allowfullscreen></iframe>
 
 ## What the alternative looks like
 
-| proprietary stack | open-source stack |
-|---|---|
-| $165,600/year | infrastructure costs only |
-| per-seat pricing | no seat limits |
-| vendor owns your data | you own everything |
-| locked into their roadmap | customize anything |
-| 51% of licenses unused | deploy only what you need |
+open-source sales infrastructure flips the model. no per-seat licensing. you own the data. you deploy only what you need. the cost is infrastructure — servers, not seats.
 
-the shift is already happening. [82% of top-performing sales teams](https://www.netguru.com/blog/sales-tech-stack) credit their success to their tech stack — but the winning stacks are getting leaner, not bigger.
+for a 20-agent team, the math changes dramatically: self-hosted CRM at $0/seat, twilio-based dialer at ~$200/month total for minutes, self-hosted AI coaching at $0/seat. total annual cost: roughly **$7,200** instead of $165,600.
+
+that's $134,000 back in your pocket. every year.
 
 ## Three things to do this week
 
-1. **audit your stack** — list every tool, what it costs, and when it was last used
-2. **find the overlaps** — which features exist in multiple tools?
-3. **calculate your waste** — multiply unused licenses × monthly cost × 12
+**audit your stack.** list every tool, what it costs, and when each person last logged in. you'll find tools nobody remembers buying.
 
-the answer will probably make you uncomfortable. that's the point.
+**find the overlaps.** which features exist in multiple tools? call recording, contact management, and analytics are the usual suspects.
+
+**calculate your waste.** multiply unused licenses × monthly cost × 12. the number will probably make you uncomfortable. that's the point.
 
 ---
 
-*sources linked inline. all statistics verified as of march 2026.*
+*all statistics from 2025-2026 industry reports. sources linked inline.*
