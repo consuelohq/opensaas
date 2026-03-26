@@ -116,6 +116,7 @@ export const DEFAULT_RECORD_ACTIONS_CONFIG: Record<
         !hasAnySoftDeleteFilterOnView) ??
       false,
     availableOn: [ActionViewType.INDEX_PAGE_NO_SELECTION],
+    hotKeys: ['C'],
     component: <CreateNewIndexRecordNoSelectionRecordAction />,
   },
   [SingleRecordActionKeys.DELETE]: {

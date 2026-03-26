@@ -33,6 +33,7 @@ const SHORTCUTS_NAVIGATION: Shortcut[] = [
 
 // record table — when viewing a table/list of records
 const SHORTCUTS_TABLE: Shortcut[] = [
+  { label: 'Create new record', type: ShortcutType.Table, firstHotKey: 'C', areSimultaneous: true },
   { label: 'Move right', type: ShortcutType.Table, firstHotKey: '→', areSimultaneous: true },
   { label: 'Move left', type: ShortcutType.Table, firstHotKey: '←', areSimultaneous: true },
   { label: 'Move up', type: ShortcutType.Table, firstHotKey: '↑', areSimultaneous: true },

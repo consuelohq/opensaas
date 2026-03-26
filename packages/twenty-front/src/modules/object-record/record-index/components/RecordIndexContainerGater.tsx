@@ -9,6 +9,7 @@ import { useObjectPermissions } from '@/object-record/hooks/useObjectPermissions
 import { lastShowPageRecordIdState } from '@/object-record/record-field/ui/states/lastShowPageRecordId';
 import { RecordIndexContainer } from '@/object-record/record-index/components/RecordIndexContainer';
 import { RecordIndexContainerContextStoreNumberOfSelectedRecordsEffect } from '@/object-record/record-index/components/RecordIndexContainerContextStoreNumberOfSelectedRecordsEffect';
+import { RecordIndexCreateHotkeyEffect } from '@/object-record/record-index/components/RecordIndexCreateHotkeyEffect';
 import { RecordIndexLoadBaseOnContextStoreEffect } from '@/object-record/record-index/components/RecordIndexLoadBaseOnContextStoreEffect';
 import { RecordIndexPageHeader } from '@/object-record/record-index/components/RecordIndexPageHeader';
 import { useHandleIndexIdentifierClick } from '@/object-record/record-index/hooks/useHandleIndexIdentifierClick';
@@ -103,6 +104,7 @@ export const RecordIndexContainerGater = () => {
                   className={RECORD_INDEX_DRAG_SELECT_BOUNDARY_CLASS}
                 >
                   <RecordIndexContainerContextStoreNumberOfSelectedRecordsEffect />
+                  <RecordIndexCreateHotkeyEffect />
                   <RecordIndexContainer />
                 </StyledIndexContainer>
               </MainContainerLayoutWithCommandMenu>
