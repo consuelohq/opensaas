@@ -3,7 +3,7 @@ import { isCommandMenuOpenedState } from '@/command-menu/states/isCommandMenuOpe
 import { CommandMenuPages } from '@/command-menu/types/CommandMenuPages';
 import { t } from '@lingui/core/macro';
 import { useRecoilValue } from 'recoil';
-import { IconKeyboard } from 'twenty-ui/display';
+import { IconCommand } from 'twenty-ui/display';
 import { v4 } from 'uuid';
 
 export const useOpenKeyboardShortcutsPageInCommandMenu = () => {
@@ -18,7 +18,7 @@ export const useOpenKeyboardShortcutsPageInCommandMenu = () => {
     navigateCommandMenu({
       page: CommandMenuPages.KeyboardShortcuts,
       pageTitle: t`Keyboard Shortcuts`,
-      pageIcon: IconKeyboard,
+      pageIcon: IconCommand,
       pageId: v4(),
       resetNavigationStack: true,
     });

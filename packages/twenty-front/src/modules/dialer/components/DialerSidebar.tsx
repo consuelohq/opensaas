@@ -24,6 +24,7 @@ import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
 import { PAGE_BAR_MIN_HEIGHT } from '@/ui/layout/page/constants/PageBarMinHeight';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
+import { useGlobalHotkeys } from '@/ui/utilities/hotkey/hooks/useGlobalHotkeys';
 import styled from '@emotion/styled';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
@@ -135,6 +136,7 @@ export const DialerSidebar = () => {
   useCallPersistence();
   const { status: configStatus } = useTwilioConfigStatus();
   const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
+  const setDialerSidebarOpen = useSetRecoilState(dialerSidebarOpenState);
   const callState = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
   const { flowState } = useFirstCallFlow();
@@ -155,6 +157,18 @@ export const DialerSidebar = () => {
     retry: retryAnalysis,
   } = usePostCallAnalysis();
   useResetCoachingState();
+
+  // esc closes dialer sidebar when not in a call
+  useGlobalHotkeys({
+    keys: ['Escape'],
+    callback: () => {
+      if (dialerSidebarOpen && !isInCall) {
+        setDialerSidebarOpen(false);
+      }
+    },
+    containsModifier: false,
+    dependencies: [dialerSidebarOpen, isInCall, setDialerSidebarOpen],
+  });
 
   const handleReconnect = () => {
     // STUB: WebRTC reconnect not yet implemented (DEV-821)
