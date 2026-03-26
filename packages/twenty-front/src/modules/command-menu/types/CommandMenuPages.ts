@@ -26,4 +26,5 @@ export enum CommandMenuPages {
   ViewFrontComponent = 'view-front-component',
   NavigationMenuItemEdit = 'navigation-menu-item-edit',
   NavigationMenuAddItem = 'navigation-menu-add-item',
+  KeyboardShortcuts = 'keyboard-shortcuts',
 }

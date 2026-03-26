@@ -50,6 +50,7 @@ export const MainNavigationDrawerFixedItems = () => {
             navigate(getSettingsPath(SettingsPath.ProfilePage));
           }}
           Icon={IconSettings}
+          keyboard={['G', 'S']}
         />
       </>
     )

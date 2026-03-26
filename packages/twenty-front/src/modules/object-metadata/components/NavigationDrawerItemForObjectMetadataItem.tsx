@@ -139,6 +139,11 @@ export const NavigationDrawerItemForObjectMetadataItem = ({
       isSelectedInEditMode={isSelectedInEditMode}
       isDragging={isDragging}
       triggerEvent={isEditMode ? 'CLICK' : undefined}
+      keyboard={
+        objectMetadataItem.shortcut
+          ? ['G', objectMetadataItem.shortcut.toUpperCase()]
+          : undefined
+      }
     />
   );
 };

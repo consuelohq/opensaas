@@ -146,6 +146,10 @@ const StyledItem = styled('button', {
     visibility: visible;
   }
 
+  .keyboard-shortcuts {
+    visibility: hidden;
+  }
+
   user-select: none;
 
   @media (max-width: ${MOBILE_VIEWPORT}px) {
@@ -192,14 +196,20 @@ const StyledItemCount = styled.span`
   width: 16px;
 `;
 
+const StyledKeyBoardShortcutContainer = styled.span`
+  align-items: center;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing(1)};
+`;
+
 const StyledKeyBoardShortcut = styled.span`
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(2)};
   height: ${({ theme }) => theme.spacing(4)};
   justify-content: center;
-  width: ${({ theme }) => theme.spacing(4)};
+  min-width: ${({ theme }) => theme.spacing(4)};
+  padding: 0 ${({ theme }) => theme.spacing(0.5)};
   box-sizing: border-box;
 
   border-radius: ${({ theme }) => theme.border.radius.sm};
@@ -440,9 +450,13 @@ export const NavigationDrawerItem = ({
 
           {keyboard && (
             <NavigationDrawerAnimatedCollapseWrapper>
-              <StyledKeyBoardShortcut className="keyboard-shortcuts">
-                <Label>{keyboard}</Label>
-              </StyledKeyBoardShortcut>
+              <StyledKeyBoardShortcutContainer className="keyboard-shortcuts">
+                {keyboard.map((key, index) => (
+                  <StyledKeyBoardShortcut key={index}>
+                    <Label>{key}</Label>
+                  </StyledKeyBoardShortcut>
+                ))}
+              </StyledKeyBoardShortcutContainer>
             </NavigationDrawerAnimatedCollapseWrapper>
           )}
 

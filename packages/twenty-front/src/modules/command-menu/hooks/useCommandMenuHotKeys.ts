@@ -3,6 +3,7 @@ import { SIDE_PANEL_FOCUS_ID } from '@/command-menu/constants/SidePanelFocusId';
 import { useCommandMenu } from '@/command-menu/hooks/useCommandMenu';
 import { useCommandMenuHistory } from '@/command-menu/hooks/useCommandMenuHistory';
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
+import { useOpenKeyboardShortcutsPageInCommandMenu } from '@/command-menu/hooks/useOpenKeyboardShortcutsPageInCommandMenu';
 import { useOpenRecordsSearchPageInCommandMenu } from '@/command-menu/hooks/useOpenRecordsSearchPageInCommandMenu';
 import { useSetGlobalCommandMenuContext } from '@/command-menu/hooks/useSetGlobalCommandMenuContext';
 import { commandMenuPageState } from '@/command-menu/states/commandMenuPageState';
@@ -25,6 +26,9 @@ export const useCommandMenuHotKeys = () => {
   const { openRecordsSearchPage } = useOpenRecordsSearchPageInCommandMenu();
 
   const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
+
+  const { openKeyboardShortcutsPage } =
+    useOpenKeyboardShortcutsPageInCommandMenu();
 
   const { goBackFromCommandMenu } = useCommandMenuHistory();
 
@@ -77,6 +81,15 @@ export const useCommandMenuHotKeys = () => {
     options: {
       ignoreModifiers: true,
     },
+  });
+
+  useGlobalHotkeys({
+    keys: ['meta+/'],
+    callback: () => {
+      openKeyboardShortcutsPage();
+    },
+    containsModifier: true,
+    dependencies: [openKeyboardShortcutsPage],
   });
 
   useHotkeysOnFocusedElement({

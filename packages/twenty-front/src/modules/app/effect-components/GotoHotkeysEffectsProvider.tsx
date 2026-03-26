@@ -2,14 +2,28 @@ import { GoToHotkeyItemEffect } from '@/app/effect-components/GoToHotkeyItemEffe
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
+import { useGlobalHotkeys } from '@/ui/utilities/hotkey/hooks/useGlobalHotkeys';
 import { useGoToHotkeys } from '@/ui/utilities/hotkey/hooks/useGoToHotkeys';
 import { useRecoilCallback } from 'recoil';
+import { useNavigate } from 'react-router-dom';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
 
 export const GotoHotkeysEffectsProvider = () => {
   const { activeNonSystemObjectMetadataItems } =
     useFilteredObjectMetadataItems();
+
+  const navigate = useNavigate();
+
+  const expandDrawerAndNavigateToSettings = useRecoilCallback(
+    ({ set }) =>
+      () => {
+        set(isNavigationDrawerExpandedState, true);
+        set(navigationDrawerExpandedMemorizedState, true);
+        navigate(getSettingsPath(SettingsPath.ProfilePage));
+      },
+    [navigate],
+  );
 
   useGoToHotkeys({
     key: 's',
@@ -22,6 +36,13 @@ export const GotoHotkeysEffectsProvider = () => {
         },
       [],
     ),
+  });
+
+  useGlobalHotkeys({
+    keys: ['meta+,'],
+    callback: expandDrawerAndNavigateToSettings,
+    containsModifier: true,
+    dependencies: [expandDrawerAndNavigateToSettings],
   });
 
   return activeNonSystemObjectMetadataItems.map((objectMetadataItem) => {
