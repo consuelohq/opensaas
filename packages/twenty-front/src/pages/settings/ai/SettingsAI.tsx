@@ -14,12 +14,14 @@ import { t } from '@lingui/core/macro';
 import {
   H2Title,
   IconFileText,
+  IconPhone,
   IconSettings,
   IconSparkles,
   IconTool,
 } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
+import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings';
 import { SettingsAIMCP } from './components/SettingsAIMCP';
 import { SettingsAIRouterSettings } from './components/SettingsAIRouterSettings';
 import { SettingsSkillsTable } from './components/SettingsSkillsTable';
@@ -38,6 +40,11 @@ export const SettingsAI = () => {
 
   const tabs = [
     {
+      id: SETTINGS_AI_TABS.TABS_IDS.DIALER,
+      title: t`Dialer`,
+      Icon: IconPhone,
+    },
+    {
       id: SETTINGS_AI_TABS.TABS_IDS.SKILLS,
       title: t`Skills`,
       Icon: IconSparkles,
@@ -54,6 +61,7 @@ export const SettingsAI = () => {
     },
   ];
 
+  const isDialerTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.DIALER;
   const isSkillsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.SKILLS;
   const isToolsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.TOOLS;
   const isSettingsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.SETTINGS;
@@ -74,6 +82,11 @@ export const SettingsAI = () => {
           tabs={tabs}
           componentInstanceId={SETTINGS_AI_TABS.COMPONENT_INSTANCE_ID}
         />
+        {isDialerTab && (
+          <Section>
+            <AIProviderSettings />
+          </Section>
+        )}
         {isSkillsTab && <SettingsSkillsTable />}
         {isToolsTab && <SettingsToolsTable />}
         {isSettingsTab && (

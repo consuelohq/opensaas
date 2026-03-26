@@ -250,11 +250,6 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           Icon: IconHelpCircle,
         },
         {
-          label: t`AI Provider`,
-          path: SettingsPath.DialerAI,
-          Icon: IconSparkles,
-        },
-        {
           label: t`Subscription`,
           path: SettingsPath.DialerSubscription,
           Icon: IconCreditCard,
