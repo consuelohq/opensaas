@@ -2608,11 +2608,6 @@ msgstr "Chart"
 msgid "Chat with AI agents and use AI features"
 msgstr "Chat with AI agents and use AI features"
 
-#. js-lingui-id: Bloatr
-#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "Check again"
-msgstr "Check again"
-
 #. js-lingui-id: xK2nU3
 #: src/pages/settings/updates/SettingsUpdates.tsx
 msgid "Check out our latest releases"
@@ -2632,11 +2627,6 @@ msgstr "Check your Emails"
 #: src/modules/settings/profile/hooks/useUpdateEmail.ts
 msgid "Check your inbox to verify your new email address."
 msgstr "Check your inbox to verify your new email address."
-
-#. js-lingui-id: pWT04I
-#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "Checking..."
-msgstr "Checking..."
 
 #. js-lingui-id: I/om5y
 #: src/modules/billing/hooks/useHandleCheckoutSession.ts
@@ -3107,6 +3097,11 @@ msgstr "Connect with Google"
 #: src/modules/settings/accounts/components/SettingsAccountsListEmptyStateCard.tsx
 msgid "Connect with Microsoft"
 msgstr "Connect with Microsoft"
+
+#. js-lingui-id: QHcLEN
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Connected"
+msgstr "Connected"
 
 #. js-lingui-id: 9TzudL
 #: src/pages/settings/accounts/SettingsAccounts.tsx
@@ -5838,16 +5833,6 @@ msgstr "Export workflows"
 msgid "Expression"
 msgstr "Expression"
 
-#. js-lingui-id: qNuZlr
-#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "Extension connected"
-msgstr "Extension connected"
-
-#. js-lingui-id: 4EhB04
-#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "Extension not detected"
-msgstr "Extension not detected"
-
 #. js-lingui-id: uE7S0L
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Extra Credits Used"
@@ -7187,10 +7172,15 @@ msgstr "Install"
 msgid "Install and manage applications"
 msgstr "Install and manage applications"
 
-#. js-lingui-id: DVUFgQ
+#. js-lingui-id: gY6LiP
 #: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "Install Chrome Extension"
-msgstr "Install Chrome Extension"
+msgid "Install Extension"
+msgstr "Install Extension"
+
+#. js-lingui-id: Dzg97Q
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Install the Consuelo Chrome Extension to use the dialer from any browser tab"
+msgstr "Install the Consuelo Chrome Extension to use the dialer from any browser tab"
 
 #. js-lingui-id: eQkgKV
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -9462,6 +9452,11 @@ msgstr "Not empty"
 #: src/modules/object-record/record-field/ui/form-types/components/VariableChip.tsx
 msgid "Not Found"
 msgstr "Not Found"
+
+#. js-lingui-id: 5SwVv1
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Not installed"
+msgstr "Not installed"
 
 #. js-lingui-id: 51G4/+
 #: src/modules/activities/calendar/components/CalendarEventNotSharedContent.tsx
@@ -12920,11 +12915,6 @@ msgstr "Text copied to clipboard"
 #: src/modules/object-record/record-field/ui/form-types/components/FormAdvancedTextFieldInput.tsx
 msgid "Text Editor"
 msgstr "Text Editor"
-
-#. js-lingui-id: kLhDeR
-#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
-msgid "The Consuelo Chrome Extension brings your dialer, contacts, and AI coaching directly into your browser. Install it to make calls from any tab."
-msgstr "The Consuelo Chrome Extension brings your dialer, contacts, and AI coaching directly into your browser. Install it to make calls from any tab."
 
 #. js-lingui-id: 1xQkU9
 #: src/modules/settings/data-model/fields/forms/phones/components/SettingsDataModelFieldPhonesForm.tsx
