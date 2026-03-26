@@ -17,16 +17,32 @@ export interface CliConfig {
   apiUrl?: string;
   apiKey?: string;
   workspaceId?: string;
+  apiKeyScope?: 'read-only' | 'full';
+  apiKeyRoleId?: string;
 }
 
 export interface ConsuloConfig {
   version: string;
   database: { type: 'postgres' | 'sqlite'; url?: string };
   server: { port: number; host: string };
-  twilio: { accountSid?: string; authToken?: string; phoneNumber?: string; localPresence: boolean };
-  ai: { provider: 'groq' | 'openai' | 'anthropic'; apiKey?: string; model?: string };
+  twilio: {
+    accountSid?: string;
+    authToken?: string;
+    phoneNumber?: string;
+    localPresence: boolean;
+  };
+  ai: {
+    provider: 'groq' | 'openai' | 'anthropic';
+    apiKey?: string;
+    model?: string;
+  };
   twenty: { enabled: boolean; serverUrl?: string };
-  features: { dialer: boolean; coaching: boolean; analytics: boolean; files: boolean };
+  features: {
+    dialer: boolean;
+    coaching: boolean;
+    analytics: boolean;
+    files: boolean;
+  };
 }
 
 export type ConfigScope = 'global' | 'project';
@@ -58,7 +74,9 @@ export const loadConfig = (): CliConfig => {
 
 export const saveConfig = (config: CliConfig): void => {
   fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
-  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), { mode: 0o600 });
+  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), {
+    mode: 0o600,
+  });
 };
 
 // new config system
@@ -73,26 +91,43 @@ export const loadFullConfig = (scope: ConfigScope): Partial<ConsuloConfig> => {
   }
 };
 
-export const saveFullConfig = (scope: ConfigScope, config: Partial<ConsuloConfig>): void => {
+export const saveFullConfig = (
+  scope: ConfigScope,
+  config: Partial<ConsuloConfig>,
+): void => {
   const filePath = configPath(scope);
-  if (scope === 'global') fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  if (scope === 'global')
+    fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
   fs.writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
 };
 
-export const getDefaultConfig = (): ConsuloConfig => structuredClone(DEFAULT_CONFIG);
+export const getDefaultConfig = (): ConsuloConfig =>
+  structuredClone(DEFAULT_CONFIG);
 
 // dot-notation helpers
-export const getByPath = (obj: Record<string, unknown>, dotPath: string): unknown => {
+export const getByPath = (
+  obj: Record<string, unknown>,
+  dotPath: string,
+): unknown => {
   const parts = dotPath.split('.');
   let current: unknown = obj;
   for (const part of parts) {
-    if (current === null || current === undefined || typeof current !== 'object') return undefined;
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== 'object'
+    )
+      return undefined;
     current = (current as Record<string, unknown>)[part];
   }
   return current;
 };
 
-export const setByPath = (obj: Record<string, unknown>, dotPath: string, value: unknown): void => {
+export const setByPath = (
+  obj: Record<string, unknown>,
+  dotPath: string,
+  value: unknown,
+): void => {
   const parts = dotPath.split('.');
   let current: Record<string, unknown> = obj;
   for (let i = 0; i < parts.length - 1; i++) {
@@ -105,12 +140,16 @@ export const setByPath = (obj: Record<string, unknown>, dotPath: string, value: 
   current[parts[parts.length - 1]] = value;
 };
 
-export const unsetByPath = (obj: Record<string, unknown>, dotPath: string): boolean => {
+export const unsetByPath = (
+  obj: Record<string, unknown>,
+  dotPath: string,
+): boolean => {
   const parts = dotPath.split('.');
   let current: Record<string, unknown> = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (typeof current[part] !== 'object' || current[part] === null) return false;
+    if (typeof current[part] !== 'object' || current[part] === null)
+      return false;
     current = current[part] as Record<string, unknown>;
   }
   const key = parts[parts.length - 1];
@@ -121,7 +160,10 @@ export const unsetByPath = (obj: Record<string, unknown>, dotPath: string): bool
 
 export const isSensitive = (key: string): boolean => SENSITIVE_KEYS.has(key);
 
-export const flattenConfig = (obj: Record<string, unknown>, prefix = ''): Array<{ key: string; value: unknown }> => {
+export const flattenConfig = (
+  obj: Record<string, unknown>,
+  prefix = '',
+): Array<{ key: string; value: unknown }> => {
   const entries: Array<{ key: string; value: unknown }> = [];
   for (const [k, v] of Object.entries(obj)) {
     const fullKey = prefix ? `${prefix}.${k}` : k;
@@ -136,33 +178,62 @@ export const flattenConfig = (obj: Record<string, unknown>, prefix = ''): Array<
 
 export const REQUIRED_KEYS = ['database.type', 'server.port', 'server.host'];
 
-export const validateConfig = (config: Partial<ConsuloConfig>): Array<{ key: string; level: 'error' | 'warning'; message: string }> => {
-  const issues: Array<{ key: string; level: 'error' | 'warning'; message: string }> = [];
+export const validateConfig = (
+  config: Partial<ConsuloConfig>,
+): Array<{ key: string; level: 'error' | 'warning'; message: string }> => {
+  const issues: Array<{
+    key: string;
+    level: 'error' | 'warning';
+    message: string;
+  }> = [];
   const flat = flattenConfig(config as Record<string, unknown>);
   const keys = new Set(flat.map((e) => e.key));
 
   for (const req of REQUIRED_KEYS) {
     if (!keys.has(req)) {
-      issues.push({ key: req, level: 'error', message: `missing required key: ${req}` });
+      issues.push({
+        key: req,
+        level: 'error',
+        message: `missing required key: ${req}`,
+      });
     }
   }
 
   const port = getByPath(config as Record<string, unknown>, 'server.port');
-  if (port !== undefined && (typeof port !== 'number' || port < 1 || port > 65535)) {
-    issues.push({ key: 'server.port', level: 'error', message: 'port must be 1-65535' });
+  if (
+    port !== undefined &&
+    (typeof port !== 'number' || port < 1 || port > 65535)
+  ) {
+    issues.push({
+      key: 'server.port',
+      level: 'error',
+      message: 'port must be 1-65535',
+    });
   }
 
   const dbType = getByPath(config as Record<string, unknown>, 'database.type');
   if (dbType !== undefined && dbType !== 'postgres' && dbType !== 'sqlite') {
-    issues.push({ key: 'database.type', level: 'error', message: 'must be postgres or sqlite' });
+    issues.push({
+      key: 'database.type',
+      level: 'error',
+      message: 'must be postgres or sqlite',
+    });
   }
 
   // warnings for recommended keys
   if (!keys.has('twilio.accountSid')) {
-    issues.push({ key: 'twilio.accountSid', level: 'warning', message: 'dialer requires twilio credentials' });
+    issues.push({
+      key: 'twilio.accountSid',
+      level: 'warning',
+      message: 'dialer requires twilio credentials',
+    });
   }
   if (!keys.has('ai.apiKey')) {
-    issues.push({ key: 'ai.apiKey', level: 'warning', message: 'coaching requires an AI provider API key' });
+    issues.push({
+      key: 'ai.apiKey',
+      level: 'warning',
+      message: 'coaching requires an AI provider API key',
+    });
   }
 
   return issues;

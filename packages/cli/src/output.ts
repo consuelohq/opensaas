@@ -17,8 +17,21 @@ export const error = (msg: string): void => {
   if (!globalThis.__consuelo_quiet) process.stderr.write(`${msg}\n`);
 };
 
+export const info = (msg: string): void => {
+  if (!globalThis.__consuelo_quiet) process.stdout.write(`  ${msg}\n`);
+};
+
+export const success = (msg: string): void => {
+  if (!globalThis.__consuelo_quiet) process.stdout.write(`✓ ${msg}\n`);
+};
+
+export const warn = (msg: string): void => {
+  if (!globalThis.__consuelo_quiet) process.stderr.write(`⚠ ${msg}\n`);
+};
+
 export const json = (data: unknown): void => {
-  if (!globalThis.__consuelo_quiet) process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+  if (!globalThis.__consuelo_quiet)
+    process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
 };
 
 export const isJson = (): boolean => !!globalThis.__consuelo_json;

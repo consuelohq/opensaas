@@ -1,6 +1,6 @@
 import type { TemplateFile, DeployConfig } from './types.js';
 
-export function awsTemplates(config: DeployConfig): TemplateFile[] {
+export const awsTemplates = (config: DeployConfig): TemplateFile[] => {
   const template = `AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Consuelo API — serverless deployment
@@ -172,9 +172,9 @@ Resources:
   DatabaseSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: !Sub "consuelo/db-secret/${AWS::StackName}"
+      Name: !Sub "consuelo/db-secret/\${AWS::StackName}"
       GenerateSecretString:
-        SecretStringTemplate: !Sub '{"username": "${DatabaseUsername}"}'
+        SecretStringTemplate: !Sub '{"username": "\${DatabaseUsername}"}'
         GenerateStringKey: password
         PasswordLength: 16
         ExcludeCharacters: '"@/\\'
@@ -182,7 +182,7 @@ Resources:
   Database:
     Type: AWS::RDS::DBInstance
     Properties:
-      DBInstanceIdentifier: !Sub "consuelo-db-${AWS::StackName}"
+      DBInstanceIdentifier: !Sub "consuelo-db-\${AWS::StackName}"
       DBName: !Ref DatabaseName
       Engine: postgres
       EngineVersion: '16'
@@ -273,4 +273,4 @@ export const handler = (event, context) => proxy(server, event, context);
     { path: 'samconfig.toml', content: samconfig },
     { path: 'lambda.js', content: handler },
   ];
-}
+};
