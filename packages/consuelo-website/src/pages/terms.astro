@@ -1,170 +1,130 @@
 ---
-// Components
-// - Layout
-import Layout from '../layouts/Layout.astro'
-// - UI
-import SidebarContent from '../components/blocks/basic/StickySidebar.astro'
-import Hero from '../components/blocks/hero/PageHeader.astro'
+import LaunchFooter from '../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../components/launch/LaunchHeader.astro';
+import LaunchLayout from '../layouts/LaunchLayout.astro';
 
-// Content
-// - SEO
-const SEO = {
-	title: 'Consuelo | Terms of Service',
-	description:
-		"Terms of service for Consuelo's open-source sales infrastructure platform — power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams."
-}
-// - Page Header
-const header = {
-	title: 'Terms and Conditions: Read, Relax, <strong>Enjoy!</strong>',
-	text: 'Please read them carefully to understand your rights and responsibilities.'
-}
+const description = "Terms of service for Consuelo's open-source sales infrastructure platform.";
 ---
 
-<Layout title={SEO.title} description={SEO.description}>
-	<Hero title={header.title} text={header.text} />
-	<SidebarContent>
-		<div slot="sidebar">
-			<h3>Introduction</h3>
-			<p>
-				Please take a moment to read through these terms to understand your rights and
-				responsibilities while using our services.
-			</p>
-		</div>
-		<div class="basic-text">
-			<h4>Welcome to Consuelo</h4>
-			<p>
-				Welcome to Consuelo! We’re thrilled to have you on board. Our services are designed to help you
-				stay organized, communicate effectively, and boost your productivity. By using Consuelo, you are
-				agreeing to these terms and conditions, so please read them carefully.
-			</p>
-			<p>
-				Your satisfaction is important to us. If you have any questions or concerns about these
-				terms, please do not hesitate to contact us. Our team is here to assist you and ensure you
-				have a great experience with Consuelo.
-			</p>
+<LaunchLayout title="Terms of Service" description={description}>
+  <LaunchHeader />
 
-			<h4>Acceptance of Terms</h4>
-			<p>
-				By accessing or using our services, you agree to comply with and be bound by these Terms of
-				Service and our Privacy Policy. If you do not agree with any part of these terms, you must
-				not use our services. Your continued use of Consuelo signifies your acceptance of these terms.
-			</p>
-			<p>
-				We reserve the right to modify these terms at any time. We will notify you of any changes by
-				posting the new terms on our website. It is your responsibility to review these terms
-				periodically. Continued use of the service after any changes means you accept the new terms.
-			</p>
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide legal-hero">
+      <h1 class="legal-hero__title launch-mono">terms of service</h1>
+      <p class="launch-copy">please read them carefully to understand your rights and responsibilities.</p>
+    </div>
+  </section>
 
-			<h4>Our Commitment to You</h4>
-			<p>
-				At Consuelo, we are committed to providing you with reliable, high-quality services. Our goal is
-				to help you achieve your productivity and organizational objectives with ease. We
-				continuously work to improve our services and provide you with the best possible experience.
-			</p>
-			<p>
-				We value your feedback and suggestions. Please feel free to reach out to us with any
-				comments or ideas on how we can serve you better. Your input helps us enhance Consuelo and meet
-				your
-			</p>
-		</div>
-	</SidebarContent>
-	<SidebarContent classes="bg-neutral-50 dark:bg-neutral-900">
-		<div slot="sidebar">
-			<h3>User Accounts</h3>
-			<p>
-				This section explains the requirements and responsibilities associated with creating and
-				maintaining a user account on Consuelo. Please ensure you understand and comply with these
-				guidelines to use our services effectively.
-			</p>
-		</div>
-		<div class="basic-text">
-			<h4>Registration</h4>
-			<p>
-				To access certain features of Consuelo, you must create a user account. During registration, you
-				agree to provide accurate and complete information. This information helps us serve you
-				better and ensures the security and functionality of your account.
-			</p>
-			<p>
-				By registering, you also agree to keep your information up-to-date. Inaccurate or outdated
-				information can lead to issues with your account and may affect your ability to use certain
-				features of Consuelo.
-			</p>
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide legal-block">
+      <p class="legal-block__eyebrow launch-mono">introduction</p>
+      <p class="launch-copy">please take a moment to read through these terms to understand your rights and responsibilities while using our services.</p>
 
-			<h4>Account Security</h4>
-			<p>
-				Maintaining the security of your account is your responsibility. You agree to keep your
-				password confidential and not share it with anyone. If you suspect any unauthorized use of
-				your account, you must notify us immediately.
-			</p>
-			<p>
-				We recommend using a strong and unique password for your Consuelo account. Regularly updating
-				your password and using two-factor authentication, if available, can further enhance the
-				security of your account.
-			</p>
+      <p class="legal-block__eyebrow launch-mono">welcome to consuelo</p>
+      <p class="launch-copy">welcome to consuelo! we're thrilled to have you on board. our services are designed to help you stay organized, communicate effectively, and boost your productivity. by using consuelo, you are agreeing to these terms and conditions, so please read them carefully.</p>
+      <p class="launch-copy">your satisfaction is important to us. if you have any questions or concerns about these terms, please do not hesitate to contact us. our team is here to assist you and ensure you have a great experience with consuelo.</p>
 
-			<h4>Account Usage</h4>
-			<p>
-				As the account holder, you are responsible for all activities that occur under your account.
-				This includes any actions taken by others who may have access to your account. Ensure that
-				you monitor and manage your account usage appropriately.
-			</p>
-			<p>
-				If we detect any suspicious or unauthorized activities, we may take actions to protect your
-				account, including temporarily suspending access or requiring additional verification steps.
-				Our goal is to safeguard your account and personal information.
-			</p>
-		</div>
-	</SidebarContent>
-	<SidebarContent>
-		<div slot="sidebar">
-			<h3>Limitation of Liability</h3>
-			<p>
-				This section outlines the limitations of our liability regarding the use of Consuelo services.
-				Understanding these limitations helps you know the extent of our responsibilities and your
-				rights.
-			</p>
-		</div>
-		<div class="basic-text">
-			<h4>General Limitations</h4>
-			<p>
-				Consuelo is provided on an "as is" and "as available" basis. We do not warrant that the service
-				will be uninterrupted, error-free, or completely secure. We disclaim all warranties, whether
-				express or implied, including but not limited to the implied warranties of merchantability,
-				fitness for a particular purpose, and non-infringement.
-			</p>
-			<p>
-				We are not liable for any damages resulting from the use or inability to use our services,
-				including but not limited to direct, indirect, incidental, special, consequential, or
-				punitive damages. This includes damages for loss of profits, data, or other intangibles.
-			</p>
+      <p class="legal-block__eyebrow launch-mono">acceptance of terms</p>
+      <p class="launch-copy">by accessing or using our services, you agree to comply with and be bound by these terms of service and our privacy policy. if you do not agree with any part of these terms, you must not use our services. your continued use of consuelo signifies your acceptance of these terms.</p>
+      <p class="launch-copy">we reserve the right to modify these terms at any time. we will notify you of any changes by posting the new terms on our website. it is your responsibility to review these terms periodically. continued use of the service after any changes means you accept the new terms.</p>
 
-			<h4>Third-Party Services</h4>
-			<p>
-				Consuelo may include links to third-party websites or services that are not owned or controlled
-				by us. We do not endorse or assume any responsibility for any such third-party sites,
-				information, materials, products, or services. Accessing and using these third-party
-				services is at your own risk.
-			</p>
-			<p>
-				We are not liable for any loss or damage incurred as a result of any dealings with
-				third-party websites or services, including the sharing of your information with such third
-				parties. It is your responsibility to review the terms and conditions and privacy policies
-				of any third-party websites or services you use.
-			</p>
+      <p class="legal-block__eyebrow launch-mono">our commitment to you</p>
+      <p class="launch-copy">at consuelo, we are committed to providing you with reliable, high-quality services. our goal is to help you achieve your productivity and organizational objectives with ease. we continuously work to improve our services and provide you with the best possible experience.</p>
+      <p class="launch-copy">we value your feedback and suggestions. please feel free to reach out to us with any comments or ideas on how we can serve you better. your input helps us enhance consuelo and meet your needs.</p>
+    </div>
+  </section>
 
-			<h4>Maximum Liability</h4>
-			<p>
-				In no event shall our total liability to you for all claims arising out of or relating to
-				the use of or inability to use the service exceed the amount paid by you, if any, for
-				accessing Consuelo during the twelve (12) months immediately preceding the date of the claim.
-				This limitation applies regardless of the form or source of the claim or loss, whether such
-				liability arises out of any claim based upon contract, warranty, tort, or otherwise.
-			</p>
-			<p>
-				Some jurisdictions do not allow the exclusion or limitation of liability for consequential
-				or incidental damages, so the above limitation may not apply to you. In such cases, our
-				liability will be limited to the fullest extent permitted by applicable law.
-			</p>
-		</div>
-	</SidebarContent>
-</Layout>
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide legal-block">
+      <p class="legal-block__eyebrow launch-mono">user accounts</p>
+      <p class="launch-copy">this section explains the requirements and responsibilities associated with creating and maintaining a user account on consuelo. please ensure you understand and comply with these guidelines to use our services effectively.</p>
+
+      <p class="legal-block__eyebrow launch-mono">registration</p>
+      <p class="launch-copy">to access certain features of consuelo, you must create a user account. during registration, you agree to provide accurate and complete information. this information helps us serve you better and ensures the security and functionality of your account.</p>
+      <p class="launch-copy">by registering, you also agree to keep your information up-to-date. inaccurate or outdated information can lead to issues with your account and may affect your ability to use certain features of consuelo.</p>
+
+      <p class="legal-block__eyebrow launch-mono">account security</p>
+      <p class="launch-copy">maintaining the security of your account is your responsibility. you agree to keep your password confidential and not share it with anyone. if you suspect any unauthorized use of your account, you must notify us immediately.</p>
+      <p class="launch-copy">we recommend using a strong and unique password for your consuelo account. regularly updating your password and using two-factor authentication, if available, can further enhance the security of your account.</p>
+
+      <p class="legal-block__eyebrow launch-mono">account usage</p>
+      <p class="launch-copy">as the account holder, you are responsible for all activities that occur under your account. this includes any actions taken by others who may have access to your account. ensure that you monitor and manage your account usage appropriately.</p>
+      <p class="launch-copy">if we detect any suspicious or unauthorized activities, we may take actions to protect your account, including temporarily suspending access or requiring additional verification steps. our goal is to safeguard your account and personal information.</p>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide legal-block">
+      <p class="legal-block__eyebrow launch-mono">limitation of liability</p>
+      <p class="launch-copy">this section outlines the limitations of our liability regarding the use of consuelo services. understanding these limitations helps you know the extent of our responsibilities and your rights.</p>
+
+      <p class="legal-block__eyebrow launch-mono">general limitations</p>
+      <p class="launch-copy">consuelo is provided on an "as is" and "as available" basis. we do not warrant that the service will be uninterrupted, error-free, or completely secure. we disclaim all warranties, whether express or implied, including but not limited to the implied warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
+      <p class="launch-copy">we are not liable for any damages resulting from the use or inability to use our services, including but not limited to direct, indirect, incidental, special, consequential, or punitive damages. this includes damages for loss of profits, data, or other intangibles.</p>
+
+      <p class="legal-block__eyebrow launch-mono">third-party services</p>
+      <p class="launch-copy">consuelo may include links to third-party websites or services that are not owned or controlled by us. we do not endorse or assume any responsibility for any such third-party sites, information, materials, products, or services. accessing and using these third-party services is at your own risk.</p>
+      <p class="launch-copy">we are not liable for any loss or damage incurred as a result of any dealings with third-party websites or services, including the sharing of your information with such third parties. it is your responsibility to review the terms and conditions and privacy policies of any third-party websites or services you use.</p>
+
+      <p class="legal-block__eyebrow launch-mono">maximum liability</p>
+      <p class="launch-copy">in no event shall our total liability to you for all claims arising out of or relating to the use of or inability to use the service exceed the amount paid by you, if any, for accessing consuelo during the twelve (12) months immediately preceding the date of the claim. this limitation applies regardless of the form or source of the claim or loss, whether such liability arises out of any claim based upon contract, warranty, tort, or otherwise.</p>
+      <p class="launch-copy">some jurisdictions do not allow the exclusion or limitation of liability for consequential or incidental damages, so the above limitation may not apply to you. in such cases, our liability will be limited to the fullest extent permitted by applicable law.</p>
+    </div>
+  </section>
+
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .legal-hero {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(1rem, 1rem + 1vw, 2rem);
+  }
+
+  .legal-hero__title {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  /* shared block */
+  .legal-block {
+    display: grid;
+    gap: 1rem;
+    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    padding-bottom: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .legal-block__eyebrow {
+    margin: 0;
+    margin-top: 1rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--launch-fg);
+    font-weight: 700;
+  }
+  
+  .legal-block__eyebrow:first-child {
+    margin-top: 0;
+  }
+
+  .legal-block ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+  
+  .legal-block li {
+    font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
+    line-height: 1.5;
+    color: var(--launch-fg);
+  }
+</style>

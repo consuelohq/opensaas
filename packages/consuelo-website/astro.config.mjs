@@ -9,4 +9,10 @@ export default defineConfig({
   output: 'static',
   site: 'https://www.consuelohq.com',
   integrations: [react(), icon(), sitemap()],
+  markdown: {
+    remarkPlugins: [
+      remarkToc,
+      [remarkCollapse, { test: "Table of contents", summary: "Open Table of contents" }],
+    ],
+  },
 });
