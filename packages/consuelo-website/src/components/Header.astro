@@ -101,7 +101,7 @@ const isActive = (path: string) => {
             </li>
           )
         }
-        <li class="col-span-1 flex items-center justify-center">
+        <li class="col-span-2 flex items-center justify-end sm:col-span-1 sm:justify-center">
           <LinkButton
             href="/blog/search"
             class:list={[
@@ -145,6 +145,14 @@ const isActive = (path: string) => {
 
     if (!menuBtn || !menuItems || !menuIcon || !closeIcon) return;
 
+    function closeMenu() {
+      menuBtn.setAttribute("aria-expanded", "false");
+      menuBtn.setAttribute("aria-label", "Open Menu");
+      menuItems.classList.add("hidden");
+      menuIcon.classList.remove("hidden");
+      closeIcon.classList.add("hidden");
+    }
+
     menuBtn.addEventListener("click", () => {
       const openMenu = menuBtn.getAttribute("aria-expanded") === "true";
 
@@ -154,6 +162,11 @@ const isActive = (path: string) => {
       menuItems.classList.toggle("hidden");
       menuIcon.classList.toggle("hidden");
       closeIcon.classList.toggle("hidden");
+    });
+
+    // close menu when a nav link is clicked
+    menuItems.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", closeMenu);
     });
   }
 

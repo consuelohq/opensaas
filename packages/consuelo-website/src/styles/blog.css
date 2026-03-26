@@ -195,3 +195,13 @@ svg.icon-tabler {
     }
   }
 }
+
+/* hide scrollbar on mobile — scroll-to-top button is sufficient */
+@media (max-width: 639px) {
+  html {
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
+}
