@@ -4,15 +4,25 @@ import { getWorkspaceTwilioConfig, type TwilioMode } from './twilio-config.js';
 import { addNumberPack, removeNumberPack } from './number-packs.js';
 
 const getStripe = async () => {
-  const { default: Stripe } = await import('stripe');
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
-  return new Stripe(key);
+  try {
+    const { default: Stripe } = await import('stripe');
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    return new Stripe(key);
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
+  }
 };
 
 const getLogger = async () => {
-  const { createLogger } = await import('@consuelo/logger');
-  return createLogger('subscription');
+  try {
+    const { createLogger } = await import('@consuelo/logger');
+    return createLogger('subscription');
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
+  }
 };
 
 const PRICE_IDS = {
