@@ -28,6 +28,7 @@ const SHORTCUTS_NAVIGATION: Shortcut[] = [
   { label: 'Go to Notes', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'N', areSimultaneous: false },
   { label: 'Go to Workflows', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'W', areSimultaneous: false },
   { label: 'Go to Settings', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'S', areSimultaneous: false },
+  { label: 'Go to Computer', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'A', areSimultaneous: false },
 ];
 
 // record table — when viewing a table/list of records

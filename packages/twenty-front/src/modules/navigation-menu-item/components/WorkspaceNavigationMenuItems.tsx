@@ -159,6 +159,7 @@ export const WorkspaceNavigationMenuItems = () => {
           Icon={IconComment}
           to={AppPath.Agent}
           active={location.pathname === AppPath.Agent}
+          keyboard={['G', 'A']}
         />
       }
       rightIcon={

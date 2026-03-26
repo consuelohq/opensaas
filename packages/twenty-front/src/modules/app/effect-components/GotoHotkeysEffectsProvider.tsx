@@ -45,6 +45,12 @@ export const GotoHotkeysEffectsProvider = () => {
     dependencies: [expandDrawerAndNavigateToSettings],
   });
 
+  // g+a → go to computer (agent)
+  useGoToHotkeys({
+    key: 'a',
+    location: AppPath.Agent,
+  });
+
   return activeNonSystemObjectMetadataItems.map((objectMetadataItem) => {
     if (!objectMetadataItem.shortcut) {
       return null;

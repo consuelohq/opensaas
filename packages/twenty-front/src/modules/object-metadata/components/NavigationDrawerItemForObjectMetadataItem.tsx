@@ -121,6 +121,12 @@ export const NavigationDrawerItemForObjectMetadataItem = ({
       ? objectMetadataItem.labelSingular
       : undefined;
 
+  const shortcutKey =
+    objectMetadataItem.shortcut ??
+    (objectMetadataItem.nameSingular === CoreObjectNameSingular.Workflow
+      ? 'w'
+      : undefined);
+
   return (
     <NavigationDrawerItem
       label={label}
@@ -140,9 +146,7 @@ export const NavigationDrawerItemForObjectMetadataItem = ({
       isDragging={isDragging}
       triggerEvent={isEditMode ? 'CLICK' : undefined}
       keyboard={
-        objectMetadataItem.shortcut
-          ? ['G', objectMetadataItem.shortcut.toUpperCase()]
-          : undefined
+        shortcutKey ? ['G', shortcutKey.toUpperCase()] : undefined
       }
     />
   );
