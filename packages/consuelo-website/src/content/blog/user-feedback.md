@@ -12,6 +12,9 @@ The insurance industry has an onboarding problem. According to industry research
 
 But this timeline isn't inevitable. Agencies that invest in structured, technology-enabled onboarding programs are seeing their new agents become productive in weeks, not months. Here's how they're doing it.
 
+
+## Table of contents
+
 ## The Traditional Onboarding Challenge
 
 Insurance sales onboarding typically involves:

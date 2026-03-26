@@ -12,6 +12,9 @@ Every insurance agency tracks metrics. Dials, conversations, appointments, close
 
 This is a framework for the metrics that actually matter for insurance sales productivity, and more importantly, how to improve them with modern infrastructure.
 
+
+## Table of contents
+
 ## The Productivity Metrics Hierarchy
 
 Not all metrics deserve equal attention. Some are diagnostic—they tell you what happened. Others are actionable—they tell you what to do next. Focus on the latter.

@@ -1,35 +1,201 @@
 ---
-// Components
-// - Layout
-import Layout from '../layouts/Layout.astro'
-// - UI
-import FormHero from '../components/blocks/hero/ContactHero.astro'
-import CTA from '../components/blocks/CTA/BasicDark.astro'
-import ContactCards from '../components/blocks/contact/ContactCards.astro'
-import SocialProof from '../components/blocks/socialproof/Basic.astro'
+import LaunchFooter from '../components/launch/LaunchFooter.astro';
+import LaunchHeader from '../components/launch/LaunchHeader.astro';
+import LaunchLayout from '../layouts/LaunchLayout.astro';
+import { mercuryFaqItems } from '../data/launch-content';
 
-// Content
-// - SEO
-const SEO = {
-	title: 'Consuelo | Contact Us',
-	description:
-		'Get in touch with the Consuelo team — support for our power dialer, AI CRM, and real-time coaching platform built for insurance sales teams.'
-}
-// - Page Header
-const header = {
-	title: 'Talk to the <strong>Consuelo</strong> Team.',
-	text: "Whether you need help setting up your dialer, have questions about our CRM, or want to share feedback — we're here for you."
-}
+const description = 'Contact the Consuelo team for support or inquiries.';
 ---
 
-<Layout title={SEO.title} description={SEO.description}>
-	<FormHero
-		title={header.title}
-		text={header.text}
-		id="contact"
-		classes="bg-neutral-50 dark:bg-neutral-950/80"
-	/>
-	<ContactCards classes="dark:bg-neutral-950/80" />
-	<SocialProof classes="dark:bg-neutral-950/80" />
-	<CTA />
-</Layout>
+<LaunchLayout title="Contact Us" description={description}>
+  <LaunchHeader />
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide contact-hero">
+      <h1 class="contact-hero__title launch-mono">Contact Us</h1>
+      <p class="launch-copy">Whether you need help setting up, have questions, or want to share feedback — we're here for you.</p>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide contact-block">
+      <form class="launch-form">
+        <div class="launch-form__row">
+          <div class="launch-form__field">
+            <label class="launch-mono" for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" />
+          </div>
+          <div class="launch-form__field">
+            <label class="launch-mono" for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" />
+          </div>
+        </div>
+        <div class="launch-form__field">
+          <label class="launch-mono" for="email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="launch-form__field">
+          <label class="launch-mono" for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" />
+        </div>
+        <div class="launch-form__field">
+          <label class="launch-mono" for="message">Message</label>
+          <textarea id="message" name="message" rows="5" required></textarea>
+        </div>
+        <button type="submit" class="launch-button launch-button--sm launch-mono">Send Message ↗</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide contact-block">
+      <p class="contact-block__eyebrow launch-mono">FAQ</p>
+      {mercuryFaqItems.map((item) => (
+        <details class="contact-expandable">
+          <summary class="contact-expandable__trigger launch-mono">{item.question}</summary>
+          <p class="launch-copy contact-expandable__body">{item.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <LaunchFooter />
+</LaunchLayout>
+
+<style>
+  .contact-hero {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(1rem, 1rem + 1vw, 2rem);
+  }
+
+  .contact-hero__title {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  /* shared block */
+  .contact-block {
+    display: grid;
+    gap: 1rem;
+    padding-top: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    padding-bottom: clamp(1.5rem, 1rem + 1.5vw, 2.5rem);
+    border-top: 1px solid var(--launch-line);
+  }
+
+  .contact-block__eyebrow {
+    margin: 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--launch-fg);
+    font-weight: 700;
+  }
+
+  /* expandable items (from mercury) */
+  .contact-expandable {
+    border-top: 1px solid var(--launch-line);
+    padding: 0.75rem 0;
+  }
+
+  .contact-expandable:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .contact-expandable__trigger {
+    font-size: clamp(0.82rem, 0.78rem + 0.16vw, 0.92rem);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+
+  .contact-expandable__trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .contact-expandable__trigger::before {
+    content: '(+)';
+    flex-shrink: 0;
+    color: var(--launch-muted);
+    font-size: 0.78rem;
+  }
+
+  details[open] .contact-expandable__trigger::before {
+    content: '(−)';
+  }
+
+  .contact-expandable__body {
+    padding: 0.5rem 0 0 1.6rem;
+  }
+
+  /* form styles */
+  .launch-form {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 800px;
+  }
+  
+  .launch-form__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .launch-form__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .launch-form__field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .launch-form__field label {
+    font-size: 0.75rem;
+    color: var(--launch-fg);
+    text-transform: uppercase;
+  }
+
+  .launch-form__field input,
+  .launch-form__field textarea {
+    background: transparent;
+    border: 1px solid var(--launch-line);
+    color: var(--launch-fg);
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 0;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .launch-form__field input:focus,
+  .launch-form__field textarea:focus {
+    border-color: var(--launch-fg);
+  }
+
+  .launch-form .launch-button {
+    justify-self: start;
+    cursor: pointer;
+    background: var(--launch-fg);
+    color: var(--launch-bg);
+    border: none;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .launch-form .launch-button {
+      background: white;
+      color: black;
+    }
+  }
+</style>

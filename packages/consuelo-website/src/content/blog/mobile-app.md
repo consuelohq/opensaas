@@ -10,6 +10,9 @@ The best sales coaches don't wait until after a call to give feedback. They list
 
 ![Consuelo is here.](/blog/post-02.png)
 
+
+## Table of contents
+
 ## What Is Real-Time AI Call Coaching?
 
 Real-time AI call coaching uses artificial intelligence to analyze phone conversations as they happen, providing live guidance to sales representatives. Unlike traditional call recording and review—which happens after the fact—real-time coaching intervenes during the call itself.

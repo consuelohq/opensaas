@@ -10,6 +10,9 @@ For years, insurance agencies have been told they need enterprise CRM software. 
 
 ![Consuelo is here.](/blog/post-05.png)
 
+
+## Table of contents
+
 ## The Hidden Costs of Proprietary CRMs
 
 When evaluating CRM costs, the sticker price is just the beginning:

@@ -10,6 +10,9 @@ Time is the scarcest resource in insurance sales. Every minute your agents spend
 
 ![Consuelo is here.](/blog/post-03.png)
 
+
+## Table of contents
+
 ## What Is a Power Dialer?
 
 A power dialer is an automated calling system that dials numbers from a contact list and connects live prospects to available agents. Unlike a predictive dialer—which uses algorithms to predict agent availability and can cause awkward silences—a power dialer waits for the agent to indicate readiness before dialing the next number.

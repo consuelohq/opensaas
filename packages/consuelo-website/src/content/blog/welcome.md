@@ -10,6 +10,9 @@ The insurance sales industry is undergoing a fundamental shift. For years, agenc
 
 ![Consuelo is here.](/blog/post-01.png)
 
+
+## Table of contents
+
 ## The Problem with Traditional Sales Stacks
 
 Most insurance agencies manage their sales operations across multiple disconnected platforms. A typical stack might include a dialer ($150/seat), a sales engagement platform ($150/seat), a CRM ($50/seat), coaching tools ($50/seat), and analytics ($50/seat). These costs add up quickly—for a 20-person team, that's $10,000+ monthly in software alone.
