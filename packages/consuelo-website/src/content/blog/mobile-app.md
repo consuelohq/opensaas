@@ -1,7 +1,7 @@
 ---
-title: 'Real-Time AI Call Coaching: How It Works and Why It Matters'
+title: Real-time AI call coaching
 pubDatetime: 2026-01-28T05:00:00Z
-description: 'Discover how real-time AI call coaching is transforming insurance sales teams. Live guidance, objection handling, and compliance monitoring—all during the call.'
+description: Live guidance and objection handling during every call.
 author: 'Consuelo Team'
 tags: ['AI coaching', 'sales training']
 ---
