@@ -448,6 +448,14 @@ const SettingsDialerGHL = lazy(() =>
   })),
 );
 
+const SettingsDialerChromeExtension = lazy(() =>
+  import(
+    '~/pages/settings/dialer/SettingsDialerChromeExtension'
+  ).then((module) => ({
+    default: module.SettingsDialerChromeExtension,
+  })),
+);
+
 const SettingsDialerDiscord = lazy(() =>
   import('~/pages/settings/dialer/SettingsDialerDiscord').then((module) => ({
     default: module.SettingsDialerDiscord,
@@ -750,6 +758,10 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
         element={<SettingsDialerTwilio />}
       />
       <Route path={SettingsPath.DialerGHL} element={<SettingsDialerGHL />} />
+      <Route
+        path={SettingsPath.DialerChromeExtension}
+        element={<SettingsDialerChromeExtension />}
+      />
       <Route
         path={SettingsPath.DialerDiscord}
         element={<SettingsDialerDiscord />}

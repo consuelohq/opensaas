@@ -2613,6 +2613,11 @@ msgstr "Graf"
 msgid "Chat with AI agents and use AI features"
 msgstr "Povídejte si s AI agenty a používejte AI funkce"
 
+#. js-lingui-id: Bloatr
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Check again"
+msgstr ""
+
 #. js-lingui-id: xK2nU3
 #: src/pages/settings/updates/SettingsUpdates.tsx
 msgid "Check out our latest releases"
@@ -2632,6 +2637,11 @@ msgstr "Zkontrolujte vaše emaily"
 #: src/modules/settings/profile/hooks/useUpdateEmail.ts
 msgid "Check your inbox to verify your new email address."
 msgstr "Zkontrolujte svou schránku a ověřte svou novou e-mailovou adresu."
+
+#. js-lingui-id: pWT04I
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Checking..."
+msgstr ""
 
 #. js-lingui-id: I/om5y
 #: src/modules/billing/hooks/useHandleCheckoutSession.ts
@@ -2702,6 +2712,13 @@ msgstr ""
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Choose your Trial"
 msgstr "Vyberte si Trial"
+
+#. js-lingui-id: xa9fQd
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+#: src/pages/settings/dialer/SettingsDialerChromeExtension.tsx
+msgid "Chrome Extension"
+msgstr ""
 
 #. js-lingui-id: 3wV73y
 #: src/modules/object-record/record-field/ui/form-types/components/FormAddressFieldInput.tsx
@@ -5826,6 +5843,16 @@ msgstr "Exportovat pracovní postupy"
 msgid "Expression"
 msgstr "Výraz"
 
+#. js-lingui-id: qNuZlr
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Extension connected"
+msgstr ""
+
+#. js-lingui-id: 4EhB04
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Extension not detected"
+msgstr ""
+
 #. js-lingui-id: uE7S0L
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Extra Credits Used"
@@ -7164,6 +7191,11 @@ msgstr ""
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
 msgid "Install and manage applications"
 msgstr "Instalace a správa aplikací"
+
+#. js-lingui-id: DVUFgQ
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Install Chrome Extension"
+msgstr ""
 
 #. js-lingui-id: eQkgKV
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -12894,6 +12926,11 @@ msgstr "Text zkopírován do schránky"
 msgid "Text Editor"
 msgstr "Textový editor"
 
+#. js-lingui-id: kLhDeR
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "The Consuelo Chrome Extension brings your dialer, contacts, and AI coaching directly into your browser. Install it to make calls from any tab."
+msgstr ""
+
 #. js-lingui-id: 1xQkU9
 #: src/modules/settings/data-model/fields/forms/phones/components/SettingsDataModelFieldPhonesForm.tsx
 msgid "The default country code for new phone numbers."
@@ -14187,6 +14224,11 @@ msgstr ""
 msgid "view group"
 msgstr "zobrazit skupinu"
 
+#. js-lingui-id: wSirfJ
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "View in Chrome Web Store"
+msgstr ""
+
 #. js-lingui-id: lh5BED
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminWorkerQueueMetricsSection.tsx
 msgid "View Jobs"
@@ -14561,6 +14603,7 @@ msgstr "Pracovní postupy"
 #: src/pages/settings/dialer/SettingsDialerAI.tsx
 #: src/pages/settings/dialer/SettingsDialerAudio.tsx
 #: src/pages/settings/dialer/SettingsDialerCalling.tsx
+#: src/pages/settings/dialer/SettingsDialerChromeExtension.tsx
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 #: src/pages/settings/dialer/SettingsDialerGHL.tsx
 #: src/pages/settings/dialer/SettingsDialerNotifications.tsx

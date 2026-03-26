@@ -80,5 +80,6 @@ export enum SettingsPath {
   DialerWorkspace = 'dialer/workspace',
   DialerTwilio = 'dialer/twilio',
   DialerGHL = 'dialer/ghl',
+  DialerChromeExtension = 'dialer/chrome-extension',
   DialerDiscord = 'dialer/discord',
 }

@@ -39,7 +39,7 @@ import {
   IconUsers,
   IconWorld,
 } from 'twenty-ui/display';
-import { IconBrandDiscord } from '@tabler/icons-react';
+import { IconBrandChrome, IconBrandDiscord } from '@tabler/icons-react';
 import { IconGoHighLevel } from '@/settings/components/IconGoHighLevel';
 import {
   FeatureFlagKey,
@@ -211,6 +211,11 @@ const useSettingsNavigationItems = (): SettingsNavigationSection[] => {
           label: t`GoHighLevel`,
           path: SettingsPath.DialerGHL,
           Icon: IconGoHighLevel,
+        },
+        {
+          label: t`Chrome Extension`,
+          path: SettingsPath.DialerChromeExtension,
+          Icon: IconBrandChrome,
         },
       ],
     },

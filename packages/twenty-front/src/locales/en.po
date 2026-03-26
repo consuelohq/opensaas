@@ -2608,6 +2608,11 @@ msgstr "Chart"
 msgid "Chat with AI agents and use AI features"
 msgstr "Chat with AI agents and use AI features"
 
+#. js-lingui-id: Bloatr
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Check again"
+msgstr "Check again"
+
 #. js-lingui-id: xK2nU3
 #: src/pages/settings/updates/SettingsUpdates.tsx
 msgid "Check out our latest releases"
@@ -2627,6 +2632,11 @@ msgstr "Check your Emails"
 #: src/modules/settings/profile/hooks/useUpdateEmail.ts
 msgid "Check your inbox to verify your new email address."
 msgstr "Check your inbox to verify your new email address."
+
+#. js-lingui-id: pWT04I
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Checking..."
+msgstr "Checking..."
 
 #. js-lingui-id: I/om5y
 #: src/modules/billing/hooks/useHandleCheckoutSession.ts
@@ -2697,6 +2707,13 @@ msgstr "Choose which profile fields users with the Edit Profile permission can m
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Choose your Trial"
 msgstr "Choose your Trial"
+
+#. js-lingui-id: xa9fQd
+#: src/modules/settings/hooks/useSettingsNavigationItems.tsx
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+#: src/pages/settings/dialer/SettingsDialerChromeExtension.tsx
+msgid "Chrome Extension"
+msgstr "Chrome Extension"
 
 #. js-lingui-id: 3wV73y
 #: src/modules/object-record/record-field/ui/form-types/components/FormAddressFieldInput.tsx
@@ -5821,6 +5838,16 @@ msgstr "Export workflows"
 msgid "Expression"
 msgstr "Expression"
 
+#. js-lingui-id: qNuZlr
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Extension connected"
+msgstr "Extension connected"
+
+#. js-lingui-id: 4EhB04
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Extension not detected"
+msgstr "Extension not detected"
+
 #. js-lingui-id: uE7S0L
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Extra Credits Used"
@@ -7159,6 +7186,11 @@ msgstr "Install"
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
 msgid "Install and manage applications"
 msgstr "Install and manage applications"
+
+#. js-lingui-id: DVUFgQ
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "Install Chrome Extension"
+msgstr "Install Chrome Extension"
 
 #. js-lingui-id: eQkgKV
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -12889,6 +12921,11 @@ msgstr "Text copied to clipboard"
 msgid "Text Editor"
 msgstr "Text Editor"
 
+#. js-lingui-id: kLhDeR
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "The Consuelo Chrome Extension brings your dialer, contacts, and AI coaching directly into your browser. Install it to make calls from any tab."
+msgstr "The Consuelo Chrome Extension brings your dialer, contacts, and AI coaching directly into your browser. Install it to make calls from any tab."
+
 #. js-lingui-id: 1xQkU9
 #: src/modules/settings/data-model/fields/forms/phones/components/SettingsDataModelFieldPhonesForm.tsx
 msgid "The default country code for new phone numbers."
@@ -14184,6 +14221,11 @@ msgstr "view filter group"
 msgid "view group"
 msgstr "view group"
 
+#. js-lingui-id: wSirfJ
+#: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+msgid "View in Chrome Web Store"
+msgstr "View in Chrome Web Store"
+
 #. js-lingui-id: lh5BED
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminWorkerQueueMetricsSection.tsx
 msgid "View Jobs"
@@ -14558,6 +14600,7 @@ msgstr "Workflows"
 #: src/pages/settings/dialer/SettingsDialerAI.tsx
 #: src/pages/settings/dialer/SettingsDialerAudio.tsx
 #: src/pages/settings/dialer/SettingsDialerCalling.tsx
+#: src/pages/settings/dialer/SettingsDialerChromeExtension.tsx
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 #: src/pages/settings/dialer/SettingsDialerGHL.tsx
 #: src/pages/settings/dialer/SettingsDialerNotifications.tsx
