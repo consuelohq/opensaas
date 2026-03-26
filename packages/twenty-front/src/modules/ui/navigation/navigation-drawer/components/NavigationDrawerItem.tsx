@@ -147,7 +147,13 @@ const StyledItem = styled('button', {
   }
 
   .keyboard-shortcuts {
-    visibility: hidden;
+    visibility: visible;
+  }
+
+  @media (max-width: ${MOBILE_VIEWPORT}px) {
+    .keyboard-shortcuts {
+      display: none;
+    }
   }
 
   user-select: none;

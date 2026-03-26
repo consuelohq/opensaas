@@ -4,7 +4,6 @@ import {
 } from '@/keyboard-shortcut-menu/types/Shortcut';
 import { ScrollWrapper } from '@/ui/utilities/scroll/components/ScrollWrapper';
 import styled from '@emotion/styled';
-import { t } from '@lingui/core/macro';
 import { getOsControlSymbol } from 'twenty-ui/utilities';
 
 const cmd = getOsControlSymbol();
@@ -113,7 +112,7 @@ const ShortcutItem = ({ shortcut }: { shortcut: Shortcut }) => (
       {shortcut.firstHotKey && <StyledKey>{shortcut.firstHotKey}</StyledKey>}
       {shortcut.secondHotKey && (
         <>
-          {!shortcut.areSimultaneous && <span>{t`then`}</span>}
+          {!shortcut.areSimultaneous && <span>then</span>}
           <StyledKey>{shortcut.secondHotKey}</StyledKey>
         </>
       )}
@@ -139,11 +138,11 @@ const ShortcutGroup = ({
 export const CommandMenuKeyboardShortcutsPage = () => (
   <ScrollWrapper componentInstanceId="scroll-wrapper-keyboard-shortcuts">
     <StyledContainer>
-      <ShortcutGroup heading={t`General`} shortcuts={SHORTCUTS_GENERAL} />
-      <ShortcutGroup heading={t`Navigation`} shortcuts={SHORTCUTS_NAVIGATION} />
-      <ShortcutGroup heading={t`Record Table`} shortcuts={SHORTCUTS_TABLE} />
-      <ShortcutGroup heading={t`Record Actions`} shortcuts={SHORTCUTS_RECORD_ACTIONS} />
-      <ShortcutGroup heading={t`Dialer`} shortcuts={SHORTCUTS_DIALER} />
+      <ShortcutGroup heading="General" shortcuts={SHORTCUTS_GENERAL} />
+      <ShortcutGroup heading="Navigation" shortcuts={SHORTCUTS_NAVIGATION} />
+      <ShortcutGroup heading="Record Table" shortcuts={SHORTCUTS_TABLE} />
+      <ShortcutGroup heading="Record Actions" shortcuts={SHORTCUTS_RECORD_ACTIONS} />
+      <ShortcutGroup heading="Dialer" shortcuts={SHORTCUTS_DIALER} />
     </StyledContainer>
   </ScrollWrapper>
 );
