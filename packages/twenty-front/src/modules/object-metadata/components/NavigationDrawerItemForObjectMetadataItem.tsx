@@ -121,11 +121,7 @@ export const NavigationDrawerItemForObjectMetadataItem = ({
       ? objectMetadataItem.labelSingular
       : undefined;
 
-  const shortcutKey =
-    objectMetadataItem.shortcut ??
-    (objectMetadataItem.nameSingular === CoreObjectNameSingular.Workflow
-      ? 'w'
-      : undefined);
+  const shortcutKey = objectMetadataItem.shortcut ?? undefined;
 
   return (
     <NavigationDrawerItem

@@ -87,6 +87,19 @@ export const WorkspaceNavigationMenuItemsFolder = ({
   const coreViews = useRecoilValue(coreViewsState);
   const views = coreViews.map(convertCoreViewToView);
   const location = useLocation();
+
+  // resolve shortcut from first child's object metadata for the folder badge
+  const folderShortcut = (() => {
+    const firstChild = navigationMenuItems[0];
+    if (!firstChild) return undefined;
+    const objMeta = getObjectMetadataForNavigationMenuItem(
+      firstChild,
+      objectMetadataItems,
+      views,
+    );
+    if (!objMeta?.shortcut) return undefined;
+    return ['G', objMeta.shortcut.toUpperCase()];
+  })();
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const currentViewPath = location.pathname + location.search;
@@ -154,6 +167,7 @@ export const WorkspaceNavigationMenuItemsFolder = ({
             triggerEvent="CLICK"
             preventCollapseOnMobile={isMobile}
             isDragging={isDragging}
+            keyboard={folderShortcut}
           />
         </NavigationMenuItemDroppable>
 
