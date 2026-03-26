@@ -15,10 +15,6 @@ export const RecordIndexCreateHotkeyEffect = () => {
       createNewIndexRecord({ position: 'first' });
     },
     containsModifier: false,
-    options: {
-      enableOnContentEditable: false,
-      enableOnFormTags: false,
-    },
   });
 
   return null;
