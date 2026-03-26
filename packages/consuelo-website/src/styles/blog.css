@@ -4,22 +4,23 @@
 
 /* astropaper base styles — adapted from astro-paper/src/styles/global.css for tw3 */
 
-:root,
-html[data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #006cac;
-  --muted: #e6e6e6;
-  --border: #ece9e9;
+:root {
+  --mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --background: #ffffff;
+  --foreground: #000000;
+  --accent: #000000;
+  --muted: rgba(0, 0, 0, 0.06);
+  --border: rgba(0, 0, 0, 0.12);
 }
 
-html[data-theme="dark"] {
-  --background: #000000;
-  --foreground: #ffffff;
-  --accent: #E2187D;
-  --muted: rgba(255, 255, 255, 0.1);
-  --border: rgba(255, 255, 255, 0.1);
-  --mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+    --accent: #ffffff;
+    --muted: rgba(255, 255, 255, 0.1);
+    --border: rgba(255, 255, 255, 0.1);
+  }
 }
 
 @layer base {
