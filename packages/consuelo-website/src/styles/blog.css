@@ -14,11 +14,12 @@ html[data-theme="light"] {
 }
 
 html[data-theme="dark"] {
-  --background: #020617;
-  --foreground: #fafafa;
+  --background: #000000;
+  --foreground: #ffffff;
   --accent: #E2187D;
-  --muted: #475569;
-  --border: #1e293b;
+  --muted: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.1);
+  --mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 @layer base {
@@ -32,6 +33,9 @@ html[data-theme="dark"] {
   }
   body {
     @apply flex min-h-screen flex-col bg-background text-foreground;
+    font-family: var(--mono-font);
+    font-size: 0.9rem;
+    line-height: 1.55;
   }
   a,
   button {
