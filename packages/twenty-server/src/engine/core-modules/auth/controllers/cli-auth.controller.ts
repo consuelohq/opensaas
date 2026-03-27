@@ -10,7 +10,7 @@ import {
   UseFilters,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { Repository } from 'typeorm';
 
 import { AuthRestApiExceptionFilter } from 'src/engine/core-modules/auth/filters/auth-rest-api-exception.filter';
@@ -21,12 +21,37 @@ import { UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
-import { JwtAuthGuard } from 'src/engine/guards/jwt-auth.guard';
-import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
-import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
+import { JwtWrapperService } from 'src/engine/core-modules/jwt/services/jwt-wrapper.service';
+import { AuthException, AuthExceptionCode } from 'src/engine/core-modules/auth/auth.exception';
+import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 
-const renderLoginForm = (redirectUrl: string, error?: string): string => `
-<!DOCTYPE html>
+const renderLoginForm = (
+  redirectUrl: string,
+  error?: string,
+  hasGoogleAuth = true,
+): string => {
+  const googleButton = hasGoogleAuth
+    ? `
+      <a href="/auth/google?action=cli-auth&cliRedirect=${encodeURIComponent(redirectUrl)}" style="text-decoration: none;">
+        <button type="button" class="google">
+          <svg class="google-icon" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+      </a>
+      <div class="divider">or</div>
+      `
+    : '';
+
+  const errorDiv = error
+    ? `<div class="error">${escapeHtml(error)}</div>`
+    : '';
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -49,11 +74,18 @@ const renderLoginForm = (redirectUrl: string, error?: string): string => `
     input::placeholder { color: var(--muted); }
     button { width: 100%; padding: 12px 16px; background: var(--accent); color: var(--bg); border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
     button:hover { opacity: 0.85; }
+    button.google { background: var(--bg); color: var(--fg); border: 1px solid var(--border); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    button.google:hover { background: var(--border); }
+    .divider { display: flex; align-items: center; margin: 16px 0; color: var(--muted); font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border); }
+    .divider::before { margin-right: 12px; }
+    .divider::after { margin-left: 12px; }
     .footer { margin-top: 24px; text-align: center; color: var(--muted); font-size: 13px; }
     .footer a { color: var(--fg); text-decoration: underline; }
     .cli-icon { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; }
     .cli-icon span { font-size: 32px; }
     .cli-icon code { background: var(--border); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-family: 'Geist Mono', monospace; }
+    .google-icon { width: 18px; height: 18px; }
   </style>
 </head>
 <body>
@@ -65,7 +97,8 @@ const renderLoginForm = (redirectUrl: string, error?: string): string => `
         <span>⌘</span>
         <code>consuelo</code>
       </div>
-      ${error ? `<div class="error">${escapeHtml(error)}</div>` : ''}
+      ${errorDiv}
+      ${googleButton}
       <form action="/cli/auth/login" method="POST">
         <input type="hidden" name="redirect" value="${escapeHtml(redirectUrl)}" />
         <input type="email" name="email" placeholder="Email" required autocomplete="email" autofocus />
@@ -78,11 +111,11 @@ const renderLoginForm = (redirectUrl: string, error?: string): string => `
     </div>
   </div>
 </body>
-</html>
-`;
+</html>`;
+};
 
-const renderSuccessPage = (email: string, tokenReceived: boolean): string => `
-<!DOCTYPE html>
+const renderSuccessPage = (email: string, redirectWithToken: string): string => {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -101,7 +134,6 @@ const renderSuccessPage = (email: string, tokenReceived: boolean): string => `
     .title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
     .subtitle { color: var(--muted); font-size: 14px; line-height: 1.5; }
     .email { font-weight: 500; }
-    .warning { margin-top: 24px; padding: 16px; background: rgba(234, 179, 8, 0.1); border-radius: 8px; color: var(--fg); font-size: 14px; }
   </style>
 </head>
 <body>
@@ -116,22 +148,22 @@ const renderSuccessPage = (email: string, tokenReceived: boolean): string => `
       Authenticated as <span class="email">${escapeHtml(email)}</span>.<br>
       You can close this tab and return to your terminal.
     </div>
-    ${
-      !tokenReceived
-        ? `
-    <div class="warning">
-      ⚠️ The CLI did not receive the token. Please check your terminal for errors.
-    </div>
-    `
-        : ''
-    }
   </div>
+  <script>
+    setTimeout(() => {
+      window.location.href = "${escapeHtml(redirectWithToken)}";
+    }, 500);
+  </script>
 </body>
-</html>
-`;
+</html>`;
+};
 
-const renderErrorPage = (message: string, redirectUrl?: string): string => `
-<!DOCTYPE html>
+const renderErrorPage = (message: string, redirectUrl?: string): string => {
+  const tryAgainLink = redirectUrl
+    ? `<a href="/cli/auth?redirect=${encodeURIComponent(redirectUrl)}">Try again</a>`
+    : '<a href="https://app.consuelohq.com">Go to Consuelo</a>';
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -150,7 +182,6 @@ const renderErrorPage = (message: string, redirectUrl?: string): string => `
     .title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
     .subtitle { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
     a { color: var(--fg); text-decoration: underline; }
-    code { background: rgba(128,128,128,0.1); padding: 2px 6px; border-radius: 4px; font-family: 'Geist Mono', monospace; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -162,11 +193,11 @@ const renderErrorPage = (message: string, redirectUrl?: string): string => `
     </div>
     <div class="title">Authentication failed</div>
     <div class="subtitle">${escapeHtml(message)}</div>
-    ${redirectUrl ? `<a href="${escapeHtml(redirectUrl)}">Try again</a>` : '<a href="https://app.consuelohq.com">Go to Consuelo</a>'}
+    ${tryAgainLink}
   </div>
 </body>
-</html>
-`;
+</html>`;
+};
 
 function escapeHtml(str: string): string {
   return str
@@ -190,17 +221,19 @@ export class CliAuthController {
     private readonly authService: AuthService,
     private readonly apiKeyService: ApiKeyService,
     private readonly userWorkspaceService: UserWorkspaceService,
+    private readonly jwtWrapperService: JwtWrapperService,
+    private readonly twentyConfigService: TwentyConfigService,
     @InjectRepository(WorkspaceEntity)
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   @Get()
   @UseGuards(PublicEndpointGuard, NoPermissionGuard)
   async cliAuthPage(
     @Query('redirect') redirect: string,
-    @Query('scope') scope: string,
-    @Req()
-    req: { user?: { id: string; email: string }; workspace?: { id: string } },
+    @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
     if (!redirect) {
@@ -233,12 +266,58 @@ export class CliAuthController {
     }
 
     // Check if user already has a valid session (via cookies)
-    // This is handled by JwtAuthGuard on other routes, but for this public endpoint
-    // we need to check manually
-    // For now, always show the login form - the user can sign in
+    const tokenPairCookie = req.cookies?.['tokenPair'];
+    if (tokenPairCookie) {
+      try {
+        const tokenPair = JSON.parse(tokenPairCookie);
+        const accessToken = tokenPair.accessOrWorkspaceAgnosticToken;
+
+        if (accessToken) {
+          const decoded = this.jwtWrapperService.verifyJwtToken(accessToken);
+
+          if (decoded?.userId) {
+            // User is already logged in - get their workspace and generate API key
+            const user = await this.userRepository.findOne({
+              where: { id: decoded.userId },
+            });
+
+            if (user) {
+              const availableWorkspaces =
+                await this.userWorkspaceService.findAvailableWorkspacesByEmail(
+                  user.email,
+                );
+
+              const signInWorkspaces =
+                availableWorkspaces.availableWorkspacesForSignIn;
+
+              if (signInWorkspaces.length > 0) {
+                const workspace = signInWorkspaces[0].workspace;
+
+                if (workspace) {
+                  const redirectHtml = await this.generateTokenAndRedirect(
+                    user,
+                    workspace,
+                    redirect,
+                  );
+
+                  res.setHeader('Content-Type', 'text/html');
+                  res.send(redirectHtml);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      } catch {
+        // Token invalid or expired - fall through to login form
+      }
+    }
+
+    // Check if Google auth is enabled
+    const hasGoogleAuth = this.twentyConfigService.get('AUTH_GOOGLE_ENABLED');
 
     res.setHeader('Content-Type', 'text/html');
-    res.send(renderLoginForm(redirect));
+    res.send(renderLoginForm(redirect, undefined, hasGoogleAuth));
   }
 
   @Post('login')
@@ -248,16 +327,54 @@ export class CliAuthController {
     @Res() res: Response,
   ): Promise<void> {
     const { email, password, redirect } = body;
+    const hasGoogleAuth = this.twentyConfigService.get('AUTH_GOOGLE_ENABLED');
 
     if (!email || !password) {
       res.setHeader('Content-Type', 'text/html');
-      res.send(renderLoginForm(redirect, 'Email and password are required'));
+      res.send(
+        renderLoginForm(
+          redirect,
+          'Email and password are required',
+          hasGoogleAuth,
+        ),
+      );
       return;
     }
 
     try {
+      // Get user first to check auth method
+      const user = await this.userRepository.findOne({
+        where: { email: email.toLowerCase() },
+        relations: { userWorkspaces: true },
+      });
+
+      if (!user) {
+        res.setHeader('Content-Type', 'text/html');
+        res.send(
+          renderLoginForm(
+            redirect,
+            'No account found with this email. Please sign up first.',
+            hasGoogleAuth,
+          ),
+        );
+        return;
+      }
+
+      // Check if user has password set (might be Google-only user)
+      if (!user.passwordHash) {
+        res.setHeader('Content-Type', 'text/html');
+        res.send(
+          renderLoginForm(
+            redirect,
+            'This account uses Google sign-in. Please click "Continue with Google" above.',
+            hasGoogleAuth,
+          ),
+        );
+        return;
+      }
+
       // Validate credentials
-      const user = await this.authService.validateLoginWithPassword({
+      await this.authService.validateLoginWithPassword({
         email: email.toLowerCase(),
         password,
       });
@@ -266,13 +383,19 @@ export class CliAuthController {
       const availableWorkspaces =
         await this.userWorkspaceService.findAvailableWorkspacesByEmail(email);
 
-      const signInWorkspaces = availableWorkspaces.availableWorkspacesForSignIn;
-      const signUpWorkspaces = availableWorkspaces.availableWorkspacesForSignUp;
+      const signInWorkspaces =
+        availableWorkspaces.availableWorkspacesForSignIn;
+      const signUpWorkspaces =
+        availableWorkspaces.availableWorkspacesForSignUp;
 
       if (signInWorkspaces.length === 0 && signUpWorkspaces.length === 0) {
         res.setHeader('Content-Type', 'text/html');
         res.send(
-          renderLoginForm(redirect, 'No workspace found for this account'),
+          renderLoginForm(
+            redirect,
+            'No workspace found for this account',
+            hasGoogleAuth,
+          ),
         );
         return;
       }
@@ -283,42 +406,50 @@ export class CliAuthController {
 
       if (!workspace) {
         res.setHeader('Content-Type', 'text/html');
-        res.send(renderLoginForm(redirect, 'Workspace not found'));
+        res.send(
+          renderLoginForm(redirect, 'Workspace not found', hasGoogleAuth),
+        );
         return;
       }
 
-      // Generate API key for CLI
-      const { token } = await this.createApiKeyForCLI(user, workspace);
-
-      // Build redirect URL with token
-      const redirectUrl = new URL(redirect);
-      redirectUrl.searchParams.set('token', token);
-      redirectUrl.searchParams.set('email', email);
-      redirectUrl.searchParams.set('workspaceId', workspace.id);
-
-      // Show success page (the redirect happens client-side via the callback)
-      res.setHeader('Content-Type', 'text/html');
-      res.send(renderSuccessPage(email, true));
-
-      // Also trigger the redirect via a script
-      res.write(`
-        <script>
-          setTimeout(() => {
-            window.location.href = "${redirectUrl.toString()}";
-          }, 100);
-        </script>
-      `);
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Authentication failed';
-      res.setHeader('Content-Type', 'text/html');
-      res.send(
-        renderLoginForm(
-          redirect,
-          'Invalid email or password. Please try again.',
-        ),
+      const redirectHtml = await this.generateTokenAndRedirect(
+        user,
+        workspace,
+        redirect,
       );
+
+      res.setHeader('Content-Type', 'text/html');
+      res.send(redirectHtml);
+    } catch (err) {
+      let errorMessage = 'Invalid email or password. Please try again.';
+
+      if (err instanceof AuthException) {
+        if (err.code === AuthExceptionCode.INVALID_INPUT) {
+          errorMessage =
+            'This account uses Google sign-in. Please click "Continue with Google" above.';
+        }
+      }
+
+      res.setHeader('Content-Type', 'text/html');
+      res.send(renderLoginForm(redirect, errorMessage, hasGoogleAuth));
     }
+  }
+
+  private async generateTokenAndRedirect(
+    user: UserEntity,
+    workspace: WorkspaceEntity,
+    redirect: string,
+  ): Promise<string> {
+    // Generate API key for CLI
+    const { token } = await this.createApiKeyForCLI(user, workspace);
+
+    // Build redirect URL with token
+    const redirectUrl = new URL(redirect);
+    redirectUrl.searchParams.set('token', token);
+    redirectUrl.searchParams.set('email', user.email);
+    redirectUrl.searchParams.set('workspaceId', workspace.id);
+
+    return renderSuccessPage(user.email, redirectUrl.toString());
   }
 
   private async createApiKeyForCLI(
@@ -329,8 +460,7 @@ export class CliAuthController {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-    // Use workspace default role (read-only by default for CLI)
-    // If no default role, the API key will have minimal permissions
+    // Use workspace default role
     const roleId = workspace.defaultRoleId;
 
     if (!roleId) {
@@ -338,7 +468,7 @@ export class CliAuthController {
     }
 
     const apiKey = await this.apiKeyService.create({
-      name: `CLI - ${user.email}`,
+      name: 'CLI - ' + user.email,
       expiresAt,
       workspaceId: workspace.id,
       roleId,

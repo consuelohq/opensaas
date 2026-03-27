@@ -3,19 +3,19 @@ import ora, { type Ora } from 'ora';
 import { intro, outro, log as clackPrompts } from '@clack/prompts';
 
 export function printBanner(steps?: string[]): void {
-  clackPrompts.message('');
-  intro(chalk.bold.white('C O N S U E L O'));
-  clackPrompts.message(`${chalk.dim('│')}`);
-  clackPrompts.message(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
+  const lines: string[] = [];
+  lines.push('');
+  lines.push(chalk.bold.white('C O N S U E L O'));
+  lines.push(chalk.dim('│'));
+  lines.push(`${chalk.dim('│')}  ${chalk.white('make more sales.')}`);
   if (steps?.length) {
-    clackPrompts.message(`${chalk.dim('│')}`);
+    lines.push(chalk.dim('│'));
     for (const step of steps) {
-      clackPrompts.message(
-        `${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`,
-      );
+      lines.push(`${chalk.dim('│')}  ${chalk.dim('○')}  ${chalk.dim(step)}`);
     }
   }
-  clackPrompts.message(`${chalk.dim('│')}`);
+  lines.push(chalk.dim('│'));
+  console.log(lines.join('\n'));
 }
 
 export function stepComplete(label: string): void {
