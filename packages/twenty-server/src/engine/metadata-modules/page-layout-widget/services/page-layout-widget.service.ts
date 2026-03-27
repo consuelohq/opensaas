@@ -5,7 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { ApplicationService } from 'src/engine/core-modules/application/services/application.service';
 import { transformRichTextV2Value } from 'src/engine/core-modules/record-transformer/utils/transform-rich-text-v2.util';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
-import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
+import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { findFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps.util';
 import { FlatPageLayoutWidgetMaps } from 'src/engine/metadata-modules/flat-page-layout-widget/types/flat-page-layout-widget-maps.type';
 import { FlatPageLayoutWidget } from 'src/engine/metadata-modules/flat-page-layout-widget/types/flat-page-layout-widget.type';
@@ -281,14 +281,16 @@ export class PageLayoutWidgetService {
         flatEntityToUpdate: [],
         flatEntityToDelete: [],
       },
-      errorMessage:
-        'Multiple validation errors occurred while creating page layout widget',
+errorMessage:
+      'Multiple validation errors occurred while creating page layout widget',
     });
 
     const recomputedMaps = await this.getFlatPageLayoutWidgetMaps(workspaceId);
 
-    const createdWidget = findFlatEntityByIdInFlatEntityMapsOrThrow({
-      flatEntityId: flatPageLayoutWidgetToCreate.id,
+    const universalIdentifier = flatPageLayoutWidgetToCreate.universalIdentifier;
+
+    const createdWidget = findFlatEntityByUniversalIdentifierOrThrow({
+      universalIdentifier,
       flatEntityMaps: recomputedMaps,
     });
 
@@ -389,18 +391,20 @@ export class PageLayoutWidgetService {
     await this.validateAndRunWidgetMigration({
       workspaceId,
       operations: {
-        flatEntityToCreate: [],
-        flatEntityToUpdate: [flatPageLayoutWidgetToUpdate],
-        flatEntityToDelete: [],
-      },
-      errorMessage:
-        'Multiple validation errors occurred while updating page layout widget',
+flatEntityToCreate: [],
+      flatEntityToUpdate: [flatPageLayoutWidgetToUpdate],
+      flatEntityToDelete: [],
+    },
+    errorMessage:
+      'Multiple validation errors occurred while updating page layout widget',
     });
 
     const recomputedMaps = await this.getFlatPageLayoutWidgetMaps(workspaceId);
 
-    const updatedWidget = findFlatEntityByIdInFlatEntityMapsOrThrow({
-      flatEntityId: id,
+    const universalIdentifier = flatPageLayoutWidgetToUpdate.universalIdentifier;
+
+    const updatedWidget = findFlatEntityByUniversalIdentifierOrThrow({
+      universalIdentifier,
       flatEntityMaps: recomputedMaps,
     });
 

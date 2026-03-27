@@ -9,7 +9,6 @@ import { ApplicationService } from 'src/engine/core-modules/application/services
 import { I18nService } from 'src/engine/core-modules/i18n/i18n.service';
 import { generateMessageId } from 'src/engine/core-modules/i18n/utils/generateMessageId';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
-import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
 import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { fromCreateViewInputToFlatViewToCreate } from 'src/engine/metadata-modules/flat-view/utils/from-create-view-input-to-flat-view-to-create.util';
 import { fromDeleteViewInputToFlatViewOrThrow } from 'src/engine/metadata-modules/flat-view/utils/from-delete-view-input-to-flat-view-or-throw.util';
@@ -103,7 +102,7 @@ export class ViewService {
       );
     }
 
-    const { flatViewMaps: recomputedExistingFlatViewMaps } =
+const { flatViewMaps: recomputedExistingFlatViewMaps } =
       await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
         {
           workspaceId,
@@ -111,12 +110,14 @@ export class ViewService {
         },
       );
 
-    return fromFlatViewToViewDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: flatViewToCreate.id,
-        flatEntityMaps: recomputedExistingFlatViewMaps,
-      }),
-    );
+      const universalIdentifier = flatViewToCreate.universalIdentifier;
+
+      return fromFlatViewToViewDto(
+        findFlatEntityByUniversalIdentifierOrThrow({
+          universalIdentifier,
+          flatEntityMaps: recomputedExistingFlatViewMaps,
+        }),
+      );
   }
 
   async updateOne({
@@ -196,9 +197,11 @@ export class ViewService {
         },
       );
 
+    const universalIdentifier = flatViewToUpdate.universalIdentifier;
+
     return fromFlatViewToViewDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: updateViewInput.id,
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
         flatEntityMaps: recomputedExistingFlatViewMaps,
       }),
     );
@@ -264,9 +267,11 @@ export class ViewService {
         },
       );
 
+    const universalIdentifier = optimisticallyUpdatedFlatViewWithDeletedAt.universalIdentifier;
+
     return fromFlatViewToViewDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: deleteViewInput.id,
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
         flatEntityMaps: recomputedExistingFlatViewMaps,
       }),
     );

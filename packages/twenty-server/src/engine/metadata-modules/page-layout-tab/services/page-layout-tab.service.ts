@@ -5,7 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 import { ApplicationService } from 'src/engine/core-modules/application/services/application.service';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
 import { findFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps.util';
-import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
+import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { FlatPageLayoutTabMaps } from 'src/engine/metadata-modules/flat-page-layout-tab/types/flat-page-layout-tab-maps.type';
 import { fromCreatePageLayoutTabInputToFlatPageLayoutTabToCreate } from 'src/engine/metadata-modules/flat-page-layout-tab/utils/from-create-page-layout-tab-input-to-flat-page-layout-tab-to-create.util';
 import { fromDestroyPageLayoutTabInputToFlatPageLayoutTabOrThrow } from 'src/engine/metadata-modules/flat-page-layout-tab/utils/from-destroy-page-layout-tab-input-to-flat-page-layout-tab-or-throw.util';
@@ -176,9 +176,9 @@ export class PageLayoutTabService {
     if (isDefined(validateAndBuildResult)) {
       throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
-        'Multiple validation errors occurred while creating page layout tab',
-      );
-    }
+'Multiple validation errors occurred while creating page layout tab',
+    );
+  }
 
     const { flatPageLayoutTabMaps: recomputedFlatPageLayoutTabMaps } =
       await this.workspaceManyOrAllFlatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
@@ -188,8 +188,10 @@ export class PageLayoutTabService {
         },
       );
 
-    const createdTab = findFlatEntityByIdInFlatEntityMapsOrThrow({
-      flatEntityId: flatPageLayoutTabToCreate.id,
+    const universalIdentifier = flatPageLayoutTabToCreate.universalIdentifier;
+
+    const createdTab = findFlatEntityByUniversalIdentifierOrThrow({
+      universalIdentifier,
       flatEntityMaps: recomputedFlatPageLayoutTabMaps,
     });
 
@@ -267,8 +269,10 @@ export class PageLayoutTabService {
         },
       );
 
-    const updatedTab = findFlatEntityByIdInFlatEntityMapsOrThrow({
-      flatEntityId: id,
+    const universalIdentifier = flatPageLayoutTabToUpdate.universalIdentifier;
+
+    const updatedTab = findFlatEntityByUniversalIdentifierOrThrow({
+      universalIdentifier,
       flatEntityMaps: recomputedFlatPageLayoutTabMaps,
     });
 

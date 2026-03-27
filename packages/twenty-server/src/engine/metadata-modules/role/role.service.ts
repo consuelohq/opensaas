@@ -9,8 +9,8 @@ import { ApplicationService } from 'src/engine/core-modules/application/services
 import { type FlatApplication } from 'src/engine/core-modules/application/types/flat-application.type';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
-import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
 import { findFlatEntityByUniversalIdentifier } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier.util';
+import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { fromCreateRoleInputToFlatRoleToCreate } from 'src/engine/metadata-modules/flat-role/utils/from-create-role-input-to-flat-role-to-create.util';
 import { fromDeleteRoleInputToFlatRoleOrThrow } from 'src/engine/metadata-modules/flat-role/utils/from-delete-role-input-to-flat-role-or-throw.util';
 import { fromUpdateRoleInputToFlatRoleToUpdateOrThrow } from 'src/engine/metadata-modules/flat-role/utils/from-update-role-input-to-flat-role-to-update-or-throw.util';
@@ -146,9 +146,11 @@ export class RoleService {
         },
       );
 
+    const universalIdentifier = flatRoleToCreate.universalIdentifier;
+
     return fromFlatRoleToRoleDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: flatRoleToCreate.id,
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
         flatEntityMaps: recomputedFlatRoleMaps,
       }),
     );
@@ -216,9 +218,11 @@ export class RoleService {
         },
       );
 
+    const universalIdentifier = flatRoleToUpdate.universalIdentifier;
+
     return fromFlatRoleToRoleDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: input.id,
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
         flatEntityMaps: recomputedFlatRoleMaps,
       }),
     );

@@ -5,7 +5,7 @@ import { isDefined } from 'twenty-shared/utils';
 
 import { ApplicationService } from 'src/engine/core-modules/application/services/application.service';
 import { WorkspaceManyOrAllFlatEntityMapsCacheService } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.service';
-import { findFlatEntityByIdInFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps-or-throw.util';
+import { findFlatEntityByUniversalIdentifierOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-universal-identifier-or-throw.util';
 import { findFlatEntityByIdInFlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/utils/find-flat-entity-by-id-in-flat-entity-maps.util';
 import { type FlatPageLayoutTabMaps } from 'src/engine/metadata-modules/flat-page-layout-tab/types/flat-page-layout-tab-maps.type';
 import { type FlatPageLayoutWidgetMaps } from 'src/engine/metadata-modules/flat-page-layout-widget/types/flat-page-layout-widget-maps.type';
@@ -226,9 +226,9 @@ export class PageLayoutService {
     if (isDefined(validateAndBuildResult)) {
       throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
-        'Multiple validation errors occurred while creating page layout',
-      );
-    }
+'Multiple validation errors occurred while creating page layout',
+    );
+  }
 
     const { flatPageLayoutMaps: recomputedFlatPageLayoutMaps } =
       await this.workspaceManyOrAllFlatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
@@ -238,9 +238,11 @@ export class PageLayoutService {
         },
       );
 
+    const universalIdentifier = flatPageLayoutToCreate.universalIdentifier;
+
     return fromFlatPageLayoutToPageLayoutDto(
-      findFlatEntityByIdInFlatEntityMapsOrThrow({
-        flatEntityId: flatPageLayoutToCreate.id,
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
         flatEntityMaps: recomputedFlatPageLayoutMaps,
       }),
     );
@@ -315,8 +317,10 @@ export class PageLayoutService {
         },
       );
 
-    const updatedLayout = findFlatEntityByIdInFlatEntityMapsOrThrow({
-      flatEntityId: id,
+    const universalIdentifier = flatPageLayoutToUpdate.universalIdentifier;
+
+    const updatedLayout = findFlatEntityByUniversalIdentifierOrThrow({
+      universalIdentifier,
       flatEntityMaps: recomputedFlatPageLayoutMaps,
     });
 
