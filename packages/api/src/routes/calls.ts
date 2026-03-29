@@ -424,6 +424,7 @@ export const callRoutes = (): RouteDefinition[] => {
             {
               twiml,
               statusCallback: statusCallbackUrl,
+              statusCallbackEvent: ['initiated', 'ringing', 'in-progress', 'completed'],
             },
           );
 

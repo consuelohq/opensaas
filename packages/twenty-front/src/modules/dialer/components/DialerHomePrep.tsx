@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/react';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useState } from 'react';
@@ -163,13 +164,17 @@ export const DialerHomePrep = () => {
       return;
     }
 
-    await startQueue(selectedListId);
-    navigate(
-      getAppPath(AppPath.RecordShowPage, {
-        objectNameSingular: 'opportunity',
-        objectRecordId: selectedListId,
-      }),
-    );
+    try {
+      await startQueue(selectedListId);
+      navigate(
+        getAppPath(AppPath.RecordShowPage, {
+          objectNameSingular: 'opportunity',
+          objectRecordId: selectedListId,
+        }),
+      );
+    } catch (error: unknown) {
+      captureException(error);
+    }
   };
 
   return (

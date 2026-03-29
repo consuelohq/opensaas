@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node';
+
 import type {
   TwilioCredentials,
   ConferenceParticipant,
@@ -302,15 +304,28 @@ export class ConferenceService {
     }
   }
 
+  private appendTransferId(
+    statusCallbackUrl: string | undefined,
+    transferId: string | undefined,
+  ): string | undefined {
+    if (!statusCallbackUrl || !transferId) {
+      return statusCallbackUrl;
+    }
+
+    const separator = statusCallbackUrl.includes('?') ? '&' : '?';
+
+    return `${statusCallbackUrl}${separator}transfer_id=${encodeURIComponent(transferId)}`;
+  }
+
   /** Cold transfer: add target, remove agent */
   private async coldTransfer(
     options: TransferOptions,
   ): Promise<TransferResult> {
     try {
-      const statusCallback =
-        options.statusCallbackUrl && options.transferId
-          ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
-          : options.statusCallbackUrl;
+      const statusCallback = this.appendTransferId(
+        options.statusCallbackUrl,
+        options.transferId,
+      );
 
       const { callSid: transferCallSid, conferenceSid } =
         await this.addParticipant(
@@ -363,10 +378,10 @@ export class ConferenceService {
 
       // add the transfer target
       const client = await this.getClient();
-      const statusCallback =
-        options.statusCallbackUrl && options.transferId
-          ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
-          : options.statusCallbackUrl;
+      const statusCallback = this.appendTransferId(
+        options.statusCallbackUrl,
+        options.transferId,
+      );
 
       const participant = await client
         .conferences(conferenceSid)
@@ -481,6 +496,7 @@ export class ConferenceService {
         duration: Number(recording.duration ?? 0),
       };
     } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { recordingSid } });
       const message = err instanceof Error ? err.message : 'Get recording failed';
       throw new Error(message);
     }
@@ -513,6 +529,7 @@ export class ConferenceService {
         duration: Number(recording.duration ?? 0),
       }));
     } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { conferenceName } });
       const message = err instanceof Error ? err.message : 'List recordings failed';
       throw new Error(message);
     }

@@ -129,6 +129,8 @@ const mapWrapUpDispositionToQueueOutcome = (
       return 'busy';
     case 'follow-up':
       return 'callback-requested';
+    case 'no-answer':
+      return 'no-answer';
     case 'not-interested':
       return 'not-interested';
     default:
@@ -194,7 +196,6 @@ export const useOpportunityQueueWorkspace = ({
   const { records } = useFindManyRecords<ListMemberWorkspaceRecord>({
     objectNameSingular: 'listMember',
     filter: { listId: { eq: listId } },
-    limit: 100,
   });
 
   const orderedRecords = useMemo(() => {
@@ -393,6 +394,7 @@ export const useOpportunityQueueWorkspace = ({
     try {
       await connect({ To: currentQueueItem.contact.phone, From: fromNumber });
     } catch (error: unknown) {
+      autoStartedItemIdRef.current = null;
       Sentry.captureException(error, {
         extra: { context: 'startCurrentQueueItem', listId },
       });
@@ -448,8 +450,9 @@ export const useOpportunityQueueWorkspace = ({
         disposition: 'NO_ANSWER',
         callSid: callState.callSid ?? '',
         duration: callState.duration,
+      }).then(() => {
+        markQueueItemCompleted(currentQueueItem.id, 'no-answer');
       });
-      markQueueItemCompleted(currentQueueItem.id, 'no-answer');
 
       autoAdvanceTimerRef.current = setTimeout(() => {
         if (hasNextQueueItem) {

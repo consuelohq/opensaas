@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 
 import { isNonEmptyString } from '@sniptt/guards';
 import type { PostHog as PostHogClient } from 'posthog-node';
@@ -44,6 +45,9 @@ export class PostHogService {
 
       const message = error instanceof Error ? error.message : 'Unknown error';
 
+      Sentry.captureException(error, {
+        extra: { source: 'PostHogService.getClient' },
+      });
       this.logger.warn(`Failed to initialize PostHog client: ${message}`);
 
       return null;
@@ -68,8 +72,13 @@ export class PostHogService {
         properties,
       });
     } catch (error: unknown) {
+      this.client = null;
+
       const message = error instanceof Error ? error.message : 'Unknown error';
 
+      Sentry.captureException(error, {
+        extra: { source: 'PostHogService.capture', event },
+      });
       this.logger.warn(`Failed to capture PostHog event ${event}: ${message}`);
     }
   }

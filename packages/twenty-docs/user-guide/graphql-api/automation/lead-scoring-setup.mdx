@@ -45,8 +45,8 @@ Lead scoring automatically ranks prospects based on criteria like demographics, 
 let score = 0;
 
 // Demographics
-if (record.company.employees > 100) score += 25;
-if (record.company.industry === 'Technology') score += 15;
+if ((record.company?.employees ?? 0) > 100) score += 25;
+if (record.company?.industry === 'Technology') score += 15;
 if (record.jobTitle?.includes('VP') || record.jobTitle?.includes('Director')) score += 20;
 
 // Behavior (requires external data)

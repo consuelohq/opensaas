@@ -71,6 +71,7 @@ View full dashboard: https://app.consuelohq.com/dashboards/growth
 
 ```javascript
 // Code action
+const startOfWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 const query = `
   query WeeklyMetrics {
     people(filter: { signupDate: { gte: "${startOfWeek}" } }) {
@@ -79,7 +80,7 @@ const query = `
   }
 `;
 
-const result = await fetch('https://consuelo.consuelohq.com/graphql', {
+const response = await fetch('https://<your-internal-domain>/graphql', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -88,6 +89,7 @@ const result = await fetch('https://consuelo.consuelohq.com/graphql', {
   body: JSON.stringify({ query })
 });
 
+const result = await response.json();
 return { newSignups: result.data.people.totalCount };
 ```
 

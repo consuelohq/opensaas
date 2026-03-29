@@ -50,16 +50,17 @@ export const useCoachingScripts = () => {
 
   const deleteScript = useCallback(
     (scriptId: string) => {
-      setScripts((currentScripts) =>
-        currentScripts.filter((script) => script.id !== scriptId),
-      );
+      setScripts((currentScripts) => {
+        const remaining = currentScripts.filter((script) => script.id !== scriptId);
 
-      if (selectedScriptId === scriptId) {
-        const nextScript = scripts.find((script) => script.id !== scriptId);
-        setSelectedScriptId(nextScript?.id ?? null);
-      }
+        if (selectedScriptId === scriptId) {
+          setSelectedScriptId(remaining[0]?.id ?? null);
+        }
+
+        return remaining;
+      });
     },
-    [scripts, selectedScriptId, setScripts, setSelectedScriptId],
+    [selectedScriptId, setScripts, setSelectedScriptId],
   );
 
   const selectedScriptSections = useMemo(

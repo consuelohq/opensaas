@@ -50,7 +50,7 @@ const UPSERT_PERSON = gql`
 `;
 
 async function importRecords(records) {
-  const results = { created: 0, updated: 0, failed: 0, errors: [] };
+  const results = { upserted: 0, failed: 0, errors: [] };
 
   for (const record of records) {
     try {
@@ -64,7 +64,7 @@ async function importRecords(records) {
 
       // Use upsert to avoid duplicates
       await client.request(UPSERT_PERSON, { data: personData });
-      results.created++;
+      results.upserted++;
     } catch (error) {
       results.failed++;
       results.errors.push({ record, error: error.message });
@@ -169,12 +169,21 @@ async function batchImport(records) {
 When some records fail:
 
 ```javascript
-async function importWithErrors(records) {
+import fs from 'node:fs';
+
+async function importWithErrors(records, client) {
   const log = [];
 
   for (const record of records) {
     try {
-      await importRecord(record);
+      await client.request(UPSERT_PERSON, {
+        data: {
+          email: record.email,
+          firstName: record.first_name,
+          lastName: record.last_name,
+          companyId: record.company_id,
+        },
+      });
       log.push({ record, status: 'success' });
     } catch (error) {
       log.push({ 

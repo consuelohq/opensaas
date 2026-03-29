@@ -9,15 +9,15 @@ Consuelo provides a dedicated GraphQL API for internal team operations. This gui
 
 ## Internal Instance
 
-**Workspace ID:** `7d0894c1-bdb1-4dd6-9a00-78681b52d5f6`
+**Workspace ID:** `<your-workspace-id>`
 
 ### Endpoints
 
 | Endpoint | URL |
 |----------|-----|
-| **GraphQL** | `https://consuelo.consuelohq.com/graphql` |
-| **Metadata** | `https://consuelo.consuelohq.com/metadata` |
-| **App** | `https://consuelo.consuelohq.com` |
+| **GraphQL** | `https://<your-internal-domain>/graphql` |
+| **Metadata** | `https://<your-internal-domain>/metadata` |
+| **App** | `https://<your-internal-domain>` |
 
 ### Authentication
 
@@ -34,7 +34,7 @@ Get your key from **Settings → APIs & Webhooks** in the internal workspace.
 ### Using cURL
 
 ```bash
-curl -X POST https://consuelo.consuelohq.com/graphql \
+curl -X POST https://<your-internal-domain>/graphql \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "{ currentUser { id email } }"}'
@@ -42,7 +42,7 @@ curl -X POST https://consuelo.consuelohq.com/graphql \
 
 ### Using GraphQL Playground
 
-1. Open `https://consuelo.consuelohq.com/graphql`
+1. Open `https://<your-internal-domain>/graphql`
 2. Click **HTTP HEADERS** at the bottom
 3. Add your authorization header:
    ```json
@@ -55,7 +55,7 @@ curl -X POST https://consuelo.consuelohq.com/graphql \
 ### Using Postman
 
 1. Set request type: **POST**
-2. URL: `https://consuelo.consuelohq.com/graphql`
+2. URL: `https://<your-internal-domain>/graphql`
 3. Headers:
    - `Authorization: Bearer YOUR_API_KEY`
    - `Content-Type: application/json`
@@ -242,7 +242,7 @@ Hitting rate limits returns HTTP 429. Implement retry logic with exponential bac
 ```javascript
 import { GraphQLClient, gql } from 'graphql-request';
 
-const client = new GraphQLClient('https://consuelo.consuelohq.com/graphql', {
+const client = new GraphQLClient('https://<your-internal-domain>/graphql', {
   headers: {
     authorization: `Bearer ${process.env.CONSUELO_API_KEY}`,
   },
@@ -270,7 +270,7 @@ console.log(data);
 ```python
 import requests
 
-url = "https://consuelo.consuelohq.com/graphql"
+url = "https://<your-internal-domain>/graphql"
 headers = {
     "Authorization": f"Bearer {api_key}",
     "Content-Type": "application/json"
