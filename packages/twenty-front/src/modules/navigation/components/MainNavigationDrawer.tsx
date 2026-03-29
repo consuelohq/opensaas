@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { useFavoritesByFolder } from '@/favorites/hooks/useFavoritesByFolder';
 import { NavigationMenuItemFolderContentDispatcherEffect } from '@/navigation-menu-item/components/NavigationMenuItemFolderContentDispatcher';
+import { MainNavigationDrawerFooter } from '@/navigation/components/MainNavigationDrawerFooter';
 import { useNavigationMenuItemsByFolder } from '@/navigation-menu-item/hooks/useNavigationMenuItemsByFolder';
 import { MainNavigationDrawerFixedItems } from '@/navigation/components/MainNavigationDrawerFixedItems';
 import { MainNavigationDrawerScrollableItems } from '@/navigation/components/MainNavigationDrawerScrollableItems';
@@ -84,6 +85,10 @@ export const MainNavigationDrawer = ({ className }: { className?: string }) => {
           <MainNavigationDrawerScrollableItems />
         )}
       </NavigationDrawerScrollableContent>
+
+      <NavigationDrawerFixedContent>
+        <MainNavigationDrawerFooter />
+      </NavigationDrawerFixedContent>
     </NavigationDrawer>
   );
 };

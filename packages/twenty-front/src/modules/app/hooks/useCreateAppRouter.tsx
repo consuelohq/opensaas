@@ -17,6 +17,8 @@ import { Authorize } from '~/pages/auth/Authorize';
 import { PasswordReset } from '~/pages/auth/PasswordReset';
 import { SignInUp } from '~/pages/auth/SignInUp';
 import { AgentPage } from '~/pages/agent/AgentPage';
+import { HomePage } from '~/pages/home/HomePage';
+import { Status } from '~/pages/status/Status';
 import { SkillDetailPage } from '~/pages/skills/SkillDetailPage';
 import { SkillsPage } from '~/pages/skills/SkillsPage';
 import { NotFound } from '~/pages/not-found/NotFound';
@@ -64,6 +66,7 @@ export const useCreateAppRouter = (
           />
           <Route path={AppPath.BookCall} element={<BookCall />} />
           <Route path={indexAppPath.getIndexAppPath()} element={<></>} />
+          <Route path={AppPath.Home} element={<HomePage />} />
           <Route path={AppPath.Agent} element={<AgentPage />} />
           <Route path={AppPath.Skills} element={<SkillsPage />} />
           <Route path={AppPath.SkillDetail} element={<SkillDetailPage />} />
@@ -82,6 +85,7 @@ export const useCreateAppRouter = (
         </Route>
         <Route element={<BlankLayout />}>
           <Route path={AppPath.Authorize} element={<Authorize />} />
+          <Route path={AppPath.Status} element={<Status />} />
         </Route>
       </Route>,
     ),

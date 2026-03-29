@@ -1,0 +1,109 @@
+import { useTheme } from '@emotion/react';
+import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
+import { useMemo } from 'react';
+
+import { useWorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
+import { NavigationDrawerUpgradeModal } from '@/navigation/components/NavigationDrawerUpgradeModal';
+import { NavigationDrawerHelpDropdown } from '@/navigation/components/NavigationDrawerHelpDropdown';
+import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
+import { useModal } from '@/ui/layout/modal/hooks/useModal';
+import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
+import { IconSparkles } from '@tabler/icons-react';
+
+const StyledFooterRow = styled.div`
+  align-items: center;
+  display: flex;
+  gap: ${({ theme }) => theme.spacing(2)};
+  justify-content: flex-start;
+  width: 100%;
+`;
+
+const StyledPlanButton = styled.button`
+  align-items: center;
+  background: ${({ theme }) => theme.background.transparent.light};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: ${({ theme }) => theme.border.radius.rounded};
+  color: ${({ theme }) => theme.font.color.primary};
+  cursor: pointer;
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing(1.5)};
+  height: ${({ theme }) => theme.spacing(8)};
+  max-width: 100%;
+  min-width: ${({ theme }) => theme.spacing(8)};
+  padding: ${({ theme }) => theme.spacing(0, 2.5)};
+  transition:
+    background ${({ theme }) => theme.animation.duration.normal}s,
+    border-color ${({ theme }) => theme.animation.duration.normal}s,
+    transform ${({ theme }) => theme.animation.duration.normal}s;
+
+  &:hover {
+    background: ${({ theme }) => theme.background.transparent.lighter};
+    border-color: ${({ theme }) => theme.border.color.strong};
+    transform: translateY(-1px);
+  }
+`;
+
+const StyledPlanLabel = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const getPlanLabel = (
+  rawPlanName: string | undefined,
+  t: ReturnType<typeof useLingui>['t'],
+) => {
+  const normalizedPlanName = rawPlanName?.trim().toLowerCase();
+
+  if (
+    normalizedPlanName === undefined ||
+    normalizedPlanName === '' ||
+    normalizedPlanName === 'no plan' ||
+    normalizedPlanName === 'starter'
+  ) {
+    return t`Free plan`;
+  }
+
+  if (normalizedPlanName === 'growth') {
+    return t`Growth plan`;
+  }
+
+  if (normalizedPlanName === 'enterprise') {
+    return t`Enterprise plan`;
+  }
+
+  return rawPlanName ?? t`Free plan`;
+};
+
+export const MainNavigationDrawerFooter = () => {
+  const theme = useTheme();
+  const { t } = useLingui();
+  const { openModal } = useModal();
+  const { subscriptionStatus } = useWorkspaceSubscriptionStatus();
+
+  const planLabel = useMemo(
+    () => getPlanLabel(subscriptionStatus?.plan.name, t),
+    [subscriptionStatus?.plan.name, t],
+  );
+
+  return (
+    <>
+      <NavigationDrawerUpgradeModal subscriptionStatus={subscriptionStatus} />
+
+      <StyledFooterRow>
+        <StyledPlanButton
+          type="button"
+          onClick={() => openModal(NAVIGATION_DRAWER_UPGRADE_MODAL_ID)}
+        >
+          <IconSparkles size={theme.icon.size.md} stroke={1.8} />
+          <NavigationDrawerAnimatedCollapseWrapper>
+            <StyledPlanLabel>{planLabel}</StyledPlanLabel>
+          </NavigationDrawerAnimatedCollapseWrapper>
+        </StyledPlanButton>
+
+        <NavigationDrawerHelpDropdown />
+      </StyledFooterRow>
+    </>
+  );
+};
