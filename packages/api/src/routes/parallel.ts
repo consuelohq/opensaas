@@ -1,4 +1,4 @@
-import type { ParallelGroup, NumberPool } from '@consuelo/dialer';
+import { ParallelStrategyResolver, type ParallelGroup, type NumberPool } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
@@ -12,10 +12,15 @@ const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
+const strategyResolver = new ParallelStrategyResolver();
+
 interface ParallelDialBody {
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];
+  profileId?: string;
+  campaignSegment?: string;
+  recentAnswerRate?: number;
 }
 
 /** /v1/calls/parallel routes — parallel dialing (power dialer) */
@@ -35,15 +40,11 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       const body = req.body as ParallelDialBody | undefined;
-      if (
-        !body?.customerNumbers ||
-        body.customerNumbers.length !== 3 ||
-        !body.queueId
-      ) {
+      if (!body?.customerNumbers || !body.queueId) {
         res.status(400).json({
           error: {
             code: 'INVALID_REQUEST',
-            message: 'Requires exactly 3 customerNumbers and a queueId',
+            message: 'Requires customerNumbers and a queueId',
           },
         });
         return;
@@ -64,6 +65,23 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const strategy = strategyResolver.resolve({
+          queueId: body.queueId,
+          campaignSegment: body.campaignSegment,
+          recentAnswerRate: body.recentAnswerRate,
+          profileId: body.profileId,
+        });
+
+        if (body.customerNumbers.length !== strategy.profile.fanout) {
+          res.status(400).json({
+            error: {
+              code: 'INVALID_REQUEST',
+              message: `Profile ${strategy.profile.id} requires exactly ${strategy.profile.fanout} customerNumbers`,
+            },
+          });
+          return;
+        }
+
         const accountNumbers = await dialer.listNumbers();
         const pool: NumberPool = {
           numbers: accountNumbers,
@@ -112,6 +130,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
           fromNumbers,
           statusCallbackUrl: `${baseUrl}/v1/calls/parallel/status-callback`,
           customerTwimlUrl: `${baseUrl}/v1/calls/parallel/customer-twiml`,
+          profile: strategy.profile,
+          campaignSegment: body.campaignSegment,
         });
 
         res.status(201).json(result);
@@ -119,6 +139,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
           action: 'parallel.dial',
           userId,
           outcome: 'success',
+          profileId: strategy.profile.id,
+          strategyReason: strategy.reason,
         });
       } catch (err: unknown) {
         Sentry.captureException(
@@ -150,11 +172,39 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const profileId =
+          typeof req.query.profileId === 'string' ? req.query.profileId : undefined;
+        const queueId =
+          typeof req.query.queueId === 'string' ? req.query.queueId : 'default';
+        const campaignSegment =
+          typeof req.query.campaignSegment === 'string'
+            ? req.query.campaignSegment
+            : undefined;
+        const recentAnswerRate =
+          typeof req.query.recentAnswerRate === 'string'
+            ? Number(req.query.recentAnswerRate)
+            : undefined;
+
+        const strategy = strategyResolver.resolve({
+          queueId,
+          campaignSegment,
+          recentAnswerRate:
+            recentAnswerRate !== undefined && Number.isFinite(recentAnswerRate)
+              ? recentAnswerRate
+              : undefined,
+          profileId,
+        });
+
         const numbers = await dialer.listNumbers();
         const result = dialer.parallel.validateRequirements(
           numbers.length,
+          strategy.profile.fanout,
         );
-        res.status(200).json(result);
+        res.status(200).json({
+          ...result,
+          profile: strategy.profile,
+          strategyReason: strategy.reason,
+        });
       } catch (err: unknown) {
         Sentry.captureException(
           err instanceof Error ? err : new Error(String(err)),
@@ -206,6 +256,20 @@ export const parallelRoutes = (): RouteDefinition[] => [
             const releasable = getLegacyDialer().parallel.getReleasableNumbers(group);
             for (const num of releasable) {
               await getLockService().releaseLockByNumber(num);
+            }
+
+            if (!group.telemetryEmittedAt) {
+              const telemetry = getLegacyDialer().parallel.computeTelemetry(group);
+              logger.info('parallel.telemetry', {
+                action: 'parallel.telemetry',
+                groupId,
+                queueId: group.queueId,
+                profileId: group.profile.id,
+                winnerRate: telemetry.winnerRate,
+                wastedLegs: telemetry.wastedLegs,
+                connectLatencyMs: telemetry.connectLatencyMs,
+              });
+              await getLegacyDialer().parallel.markTelemetryEmitted(groupId);
             }
           }
         }
@@ -389,6 +453,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
           action: 'parallel.terminated',
           userId,
           outcome: 'success',
+          profileId: strategy.profile.id,
+          strategyReason: strategy.reason,
         });
       } catch (err: unknown) {
         Sentry.captureException(

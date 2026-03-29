@@ -226,6 +226,36 @@ export type ParallelGroupStatus = 'dialing' | 'connected' | 'completed' | 'faile
 // AMD (answering machine detection) result
 export type AmdResult = 'human' | 'machine' | 'unknown';
 
+export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
+
+export type ParallelTerminationPolicy = 'winner-take-all';
+
+export type ParallelDialProfile = {
+  id: string;
+  fanout: number;
+  staggerMs: number;
+  amdPolicy: ParallelAmdPolicy;
+  terminationPolicy: ParallelTerminationPolicy;
+}
+
+export type ParallelStrategyContext = {
+  queueId: string;
+  campaignSegment?: string;
+  recentAnswerRate?: number;
+  profileId?: string;
+}
+
+export type ParallelStrategyResolution = {
+  profile: ParallelDialProfile;
+  reason: string;
+}
+
+export type ParallelTelemetry = {
+  winnerRate: number;
+  wastedLegs: number;
+  connectLatencyMs: number | null;
+}
+
 // Single call within a parallel group
 export type ParallelCall = {
   callSid: string;
@@ -235,6 +265,9 @@ export type ParallelCall = {
   status: string;
   amdResult?: AmdResult;
   contactId?: string;
+  dialStartedAt: string;
+  answeredAt?: string;
+  terminatedAt?: string;
 }
 
 // Full parallel dial group state (stored in redis)
@@ -247,6 +280,12 @@ export type ParallelGroup = {
   queueId: string;
   userId: string;
   createdAt: string;
+  campaignSegment?: string;
+  profile: ParallelDialProfile;
+  resolverReason: string;
+  connectedAt?: string;
+  completedAt?: string;
+  telemetryEmittedAt?: string;
 }
 
 /** Options for initiating a parallel dial batch */
@@ -258,12 +297,15 @@ export interface ParallelDialOptions {
   fromNumbers: string[];
   statusCallbackUrl: string;
   customerTwimlUrl: string;
+  profile: ParallelDialProfile;
+  campaignSegment?: string;
 }
 
 /** Result of initiating a parallel dial batch */
 export interface ParallelDialResult {
   groupId: string;
   conferenceName: string;
+  profileId: string;
   calls: Array<{
     callSid: string;
     customerNumber: string;

@@ -20,6 +20,7 @@ export {
   ParallelDialerService,
   InMemoryParallelStore,
 } from './services/parallel-dialer.js';
+export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
@@ -50,6 +51,12 @@ export type {
   DialStatusPayload,
   ParallelGroupStatus,
   AmdResult,
+  ParallelAmdPolicy,
+  ParallelTerminationPolicy,
+  ParallelDialProfile,
+  ParallelStrategyContext,
+  ParallelStrategyResolution,
+  ParallelTelemetry,
   ParallelCall,
   ParallelGroup,
   ParallelDialOptions,
