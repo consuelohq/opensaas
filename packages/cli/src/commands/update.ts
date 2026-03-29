@@ -12,7 +12,8 @@ const getInstalledVersion = (): string => {
     const pkgPath = require.resolve(`${CLI_PACKAGE_NAME}/package.json`);
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
     return pkg.version;
-  } catch {
+  } catch (err: unknown) {
+    captureError(err, { command: 'update', step: 'getInstalledVersion' });
     return 'unknown';
   }
 };
@@ -25,7 +26,8 @@ const getLatestVersion = (): string | null => {
     });
     const parsed = JSON.parse(result) as string;
     return parsed.trim();
-  } catch {
+  } catch (err: unknown) {
+    captureError(err, { command: 'update', step: 'getLatestVersion' });
     return null;
   }
 };
@@ -39,7 +41,8 @@ const isLocalDev = (): boolean => {
     if (realPath.includes('/packages/cli')) return true;
     if (process.env.CONSUELO_DEV === 'true') return true;
     return false;
-  } catch {
+  } catch (err: unknown) {
+    captureError(err, { command: 'update', step: 'isLocalDev' });
     return false;
   }
 };

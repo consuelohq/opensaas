@@ -19,7 +19,7 @@ interface PostCallSummaryProps {
   analysis: CallAnalytics | null;
   isAnalyzing: boolean;
   error: string | null;
-  onRetry: () => void;
+  onRetry?: () => void;
 }
 
 // region styled
@@ -249,9 +249,11 @@ export const PostCallSummary = ({
         <StyledEmpty>
           <IconAlertTriangle size={20} />
           <span>{error}</span>
-          <StyledRetryButton onClick={onRetry}>
-            Retry Analysis
-          </StyledRetryButton>
+          {onRetry && (
+            <StyledRetryButton onClick={onRetry}>
+              Retry Analysis
+            </StyledRetryButton>
+          )}
         </StyledEmpty>
       );
     }

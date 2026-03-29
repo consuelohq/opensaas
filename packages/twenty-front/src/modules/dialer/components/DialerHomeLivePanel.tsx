@@ -138,7 +138,6 @@ export const DialerHomeLivePanel = () => {
               talkingPoints={talkingPoints}
               callStatus={callState.status}
               error={coachingError}
-              onRetry={() => undefined}
             />
           )}
 
@@ -154,7 +153,6 @@ export const DialerHomeLivePanel = () => {
             analysis={analysis}
             isAnalyzing={isAnalyzing}
             error={analysisError}
-            onRetry={() => undefined}
           />
         </StyledColumn>
       </StyledMainGrid>

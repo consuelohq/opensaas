@@ -169,15 +169,9 @@ export const SettingsAIScripts = () => {
                 placeholder={t`# Opening\n\nIntroduce yourself and explain why you are calling.\n\n# Discovery\n\nAsk about the current workflow, goals, and blockers.`}
               />
 
-              {(() => {
-                const sectionCount = selectedScriptSections.length;
-
-                return (
-                  <StyledScriptMeta>
-                    {t`${sectionCount} live sections detected`}
-                  </StyledScriptMeta>
-                );
-              })()}
+              <StyledScriptMeta>
+                {t`${selectedScriptSections.length} live sections detected`}
+              </StyledScriptMeta>
             </>
           ) : (
             <StyledEmpty>

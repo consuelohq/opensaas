@@ -1,3 +1,13 @@
+import styled from '@emotion/styled';
+import { t } from '@lingui/core/macro';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
+import { Button } from 'twenty-ui/input';
+import { Card } from 'twenty-ui/layout';
+
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
@@ -13,17 +23,10 @@ import { useOpenObjectRecordsSpreadsheetImportDialog } from '@/object-record/spr
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { Select } from '@/ui/input/components/Select';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
-import styled from '@emotion/styled';
-import { t } from '@lingui/core/macro';
-import { useState } from 'react';
-import { useRecoilState } from 'recoil';
-import { useNavigate } from 'react-router-dom';
-import { FeatureFlagKey } from '~/generated-metadata/graphql';
-import { AppPath, SettingsPath } from 'twenty-shared/types';
-import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
-import { Button } from 'twenty-ui/input';
-import { Card } from 'twenty-ui/layout';
+
 import { IconList, IconRobot, IconUpload, IconUser } from 'twenty-ui/display';
+
+import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 type HomeSource = 'person' | 'list' | 'segment' | 'csv' | 'ai';
 

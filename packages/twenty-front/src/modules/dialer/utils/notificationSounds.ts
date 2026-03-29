@@ -1,8 +1,6 @@
-/**
- * Notification sounds for dialer feedback.
- * Uses Web Audio API to generate pleasant, non-intrusive notification sounds.
- * No external audio files required - all sounds are synthesized.
- */
+// notification sounds for dialer feedback
+// uses Web Audio API to generate pleasant, non-intrusive notification sounds
+// no external audio files required — all sounds are synthesized
 
 let audioContext: AudioContext | null = null;
 let soundsEnabled = true;
@@ -21,7 +19,7 @@ const getAudioContext = (): AudioContext | null => {
     }
 
     if (audioContext !== null && audioContext.state === 'suspended') {
-      audioContext.resume();
+      void audioContext.resume();
     }
 
     return audioContext;

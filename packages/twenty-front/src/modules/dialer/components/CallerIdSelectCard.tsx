@@ -1,12 +1,13 @@
-import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
-import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
-import { localPresenceEnabledState } from '@/dialer/states/localPresenceEnabledState';
-import { Select } from '@/ui/input/components/Select';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import { IconPhone, IconWorld } from 'twenty-ui/display';
+
+import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
+import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
+import { localPresenceEnabledState } from '@/dialer/states/localPresenceEnabledState';
+import { Select } from '@/ui/input/components/Select';
 
 const StyledContainer = styled.div`
   display: flex;

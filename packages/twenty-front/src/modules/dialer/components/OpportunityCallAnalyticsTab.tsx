@@ -67,6 +67,15 @@ type OpportunityCallAnalyticsTabProps = {
   onEndList: (disposition: string) => void;
 };
 
+const ANSWERED_DISPOSITIONS = [
+  { value: 'connected', label: t`Connected` },
+  { value: 'follow-up', label: t`Follow up` },
+  { value: 'not-interested', label: t`Not interested` },
+  { value: 'voicemail', label: t`Voicemail` },
+  { value: 'busy', label: t`Busy` },
+  { value: 'no-answer', label: t`No answer` },
+] as const;
+
 export const OpportunityCallAnalyticsTab = ({
   wrapUpState,
   onContinueList,
@@ -80,14 +89,7 @@ export const OpportunityCallAnalyticsTab = ({
   const callState = useRecoilValue(callStateAtom);
   const [selectedDisposition, setSelectedDisposition] = useState('connected');
 
-  const answeredDispositions = [
-    { value: 'connected', label: t`Connected` },
-    { value: 'follow-up', label: t`Follow up` },
-    { value: 'not-interested', label: t`Not interested` },
-    { value: 'voicemail', label: t`Voicemail` },
-    { value: 'busy', label: t`Busy` },
-    { value: 'no-answer', label: t`No answer` },
-  ] as const;
+
 
   useEffect(() => {
     setSelectedDisposition('connected');
@@ -102,7 +104,7 @@ export const OpportunityCallAnalyticsTab = ({
           {wrapUpState.outcome === 'answered' ? (
             <>
               <StyledDispositionGrid>
-                {answeredDispositions.map((disposition) => (
+                {ANSWERED_DISPOSITIONS.map((disposition) => (
                   <Button
                     key={disposition.value}
                     title={disposition.label}
@@ -142,7 +144,6 @@ export const OpportunityCallAnalyticsTab = ({
         analysis={analysis}
         isAnalyzing={isAnalyzing}
         error={analysisError}
-        onRetry={() => undefined}
       />
 
       <LiveTranscript

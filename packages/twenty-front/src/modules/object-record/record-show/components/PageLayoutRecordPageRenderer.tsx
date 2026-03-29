@@ -104,14 +104,14 @@ export const PageLayoutRecordPageRenderer = ({
                 CoreObjectNameSingular.Opportunity && (
                 <OpportunityCallingWorkspace
                   listId={targetRecordIdentifier.id}
-                  pageLayoutId={pageLayoutId!}
+                  pageLayoutId={pageLayoutId}
                 />
               )}
             {isDefined(pageLayoutId) &&
               (isInRightDrawer ||
                 targetRecordIdentifier.targetObjectNameSingular !==
                   CoreObjectNameSingular.Opportunity) && (
-                <PageLayoutRenderer pageLayoutId={pageLayoutId!} />
+                <PageLayoutRenderer pageLayoutId={pageLayoutId} />
               )}
           </LayoutRenderingProvider>
         </StyledContentContainer>

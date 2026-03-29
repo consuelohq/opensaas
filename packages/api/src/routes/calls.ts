@@ -113,8 +113,8 @@ const SQL_PERSIST_ANALYSIS =
 const SQL_GET_CALL_BY_RECORDING_SID =
   'SELECT id FROM calls WHERE recording_sid = $1 AND workspace_id = $2';
 
-const _SQL_SET_DISPOSITION =
-  'UPDATE calls SET outcome = $1, notes = $2, updated_at = NOW() WHERE id = $3 AND workspace_id = $4 RETURNING id, outcome, notes';
+const SQL_SET_DISPOSITION =
+  'UPDATE calls SET outcome = COALESCE($1, outcome), notes = COALESCE($2, notes), updated_at = NOW() WHERE (id::text = $3 OR call_sid = $3) AND workspace_id = $4 RETURNING id, outcome, notes';
 
 const getPool = getSharedPool;
 
@@ -800,26 +800,12 @@ export const callRoutes = (): RouteDefinition[] => {
 
         try {
           const db = await getPool();
-          const setClauses: string[] = ['updated_at = NOW()'];
-          const params: unknown[] = [];
-          let idx = 1;
-
-          if (body.outcome) {
-            setClauses.push(`outcome = $${idx}`);
-            params.push(body.outcome);
-            idx++;
-          }
-
-          if (body.notes !== undefined) {
-            setClauses.push(`notes = $${idx}`);
-            params.push(body.notes);
-            idx++;
-          }
-
-          params.push(callId, auth.workspaceId);
-
-          const sql = `UPDATE calls SET ${setClauses.join(', ')} WHERE (id::text = $${idx} OR call_sid = $${idx}) AND workspace_id = $${idx + 1} RETURNING id, outcome, notes`;
-          const { rows } = await db.query(sql, params);
+          const { rows } = await db.query(SQL_SET_DISPOSITION, [
+            body.outcome ?? null,
+            body.notes ?? null,
+            callId,
+            auth.workspaceId,
+          ]);
           if (rows.length === 0) {
             res.status(404).json({
               error: { code: 'NOT_FOUND', message: 'Call not found' },

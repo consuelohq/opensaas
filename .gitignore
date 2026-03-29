@@ -84,3 +84,7 @@ xfs-*/
 
 # Temp upload dirs
 .tmp.driveupload/
+
+.nx/polygraph
+.claude/worktrees
+.claude/settings.local.json

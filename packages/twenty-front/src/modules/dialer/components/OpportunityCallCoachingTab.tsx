@@ -64,7 +64,6 @@ export const OpportunityCallCoachingTab = () => {
           talkingPoints={talkingPoints}
           callStatus={callState.status}
           error={coachingError}
-          onRetry={() => undefined}
         />
       )}
 

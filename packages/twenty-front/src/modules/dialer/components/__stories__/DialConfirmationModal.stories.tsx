@@ -154,9 +154,7 @@ export const ConfirmCall: Story = {
 };
 
 export const CloseWithEscape: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
+  play: async ({ args }) => {
     await userEvent.keyboard('{Escape}');
 
     await expect(args.onClose).toHaveBeenCalled();
@@ -164,9 +162,7 @@ export const CloseWithEscape: Story = {
 };
 
 export const ConfirmWithEnter: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
+  play: async ({ args }) => {
     await userEvent.keyboard('{Enter}');
 
     await expect(args.onConfirm).toHaveBeenCalled();
