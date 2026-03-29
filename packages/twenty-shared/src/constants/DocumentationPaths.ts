@@ -12,6 +12,31 @@
  */
 
 export const DOCUMENTATION_PATHS = {
+  CONSUELO_UI_DISPLAY_APP_TOOLTIP: '/consuelo-ui/display/app-tooltip',
+  CONSUELO_UI_DISPLAY_CHECKMARK: '/consuelo-ui/display/checkmark',
+  CONSUELO_UI_DISPLAY_CHIP: '/consuelo-ui/display/chip',
+  CONSUELO_UI_DISPLAY_ICONS: '/consuelo-ui/display/icons',
+  CONSUELO_UI_DISPLAY_SOON_PILL: '/consuelo-ui/display/soon-pill',
+  CONSUELO_UI_DISPLAY_TAG: '/consuelo-ui/display/tag',
+  CONSUELO_UI_INPUT_BLOCK_EDITOR: '/consuelo-ui/input/block-editor',
+  CONSUELO_UI_INPUT_BUTTONS: '/consuelo-ui/input/buttons',
+  CONSUELO_UI_INPUT_CHECKBOX: '/consuelo-ui/input/checkbox',
+  CONSUELO_UI_INPUT_COLOR_SCHEME: '/consuelo-ui/input/color-scheme',
+  CONSUELO_UI_INPUT_ICON_PICKER: '/consuelo-ui/input/icon-picker',
+  CONSUELO_UI_INPUT_IMAGE_INPUT: '/consuelo-ui/input/image-input',
+  CONSUELO_UI_INPUT_RADIO: '/consuelo-ui/input/radio',
+  CONSUELO_UI_INPUT_SELECT: '/consuelo-ui/input/select',
+  CONSUELO_UI_INPUT_TEXT: '/consuelo-ui/input/text',
+  CONSUELO_UI_INPUT_TOGGLE: '/consuelo-ui/input/toggle',
+  CONSUELO_UI_INTRODUCTION: '/consuelo-ui/introduction',
+  CONSUELO_UI_NAVIGATION: '/consuelo-ui/navigation',
+  CONSUELO_UI_NAVIGATION_BREADCRUMB: '/consuelo-ui/navigation/breadcrumb',
+  CONSUELO_UI_NAVIGATION_LINKS: '/consuelo-ui/navigation/links',
+  CONSUELO_UI_NAVIGATION_MENU_ITEM: '/consuelo-ui/navigation/menu-item',
+  CONSUELO_UI_NAVIGATION_NAVIGATION_BAR:
+    '/consuelo-ui/navigation/navigation-bar',
+  CONSUELO_UI_NAVIGATION_STEP_BAR: '/consuelo-ui/navigation/step-bar',
+  CONSUELO_UI_PROGRESS_BAR: '/consuelo-ui/progress-bar',
   DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_BEST_PRACTICES_SERVER:
     '/developers/contribute/capabilities/backend-development/best-practices-server',
   DEVELOPERS_CONTRIBUTE_CAPABILITIES_BACKEND_DEVELOPMENT_CUSTOM_OBJECTS:
@@ -62,30 +87,34 @@ export const DOCUMENTATION_PATHS = {
   DEVELOPERS_SELF_HOST_CAPABILITIES_UPGRADE_GUIDE:
     '/developers/self-host/capabilities/upgrade-guide',
   DEVELOPERS_SELF_HOST_SELF_HOST: '/developers/self-host/self-host',
-  TWENTY_UI_DISPLAY_APP_TOOLTIP: '/twenty-ui/display/app-tooltip',
-  TWENTY_UI_DISPLAY_CHECKMARK: '/twenty-ui/display/checkmark',
-  TWENTY_UI_DISPLAY_CHIP: '/twenty-ui/display/chip',
-  TWENTY_UI_DISPLAY_ICONS: '/twenty-ui/display/icons',
-  TWENTY_UI_DISPLAY_SOON_PILL: '/twenty-ui/display/soon-pill',
-  TWENTY_UI_DISPLAY_TAG: '/twenty-ui/display/tag',
-  TWENTY_UI_INPUT_BLOCK_EDITOR: '/twenty-ui/input/block-editor',
-  TWENTY_UI_INPUT_BUTTONS: '/twenty-ui/input/buttons',
-  TWENTY_UI_INPUT_CHECKBOX: '/twenty-ui/input/checkbox',
-  TWENTY_UI_INPUT_COLOR_SCHEME: '/twenty-ui/input/color-scheme',
-  TWENTY_UI_INPUT_ICON_PICKER: '/twenty-ui/input/icon-picker',
-  TWENTY_UI_INPUT_IMAGE_INPUT: '/twenty-ui/input/image-input',
-  TWENTY_UI_INPUT_RADIO: '/twenty-ui/input/radio',
-  TWENTY_UI_INPUT_SELECT: '/twenty-ui/input/select',
-  TWENTY_UI_INPUT_TEXT: '/twenty-ui/input/text',
-  TWENTY_UI_INPUT_TOGGLE: '/twenty-ui/input/toggle',
-  TWENTY_UI_INTRODUCTION: '/twenty-ui/introduction',
-  TWENTY_UI_NAVIGATION: '/twenty-ui/navigation',
-  TWENTY_UI_NAVIGATION_BREADCRUMB: '/twenty-ui/navigation/breadcrumb',
-  TWENTY_UI_NAVIGATION_LINKS: '/twenty-ui/navigation/links',
-  TWENTY_UI_NAVIGATION_MENU_ITEM: '/twenty-ui/navigation/menu-item',
-  TWENTY_UI_NAVIGATION_NAVIGATION_BAR: '/twenty-ui/navigation/navigation-bar',
-  TWENTY_UI_NAVIGATION_STEP_BAR: '/twenty-ui/navigation/step-bar',
-  TWENTY_UI_PROGRESS_BAR: '/twenty-ui/progress-bar',
+  GRAPHQL_API_ANALYTICS_CONNECTING_EXTERNAL_ANALYTICS:
+    '/graphql-api/analytics/connecting-external-analytics',
+  GRAPHQL_API_ANALYTICS_GROWTH_METRICS_DASHBOARDS:
+    '/graphql-api/analytics/growth-metrics-dashboards',
+  GRAPHQL_API_ANALYTICS_SCHEDULED_REPORTS:
+    '/graphql-api/analytics/scheduled-reports',
+  GRAPHQL_API_AUTOMATION_DATA_CLEANUP_AUTOMATION:
+    '/graphql-api/automation/data-cleanup-automation',
+  GRAPHQL_API_AUTOMATION_INTERNAL_WORKFLOWS_OVERVIEW:
+    '/graphql-api/automation/internal-workflows-overview',
+  GRAPHQL_API_AUTOMATION_LEAD_SCORING_SETUP:
+    '/graphql-api/automation/lead-scoring-setup',
+  GRAPHQL_API_AUTOMATION_SLACK_NOTIFICATIONS:
+    '/graphql-api/automation/slack-notifications',
+  GRAPHQL_API_GENERAL_BULK_UPDATE_SCRIPT:
+    '/graphql-api/general/bulk-update-script',
+  GRAPHQL_API_GENERAL_EXPORT_ANALYTICS: '/graphql-api/general/export-analytics',
+  GRAPHQL_API_GENERAL_IMPORT_AUTOMATION:
+    '/graphql-api/general/import-automation',
+  GRAPHQL_API_GENERAL_INTERNAL_API_ACCESS:
+    '/graphql-api/general/internal-api-access',
+  GRAPHQL_API_GENERAL_RATE_LIMITS_AND_BEST_PRACTICES:
+    '/graphql-api/general/rate-limits-and-best-practices',
+  GRAPHQL_API_GETTING_STARTED_SETTING_UP_INTERNAL_WORKSPACE:
+    '/graphql-api/getting-started/setting-up-internal-workspace',
+  GRAPHQL_API_OVERVIEW: '/graphql-api/overview',
+  GRAPHQL_API_TROUBLESHOOTING_COMMON_OPS_ISSUES:
+    '/graphql-api/troubleshooting/common-ops-issues',
   USER_GUIDE_AI_CAPABILITIES_AI_AGENTS: '/user-guide/ai/capabilities/ai-agents',
   USER_GUIDE_AI_CAPABILITIES_AI_CHATBOT:
     '/user-guide/ai/capabilities/ai-chatbot',
@@ -104,10 +133,10 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/calendar-emails/capabilities/calendar',
   USER_GUIDE_CALENDAR_EMAILS_CAPABILITIES_MAILBOX:
     '/user-guide/calendar-emails/capabilities/mailbox',
-  USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CAN_I_BOOK_MEETINGS_FROM_TWENTY:
-    '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-twenty',
-  USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CAN_I_SEND_EMAILS_FROM_TWENTY:
-    '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-twenty',
+  USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CAN_I_BOOK_MEETINGS_FROM_CONSUELO:
+    '/user-guide/calendar-emails/how-tos/can-i-book-meetings-from-consuelo',
+  USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CAN_I_SEND_EMAILS_FROM_CONSUELO:
+    '/user-guide/calendar-emails/how-tos/can-i-send-emails-from-consuelo',
   USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CAN_I_TRACK_EMAIL_ACTIVITY_ON_ALL_OBJECTS:
     '/user-guide/calendar-emails/how-tos/can-i-track-email-activity-on-all-objects',
   USER_GUIDE_CALENDAR_EMAILS_HOW_TOS_CONNECT_SEVERAL_MAILBOXES_PER_USER:
@@ -199,14 +228,16 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/getting-started/capabilities/glossary',
   USER_GUIDE_GETTING_STARTED_CAPABILITIES_IMPLEMENTATION_SERVICES:
     '/user-guide/getting-started/capabilities/implementation-services',
-  USER_GUIDE_GETTING_STARTED_CAPABILITIES_WHAT_IS_TWENTY:
-    '/user-guide/getting-started/capabilities/what-is-twenty',
+  USER_GUIDE_GETTING_STARTED_CAPABILITIES_KEYBOARD_SHORTCUTS:
+    '/user-guide/getting-started/capabilities/keyboard-shortcuts',
+  USER_GUIDE_GETTING_STARTED_CAPABILITIES_WHAT_IS_CONSUELO:
+    '/user-guide/getting-started/capabilities/what-is-consuelo',
   USER_GUIDE_GETTING_STARTED_HOW_TOS_CONFIGURE_YOUR_WORKSPACE:
     '/user-guide/getting-started/how-tos/configure-your-workspace',
   USER_GUIDE_GETTING_STARTED_HOW_TOS_CREATE_WORKSPACE:
     '/user-guide/getting-started/how-tos/create-workspace',
-  USER_GUIDE_GETTING_STARTED_HOW_TOS_NAVIGATE_AROUND_TWENTY:
-    '/user-guide/getting-started/how-tos/navigate-around-twenty',
+  USER_GUIDE_GETTING_STARTED_HOW_TOS_NAVIGATE_AROUND_CONSUELO:
+    '/user-guide/getting-started/how-tos/navigate-around-consuelo',
   USER_GUIDE_INTRODUCTION: '/user-guide/introduction',
   USER_GUIDE_PERMISSIONS_ACCESS_CAPABILITIES_PERMISSIONS:
     '/user-guide/permissions-access/capabilities/permissions',
@@ -278,14 +309,14 @@ export const DOCUMENTATION_PATHS = {
     '/user-guide/workflows/capabilities/workflow-versions',
   USER_GUIDE_WORKFLOWS_HOW_TOS_ADVANCED_CONFIGURATIONS_HANDLE_ARRAYS_IN_CODE_ACTIONS:
     '/user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions',
-  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_BRING_PRODUCT_DATA_IN_TWENTY:
-    '/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-twenty',
-  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_BRING_TYPEFORM_SUBMISSIONS_IN_TWENTY:
-    '/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-twenty',
-  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_GENERATE_PDF_FROM_TWENTY:
-    '/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-twenty',
-  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_GENERATE_QUOTE_OR_INVOICE_FROM_TWENTY:
-    '/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-twenty',
+  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_BRING_PRODUCT_DATA_IN_CONSUELO:
+    '/user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo',
+  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_BRING_TYPEFORM_SUBMISSIONS_IN_CONSUELO:
+    '/user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo',
+  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_GENERATE_PDF_FROM_CONSUELO:
+    '/user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo',
+  USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_GENERATE_QUOTE_OR_INVOICE_FROM_CONSUELO:
+    '/user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo',
   USER_GUIDE_WORKFLOWS_HOW_TOS_CONNECT_TO_OTHER_TOOLS_SET_UP_A_WEBHOOK_TRIGGER:
     '/user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger',
   USER_GUIDE_WORKFLOWS_HOW_TOS_CRM_AUTOMATIONS_CLOSED_WON_AUTOMATIONS:
