@@ -183,8 +183,17 @@ export const DialConfirmationModal = ({
   }, [callerId, onConfirm]);
 
   useGlobalHotkeys({
-    Escape: onClose,
-    Enter: handleConfirm,
+    keys: ['Escape'],
+    callback: onClose,
+    containsModifier: false,
+    dependencies: [onClose],
+  });
+
+  useGlobalHotkeys({
+    keys: ['Enter'],
+    callback: handleConfirm,
+    containsModifier: false,
+    dependencies: [handleConfirm],
   });
 
   const initials = contact

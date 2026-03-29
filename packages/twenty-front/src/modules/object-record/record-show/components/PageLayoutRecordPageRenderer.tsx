@@ -1,4 +1,5 @@
 import { RecordShowRightDrawerActionMenu } from '@/action-menu/components/RecordShowRightDrawerActionMenu';
+import { OpportunityCallingWorkspace } from '@/dialer/components/OpportunityCallingWorkspace';
 import { RecordShowRightDrawerOpenRecordButton } from '@/action-menu/components/RecordShowRightDrawerOpenRecordButton';
 import { ListRecordQueueControls } from '@/dialer/components/ListRecordQueueControls';
 import { InformationBannerDeletedRecord } from '@/information-banner/components/deleted-record/InformationBannerDeletedRecord';
@@ -79,9 +80,7 @@ export const PageLayoutRecordPageRenderer = ({
       <StyledShowPageRightContainer>
         {targetRecordIdentifier.targetObjectNameSingular ===
           CoreObjectNameSingular.Opportunity && (
-          <ListRecordQueueControls
-            recordId={targetRecordIdentifier.id}
-          />
+          <ListRecordQueueControls recordId={targetRecordIdentifier.id} />
         )}
         <StyledContentContainer isInRightDrawer={isInRightDrawer}>
           <LayoutRenderingProvider
@@ -99,9 +98,21 @@ export const PageLayoutRecordPageRenderer = ({
               isInRightDrawer,
             }}
           >
-            {isDefined(pageLayoutId) && (
-              <PageLayoutRenderer pageLayoutId={pageLayoutId} />
-            )}
+            {isDefined(pageLayoutId) &&
+              !isInRightDrawer &&
+              targetRecordIdentifier.targetObjectNameSingular ===
+                CoreObjectNameSingular.Opportunity && (
+                <OpportunityCallingWorkspace
+                  listId={targetRecordIdentifier.id}
+                  pageLayoutId={pageLayoutId!}
+                />
+              )}
+            {isDefined(pageLayoutId) &&
+              (isInRightDrawer ||
+                targetRecordIdentifier.targetObjectNameSingular !==
+                  CoreObjectNameSingular.Opportunity) && (
+                <PageLayoutRenderer pageLayoutId={pageLayoutId!} />
+              )}
           </LayoutRenderingProvider>
         </StyledContentContainer>
 

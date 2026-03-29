@@ -29,6 +29,9 @@ export type QueueItemStatus =
   | 'skipped'
   | 'failed';
 
+// alias used by hooks and analytics
+export type CallOutcome = QueueOutcome;
+
 export type QueueOutcome =
   | 'connected'
   | 'no-answer'

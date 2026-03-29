@@ -88,7 +88,16 @@ const meta: Meta<typeof DialConfirmationModal> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof DialConfirmationModal>;
+type StoryArgs = {
+  onClose: () => void;
+  onConfirm: (callerId: string) => void;
+  contact?: DialerContact | null;
+  phoneNumber?: string;
+  availableCallerIds?: CallerIdOption[];
+  selectedCallerId?: string | null;
+};
+
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 

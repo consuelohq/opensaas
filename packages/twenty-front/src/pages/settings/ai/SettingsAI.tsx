@@ -22,6 +22,7 @@ import {
 import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
 import { AIProviderSettings } from '~/pages/settings/consuelo/AIProviderSettings';
+import { SettingsAIScripts } from './components/SettingsAIScripts';
 import { SettingsAIMCP } from './components/SettingsAIMCP';
 import { SettingsAIRouterSettings } from './components/SettingsAIRouterSettings';
 import { SettingsSkillsTable } from './components/SettingsSkillsTable';
@@ -45,6 +46,11 @@ export const SettingsAI = () => {
       Icon: IconPhone,
     },
     {
+      id: SETTINGS_AI_TABS.TABS_IDS.SCRIPTS,
+      title: t`Scripts`,
+      Icon: IconFileText,
+    },
+    {
       id: SETTINGS_AI_TABS.TABS_IDS.SKILLS,
       title: t`Skills`,
       Icon: IconSparkles,
@@ -62,6 +68,7 @@ export const SettingsAI = () => {
   ];
 
   const isDialerTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.DIALER;
+  const isScriptsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.SCRIPTS;
   const isSkillsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.SKILLS;
   const isToolsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.TOOLS;
   const isSettingsTab = activeTabId === SETTINGS_AI_TABS.TABS_IDS.SETTINGS;
@@ -87,6 +94,7 @@ export const SettingsAI = () => {
             <AIProviderSettings />
           </Section>
         )}
+        {isScriptsTab && <SettingsAIScripts />}
         {isSkillsTab && <SettingsSkillsTable />}
         {isToolsTab && <SettingsToolsTable />}
         {isSettingsTab && (

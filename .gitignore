@@ -62,3 +62,25 @@ TRANSLATION_QA_REPORT.md
 .agent/.oauth-token.json
 .agent/.opencode-token.json
 .agent/workpads/
+
+# Node compile cache (v8/node native caching)
+node-compile-cache/
+v8-compile-cache-*/
+tsx-*/
+
+# Native module build artifacts
+*.dylib
+
+# Nx native file cache
+nx-native-file-cache-*/
+
+# Temp cache dirs
+jest_dx/
+jiti/
+xfs-*/
+
+# Agent worktrees
+.agent/worktrees/
+
+# Temp upload dirs
+.tmp.driveupload/

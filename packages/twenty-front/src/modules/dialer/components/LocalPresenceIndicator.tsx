@@ -25,7 +25,7 @@ const StyledLocalBadge = styled.span`
   font-size: ${({ theme }) => theme.font.size.xs};
   font-weight: ${({ theme }) => theme.font.weight.medium};
   color: ${({ theme }) => theme.color.green};
-  background: ${({ theme }) => theme.background.transparent.green};
+  background: ${({ theme }) => theme.background.transparent.success};
   padding: 1px ${({ theme }) => theme.spacing(1)};
   border-radius: ${({ theme }) => theme.border.radius.pill};
 `;

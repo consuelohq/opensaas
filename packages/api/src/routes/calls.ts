@@ -3,7 +3,11 @@ import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, getDialerForWorkspace, sharedCallerIdLockService } from '../shared/dialer.js';
+import {
+  sharedDialer,
+  getDialerForWorkspace,
+  sharedCallerIdLockService,
+} from '../shared/dialer.js';
 
 let _callsLogger: {
   info: (message: string, meta?: Record<string, unknown>) => void;
@@ -13,7 +17,6 @@ let _callsLogger: {
 const getCallsLogger = async () => {
   try {
     if (!_callsLogger) {
-      // eslint-disable-next-line @nx/enforce-module-boundaries
       const { createLogger } = await import('@consuelo/logger');
       _callsLogger = createLogger('api:audit');
     }
@@ -54,10 +57,21 @@ interface AnalysisBody {
   summary?: string;
 }
 
-type Disposition = 'connected' | 'voicemail' | 'no-answer' | 'busy' | 'follow-up' | 'not-interested';
+type Disposition =
+  | 'connected'
+  | 'voicemail'
+  | 'no-answer'
+  | 'busy'
+  | 'follow-up'
+  | 'not-interested';
 
 const VALID_DISPOSITIONS: ReadonlySet<string> = new Set<Disposition>([
-  'connected', 'voicemail', 'no-answer', 'busy', 'follow-up', 'not-interested',
+  'connected',
+  'voicemail',
+  'no-answer',
+  'busy',
+  'follow-up',
+  'not-interested',
 ]);
 
 interface DispositionBody {
@@ -75,30 +89,31 @@ interface InitiatePhoneCallBody {
   contactId?: string;
 }
 
-const PHONE_CALL_TIMEOUT_SECONDS = 30;
-
-const SQL_HISTORY =
+const _SQL_HISTORY =
   'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.workspace_id = $1';
 
-const SQL_HISTORY_COUNT =
+const _SQL_HISTORY_COUNT =
   'SELECT COUNT(*) AS total FROM calls c WHERE c.workspace_id = $1';
 
-const SQL_GET_CALL =
-  'SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.id = $1 AND c.workspace_id = $2';
+const SQL_CALL_LOOKUP_WHERE =
+  'WHERE (c.id::text = $1 OR c.call_sid = $1) AND c.workspace_id = $2';
 
-const SQL_GET_TRANSCRIPT =
-  'SELECT transcript FROM calls WHERE id = $1 AND workspace_id = $2';
+const SQL_CALL_LOOKUP_WHERE_WITHOUT_ALIAS =
+  'WHERE (id::text = $1 OR call_sid = $1) AND workspace_id = $2';
 
-const SQL_GET_RECORDING_INFO =
-  'SELECT conference_name, recording_sid FROM calls WHERE id = $1 AND workspace_id = $2';
+const SQL_GET_CALL = `SELECT c.*, ct.name AS contact_name, ct.company AS contact_company FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id ${SQL_CALL_LOOKUP_WHERE}`;
+
+const SQL_GET_TRANSCRIPT = `SELECT transcript FROM calls ${SQL_CALL_LOOKUP_WHERE_WITHOUT_ALIAS}`;
+
+const SQL_GET_RECORDING_INFO = `SELECT conference_name, recording_sid FROM calls ${SQL_CALL_LOOKUP_WHERE_WITHOUT_ALIAS}`;
 
 const SQL_PERSIST_ANALYSIS =
-  'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING id';
+  'UPDATE calls SET analysis = $1, updated_at = NOW() WHERE (id::text = $2 OR call_sid = $2) AND workspace_id = $3 RETURNING id';
 
 const SQL_GET_CALL_BY_RECORDING_SID =
   'SELECT id FROM calls WHERE recording_sid = $1 AND workspace_id = $2';
 
-const SQL_SET_DISPOSITION =
+const _SQL_SET_DISPOSITION =
   'UPDATE calls SET outcome = $1, notes = $2, updated_at = NOW() WHERE id = $3 AND workspace_id = $4 RETURNING id, outcome, notes';
 
 const getPool = getSharedPool;
@@ -118,7 +133,9 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         try {
-          const dialer = await getDialerForWorkspace(req.auth?.workspaceId ?? '');
+          const dialer = await getDialerForWorkspace(
+            req.auth?.workspaceId ?? '',
+          );
           const result = await dialer.dial({
             to: body.to,
             from: body.from ?? '',
@@ -200,7 +217,9 @@ export const callRoutes = (): RouteDefinition[] => {
         const twimlUrl = `${baseUrl}/v1/calls/callback/twiml?customer=${encodeURIComponent(body.customerPhone)}&conf=${encodeURIComponent(conferenceName)}&from=${encodeURIComponent(callerId)}`;
 
         try {
-          const dialer = await getDialerForWorkspace(req.auth?.workspaceId ?? '');
+          const dialer = await getDialerForWorkspace(
+            req.auth?.workspaceId ?? '',
+          );
           const { callSid } = await dialer.createCall(
             body.agentPhone,
             callerId,
@@ -264,14 +283,12 @@ export const callRoutes = (): RouteDefinition[] => {
 
         res.type('text/xml').status(200).send(agentTwiml);
 
-        const customerTwiml = getLegacyDialer().conference.generateConferenceTwiml(
-          conf,
-          {
+        const customerTwiml =
+          getLegacyDialer().conference.generateConferenceTwiml(conf, {
             startOnEnter: false,
             endOnExit: true,
             participantLabel: 'customer',
-          },
-        );
+          });
         getLegacyDialer()
           .createCall(customer, from, { twiml: customerTwiml })
           .catch((err: unknown) => {
@@ -303,7 +320,10 @@ export const callRoutes = (): RouteDefinition[] => {
           });
           return;
         }
-        if (!E164_REGEX.test(body.repPhone) || !E164_REGEX.test(body.leadPhone)) {
+        if (
+          !E164_REGEX.test(body.repPhone) ||
+          !E164_REGEX.test(body.leadPhone)
+        ) {
           res.status(400).json({
             error: {
               code: 'INVALID_PHONE',
@@ -368,7 +388,8 @@ export const callRoutes = (): RouteDefinition[] => {
               res.status(409).json({
                 error: {
                   code: 'CALLER_ID_LOCKED',
-                  message: 'Caller ID number is currently in use by another call',
+                  message:
+                    'Caller ID number is currently in use by another call',
                 },
               });
               return;
@@ -397,14 +418,12 @@ export const callRoutes = (): RouteDefinition[] => {
           );
 
           // call rep's phone with conference TwiML + status callback
-          const { callSid: repCallSid } = await dialer.conference.createCall(
+          const { callSid: repCallSid } = await dialer.createCall(
             body.repPhone,
             callerId,
             {
               twiml,
               statusCallback: statusCallbackUrl,
-              statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-              timeout: PHONE_CALL_TIMEOUT_SECONDS,
             },
           );
 
@@ -460,7 +479,9 @@ export const callRoutes = (): RouteDefinition[] => {
             },
           );
           const message =
-            err instanceof Error ? err.message : 'Failed to initiate phone call';
+            err instanceof Error
+              ? err.message
+              : 'Failed to initiate phone call';
           res.status(502).json({ error: { code: 'TWILIO_ERROR', message } });
         }
       }),
@@ -558,7 +579,6 @@ export const callRoutes = (): RouteDefinition[] => {
         }
 
         // STUB: redirect to Twilio URL (replace with proxy streaming if needed)
-        const apiBaseUrl = process.env.API_BASE_URL ?? '';
         const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${process.env.TWILIO_ACCOUNT_SID ?? ''}/Recordings/${recordingSid}.mp3`;
         res.status(200).json({ url: twilioUrl });
       }),
@@ -698,10 +718,10 @@ export const callRoutes = (): RouteDefinition[] => {
         const conferenceName = rows[0].conference_name as string | null;
 
         // STUB: return proxy URL instead of direct Twilio URL
-        const apiBaseUrl = process.env.API_BASE_URL ?? '';
         if (recordingSid) {
           try {
-            const recording = await getLegacyDialer().getRecording(recordingSid);
+            const recording =
+              await getLegacyDialer().getRecording(recordingSid);
             res
               .status(200)
               .json({ url: recording.url, duration: recording.duration });
@@ -771,7 +791,8 @@ export const callRoutes = (): RouteDefinition[] => {
           res.status(400).json({
             error: {
               code: 'INVALID_REQUEST',
-              message: 'Invalid outcome. Valid: connected, voicemail, no-answer, busy, follow-up, not-interested',
+              message:
+                'Invalid outcome. Valid: connected, voicemail, no-answer, busy, follow-up, not-interested',
             },
           });
           return;
@@ -779,22 +800,25 @@ export const callRoutes = (): RouteDefinition[] => {
 
         try {
           const db = await getPool();
-          // build dynamic update
           const setClauses: string[] = ['updated_at = NOW()'];
           const params: unknown[] = [];
           let idx = 1;
+
           if (body.outcome) {
-            setClauses.push(`outcome = ${idx}`);
+            setClauses.push(`outcome = $${idx}`);
             params.push(body.outcome);
             idx++;
           }
+
           if (body.notes !== undefined) {
-            setClauses.push(`notes = ${idx}`);
+            setClauses.push(`notes = $${idx}`);
             params.push(body.notes);
             idx++;
           }
+
           params.push(callId, auth.workspaceId);
-          const sql = `UPDATE calls SET ${setClauses.join(', ')} WHERE id = ${idx} AND workspace_id = ${idx + 1} RETURNING id, outcome, notes`;
+
+          const sql = `UPDATE calls SET ${setClauses.join(', ')} WHERE (id::text = $${idx} OR call_sid = $${idx}) AND workspace_id = $${idx + 1} RETURNING id, outcome, notes`;
           const { rows } = await db.query(sql, params);
           if (rows.length === 0) {
             res.status(404).json({
@@ -820,7 +844,9 @@ export const callRoutes = (): RouteDefinition[] => {
             { extra: { context: 'disposition', callId } },
           );
           const message = err instanceof Error ? err.message : 'Unknown error';
-          res.status(500).json({ error: { code: 'DISPOSITION_FAILED', message } });
+          res
+            .status(500)
+            .json({ error: { code: 'DISPOSITION_FAILED', message } });
         }
       }),
     },

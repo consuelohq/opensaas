@@ -5,6 +5,7 @@ import { useRecoilValue } from 'recoil';
 import { useCallDuration } from '@/dialer/hooks/useCallDuration';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
+import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { type CallStatus } from '@/dialer/types/dialer';
 import { formatDurationTimer } from '@/dialer/utils/callDuration';
@@ -107,6 +108,7 @@ export const ContactHeader = () => {
   const callState = useRecoilValue(callStateAtom);
   const contact = useRecoilValue(selectedContactState);
   const isOnHold = useRecoilValue(isOnHoldState);
+  const rawPhoneNumber = useRecoilValue(phoneNumberState);
   const duration = useCallDuration();
 
   const displayStatus: DisplayStatus =
@@ -120,7 +122,11 @@ export const ContactHeader = () => {
     return (
       <StyledContainer aria-label="No contact selected">
         <StyledInfo>
-          <StyledName>Enter a number to call</StyledName>
+          <StyledName>
+            {rawPhoneNumber
+              ? formatPhone(rawPhoneNumber)
+              : 'Enter a number to call'}
+          </StyledName>
         </StyledInfo>
       </StyledContainer>
     );
