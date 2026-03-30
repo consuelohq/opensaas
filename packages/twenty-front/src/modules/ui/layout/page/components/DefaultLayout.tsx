@@ -13,22 +13,31 @@ import { KeyboardShortcutMenu } from '@/keyboard-shortcut-menu/components/Keyboa
 import { NavigationMenuEditModeBar } from '@/navigation-menu-item/components/NavigationMenuEditModeBar';
 import { AppNavigationDrawer } from '@/navigation/components/AppNavigationDrawer';
 import { MobileNavigationBar } from '@/navigation/components/MobileNavigationBar';
+import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
 import { PageDragDropProvider } from '@/navigation/components/PageDragDropProvider';
 import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { OBJECT_SETTINGS_WIDTH } from '@/settings/data-model/constants/ObjectSettings';
 import { SignInAppNavigationDrawerMock } from '@/sign-in-background-mock/components/SignInAppNavigationDrawerMock';
 import { SignInBackgroundMockPage } from '@/sign-in-background-mock/components/SignInBackgroundMockPage';
+import { isModalOpenedComponentState } from '@/ui/layout/modal/states/isModalOpenedComponentState';
 import { useShowFullscreen } from '@/ui/layout/fullscreen/hooks/useShowFullscreen';
 import { useShowAuthModal } from '@/ui/layout/hooks/useShowAuthModal';
 import { NAVIGATION_DRAWER_CONSTRAINTS } from '@/ui/layout/resizable-panel/constants/NavigationDrawerConstraints';
+import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { useIsMobile } from '@/ui/utilities/responsive/hooks/useIsMobile';
 import { Global, css, useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { useCallback } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
+import { AppPath } from 'twenty-shared/types';
 import { useScreenSize } from 'twenty-ui/utilities';
+
+const MOBILE_NAVIGATION_HIDDEN_ROUTES = new Set([
+  AppPath.PlanRequired,
+  AppPath.PlanRequiredSuccess,
+]);
 
 const StyledLayout = styled.div`
   background: ${({ theme }) => theme.background.noisy};
@@ -69,12 +78,21 @@ const StyledMainContainer = styled.div`
 export const DefaultLayout = () => {
   const isMobile = useIsMobile();
   const isSettingsPage = useIsSettingsPage();
+  const location = useLocation();
   const theme = useTheme();
   const windowsWidth = useScreenSize().width;
   const showAuthModal = useShowAuthModal();
   const useShowFullScreen = useShowFullscreen();
+  const isUpgradeModalOpened = useRecoilComponentValue(
+    isModalOpenedComponentState,
+    NAVIGATION_DRAWER_UPGRADE_MODAL_ID,
+  );
   const setDialerOpen = useSetRecoilState(dialerSidebarOpenState);
   const setCallingMode = useSetRecoilState(callingModeState);
+
+  const shouldHideMobileNavigationBar =
+    MOBILE_NAVIGATION_HIDDEN_ROUTES.has(location.pathname as AppPath) ||
+    isUpgradeModalOpened;
 
   const handleToggleSidebar = useCallback(() => {
     setDialerOpen((prev) => !prev);
@@ -149,7 +167,9 @@ export const DefaultLayout = () => {
                 {!showAuthModal && <AssistantSidebar />}
               </PageDragDropProvider>
             </StyledPageContainer>
-            {isMobile && !showAuthModal && <MobileNavigationBar />}
+            {isMobile && !showAuthModal && !shouldHideMobileNavigationBar && (
+              <MobileNavigationBar />
+            )}
           </AppErrorBoundary>
         </StyledLayout>
       </FileUploadProvider>
