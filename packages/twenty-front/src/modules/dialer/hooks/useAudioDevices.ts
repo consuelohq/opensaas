@@ -32,21 +32,21 @@ const toDeviceInfo = (device: MediaDeviceInfo): AudioDeviceInfo => ({
 
 export const useAudioDevices = (): UseAudioDevicesReturn => {
   const [audioDevices, setAudioDevices] = useRecoilState(audioDevicesState);
-  const [selectedMic, setSelectedMic] = useRecoilState(selectedMicState);
-  const [selectedSpeaker, setSelectedSpeaker] =
+  const [selectedMic, setSelectedMicAtom] = useRecoilState(selectedMicState);
+  const [selectedSpeaker, setSelectedSpeakerAtom] =
     useRecoilState(selectedSpeakerState);
   const initializedRef = useRef(false);
 
-  const microphones = allDevices
+  const microphones = audioDevices
     .filter((d) => d.kind === 'audioinput')
     .map(toDeviceInfo);
 
-  const speakers = allDevices
+  const speakers = audioDevices
     .filter((d) => d.kind === 'audiooutput')
     .map(toDeviceInfo);
 
   // labels are empty strings until permission is granted
-  const hasPermission = allDevices.some((d) => d.label.length > 0);
+  const hasPermission = audioDevices.some((d) => d.label.length > 0);
 
   const refreshDevices = useCallback(async () => {
     try {
@@ -54,11 +54,11 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
       const audioDevices = devices.filter(
         (d) => d.kind === 'audioinput' || d.kind === 'audiooutput',
       );
-      setAllDevices(audioDevices);
+      setAudioDevices(audioDevices);
     } catch (err: unknown) {
       captureException(err, { extra: { context: 'refreshDevices' } });
     }
-  }, [setAllDevices]);
+  }, [setAudioDevices]);
 
   const restoreOrDefault = useCallback(
     (devices: MediaDeviceInfo[]) => {
@@ -123,7 +123,7 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
         const audioDevices = devices.filter(
           (d) => d.kind === 'audioinput' || d.kind === 'audiooutput',
         );
-        setAllDevices(audioDevices);
+        setAudioDevices(audioDevices);
         restoreOrDefault(audioDevices);
       } catch (err: unknown) {
         captureException(err, { extra: { context: 'initAudioDevices' } });
@@ -131,7 +131,7 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
     };
 
     init();
-  }, [setAllDevices, restoreOrDefault]);
+  }, [setAudioDevices, restoreOrDefault]);
 
   // devicechange listener
   useEffect(() => {

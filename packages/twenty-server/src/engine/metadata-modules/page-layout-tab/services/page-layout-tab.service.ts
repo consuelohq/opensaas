@@ -176,9 +176,9 @@ export class PageLayoutTabService {
     if (isDefined(validateAndBuildResult)) {
       throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
-'Multiple validation errors occurred while creating page layout tab',
-    );
-  }
+        'Multiple validation errors occurred while creating page layout tab',
+      );
+    }
 
     const { flatPageLayoutTabMaps: recomputedFlatPageLayoutTabMaps } =
       await this.workspaceManyOrAllFlatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(

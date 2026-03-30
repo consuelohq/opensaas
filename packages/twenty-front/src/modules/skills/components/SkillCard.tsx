@@ -92,9 +92,7 @@ export const SkillCard = ({
           {formatCategory(category)}
         </StyledBadge>
         <StyledBadge
-          color={
-            enabled ? theme.font.color.primary : theme.font.color.tertiary
-          }
+          color={enabled ? theme.font.color.primary : theme.font.color.tertiary}
         >
           {enabled ? t`Active` : t`Draft`}
         </StyledBadge>

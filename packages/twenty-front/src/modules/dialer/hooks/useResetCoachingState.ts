@@ -12,9 +12,10 @@ import {
   transcriptErrorState,
   transcriptState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 
 export const useResetCoachingState = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const prevStatusRef = useRef(callState.status);
 
   const resetAll = useRecoilCallback(

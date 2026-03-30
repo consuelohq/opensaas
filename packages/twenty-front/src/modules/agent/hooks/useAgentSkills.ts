@@ -44,7 +44,9 @@ export const useAgentSkills = () => {
     try {
       const [skillsResponse, foldersResponse] = await Promise.all([
         fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/skills`, { headers }),
-        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/skills/folders`, { headers }),
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/skills/folders`, {
+          headers,
+        }),
       ]);
 
       if (skillsResponse.ok) {

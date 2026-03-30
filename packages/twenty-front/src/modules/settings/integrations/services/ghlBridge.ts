@@ -26,10 +26,7 @@ const isTrustedOrigin = (origin: string): boolean =>
 // notify the GHL parent frame that the dialer is ready to receive calls
 export const sendDialerReady = (): void => {
   try {
-    window.parent.postMessage(
-      { type: GHL_MESSAGE_TYPES.DIALER_READY },
-      '*',
-    );
+    window.parent.postMessage({ type: GHL_MESSAGE_TYPES.DIALER_READY }, '*');
   } catch (_err: unknown) {
     // postMessage may fail if not in an iframe — safe to ignore
   }

@@ -1,5 +1,12 @@
 import styled from '@emotion/styled';
-import { IconBolt, IconChevronRight, IconClock, IconEye, IconPencil, IconPlayerPlay } from '@tabler/icons-react';
+import {
+  IconBolt,
+  IconChevronRight,
+  IconClock,
+  IconEye,
+  IconPencil,
+  IconPlayerPlay,
+} from '@tabler/icons-react';
 import { useLingui } from '@lingui/react/macro';
 import { useCallback, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -125,13 +132,10 @@ export const SkillDetailPage = () => {
     navigate(AppPath.Skills);
   }, [navigate]);
 
-  const handleEditorSave = useCallback(
-    (_data: SkillFormData) => {
-      // NOTE: save wired when DEV-948 storage layer is complete
-      setActiveTab('overview');
-    },
-    [],
-  );
+  const handleEditorSave = useCallback((_data: SkillFormData) => {
+    // NOTE: save wired when DEV-948 storage layer is complete
+    setActiveTab('overview');
+  }, []);
 
   const handleEditorCancel = useCallback(() => {
     setActiveTab('overview');

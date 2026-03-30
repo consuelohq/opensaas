@@ -226,9 +226,9 @@ export class PageLayoutService {
     if (isDefined(validateAndBuildResult)) {
       throw new WorkspaceMigrationBuilderException(
         validateAndBuildResult,
-'Multiple validation errors occurred while creating page layout',
-    );
-  }
+        'Multiple validation errors occurred while creating page layout',
+      );
+    }
 
     const { flatPageLayoutMaps: recomputedFlatPageLayoutMaps } =
       await this.workspaceManyOrAllFlatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(

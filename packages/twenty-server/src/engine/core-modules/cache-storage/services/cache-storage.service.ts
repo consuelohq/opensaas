@@ -38,7 +38,9 @@ export class CacheStorageService {
     if (this.isRedisCache()) {
       const prefixedKeys = keys.map((k) => this.getKey(k));
 
-      await (this.cache as unknown as RedisCache).store.client.del(prefixedKeys);
+      await (this.cache as unknown as RedisCache).store.client.del(
+        prefixedKeys,
+      );
 
       return;
     }
@@ -49,9 +51,9 @@ export class CacheStorageService {
   async mget<T = unknown>(keys: string[]): Promise<(T | undefined)[]> {
     if (this.isRedisCache()) {
       const prefixedKeys = keys.map((k) => this.getKey(k));
-      const values = await (this.cache as unknown as RedisCache).store.client.mGet(
-        prefixedKeys,
-      );
+      const values = await (
+        this.cache as unknown as RedisCache
+      ).store.client.mGet(prefixedKeys);
 
       return values.map((v) => {
         if (v === null || v === undefined) return undefined;
@@ -173,7 +175,9 @@ export class CacheStorageService {
 
   async setMembers(key: string): Promise<string[]> {
     if (this.isRedisCache()) {
-      return (this.cache as unknown as RedisCache).store.client.sMembers(this.getKey(key));
+      return (this.cache as unknown as RedisCache).store.client.sMembers(
+        this.getKey(key),
+      );
     }
 
     return (await this.get<string[]>(key)) ?? [];

@@ -16,6 +16,7 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type DialerContact } from '@/dialer/types/dialer';
 import {
   DEFAULT_QUEUE_SETTINGS,
@@ -174,7 +175,7 @@ export const useOpportunityQueueWorkspace = ({
 
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
 
   const setActiveQueue = useSetRecoilState(activeQueueState);
   const setQueueItems = useSetRecoilState(queueItemsState);

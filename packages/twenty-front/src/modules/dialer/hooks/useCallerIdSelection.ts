@@ -14,14 +14,14 @@ export const useCallerIdSelection = () => {
     selectedCallerIdState,
   );
 
-  const contactPhone = contact?.phone ?? null;
+  const contactPhone = selectedContact?.phone ?? null;
 
   // extract area code from E.164 (+1XXXXXXXXXX)
   const contactAreaCode =
     contactPhone && contactPhone.length >= 5 ? contactPhone.slice(2, 5) : null;
 
   const matchedNumber = contactAreaCode
-    ? availableNumbers.find((n) => n.areaCode === contactAreaCode)
+    ? availableCallerIds.find((n) => n.areaCode === contactAreaCode)
     : null;
 
   const isLocalMatch =
@@ -32,18 +32,18 @@ export const useCallerIdSelection = () => {
 
   // auto-select matching area code when local presence is on
   useEffect(() => {
-    if (!localPresenceEnabled || availableNumbers.length === 0) return;
+    if (!localPresenceEnabled || availableCallerIds.length === 0) return;
 
     if (matchedNumber) {
       setSelectedCallerId(matchedNumber.phoneNumber);
-    } else if (!selectedCallerId && availableNumbers.length > 0) {
+    } else if (!selectedCallerId && availableCallerIds.length > 0) {
       // fallback to first available
-      setSelectedCallerId(availableNumbers[0].phoneNumber);
+      setSelectedCallerId(availableCallerIds[0].phoneNumber);
     }
   }, [
     contactAreaCode,
     localPresenceEnabled,
-    availableNumbers,
+    availableCallerIds,
     matchedNumber,
     selectedCallerId,
     setSelectedCallerId,
@@ -52,7 +52,7 @@ export const useCallerIdSelection = () => {
   return {
     selectedCallerId,
     setSelectedCallerId,
-    availableNumbers,
+    availableCallerIds,
     isLocalMatch,
   };
 };

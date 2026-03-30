@@ -6,9 +6,7 @@ import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('WorkflowRunConfiguration')
-export class WorkflowRunConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class WorkflowRunConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.WORKFLOW_RUN])
   @IsNotEmpty()

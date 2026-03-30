@@ -1,12 +1,10 @@
-import type { IconComponentProps } from 'twenty-ui/display';
-
 // GoHighLevel logo — upward arrow/chevron mark
 export const IconGoHighLevel = ({
   size = 24,
   color = 'currentColor',
   className,
   style,
-}: IconComponentProps) => (
+}: IconGoHighLevelProps) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -16,9 +14,6 @@ export const IconGoHighLevel = ({
     className={className}
     style={style}
   >
-    <path
-      d="M12 3L4 13h5.5v8h5v-8H20L12 3z"
-      fill={color}
-    />
+    <path d="M12 3L4 13h5.5v8h5v-8H20L12 3z" fill={color} />
   </svg>
 );

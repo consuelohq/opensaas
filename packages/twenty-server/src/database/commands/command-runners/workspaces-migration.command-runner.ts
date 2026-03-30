@@ -38,8 +38,8 @@ export type WorkspaceMigrationReport = {
 };
 
 export abstract class WorkspacesMigrationCommandRunner<
-  Options extends
-    WorkspacesMigrationCommandOptions = WorkspacesMigrationCommandOptions,
+  Options extends WorkspacesMigrationCommandOptions =
+    WorkspacesMigrationCommandOptions,
 > extends MigrationCommandRunner {
   protected workspaceIds: Set<string> = new Set();
   private startFromWorkspaceId: string | undefined;

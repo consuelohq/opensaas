@@ -102,7 +102,7 @@ export class ViewService {
       );
     }
 
-const { flatViewMaps: recomputedExistingFlatViewMaps } =
+    const { flatViewMaps: recomputedExistingFlatViewMaps } =
       await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
         {
           workspaceId,
@@ -110,14 +110,14 @@ const { flatViewMaps: recomputedExistingFlatViewMaps } =
         },
       );
 
-      const universalIdentifier = flatViewToCreate.universalIdentifier;
+    const universalIdentifier = flatViewToCreate.universalIdentifier;
 
-      return fromFlatViewToViewDto(
-        findFlatEntityByUniversalIdentifierOrThrow({
-          universalIdentifier,
-          flatEntityMaps: recomputedExistingFlatViewMaps,
-        }),
-      );
+    return fromFlatViewToViewDto(
+      findFlatEntityByUniversalIdentifierOrThrow({
+        universalIdentifier,
+        flatEntityMaps: recomputedExistingFlatViewMaps,
+      }),
+    );
   }
 
   async updateOne({
@@ -267,7 +267,8 @@ const { flatViewMaps: recomputedExistingFlatViewMaps } =
         },
       );
 
-    const universalIdentifier = optimisticallyUpdatedFlatViewWithDeletedAt.universalIdentifier;
+    const universalIdentifier =
+      optimisticallyUpdatedFlatViewWithDeletedAt.universalIdentifier;
 
     return fromFlatViewToViewDto(
       findFlatEntityByUniversalIdentifierOrThrow({

@@ -278,14 +278,14 @@ const formatDate = (dateString: string | null): string => {
 
 export const GHLSettings = () => {
   const theme = useTheme();
-  const connection = useRecoilValue(ghlConnectionState);
-  const syncConfig = useRecoilValue(ghlSyncConfigState);
-  const syncHistory = useRecoilValue(ghlSyncHistoryState);
-  const pushSettings = useRecoilValue(ghlPushSettingsState);
-  const syncProgress = useRecoilValue(ghlManualSyncProgressState);
-  const importProgress = useRecoilValue(ghlImportProgressState);
-  const loading = useRecoilValue(ghlLoadingState);
-  const error = useRecoilValue(ghlErrorState);
+  const ghlConnection = useRecoilValue(ghlConnectionState);
+  const ghlSyncConfig = useRecoilValue(ghlSyncConfigState);
+  const ghlSyncHistory = useRecoilValue(ghlSyncHistoryState);
+  const ghlPushSettings = useRecoilValue(ghlPushSettingsState);
+  const ghlManualSyncProgress = useRecoilValue(ghlManualSyncProgressState);
+  const ghlImportProgress = useRecoilValue(ghlImportProgressState);
+  const ghlLoading = useRecoilValue(ghlLoadingState);
+  const ghlError = useRecoilValue(ghlErrorState);
 
   const {
     fetchConnectionStatus,
@@ -461,7 +461,8 @@ export const GHLSettings = () => {
 
   const isLoading = loading !== 'idle';
   const isSyncing = loading === 'syncing' || syncProgress.status === 'running';
-  const isImporting = loading === 'importing' || importProgress.status === 'running';
+  const isImporting =
+    loading === 'importing' || importProgress.status === 'running';
 
   return (
     <SettingsPageContainer>
@@ -626,7 +627,8 @@ export const GHLSettings = () => {
                     disabled={isLoading}
                   />
                   <StyledTagHint>
-                    Only import/sync contacts with these GHL tags. Leave empty for all contacts.
+                    Only import/sync contacts with these GHL tags. Leave empty
+                    for all contacts.
                   </StyledTagHint>
                 </StyledConfigItem>
 
@@ -658,16 +660,17 @@ export const GHLSettings = () => {
                   </>
                 )}
 
-                {(isSyncing || syncProgress.status !== 'idle') && !isImporting && (
-                  <>
-                    <StyledProgressBar>
-                      <StyledProgressFill progress={syncProgress.progress} />
-                    </StyledProgressBar>
-                    <StyledProgressText>
-                      {syncProgress.message}
-                    </StyledProgressText>
-                  </>
-                )}
+                {(isSyncing || syncProgress.status !== 'idle') &&
+                  !isImporting && (
+                    <>
+                      <StyledProgressBar>
+                        <StyledProgressFill progress={syncProgress.progress} />
+                      </StyledProgressBar>
+                      <StyledProgressText>
+                        {syncProgress.message}
+                      </StyledProgressText>
+                    </>
+                  )}
               </StyledCardContent>
             </StyledCard>
           </StyledSection>

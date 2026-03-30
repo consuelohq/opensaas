@@ -49,18 +49,18 @@ const StyledUploadBox = styled.label`
 `;
 
 const StyledColorRow = styled.div`
+  align-items: center;
   display: flex;
   gap: ${({ theme }) => theme.spacing(3)};
-  align-items: center;
 `;
 
 const StyledColorInput = styled.input`
-  width: 36px;
-  height: 36px;
-  border: none;
-  padding: 0;
-  cursor: pointer;
   background: none;
+  border: none;
+  cursor: pointer;
+  height: 36px;
+  padding: 0;
+  width: 36px;
 `;
 
 type Props = {
@@ -68,7 +68,7 @@ type Props = {
   onSave: (branding: WorkspaceBranding) => Promise<void>;
 };
 
-export const BrandingTab = ({ branding, onSave }: Props) => {
+export const BrandingTab = ({ branding, onSave }: BrandingTabProps) => {
   const [draft, setDraft] = useState(branding);
   const [saving, setSaving] = useState(false);
 

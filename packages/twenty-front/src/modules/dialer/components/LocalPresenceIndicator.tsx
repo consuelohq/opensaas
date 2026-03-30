@@ -1,7 +1,7 @@
 import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
 import styled from '@emotion/styled';
-import { IconMapPin, IconPhone } from '@tabler/icons-react';
+import { IconMapPin, IconPhone } from 'twenty-ui/display';
 import { useState } from 'react';
 
 const StyledContainer = styled.div`
@@ -71,14 +71,14 @@ export const LocalPresenceIndicator = () => {
   const {
     selectedCallerId,
     setSelectedCallerId,
-    availableNumbers,
+    availableCallerIds,
     isLocalMatch,
   } = useCallerIdSelection();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!selectedCallerId || availableNumbers.length === 0) return null;
+  if (!selectedCallerId || availableCallerIds.length === 0) return null;
 
-  const selected = availableNumbers.find(
+  const selected = availableCallerIds.find(
     (n) => n.phoneNumber === selectedCallerId,
   );
 
@@ -97,9 +97,9 @@ export const LocalPresenceIndicator = () => {
           Local
         </StyledLocalBadge>
       )}
-      {isOpen && availableNumbers.length > 1 && (
+      {isOpen && availableCallerIds.length > 1 && (
         <StyledDropdown>
-          {availableNumbers.map((option) => (
+          {availableCallerIds.map((option) => (
             <StyledOption
               key={option.phoneNumber}
               isSelected={option.phoneNumber === selectedCallerId}

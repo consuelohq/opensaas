@@ -17,6 +17,7 @@ import {
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -64,7 +65,7 @@ const StyledColumn = styled.div`
 `;
 
 export const DialerHomeLivePanel = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const callAssistMode = useRecoilValue(callAssistModeState);
   const talkingPoints = useRecoilValue(talkingPointsState);
   const coachingError = useRecoilValue(coachingErrorState);
@@ -114,7 +115,7 @@ export const DialerHomeLivePanel = () => {
       <StyledMetaRow>
         <StyledBadge>{callState.status}</StyledBadge>
         <StyledBadge>
-          {assistMode === 'script' ? t`Script mode` : t`AI coaching`}
+          {callAssistMode === 'script' ? t`Script mode` : t`AI coaching`}
         </StyledBadge>
         {callState.status === 'ended' && (
           <Button
@@ -129,7 +130,7 @@ export const DialerHomeLivePanel = () => {
 
       <StyledMainGrid>
         <StyledColumn>
-          {assistMode === 'script' ? (
+          {callAssistMode === 'script' ? (
             <ScriptAssistPanel />
           ) : (
             <CoachingPanel
@@ -137,6 +138,7 @@ export const DialerHomeLivePanel = () => {
               talkingPoints={talkingPoints}
               callStatus={callState.status}
               error={coachingError}
+              onRetry={() => undefined}
             />
           )}
 
@@ -144,14 +146,12 @@ export const DialerHomeLivePanel = () => {
         </StyledColumn>
 
         <StyledColumn>
-          <LiveTranscript
-            transcript={transcript}
-            isConnected={transcriptConnected}
-          />
+          <LiveTranscript transcript={transcript} isConnected={transcriptConnected} />
           <PostCallSummary
-            analysis={analysis}
+            analysis={postCallAnalysis}
             isAnalyzing={isAnalyzing}
             error={analysisError}
+            onRetry={() => undefined}
           />
         </StyledColumn>
       </StyledMainGrid>

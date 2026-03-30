@@ -27,9 +27,7 @@ import { ChartFilter } from 'src/engine/metadata-modules/page-layout-widget/type
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('PieChartConfiguration')
-export class PieChartConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class PieChartConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.PIE_CHART])
   @IsNotEmpty()

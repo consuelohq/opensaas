@@ -11,7 +11,7 @@ import { type DialerContact, type CallerIdOption } from '@/dialer/types/dialer';
 
 const Wrapper = ({
   children,
-  contact,
+  selectedContact,
   phoneNumber,
   availableCallerIds,
   selectedCallerId,
@@ -24,7 +24,7 @@ const Wrapper = ({
 }) => (
   <RecoilRoot
     initializeState={({ set }) => {
-      set(selectedContactState, contact);
+      set(selectedContactState, selectedContact);
       set(phoneNumberState, phoneNumber);
       set(availableCallerIdsState, availableCallerIds);
       set(selectedCallerIdState, selectedCallerId);
@@ -35,7 +35,7 @@ const Wrapper = ({
 );
 
 const mockContact: DialerContact = {
-  id: 'contact-1',
+  id: 'selectedContact-1',
   name: 'Jane Smith',
   firstName: 'Jane',
   lastName: 'Smith',
@@ -56,19 +56,19 @@ const meta: Meta<typeof DialConfirmationModal> = {
   decorators: [
     (Story, context) => {
       const {
-        contact = mockContact,
+        selectedContact = mockContact,
         phoneNumber = '+14155551234',
         availableCallerIds = mockCallerIds,
         selectedCallerId = null,
       } = context.args as unknown as {
-        contact?: DialerContact | null;
+        selectedContact?: DialerContact | null;
         phoneNumber?: string;
         availableCallerIds?: CallerIdOption[];
         selectedCallerId?: string | null;
       };
       return (
         <Wrapper
-          contact={contact}
+          selectedContact={selectedContact}
           phoneNumber={phoneNumber}
           availableCallerIds={availableCallerIds}
           selectedCallerId={selectedCallerId}
@@ -91,7 +91,7 @@ export default meta;
 type StoryArgs = {
   onClose: () => void;
   onConfirm: (callerId: string) => void;
-  contact?: DialerContact | null;
+  selectedContact?: DialerContact | null;
   phoneNumber?: string;
   availableCallerIds?: CallerIdOption[];
   selectedCallerId?: string | null;

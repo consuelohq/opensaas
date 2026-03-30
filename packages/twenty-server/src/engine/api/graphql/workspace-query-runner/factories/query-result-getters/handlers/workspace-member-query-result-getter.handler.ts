@@ -3,9 +3,7 @@ import { type QueryResultGetterHandlerInterface } from 'src/engine/api/graphql/w
 import { type FileService } from 'src/engine/core-modules/file/services/file.service';
 import { type WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
 
-export class WorkspaceMemberQueryResultGetterHandler
-  implements QueryResultGetterHandlerInterface
-{
+export class WorkspaceMemberQueryResultGetterHandler implements QueryResultGetterHandlerInterface {
   constructor(private readonly fileService: FileService) {}
 
   async handle(

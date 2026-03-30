@@ -6,9 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { type AppTokenEntity } from 'src/engine/core-modules/app-token/app-token.entity';
 
-export class BeforeCreateOneAppToken<T extends AppTokenEntity>
-  implements BeforeCreateOneHook<T>
-{
+export class BeforeCreateOneAppToken<
+  T extends AppTokenEntity,
+> implements BeforeCreateOneHook<T> {
   async run(
     instance: CreateOneInputType<T>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

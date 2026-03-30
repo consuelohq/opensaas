@@ -40,10 +40,15 @@ export const useAgentUsage = () => {
 
     try {
       const [summaryResponse, breakdownResponse] = await Promise.all([
-        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage`, { headers }),
-        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage/breakdown`, {
+        fetch(`${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage`, {
           headers,
         }),
+        fetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/agent/automations/usage/breakdown`,
+          {
+            headers,
+          },
+        ),
       ]);
 
       if (summaryResponse.ok) {

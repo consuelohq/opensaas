@@ -3,11 +3,11 @@ import { useCallback, useRef, useState } from 'react';
 import { IconSend } from 'twenty-ui/display';
 
 const StyledInputContainer = styled.div`
-  display: flex;
   align-items: flex-end;
+  border-top: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
   gap: ${({ theme }) => theme.spacing(1)};
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-  border-top: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledTextarea = styled.textarea`
@@ -15,7 +15,8 @@ const StyledTextarea = styled.textarea`
   resize: none;
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-family: ${({ theme }) => theme.font.family};
   color: ${({ theme }) => theme.font.color.primary};
@@ -34,19 +35,19 @@ const StyledTextarea = styled.textarea`
 `;
 
 const StyledSendButton = styled.button<{ disabled: boolean }>`
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme, disabled }) =>
     disabled ? theme.background.tertiary : theme.accent.primary};
+  border: none;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme, disabled }) =>
     disabled ? theme.font.color.tertiary : theme.grayScale.gray0};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
+  display: flex;
   flex-shrink: 0;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
 `;
 
 type AssistantMessageInputProps = {

@@ -91,34 +91,34 @@ const StyledMeterBar = styled.div`
 `;
 
 const StyledMeterFill = styled.div<{ percent: number; warn: boolean }>`
-  height: 100%;
-  width: ${({ percent }) => Math.min(percent, 100)}%;
   background: ${({ warn, theme }) =>
     warn ? theme.color.red : theme.color.blue};
   border-radius: 4px;
+  height: 100%;
+  width: ${({ percent }) => Math.min(percent, 100)}%;
 `;
 
 const StyledFeatureList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  list-style: none;
+  margin: 0;
+  padding: 0;
 `;
 
 const StyledFeature = styled.li`
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.sm};
   &::before {
-    content: '✓ ';
     color: ${({ theme }) => theme.color.green};
+    content: '✓ ';
   }
 `;
 
 const StyledPeriod = styled.div`
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
 type Props = {
@@ -161,7 +161,11 @@ const Meter = ({
   );
 };
 
-export const BillingTab = ({ billing, limits, onManageBilling }: Props) => {
+export const BillingTab = ({
+  billing,
+  limits,
+  onManageBilling,
+}: BillingTabProps) => {
   const periodEnd = new Date(billing.currentPeriodEnd).toLocaleDateString();
 
   return (

@@ -7,9 +7,9 @@ import { TextInput } from '~/modules/ui/input/components/TextInput';
 import type { WorkspaceConfig } from '~/modules/settings/types/workspace';
 
 const StyledRow = styled.div`
+  align-items: flex-end;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  align-items: flex-end;
 `;
 
 const StyledField = styled.div`
@@ -43,7 +43,7 @@ type Props = {
   onSave: (patch: { name?: string; slug?: string }) => Promise<void>;
 };
 
-export const GeneralTab = ({ workspace, onSave }: Props) => {
+export const GeneralTab = ({ workspace, onSave }: GeneralTabProps) => {
   const [name, setName] = useState(workspace.name);
   const [slug, setSlug] = useState(workspace.slug);
   const [saving, setSaving] = useState(false);

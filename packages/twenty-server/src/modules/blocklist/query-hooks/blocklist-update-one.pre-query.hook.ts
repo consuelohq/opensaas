@@ -14,9 +14,7 @@ import {
 import { WorkspaceNotFoundDefaultError } from 'src/engine/core-modules/workspace/workspace.exception';
 
 @WorkspaceQueryHook(`blocklist.updateOne`)
-export class BlocklistUpdateOnePreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class BlocklistUpdateOnePreQueryHook implements WorkspacePreQueryHookInstance {
   constructor(
     private readonly blocklistValidationService: BlocklistValidationService,
   ) {}

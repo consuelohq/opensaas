@@ -18,9 +18,7 @@ export const calculateAggregatedStats = (
   const noAnswerCount = processed.filter(
     (i) => i.callOutcome === 'no-answer',
   ).length;
-  const busyCount = processed.filter(
-    (i) => i.callOutcome === 'busy',
-  ).length;
+  const busyCount = processed.filter((i) => i.callOutcome === 'busy').length;
   const voicemailCount = processed.filter(
     (i) => i.callOutcome === 'voicemail',
   ).length;
@@ -61,15 +59,15 @@ export const calculateOutcomeBreakdown = (
   items: QueueItem[],
 ): Record<CallOutcome, number> => {
   const breakdown: Record<CallOutcome, number> = {
-    'connected': 0,
+    connected: 0,
     'no-answer': 0,
-    'voicemail': 0,
-    'busy': 0,
+    voicemail: 0,
+    busy: 0,
     'wrong-number': 0,
     'callback-requested': 0,
     'not-interested': 0,
-    'qualified': 0,
-    'dnc': 0,
+    qualified: 0,
+    dnc: 0,
   };
 
   for (const item of items) {

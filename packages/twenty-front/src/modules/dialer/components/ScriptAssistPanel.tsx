@@ -9,8 +9,8 @@ import { useRecoilValue } from 'recoil';
 import {
   IconChevronLeft,
   IconChevronRight,
-  IconScript,
-} from '@tabler/icons-react';
+  IconFileText,
+} from 'twenty-ui/display';
 
 const StyledPanel = styled.div`
   background: ${({ theme }) => theme.background.primary};
@@ -151,7 +151,7 @@ export const ScriptAssistPanel = () => {
     }
   }, [activeSectionIndex, suggestedSectionIndex]);
 
-  if (assistMode !== 'script') {
+  if (callAssistMode !== 'script') {
     return null;
   }
 
@@ -159,7 +159,7 @@ export const ScriptAssistPanel = () => {
     return (
       <StyledPanel>
         <StyledEmpty>
-          <IconScript size={20} />
+          <IconFileText size={20} />
           <span>{t`Select a script in AI settings to guide the call.`}</span>
         </StyledEmpty>
       </StyledPanel>

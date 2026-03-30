@@ -6,8 +6,9 @@ import {
   IconPlayerPlay,
   IconPlayerStop,
   IconRefresh,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
+import { useLingui } from '@lingui/react/macro';
 
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
@@ -23,13 +24,6 @@ type ListRecordQueueControlsProps = {
 };
 
 // region styled
-
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  IDLE: { bg: '#e5e7eb', text: '#374151' },
-  ACTIVE: { bg: '#d1fae5', text: '#065f46' },
-  PAUSED: { bg: '#fef3c7', text: '#92400e' },
-  COMPLETED: { bg: '#e0f2fe', text: '#0c4a6e' },
-};
 
 const StyledContainer = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
@@ -47,9 +41,31 @@ const StyledTopRow = styled.div`
 
 const StyledBadge = styled.span<{ status: string }>`
   align-items: center;
-  background: ${({ status }) => STATUS_COLORS[status]?.bg ?? '#e5e7eb'};
+  background: ${({ theme, status }) => {
+    switch (status) {
+      case 'ACTIVE':
+        return theme.background.transparent.green;
+      case 'PAUSED':
+        return theme.background.transparent.yellow;
+      case 'COMPLETED':
+        return theme.background.transparent.blue;
+      default:
+        return theme.background.tertiary;
+    }
+  }};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: ${({ status }) => STATUS_COLORS[status]?.text ?? '#374151'};
+  color: ${({ theme, status }) => {
+    switch (status) {
+      case 'ACTIVE':
+        return theme.color.green;
+      case 'PAUSED':
+        return theme.color.yellow;
+      case 'COMPLETED':
+        return theme.color.blue;
+      default:
+        return theme.font.color.primary;
+    }
+  }};
   display: inline-flex;
   font-size: ${({ theme }) => theme.font.size.xs};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
@@ -74,13 +90,13 @@ const StyledButton = styled.button<{ variant?: 'danger' | 'accent' }>`
   cursor: pointer;
   background: ${({ variant, theme }) =>
     variant === 'danger'
-      ? '#ef4444'
+      ? theme.color.red
       : variant === 'accent'
         ? theme.color.blue
         : theme.background.tertiary};
   color: ${({ variant, theme }) =>
     variant === 'danger' || variant === 'accent'
-      ? '#fff'
+      ? theme.font.color.inverted
       : theme.font.color.primary};
   &:hover {
     opacity: 0.85;
@@ -129,6 +145,7 @@ const StyledStatValue = styled.span`
 export const ListRecordQueueControls = ({
   recordId,
 }: ListRecordQueueControlsProps) => {
+  const { t } = useLingui();
   const listStatus = useRecoilValue<ListStatus>(
     recordStoreFamilySelector({
       recordId,
@@ -248,18 +265,18 @@ export const ListRecordQueueControls = ({
           {status === 'IDLE' && (
             <StyledButton variant="accent" onClick={handleStart}>
               <IconPlayerPlay size={14} />
-              Start Queue
+              {t`Start Queue`}
             </StyledButton>
           )}
           {status === 'ACTIVE' && (
             <>
               <StyledButton onClick={handlePause}>
                 <IconPlayerPause size={14} />
-                Pause
+                {t`Pause`}
               </StyledButton>
               <StyledButton variant="danger" onClick={handleStop}>
                 <IconPlayerStop size={14} />
-                Stop
+                {t`Stop`}
               </StyledButton>
             </>
           )}
@@ -267,18 +284,18 @@ export const ListRecordQueueControls = ({
             <>
               <StyledButton variant="accent" onClick={handleResume}>
                 <IconPlayerPlay size={14} />
-                Resume
+                {t`Resume`}
               </StyledButton>
               <StyledButton variant="danger" onClick={handleStop}>
                 <IconPlayerStop size={14} />
-                Stop
+                {t`Stop`}
               </StyledButton>
             </>
           )}
           {status === 'COMPLETED' && (
             <StyledButton variant="accent" onClick={handleRestart}>
               <IconRefresh size={14} />
-              Restart
+              {t`Restart`}
             </StyledButton>
           )}
         </StyledButtons>
@@ -290,17 +307,17 @@ export const ListRecordQueueControls = ({
 
       <StyledStats>
         <StyledStat>
-          <StyledStatLabel>Progress</StyledStatLabel>
+          <StyledStatLabel>{t`Progress`}</StyledStatLabel>
           <StyledStatValue>
             {stats.completed} / {stats.totalMembers}
           </StyledStatValue>
         </StyledStat>
         <StyledStat>
-          <StyledStatLabel>Answer Rate</StyledStatLabel>
+          <StyledStatLabel>{t`Answer Rate`}</StyledStatLabel>
           <StyledStatValue>{stats.answerRate}%</StyledStatValue>
         </StyledStat>
         <StyledStat>
-          <StyledStatLabel>Avg Duration</StyledStatLabel>
+          <StyledStatLabel>{t`Avg Duration`}</StyledStatLabel>
           <StyledStatValue>
             {formatDurationTimer(stats.avgDuration)}
           </StyledStatValue>
@@ -308,15 +325,15 @@ export const ListRecordQueueControls = ({
         {(listStatus === 'ACTIVE' || listStatus === 'PAUSED') &&
           currentIndex !== null && (
             <StyledStat>
-              <StyledStatLabel>Current Contact</StyledStatLabel>
+              <StyledStatLabel>{t`Current Contact`}</StyledStatLabel>
               <StyledStatValue>
-                {currentIndex + 1} of {stats.totalMembers}
+                {currentIndex + 1} {t`of`} {stats.totalMembers}
               </StyledStatValue>
             </StyledStat>
           )}
         {listStatus === 'ACTIVE' && (
           <StyledStat>
-            <StyledStatLabel>Elapsed</StyledStatLabel>
+            <StyledStatLabel>{t`Elapsed`}</StyledStatLabel>
             <StyledStatValue>
               {formatDurationTimer(elapsedSeconds)}
             </StyledStatValue>

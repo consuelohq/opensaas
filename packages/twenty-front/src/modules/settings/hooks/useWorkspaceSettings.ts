@@ -107,7 +107,8 @@ export const useWorkspaceSettings = () => {
         if (!res.ok) throw new Error(`${res.status}`);
         update({ branding });
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : 'Branding update failed';
+        const msg =
+          err instanceof Error ? err.message : 'Branding update failed';
         setError(msg);
         throw err;
       }
@@ -142,7 +143,10 @@ export const useWorkspaceSettings = () => {
             team: [...prev.team, member],
             billing: {
               ...prev.billing,
-              seats: { ...prev.billing.seats, used: prev.billing.seats.used + 1 },
+              seats: {
+                ...prev.billing.seats,
+                used: prev.billing.seats.used + 1,
+              },
             },
           };
           saveToStorage(next);
@@ -169,7 +173,9 @@ export const useWorkspaceSettings = () => {
         setWorkspace((prev) => {
           const next = {
             ...prev,
-            team: prev.team.map((m) => (m.id === memberId ? { ...m, role } : m)),
+            team: prev.team.map((m) =>
+              m.id === memberId ? { ...m, role } : m,
+            ),
           };
           saveToStorage(next);
           return next;
@@ -198,7 +204,10 @@ export const useWorkspaceSettings = () => {
             team: prev.team.filter((m) => m.id !== memberId),
             billing: {
               ...prev.billing,
-              seats: { ...prev.billing.seats, used: prev.billing.seats.used - 1 },
+              seats: {
+                ...prev.billing.seats,
+                used: prev.billing.seats.used - 1,
+              },
             },
           };
           saveToStorage(next);

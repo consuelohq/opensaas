@@ -166,7 +166,8 @@ export type FileBrowserProps = {
 
 export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
   const { t } = useLingui();
-  const [view, setView] = useRecoilState(fileBrowserViewState);
+  const [fileBrowserView, setFileBrowserView] =
+    useRecoilState(fileBrowserViewState);
   const setPreviewFile = useSetRecoilState(filePreviewState);
   const [activeFolder, setActiveFolder] = useState('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -231,7 +232,10 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
     [setView],
   );
 
-  const folderIcons: Record<string, React.ComponentType<{ size?: number; stroke?: number }>> = {
+  const folderIcons: Record<
+    string,
+    React.ComponentType<{ size?: number; stroke?: number }>
+  > = {
     all: IconFolder,
     documents: IconFile,
     images: IconPhoto,
@@ -286,9 +290,7 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
 
       {selected.size > 0 && (
         <StyledBulkBar>
-          <StyledBulkCount>
-            {t`${selected.size} selected`}
-          </StyledBulkCount>
+          <StyledBulkCount>{t`${selected.size} selected`}</StyledBulkCount>
           <Button
             title={t`Delete`}
             Icon={IconTrash}

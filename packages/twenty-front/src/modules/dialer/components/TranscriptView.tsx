@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports — DEV-788: twenty-ui module resolution conflict
-import { IconChevronDown, IconChevronUp, IconCopy } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronUp, IconCopy } from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';

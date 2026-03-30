@@ -8,6 +8,7 @@ import {
   coachingLoadingState,
   talkingPointsState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useRecoilValue } from 'recoil';
@@ -38,7 +39,7 @@ const StyledBadge = styled.span`
 `;
 
 export const OpportunityCallCoachingTab = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const callAssistMode = useRecoilValue(callAssistModeState);
   const talkingPoints = useRecoilValue(talkingPointsState);
   const coachingError = useRecoilValue(coachingErrorState);
@@ -49,13 +50,13 @@ export const OpportunityCallCoachingTab = () => {
       <StyledMetaRow>
         <StyledBadge>{callState.status}</StyledBadge>
         <StyledBadge>
-          {assistMode === 'script' ? t`Script mode` : t`AI coaching`}
+          {callAssistMode === 'script' ? t`Script mode` : t`AI coaching`}
         </StyledBadge>
       </StyledMetaRow>
 
       <ContactHeader />
 
-      {assistMode === 'script' ? (
+      {callAssistMode === 'script' ? (
         <ScriptAssistPanel />
       ) : (
         <CoachingPanel
@@ -63,6 +64,7 @@ export const OpportunityCallCoachingTab = () => {
           talkingPoints={talkingPoints}
           callStatus={callState.status}
           error={coachingError}
+          onRetry={() => undefined}
         />
       )}
 

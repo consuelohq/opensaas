@@ -13,7 +13,7 @@ import {
   IconPlayerPlay,
   IconSwitchHorizontal,
   IconX,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 
 import { DialPad } from '@/dialer/components/DialPad';
 import { TransferModal } from '@/dialer/components/TransferModal';
@@ -23,6 +23,7 @@ import { activeCallState } from '@/dialer/states/activeCallState';
 import { callErrorState } from '@/dialer/states/callErrorState';
 import { isMutedState } from '@/dialer/states/isMutedState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 
 const VISIBLE_STATUSES = new Set(['connecting', 'ringing', 'active']);
@@ -64,9 +65,13 @@ const StyledButton = styled.button<{
     background 120ms,
     transform 80ms;
   background: ${({ active, danger, theme }) =>
-    danger ? '#ef4444' : active ? theme.color.blue : theme.background.tertiary};
+    danger
+      ? theme.color.red
+      : active
+        ? theme.color.blue
+        : theme.background.tertiary};
   color: ${({ active, danger, theme }) =>
-    active || danger ? '#fff' : theme.font.color.primary};
+    active || danger ? theme.font.color.inverted : theme.font.color.primary};
 
   &:hover:not(:disabled) {
     transform: scale(1.05);
@@ -118,8 +123,9 @@ const StyledSmallButton = styled.button<{ danger?: boolean }>`
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  background: ${({ danger, theme }) => (danger ? '#ef4444' : theme.color.blue)};
-  color: #fff;
+  background: ${({ danger, theme }) =>
+    danger ? theme.color.red : theme.color.blue};
+  color: ${({ theme }) => theme.font.color.inverted};
   display: flex;
   align-items: center;
   gap: 4px;
@@ -127,10 +133,10 @@ const StyledSmallButton = styled.button<{ danger?: boolean }>`
 
 const StyledErrorBar = styled.div`
   align-items: center;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid #ef4444;
+  background: ${({ theme }) => theme.background.transparent.red};
+  border: 1px solid ${({ theme }) => theme.color.red};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: #ef4444;
+  color: ${({ theme }) => theme.color.red};
   display: flex;
   font-size: 12px;
   gap: ${({ theme }) => theme.spacing(2)};
@@ -151,7 +157,7 @@ const StyledErrorText = styled.span`
 const StyledErrorDismiss = styled.button`
   background: none;
   border: none;
-  color: #ef4444;
+  color: ${({ theme }) => theme.color.red};
   cursor: pointer;
   padding: 2px;
   display: flex;
@@ -164,7 +170,7 @@ const StyledErrorDismiss = styled.button`
 
 export const InCallControls = () => {
   const { t } = useLingui();
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const [callError, setCallError] = useRecoilState(callErrorState);
   const [isMuted, setIsMuted] = useRecoilState(isMutedState);
@@ -224,10 +230,10 @@ export const InCallControls = () => {
       await toggleHold(next);
     } catch (err: unknown) {
       enqueueErrorSnackBar({
-        message: err instanceof Error ? err.message : 'Failed to toggle hold',
+        message: err instanceof Error ? err.message : t`Failed to toggle hold`,
       });
     }
-  }, [isOnHold, toggleHold, enqueueErrorSnackBar]);
+  }, [isOnHold, toggleHold, enqueueErrorSnackBar, t]);
 
   const handleEndCall = useCallback(() => {
     activeCall?.disconnect();
@@ -269,11 +275,11 @@ export const InCallControls = () => {
           <StyledWarmLabel>{t`Consulting with transfer target...`}</StyledWarmLabel>
           <StyledSmallButton onClick={completeTransfer}>
             <IconCheck size={14} />
-            Complete
+            {t`Complete`}
           </StyledSmallButton>
           <StyledSmallButton danger onClick={cancelTransfer}>
             <IconX size={14} />
-            Cancel
+            {t`Cancel`}
           </StyledSmallButton>
         </StyledWarmBar>
       )}
@@ -296,7 +302,7 @@ export const InCallControls = () => {
           <StyledButton
             active={isMuted}
             onClick={handleMuteToggle}
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
+            aria-label={isMuted ? t`Unmute` : t`Mute`}
             aria-pressed={isMuted}
           >
             {isMuted ? (
@@ -313,7 +319,7 @@ export const InCallControls = () => {
             active={isOnHold}
             onClick={handleHoldToggle}
             isDisabled={!isActive}
-            aria-label={isOnHold ? 'Resume' : 'Hold'}
+            aria-label={isOnHold ? t`Resume` : t`Hold`}
             aria-pressed={isOnHold}
           >
             {isOnHold ? (
@@ -326,7 +332,7 @@ export const InCallControls = () => {
         </StyledButtonGroup>
 
         <StyledButtonGroup>
-          <StyledButton danger onClick={handleEndCall} aria-label="End call">
+          <StyledButton danger onClick={handleEndCall} aria-label={t`End call`}>
             <IconPhoneOff size={20} />
           </StyledButton>
           <StyledLabel>{t`End`}</StyledLabel>
@@ -337,7 +343,7 @@ export const InCallControls = () => {
             active={isDTMFOpen}
             onClick={handleDTMFToggle}
             isDisabled={!isActive}
-            aria-label="Keypad"
+            aria-label={t`Keypad`}
             aria-pressed={isDTMFOpen}
           >
             <IconHash size={20} />
@@ -350,7 +356,7 @@ export const InCallControls = () => {
             active={isTransferOpen}
             onClick={handleTransferToggle}
             isDisabled={!isActive}
-            aria-label="Transfer"
+            aria-label={t`Transfer`}
             aria-pressed={isTransferOpen}
           >
             <IconSwitchHorizontal size={20} />

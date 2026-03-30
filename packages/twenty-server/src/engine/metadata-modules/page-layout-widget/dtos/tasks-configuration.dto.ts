@@ -6,9 +6,7 @@ import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('TasksConfiguration')
-export class TasksConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class TasksConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.TASKS])
   @IsNotEmpty()

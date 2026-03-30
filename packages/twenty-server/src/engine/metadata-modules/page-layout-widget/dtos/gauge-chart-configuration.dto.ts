@@ -24,9 +24,7 @@ import { ChartFilter } from 'src/engine/metadata-modules/page-layout-widget/type
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('GaugeChartConfiguration')
-export class GaugeChartConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class GaugeChartConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.GAUGE_CHART])
   @IsNotEmpty()

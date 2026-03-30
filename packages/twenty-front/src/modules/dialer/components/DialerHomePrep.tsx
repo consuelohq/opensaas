@@ -140,7 +140,7 @@ export const DialerHomePrep = () => {
   const { status } = useTwilioConfigStatus();
   const [callAssistMode, setCallAssistMode] =
     useRecoilState(callAssistModeState);
-  const { selectedScriptId, setSelectedScriptId, scripts } =
+  const { selectedCoachingScriptId, setSelectedCoachingScriptId, coachingScripts } =
     useCoachingScripts();
   const [source, setSource] = useState<HomeSource>('person');
   const [selectedListId, setSelectedListId] = useState<string>('');
@@ -350,22 +350,22 @@ export const DialerHomePrep = () => {
             dropdownId="dialer-home-assist-mode"
             fullWidth
             label={t`Assist mode`}
-            value={assistMode}
-            onChange={(value) => setAssistMode(value)}
+            value={callAssistMode}
+            onChange={(value) => setCallAssistMode(value)}
             options={[
               { value: 'ai', label: t`AI coaching` },
               { value: 'script', label: t`Script mode` },
             ]}
           />
 
-          {assistMode === 'script' && (
+          {callAssistMode === 'script' && (
             <Select
               dropdownId="dialer-home-script-select"
               fullWidth
               label={t`Script`}
-              value={selectedScriptId ?? ''}
-              onChange={(value) => setSelectedScriptId(value)}
-              options={scripts.map((script) => ({
+              value={selectedCoachingScriptId ?? ''}
+              onChange={(value) => setSelectedCoachingScriptId(value)}
+              options={coachingScripts.map((script) => ({
                 value: script.id,
                 label: script.name,
               }))}
@@ -378,7 +378,7 @@ export const DialerHomePrep = () => {
 
           <StyledInlineActions>
             <Button
-              title={t`Manage scripts`}
+              title={t`Manage coachingScripts`}
               variant="secondary"
               onClick={() => navigate(getSettingsPath(SettingsPath.AI))}
             />

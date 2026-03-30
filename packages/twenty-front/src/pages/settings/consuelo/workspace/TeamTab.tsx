@@ -19,10 +19,10 @@ const StyledSeatBar = styled.div`
 `;
 
 const StyledSeatFill = styled.div<{ percent: number }>`
-  height: 100%;
-  width: ${({ percent }) => percent}%;
   background: ${({ theme }) => theme.color.blue};
   border-radius: 4px;
+  height: 100%;
+  width: ${({ percent }) => percent}%;
 `;
 
 const StyledSeatLabel = styled.div`
@@ -32,31 +32,31 @@ const StyledSeatLabel = styled.div`
 `;
 
 const StyledInviteRow = styled.div`
+  align-items: flex-end;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  align-items: flex-end;
 `;
 
 const StyledTable = styled.table`
-  width: 100%;
   border-collapse: collapse;
   margin-top: ${({ theme }) => theme.spacing(2)};
+  width: 100%;
 `;
 
 const StyledTh = styled.th`
-  text-align: left;
-  padding: ${({ theme }) => theme.spacing(2)};
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
   color: ${({ theme }) => theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.medium};
+  padding: ${({ theme }) => theme.spacing(2)};
+  text-align: left;
 `;
 
 const StyledTd = styled.td`
-  padding: ${({ theme }) => theme.spacing(2)};
-  font-size: ${({ theme }) => theme.font.size.sm};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledSelect = styled.select`
@@ -87,10 +87,10 @@ const StyledBadge = styled.span<{ status: string }>`
 `;
 
 const StyledRoleInfo = styled.div`
-  margin-top: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  margin-top: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledRoleRow = styled.div`
@@ -122,7 +122,7 @@ export const TeamTab = ({
   onInvite,
   onUpdateRole,
   onRemove,
-}: Props) => {
+}: TeamTabProps) => {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<TeamRole>('member');
   const [inviting, setInviting] = useState(false);

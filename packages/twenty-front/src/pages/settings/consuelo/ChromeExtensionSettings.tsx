@@ -82,7 +82,9 @@ export const ChromeExtensionSettings = () => {
           description={t`Install the Consuelo Chrome Extension to use the dialer from any browser tab`}
         />
         <StyledDocLink
-          href={getDocumentationUrl({ path: '/user-guide/chrome-extension/overview' })}
+          href={getDocumentationUrl({
+            path: '/user-guide/chrome-extension/overview',
+          })}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -98,7 +100,9 @@ export const ChromeExtensionSettings = () => {
         </StyledStatusRow>
         <StyledButtonRow>
           <Button
-            title={connected ? t`View in Chrome Web Store` : t`Install Extension`}
+            title={
+              connected ? t`View in Chrome Web Store` : t`Install Extension`
+            }
             Icon={IconBrandChrome}
             size="small"
             onClick={handleInstall}

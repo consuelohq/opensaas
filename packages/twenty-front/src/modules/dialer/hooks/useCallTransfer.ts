@@ -7,6 +7,7 @@ import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { activeTransferState } from '@/dialer/states/activeTransferState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { conferenceSidState } from '@/dialer/states/conferenceState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { TransferType, TransferStatus } from '@/dialer/types/dialer';
 
 interface TransferState {
@@ -52,7 +53,7 @@ async function postJson(
 }
 
 export const useCallTransfer = (): UseCallTransferReturn => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const setActiveTransfer = useSetRecoilState(activeTransferState);
   const setIsOnHold = useSetRecoilState(isOnHoldState);
   const setConferenceSid = useSetRecoilState(conferenceSidState);

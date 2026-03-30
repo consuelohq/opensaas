@@ -31,13 +31,12 @@ export class RenameOpportunityToListCommand extends ActiveOrSuspendedWorkspacesM
     workspaceId,
     options,
   }: RunOnWorkspaceArgs): Promise<void> {
-    const opportunityMetadata =
-      await this.objectMetadataRepository.findOne({
-        where: {
-          nameSingular: 'opportunity',
-          workspaceId,
-        },
-      });
+    const opportunityMetadata = await this.objectMetadataRepository.findOne({
+      where: {
+        nameSingular: 'opportunity',
+        workspaceId,
+      },
+    });
 
     if (!opportunityMetadata) {
       this.logger.log(
@@ -74,8 +73,6 @@ export class RenameOpportunityToListCommand extends ActiveOrSuspendedWorkspacesM
       shortcut: 'L',
     });
 
-    this.logger.log(
-      `Renamed opportunity to List for workspace ${workspaceId}`,
-    );
+    this.logger.log(`Renamed opportunity to List for workspace ${workspaceId}`);
   }
 }

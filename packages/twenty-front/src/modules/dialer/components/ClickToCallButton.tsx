@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { IconPhone } from '@tabler/icons-react';
+import { IconPhone } from 'twenty-ui/display';
 import styled from '@emotion/styled';
 import { captureException } from '@sentry/react';
 

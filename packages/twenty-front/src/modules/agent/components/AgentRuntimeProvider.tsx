@@ -11,10 +11,7 @@ import { getTokenPair } from '@/apollo/utils/getTokenPair';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 
-import type {
-  ThreadMessage,
-  AppendMessage,
-} from '@assistant-ui/react';
+import type { ThreadMessage, AppendMessage } from '@assistant-ui/react';
 import type { UIMessage } from 'ai';
 
 type AgentRuntimeProviderProps = {
@@ -57,7 +54,7 @@ const convertMessage = (msg: UIMessage): ThreadMessage => {
 
 export const AgentRuntimeProviderWrapper = ({
   children,
-}: AgentRuntimeProviderProps) => {
+}: AgentRuntimeProviderWrapperProps) => {
   const chat = useChat({
     transport: new DefaultChatTransport({
       api: `${REACT_APP_SERVER_BASE_URL}/v1/agent/chat`,

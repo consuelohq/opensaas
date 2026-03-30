@@ -292,15 +292,16 @@ export class FieldMetadataService extends TypeOrmQueryService<FieldMetadataEntit
       );
     }
 
-const { flatFieldMetadataMaps: recomputedFlatFieldMetadataMaps } =
-    await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
-      {
-        workspaceId,
-        flatMapsKeys: ['flatFieldMetadataMaps'],
-      },
-    );
+    const { flatFieldMetadataMaps: recomputedFlatFieldMetadataMaps } =
+      await this.flatEntityMapsCacheService.getOrRecomputeManyOrAllFlatEntityMaps(
+        {
+          workspaceId,
+          flatMapsKeys: ['flatFieldMetadataMaps'],
+        },
+      );
 
-    const universalIdentifier = flatFieldMetadatasToUpdate[0].universalIdentifier;
+    const universalIdentifier =
+      flatFieldMetadatasToUpdate[0].universalIdentifier;
 
     return findFlatEntityByUniversalIdentifierOrThrow({
       universalIdentifier,

@@ -5,11 +5,14 @@
 import { useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
 
-import { onClickToCall, sendDialerReady } from '@/settings/integrations/services/ghlBridge';
+import {
+  onClickToCall,
+  sendDialerReady,
+} from '@/settings/integrations/services/ghlBridge';
 import { ghlClickToCallState } from '@/settings/integrations/states/ghlClickToCallState';
 import type { GHLClickToCallContact } from '@/settings/integrations/types/ghl';
 
-export const ClickToCallHandler = () => {
+export const ClickToCallHandlerEffect = () => {
   const setClickToCall = useSetRecoilState(ghlClickToCallState);
 
   useEffect(() => {

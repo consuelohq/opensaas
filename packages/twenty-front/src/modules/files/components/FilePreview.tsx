@@ -86,7 +86,7 @@ type DownloadUrlResponse = {
 
 export const FilePreview = () => {
   const { t } = useLingui();
-  const [file, setFile] = useRecoilState(filePreviewState);
+  const [filePreview, setFilePreview] = useRecoilState(filePreviewState);
   const { openModal, closeModal } = useModal();
   const { enqueueSnackBar } = useSnackBar();
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
@@ -157,7 +157,7 @@ export const FilePreview = () => {
   }
 
   const extension = file.name.includes('.')
-    ? file.name.split('.').pop() ?? ''
+    ? (file.name.split('.').pop() ?? '')
     : '';
 
   return (
@@ -181,9 +181,7 @@ export const FilePreview = () => {
           <IconButton Icon={IconX} onClick={handleClose} size="small" />
         </StyledButtons>
       </StyledHeader>
-      <ScrollWrapper
-        componentInstanceId={`file-preview-${file.id}`}
-      >
+      <ScrollWrapper componentInstanceId={`file-preview-${file.id}`}>
         <StyledContent>
           {loading && (
             <StyledLoadingContainer>

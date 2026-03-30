@@ -19,25 +19,25 @@ export const useCallAnalytics = () => {
 
   const fetchMetrics = useCallback(
     async (period: AnalyticsPeriod) => {
-      setLoading(true);
+      setMetricsLoading(true);
       try {
         const res = await authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/analytics/metrics?period=${period}`,
+          `${REACT_APP_SERVER_BASE_URL}/v1/analytics/callMetrics?period=${period}`,
         );
         if (!res.ok) throw new Error('fetch failed');
-        const data = (await res.json()) as { metrics: CallMetrics };
-        setMetrics(data.metrics);
+        const data = (await res.json()) as { callMetrics: CallMetrics };
+        setCallMetrics(data.callMetrics);
       } catch (err: unknown) {
         captureException(err, { extra: { context: 'fetchMetrics', period } });
-        setMetrics(null);
+        setCallMetrics(null);
       } finally {
-        setLoading(false);
+        setMetricsLoading(false);
       }
     },
-    [setMetrics, setLoading],
+    [setCallMetrics, setMetricsLoading],
   );
 
-  return { metrics, loading, fetchMetrics };
+  return { callMetrics, metricsLoading, fetchMetrics };
 };
 
 export type { AnalyticsPeriod };

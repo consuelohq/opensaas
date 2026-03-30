@@ -20,11 +20,11 @@ import { getAppPath } from 'twenty-shared/utils';
 import { AxisNameDisplay } from '~/generated-metadata/graphql';
 
 const GraphWidgetBarChart = lazy(() =>
-  import(
-    '@/page-layout/widgets/graph/graphWidgetBarChart/components/GraphWidgetBarChart'
-  ).then((module) => ({
-    default: module.GraphWidgetBarChart,
-  })),
+  import('@/page-layout/widgets/graph/graphWidgetBarChart/components/GraphWidgetBarChart').then(
+    (module) => ({
+      default: module.GraphWidgetBarChart,
+    }),
+  ),
 );
 
 export const GraphWidgetBarChartRenderer = () => {

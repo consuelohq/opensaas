@@ -55,7 +55,14 @@ jest.mock('@/dialer/hooks/useCallPersistence', () => ({
 }));
 jest.mock('@/dialer/hooks/useTwilioConfigStatus', () => ({
   useTwilioConfigStatus: () => ({
-    status: { configured: true, mode: 'hosted', twilioConnected: true, hasPhoneNumbers: true, twimlAppConfigured: true, error: null },
+    status: {
+      configured: true,
+      mode: 'hosted',
+      twilioConnected: true,
+      hasPhoneNumbers: true,
+      twimlAppConfigured: true,
+      error: null,
+    },
     isLoading: false,
     error: null,
   }),
@@ -131,7 +138,11 @@ describe('DialerSidebar', () => {
   it('should show in-call controls when call is active', () => {
     const inCallState = (snap: MutableSnapshot) => {
       snap.set(dialerSidebarOpenState, true);
-      snap.set(callStateAtom, { ...defaultCallState, status: 'active', callSid: 'CA-123' });
+      snap.set(callStateAtom, {
+        ...defaultCallState,
+        status: 'active',
+        callSid: 'CA-123',
+      });
     };
 
     renderWithRecoil(<DialerSidebar />, { initializeState: inCallState });
@@ -163,7 +174,9 @@ describe('DialerSidebar', () => {
 
     renderWithRecoil(<DialerSidebar />, { initializeState: reconnectState });
 
-    expect(screen.getByText('Active call detected. Reconnect?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Active call detected. Reconnect?'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Reconnect')).toBeInTheDocument();
     expect(screen.getByText('Dismiss')).toBeInTheDocument();
   });

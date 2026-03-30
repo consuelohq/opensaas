@@ -6,8 +6,8 @@ import { useDebouncedCallback } from 'use-debounce';
 import type { FileRecord } from '@/files/types/FileUpload';
 
 const BASE_URL =
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  window._env_?.REACT_APP_SERVER_BASE_URL ?? process.env.REACT_APP_SERVER_BASE_URL!;
+  window._env_?.REACT_APP_SERVER_BASE_URL ??
+  process.env.REACT_APP_SERVER_BASE_URL!;
 
 export type FilesFilter = {
   folder?: string;
@@ -102,7 +102,10 @@ export const useFiles = (initialFilter?: FilesFilter) => {
     [deleteFile],
   );
 
-  const refresh = useCallback(() => void fetchFiles(filter), [fetchFiles, filter]);
+  const refresh = useCallback(
+    () => void fetchFiles(filter),
+    [fetchFiles, filter],
+  );
 
   return {
     files,

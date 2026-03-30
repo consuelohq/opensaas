@@ -20,7 +20,8 @@ const StyledCard = styled.div`
 `;
 
 const StyledCardHeader = styled.div`
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   background: ${({ theme }) => theme.background.tertiary};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   font-weight: ${({ theme }) => theme.font.weight.medium};
@@ -44,13 +45,13 @@ const StyledField = styled.div`
 `;
 
 const StyledFieldLabel = styled.span`
-  font-size: ${({ theme }) => theme.font.size.xs};
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
 `;
 
 const StyledFieldValue = styled.span`
-  font-weight: ${({ theme }) => theme.font.weight.medium};
   color: ${({ theme }) => theme.font.color.primary};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
 `;
 
 const StyledRow = styled.div`
@@ -81,13 +82,13 @@ const StyledError = styled.div`
 `;
 
 const StyledStatusDot = styled.span<{ healthy: boolean }>`
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
   background: ${({ theme, healthy }) =>
     healthy ? theme.color.green : theme.color.red};
+  border-radius: 50%;
+  display: inline-block;
+  height: 8px;
   margin-right: ${({ theme }) => theme.spacing(1)};
+  width: 8px;
 `;
 
 // -- helpers --
@@ -98,8 +99,7 @@ const formatDuration = (seconds: number): string => {
   return `${m}:${String(s).padStart(2, '0')}`;
 };
 
-const formatRate = (rate: number): string =>
-  `${Math.round(rate * 100)}%`;
+const formatRate = (rate: number): string => `${Math.round(rate * 100)}%`;
 
 // -- renderers --
 

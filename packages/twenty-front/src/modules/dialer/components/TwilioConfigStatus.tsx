@@ -7,9 +7,10 @@ import {
   IconAlertTriangle,
   IconSettings,
   IconRefresh,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 import { useRecoilValue } from 'recoil';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useLingui, Trans } from '@lingui/react/macro';
 
 import { twilioConfigStatusState } from '@/dialer/states/twilioConfigStatusState';
 
@@ -30,11 +31,22 @@ const StyledContainer = styled.div`
   text-align: center;
 `;
 
-const StyledIcon = styled.div<{ color: string }>`
+const StyledIcon = styled.div<{ colorKey: 'blue' | 'yellow' | 'red' | 'gray' }>`
   align-items: center;
-  background: ${({ color }) => color};
+  background: ${({ theme, colorKey }) => {
+    switch (colorKey) {
+      case 'blue':
+        return theme.color.blue;
+      case 'yellow':
+        return theme.color.yellow;
+      case 'red':
+        return theme.color.red;
+      default:
+        return theme.color.gray;
+    }
+  }};
   border-radius: 50%;
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   display: flex;
   height: 40px;
   justify-content: center;
@@ -75,8 +87,8 @@ const StyledButton = styled.button`
 `;
 
 export const TwilioConfigStatusEffect = () => {
-  const twilioConfigStatus = useRecoilValue(twilioConfigStatusState);
-  const navigate = useNavigate();
+  const status = useRecoilValue(twilioConfigStatusState);
+  useLingui();
 
   // loading or fully configured — render nothing
   if (!status || status.configured) return null;
@@ -85,11 +97,15 @@ export const TwilioConfigStatusEffect = () => {
   if (status.mode === 'hosted' && !status.twilioConnected) {
     return (
       <StyledContainer>
-        <StyledIcon color="#3b82f6">
+        <StyledIcon colorKey="blue">
           <IconCloud size={20} />
         </StyledIcon>
-        <StyledTitle>Setting up your phone system...</StyledTitle>
-        <StyledPulse>This takes about 30 seconds on first use.</StyledPulse>
+        <StyledTitle>
+          <Trans>Setting up your phone system...</Trans>
+        </StyledTitle>
+        <StyledPulse>
+          <Trans>This takes about 30 seconds on first use.</Trans>
+        </StyledPulse>
       </StyledContainer>
     );
   }
@@ -98,12 +114,14 @@ export const TwilioConfigStatusEffect = () => {
   if (status.mode === 'hosted' && !status.hasPhoneNumbers) {
     return (
       <StyledContainer>
-        <StyledIcon color="#3b82f6">
+        <StyledIcon colorKey="blue">
           <IconPhone size={20} />
         </StyledIcon>
-        <StyledTitle>Pick a phone number to start calling</StyledTitle>
-        <StyledButton onClick={() => navigate('/settings/accounts')}>
-          <IconSettings size={14} /> Go to Settings
+        <StyledTitle>
+          <Trans>Pick a phone number to start calling</Trans>
+        </StyledTitle>
+        <StyledButton as={Link} to="/settings/accounts">
+          <IconSettings size={14} /> <Trans>Go to Settings</Trans>
         </StyledButton>
       </StyledContainer>
     );
@@ -113,11 +131,15 @@ export const TwilioConfigStatusEffect = () => {
   if (status.mode === 'hosted' && !status.twimlAppConfigured) {
     return (
       <StyledContainer>
-        <StyledIcon color="#eab308">
+        <StyledIcon colorKey="yellow">
           <IconRefresh size={20} />
         </StyledIcon>
-        <StyledTitle>Phone system needs repair</StyledTitle>
-        <StyledPulse>Fixing automatically...</StyledPulse>
+        <StyledTitle>
+          <Trans>Phone system needs repair</Trans>
+        </StyledTitle>
+        <StyledPulse>
+          <Trans>Fixing automatically...</Trans>
+        </StyledPulse>
       </StyledContainer>
     );
   }
@@ -127,19 +149,23 @@ export const TwilioConfigStatusEffect = () => {
     const hasError = !!status.error;
     return (
       <StyledContainer>
-        <StyledIcon color={hasError ? '#ef4444' : '#6b7280'}>
+        <StyledIcon colorKey={hasError ? 'red' : 'gray'}>
           {hasError ? <IconAlertTriangle size={20} /> : <IconKey size={20} />}
         </StyledIcon>
         <StyledTitle>
-          {hasError
-            ? 'Twilio connection failed'
-            : 'Connect your Twilio account to start calling'}
+          {hasError ? (
+            <Trans>Twilio connection failed</Trans>
+          ) : (
+            <Trans>Connect your Twilio account to start calling</Trans>
+          )}
         </StyledTitle>
         {hasError && (
-          <StyledSubtext>Check your credentials in Settings</StyledSubtext>
+          <StyledSubtext>
+            <Trans>Check your credentials in Settings</Trans>
+          </StyledSubtext>
         )}
-        <StyledButton onClick={() => navigate('/settings/accounts')}>
-          <IconSettings size={14} /> Go to Settings
+        <StyledButton as={Link} to="/settings/accounts">
+          <IconSettings size={14} /> <Trans>Go to Settings</Trans>
         </StyledButton>
       </StyledContainer>
     );
@@ -149,11 +175,15 @@ export const TwilioConfigStatusEffect = () => {
   if (status.mode === 'byok' && !status.twimlAppConfigured) {
     return (
       <StyledContainer>
-        <StyledIcon color="#eab308">
+        <StyledIcon colorKey="yellow">
           <IconRefresh size={20} />
         </StyledIcon>
-        <StyledTitle>Phone system needs repair</StyledTitle>
-        <StyledPulse>Fixing automatically...</StyledPulse>
+        <StyledTitle>
+          <Trans>Phone system needs repair</Trans>
+        </StyledTitle>
+        <StyledPulse>
+          <Trans>Fixing automatically...</Trans>
+        </StyledPulse>
       </StyledContainer>
     );
   }
@@ -162,10 +192,12 @@ export const TwilioConfigStatusEffect = () => {
   if (status.error) {
     return (
       <StyledContainer>
-        <StyledIcon color="#ef4444">
+        <StyledIcon colorKey="red">
           <IconAlertTriangle size={20} />
         </StyledIcon>
-        <StyledTitle>Phone system error</StyledTitle>
+        <StyledTitle>
+          <Trans>Phone system error</Trans>
+        </StyledTitle>
         <StyledSubtext>{status.error}</StyledSubtext>
       </StyledContainer>
     );

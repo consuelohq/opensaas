@@ -1,8 +1,9 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { IconLoader2, IconPhone, IconPhoneOff } from '@tabler/icons-react';
+import { IconLoader2, IconPhone, IconPhoneOff } from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
+import { useLingui } from '@lingui/react/macro';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
@@ -12,6 +13,7 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { callErrorState } from '@/dialer/states/callErrorState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { stripNonDigits } from '@/dialer/utils/phoneFormat';
 
 const isValidNumber = (phone: string): boolean => {
@@ -31,27 +33,27 @@ const StyledButton = styled.button<{ variant: 'call' | 'end' | 'disabled' }>`
   gap: ${({ theme }) => theme.spacing(2)};
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   cursor: ${({ variant }) =>
     variant === 'disabled' ? 'not-allowed' : 'pointer'};
   opacity: ${({ variant }) => (variant === 'disabled' ? 0.5 : 1)};
   transition:
     background 120ms,
     transform 80ms;
-  background: ${({ variant }) =>
+  background: ${({ variant, theme }) =>
     variant === 'end'
-      ? '#ef4444'
+      ? theme.color.red
       : variant === 'disabled'
-        ? '#9ca3af'
-        : '#22c55e'};
+        ? theme.color.gray
+        : theme.color.green};
 
   &:hover:not(:disabled) {
-    background: ${({ variant }) =>
+    background: ${({ variant, theme }) =>
       variant === 'end'
-        ? '#dc2626'
+        ? theme.color.red
         : variant === 'disabled'
-          ? '#9ca3af'
-          : '#16a34a'};
+          ? theme.color.gray
+          : theme.color.green};
   }
 
   &:active:not(:disabled) {
@@ -70,7 +72,8 @@ const StyledSpinner = styled(IconLoader2)`
 `;
 
 export const CallButton = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const { t } = useLingui();
+  const callState = useRecoilValue(callStateAtom);
   const phoneNumber = useRecoilValue(phoneNumberState);
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
@@ -82,7 +85,7 @@ export const CallButton = () => {
     callState.status === 'connecting' || callState.status === 'ringing';
   const isActive = callState.status === 'active';
   const isInCall = isConnecting || isActive;
-  const valid = isValidNumber(rawNumber);
+  const valid = isValidNumber(phoneNumber);
   const fromNumber =
     selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
 
@@ -97,8 +100,7 @@ export const CallButton = () => {
       if (!fromNumber) {
         setCallError({
           reason: 'no_caller_id',
-          message:
-            'No caller ID available. Add a phone number in Settings → Dialer.',
+          message: t`No caller ID available. Add a phone number in Settings → Dialer.`,
           occurredAt: new Date(),
         });
       }
@@ -120,7 +122,7 @@ export const CallButton = () => {
         if (preflightRes.status === 409) {
           setCallError({
             reason: 'caller_id_locked',
-            message: 'Number in use by another agent',
+            message: t`Number in use by another agent`,
             occurredAt: new Date(),
           });
           return;
@@ -134,12 +136,13 @@ export const CallButton = () => {
         );
       }
 
-      await connect({ To: rawNumber, From: fromNumber });
+      await connect({ To: phoneNumber, From: fromNumber });
     } catch (err: unknown) {
       captureException(err, {
         extra: {
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           context: 'CallButton.connect',
-          to: rawNumber,
+          to: phoneNumber,
           from: fromNumber,
         },
       });
@@ -149,7 +152,7 @@ export const CallButton = () => {
     isInCall,
     valid,
     fromNumber,
-    rawNumber,
+    phoneNumber,
     connect,
     disconnect,
     setCallError,
@@ -158,13 +161,14 @@ export const CallButton = () => {
   const isDisabled = !isInCall && (!valid || !fromNumber);
   const variant = isInCall ? 'end' : isDisabled ? 'disabled' : 'call';
 
+  const firstName = selectedContact?.firstName;
   const label = isConnecting
-    ? 'Connecting...'
+    ? t`Connecting...`
     : isActive
-      ? 'End Call'
-      : contact?.firstName
-        ? `Call ${contact.firstName}`
-        : 'Call';
+      ? t`End Call`
+      : firstName
+        ? t`Call ${firstName}`
+        : t`Call`;
 
   return (
     <StyledButton

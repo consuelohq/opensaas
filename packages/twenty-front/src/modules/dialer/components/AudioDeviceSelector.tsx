@@ -3,7 +3,8 @@ import {
   IconMicrophone,
   IconVolume,
   IconMicrophoneOff,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
 
 import { useAudioDevices } from '@/dialer/hooks/useAudioDevices';
 
@@ -71,6 +72,7 @@ const StyledPermissionButton = styled.button`
 export const AudioDeviceSelector = ({
   compact = false,
 }: AudioDeviceSelectorProps) => {
+  const { t } = useLingui();
   const {
     microphones,
     speakers,
@@ -86,7 +88,7 @@ export const AudioDeviceSelector = ({
     return (
       <StyledPermissionButton onClick={requestPermission}>
         <IconMicrophoneOff size={14} />
-        Grant microphone access
+        {t`Grant microphone access`}
       </StyledPermissionButton>
     );
   }
@@ -97,11 +99,11 @@ export const AudioDeviceSelector = ({
         {!compact && (
           <StyledLabel>
             <IconMicrophone size={14} />
-            Microphone
+            {t`Microphone`}
           </StyledLabel>
         )}
         <StyledSelect
-          aria-label="Microphone"
+          aria-label={t`Microphone`}
           value={selectedMic ?? ''}
           onChange={(e) => setSelectedMic(e.target.value)}
         >
@@ -117,11 +119,11 @@ export const AudioDeviceSelector = ({
         {!compact && (
           <StyledLabel>
             <IconVolume size={14} />
-            Speaker
+            {t`Speaker`}
           </StyledLabel>
         )}
         <StyledSelect
-          aria-label="Speaker"
+          aria-label={t`Speaker`}
           value={selectedSpeaker ?? ''}
           onChange={(e) => setSelectedSpeaker(e.target.value)}
         >

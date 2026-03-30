@@ -14,9 +14,7 @@ import { type CalendarEventWorkspaceEntity } from 'src/modules/calendar/common/s
   key: `calendarEvent.findMany`,
   type: WorkspaceQueryHookType.POST_HOOK,
 })
-export class CalendarEventFindManyPostQueryHook
-  implements WorkspacePostQueryHookInstance
-{
+export class CalendarEventFindManyPostQueryHook implements WorkspacePostQueryHookInstance {
   constructor(
     private readonly applyCalendarEventsVisibilityRestrictionsService: ApplyCalendarEventsVisibilityRestrictionsService,
   ) {}

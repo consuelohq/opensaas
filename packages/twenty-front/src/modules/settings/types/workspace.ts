@@ -65,7 +65,13 @@ export type WorkspaceConfig = {
 
 export const ROLE_PERMISSIONS: Record<TeamRole, string[]> = {
   owner: ['*'],
-  admin: ['manage_team', 'manage_settings', 'manage_billing', 'make_calls', 'view_analytics'],
+  admin: [
+    'manage_team',
+    'manage_settings',
+    'manage_billing',
+    'make_calls',
+    'view_analytics',
+  ],
   member: ['make_calls', 'view_contacts', 'view_own_analytics'],
 };
 

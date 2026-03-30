@@ -41,7 +41,8 @@ export class AgentModelConfigService {
     switch (model.provider) {
       case ModelProvider.ANTHROPIC:
         if (agent.modelConfiguration.webSearch?.enabled) {
-          tools.web_search = anthropic.tools.webSearch_20250305() as ToolSet[string];
+          tools.web_search =
+            anthropic.tools.webSearch_20250305() as ToolSet[string];
         }
         break;
       case ModelProvider.OPENAI:

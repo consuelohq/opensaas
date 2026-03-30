@@ -10,6 +10,7 @@ import {
   UseFilters,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Response, Request } from 'express';
 import { Repository } from 'typeorm';
 
@@ -22,7 +23,10 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 import { JwtWrapperService } from 'src/engine/core-modules/jwt/services/jwt-wrapper.service';
-import { AuthException, AuthExceptionCode } from 'src/engine/core-modules/auth/auth.exception';
+import {
+  AuthException,
+  AuthExceptionCode,
+} from 'src/engine/core-modules/auth/auth.exception';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 
 const renderLoginForm = (
@@ -47,9 +51,7 @@ const renderLoginForm = (
       `
     : '';
 
-  const errorDiv = error
-    ? `<div class="error">${escapeHtml(error)}</div>`
-    : '';
+  const errorDiv = error ? `<div class="error">${escapeHtml(error)}</div>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -114,7 +116,10 @@ const renderLoginForm = (
 </html>`;
 };
 
-const renderSuccessPage = (email: string, redirectWithToken: string): string => {
+const renderSuccessPage = (
+  email: string,
+  redirectWithToken: string,
+): string => {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -243,12 +248,14 @@ export class CliAuthController {
           'Missing redirect URL. Please start authentication from the CLI.',
         ),
       );
+
       return;
     }
 
     // Validate redirect URL is localhost
     try {
       const redirectUrl = new URL(redirect);
+
       if (
         redirectUrl.hostname !== 'localhost' &&
         redirectUrl.hostname !== '127.0.0.1'
@@ -257,16 +264,19 @@ export class CliAuthController {
         res.send(
           renderErrorPage('Invalid redirect URL. Must be localhost.', redirect),
         );
+
         return;
       }
     } catch {
       res.setHeader('Content-Type', 'text/html');
       res.send(renderErrorPage('Invalid redirect URL format.', redirect));
+
       return;
     }
 
     // Check if user already has a valid session (via cookies)
     const tokenPairCookie = req.cookies?.['tokenPair'];
+
     if (tokenPairCookie) {
       try {
         const tokenPair = JSON.parse(tokenPairCookie);
@@ -302,6 +312,7 @@ export class CliAuthController {
 
                   res.setHeader('Content-Type', 'text/html');
                   res.send(redirectHtml);
+
                   return;
                 }
               }
@@ -338,6 +349,7 @@ export class CliAuthController {
           hasGoogleAuth,
         ),
       );
+
       return;
     }
 
@@ -357,6 +369,7 @@ export class CliAuthController {
             hasGoogleAuth,
           ),
         );
+
         return;
       }
 
@@ -370,6 +383,7 @@ export class CliAuthController {
             hasGoogleAuth,
           ),
         );
+
         return;
       }
 
@@ -383,10 +397,8 @@ export class CliAuthController {
       const availableWorkspaces =
         await this.userWorkspaceService.findAvailableWorkspacesByEmail(email);
 
-      const signInWorkspaces =
-        availableWorkspaces.availableWorkspacesForSignIn;
-      const signUpWorkspaces =
-        availableWorkspaces.availableWorkspacesForSignUp;
+      const signInWorkspaces = availableWorkspaces.availableWorkspacesForSignIn;
+      const signUpWorkspaces = availableWorkspaces.availableWorkspacesForSignUp;
 
       if (signInWorkspaces.length === 0 && signUpWorkspaces.length === 0) {
         res.setHeader('Content-Type', 'text/html');
@@ -397,6 +409,7 @@ export class CliAuthController {
             hasGoogleAuth,
           ),
         );
+
         return;
       }
 
@@ -409,6 +422,7 @@ export class CliAuthController {
         res.send(
           renderLoginForm(redirect, 'Workspace not found', hasGoogleAuth),
         );
+
         return;
       }
 
@@ -445,6 +459,7 @@ export class CliAuthController {
 
     // Build redirect URL with token
     const redirectUrl = new URL(redirect);
+
     redirectUrl.searchParams.set('token', token);
     redirectUrl.searchParams.set('email', user.email);
     redirectUrl.searchParams.set('workspaceId', workspace.id);
@@ -458,6 +473,7 @@ export class CliAuthController {
   ): Promise<{ token: string }> {
     // Create API key with 1 year expiry
     const expiresAt = new Date();
+
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
     // Use workspace default role

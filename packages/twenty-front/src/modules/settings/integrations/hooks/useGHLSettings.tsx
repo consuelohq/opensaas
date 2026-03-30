@@ -61,10 +61,15 @@ export const useGHLSettings = () => {
       setConnection(data);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Failed to fetch connection status';
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch connection status';
 
       Sentry.captureException(err, {
-        tags: { component: 'useGHLSettings', operation: 'fetchConnectionStatus' },
+        tags: {
+          component: 'useGHLSettings',
+          operation: 'fetchConnectionStatus',
+        },
       });
       setError(message);
     } finally {
@@ -173,7 +178,10 @@ export const useGHLSettings = () => {
         setSyncConfig((prev) => ({ ...prev, direction }));
       } catch (err: unknown) {
         Sentry.captureException(err, {
-          tags: { component: 'useGHLSettings', operation: 'updateSyncDirection' },
+          tags: {
+            component: 'useGHLSettings',
+            operation: 'updateSyncDirection',
+          },
         });
         throw err;
       }
@@ -336,7 +344,11 @@ export const useGHLSettings = () => {
     async (tags?: string[]) => {
       try {
         setLoading('syncing');
-        setSyncProgress({ status: 'running', progress: 0, message: 'Starting sync...' });
+        setSyncProgress({
+          status: 'running',
+          progress: 0,
+          message: 'Starting sync...',
+        });
 
         const body: Record<string, unknown> = {};
         if (tags && tags.length > 0) {

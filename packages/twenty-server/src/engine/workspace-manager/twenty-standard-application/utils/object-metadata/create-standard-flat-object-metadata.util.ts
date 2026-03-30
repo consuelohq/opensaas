@@ -330,16 +330,12 @@ export const STANDARD_FLAT_OBJECT_METADATA_BUILDERS_BY_OBJECT_NAME = {
     standardObjectMetadataRelatedEntityIds,
     twentyStandardApplicationId,
     dependencyFlatEntityMaps,
-  }: Omit<
-    CreateStandardObjectArgs<'listMember'>,
-    'context' | 'objectName'
-  >) =>
+  }: Omit<CreateStandardObjectArgs<'listMember'>, 'context' | 'objectName'>) =>
     createStandardObjectFlatMetadata({
       objectName: 'listMember',
       dependencyFlatEntityMaps,
       context: {
-        universalIdentifier:
-          STANDARD_OBJECTS.listMember.universalIdentifier,
+        universalIdentifier: STANDARD_OBJECTS.listMember.universalIdentifier,
         nameSingular: 'listMember',
         namePlural: 'listMembers',
         labelSingular: 'List Member',

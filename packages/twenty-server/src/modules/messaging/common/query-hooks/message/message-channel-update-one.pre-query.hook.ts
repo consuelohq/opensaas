@@ -32,9 +32,7 @@ const ONGOING_SYNC_STAGES = [
 ];
 
 @WorkspaceQueryHook(`messageChannel.updateOne`)
-export class MessageChannelUpdateOnePreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class MessageChannelUpdateOnePreQueryHook implements WorkspacePreQueryHookInstance {
   private readonly logger = new Logger(
     MessageChannelUpdateOnePreQueryHook.name,
   );

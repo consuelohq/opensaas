@@ -6,9 +6,7 @@ import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('CalendarConfiguration')
-export class CalendarConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class CalendarConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.CALENDAR])
   @IsNotEmpty()

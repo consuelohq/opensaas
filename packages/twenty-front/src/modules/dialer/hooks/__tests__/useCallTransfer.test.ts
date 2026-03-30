@@ -1,4 +1,4 @@
-import { act, waitFor } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { type MutableSnapshot } from 'recoil';
 
 import { renderHookWithRecoil } from '@/dialer/testing/renderWithRecoil';
@@ -37,7 +37,8 @@ const jsonResponse = (data: Record<string, unknown>, ok = true) =>
   Promise.resolve({
     ok,
     status: ok ? 200 : 500,
-    json: () => Promise.resolve(ok ? data : { error: { message: 'Server error' } }),
+    json: () =>
+      Promise.resolve(ok ? data : { error: { message: 'Server error' } }),
   });
 
 describe('useCallTransfer', () => {

@@ -91,9 +91,7 @@ export const SkillsIndexPage = () => {
             <StyledEmptyState>{t`Loading skills...`}</StyledEmptyState>
           ) : filteredSkills.length === 0 ? (
             <StyledEmptyState>
-              {searchTerm
-                ? t`No skills match your search`
-                : t`No skills yet`}
+              {searchTerm ? t`No skills match your search` : t`No skills yet`}
             </StyledEmptyState>
           ) : (
             <StyledGrid>

@@ -10,6 +10,7 @@ import {
   postCallAnalysisState,
   transcriptState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   type CallAnalytics,
   type TranscriptEntry,
@@ -29,15 +30,15 @@ function isValidCallAnalytics(data: unknown): data is CallAnalytics {
 }
 
 interface UsePostCallAnalysisReturn {
-  analysis: CallAnalytics | null;
+  postCallAnalysis: CallAnalytics | null;
   isAnalyzing: boolean;
-  error: string | null;
+  analysisError: string | null;
   analyze: (callId: string, transcript: TranscriptEntry[]) => Promise<void>;
   retry: () => void;
 }
 
 export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const transcript = useRecoilValue(transcriptState);
   const setAnalysis = useSetRecoilState(postCallAnalysisState);
   const setIsAnalyzing = useSetRecoilState(isAnalyzingState);
@@ -88,13 +89,13 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
         const data = json.data;
 
         if (!isValidCallAnalytics(data)) {
-          throw new Error('Invalid analysis response format');
+          throw new Error('Invalid postCallAnalysis response format');
         }
 
         setAnalysis(data);
 
         authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`,
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/postCallAnalysis`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -141,7 +142,7 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     }
   }, [callState.status, callState.callSid, analyze]);
 
-  // clear analysis when a new call starts
+  // clear postCallAnalysis when a new call starts
   useEffect(() => {
     if (callState.status === 'idle') {
       if (abortControllerRef.current) {
@@ -161,5 +162,5 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     }
   }, [analyze]);
 
-  return { analysis, isAnalyzing, error, analyze, retry };
+  return { postCallAnalysis, isAnalyzing, analysisError, analyze, retry };
 };

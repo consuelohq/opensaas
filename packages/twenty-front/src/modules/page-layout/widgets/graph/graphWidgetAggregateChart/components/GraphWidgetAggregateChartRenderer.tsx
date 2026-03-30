@@ -5,11 +5,11 @@ import { useCurrentWidget } from '@/page-layout/widgets/hooks/useCurrentWidget';
 import { lazy, Suspense } from 'react';
 
 const GraphWidgetAggregateChart = lazy(() =>
-  import(
-    '@/page-layout/widgets/graph/graphWidgetAggregateChart/components/GraphWidgetAggregateChart'
-  ).then((module) => ({
-    default: module.GraphWidgetAggregateChart,
-  })),
+  import('@/page-layout/widgets/graph/graphWidgetAggregateChart/components/GraphWidgetAggregateChart').then(
+    (module) => ({
+      default: module.GraphWidgetAggregateChart,
+    }),
+  ),
 );
 
 export const GraphWidgetAggregateChartRenderer = () => {

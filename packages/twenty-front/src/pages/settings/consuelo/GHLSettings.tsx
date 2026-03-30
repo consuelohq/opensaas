@@ -296,7 +296,9 @@ export const GHLSettings = () => {
     try {
       setDisconnecting(true);
       setError(null);
-      await fetchJson('/v1/integrations/leadconnector/connection', { method: 'DELETE' });
+      await fetchJson('/v1/integrations/leadconnector/connection', {
+        method: 'DELETE',
+      });
       setStatus({ connected: false });
       setGhlConnection({
         connected: false,
@@ -334,7 +336,9 @@ export const GHLSettings = () => {
             description="Connect your GHL account to sync contacts and push call outcomes"
           />
           <StyledDocLink
-            href={getDocumentationUrl({ path: '/user-guide/highlevel/overview' })}
+            href={getDocumentationUrl({
+              path: '/user-guide/highlevel/overview',
+            })}
             target="_blank"
             rel="noopener noreferrer"
           >

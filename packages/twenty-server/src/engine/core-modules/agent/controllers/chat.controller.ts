@@ -7,10 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import {
-  createUIMessageStream,
-  pipeUIMessageStreamToResponse,
-} from 'ai';
+import { createUIMessageStream, pipeUIMessageStreamToResponse } from 'ai';
 import { type Response } from 'express';
 import { type ExtendedUIMessage } from 'twenty-shared/ai';
 
@@ -34,9 +31,7 @@ type ChatBody = {
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 @UseFilters(RestApiExceptionFilter)
 export class ChatController {
-  constructor(
-    private readonly chatExecutionService: ChatExecutionService,
-  ) {}
+  constructor(private readonly chatExecutionService: ChatExecutionService) {}
 
   @Post()
   async chat(
@@ -65,8 +60,7 @@ export class ChatController {
             }),
           );
         } catch (err: unknown) {
-          const message =
-            err instanceof Error ? err.message : 'unknown error';
+          const message = err instanceof Error ? err.message : 'unknown error';
 
           writer.write({
             type: 'error',

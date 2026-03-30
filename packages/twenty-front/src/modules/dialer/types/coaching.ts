@@ -1,4 +1,5 @@
 import { type CallStatus } from '@/dialer/types/dialer';
+import { msg } from '@lingui/core/macro';
 
 export interface TalkingPoints {
   product_or_option_name: string | null;
@@ -66,10 +67,12 @@ export interface CallAnalytics {
 }
 
 // maps call status to the empty-state message shown in the coaching panel
-export const COACHING_EMPTY_MESSAGES: Partial<Record<CallStatus, string>> = {
-  idle: 'Start a call to receive coaching',
-  connecting: 'Preparing coaching...',
-  active: 'Analyzing conversation...',
-  ended: 'Call ended',
-  failed: 'Call failed — no coaching available',
+export const COACHING_EMPTY_MESSAGES: Partial<
+  Record<CallStatus, ReturnType<typeof msg>>
+> = {
+  idle: msg`Start a call to receive coaching`,
+  connecting: msg`Preparing coaching...`,
+  active: msg`Analyzing conversation...`,
+  ended: msg`Call ended`,
+  failed: msg`Call failed — no coaching available`,
 };

@@ -10,6 +10,7 @@ import {
   talkingPointsState,
   transcriptState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   type TalkingPoints,
   type TranscriptEntry,
@@ -50,14 +51,14 @@ function isValidTalkingPoints(data: unknown): data is TalkingPoints {
 }
 
 interface UseCoachingReturn {
-  isLoading: boolean;
+  coachingLoading: boolean;
   talkingPoints: TalkingPoints | null;
-  error: string | null;
+  coachingError: string | null;
   retry: () => void;
 }
 
 export const useCoaching = (): UseCoachingReturn => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const transcript = useRecoilValue(transcriptState);
   const setLoading = useSetRecoilState(coachingLoadingState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
@@ -176,7 +177,7 @@ export const useCoaching = (): UseCoachingReturn => {
           }
         }
       } catch (error: unknown) {
-        captureException(error);
+        captureException(coachingError);
         // graceful degradation — coaching still works via initial REST fetch
       }
     },
@@ -240,5 +241,5 @@ export const useCoaching = (): UseCoachingReturn => {
     }
   }, [callState.callSid, callState.status, callState.contact, fetchCoaching]);
 
-  return { isLoading, talkingPoints, error, retry };
+  return { coachingLoading, talkingPoints, coachingError, retry };
 };

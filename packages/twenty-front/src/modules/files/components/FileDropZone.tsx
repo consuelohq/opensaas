@@ -11,7 +11,12 @@ import {
   type FileDropZoneProps,
 } from '@/files/types/FileUpload';
 import { formatFileSize } from '@/file/utils/formatFileSize';
-import { IconUpload, IconX, IconCheck, IconAlertCircle } from 'twenty-ui/display';
+import {
+  IconUpload,
+  IconX,
+  IconCheck,
+  IconAlertCircle,
+} from 'twenty-ui/display';
 import { isDefined } from 'twenty-shared/utils';
 
 const StyledContainer = styled.div`
@@ -24,7 +29,9 @@ const StyledContainer = styled.div`
 const StyledDropArea = styled.div<{ isDragActive: boolean }>`
   align-items: center;
   background: ${({ theme, isDragActive }) =>
-    isDragActive ? theme.background.transparent.light : theme.background.secondary};
+    isDragActive
+      ? theme.background.transparent.light
+      : theme.background.secondary};
   border: 2px dashed
     ${({ theme, isDragActive }) =>
       isDragActive ? theme.color.blue : theme.border.color.medium};
@@ -97,7 +104,10 @@ const StyledProgressBarContainer = styled.div`
   width: 80px;
 `;
 
-const StyledProgressBarFill = styled.div<{ progress: number; hasError: boolean }>`
+const StyledProgressBarFill = styled.div<{
+  progress: number;
+  hasError: boolean;
+}>`
   background: ${({ theme, hasError }) =>
     hasError ? theme.color.red : theme.color.blue};
   border-radius: 2px;
@@ -164,9 +174,7 @@ export const FileDropZone = ({
     maxFiles,
     onDropRejected: (rejections) => {
       for (const rejection of rejections) {
-        const errorMessage = rejection.errors
-          .map((e) => e.message)
-          .join(', ');
+        const errorMessage = rejection.errors.map((e) => e.message).join(', ');
         onUploadError?.(rejection.file.name, errorMessage);
       }
     },
@@ -191,11 +199,7 @@ export const FileDropZone = ({
         <IconUpload
           size={theme.icon.size.lg}
           stroke={theme.icon.stroke.sm}
-          color={
-            isDragActive
-              ? theme.color.blue
-              : theme.font.color.tertiary
-          }
+          color={isDragActive ? theme.color.blue : theme.font.color.tertiary}
         />
         <StyledDropText>
           {isDragActive
@@ -242,8 +246,7 @@ export const FileDropZone = ({
                 </StyledStatusIcon>
               )}
 
-              {(upload.status === 'complete' ||
-                upload.status === 'error') && (
+              {(upload.status === 'complete' || upload.status === 'error') && (
                 <StyledRemoveButton
                   onClick={(event) => {
                     event.stopPropagation();
@@ -262,14 +265,16 @@ export const FileDropZone = ({
         </StyledUploadList>
       )}
 
-      {hasCompleted && isDefined(activeUploads) && activeUploads.length === 0 && (
-        <StyledRemoveButton
-          onClick={clearCompleted}
-          style={{ alignSelf: 'flex-end' }}
-        >
-          <StyledDropSubText>{t`Clear completed`}</StyledDropSubText>
-        </StyledRemoveButton>
-      )}
+      {hasCompleted &&
+        isDefined(activeUploads) &&
+        activeUploads.length === 0 && (
+          <StyledRemoveButton
+            onClick={clearCompleted}
+            style={{ alignSelf: 'flex-end' }}
+          >
+            <StyledDropSubText>{t`Clear completed`}</StyledDropSubText>
+          </StyledRemoveButton>
+        )}
     </StyledContainer>
   );
 };

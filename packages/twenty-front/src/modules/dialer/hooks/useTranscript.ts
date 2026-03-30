@@ -11,6 +11,7 @@ import {
   transcriptErrorState,
   transcriptState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type TranscriptEntry } from '@/dialer/types/coaching';
 
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -44,13 +45,13 @@ function countWords(entries: TranscriptEntry[]): number {
 
 interface UseTranscriptReturn {
   transcript: TranscriptEntry[];
-  isConnected: boolean;
+  transcriptConnected: boolean;
   connect: (callId: string) => void;
   disconnect: () => void;
 }
 
 export const useTranscript = (): UseTranscriptReturn => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const setTranscript = useSetRecoilState(transcriptState);
   const setConnected = useSetRecoilState(transcriptConnectedState);
   const setTranscriptError = useSetRecoilState(transcriptErrorState);
@@ -244,5 +245,5 @@ export const useTranscript = (): UseTranscriptReturn => {
     };
   }, [clearReconnectTimer]);
 
-  return { transcript, isConnected, connect, disconnect };
+  return { transcript, transcriptConnected, connect, disconnect };
 };

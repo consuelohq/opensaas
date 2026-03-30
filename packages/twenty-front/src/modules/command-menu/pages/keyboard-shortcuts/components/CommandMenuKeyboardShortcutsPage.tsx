@@ -10,57 +10,250 @@ const cmd = getOsControlSymbol();
 
 // general — available everywhere
 const SHORTCUTS_GENERAL: Shortcut[] = [
-  { label: 'Open command menu', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: 'K', areSimultaneous: true },
-  { label: 'Search records', type: ShortcutType.General, firstHotKey: '/', areSimultaneous: true },
-  { label: 'Ask AI', type: ShortcutType.General, firstHotKey: '@', areSimultaneous: true },
-  { label: 'Keyboard shortcuts', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: '/', areSimultaneous: true },
-  { label: 'Back / Close', type: ShortcutType.General, firstHotKey: 'Esc', areSimultaneous: true },
-  { label: 'Open settings', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: ',', areSimultaneous: true },
-  { label: 'Mark as favourite', type: ShortcutType.General, firstHotKey: '⇧', secondHotKey: 'F', areSimultaneous: true },
+  {
+    label: 'Open command menu',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: 'K',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Search records',
+    type: ShortcutType.General,
+    firstHotKey: '/',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Ask AI',
+    type: ShortcutType.General,
+    firstHotKey: '@',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Keyboard shortcuts',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: '/',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Back / Close',
+    type: ShortcutType.General,
+    firstHotKey: 'Esc',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Open settings',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: ',',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Mark as favourite',
+    type: ShortcutType.General,
+    firstHotKey: '⇧',
+    secondHotKey: 'F',
+    areSimultaneous: true,
+  },
 ];
 
 // navigation — g+key sequences
 const SHORTCUTS_NAVIGATION: Shortcut[] = [
-  { label: 'Go to People', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'P', areSimultaneous: false },
-  { label: 'Go to Companies', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'C', areSimultaneous: false },
-  { label: 'Go to Dashboards', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'D', areSimultaneous: false },
-  { label: 'Go to Tasks', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'T', areSimultaneous: false },
-  { label: 'Go to Notes', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'N', areSimultaneous: false },
-  { label: 'Go to Workflows', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'W', areSimultaneous: false },
-  { label: 'Go to Settings', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'S', areSimultaneous: false },
-  { label: 'Go to Computer', type: ShortcutType.General, firstHotKey: 'G', secondHotKey: 'A', areSimultaneous: false },
+  {
+    label: 'Go to People',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'P',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Companies',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'C',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Dashboards',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'D',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Tasks',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'T',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Notes',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'N',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Workflows',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'W',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Settings',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'S',
+    areSimultaneous: false,
+  },
+  {
+    label: 'Go to Computer',
+    type: ShortcutType.General,
+    firstHotKey: 'G',
+    secondHotKey: 'A',
+    areSimultaneous: false,
+  },
 ];
 
 // record table — when viewing a table/list of records
 const SHORTCUTS_TABLE: Shortcut[] = [
-  { label: 'Create new record', type: ShortcutType.Table, firstHotKey: 'C', areSimultaneous: true },
-  { label: 'Move right', type: ShortcutType.Table, firstHotKey: '→', areSimultaneous: true },
-  { label: 'Move left', type: ShortcutType.Table, firstHotKey: '←', areSimultaneous: true },
-  { label: 'Move up', type: ShortcutType.Table, firstHotKey: '↑', areSimultaneous: true },
-  { label: 'Move down', type: ShortcutType.Table, firstHotKey: '↓', areSimultaneous: true },
-  { label: 'Open focused record', type: ShortcutType.Table, firstHotKey: 'Enter', areSimultaneous: true },
-  { label: 'Clear selection', type: ShortcutType.Table, firstHotKey: 'Esc', areSimultaneous: true },
-  { label: 'Select record', type: ShortcutType.Table, firstHotKey: 'X', areSimultaneous: true },
-  { label: 'Select multiple', type: ShortcutType.Table, firstHotKey: '⇧', secondHotKey: 'Click', areSimultaneous: true },
+  {
+    label: 'Create new record',
+    type: ShortcutType.Table,
+    firstHotKey: 'C',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Move right',
+    type: ShortcutType.Table,
+    firstHotKey: '→',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Move left',
+    type: ShortcutType.Table,
+    firstHotKey: '←',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Move up',
+    type: ShortcutType.Table,
+    firstHotKey: '↑',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Move down',
+    type: ShortcutType.Table,
+    firstHotKey: '↓',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Open focused record',
+    type: ShortcutType.Table,
+    firstHotKey: 'Enter',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Clear selection',
+    type: ShortcutType.Table,
+    firstHotKey: 'Esc',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Select record',
+    type: ShortcutType.Table,
+    firstHotKey: 'X',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Select multiple',
+    type: ShortcutType.Table,
+    firstHotKey: '⇧',
+    secondHotKey: 'Click',
+    areSimultaneous: true,
+  },
 ];
 
 // record actions — when a record is focused/selected
 const SHORTCUTS_RECORD_ACTIONS: Shortcut[] = [
-  { label: 'Peek into record', type: ShortcutType.General, firstHotKey: 'Space', areSimultaneous: true },
-  { label: 'Open record', type: ShortcutType.General, firstHotKey: 'Enter', areSimultaneous: true },
-  { label: 'Delete record', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: '⌫', areSimultaneous: true },
-  { label: 'Copy record URL', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: '⇧ ,', areSimultaneous: true },
+  {
+    label: 'Peek into record',
+    type: ShortcutType.General,
+    firstHotKey: 'Space',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Open record',
+    type: ShortcutType.General,
+    firstHotKey: 'Enter',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Delete record',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: '⌫',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Copy record URL',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: '⇧ ,',
+    areSimultaneous: true,
+  },
 ];
 
 // dialer — when dialer sidebar is open
 const SHORTCUTS_DIALER: Shortcut[] = [
-  { label: 'Toggle dialer', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: 'D', areSimultaneous: true },
-  { label: 'Mute / Unmute', type: ShortcutType.General, firstHotKey: 'M', areSimultaneous: true },
-  { label: 'Hold / Unhold', type: ShortcutType.General, firstHotKey: 'H', areSimultaneous: true },
-  { label: 'Transfer', type: ShortcutType.General, firstHotKey: 'T', areSimultaneous: true },
-  { label: 'End call', type: ShortcutType.General, firstHotKey: 'Esc', areSimultaneous: true },
-  { label: 'Call selected contact', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: '⇧ C', areSimultaneous: true },
-  { label: 'Toggle calling mode', type: ShortcutType.General, firstHotKey: cmd, secondHotKey: '⇧ M', areSimultaneous: true },
+  {
+    label: 'Toggle dialer',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: 'D',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Mute / Unmute',
+    type: ShortcutType.General,
+    firstHotKey: 'M',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Hold / Unhold',
+    type: ShortcutType.General,
+    firstHotKey: 'H',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Transfer',
+    type: ShortcutType.General,
+    firstHotKey: 'T',
+    areSimultaneous: true,
+  },
+  {
+    label: 'End call',
+    type: ShortcutType.General,
+    firstHotKey: 'Esc',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Call selected contact',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: '⇧ C',
+    areSimultaneous: true,
+  },
+  {
+    label: 'Toggle calling mode',
+    type: ShortcutType.General,
+    firstHotKey: cmd,
+    secondHotKey: '⇧ M',
+    areSimultaneous: true,
+  },
 ];
 
 const StyledContainer = styled.div`
@@ -143,7 +336,10 @@ export const CommandMenuKeyboardShortcutsPage = () => (
       <ShortcutGroup heading="General" shortcuts={SHORTCUTS_GENERAL} />
       <ShortcutGroup heading="Navigation" shortcuts={SHORTCUTS_NAVIGATION} />
       <ShortcutGroup heading="Record Table" shortcuts={SHORTCUTS_TABLE} />
-      <ShortcutGroup heading="Record Actions" shortcuts={SHORTCUTS_RECORD_ACTIONS} />
+      <ShortcutGroup
+        heading="Record Actions"
+        shortcuts={SHORTCUTS_RECORD_ACTIONS}
+      />
       <ShortcutGroup heading="Dialer" shortcuts={SHORTCUTS_DIALER} />
     </StyledContainer>
   </ScrollWrapper>

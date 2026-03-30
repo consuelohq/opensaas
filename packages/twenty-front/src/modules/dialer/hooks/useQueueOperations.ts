@@ -75,8 +75,8 @@ export const useQueueOperations = () => {
     async (listId: string) => {
       try {
         const now = new Date();
-        const startedAt = session?.startedAt
-          ? new Date(session.startedAt)
+        const startedAt = queueSession?.startedAt
+          ? new Date(queueSession.startedAt)
           : now;
         const elapsedSeconds = Math.round(
           (now.getTime() - startedAt.getTime()) / 1000,
@@ -96,7 +96,7 @@ export const useQueueOperations = () => {
         throw err;
       }
     },
-    [updateOneRecord, session?.startedAt],
+    [updateOneRecord, queueSession?.startedAt],
   );
 
   const advanceQueue = useCallback(
@@ -105,14 +105,14 @@ export const useQueueOperations = () => {
         await updateOneRecord({
           objectNameSingular: 'opportunity',
           idToUpdate: listId,
-          updateOneRecordInput: { currentIndex: currentIndex + 1 },
+          updateOneRecordInput: { currentIndex: currentQueueIndex + 1 },
         });
       } catch (err: unknown) {
         captureException(err, { extra: { context: 'advanceQueue', listId } });
         throw err;
       }
     },
-    [updateOneRecord, currentIndex],
+    [updateOneRecord, currentQueueIndex],
   );
 
   const recordResult = useCallback(

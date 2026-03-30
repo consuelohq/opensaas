@@ -109,7 +109,7 @@
   "hooks": {
     "agentSpawn": [
       {
-        "command": "cd /Users/kokayi/Dev/opensaas && git log --oneline -5 && echo '---' && git status --short",
+        "command": "TZ='America/New_York' date '+%Y-%m-%d %H:%M:%S %Z (%A)' && echo '---' && cd /Users/kokayi/Dev/opensaas && git log --oneline -5 && echo '---' && git status --short",
         "description": "show recent commits and working tree status"
       }
     ],
@@ -122,7 +122,7 @@
     "preToolUse": [
       {
         "command": "bash ~/.kiro/hooks/nag.sh",
-        "description": "blocks every 7th tool use — forces agent to re-read spec"
+        "description": "blocks every 7th tool use \u2014 forces agent to re-read spec"
       }
     ],
     "stop": [

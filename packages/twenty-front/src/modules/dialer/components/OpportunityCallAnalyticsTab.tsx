@@ -10,6 +10,7 @@ import {
   transcriptConnectedState,
   transcriptState,
 } from '@/dialer/states/coachingState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useEffect, useState } from 'react';
@@ -66,14 +67,15 @@ type OpportunityCallAnalyticsTabProps = {
   onEndList: (disposition: string) => void;
 };
 
-const ANSWERED_DISPOSITIONS = [
-  { value: 'connected', label: t`Connected` },
-  { value: 'follow-up', label: t`Follow up` },
-  { value: 'not-interested', label: t`Not interested` },
-  { value: 'voicemail', label: t`Voicemail` },
-  { value: 'busy', label: t`Busy` },
-  { value: 'no-answer', label: t`No answer` },
-] as const;
+const getAnsweredDispositions = () =>
+  [
+    { value: 'connected', label: t`Connected` },
+    { value: 'follow-up', label: t`Follow up` },
+    { value: 'not-interested', label: t`Not interested` },
+    { value: 'voicemail', label: t`Voicemail` },
+    { value: 'busy', label: t`Busy` },
+    { value: 'no-answer', label: t`No answer` },
+  ] as const;
 
 export const OpportunityCallAnalyticsTab = ({
   wrapUpState,
@@ -85,8 +87,9 @@ export const OpportunityCallAnalyticsTab = ({
   const postCallAnalysis = useRecoilValue(postCallAnalysisState);
   const isAnalyzing = useRecoilValue(isAnalyzingState);
   const analysisError = useRecoilValue(analysisErrorState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const [selectedDisposition, setSelectedDisposition] = useState('connected');
+  const answeredDispositions = getAnsweredDispositions();
 
   useEffect(() => {
     setSelectedDisposition('connected');
@@ -101,7 +104,7 @@ export const OpportunityCallAnalyticsTab = ({
           {wrapUpState.outcome === 'answered' ? (
             <>
               <StyledDispositionGrid>
-                {ANSWERED_DISPOSITIONS.map((disposition) => (
+                {answeredDispositions.map((disposition) => (
                   <Button
                     key={disposition.value}
                     title={disposition.label}
@@ -138,15 +141,12 @@ export const OpportunityCallAnalyticsTab = ({
       <QueueAnalytics />
 
       <PostCallSummary
-        analysis={analysis}
+        analysis={postCallAnalysis}
         isAnalyzing={isAnalyzing}
         error={analysisError}
       />
 
-      <LiveTranscript
-        transcript={transcript}
-        isConnected={transcriptConnected}
-      />
+      <LiveTranscript transcript={transcript} isConnected={transcriptConnected} />
 
       <StyledRecordingCard>
         {callState.callSid ? (

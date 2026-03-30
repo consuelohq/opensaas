@@ -149,9 +149,9 @@ const StyledPackRow = styled.div`
 `;
 
 const StyledPackSelector = styled.div`
+  align-items: center;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  align-items: center;
 `;
 
 const StyledSelect = styled.select`

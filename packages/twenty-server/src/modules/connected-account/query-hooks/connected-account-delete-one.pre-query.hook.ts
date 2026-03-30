@@ -16,9 +16,7 @@ import { WorkspaceEventEmitter } from 'src/engine/workspace-event-emitter/worksp
 import { type MessageChannelWorkspaceEntity } from 'src/modules/messaging/common/standard-objects/message-channel.workspace-entity';
 
 @WorkspaceQueryHook(`connectedAccount.destroyOne`)
-export class ConnectedAccountDeleteOnePreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class ConnectedAccountDeleteOnePreQueryHook implements WorkspacePreQueryHookInstance {
   constructor(
     private readonly globalWorkspaceOrmManager: GlobalWorkspaceOrmManager,
     private readonly workspaceEventEmitter: WorkspaceEventEmitter,

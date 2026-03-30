@@ -33,42 +33,32 @@ describe('useDialerHotkeys', () => {
       useDialerHotkeys({ onToggleSidebar: jest.fn() }),
     );
 
-    const sidebarCall = mockUseGlobalHotkeys.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { keys: string[] };
-        return arg.keys.includes('mod+d');
-      },
-    );
+    const sidebarCall = mockUseGlobalHotkeys.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { keys: string[] };
+      return arg.keys.includes('mod+d');
+    });
     expect(sidebarCall).toBeDefined();
     expect(sidebarCall[0].containsModifier).toBe(true);
   });
 
   it('should register m for mute toggle', () => {
-    renderHookWithRecoil(() =>
-      useDialerHotkeys({ onMuteToggle: jest.fn() }),
-    );
+    renderHookWithRecoil(() => useDialerHotkeys({ onMuteToggle: jest.fn() }));
 
-    const muteCall = mockUseGlobalHotkeys.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { keys: string[] };
-        return arg.keys.includes('m');
-      },
-    );
+    const muteCall = mockUseGlobalHotkeys.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { keys: string[] };
+      return arg.keys.includes('m');
+    });
     expect(muteCall).toBeDefined();
     expect(muteCall[0].containsModifier).toBe(false);
   });
 
   it('should register Escape for end call', () => {
-    renderHookWithRecoil(() =>
-      useDialerHotkeys({ onEndCall: jest.fn() }),
-    );
+    renderHookWithRecoil(() => useDialerHotkeys({ onEndCall: jest.fn() }));
 
-    const escCall = mockUseGlobalHotkeys.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { keys: string[] };
-        return arg.keys.includes('Escape');
-      },
-    );
+    const escCall = mockUseGlobalHotkeys.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { keys: string[] };
+      return arg.keys.includes('Escape');
+    });
     expect(escCall).toBeDefined();
   });
 
@@ -76,12 +66,10 @@ describe('useDialerHotkeys', () => {
     const onMuteToggle = jest.fn();
     renderHookWithRecoil(() => useDialerHotkeys({ onMuteToggle }));
 
-    const muteCall = mockUseGlobalHotkeys.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { keys: string[] };
-        return arg.keys.includes('m');
-      },
-    );
+    const muteCall = mockUseGlobalHotkeys.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { keys: string[] };
+      return arg.keys.includes('m');
+    });
 
     // invoke the registered callback
     muteCall[0].callback();
@@ -102,12 +90,10 @@ describe('useDialerHotkeys', () => {
       useDialerHotkeys({ onCallSelectedContact: jest.fn() }),
     );
 
-    const callContact = mockUseGlobalHotkeys.mock.calls.find(
-      (c: unknown[]) => {
-        const arg = c[0] as { keys: string[] };
-        return arg.keys.includes('mod+shift+c');
-      },
-    );
+    const callContact = mockUseGlobalHotkeys.mock.calls.find((c: unknown[]) => {
+      const arg = c[0] as { keys: string[] };
+      return arg.keys.includes('mod+shift+c');
+    });
     expect(callContact).toBeDefined();
     expect(callContact[0].containsModifier).toBe(true);
   });

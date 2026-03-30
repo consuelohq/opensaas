@@ -76,10 +76,15 @@
     }
 
     // try to find contact name from nearby DOM
-    var card = element.closest('[data-contact-id], [data-record-id], .contact-card, .contact-detail');
+    var card = element.closest(
+      '[data-contact-id], [data-record-id], .contact-card, .contact-detail',
+    );
     if (card) {
-      context.contactId = card.dataset.contactId || card.dataset.recordId || null;
-      var nameEl = card.querySelector('[data-contact-name], .contact-name, h1, h2, h3');
+      context.contactId =
+        card.dataset.contactId || card.dataset.recordId || null;
+      var nameEl = card.querySelector(
+        '[data-contact-name], .contact-name, h1, h2, h3',
+      );
       if (nameEl) {
         context.name = (nameEl.textContent || '').trim() || null;
       }
@@ -100,16 +105,19 @@
     }
 
     try {
-      dialerFrame.contentWindow.postMessage({
-        type: CLICK_TO_CALL_TYPE,
-        contact: {
-          phone: contact.phone,
-          name: contact.name || null,
-          contactId: contact.contactId || null,
+      dialerFrame.contentWindow.postMessage(
+        {
+          type: CLICK_TO_CALL_TYPE,
+          contact: {
+            phone: contact.phone,
+            name: contact.name || null,
+            contactId: contact.contactId || null,
+          },
+          autoDial: false,
+          timestamp: new Date().toISOString(),
         },
-        autoDial: false,
-        timestamp: new Date().toISOString(),
-      }, CONSUELO_ORIGIN);
+        CONSUELO_ORIGIN,
+      );
     } catch (_e) {
       // postMessage failed — allow native behavior
     }
@@ -155,15 +163,21 @@
 
   function scanForPhoneNumbers() {
     // strategy 1: tel: links (most reliable)
-    var telLinks = document.querySelectorAll('a[href^="tel:"]:not([' + PROCESSED_ATTR + '])');
+    var telLinks = document.querySelectorAll(
+      'a[href^="tel:"]:not([' + PROCESSED_ATTR + '])',
+    );
     for (var i = 0; i < telLinks.length; i++) {
       processElement(telLinks[i]);
     }
 
     // strategy 2: elements with phone data attributes
     var dataPhones = document.querySelectorAll(
-      '[data-phone]:not([' + PROCESSED_ATTR + ']), ' +
-      '[data-contact-phone]:not([' + PROCESSED_ATTR + '])'
+      '[data-phone]:not([' +
+        PROCESSED_ATTR +
+        ']), ' +
+        '[data-contact-phone]:not([' +
+        PROCESSED_ATTR +
+        '])',
     );
     for (var j = 0; j < dataPhones.length; j++) {
       processElement(dataPhones[j]);

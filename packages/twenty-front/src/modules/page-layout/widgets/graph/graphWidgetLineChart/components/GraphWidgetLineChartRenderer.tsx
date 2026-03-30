@@ -24,11 +24,11 @@ import {
 } from '~/generated-metadata/graphql';
 
 const GraphWidgetLineChart = lazy(() =>
-  import(
-    '@/page-layout/widgets/graph/graphWidgetLineChart/components/GraphWidgetLineChart'
-  ).then((module) => ({
-    default: module.GraphWidgetLineChart,
-  })),
+  import('@/page-layout/widgets/graph/graphWidgetLineChart/components/GraphWidgetLineChart').then(
+    (module) => ({
+      default: module.GraphWidgetLineChart,
+    }),
+  ),
 );
 
 export const GraphWidgetLineChartRenderer = () => {
