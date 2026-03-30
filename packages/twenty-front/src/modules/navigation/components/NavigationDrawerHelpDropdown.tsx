@@ -309,42 +309,52 @@ export const NavigationDrawerHelpDropdown = () => {
   };
 
   const handleOpenFeedback = async () => {
-    closeHelpDropdown();
+    try {
+      closeHelpDropdown();
 
-    const didOpenFeedback = await openSentryFeedbackForm({
-      formTitle: t`Contact us`,
-      submitButtonLabel: t`Send feedback`,
-      messagePlaceholder: t`How can we help?`,
-    });
-
-    if (!didOpenFeedback) {
-      window.location.href = `mailto:${SUPPORT_EMAIL}`;
-      enqueueInfoSnackBar({
-        message: t`Opening email because feedback isn't ready yet`,
+      const didOpenFeedback = await openSentryFeedbackForm({
+        formTitle: t`Contact us`,
+        submitButtonLabel: t`Send feedback`,
+        messagePlaceholder: t`How can we help?`,
       });
+
+      if (!didOpenFeedback) {
+        window.location.href = `mailto:${SUPPORT_EMAIL}`;
+        enqueueInfoSnackBar({
+          message: t`Opening email because feedback isn't ready yet`,
+        });
+      }
+    } catch {
+      window.location.href = `mailto:${SUPPORT_EMAIL}`;
     }
   };
 
   const handleDownloadAppClick = async (itemId: DownloadAppItemId) => {
-    const item = DOWNLOAD_APP_ITEMS.find(
-      (downloadItem) => downloadItem.id === itemId,
-    );
+    try {
+      const item = DOWNLOAD_APP_ITEMS.find(
+        (downloadItem) => downloadItem.id === itemId,
+      );
 
-    if (!item) {
-      return;
+      if (!item) {
+        return;
+      }
+
+      closeHelpDropdown();
+
+      if (item.type === 'link') {
+        window.open(item.href, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      const downloadItemLabel = getDownloadItemLabel(item.id, t);
+      const copiedCommandMessage = t`${downloadItemLabel} command copied`;
+
+      await copyToClipboard(item.value, copiedCommandMessage);
+    } catch {
+      enqueueInfoSnackBar({
+        message: t`Couldn't open that right now`,
+      });
     }
-
-    closeHelpDropdown();
-
-    if (item.type === 'link') {
-      window.open(item.href, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    const downloadItemLabel = getDownloadItemLabel(item.id, t);
-    const copiedCommandMessage = t`${downloadItemLabel} command copied`;
-
-    await copyToClipboard(item.value, copiedCommandMessage);
   };
 
   const dropdownContent = (
