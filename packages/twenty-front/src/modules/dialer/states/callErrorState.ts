@@ -6,7 +6,8 @@ export type CallErrorReason =
   | 'no-answer'
   | 'canceled'
   | 'unknown'
-  | 'caller_id_locked';
+  | 'caller_id_locked'
+  | 'no_caller_id';
 
 export interface CallError {
   reason: CallErrorReason;

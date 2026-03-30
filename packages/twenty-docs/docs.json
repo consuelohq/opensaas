@@ -121,153 +121,6 @@
                 ]
               },
               {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "user-guide/dialer/overview",
-                  "user-guide/dialer/making-calls",
-                  "user-guide/dialer/transfers",
-                  "user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "HighLevel",
-                "icon": "plug",
-                "pages": [
-                  "user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "user-guide/highlevel/embedded/overview",
-                      "user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "user-guide/highlevel/embedded/capabilities/call-logging",
-                          "user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "user-guide/highlevel/integration/overview",
-                      "user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "user-guide/highlevel/integration/capabilities/field-mapping",
-                          "user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "CLI",
-                "icon": "terminal",
-                "pages": [
-                  "user-guide/cli/overview",
-                  "user-guide/cli/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/cli/capabilities/configuration",
-                      "user-guide/cli/capabilities/contacts-management",
-                      "user-guide/cli/capabilities/call-operations",
-                      "user-guide/cli/capabilities/queue-management",
-                      "user-guide/cli/capabilities/knowledge-base",
-                      "user-guide/cli/capabilities/file-management",
-                      "user-guide/cli/capabilities/analytics-history",
-                      "user-guide/cli/capabilities/deployment"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/cli/how-tos/set-up-twilio",
-                      "user-guide/cli/how-tos/import-contacts-csv",
-                      "user-guide/cli/how-tos/use-local-presence",
-                      "user-guide/cli/how-tos/deploy-to-railway",
-                      "user-guide/cli/how-tos/troubleshoot-auth",
-                      "user-guide/cli/how-tos/cli-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "user-guide/discord-bot/overview",
-                  "user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/discord-bot/capabilities/queue-management",
-                      "user-guide/discord-bot/capabilities/call-controls",
-                      "user-guide/discord-bot/capabilities/contact-search",
-                      "user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "user-guide/chrome-extension/overview",
-                  "user-guide/chrome-extension/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/chrome-extension/capabilities/browser-dialer",
-                      "user-guide/chrome-extension/capabilities/contact-management",
-                      "user-guide/chrome-extension/capabilities/queue-dialing",
-                      "user-guide/chrome-extension/capabilities/ai-coaching",
-                      "user-guide/chrome-extension/capabilities/call-history",
-                      "user-guide/chrome-extension/capabilities/google-sheets-import"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/chrome-extension/how-tos/import-from-google-sheets",
-                      "user-guide/chrome-extension/how-tos/run-a-queue-campaign",
-                      "user-guide/chrome-extension/how-tos/configure-calling-number",
-                      "user-guide/chrome-extension/how-tos/troubleshoot-extension"
-                    ]
-                  }
-                ]
-              },
-              {
                 "group": "Calendar & Emails",
                 "icon": "envelope",
                 "pages": [
@@ -369,7 +222,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -459,7 +314,42 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "user-guide/dialer/overview",
+                  "user-guide/dialer/making-calls",
+                  "user-guide/dialer/transfers",
+                  "user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "user-guide/discord-bot/overview",
+                  "user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/discord-bot/capabilities/queue-management",
+                      "user-guide/discord-bot/capabilities/call-controls",
+                      "user-guide/discord-bot/capabilities/contact-search",
+                      "user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -481,7 +371,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -492,7 +384,9 @@
             "groups": [
               {
                 "group": "Developers",
-                "pages": ["developers/introduction"]
+                "pages": [
+                  "developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -557,7 +451,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -612,6 +508,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "graphql-api/overview",
+                  "graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "graphql-api/analytics/growth-metrics-dashboards",
+                  "graphql-api/analytics/connecting-external-analytics",
+                  "graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "graphql-api/automation/internal-workflows-overview",
+                  "graphql-api/automation/data-cleanup-automation",
+                  "graphql-api/automation/lead-scoring-setup",
+                  "graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "graphql-api/general/internal-api-access",
+                  "graphql-api/general/bulk-update-script",
+                  "graphql-api/general/import-automation",
+                  "graphql-api/general/export-analytics",
+                  "graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -631,7 +577,8 @@
                     "pages": [
                       "l/fr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/fr/user-guide/getting-started/capabilities/implementation-services",
-                      "l/fr/user-guide/getting-started/capabilities/glossary"
+                      "l/fr/user-guide/getting-started/capabilities/glossary",
+                      "l/fr/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -698,121 +645,6 @@
                       "l/fr/user-guide/data-migration/how-tos/import-data-via-api",
                       "l/fr/user-guide/data-migration/how-tos/migrating-from-other-crms",
                       "l/fr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/fr/user-guide/dialer/overview",
-                  "l/fr/user-guide/dialer/making-calls",
-                  "l/fr/user-guide/dialer/transfers",
-                  "l/fr/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/fr/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/fr/user-guide/highlevel/embedded/overview",
-                      "l/fr/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/fr/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/fr/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/fr/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/fr/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/fr/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/fr/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/fr/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/fr/user-guide/highlevel/integration/overview",
-                      "l/fr/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/fr/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/fr/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/fr/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/fr/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/fr/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/fr/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/fr/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/fr/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/fr/user-guide/discord-bot/overview",
-                  "l/fr/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
-                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
-                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
-                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/fr/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/fr/user-guide/chrome-extension/overview",
-                  "l/fr/user-guide/chrome-extension/getting-started",
-                  {
-                    "group": "Capacités",
-                    "pages": [
-                      "l/fr/user-guide/chrome-extension/capabilities/browser-dialer",
-                      "l/fr/user-guide/chrome-extension/capabilities/contact-management",
-                      "l/fr/user-guide/chrome-extension/capabilities/queue-dialing",
-                      "l/fr/user-guide/chrome-extension/capabilities/ai-coaching",
-                      "l/fr/user-guide/chrome-extension/capabilities/call-history",
-                      "l/fr/user-guide/chrome-extension/capabilities/google-sheets-import"
-                    ]
-                  },
-                  {
-                    "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/chrome-extension/how-tos/import-from-google-sheets",
-                      "l/fr/user-guide/chrome-extension/how-tos/run-a-queue-campaign",
-                      "l/fr/user-guide/chrome-extension/how-tos/configure-calling-number",
-                      "l/fr/user-guide/chrome-extension/how-tos/troubleshoot-extension"
                     ]
                   }
                 ]
@@ -919,7 +751,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/fr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1009,7 +843,42 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/fr/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/fr/user-guide/dialer/overview",
+                  "l/fr/user-guide/dialer/making-calls",
+                  "l/fr/user-guide/dialer/transfers",
+                  "l/fr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/fr/user-guide/discord-bot/overview",
+                  "l/fr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/fr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/fr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/fr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/fr/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/fr/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -1031,7 +900,9 @@
                   },
                   {
                     "group": "Guides pratiques",
-                    "pages": ["l/fr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/fr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -1042,7 +913,9 @@
             "groups": [
               {
                 "group": "Développeurs",
-                "pages": ["l/fr/developers/introduction"]
+                "pages": [
+                  "l/fr/developers/introduction"
+                ]
               },
               {
                 "group": "Étendre",
@@ -1107,7 +980,9 @@
                               },
                               {
                                 "group": "Retour d'information",
-                                "pages": ["l/fr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/fr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrée ",
@@ -1162,6 +1037,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/fr/graphql-api/overview",
+                  "l/fr/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/fr/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/fr/graphql-api/analytics/connecting-external-analytics",
+                  "l/fr/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/fr/graphql-api/automation/internal-workflows-overview",
+                  "l/fr/graphql-api/automation/data-cleanup-automation",
+                  "l/fr/graphql-api/automation/lead-scoring-setup",
+                  "l/fr/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/fr/graphql-api/general/internal-api-access",
+                  "l/fr/graphql-api/general/bulk-update-script",
+                  "l/fr/graphql-api/general/import-automation",
+                  "l/fr/graphql-api/general/export-analytics",
+                  "l/fr/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/fr/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -1181,7 +1106,8 @@
                     "pages": [
                       "l/ar/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ar/user-guide/getting-started/capabilities/implementation-services",
-                      "l/ar/user-guide/getting-started/capabilities/glossary"
+                      "l/ar/user-guide/getting-started/capabilities/glossary",
+                      "l/ar/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -1250,101 +1176,6 @@
                       "l/ar/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ar/user-guide/dialer/overview",
-                  "l/ar/user-guide/dialer/making-calls",
-                  "l/ar/user-guide/dialer/transfers",
-                  "l/ar/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/ar/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/ar/user-guide/highlevel/embedded/overview",
-                      "l/ar/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ar/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/ar/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/ar/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/ar/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ar/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/ar/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/ar/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/ar/user-guide/highlevel/integration/overview",
-                      "l/ar/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ar/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/ar/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/ar/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/ar/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ar/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/ar/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/ar/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/ar/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/ar/user-guide/discord-bot/overview",
-                  "l/ar/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ar/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/ar/user-guide/chrome-extension/overview",
-                  "l/ar/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -1449,7 +1280,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ar/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -1539,7 +1372,42 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ar/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ar/user-guide/dialer/overview",
+                  "l/ar/user-guide/dialer/making-calls",
+                  "l/ar/user-guide/dialer/transfers",
+                  "l/ar/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ar/user-guide/discord-bot/overview",
+                  "l/ar/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ar/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ar/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ar/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ar/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ar/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -1561,7 +1429,9 @@
                   },
                   {
                     "group": "الإرشادات",
-                    "pages": ["l/ar/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ar/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -1572,7 +1442,9 @@
             "groups": [
               {
                 "group": "المطورون",
-                "pages": ["l/ar/developers/introduction"]
+                "pages": [
+                  "l/ar/developers/introduction"
+                ]
               },
               {
                 "group": "التوسيع",
@@ -1637,7 +1509,9 @@
                               },
                               {
                                 "group": "التغذية الراجعة",
-                                "pages": ["l/ar/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ar/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "إدخال",
@@ -1692,6 +1566,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/ar/graphql-api/overview",
+                  "l/ar/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/ar/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/ar/graphql-api/analytics/connecting-external-analytics",
+                  "l/ar/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/ar/graphql-api/automation/internal-workflows-overview",
+                  "l/ar/graphql-api/automation/data-cleanup-automation",
+                  "l/ar/graphql-api/automation/lead-scoring-setup",
+                  "l/ar/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/ar/graphql-api/general/internal-api-access",
+                  "l/ar/graphql-api/general/bulk-update-script",
+                  "l/ar/graphql-api/general/import-automation",
+                  "l/ar/graphql-api/general/export-analytics",
+                  "l/ar/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/ar/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -1711,7 +1635,8 @@
                     "pages": [
                       "l/cs/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/cs/user-guide/getting-started/capabilities/implementation-services",
-                      "l/cs/user-guide/getting-started/capabilities/glossary"
+                      "l/cs/user-guide/getting-started/capabilities/glossary",
+                      "l/cs/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -1780,101 +1705,6 @@
                       "l/cs/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/cs/user-guide/dialer/overview",
-                  "l/cs/user-guide/dialer/making-calls",
-                  "l/cs/user-guide/dialer/transfers",
-                  "l/cs/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/cs/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/cs/user-guide/highlevel/embedded/overview",
-                      "l/cs/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/cs/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/cs/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/cs/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/cs/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/cs/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/cs/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/cs/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/cs/user-guide/highlevel/integration/overview",
-                      "l/cs/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/cs/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/cs/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/cs/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/cs/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/cs/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/cs/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/cs/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/cs/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/cs/user-guide/discord-bot/overview",
-                  "l/cs/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
-                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
-                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
-                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/cs/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/cs/user-guide/chrome-extension/overview",
-                  "l/cs/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -1979,7 +1809,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/cs/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -2069,7 +1901,42 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/cs/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/cs/user-guide/dialer/overview",
+                  "l/cs/user-guide/dialer/making-calls",
+                  "l/cs/user-guide/dialer/transfers",
+                  "l/cs/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/cs/user-guide/discord-bot/overview",
+                  "l/cs/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/cs/user-guide/discord-bot/capabilities/queue-management",
+                      "l/cs/user-guide/discord-bot/capabilities/call-controls",
+                      "l/cs/user-guide/discord-bot/capabilities/contact-search",
+                      "l/cs/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/cs/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -2091,7 +1958,9 @@
                   },
                   {
                     "group": "Návody",
-                    "pages": ["l/cs/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/cs/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2102,7 +1971,9 @@
             "groups": [
               {
                 "group": "Vývojáři",
-                "pages": ["l/cs/developers/introduction"]
+                "pages": [
+                  "l/cs/developers/introduction"
+                ]
               },
               {
                 "group": "Rozšíření",
@@ -2167,7 +2038,9 @@
                               },
                               {
                                 "group": "Zpětná vazba",
-                                "pages": ["l/cs/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/cs/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Vstup",
@@ -2222,6 +2095,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/cs/graphql-api/overview",
+                  "l/cs/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/cs/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/cs/graphql-api/analytics/connecting-external-analytics",
+                  "l/cs/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/cs/graphql-api/automation/internal-workflows-overview",
+                  "l/cs/graphql-api/automation/data-cleanup-automation",
+                  "l/cs/graphql-api/automation/lead-scoring-setup",
+                  "l/cs/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/cs/graphql-api/general/internal-api-access",
+                  "l/cs/graphql-api/general/bulk-update-script",
+                  "l/cs/graphql-api/general/import-automation",
+                  "l/cs/graphql-api/general/export-analytics",
+                  "l/cs/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/cs/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -2241,7 +2164,8 @@
                     "pages": [
                       "l/de/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/de/user-guide/getting-started/capabilities/implementation-services",
-                      "l/de/user-guide/getting-started/capabilities/glossary"
+                      "l/de/user-guide/getting-started/capabilities/glossary",
+                      "l/de/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -2310,101 +2234,6 @@
                       "l/de/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/de/user-guide/dialer/overview",
-                  "l/de/user-guide/dialer/making-calls",
-                  "l/de/user-guide/dialer/transfers",
-                  "l/de/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/de/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/de/user-guide/highlevel/embedded/overview",
-                      "l/de/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/de/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/de/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/de/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/de/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/de/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/de/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/de/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/de/user-guide/highlevel/integration/overview",
-                      "l/de/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/de/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/de/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/de/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/de/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/de/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/de/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/de/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/de/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/de/user-guide/discord-bot/overview",
-                  "l/de/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/de/user-guide/discord-bot/capabilities/queue-management",
-                      "l/de/user-guide/discord-bot/capabilities/call-controls",
-                      "l/de/user-guide/discord-bot/capabilities/contact-search",
-                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/de/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/de/user-guide/chrome-extension/overview",
-                  "l/de/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -2509,7 +2338,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/de/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -2599,7 +2430,42 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/de/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/de/user-guide/dialer/overview",
+                  "l/de/user-guide/dialer/making-calls",
+                  "l/de/user-guide/dialer/transfers",
+                  "l/de/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/de/user-guide/discord-bot/overview",
+                  "l/de/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/de/user-guide/discord-bot/capabilities/queue-management",
+                      "l/de/user-guide/discord-bot/capabilities/call-controls",
+                      "l/de/user-guide/discord-bot/capabilities/contact-search",
+                      "l/de/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/de/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -2621,7 +2487,9 @@
                   },
                   {
                     "group": "Anleitungen",
-                    "pages": ["l/de/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/de/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -2632,7 +2500,9 @@
             "groups": [
               {
                 "group": "Entwickler",
-                "pages": ["l/de/developers/introduction"]
+                "pages": [
+                  "l/de/developers/introduction"
+                ]
               },
               {
                 "group": "Erweitern",
@@ -2697,7 +2567,9 @@
                               },
                               {
                                 "group": "Rückmeldung",
-                                "pages": ["l/de/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/de/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Eingabe",
@@ -2752,6 +2624,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/de/graphql-api/overview",
+                  "l/de/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/de/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/de/graphql-api/analytics/connecting-external-analytics",
+                  "l/de/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/de/graphql-api/automation/internal-workflows-overview",
+                  "l/de/graphql-api/automation/data-cleanup-automation",
+                  "l/de/graphql-api/automation/lead-scoring-setup",
+                  "l/de/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/de/graphql-api/general/internal-api-access",
+                  "l/de/graphql-api/general/bulk-update-script",
+                  "l/de/graphql-api/general/import-automation",
+                  "l/de/graphql-api/general/export-analytics",
+                  "l/de/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/de/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -2771,7 +2693,8 @@
                     "pages": [
                       "l/es/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/es/user-guide/getting-started/capabilities/implementation-services",
-                      "l/es/user-guide/getting-started/capabilities/glossary"
+                      "l/es/user-guide/getting-started/capabilities/glossary",
+                      "l/es/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -2840,101 +2763,6 @@
                       "l/es/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/es/user-guide/dialer/overview",
-                  "l/es/user-guide/dialer/making-calls",
-                  "l/es/user-guide/dialer/transfers",
-                  "l/es/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/es/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/es/user-guide/highlevel/embedded/overview",
-                      "l/es/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/es/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/es/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/es/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/es/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/es/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/es/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/es/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/es/user-guide/highlevel/integration/overview",
-                      "l/es/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/es/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/es/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/es/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/es/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/es/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/es/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/es/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/es/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/es/user-guide/discord-bot/overview",
-                  "l/es/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/es/user-guide/discord-bot/capabilities/queue-management",
-                      "l/es/user-guide/discord-bot/capabilities/call-controls",
-                      "l/es/user-guide/discord-bot/capabilities/contact-search",
-                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/es/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/es/user-guide/chrome-extension/overview",
-                  "l/es/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -3039,7 +2867,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/es/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3129,7 +2959,42 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/es/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/es/user-guide/dialer/overview",
+                  "l/es/user-guide/dialer/making-calls",
+                  "l/es/user-guide/dialer/transfers",
+                  "l/es/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/es/user-guide/discord-bot/overview",
+                  "l/es/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/es/user-guide/discord-bot/capabilities/queue-management",
+                      "l/es/user-guide/discord-bot/capabilities/call-controls",
+                      "l/es/user-guide/discord-bot/capabilities/contact-search",
+                      "l/es/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/es/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -3151,7 +3016,9 @@
                   },
                   {
                     "group": "Guías prácticas",
-                    "pages": ["l/es/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/es/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3162,7 +3029,9 @@
             "groups": [
               {
                 "group": "Desarrolladores",
-                "pages": ["l/es/developers/introduction"]
+                "pages": [
+                  "l/es/developers/introduction"
+                ]
               },
               {
                 "group": "Ampliar",
@@ -3227,7 +3096,9 @@
                               },
                               {
                                 "group": "Retroalimentación",
-                                "pages": ["l/es/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/es/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -3282,6 +3153,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/es/graphql-api/overview",
+                  "l/es/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/es/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/es/graphql-api/analytics/connecting-external-analytics",
+                  "l/es/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/es/graphql-api/automation/internal-workflows-overview",
+                  "l/es/graphql-api/automation/data-cleanup-automation",
+                  "l/es/graphql-api/automation/lead-scoring-setup",
+                  "l/es/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/es/graphql-api/general/internal-api-access",
+                  "l/es/graphql-api/general/bulk-update-script",
+                  "l/es/graphql-api/general/import-automation",
+                  "l/es/graphql-api/general/export-analytics",
+                  "l/es/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/es/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -3301,7 +3222,8 @@
                     "pages": [
                       "l/it/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/it/user-guide/getting-started/capabilities/implementation-services",
-                      "l/it/user-guide/getting-started/capabilities/glossary"
+                      "l/it/user-guide/getting-started/capabilities/glossary",
+                      "l/it/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -3370,101 +3292,6 @@
                       "l/it/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/it/user-guide/dialer/overview",
-                  "l/it/user-guide/dialer/making-calls",
-                  "l/it/user-guide/dialer/transfers",
-                  "l/it/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/it/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/it/user-guide/highlevel/embedded/overview",
-                      "l/it/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/it/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/it/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/it/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/it/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/it/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/it/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/it/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/it/user-guide/highlevel/integration/overview",
-                      "l/it/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/it/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/it/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/it/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/it/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/it/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/it/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/it/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/it/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/it/user-guide/discord-bot/overview",
-                  "l/it/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/it/user-guide/discord-bot/capabilities/queue-management",
-                      "l/it/user-guide/discord-bot/capabilities/call-controls",
-                      "l/it/user-guide/discord-bot/capabilities/contact-search",
-                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/it/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/it/user-guide/chrome-extension/overview",
-                  "l/it/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -3569,7 +3396,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/it/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -3659,7 +3488,42 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/it/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/it/user-guide/dialer/overview",
+                  "l/it/user-guide/dialer/making-calls",
+                  "l/it/user-guide/dialer/transfers",
+                  "l/it/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/it/user-guide/discord-bot/overview",
+                  "l/it/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/it/user-guide/discord-bot/capabilities/queue-management",
+                      "l/it/user-guide/discord-bot/capabilities/call-controls",
+                      "l/it/user-guide/discord-bot/capabilities/contact-search",
+                      "l/it/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/it/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -3681,7 +3545,9 @@
                   },
                   {
                     "group": "Guide pratiche",
-                    "pages": ["l/it/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/it/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -3692,7 +3558,9 @@
             "groups": [
               {
                 "group": "Sviluppatori",
-                "pages": ["l/it/developers/introduction"]
+                "pages": [
+                  "l/it/developers/introduction"
+                ]
               },
               {
                 "group": "Estendi",
@@ -3757,7 +3625,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/it/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/it/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Input",
@@ -3812,6 +3682,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/it/graphql-api/overview",
+                  "l/it/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/it/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/it/graphql-api/analytics/connecting-external-analytics",
+                  "l/it/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/it/graphql-api/automation/internal-workflows-overview",
+                  "l/it/graphql-api/automation/data-cleanup-automation",
+                  "l/it/graphql-api/automation/lead-scoring-setup",
+                  "l/it/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/it/graphql-api/general/internal-api-access",
+                  "l/it/graphql-api/general/bulk-update-script",
+                  "l/it/graphql-api/general/import-automation",
+                  "l/it/graphql-api/general/export-analytics",
+                  "l/it/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/it/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -3831,7 +3751,8 @@
                     "pages": [
                       "l/ja/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ja/user-guide/getting-started/capabilities/implementation-services",
-                      "l/ja/user-guide/getting-started/capabilities/glossary"
+                      "l/ja/user-guide/getting-started/capabilities/glossary",
+                      "l/ja/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -3900,101 +3821,6 @@
                       "l/ja/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ja/user-guide/dialer/overview",
-                  "l/ja/user-guide/dialer/making-calls",
-                  "l/ja/user-guide/dialer/transfers",
-                  "l/ja/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/ja/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/ja/user-guide/highlevel/embedded/overview",
-                      "l/ja/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ja/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/ja/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/ja/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/ja/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ja/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/ja/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/ja/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/ja/user-guide/highlevel/integration/overview",
-                      "l/ja/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ja/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/ja/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/ja/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/ja/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ja/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/ja/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/ja/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/ja/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/ja/user-guide/discord-bot/overview",
-                  "l/ja/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ja/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/ja/user-guide/chrome-extension/overview",
-                  "l/ja/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -4099,7 +3925,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ja/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -4189,7 +4017,42 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ja/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ja/user-guide/dialer/overview",
+                  "l/ja/user-guide/dialer/making-calls",
+                  "l/ja/user-guide/dialer/transfers",
+                  "l/ja/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ja/user-guide/discord-bot/overview",
+                  "l/ja/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ja/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ja/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ja/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ja/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ja/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -4211,7 +4074,9 @@
                   },
                   {
                     "group": "ハウツー",
-                    "pages": ["l/ja/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ja/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4222,7 +4087,9 @@
             "groups": [
               {
                 "group": "開発者",
-                "pages": ["l/ja/developers/introduction"]
+                "pages": [
+                  "l/ja/developers/introduction"
+                ]
               },
               {
                 "group": "拡張",
@@ -4287,7 +4154,9 @@
                               },
                               {
                                 "group": "フィードバック",
-                                "pages": ["l/ja/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ja/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "入力",
@@ -4342,6 +4211,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/ja/graphql-api/overview",
+                  "l/ja/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/ja/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/ja/graphql-api/analytics/connecting-external-analytics",
+                  "l/ja/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/ja/graphql-api/automation/internal-workflows-overview",
+                  "l/ja/graphql-api/automation/data-cleanup-automation",
+                  "l/ja/graphql-api/automation/lead-scoring-setup",
+                  "l/ja/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/ja/graphql-api/general/internal-api-access",
+                  "l/ja/graphql-api/general/bulk-update-script",
+                  "l/ja/graphql-api/general/import-automation",
+                  "l/ja/graphql-api/general/export-analytics",
+                  "l/ja/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/ja/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -4361,7 +4280,8 @@
                     "pages": [
                       "l/ko/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ko/user-guide/getting-started/capabilities/implementation-services",
-                      "l/ko/user-guide/getting-started/capabilities/glossary"
+                      "l/ko/user-guide/getting-started/capabilities/glossary",
+                      "l/ko/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -4430,101 +4350,6 @@
                       "l/ko/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ko/user-guide/dialer/overview",
-                  "l/ko/user-guide/dialer/making-calls",
-                  "l/ko/user-guide/dialer/transfers",
-                  "l/ko/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/ko/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/ko/user-guide/highlevel/embedded/overview",
-                      "l/ko/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ko/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/ko/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/ko/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/ko/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ko/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/ko/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/ko/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/ko/user-guide/highlevel/integration/overview",
-                      "l/ko/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ko/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/ko/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/ko/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/ko/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ko/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/ko/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/ko/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/ko/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/ko/user-guide/discord-bot/overview",
-                  "l/ko/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ko/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/ko/user-guide/chrome-extension/overview",
-                  "l/ko/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -4629,7 +4454,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ko/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -4719,7 +4546,42 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ko/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ko/user-guide/dialer/overview",
+                  "l/ko/user-guide/dialer/making-calls",
+                  "l/ko/user-guide/dialer/transfers",
+                  "l/ko/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ko/user-guide/discord-bot/overview",
+                  "l/ko/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ko/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ko/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ko/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ko/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ko/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -4741,7 +4603,9 @@
                   },
                   {
                     "group": "사용 방법",
-                    "pages": ["l/ko/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ko/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -4752,7 +4616,9 @@
             "groups": [
               {
                 "group": "개발자",
-                "pages": ["l/ko/developers/introduction"]
+                "pages": [
+                  "l/ko/developers/introduction"
+                ]
               },
               {
                 "group": "확장",
@@ -4817,7 +4683,9 @@
                               },
                               {
                                 "group": "피드백",
-                                "pages": ["l/ko/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ko/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "입력",
@@ -4872,6 +4740,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/ko/graphql-api/overview",
+                  "l/ko/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/ko/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/ko/graphql-api/analytics/connecting-external-analytics",
+                  "l/ko/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/ko/graphql-api/automation/internal-workflows-overview",
+                  "l/ko/graphql-api/automation/data-cleanup-automation",
+                  "l/ko/graphql-api/automation/lead-scoring-setup",
+                  "l/ko/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/ko/graphql-api/general/internal-api-access",
+                  "l/ko/graphql-api/general/bulk-update-script",
+                  "l/ko/graphql-api/general/import-automation",
+                  "l/ko/graphql-api/general/export-analytics",
+                  "l/ko/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/ko/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -4891,7 +4809,8 @@
                     "pages": [
                       "l/pt/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/pt/user-guide/getting-started/capabilities/implementation-services",
-                      "l/pt/user-guide/getting-started/capabilities/glossary"
+                      "l/pt/user-guide/getting-started/capabilities/glossary",
+                      "l/pt/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -4960,101 +4879,6 @@
                       "l/pt/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/pt/user-guide/dialer/overview",
-                  "l/pt/user-guide/dialer/making-calls",
-                  "l/pt/user-guide/dialer/transfers",
-                  "l/pt/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/pt/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/pt/user-guide/highlevel/embedded/overview",
-                      "l/pt/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/pt/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/pt/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/pt/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/pt/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/pt/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/pt/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/pt/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/pt/user-guide/highlevel/integration/overview",
-                      "l/pt/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/pt/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/pt/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/pt/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/pt/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/pt/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/pt/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/pt/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/pt/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/pt/user-guide/discord-bot/overview",
-                  "l/pt/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
-                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
-                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
-                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/pt/user-guide/chrome-extension/overview",
-                  "l/pt/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -5159,7 +4983,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/pt/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5249,7 +5075,42 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/pt/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/pt/user-guide/dialer/overview",
+                  "l/pt/user-guide/dialer/making-calls",
+                  "l/pt/user-guide/dialer/transfers",
+                  "l/pt/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/pt/user-guide/discord-bot/overview",
+                  "l/pt/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/discord-bot/capabilities/queue-management",
+                      "l/pt/user-guide/discord-bot/capabilities/call-controls",
+                      "l/pt/user-guide/discord-bot/capabilities/contact-search",
+                      "l/pt/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/pt/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -5271,7 +5132,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/pt/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/pt/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5282,7 +5145,9 @@
             "groups": [
               {
                 "group": "Programadores",
-                "pages": ["l/pt/developers/introduction"]
+                "pages": [
+                  "l/pt/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5347,7 +5212,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/pt/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/pt/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Entrada",
@@ -5402,6 +5269,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/pt/graphql-api/overview",
+                  "l/pt/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/pt/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/pt/graphql-api/analytics/connecting-external-analytics",
+                  "l/pt/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/pt/graphql-api/automation/internal-workflows-overview",
+                  "l/pt/graphql-api/automation/data-cleanup-automation",
+                  "l/pt/graphql-api/automation/lead-scoring-setup",
+                  "l/pt/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/pt/graphql-api/general/internal-api-access",
+                  "l/pt/graphql-api/general/bulk-update-script",
+                  "l/pt/graphql-api/general/import-automation",
+                  "l/pt/graphql-api/general/export-analytics",
+                  "l/pt/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/pt/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -5421,7 +5338,8 @@
                     "pages": [
                       "l/ro/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ro/user-guide/getting-started/capabilities/implementation-services",
-                      "l/ro/user-guide/getting-started/capabilities/glossary"
+                      "l/ro/user-guide/getting-started/capabilities/glossary",
+                      "l/ro/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -5490,101 +5408,6 @@
                       "l/ro/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ro/user-guide/dialer/overview",
-                  "l/ro/user-guide/dialer/making-calls",
-                  "l/ro/user-guide/dialer/transfers",
-                  "l/ro/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/ro/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/ro/user-guide/highlevel/embedded/overview",
-                      "l/ro/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ro/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/ro/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/ro/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/ro/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ro/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/ro/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/ro/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/ro/user-guide/highlevel/integration/overview",
-                      "l/ro/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ro/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/ro/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/ro/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/ro/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ro/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/ro/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/ro/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/ro/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/ro/user-guide/discord-bot/overview",
-                  "l/ro/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/ro/user-guide/chrome-extension/overview",
-                  "l/ro/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -5689,7 +5512,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ro/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -5779,7 +5604,42 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ro/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ro/user-guide/dialer/overview",
+                  "l/ro/user-guide/dialer/making-calls",
+                  "l/ro/user-guide/dialer/transfers",
+                  "l/ro/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ro/user-guide/discord-bot/overview",
+                  "l/ro/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ro/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ro/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ro/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ro/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -5801,7 +5661,9 @@
                   },
                   {
                     "group": "How-Tos",
-                    "pages": ["l/ro/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ro/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -5812,7 +5674,9 @@
             "groups": [
               {
                 "group": "Dezvoltatori",
-                "pages": ["l/ro/developers/introduction"]
+                "pages": [
+                  "l/ro/developers/introduction"
+                ]
               },
               {
                 "group": "Extend",
@@ -5877,7 +5741,9 @@
                               },
                               {
                                 "group": "Feedback",
-                                "pages": ["l/ro/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ro/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Intrare",
@@ -5932,6 +5798,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/ro/graphql-api/overview",
+                  "l/ro/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/ro/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/ro/graphql-api/analytics/connecting-external-analytics",
+                  "l/ro/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/ro/graphql-api/automation/internal-workflows-overview",
+                  "l/ro/graphql-api/automation/data-cleanup-automation",
+                  "l/ro/graphql-api/automation/lead-scoring-setup",
+                  "l/ro/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/ro/graphql-api/general/internal-api-access",
+                  "l/ro/graphql-api/general/bulk-update-script",
+                  "l/ro/graphql-api/general/import-automation",
+                  "l/ro/graphql-api/general/export-analytics",
+                  "l/ro/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/ro/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -5951,7 +5867,8 @@
                     "pages": [
                       "l/ru/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ru/user-guide/getting-started/capabilities/implementation-services",
-                      "l/ru/user-guide/getting-started/capabilities/glossary"
+                      "l/ru/user-guide/getting-started/capabilities/glossary",
+                      "l/ru/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -6020,101 +5937,6 @@
                       "l/ru/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/ru/user-guide/dialer/overview",
-                  "l/ru/user-guide/dialer/making-calls",
-                  "l/ru/user-guide/dialer/transfers",
-                  "l/ru/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/ru/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/ru/user-guide/highlevel/embedded/overview",
-                      "l/ru/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ru/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/ru/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/ru/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/ru/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ru/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/ru/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/ru/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/ru/user-guide/highlevel/integration/overview",
-                      "l/ru/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/ru/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/ru/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/ru/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/ru/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/ru/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/ru/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/ru/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/ru/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/ru/user-guide/discord-bot/overview",
-                  "l/ru/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
-                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
-                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
-                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/ru/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/ru/user-guide/chrome-extension/overview",
-                  "l/ru/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -6219,7 +6041,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/ru/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6309,7 +6133,42 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/ru/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/ru/user-guide/dialer/overview",
+                  "l/ru/user-guide/dialer/making-calls",
+                  "l/ru/user-guide/dialer/transfers",
+                  "l/ru/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/ru/user-guide/discord-bot/overview",
+                  "l/ru/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ru/user-guide/discord-bot/capabilities/queue-management",
+                      "l/ru/user-guide/discord-bot/capabilities/call-controls",
+                      "l/ru/user-guide/discord-bot/capabilities/contact-search",
+                      "l/ru/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ru/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -6331,7 +6190,9 @@
                   },
                   {
                     "group": "Инструкции",
-                    "pages": ["l/ru/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/ru/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6342,7 +6203,9 @@
             "groups": [
               {
                 "group": "Разработчики",
-                "pages": ["l/ru/developers/introduction"]
+                "pages": [
+                  "l/ru/developers/introduction"
+                ]
               },
               {
                 "group": "Расширяйте",
@@ -6407,7 +6270,9 @@
                               },
                               {
                                 "group": "Обратная связь",
-                                "pages": ["l/ru/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/ru/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Ввод",
@@ -6462,6 +6327,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/ru/graphql-api/overview",
+                  "l/ru/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/ru/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/ru/graphql-api/analytics/connecting-external-analytics",
+                  "l/ru/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/ru/graphql-api/automation/internal-workflows-overview",
+                  "l/ru/graphql-api/automation/data-cleanup-automation",
+                  "l/ru/graphql-api/automation/lead-scoring-setup",
+                  "l/ru/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/ru/graphql-api/general/internal-api-access",
+                  "l/ru/graphql-api/general/bulk-update-script",
+                  "l/ru/graphql-api/general/import-automation",
+                  "l/ru/graphql-api/general/export-analytics",
+                  "l/ru/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/ru/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -6481,7 +6396,8 @@
                     "pages": [
                       "l/tr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/tr/user-guide/getting-started/capabilities/implementation-services",
-                      "l/tr/user-guide/getting-started/capabilities/glossary"
+                      "l/tr/user-guide/getting-started/capabilities/glossary",
+                      "l/tr/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -6550,101 +6466,6 @@
                       "l/tr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/tr/user-guide/dialer/overview",
-                  "l/tr/user-guide/dialer/making-calls",
-                  "l/tr/user-guide/dialer/transfers",
-                  "l/tr/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/tr/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/tr/user-guide/highlevel/embedded/overview",
-                      "l/tr/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/tr/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/tr/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/tr/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/tr/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/tr/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/tr/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/tr/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/tr/user-guide/highlevel/integration/overview",
-                      "l/tr/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/tr/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/tr/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/tr/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/tr/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/tr/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/tr/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/tr/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/tr/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/tr/user-guide/discord-bot/overview",
-                  "l/tr/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
-                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
-                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
-                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/tr/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/tr/user-guide/chrome-extension/overview",
-                  "l/tr/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -6749,7 +6570,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/tr/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -6839,7 +6662,42 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/tr/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/tr/user-guide/dialer/overview",
+                  "l/tr/user-guide/dialer/making-calls",
+                  "l/tr/user-guide/dialer/transfers",
+                  "l/tr/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/tr/user-guide/discord-bot/overview",
+                  "l/tr/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/tr/user-guide/discord-bot/capabilities/queue-management",
+                      "l/tr/user-guide/discord-bot/capabilities/call-controls",
+                      "l/tr/user-guide/discord-bot/capabilities/contact-search",
+                      "l/tr/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/tr/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -6861,7 +6719,9 @@
                   },
                   {
                     "group": "Nasıl Yapılırlar",
-                    "pages": ["l/tr/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/tr/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -6872,7 +6732,9 @@
             "groups": [
               {
                 "group": "Geliştiriciler",
-                "pages": ["l/tr/developers/introduction"]
+                "pages": [
+                  "l/tr/developers/introduction"
+                ]
               },
               {
                 "group": "Genişlet",
@@ -6937,7 +6799,9 @@
                               },
                               {
                                 "group": "Geri Bildirim",
-                                "pages": ["l/tr/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/tr/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "Girdi",
@@ -6992,6 +6856,56 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/tr/graphql-api/overview",
+                  "l/tr/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/tr/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/tr/graphql-api/analytics/connecting-external-analytics",
+                  "l/tr/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/tr/graphql-api/automation/internal-workflows-overview",
+                  "l/tr/graphql-api/automation/data-cleanup-automation",
+                  "l/tr/graphql-api/automation/lead-scoring-setup",
+                  "l/tr/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/tr/graphql-api/general/internal-api-access",
+                  "l/tr/graphql-api/general/bulk-update-script",
+                  "l/tr/graphql-api/general/import-automation",
+                  "l/tr/graphql-api/general/export-analytics",
+                  "l/tr/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/tr/graphql-api/troubleshooting/common-ops-issues"
+                ]
+              }
+            ]
           }
         ]
       },
@@ -7011,7 +6925,8 @@
                     "pages": [
                       "l/zh/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/zh/user-guide/getting-started/capabilities/implementation-services",
-                      "l/zh/user-guide/getting-started/capabilities/glossary"
+                      "l/zh/user-guide/getting-started/capabilities/glossary",
+                      "l/zh/user-guide/getting-started/capabilities/keyboard-shortcuts"
                     ]
                   },
                   {
@@ -7080,101 +6995,6 @@
                       "l/zh/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Dialer",
-                "icon": "phone",
-                "pages": [
-                  "l/zh/user-guide/dialer/overview",
-                  "l/zh/user-guide/dialer/making-calls",
-                  "l/zh/user-guide/dialer/transfers",
-                  "l/zh/user-guide/dialer/hold-mute"
-                ]
-              },
-              {
-                "group": "Overview",
-                "icon": "plug",
-                "pages": [
-                  "l/zh/user-guide/highlevel/overview",
-                  {
-                    "group": "Embedded Dialer",
-                    "pages": [
-                      "l/zh/user-guide/highlevel/embedded/overview",
-                      "l/zh/user-guide/highlevel/embedded/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/zh/user-guide/highlevel/embedded/capabilities/click-to-dial",
-                          "l/zh/user-guide/highlevel/embedded/capabilities/dialer-controls",
-                          "l/zh/user-guide/highlevel/embedded/capabilities/call-logging",
-                          "l/zh/user-guide/highlevel/embedded/capabilities/sso-auth"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/zh/user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                          "l/zh/user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                          "l/zh/user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "group": "Integration",
-                    "pages": [
-                      "l/zh/user-guide/highlevel/integration/overview",
-                      "l/zh/user-guide/highlevel/integration/getting-started",
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "l/zh/user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                          "l/zh/user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                          "l/zh/user-guide/highlevel/integration/capabilities/field-mapping",
-                          "l/zh/user-guide/highlevel/integration/capabilities/call-logging"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "l/zh/user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                          "l/zh/user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                          "l/zh/user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                          "l/zh/user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Discord",
-                "icon": "discord",
-                "pages": [
-                  "l/zh/user-guide/discord-bot/overview",
-                  "l/zh/user-guide/discord-bot/getting-started",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
-                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
-                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
-                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": ["l/zh/user-guide/dialer/how-tos/discord-setup"]
-                  }
-                ]
-              },
-              {
-                "group": "Chrome Extension",
-                "icon": "puzzle-piece",
-                "pages": [
-                  "l/zh/user-guide/chrome-extension/overview",
-                  "l/zh/user-guide/chrome-extension/getting-started"
                 ]
               },
               {
@@ -7279,7 +7099,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/ai/how-tos/ai-faq"]
+                    "pages": [
+                      "l/zh/user-guide/ai/how-tos/ai-faq"
+                    ]
                   }
                 ]
               },
@@ -7369,7 +7191,42 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/billing/how-tos/billing-faq"]
+                    "pages": [
+                      "l/zh/user-guide/billing/how-tos/billing-faq"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Dialer",
+                "icon": "phone",
+                "pages": [
+                  "l/zh/user-guide/dialer/overview",
+                  "l/zh/user-guide/dialer/making-calls",
+                  "l/zh/user-guide/dialer/transfers",
+                  "l/zh/user-guide/dialer/hold-mute"
+                ]
+              },
+              {
+                "group": "Discord Bot",
+                "icon": "discord",
+                "pages": [
+                  "l/zh/user-guide/discord-bot/overview",
+                  "l/zh/user-guide/discord-bot/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/zh/user-guide/discord-bot/capabilities/queue-management",
+                      "l/zh/user-guide/discord-bot/capabilities/call-controls",
+                      "l/zh/user-guide/discord-bot/capabilities/contact-search",
+                      "l/zh/user-guide/discord-bot/capabilities/team-collaboration"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/zh/user-guide/dialer/how-tos/discord-setup"
+                    ]
                   }
                 ]
               },
@@ -7391,7 +7248,9 @@
                   },
                   {
                     "group": "操作指南",
-                    "pages": ["l/zh/user-guide/settings/how-tos/settings-faq"]
+                    "pages": [
+                      "l/zh/user-guide/settings/how-tos/settings-faq"
+                    ]
                   }
                 ]
               }
@@ -7402,7 +7261,9 @@
             "groups": [
               {
                 "group": "开发者",
-                "pages": ["l/zh/developers/introduction"]
+                "pages": [
+                  "l/zh/developers/introduction"
+                ]
               },
               {
                 "group": "扩展",
@@ -7467,7 +7328,9 @@
                               },
                               {
                                 "group": "反馈",
-                                "pages": ["l/zh/consuelo-ui/progress-bar"]
+                                "pages": [
+                                  "l/zh/consuelo-ui/progress-bar"
+                                ]
                               },
                               {
                                 "group": "输入",
@@ -7519,6 +7382,56 @@
                       }
                     ]
                   }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "GraphQL API",
+            "groups": [
+              {
+                "group": "Overview",
+                "icon": "code",
+                "pages": [
+                  "l/zh/graphql-api/overview",
+                  "l/zh/graphql-api/getting-started/setting-up-internal-workspace"
+                ]
+              },
+              {
+                "group": "Analytics",
+                "icon": "chart",
+                "pages": [
+                  "l/zh/graphql-api/analytics/growth-metrics-dashboards",
+                  "l/zh/graphql-api/analytics/connecting-external-analytics",
+                  "l/zh/graphql-api/analytics/scheduled-reports"
+                ]
+              },
+              {
+                "group": "Automation",
+                "icon": "zap",
+                "pages": [
+                  "l/zh/graphql-api/automation/internal-workflows-overview",
+                  "l/zh/graphql-api/automation/data-cleanup-automation",
+                  "l/zh/graphql-api/automation/lead-scoring-setup",
+                  "l/zh/graphql-api/automation/slack-notifications"
+                ]
+              },
+              {
+                "group": "General",
+                "icon": "terminal",
+                "pages": [
+                  "l/zh/graphql-api/general/internal-api-access",
+                  "l/zh/graphql-api/general/bulk-update-script",
+                  "l/zh/graphql-api/general/import-automation",
+                  "l/zh/graphql-api/general/export-analytics",
+                  "l/zh/graphql-api/general/rate-limits-and-best-practices"
+                ]
+              },
+              {
+                "group": "Troubleshooting",
+                "icon": "help-circle",
+                "pages": [
+                  "l/zh/graphql-api/troubleshooting/common-ops-issues"
                 ]
               }
             ]

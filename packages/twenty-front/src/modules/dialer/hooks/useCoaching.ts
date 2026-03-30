@@ -22,6 +22,9 @@ const COACHING_REFRESH_INTERVAL_MS = 30_000;
 const MAX_COACHING_REFRESHES = 10;
 const MIN_NEW_WORDS_THRESHOLD = 50;
 
+const countWords = (entries: TranscriptEntry[]): number =>
+  entries.reduce((sum, entry) => sum + entry.text.split(/\s+/).filter(Boolean).length, 0);
+
 // B6/W17: only send non-PII context — no name, phone, or email
 function buildContactContext(contact: DialerContact | null): string {
   if (!contact) return 'No contact information available.';
@@ -170,7 +173,8 @@ export const useCoaching = (): UseCoachingReturn => {
             setTalkingPoints(data);
           }
         }
-      } catch {
+      } catch (error: unknown) {
+        captureException(error);
         // graceful degradation — coaching still works via initial REST fetch
       }
     },
@@ -195,7 +199,8 @@ export const useCoaching = (): UseCoachingReturn => {
       const delta = transcript.slice(lastRefreshIndex.current);
       if (delta.length === 0) return;
 
-      void refreshCoaching(callState.callSid, delta);
+      // callSid is guaranteed non-null by the guard at the top of this effect
+      void refreshCoaching(callState.callSid as string, delta);
 
       refreshCount.current += 1;
       lastRefreshTime.current = Date.now();

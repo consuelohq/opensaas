@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node';
+
 import type {
   TwilioCredentials,
   ConferenceParticipant,
@@ -302,14 +304,28 @@ export class ConferenceService {
     }
   }
 
+  private appendTransferId(
+    statusCallbackUrl: string | undefined,
+    transferId: string | undefined,
+  ): string | undefined {
+    if (!statusCallbackUrl || !transferId) {
+      return statusCallbackUrl;
+    }
+
+    const separator = statusCallbackUrl.includes('?') ? '&' : '?';
+
+    return `${statusCallbackUrl}${separator}transfer_id=${encodeURIComponent(transferId)}`;
+  }
+
   /** Cold transfer: add target, remove agent */
   private async coldTransfer(
     options: TransferOptions,
   ): Promise<TransferResult> {
     try {
-      const statusCallback = options.statusCallbackUrl && options.transferId
-        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
-        : options.statusCallbackUrl;
+      const statusCallback = this.appendTransferId(
+        options.statusCallbackUrl,
+        options.transferId,
+      );
 
       const { callSid: transferCallSid, conferenceSid } =
         await this.addParticipant(
@@ -324,7 +340,12 @@ export class ConferenceService {
         );
 
       await this.removeParticipant(conferenceSid, options.callSid);
-      return { success: true, transferCallSid, conferenceSid, transferId: options.transferId };
+      return {
+        success: true,
+        transferCallSid,
+        conferenceSid,
+        transferId: options.transferId,
+      };
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Cold transfer failed';
@@ -357,9 +378,10 @@ export class ConferenceService {
 
       // add the transfer target
       const client = await this.getClient();
-      const statusCallback = options.statusCallbackUrl && options.transferId
-        ? `${options.statusCallbackUrl}?transfer_id=${options.transferId}`
-        : options.statusCallbackUrl;
+      const statusCallback = this.appendTransferId(
+        options.statusCallbackUrl,
+        options.transferId,
+      );
 
       const participant = await client
         .conferences(conferenceSid)
@@ -369,7 +391,12 @@ export class ConferenceService {
           endConferenceOnExit: false,
           label: 'transfer-target',
           statusCallback,
-          statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
+          statusCallbackEvent: [
+            'initiated',
+            'ringing',
+            'answered',
+            'completed',
+          ],
         });
 
       return {
@@ -460,13 +487,51 @@ export class ConferenceService {
   async getRecording(
     recordingSid: string,
   ): Promise<{ url: string; duration: number }> {
-    throw new Error('NOT_IMPLEMENTED: getRecording not yet implemented');
+    try {
+      const client = await this.getClient();
+      const recording = await client.recordings(recordingSid).fetch();
+
+      return {
+        url: `https://api.twilio.com/2010-04-01/Accounts/${this.credentials.accountSid}/Recordings/${recordingSid}.mp3`,
+        duration: Number(recording.duration ?? 0),
+      };
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { recordingSid } });
+      const message = err instanceof Error ? err.message : 'Get recording failed';
+      throw new Error(message);
+    }
   }
 
   /** List recordings for a conference */
   async listRecordings(
     conferenceName: string,
   ): Promise<Array<{ url: string; duration: number }>> {
-    throw new Error('NOT_IMPLEMENTED: listRecordings not yet implemented');
+    try {
+      const client = await this.getClient();
+      const conferences = await client.conferences.list({
+        friendlyName: conferenceName,
+        limit: 1,
+      });
+
+      const conference = conferences[0];
+
+      if (!conference) {
+        return [];
+      }
+
+      const recordings = await client.recordings.list({
+        conferenceSid: conference.sid,
+        limit: 10,
+      });
+
+      return recordings.map((recording) => ({
+        url: `https://api.twilio.com/2010-04-01/Accounts/${this.credentials.accountSid}/Recordings/${recording.sid}.mp3`,
+        duration: Number(recording.duration ?? 0),
+      }));
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { conferenceName } });
+      const message = err instanceof Error ? err.message : 'List recordings failed';
+      throw new Error(message);
+    }
   }
 }

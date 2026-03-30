@@ -212,6 +212,26 @@
           }
         }
       }
+    },
+    "graphqlApi": {
+      "label": "GraphQL API",
+      "groups": {
+        "graphqlOverview": {
+          "label": "Overview"
+        },
+        "graphqlAnalytics": {
+          "label": "Analytics"
+        },
+        "graphqlAutomation": {
+          "label": "Automation"
+        },
+        "graphqlGeneral": {
+          "label": "General"
+        },
+        "graphqlTroubleshooting": {
+          "label": "Troubleshooting"
+        }
+      }
     }
   }
 }

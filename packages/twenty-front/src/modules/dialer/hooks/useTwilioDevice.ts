@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Device, Call } from '@twilio/voice-sdk';
+import { Device, type Call } from '@twilio/voice-sdk';
 import { captureException } from '@sentry/react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 
@@ -38,7 +38,7 @@ interface UseTwilioDeviceReturn {
   refreshToken: () => Promise<void>;
 }
 
-async function fetchVoiceToken(): Promise<string> {
+const fetchVoiceToken = async (): Promise<string> => {
   try {
     const res = await authenticatedFetch(
       `${REACT_APP_SERVER_BASE_URL}/v1/voice/token`,
@@ -55,7 +55,7 @@ async function fetchVoiceToken(): Promise<string> {
     captureException(err, { extra: { context: 'fetchVoiceToken' } });
     throw err;
   }
-}
+};
 
 export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   const [isReady, setIsReady] = useRecoilState(deviceReadyState);
@@ -313,13 +313,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }, DEVICE_RETRY_DELAY);
       }
     }
-  }, [
-    setError,
-    setIsReady,
-    bindCallEvents,
-    updateCallStatus,
-    refreshToken,
-  ]);
+  }, [setError, setIsReady, bindCallEvents, updateCallStatus, refreshToken]);
 
   // connect outbound call
   const connect = useCallback(
@@ -340,6 +334,10 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       }
 
       try {
+        setCallState((previousCallState) => ({
+          ...previousCallState,
+          fromNumber: params.From,
+        }));
         updateCallStatus('connecting');
 
         const call = await deviceRef.current.connect({
@@ -356,7 +354,13 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         throw err;
       }
     },
-    [updateCallStatus, bindCallEvents, requestMicPermission, setError],
+    [
+      updateCallStatus,
+      bindCallEvents,
+      requestMicPermission,
+      setCallState,
+      setError,
+    ],
   );
 
   // disconnect active call
@@ -407,8 +411,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       setIsReady(false);
       setActiveCall(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [configStatus?.configured]);
+  }, [configStatus?.configured, initDevice, setActiveCall, setIsReady]);
 
   return {
     device: deviceRef.current,

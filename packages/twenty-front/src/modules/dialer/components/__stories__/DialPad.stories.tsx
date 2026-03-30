@@ -64,7 +64,13 @@ const meta: Meta<typeof DialPad> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof DialPad>;
+type StoryArgs = {
+  onCall?: (phoneNumber: string) => void;
+  callState?: CallState;
+  initialNumber?: string;
+};
+
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 

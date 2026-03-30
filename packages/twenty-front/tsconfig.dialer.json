@@ -4,5 +4,8 @@
     "src/modules/dialer/**/*.ts",
     "src/modules/dialer/**/*.tsx",
     "src/emotion.d.ts"
+  ],
+  "exclude": [
+    "src/modules/dialer/**/__stories__/**"
   ]
 }

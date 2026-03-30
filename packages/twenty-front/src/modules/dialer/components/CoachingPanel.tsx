@@ -24,7 +24,7 @@ interface CoachingPanelProps {
   talkingPoints: TalkingPoints | null;
   callStatus: CallStatus;
   error: string | null;
-  onRetry: () => void;
+  onRetry?: () => void;
 }
 
 // region styled
@@ -296,7 +296,9 @@ export const CoachingPanel = ({
         <StyledEmpty>
           <IconAlertTriangle size={20} />
           <span>{error}</span>
-          <StyledRetryButton onClick={onRetry}>Retry</StyledRetryButton>
+          {onRetry && (
+            <StyledRetryButton onClick={onRetry}>Retry</StyledRetryButton>
+          )}
         </StyledEmpty>
       );
     }

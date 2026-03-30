@@ -4,13 +4,9 @@
 
 read `CODING-STANDARDS.md` before writing any code. every rule in that file is mandatory.
 
-
 ## project overview
+
 Consuelo - Teleommunication infrastructure.
-
-
-
-
 
 ## key commands
 
@@ -182,6 +178,7 @@ npx nx run twenty-front:graphql:generate --configuration=metadata
 ### utility helpers
 
 use existing helpers from `twenty-shared` instead of manual type guards:
+
 - `isDefined()`, `isNonEmptyString()`, `isNonEmptyArray()`
 
 ### auth system (twenty's built-in JWT)
@@ -233,12 +230,12 @@ when running in CI, the dev environment is **not** pre-configured. dependencies 
 
 twenty has a full hotkey system built in. **always use it** — never raw `addEventListener` for keyboard shortcuts.
 
-| hook | use case |
-|------|----------|
-| `useGlobalHotkeys` | single key or modifier combos (e.g. `m` for mute) |
-| `useGlobalHotkeysSequence` | two-key sequences (e.g. `g` then `s` = go to settings) |
-| `useGoToHotkeys` | navigation via `g+key` (wraps sequence hook + `useNavigate`) |
-| `useHotkeysOnFocusedElement` | context-scoped (only fires when specific element focused) |
+| hook                         | use case                                                     |
+| ---------------------------- | ------------------------------------------------------------ |
+| `useGlobalHotkeys`           | single key or modifier combos (e.g. `m` for mute)            |
+| `useGlobalHotkeysSequence`   | two-key sequences (e.g. `g` then `s` = go to settings)       |
+| `useGoToHotkeys`             | navigation via `g+key` (wraps sequence hook + `useNavigate`) |
+| `useHotkeysOnFocusedElement` | context-scoped (only fires when specific element focused)    |
 
 all hooks live in `packages/twenty-front/src/modules/ui/utilities/hotkey/hooks/`.
 
@@ -250,12 +247,12 @@ dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules
 
 production is deployed on railway at `app.consuelohq.com`. four services:
 
-| service | what it does | Dockerfile |
-|---------|-------------|------------|
-| `opensaas` | twenty-server (NestJS API + frontend) | `packages/twenty-docker/twenty/Dockerfile` |
-| `twenty-worker` | BullMQ background job processor | same Dockerfile, custom start command |
-| `postgres` | PostgreSQL database | railway managed |
-| `redis` | Redis cache + sessions + BullMQ | railway managed |
+| service         | what it does                          | Dockerfile                                 |
+| --------------- | ------------------------------------- | ------------------------------------------ |
+| `opensaas`      | twenty-server (NestJS API + frontend) | `packages/twenty-docker/twenty/Dockerfile` |
+| `twenty-worker` | BullMQ background job processor       | same Dockerfile, custom start command      |
+| `postgres`      | PostgreSQL database                   | railway managed                            |
+| `redis`         | Redis cache + sessions + BullMQ       | railway managed                            |
 
 ### railway Dockerfile configuration
 
@@ -332,6 +329,7 @@ twenty's graphql has two schema scopes:
 - **workspace** — requires auth token. all business data (companies, people, opportunities, etc.). 551+ types, built dynamically per workspace from metadata.
 
 the yoga driver patch merges these at request time:
+
 1. core schema is always loaded
 2. if request has a valid auth token, workspace schema is fetched (cached in redis)
 3. `mergeSchemas({ schemas: [coreSchema, workspaceSchema] })` produces the final schema
@@ -347,6 +345,7 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API you can hit directly.
 
 ### graphql endpoints
+
 - workspace data: `https://consuelo.consuelohq.com/graphql` — contacts, companies, lists, tasks, notes, etc.
 - metadata: `https://consuelo.consuelohq.com/metadata` — object definitions, field metadata
 - auth: `Authorization: Bearer $INTERNAL_CONSUELO_API_KEY` (workspace-scoped JWT token, in `.env`)
@@ -354,7 +353,9 @@ the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API yo
 the workspace token can query/mutate workspace-level data (people, companies, etc.) but NOT core-level queries like `currentUser`. core queries require a user JWT from the login flow.
 
 ### database access (for admin operations)
+
 when you need to bypass the API (bulk operations, feature flags, cache inspection):
+
 - postgres public URL: `postgresql://postgres:<pw>@maglev.proxy.rlwy.net:21615/railway`
 - redis public URL: `redis://default:<pw>@mainline.proxy.rlwy.net:46909`
 - credentials are in the Railway service env vars (use `railway variables --json --service Postgres` or `--service Redis`)
@@ -368,11 +369,12 @@ feature flags are stored in `core."featureFlag"` table (per workspace). **but th
 3. **postgres** (source of truth)
 
 **if you modify flags directly in postgres, you MUST also flush the redis cache:**
+
 ```javascript
 // connect to redis public URL and delete:
 redis.del(
   `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:data`,
-  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:hash`
+  `engine:workspace:feature-flag:feature-flags-map:${workspaceId}:hash`,
 );
 ```
 
@@ -381,6 +383,7 @@ without this, the server reads stale data from redis and your DB changes are inv
 **the proper way** (if you have API access): use the `updateWorkspaceFeatureFlag` admin mutation, which calls `invalidateAndRecompute` internally and handles all cache tiers. but that requires `AdminPanelGuard` auth.
 
 ### workspace IDs
+
 - consuelo (internal): `7d0894c1-bdb1-4dd6-9a00-78681b52d5f6`
 - alex moreno: `8eaedb39-991a-47fc-8337-00a195483851`
 
@@ -397,7 +400,6 @@ without this, the server reads stale data from redis and your DB changes are inv
 ## pre-push code review — 13 automated checks
 
 `scripts/code-review.sh` (also `npm run review`) runs on every push. all 13 must pass:
-
 
 ## route ordering
 
@@ -514,18 +516,25 @@ the pre-push `STUB_HANDLER` check flags suspicious hardcoded responses in route 
 // ❌ wrong — looks implemented but returns fake data
 handler: async (req, res) => {
   res.status(200).json({ status: 'in-progress' });
-}
+};
 
 // ✅ correct — clearly unfinished
 handler: async (req, res) => {
-  res.status(501).json({ error: { code: 'NOT_IMPLEMENTED', message: 'Call status lookup not yet implemented' } });
-}
+  res
+    .status(501)
+    .json({
+      error: {
+        code: 'NOT_IMPLEMENTED',
+        message: 'Call status lookup not yet implemented',
+      },
+    });
+};
 
 // ✅ also fine — marked as intentional stub
 handler: async (req, res) => {
   // STUB: replace with real call status check (DEV-xxx)
   res.status(200).json({ status: 'in-progress' });
-}
+};
 ```
 
 ## error recovery in cached clients
@@ -576,34 +585,44 @@ You have context-mode MCP tools available. These rules are NOT optional — they
 ## BLOCKED commands — do NOT attempt these
 
 ### curl / wget — BLOCKED
+
 Any shell command containing `curl` or `wget` will be intercepted and blocked by the context-mode plugin. Do NOT retry.
 Instead use:
+
 - `context-mode_ctx_fetch_and_index(url, source)` to fetch and index web pages
 - `context-mode_ctx_execute(language: "javascript", code: "const r = await fetch(...)")` to run HTTP calls in sandbox
 
 ### Inline HTTP — BLOCKED
+
 Any shell command containing `fetch('http`, `requests.get(`, `requests.post(`, `http.get(`, or `http.request(` will be intercepted and blocked. Do NOT retry with shell.
 Instead use:
+
 - `context-mode_ctx_execute(language, code)` to run HTTP calls in sandbox — only stdout enters context
 
 ### Direct web fetching — BLOCKED
+
 Do NOT use any direct URL fetching tool. Use the sandbox equivalent.
 Instead use:
+
 - `context-mode_ctx_fetch_and_index(url, source)` then `context-mode_ctx_search(queries)` to query the indexed content
 
 ## REDIRECTED tools — use sandbox equivalents
 
 ### Shell (>20 lines output)
+
 Shell is ONLY for: `git`, `mkdir`, `rm`, `mv`, `cd`, `ls`, `npm install`, `pip install`, and other short-output commands.
 For everything else, use:
+
 - `context-mode_ctx_batch_execute(commands, queries)` — run multiple commands + search in ONE call
 - `context-mode_ctx_execute(language: "shell", code: "...")` — run in sandbox, only stdout enters context
 
 ### File reading (for analysis)
+
 If you are reading a file to **edit** it → reading is correct (edit needs content in context).
 If you are reading to **analyze, explore, or summarize** → use `context-mode_ctx_execute_file(path, language, code)` instead. Only your printed summary enters context.
 
 ### grep / search (large results)
+
 Search results can flood context. Use `context-mode_ctx_execute(language: "shell", code: "grep ...")` to run searches in sandbox. Only your printed summary enters context.
 
 ## Tool selection hierarchy
@@ -622,8 +641,32 @@ Search results can flood context. Use `context-mode_ctx_execute(language: "shell
 
 ## ctx commands
 
-| Command | Action |
-|---------|--------|
-| `ctx stats` | Call the `stats` MCP tool and display the full output verbatim |
-| `ctx doctor` | Call the `doctor` MCP tool, run the returned shell command, display as checklist |
+| Command       | Action                                                                            |
+| ------------- | --------------------------------------------------------------------------------- |
+| `ctx stats`   | Call the `stats` MCP tool and display the full output verbatim                    |
+| `ctx doctor`  | Call the `doctor` MCP tool, run the returned shell command, display as checklist  |
 | `ctx upgrade` | Call the `upgrade` MCP tool, run the returned shell command, display as checklist |
+
+<!-- nx configuration start-->
+<!-- Leave the start & end comments to automatically receive updates. -->
+
+## General Guidelines for working with Nx
+
+- For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
+- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
+- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
+- You have access to the Nx MCP server and its tools, use them to help the user
+- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
+- NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
+
+## Scaffolding & Generators
+
+- For scaffolding tasks (creating apps, libs, project structure, setup), ALWAYS invoke the `nx-generate` skill FIRST before exploring or calling MCP tools
+
+## When to use nx_docs
+
+- USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
+- DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
+- The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
+
+<!-- nx configuration end-->
