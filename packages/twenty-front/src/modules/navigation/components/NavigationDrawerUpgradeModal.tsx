@@ -9,10 +9,10 @@ import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navig
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 import { Modal } from '@/ui/layout/modal/components/Modal';
-import { IconCheck, IconSparkles, IconX } from '@tabler/icons-react';
+import { IconCheck, IconSparkles } from '@tabler/icons-react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
-import { H2Title } from 'twenty-ui/display';
+import { H2Title, IconX } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
 
 const CONSUELO_PRICING_URL = 'https://www.consuelohq.com/mercury';

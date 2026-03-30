@@ -85,7 +85,7 @@ const StyledDropdownFrame = styled(motion.div)`
   min-height: 460px;
 `;
 
-const StyledDropdownBody = styled.div`
+const StyledDropdownBody = styled(motion.div)`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -367,7 +367,6 @@ export const NavigationDrawerHelpDropdown = () => {
       >
         <AnimatePresence initial={false} mode="wait">
           <StyledDropdownBody
-            as={motion.div}
             key={view}
             initial={{ opacity: 0, x: direction > 0 ? 18 : -18 }}
             animate={{ opacity: 1, x: 0 }}
@@ -408,7 +407,7 @@ export const NavigationDrawerHelpDropdown = () => {
                     onMouseLeave={clearOpenAppsTimeout}
                     text={t`Download apps`}
                     hasSubMenu={true}
-                    isSubMenuOpened={view === 'apps'}
+                    isSubMenuOpened={false}
                   />
                   <MenuItem
                     LeftIcon={IconSettings}
