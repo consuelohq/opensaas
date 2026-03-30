@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
   IconList,
-  IconPhoneCall,
   IconSettings,
   IconUser,
   IconX,
 } from 'twenty-ui/display';
+import { IconPhoneCall } from '@tabler/icons-react';
 
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { QueueControls } from '@/dialer/components/QueueControls';

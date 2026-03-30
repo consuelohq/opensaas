@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { IconLoader2, IconPhone, IconPhoneOff } from 'twenty-ui/display';
+import { IconPhone, IconPhoneOff } from 'twenty-ui/display';
+import { IconLoader2 } from '@tabler/icons-react';
 import { captureException } from '@sentry/react';
 import { useLingui } from '@lingui/react/macro';
 

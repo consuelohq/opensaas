@@ -4,20 +4,16 @@ import { msg } from '@lingui/core/macro';
 import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
-  IconBan,
   IconCalendar,
-  IconDots,
   IconPhone,
   IconPhoneOff,
   IconPlayerPause,
   IconPlayerPlay,
   IconPlayerStop,
-  IconPlayerTrackNext,
   IconRefresh,
-  IconThumbDown,
-  IconMailbox,
   IconX,
 } from 'twenty-ui/display';
+import { IconBan, IconDots, IconPlayerTrackNext, IconThumbDown, IconMailbox } from '@tabler/icons-react';
 
 import { activeQueueState } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';

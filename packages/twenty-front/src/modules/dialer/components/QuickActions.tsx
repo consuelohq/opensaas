@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { IconCalendar, IconLoader2, IconNote } from 'twenty-ui/display';
+import { IconCalendar } from 'twenty-ui/display';
+import { IconLoader2, IconNote } from '@tabler/icons-react';
 import { useLingui } from '@lingui/react/macro';
 import { msg } from '@lingui/core/macro';
 

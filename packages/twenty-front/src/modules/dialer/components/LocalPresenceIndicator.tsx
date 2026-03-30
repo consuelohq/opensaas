@@ -1,7 +1,8 @@
 import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
 import styled from '@emotion/styled';
-import { IconMapPin, IconPhone } from 'twenty-ui/display';
+import { IconPhone } from 'twenty-ui/display';
+import { IconMapPin } from '@tabler/icons-react';
 import { useState } from 'react';
 
 const StyledContainer = styled.div`

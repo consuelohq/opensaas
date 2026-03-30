@@ -1,13 +1,13 @@
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
 import {
-  IconCloud,
   IconKey,
   IconPhone,
   IconAlertTriangle,
   IconSettings,
   IconRefresh,
 } from 'twenty-ui/display';
+import { IconCloud } from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
 import { Link } from 'react-router-dom';
 import { useLingui, Trans } from '@lingui/react/macro';

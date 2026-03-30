@@ -2,14 +2,13 @@ import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import {
   IconAlertTriangle,
-  IconBulb,
   IconChevronDown,
   IconChevronUp,
-  IconLoader2,
   IconMinus,
   IconPlus,
   IconTargetArrow,
 } from 'twenty-ui/display';
+import { IconBulb, IconLoader2 } from '@tabler/icons-react';
 import { useLingui } from '@lingui/react/macro';
 
 import { type CallStatus } from '@/dialer/types/dialer';

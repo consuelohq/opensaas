@@ -5,11 +5,11 @@ import { useSetRecoilState } from 'recoil';
 import {
   IconFileText,
   IconHistory,
-  IconLoader2,
   IconPhone,
   IconPlayerPlay,
   IconRefresh,
 } from 'twenty-ui/display';
+import { IconLoader2 } from '@tabler/icons-react';
 
 import { useCallHistory } from '@/dialer/hooks/useCallHistory';
 import { callStateAtom } from '@/dialer/states/callStateAtom';

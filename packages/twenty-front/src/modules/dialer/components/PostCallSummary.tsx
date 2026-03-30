@@ -5,10 +5,10 @@ import {
   IconChartBar,
   IconChevronDown,
   IconChevronUp,
-  IconLoader2,
   IconMinus,
   IconPlus,
 } from 'twenty-ui/display';
+import { IconLoader2 } from '@tabler/icons-react';
 import { useLingui } from '@lingui/react/macro';
 
 import { type CallAnalytics, type MomentType } from '@/dialer/types/coaching';
