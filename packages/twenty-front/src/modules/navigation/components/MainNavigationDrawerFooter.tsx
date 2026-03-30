@@ -14,6 +14,7 @@ const StyledFooterRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   justify-content: flex-start;
+  padding: ${({ theme }) => theme.spacing(0.5, 1, 1, 0.5)};
   width: 100%;
 `;
 
@@ -25,7 +26,7 @@ const StyledPlanButton = styled.button`
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
-  height: ${({ theme }) => theme.spacing(8)};
+  height: ${({ theme }) => theme.spacing(7)};
   max-width: 100%;
   min-width: ${({ theme }) => theme.spacing(8)};
   padding: ${({ theme }) => theme.spacing(0, 2.5)};

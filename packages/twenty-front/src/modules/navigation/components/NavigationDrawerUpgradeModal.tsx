@@ -12,14 +12,14 @@ import { Modal } from '@/ui/layout/modal/components/Modal';
 import { IconCheck, IconSparkles } from '@tabler/icons-react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
-import { H2Title, IconX } from 'twenty-ui/display';
+import { IconX } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
 
 const CONSUELO_PRICING_URL = 'https://www.consuelohq.com/mercury';
 
 const StyledModalContent = styled(Modal.Content)`
   gap: ${({ theme }) => theme.spacing(5)};
-  padding: ${({ theme }) => theme.spacing(5)};
+  padding: ${({ theme }) => theme.spacing(4.5)};
 `;
 
 const StyledHeader = styled.div`
@@ -35,9 +35,18 @@ const StyledHeaderCopy = styled.div`
   gap: ${({ theme }) => theme.spacing(2)};
 `;
 
+const StyledTitle = styled.h2`
+  color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.xxl};
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
+`;
+
 const StyledEyebrow = styled.div`
   align-items: center;
-  color: ${({ theme }) => theme.font.color.tertiary};
+  color: ${({ theme }) => theme.font.color.secondary};
   display: flex;
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
@@ -45,9 +54,9 @@ const StyledEyebrow = styled.div`
 `;
 
 const StyledDescription = styled.p`
-  color: ${({ theme }) => theme.font.color.secondary};
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
-  line-height: 1.6;
+  line-height: 1.55;
   margin: 0;
 `;
 
@@ -99,11 +108,10 @@ const StyledPlanBadge = styled.span<{ featured?: boolean }>`
     featured ? theme.color.blue + '20' : theme.background.transparent.light};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ featured, theme }) =>
-    featured ? theme.color.blue : theme.font.color.tertiary};
+    featured ? theme.color.blue : theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.xs};
   font-weight: ${({ theme }) => theme.font.weight.medium};
   padding: ${({ theme }) => theme.spacing(0.5, 1.5)};
-  text-transform: uppercase;
 `;
 
 const StyledPlanPrice = styled.div`
@@ -114,7 +122,7 @@ const StyledPlanPrice = styled.div`
 `;
 
 const StyledPlanSubtitle = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
+  color: ${({ theme }) => theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
@@ -126,7 +134,7 @@ const StyledFeatureList = styled.div`
 
 const StyledFeature = styled.div`
   align-items: flex-start;
-  color: ${({ theme }) => theme.font.color.secondary};
+  color: ${({ theme }) => theme.font.color.primary};
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   line-height: 1.5;
@@ -136,16 +144,14 @@ const StyledFooter = styled(Modal.Footer)`
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   justify-content: flex-end;
-  padding: ${({ theme }) => theme.spacing(0, 5, 5)};
+  padding: ${({ theme }) => theme.spacing(1, 4.5, 4, 4.5)};
 `;
 
 const StyledActionButton = styled.button<{ primary?: boolean }>`
   align-items: center;
   background: ${({ primary, theme }) =>
     primary ? theme.color.blue : theme.background.transparent.light};
-  border: 1px solid
-    ${({ primary, theme }) =>
-      primary ? theme.color.blue : theme.border.color.medium};
+  border: none;
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ primary, theme }) =>
     primary ? theme.grayScale.gray1 : theme.font.color.primary};
@@ -153,10 +159,14 @@ const StyledActionButton = styled.button<{ primary?: boolean }>`
   display: inline-flex;
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  height: 36px;
+  height: 34px;
   justify-content: center;
-  min-width: 140px;
+  min-width: 120px;
   padding: ${({ theme }) => theme.spacing(0, 3)};
+
+  &:hover {
+    filter: brightness(0.98);
+  }
 
   &:disabled {
     cursor: not-allowed;
@@ -174,6 +184,7 @@ const getPlanName = (
   if (
     normalizedPlanName === undefined ||
     normalizedPlanName === '' ||
+    normalizedPlanName === 'none' ||
     normalizedPlanName === 'no plan' ||
     normalizedPlanName === 'starter'
   ) {
@@ -302,6 +313,7 @@ export const NavigationDrawerUpgradeModal = ({
       onClose={handleClose}
       size="large"
       padding="none"
+      shouldCloseModalOnClickOutsideOrEscape={false}
     >
       <StyledModalContent>
         <StyledHeader>
@@ -310,10 +322,10 @@ export const NavigationDrawerUpgradeModal = ({
               <IconSparkles size={theme.icon.size.md} stroke={1.8} />
               {t`Free plan`}
             </StyledEyebrow>
-            <H2Title
-              title={t`Upgrade your workspace`}
-              description={t`Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling.`}
-            />
+            <StyledTitle>{t`Upgrade your workspace`}</StyledTitle>
+            <StyledDescription>
+              {t`Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling.`}
+            </StyledDescription>
             <StyledDescription>
               {t`You can start with the free CRM, then turn on hosted calling and AI when your team is ready.`}
             </StyledDescription>
@@ -332,7 +344,9 @@ export const NavigationDrawerUpgradeModal = ({
             <StyledPlanHeading>
               <StyledPlanTitleRow>
                 <StyledPlanTitle>{t`Current plan`}</StyledPlanTitle>
-                <StyledPlanBadge>{currentPlanName}</StyledPlanBadge>
+                <StyledPlanBadge>
+                  {currentPlanName === 'Free' ? t`Free plan` : t`Paid plan`}
+                </StyledPlanBadge>
               </StyledPlanTitleRow>
               <StyledPlanPrice>{t`$0`}</StyledPlanPrice>
               <StyledPlanSubtitle>{t`Free forever`}</StyledPlanSubtitle>

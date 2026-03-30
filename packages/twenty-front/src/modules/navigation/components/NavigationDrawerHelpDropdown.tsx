@@ -60,17 +60,16 @@ const StyledHelpButton = styled.button`
   background: ${({ theme }) => theme.background.primary};
   border: 1px solid ${({ theme }) => theme.border.color.strong};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
-  color: ${({ theme }) => theme.font.color.secondary};
+  color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
-  height: ${({ theme }) => theme.spacing(8)};
+  height: ${({ theme }) => theme.spacing(7)};
   justify-content: center;
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
     border-color ${({ theme }) => theme.animation.duration.normal}s,
     color ${({ theme }) => theme.animation.duration.normal}s;
-  width: ${({ theme }) => theme.spacing(8)};
-  box-shadow: ${({ theme }) => theme.boxShadow.light};
+  width: ${({ theme }) => theme.spacing(7)};
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
@@ -80,9 +79,14 @@ const StyledHelpButton = styled.button`
 `;
 
 const StyledDropdownFrame = styled(motion.div)`
+  background: ${({ theme }) => theme.background.primary};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: ${({ theme }) => theme.border.radius.md};
+  box-shadow: ${({ theme }) => theme.boxShadow.strong};
   display: flex;
   flex-direction: column;
-  min-height: 460px;
+  min-height: 400px;
+  padding: ${({ theme }) => theme.spacing(1.5)};
 `;
 
 const StyledDropdownBody = styled(motion.div)`
@@ -94,12 +98,12 @@ const StyledDropdownBody = styled(motion.div)`
 const StyledUpdatesSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(1)};
-  padding: ${({ theme }) => theme.spacing(3)};
+  gap: ${({ theme }) => theme.spacing(0.75)};
+  padding: ${({ theme }) => theme.spacing(2.5, 2, 1.5)};
 `;
 
 const StyledUpdatesHeading = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
+  color: ${({ theme }) => theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
   text-transform: uppercase;
@@ -107,11 +111,11 @@ const StyledUpdatesHeading = styled.div`
 
 const StyledUpdateLink = styled.a`
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: ${({ theme }) => theme.font.color.secondary};
+  color: ${({ theme }) => theme.font.color.primary};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(0.5)};
-  padding: ${({ theme }) => theme.spacing(1.5, 2)};
+  padding: ${({ theme }) => theme.spacing(1.25, 1.5)};
   text-decoration: none;
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
@@ -127,6 +131,7 @@ const StyledUpdateTitle = styled.div`
   color: inherit;
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
+  line-height: 1.4;
 `;
 
 const StyledFullChangelogLink = styled.a`
@@ -223,13 +228,10 @@ export const NavigationDrawerHelpDropdown = () => {
 
   const changelogPreviewItems = [
     {
-      title: t`Settings restructure, agent polish, and landing refresh`,
+      title: t`Settings refresh and agent polish`,
     },
     {
-      title: t`Launch site refresh and mercury positioning updates`,
-    },
-    {
-      title: t`GoHighLevel navigation, nav reorg, and docs updates`,
+      title: t`Launch site and mercury updates`,
     },
   ];
 
@@ -358,7 +360,7 @@ export const NavigationDrawerHelpDropdown = () => {
   };
 
   const dropdownContent = (
-    <DropdownContent widthInPixels={320}>
+    <DropdownContent widthInPixels={300}>
       <StyledDropdownFrame
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
