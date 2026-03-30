@@ -20,20 +20,80 @@ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
+msgid "If you wish to continue using Consuelo, please update your subscription within the next {remainingDays} {dayOrDays}."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's website"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's GitHub repository"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Read Consuelo's user guide"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's developer documentation"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Kiểm tra email"
+
+#. js-lingui-explicit-id
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Không gian làm việc bị tạm ngưng"
 
 #. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-#: src/emails/password-update-notify.email.tsx
 #: src/emails/clean-suspended-workspace.email.tsx
+#: src/emails/password-update-notify.email.tsx
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Dear {userName},"
 msgstr "Kính gửi {userName},"
 
 #. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-#: src/emails/password-update-notify.email.tsx
 #: src/emails/clean-suspended-workspace.email.tsx
+#: src/emails/password-update-notify.email.tsx
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Hello,"
 msgstr "Xin chào,"
 
@@ -46,11 +106,6 @@ msgstr "Có vẻ như không gian làm việc của bạn <0>{workspaceDisplayNa
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "The workspace will be deactivated in {remainingDays} {dayOrDays}, and all its data will be deleted."
 msgstr "Không gian làm việc sẽ bị ngừng hoạt động trong {remainingDays} ngày tới, và tất cả dữ liệu của nó sẽ bị xóa bỏ."
-
-#. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-msgid "If you wish to continue using Twenty, please update your subscription within the next {remainingDays} {dayOrDays}."
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
@@ -67,16 +122,6 @@ msgstr "Xác thực tên miền"
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow users with <1>@{domain}</1> email addresses to join your workspace without requiring an invitation."
 msgstr "{senderName} (<0>{senderEmail}</0>): Vui lòng xác thực tên miền này để cho phép người dùng có địa chỉ email <1>@{domain}</1> tham gia không gian làm việc của bạn mà không cần lời mời."
-
-#. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Kiểm tra email"
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Twenty"
-msgstr "Tham gia vào đội ngũ của bạn trên Twenty"
 
 #. js-lingui-explicit-id
 #: src/emails/send-invite-link.email.tsx
@@ -124,11 +169,6 @@ msgid "If you did not initiate this change, please contact your workspace owner 
 msgstr "Nếu bạn không khởi xướng việc thay đổi này, vui lòng liên hệ ngay với chủ sở hữu của không gian làm việc của bạn."
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Twenty"
-msgstr "Kết nối với Twenty"
-
-#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr "Đặt lại mật khẩu của bạn 🗝"
@@ -170,23 +210,8 @@ msgstr "Tất cả dữ liệu trong không gian làm việc này đã bị xóa
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
-msgid "If you wish to use Twenty again, you can create a new workspace."
-msgstr "Nếu bạn muốn sử dụng Twenty lại, bạn có thể tạo một không gian làm việc mới."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "Tạo không gian làm việc mới"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Twenty?"
-msgstr "Twenty là gì?"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's a CRM, a software to help businesses manage their customer data and relationships efficiently."
-msgstr "Đó là một CRM, một phần mềm giúp doanh nghiệp quản lý dữ liệu và mối quan hệ khách hàng một cách hiệu quả."
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
@@ -195,18 +220,8 @@ msgstr "Trang web"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
-msgid "Visit Twenty's website"
-msgstr "Thăm trang web của Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
 msgid "Github"
 msgstr "Github"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Visit Twenty's GitHub repository"
-msgstr "Thăm kho GitHub của Twenty"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
@@ -215,23 +230,8 @@ msgstr "Hướng dẫn người dùng"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
-msgid "Read Twenty's user guide"
-msgstr "Đọc hướng dẫn người dùng của Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
 msgid "Developers"
 msgstr "Nhà phát triển"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Visit Twenty's developer documentation"
-msgstr "Thăm tài liệu nhà phát triển của Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Twenty.com, Public Benefit Corporation"
-msgstr "Twenty.com, Tập đoàn lợi ích công cộng"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx

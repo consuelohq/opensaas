@@ -24,8 +24,8 @@ msgid "{fieldName} and {fieldName}Id cannot be both provided."
 msgstr "{fieldName} и {fieldName}Id не могу обоје бити наведени."
 
 #. js-lingui-id: ZkHTHm
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 #: src/engine/metadata-modules/index-metadata/utils/validate-can-create-unique-index.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 msgid "{fieldType} fields cannot be unique."
 msgstr "Поља типа {fieldType} не могу бити јединствена."
 
@@ -110,8 +110,8 @@ msgid "A required field is missing."
 msgstr ""
 
 #. js-lingui-id: Q2De+v
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-label-uniqueness.util.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-label-uniqueness.util.ts
 msgid "A role with this label already exists."
 msgstr "Улога са овом ознаком већ постоји."
 
@@ -258,6 +258,11 @@ msgstr ""
 msgid "AI agent step execution failed."
 msgstr "Извршавање корака AI агента није успело."
 
+#. js-lingui-id: mYXmIA
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "AI provider returned an error."
+msgstr ""
+
 #. js-lingui-id: pZEIPj
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-name-uniqueness.util.ts
 msgid "An agent with this name already exists"
@@ -284,9 +289,9 @@ msgid "An error occurred with two-factor authentication data."
 msgstr "Дошло је до грешке са подацима двофакторске аутентификације."
 
 #. js-lingui-id: XyOToQ
-#: src/engine/core-modules/graphql/utils/generate-graphql-error-from-error.util.ts
-#: src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts
 #: src/engine/api/common/common-query-runners/errors/standard-error-message.constant.ts
+#: src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts
+#: src/engine/core-modules/graphql/utils/generate-graphql-error-from-error.util.ts
 msgid "An error occurred."
 msgstr "Дошло је до грешке."
 
@@ -321,23 +326,23 @@ msgid "An unexpected configuration error occurred."
 msgstr "Дошло је до неочекиване грешке у конфигурацији."
 
 #. js-lingui-id: W5A0Ly
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/workspace-cache/exceptions/workspace-cache.exception.ts
-#: src/engine/metadata-modules/view-sort/filters/view-sort-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/view-group/filters/view-group-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/metadata-modules/view-field/filters/view-field-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view-filter-group/filters/view-filter-group-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view-filter/filters/view-filter-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/view-field/filters/view-field-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/view-group/filters/view-group-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/view-sort/filters/view-sort-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view/filters/view-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/workspace-cache/exceptions/workspace-cache.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
 msgid "An unexpected error occurred."
 msgstr "Дошло је до неочекиване грешке."
 
 #. js-lingui-id: q8ZbjA
-#: src/modules/calendar/calendar-event-import-manager/exceptions/calendar-event-import.exception.ts
 #: src/modules/calendar/calendar-event-import-manager/drivers/exceptions/calendar-event-import-driver.exception.ts
+#: src/modules/calendar/calendar-event-import-manager/exceptions/calendar-event-import.exception.ts
 msgid "An unknown calendar error occurred."
 msgstr "Дошло је до непознате грешке календара."
 
@@ -362,12 +367,12 @@ msgid "API key role not found."
 msgstr "Улога API кључа није пронађена."
 
 #. js-lingui-id: ltvmAF
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
-#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/core-modules/application/application.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/auth/strategies/jwt.auth.strategy.spec.ts
-#: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
 msgid "Application not found."
 msgstr "Апликација није пронађена."
 
@@ -433,8 +438,8 @@ msgid "Authentication is required to access this feature. Please sign in and try
 msgstr "Потребна је аутентификација да би се приступило овој функцији. Молимо пријавите се и покушајте поново."
 
 #. js-lingui-id: cgNV3G
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
 #: src/engine/core-modules/file/file.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "Authentication is required."
 msgstr "Аутентификација је обавезна."
 
@@ -803,10 +808,10 @@ msgid "Configuration is required for widget \"{widgetTitle}\""
 msgstr ""
 
 #. js-lingui-id: oH0/eJ
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-front-component-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
 msgid "Configuration type is required"
 msgstr ""
 
@@ -816,9 +821,9 @@ msgid "Configuration type is required for widget \"{title}\""
 msgstr ""
 
 #. js-lingui-id: SlSmjG
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
 msgid "Configuration type is required for widget \"{widgetTitle}\""
 msgstr ""
 
@@ -853,7 +858,7 @@ msgid "Connect is not allowed for {connectFieldName} on {objectMetadataNameSingu
 msgstr "Повезивање није дозвољено за {connectFieldName} на {objectMetadataNameSingular}."
 
 #. js-lingui-id: /OJTzk
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Connected account not found."
 msgstr "Повезани налог није пронађен."
 
@@ -1062,9 +1067,9 @@ msgid "Email is required"
 msgstr "Е-пошта је обавезна"
 
 #. js-lingui-id: Qof3ks
-#: src/engine/core-modules/workspace-invitation/workspace-invitation.exception.ts
-#: src/engine/core-modules/email-verification/email-verification.exception.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/email-verification/email-verification.exception.ts
+#: src/engine/core-modules/workspace-invitation/workspace-invitation.exception.ts
 msgid "Email is required."
 msgstr "Е-пошта је обавезна."
 
@@ -1099,8 +1104,8 @@ msgid "Empty field permissions are not allowed."
 msgstr "Празне дозволе поља нису дозвољене."
 
 #. js-lingui-id: qpXqpa
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
 msgid "Entity not found."
 msgstr "Ентитет није пронађен."
 
@@ -1256,24 +1261,24 @@ msgid "Field label identifier is required"
 msgstr "Идентификатор ознаке поља је обавезан"
 
 #. js-lingui-id: MPt365
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 msgid "Field metadata not found"
 msgstr "Метаподаци поља нису пронађени"
 
 #. js-lingui-id: JrAl/I
-#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
 msgid "Field metadata not found."
 msgstr "Метаподаци поља нису пронађени."
 
@@ -1298,8 +1303,8 @@ msgid "Field name is not synced with label."
 msgstr "Име поља није синхронизовано са ознаком."
 
 #. js-lingui-id: Ts+YbB
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
 msgid "Field not found."
 msgstr "Поље није пронађено."
 
@@ -1407,9 +1412,9 @@ msgid "File {fileId} was not uploaded for this field. Please re-upload the file.
 msgstr ""
 
 #. js-lingui-id: weWV3g
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
 #: src/engine/core-modules/file-storage/interfaces/file-storage-exception.ts
 #: src/engine/core-modules/file/file.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "File not found."
 msgstr "Датотека није пронађена."
 
@@ -1475,8 +1480,8 @@ msgid "Front component not found"
 msgstr ""
 
 #. js-lingui-id: J+VVwG
-#: src/engine/metadata-modules/front-component/front-component.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/front-component/front-component.exception.ts
 msgid "Front component not found."
 msgstr ""
 
@@ -1573,8 +1578,8 @@ msgid "Index related object not found"
 msgstr "Објекат повезан са индексом није пронађен"
 
 #. js-lingui-id: fY2zUQ
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/builders/index/workspace-migration-index-actions-builder.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 msgid "Index to delete not found"
 msgstr "Индекс за брисање није пронађен"
 
@@ -1615,8 +1620,8 @@ msgid "Insufficient permissions."
 msgstr "Недовољне дозволе."
 
 #. js-lingui-id: pSjWxS
-#: src/modules/workflow/workflow-trigger/exceptions/workflow-trigger.exception.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/workflow/workflow-trigger/exceptions/workflow-trigger.exception.ts
 msgid "Invalid action type."
 msgstr "Неважећа врста радње."
 
@@ -1736,7 +1741,7 @@ msgid "Invalid configuration type for widget \"{widgetTitle}\". Expected {expect
 msgstr ""
 
 #. js-lingui-id: jUt31O
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid connected account ID."
 msgstr "Неважећи ID повезаног налога."
 
@@ -1761,8 +1766,8 @@ msgid "Invalid depth parameter."
 msgstr "Неважећи параметар дубине."
 
 #. js-lingui-id: 9lqqpY
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
 #: src/engine/core-modules/email-verification/email-verification.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid email address."
 msgstr "Неважећа адреса е-поште."
 
@@ -1777,14 +1782,14 @@ msgid "Invalid field input."
 msgstr "Неважећи унос поља."
 
 #. js-lingui-id: d6DMa/
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid file ID."
 msgstr "Неважећи ID датотеке."
 
 #. js-lingui-id: 1yoHmO
-#: src/engine/api/rest/input-request-parsers/rest-input-request-parser.exception.ts
-#: src/engine/api/rest/input-request-parsers/filter-parser-utils/parse-filter.util.ts
 #: src/engine/api/rest/input-request-parsers/filter-parser-utils/check-filter-query.util.ts
+#: src/engine/api/rest/input-request-parsers/filter-parser-utils/parse-filter.util.ts
+#: src/engine/api/rest/input-request-parsers/rest-input-request-parser.exception.ts
 msgid "Invalid filter parameter."
 msgstr "Неважећи параметар филтера."
 
@@ -1821,9 +1826,9 @@ msgid "Invalid identity provider type."
 msgstr "Неважећа врста провајдера идентитета."
 
 #. js-lingui-id: t7SpQO
-#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
-#: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
 msgid "Invalid input provided."
 msgstr "Дат је неважећи унос."
 
@@ -1940,8 +1945,8 @@ msgid "Invalid relation creation payload"
 msgstr "Неважећи payload за креирање релације"
 
 #. js-lingui-id: iWv3nK
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-relation-flat-field-metadata.util.ts
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-metadata.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-relation-flat-field-metadata.util.ts
 msgid "Invalid relation field target"
 msgstr ""
 
@@ -2142,12 +2147,12 @@ msgid "Invalid value for UUID: \"{inspectedValue}\""
 msgstr ""
 
 #. js-lingui-id: Og/MZQ
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-text-field-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-additional-emails-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-boolean-field-or-throw.util.ts
 #: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-array-field-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-boolean-field-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-additional-emails-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-text-field-or-throw.util.ts
 msgid "Invalid value: \"{inspectedValue}\""
 msgstr ""
 
@@ -2324,10 +2329,10 @@ msgid "Kanban view must have a main group by field"
 msgstr "Канбан приказ мора да има главно поље за груписање"
 
 #. js-lingui-id: 6sFS+I
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-required-properties.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-required-properties.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
 msgid "Label cannot be empty"
 msgstr "Ознака не може бити празна"
 
@@ -2342,10 +2347,10 @@ msgid "Label identifier field not found."
 msgstr "Поље идентификатора ознаке није пронађено."
 
 #. js-lingui-id: ACUSmL
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
 msgid "Label identifier view field cannot be deleted"
 msgstr "Поле приказа идентификатора етикете не може бити избрисано"
 
@@ -2420,8 +2425,8 @@ msgid "Logic function not found"
 msgstr ""
 
 #. js-lingui-id: 6Rq45N
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 msgid "Logic function not found."
 msgstr ""
 
@@ -2562,23 +2567,23 @@ msgid "Name is not synced with label."
 msgstr "Име није синхронизовано са натписом."
 
 #. js-lingui-id: Ny5wFU
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is not valid: it must start with lowercase letter and contain only alphanumeric letters"
 msgstr "Наслов није важећи: мора почети малим словом и садржавати само алфанумеричка слова"
 
 #. js-lingui-id: zjh2SJ
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is too long"
 msgstr "Име је предугачко"
 
 #. js-lingui-id: go/Vg1
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is too short"
 msgstr "Наслов је превише кратак"
 
@@ -2757,35 +2762,35 @@ msgid "Object label is too short"
 msgstr "Натпис објекта је прекратак"
 
 #. js-lingui-id: xrblgA
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
 msgid "Object metadata not found"
 msgstr "Метаподаци објекта нису пронађени"
 
 #. js-lingui-id: rHce90
-#: src/modules/workflow/common/exceptions/workflow-common.exception.ts
-#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
+#: src/modules/workflow/common/exceptions/workflow-common.exception.ts
 msgid "Object metadata not found."
 msgstr "Метаподаци објекта нису пронађени."
 
 #. js-lingui-id: AKqp4k
-#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
-#: src/engine/core-modules/search/exceptions/search.exception.ts
-#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
+#: src/engine/core-modules/search/exceptions/search.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
 msgid "Object not found."
 msgstr "Објекат није пронађен."
 
@@ -2936,28 +2941,28 @@ msgid "Options are required for enum fields"
 msgstr "Опције су обавезне за поља енума"
 
 #. js-lingui-id: ZKtamk
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
 msgid "Page layout not found"
 msgstr "Распоред странице није пронађен"
 
 #. js-lingui-id: C4+axZ
-#: src/modules/dashboard/exceptions/dashboard.exception.ts
 #: src/engine/metadata-modules/page-layout/exceptions/page-layout.exception.ts
+#: src/modules/dashboard/exceptions/dashboard.exception.ts
 msgid "Page layout not found."
 msgstr "Распоред странице није пронађен."
 
 #. js-lingui-id: qJ9V6q
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 msgid "Page layout tab not found"
 msgstr "Картица распореда странице није пронађена"
 
@@ -3008,9 +3013,9 @@ msgid "Page layout widget to destroy not found"
 msgstr "Виџет распореда странице за уништавање није пронађен"
 
 #. js-lingui-id: yCsIxc
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/utils/from-update-page-layout-widget-input-to-flat-page-layout-widget-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 msgid "Page layout widget to update not found"
 msgstr "Виџет распореда странице за ажурирање није пронађен"
 
@@ -3095,8 +3100,8 @@ msgid "Please use a company email domain."
 msgstr "Молимо користите домен е-поште компаније."
 
 #. js-lingui-id: Sguqn/
-#: src/modules/workspace-member/query-hooks/workspace-member-delete-one.pre-query.hook.ts
 #: src/modules/workspace-member/query-hooks/workspace-member-delete-many.pre-query.hook.ts
+#: src/modules/workspace-member/query-hooks/workspace-member-delete-one.pre-query.hook.ts
 msgid "Please use Settings to remove a workspace member."
 msgstr ""
 
@@ -3235,8 +3240,8 @@ msgid "Relation configuration is invalid."
 msgstr "Конфигурација релације је неважећа."
 
 #. js-lingui-id: +bFtT5
-#: src/engine/metadata-modules/flat-field-metadata/utils/from-relation-create-field-input-to-flat-field-metadatas.util.ts
 #: src/engine/metadata-modules/flat-field-metadata/utils/from-morph-relation-create-field-input-to-flat-field-metadatas.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/utils/from-relation-create-field-input-to-flat-field-metadatas.util.ts
 msgid "Relation creation payload is required"
 msgstr "Payload за креирање релације је обавезан"
 
@@ -3267,6 +3272,11 @@ msgstr "Даљински објекти још нису подржани"
 #: src/engine/core-modules/email-verification/email-verification-exception-filter.util.ts
 msgid "Request has expired, please try again."
 msgstr "Захтев је истекао, молимо покушајте поново."
+
+#. js-lingui-id: SjzOjS
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Required integration is not connected."
+msgstr ""
 
 #. js-lingui-id: KPIUoa
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-response-format.util.ts
@@ -3312,31 +3322,31 @@ msgid "Role must have at least one target."
 msgstr "Улога мора имати најмање један циљ."
 
 #. js-lingui-id: MvTCyk
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 msgid "Role not found"
 msgstr ""
 
 #. js-lingui-id: /BTyf+
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
-#: src/engine/metadata-modules/role/exceptions/role-target.exception.ts
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
 #: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/role/exceptions/role-target.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 msgid "Role not found."
 msgstr "Улога није пронађена."
 
@@ -3400,8 +3410,8 @@ msgid "Row level permission predicate already exists"
 msgstr ""
 
 #. js-lingui-id: RwBHMj
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 #: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 msgid "Row level permission predicate feature is disabled."
 msgstr ""
 
@@ -3462,6 +3472,16 @@ msgstr ""
 msgid "Row level permission predicate with this universal identifier already exists"
 msgstr ""
 
+#. js-lingui-id: Oh6E+5
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Sandbox execution failed."
+msgstr ""
+
+#. js-lingui-id: i1c+QS
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Sandbox execution timed out."
+msgstr ""
+
 #. js-lingui-id: +5kO8P
 #: src/engine/api/graphql/graphql-query-runner/group-by/resolvers/utils/format-result-with-group-by-dimension-values.util.ts
 msgid "Saturday"
@@ -3487,6 +3507,11 @@ msgstr "Регистрација је онемогућена."
 msgid "Single sign-on authentication failed."
 msgstr "Аутентификација путем SSO-а није успела."
 
+#. js-lingui-id: tSMlKr
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Skill input validation failed."
+msgstr ""
+
 #. js-lingui-id: OhD7+a
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-skill-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-skill-validator.service.ts
@@ -3496,6 +3521,7 @@ msgid "Skill not found"
 msgstr ""
 
 #. js-lingui-id: 68ze54
+#: src/engine/core-modules/agent/skill-execution.exception.ts
 #: src/engine/metadata-modules/skill/skill.exception.ts
 msgid "Skill not found."
 msgstr ""
@@ -3712,8 +3738,8 @@ msgid "The initial version of a workflow can not be deleted"
 msgstr "Почетна верзија тока рада не може се избрисати"
 
 #. js-lingui-id: hx2IZ4
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 msgid "The object you are trying to set permissions for could not be found. It may have been deleted."
 msgstr "Објекат за који покушавате да подесите дозволе није пронађен. Могуће је да је избрисан."
 
@@ -3738,16 +3764,16 @@ msgid "The request is too complex to process. Please try reducing the amount of 
 msgstr "Захтев је превише сложен за обраду. Покушајте да смањите број тражених коренских резолвера."
 
 #. js-lingui-id: Zi9X+u
-#: src/engine/metadata-modules/flat-role/utils/from-update-role-input-to-flat-role-to-update-or-throw.util.ts
 #: src/engine/metadata-modules/flat-role/utils/from-delete-role-input-to-flat-role-or-throw.util.ts
+#: src/engine/metadata-modules/flat-role/utils/from-update-role-input-to-flat-role-to-update-or-throw.util.ts
 msgid "The role you are looking for could not be found. It may have been deleted or you may not have access to it."
 msgstr "Улога коју тражите није пронађена. Могуће је да је избрисана или можда немате приступ истој."
 
 #. js-lingui-id: HRcugS
-#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
 msgid "The role you are trying to modify could not be found. It may have been deleted or you may not have access to it."
 msgstr "Улога коју покушавате да измените није пронађена. Могуће је да је избрисана или немате приступ истој."
 
@@ -3867,8 +3893,8 @@ msgid "This method is not allowed."
 msgstr "Овај метод није дозвољен."
 
 #. js-lingui-id: /XKGep
-#: src/engine/metadata-modules/utils/exceptions/invalid-metadata.exception.ts
 #: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/utils/exceptions/invalid-metadata.exception.ts
 msgid "This name is a reserved keyword."
 msgstr "Ово име је резервисана кључна реч."
 
@@ -3878,9 +3904,9 @@ msgid "This name is not available."
 msgstr "Ово име није доступно."
 
 #. js-lingui-id: gPBck6
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "This name is reserved. Use a different name or the system will add \"Custom\" suffix."
 msgstr "Ово име је резервисано. Користите друго име или ће систем додати суфикс \"Custom\"."
 
@@ -3921,12 +3947,12 @@ msgid "This record already exists. Please check your data and try again."
 msgstr "Овај запис већ постоји. Молимо проверите ваше податке и покушајте поново."
 
 #. js-lingui-id: 0arbc4
-#: src/engine/api/common/common-query-runners/common-update-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-restore-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-merge-many-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-find-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-destroy-one-query-runner.service.ts
 #: src/engine/api/common/common-query-runners/common-delete-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-destroy-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-find-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-merge-many-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-restore-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-update-one-query-runner.service.ts
 msgid "This record does not exist or has been deleted."
 msgstr ""
 
@@ -3951,10 +3977,10 @@ msgid "This role cannot be edited."
 msgstr "Ову улогу није могуће уређивати."
 
 #. js-lingui-id: KoDdqN
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-is-editable.util.ts
-#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-is-editable.util.ts
 msgid "This role cannot be modified because it is a system role. Only custom roles can be edited."
 msgstr "Ова улога не може бити измењена јер је системска улога. Само прилагођене улоге се могу изменити."
 
@@ -4006,6 +4032,11 @@ msgstr "Превише захтева. Покушајте поново касн�
 #. js-lingui-id: mfqtz7
 #: src/engine/core-modules/workspace-invitation/services/workspace-invitation.service.ts
 msgid "Too many workspace invitations sent. Please try again later."
+msgstr ""
+
+#. js-lingui-id: B/ZIX1
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Tool execution failed during skill run."
 msgstr ""
 
 #. js-lingui-id: tEb/hR
@@ -4126,8 +4157,8 @@ msgid "User already has a role assigned."
 msgstr "Кориснику је већ додељена улога."
 
 #. js-lingui-id: l9dlVi
-#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 msgid "User does not have access to this workspace"
 msgstr "Корисник нема приступ овом радном простору"
 
@@ -4149,9 +4180,9 @@ msgid "User friendly error message"
 msgstr "Кориснику прилагођена порука о грешци"
 
 #. js-lingui-id: pMOjQa
-#: src/engine/core-modules/auth/token/services/access-token.service.ts
-#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
+#: src/engine/core-modules/auth/token/services/access-token.service.ts
 msgid "User is not a member of the workspace."
 msgstr "Корисник није члан радног простора."
 
@@ -4161,9 +4192,9 @@ msgid "User is not part of the workspace"
 msgstr "Корисник није члан радног простора"
 
 #. js-lingui-id: siJgSI
-#: src/engine/core-modules/user/user.exception.ts
-#: src/engine/core-modules/sso/sso.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/sso/sso.exception.ts
+#: src/engine/core-modules/user/user.exception.ts
 msgid "User not found."
 msgstr "Корисник није пронађен."
 
@@ -4178,11 +4209,11 @@ msgid "User was not created with email/password"
 msgstr "Корисник није креиран путем е-поште/лозинке"
 
 #. js-lingui-id: lUEEso
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
-#: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
-#: src/engine/core-modules/user-workspace/user-workspace.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/auth/strategies/jwt.auth.strategy.spec.ts
+#: src/engine/core-modules/user-workspace/user-workspace.exception.ts
+#: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "User workspace not found."
 msgstr "Радни простор корисника није пронађен."
 
@@ -4229,9 +4260,9 @@ msgid "View field group parent view not found"
 msgstr ""
 
 #. js-lingui-id: uO9NF0
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field-group/utils/from-delete-view-field-group-input-to-flat-view-field-group-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 msgid "View field group to delete not found"
 msgstr ""
 
@@ -4241,9 +4272,9 @@ msgid "View field group to destroy not found"
 msgstr ""
 
 #. js-lingui-id: KpmBDs
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field-group/utils/from-update-view-field-group-input-to-flat-view-field-group-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 msgid "View field group to update not found"
 msgstr ""
 
@@ -4275,9 +4306,9 @@ msgid "View field related view object metadata not found"
 msgstr "Метаподаци повезаног објекта приказног поља нису пронађени"
 
 #. js-lingui-id: XJlyZS
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field/utils/from-delete-view-field-input-to-flat-view-field-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 msgid "View field to delete not found"
 msgstr "Поље приказа за брисање није пронађено"
 
@@ -4287,9 +4318,9 @@ msgid "View field to destroy not found"
 msgstr "Поље приказа за уништавање није пронађено"
 
 #. js-lingui-id: Fpy/K1
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field/utils/from-update-view-field-input-to-flat-view-field-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 msgid "View field to update not found"
 msgstr "Приказно поље за ажурирање није пронађено"
 
@@ -4333,14 +4364,14 @@ msgid "View filter group hierarchy exceeds maximum depth of {VIEW_FILTER_GROUP_M
 msgstr ""
 
 #. js-lingui-id: eUPMYZ
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 msgid "View filter group not found"
 msgstr ""
 
@@ -4388,9 +4419,9 @@ msgid "View group metadata with universal identifier {flatViewGroupUniversalIden
 msgstr ""
 
 #. js-lingui-id: JdAvYa
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-group/utils/from-delete-view-group-input-to-flat-view-group-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 msgid "View group to delete not found"
 msgstr "Група приказа за брисање није пронађена"
 
@@ -4400,9 +4431,9 @@ msgid "View group to destroy not found"
 msgstr "Група приказа за уништавање није пронађена"
 
 #. js-lingui-id: UP/TXo
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-group/utils/from-update-view-group-input-to-flat-view-group-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 msgid "View group to update not found"
 msgstr "Група приказа за ажурирање није пронађена"
 
@@ -4421,20 +4452,20 @@ msgid "View kanban aggregate field metadata not found"
 msgstr "Метаподаци агрегационог поља Канбан приказа нису пронађени"
 
 #. js-lingui-id: F4A9mL
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
 msgid "View not found"
 msgstr "Приказ није пронађен"
 
@@ -4548,16 +4579,16 @@ msgid "Welcome to Twenty: Please Confirm Your Email"
 msgstr "Добродошли у Twenty: Молимо потврдите ваш имејл"
 
 #. js-lingui-id: OHlJ1X
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget extends beyond grid height"
 msgstr ""
 
 #. js-lingui-id: PFI4iS
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget extends beyond grid width"
 msgstr ""
 
@@ -4582,8 +4613,8 @@ msgid "Widget position type must match the tab layout mode"
 msgstr ""
 
 #. js-lingui-id: D5gHL1
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget row exceeds grid height"
 msgstr ""
 
@@ -4680,8 +4711,8 @@ msgid "Workflow run not found."
 msgstr "Извршавање радног процеса није пронађено."
 
 #. js-lingui-id: dD9Vpa
-#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 #: src/modules/workflow/common/exceptions/workflow-version-step.exception.ts
+#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 msgid "Workflow step not found."
 msgstr "Корак радног процеса није пронађен."
 
@@ -4691,8 +4722,8 @@ msgid "Workflow version does not contain at least one step"
 msgstr "Верзија тока рада не садржи барем једну фазу"
 
 #. js-lingui-id: k4DPlQ
-#: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
 #: src/modules/workflow/common/utils/assert-workflow-version-trigger-is-defined.util.ts
+#: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
 msgid "Workflow version does not contain trigger"
 msgstr "Верзија тока рада не садржи покретач"
 
@@ -4749,13 +4780,13 @@ msgid "Workspace not found for subscription event."
 msgstr "Радни простор није пронађен за догађај претплате."
 
 #. js-lingui-id: EhVOPs
-#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
-#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
-#: src/engine/core-modules/workspace/workspace.exception.ts
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
-#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
+#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
+#: src/engine/core-modules/workspace/workspace.exception.ts
+#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
+#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 msgid "Workspace not found."
 msgstr "Радни простор није пронађен."
 
@@ -4840,8 +4871,8 @@ msgid "You cannot change your own role. Please ask another administrator to upda
 msgstr "Не можете променити сопствену улогу. Молимо тражите од другог администратора да ажурира вашу улогу."
 
 #. js-lingui-id: y5haJ4
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-read-write-permissions-consistency.util.ts
 #: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-read-write-permissions-consistency.util.ts
 msgid "You cannot grant edit permissions without also granting read permissions. Please enable read access first."
 msgstr "Не можете дати дозволе за измене без да прво дате дозволе за читање. Молимо најпре омогућите приступ читању."
 
@@ -4896,10 +4927,10 @@ msgid "You do not have permission to impersonate users. Please contact your work
 msgstr "Немате дозволу да имитирате кориснике. Молимо контактирајте администратора ваше радне површине за приступ."
 
 #. js-lingui-id: q5OVn+
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
-#: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "You do not have permission to perform this action."
 msgstr "Немате дозволу да извршите ову радњу."
 
@@ -4907,6 +4938,11 @@ msgstr "Немате дозволу да извршите ову радњу."
 #: src/modules/workflow/common/exceptions/workflow-query-validation.exception.ts
 msgid "You do not have permission to perform this workflow action."
 msgstr "Немате дозволу да извршите ову радњу радног процеса."
+
+#. js-lingui-id: 8cvENl
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "You do not have permission to run this skill."
+msgstr ""
 
 #. js-lingui-id: 1dsy9v
 #: src/engine/core-modules/workspace/services/workspace.service.ts
@@ -4965,9 +5001,9 @@ msgid "Your Password Has Been Successfully Changed"
 msgstr "Ваша лозинка је успешно промењена"
 
 #. js-lingui-id: XxkUFT
+#: src/engine/metadata-modules/permissions/permissions.service.ts
+#: src/engine/metadata-modules/permissions/permissions.service.ts
 #: src/engine/metadata-modules/user-role/user-role.service.ts
-#: src/engine/metadata-modules/permissions/permissions.service.ts
-#: src/engine/metadata-modules/permissions/permissions.service.ts
 msgid "Your role in this workspace could not be found. Please contact your workspace administrator."
 msgstr "Ваша улога у овој радној околини није пронађена. Молимо контактирајте администратора ваше радне површине."
 

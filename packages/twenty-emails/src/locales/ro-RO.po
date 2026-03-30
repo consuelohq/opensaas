@@ -20,20 +20,80 @@ msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
+msgid "If you wish to continue using Consuelo, please update your subscription within the next {remainingDays} {dayOrDays}."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/send-invite-link.email.tsx
+msgid "Join your team on Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's website"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's GitHub repository"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Read Consuelo's user guide"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Visit Consuelo's developer documentation"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/Footer.tsx
+msgid "Consuelo"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Email de test"
+
+#. js-lingui-explicit-id
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Spațiu de lucru suspendat"
 
 #. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-#: src/emails/password-update-notify.email.tsx
 #: src/emails/clean-suspended-workspace.email.tsx
+#: src/emails/password-update-notify.email.tsx
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Dear {userName},"
 msgstr "Dragă {userName},"
 
 #. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-#: src/emails/password-update-notify.email.tsx
 #: src/emails/clean-suspended-workspace.email.tsx
+#: src/emails/password-update-notify.email.tsx
+#: src/emails/warn-suspended-workspace.email.tsx
 msgid "Hello,"
 msgstr "Salut,"
 
@@ -46,11 +106,6 @@ msgstr "Se pare că spațiul dvs. de lucru <0>{workspaceDisplayName}</0> a fost 
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "The workspace will be deactivated in {remainingDays} {dayOrDays}, and all its data will be deleted."
 msgstr "Spațiul de lucru va fi dezactivat în {remainingDays} {dayOrDays}, iar toate datele sale vor fi șterse."
-
-#. js-lingui-explicit-id
-#: src/emails/warn-suspended-workspace.email.tsx
-msgid "If you wish to continue using Twenty, please update your subscription within the next {remainingDays} {dayOrDays}."
-msgstr "Dacă doriți să continuați utilizarea Twenty, vă rugăm să vă actualizați abonamentul în următoarele {remainingDays} {dayOrDays}."
 
 #. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
@@ -67,16 +122,6 @@ msgstr "Validează domeniul"
 #: src/emails/validate-approved-access-domain.email.tsx
 msgid "{senderName} (<0>{senderEmail}</0>): Please validate this domain to allow users with <1>@{domain}</1> email addresses to join your workspace without requiring an invitation."
 msgstr "{senderName} (<0>{senderEmail}</0>): Vă rugăm să validați acest domeniu pentru a permite utilizatorilor cu adrese de email <1>@{domain}</1> să se alăture spațiului dumneavoastră de lucru fără a necesita o invitație."
-
-#. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Email de test"
-
-#. js-lingui-explicit-id
-#: src/emails/send-invite-link.email.tsx
-msgid "Join your team on Twenty"
-msgstr "Alăturați-vă echipei pe Twenty"
 
 #. js-lingui-explicit-id
 #: src/emails/send-invite-link.email.tsx
@@ -124,11 +169,6 @@ msgid "If you did not initiate this change, please contact your workspace owner 
 msgstr "Dacă nu ați inițiat această schimbare, vă rugăm să contactați imediat proprietarul spațiului de lucru."
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Twenty"
-msgstr "Conectați-vă la Twenty"
-
-#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr "Resetați-vă parola 🗝"
@@ -170,23 +210,8 @@ msgstr "Toate datele din acest spațiu de lucru au fost șterse permanent."
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
-msgid "If you wish to use Twenty again, you can create a new workspace."
-msgstr "Dacă doriți să folosiți din nou Twenty, puteți crea un spațiu de lucru nou."
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "Creează un nou spațiu de lucru"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Twenty?"
-msgstr "Ce este Twenty?"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's a CRM, a software to help businesses manage their customer data and relationships efficiently."
-msgstr "Este un CRM, un software care ajută companiile să își gestioneze eficient datele și relațiile cu clienții."
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
@@ -195,18 +220,8 @@ msgstr "Site web"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
-msgid "Visit Twenty's website"
-msgstr "Vizitați site-ul Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
 msgid "Github"
 msgstr "Github"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Visit Twenty's GitHub repository"
-msgstr "Vizitați depozitul GitHub al Twenty"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
@@ -215,23 +230,8 @@ msgstr "Ghidul Utilizatorului"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
-msgid "Read Twenty's user guide"
-msgstr "Citiți ghidul utilizatorului Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
 msgid "Developers"
 msgstr "Dezvoltatori"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Visit Twenty's developer documentation"
-msgstr "Vizitați documentația pentru dezvoltatori a Twenty"
-
-#. js-lingui-explicit-id
-#: src/components/Footer.tsx
-msgid "Twenty.com, Public Benefit Corporation"
-msgstr "Twenty.com, Corporație de Beneficiu Public"
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx

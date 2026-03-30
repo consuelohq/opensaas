@@ -24,8 +24,8 @@ msgid "{fieldName} and {fieldName}Id cannot be both provided."
 msgstr "Το {fieldName} και το {fieldName}Id δεν μπορούν να παρέχονται και τα δύο."
 
 #. js-lingui-id: ZkHTHm
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 #: src/engine/metadata-modules/index-metadata/utils/validate-can-create-unique-index.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 msgid "{fieldType} fields cannot be unique."
 msgstr "Τα πεδία {fieldType} δεν μπορούν να είναι μοναδικά."
 
@@ -110,8 +110,8 @@ msgid "A required field is missing."
 msgstr ""
 
 #. js-lingui-id: Q2De+v
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-label-uniqueness.util.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-label-uniqueness.util.ts
 msgid "A role with this label already exists."
 msgstr "Η ετικέτα αυτή ήδη υπάρχει σε κάποιον ρόλο."
 
@@ -258,6 +258,11 @@ msgstr ""
 msgid "AI agent step execution failed."
 msgstr "Η εκτέλεση βήματος πράκτορα ΤΝ απέτυχε."
 
+#. js-lingui-id: mYXmIA
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "AI provider returned an error."
+msgstr ""
+
 #. js-lingui-id: pZEIPj
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-name-uniqueness.util.ts
 msgid "An agent with this name already exists"
@@ -284,9 +289,9 @@ msgid "An error occurred with two-factor authentication data."
 msgstr "Παρουσιάστηκε σφάλμα με τα δεδομένα της ταυτοποίησης δύο παραγόντων."
 
 #. js-lingui-id: XyOToQ
-#: src/engine/core-modules/graphql/utils/generate-graphql-error-from-error.util.ts
-#: src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts
 #: src/engine/api/common/common-query-runners/errors/standard-error-message.constant.ts
+#: src/engine/core-modules/graphql/hooks/use-graphql-error-handler.hook.ts
+#: src/engine/core-modules/graphql/utils/generate-graphql-error-from-error.util.ts
 msgid "An error occurred."
 msgstr "Παρουσιάστηκε ένα σφάλμα."
 
@@ -321,23 +326,23 @@ msgid "An unexpected configuration error occurred."
 msgstr "Παρουσιάστηκε απροσδόκητο σφάλμα διαμόρφωσης."
 
 #. js-lingui-id: W5A0Ly
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/workspace-cache/exceptions/workspace-cache.exception.ts
-#: src/engine/metadata-modules/view-sort/filters/view-sort-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/view-group/filters/view-group-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/metadata-modules/view-field/filters/view-field-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view-filter-group/filters/view-filter-group-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view-filter/filters/view-filter-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/view-field/filters/view-field-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/view-group/filters/view-group-rest-api-exception.filter.ts
+#: src/engine/metadata-modules/view-sort/filters/view-sort-rest-api-exception.filter.ts
 #: src/engine/metadata-modules/view/filters/view-rest-api-exception.filter.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/workspace-cache/exceptions/workspace-cache.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
 msgid "An unexpected error occurred."
 msgstr "Παρουσιάστηκε ένα απροσδόκητο σφάλμα."
 
 #. js-lingui-id: q8ZbjA
-#: src/modules/calendar/calendar-event-import-manager/exceptions/calendar-event-import.exception.ts
 #: src/modules/calendar/calendar-event-import-manager/drivers/exceptions/calendar-event-import-driver.exception.ts
+#: src/modules/calendar/calendar-event-import-manager/exceptions/calendar-event-import.exception.ts
 msgid "An unknown calendar error occurred."
 msgstr "Παρουσιάστηκε άγνωστο σφάλμα ημερολογίου."
 
@@ -362,12 +367,12 @@ msgid "API key role not found."
 msgstr "Ο ρόλος για το κλειδί API δεν βρέθηκε."
 
 #. js-lingui-id: ltvmAF
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
-#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/core-modules/application/application.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/auth/strategies/jwt.auth.strategy.spec.ts
-#: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception.ts
 msgid "Application not found."
 msgstr "Η εφαρμογή δεν βρέθηκε."
 
@@ -433,8 +438,8 @@ msgid "Authentication is required to access this feature. Please sign in and try
 msgstr "Απαιτείται έλεγχος ταυτότητας για να αποκτήσετε πρόσβαση σε αυτή τη λειτουργία. Παρακαλώ συνδεθείτε και δοκιμάστε ξανά."
 
 #. js-lingui-id: cgNV3G
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
 #: src/engine/core-modules/file/file.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "Authentication is required."
 msgstr "Απαιτείται ταυτοποίηση."
 
@@ -803,10 +808,10 @@ msgid "Configuration is required for widget \"{widgetTitle}\""
 msgstr ""
 
 #. js-lingui-id: oH0/eJ
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-front-component-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
 msgid "Configuration type is required"
 msgstr ""
 
@@ -816,9 +821,9 @@ msgid "Configuration type is required for widget \"{title}\""
 msgstr ""
 
 #. js-lingui-id: SlSmjG
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
-#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-graph-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-iframe-configuration-type.util.ts
+#: src/engine/metadata-modules/flat-page-layout-widget/validators/utils/validate-standalone-rich-text-configuration-type.util.ts
 msgid "Configuration type is required for widget \"{widgetTitle}\""
 msgstr ""
 
@@ -853,7 +858,7 @@ msgid "Connect is not allowed for {connectFieldName} on {objectMetadataNameSingu
 msgstr "Σύνδεση δεν επιτρέπεται για το {connectFieldName} στο {objectMetadataNameSingular}."
 
 #. js-lingui-id: /OJTzk
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Connected account not found."
 msgstr "Ο συνδεδεμένος λογαριασμός δεν βρέθηκε."
 
@@ -1062,9 +1067,9 @@ msgid "Email is required"
 msgstr "Απαιτείται το email"
 
 #. js-lingui-id: Qof3ks
-#: src/engine/core-modules/workspace-invitation/workspace-invitation.exception.ts
-#: src/engine/core-modules/email-verification/email-verification.exception.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/email-verification/email-verification.exception.ts
+#: src/engine/core-modules/workspace-invitation/workspace-invitation.exception.ts
 msgid "Email is required."
 msgstr "Απαιτείται το email."
 
@@ -1099,8 +1104,8 @@ msgid "Empty field permissions are not allowed."
 msgstr "Κενά δικαιώματα πεδίου δεν επιτρέπονται."
 
 #. js-lingui-id: qpXqpa
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
 msgid "Entity not found."
 msgstr "Η οντότητα δεν βρέθηκε."
 
@@ -1256,24 +1261,24 @@ msgid "Field label identifier is required"
 msgstr "Ο προσδιοριστής ετικέτας πεδίου είναι υποχρεωτικός"
 
 #. js-lingui-id: MPt365
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 msgid "Field metadata not found"
 msgstr "Δεν βρέθηκαν μεταδεδομένα πεδίου"
 
 #. js-lingui-id: JrAl/I
-#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
 msgid "Field metadata not found."
 msgstr "Δεν βρέθηκαν μεταδεδομένα πεδίου."
 
@@ -1298,8 +1303,8 @@ msgid "Field name is not synced with label."
 msgstr "Το όνομα πεδίου δεν είναι συγχρονισμένο με την ετικέτα."
 
 #. js-lingui-id: Ts+YbB
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
 msgid "Field not found."
 msgstr "Το πεδίο δεν βρέθηκε."
 
@@ -1407,9 +1412,9 @@ msgid "File {fileId} was not uploaded for this field. Please re-upload the file.
 msgstr ""
 
 #. js-lingui-id: weWV3g
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
 #: src/engine/core-modules/file-storage/interfaces/file-storage-exception.ts
 #: src/engine/core-modules/file/file.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "File not found."
 msgstr "Το αρχείο δεν βρέθηκε."
 
@@ -1475,8 +1480,8 @@ msgid "Front component not found"
 msgstr ""
 
 #. js-lingui-id: J+VVwG
-#: src/engine/metadata-modules/front-component/front-component.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/metadata-modules/front-component/front-component.exception.ts
 msgid "Front component not found."
 msgstr ""
 
@@ -1573,8 +1578,8 @@ msgid "Index related object not found"
 msgstr "Το σχετικό αντικείμενο του ευρετηρίου δεν βρέθηκε"
 
 #. js-lingui-id: fY2zUQ
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/builders/index/workspace-migration-index-actions-builder.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-index-metadata-validator.service.ts
 msgid "Index to delete not found"
 msgstr "Το ευρετήριο για διαγραφή δεν βρέθηκε"
 
@@ -1615,8 +1620,8 @@ msgid "Insufficient permissions."
 msgstr "Ανεπαρκή δικαιώματα."
 
 #. js-lingui-id: pSjWxS
-#: src/modules/workflow/workflow-trigger/exceptions/workflow-trigger.exception.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/workflow/workflow-trigger/exceptions/workflow-trigger.exception.ts
 msgid "Invalid action type."
 msgstr "Μη έγκυρος τύπος ενέργειας."
 
@@ -1736,7 +1741,7 @@ msgid "Invalid configuration type for widget \"{widgetTitle}\". Expected {expect
 msgstr ""
 
 #. js-lingui-id: jUt31O
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid connected account ID."
 msgstr "Μη έγκυρο αναγνωριστικό συνδεδεμένου λογαριασμού."
 
@@ -1761,8 +1766,8 @@ msgid "Invalid depth parameter."
 msgstr "Μη έγκυρη παράμετρος βάθους."
 
 #. js-lingui-id: 9lqqpY
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
 #: src/engine/core-modules/email-verification/email-verification.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid email address."
 msgstr "Μη έγκυρη διεύθυνση email."
 
@@ -1777,14 +1782,14 @@ msgid "Invalid field input."
 msgstr "Μη έγκυρα δεδομένα εισόδου πεδίου."
 
 #. js-lingui-id: d6DMa/
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
 msgid "Invalid file ID."
 msgstr "Μη έγκυρο αναγνωριστικό αρχείου."
 
 #. js-lingui-id: 1yoHmO
-#: src/engine/api/rest/input-request-parsers/rest-input-request-parser.exception.ts
-#: src/engine/api/rest/input-request-parsers/filter-parser-utils/parse-filter.util.ts
 #: src/engine/api/rest/input-request-parsers/filter-parser-utils/check-filter-query.util.ts
+#: src/engine/api/rest/input-request-parsers/filter-parser-utils/parse-filter.util.ts
+#: src/engine/api/rest/input-request-parsers/rest-input-request-parser.exception.ts
 msgid "Invalid filter parameter."
 msgstr "Μη έγκυρη παράμετρος φίλτρου."
 
@@ -1821,9 +1826,9 @@ msgid "Invalid identity provider type."
 msgstr "Μη έγκυρος τύπος παρόχου ταυτότητας."
 
 #. js-lingui-id: t7SpQO
-#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
-#: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
 msgid "Invalid input provided."
 msgstr "Δόθηκαν μη έγκυρα δεδομένα εισόδου."
 
@@ -1940,8 +1945,8 @@ msgid "Invalid relation creation payload"
 msgstr "Μη έγκυρο περιεχόμενο δημιουργίας σχέσης"
 
 #. js-lingui-id: iWv3nK
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-relation-flat-field-metadata.util.ts
 #: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-or-relation-flat-field-metadata.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-morph-relation-flat-field-metadata.util.ts
 msgid "Invalid relation field target"
 msgstr ""
 
@@ -2142,12 +2147,12 @@ msgid "Invalid value for UUID: \"{inspectedValue}\""
 msgstr ""
 
 #. js-lingui-id: Og/MZQ
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-text-field-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-additional-emails-subfield-or-throw.util.ts
-#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-boolean-field-or-throw.util.ts
 #: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-array-field-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-boolean-field-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-additional-emails-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-emails-primary-email-subfield-or-throw.util.ts
+#: src/engine/api/common/common-args-processors/data-arg-processor/validator-utils/validate-text-field-or-throw.util.ts
 msgid "Invalid value: \"{inspectedValue}\""
 msgstr ""
 
@@ -2324,10 +2329,10 @@ msgid "Kanban view must have a main group by field"
 msgstr "Η προβολή Kanban πρέπει να έχει ένα κύριο πεδίο ομαδοποίησης"
 
 #. js-lingui-id: 6sFS+I
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-required-properties.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-required-properties.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-skill-required-properties.util.ts
 msgid "Label cannot be empty"
 msgstr "Η ετικέτα δεν μπορεί να είναι κενή"
 
@@ -2342,10 +2347,10 @@ msgid "Label identifier field not found."
 msgstr "Το πεδίο αναγνωριστικού ετικέτας δεν βρέθηκε."
 
 #. js-lingui-id: ACUSmL
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-label-identifier-field-metadata-id-flat-view-field.util.ts
 msgid "Label identifier view field cannot be deleted"
 msgstr "Το πεδίο προβολής αναγνωριστικού ετικέτας δεν μπορεί να διαγραφεί"
 
@@ -2420,8 +2425,8 @@ msgid "Logic function not found"
 msgstr ""
 
 #. js-lingui-id: 6Rq45N
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 msgid "Logic function not found."
 msgstr ""
 
@@ -2562,23 +2567,23 @@ msgid "Name is not synced with label."
 msgstr "Το όνομα δεν είναι συγχρονισμένο με την ετικέτα."
 
 #. js-lingui-id: Ny5wFU
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is not valid: it must start with lowercase letter and contain only alphanumeric letters"
 msgstr "Το όνομα δεν είναι έγκυρο: πρέπει να ξεκινά με πεζό γράμμα και να περιέχει μόνο αλφαριθμητικά γράμματα"
 
 #. js-lingui-id: zjh2SJ
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is too long"
 msgstr "Το όνομα είναι πολύ μεγάλο"
 
 #. js-lingui-id: go/Vg1
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "Name is too short"
 msgstr "Το όνομα είναι πολύ μικρό"
 
@@ -2757,35 +2762,35 @@ msgid "Object label is too short"
 msgstr "Η ετικέτα αντικειμένου είναι πολύ μικρή"
 
 #. js-lingui-id: xrblgA
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
 msgid "Object metadata not found"
 msgstr "Δεν βρέθηκαν μεταδεδομένα αντικειμένου"
 
 #. js-lingui-id: rHce90
-#: src/modules/workflow/common/exceptions/workflow-common.exception.ts
-#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
 #: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-action-execution.exception.ts
+#: src/modules/dashboard/chart-data/exceptions/chart-data.exception.ts
+#: src/modules/workflow/common/exceptions/workflow-common.exception.ts
 msgid "Object metadata not found."
 msgstr "Δεν βρέθηκαν μεταδεδομένα αντικειμένου."
 
 #. js-lingui-id: AKqp4k
-#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
-#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
-#: src/engine/core-modules/search/exceptions/search.exception.ts
-#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
+#: src/engine/core-modules/search/exceptions/search.exception.ts
+#: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/object-metadata/object-metadata.exception.ts
 msgid "Object not found."
 msgstr "Το αντικείμενο δεν βρέθηκε."
 
@@ -2936,28 +2941,28 @@ msgid "Options are required for enum fields"
 msgstr "Απαιτούνται επιλογές για πεδία λίστας"
 
 #. js-lingui-id: ZKtamk
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-validator.service.ts
 msgid "Page layout not found"
 msgstr "Δεν βρέθηκε η διάταξη σελίδας"
 
 #. js-lingui-id: C4+axZ
-#: src/modules/dashboard/exceptions/dashboard.exception.ts
 #: src/engine/metadata-modules/page-layout/exceptions/page-layout.exception.ts
+#: src/modules/dashboard/exceptions/dashboard.exception.ts
 msgid "Page layout not found."
 msgstr "Δεν βρέθηκε η διάταξη σελίδας."
 
 #. js-lingui-id: qJ9V6q
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-tab-validator.service.ts
 msgid "Page layout tab not found"
 msgstr "Δεν βρέθηκε η καρτέλα διάταξης σελίδας"
 
@@ -3008,9 +3013,9 @@ msgid "Page layout widget to destroy not found"
 msgstr "Δεν βρέθηκε widget διάταξης σελίδας για καταστροφή"
 
 #. js-lingui-id: yCsIxc
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 #: src/engine/metadata-modules/flat-page-layout-widget/utils/from-update-page-layout-widget-input-to-flat-page-layout-widget-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-page-layout-widget-validator.service.ts
 msgid "Page layout widget to update not found"
 msgstr "Δεν βρέθηκε widget διάταξης σελίδας για ενημέρωση"
 
@@ -3095,8 +3100,8 @@ msgid "Please use a company email domain."
 msgstr "Παρακαλούμε χρησιμοποιήστε εταιρικό τομέα email."
 
 #. js-lingui-id: Sguqn/
-#: src/modules/workspace-member/query-hooks/workspace-member-delete-one.pre-query.hook.ts
 #: src/modules/workspace-member/query-hooks/workspace-member-delete-many.pre-query.hook.ts
+#: src/modules/workspace-member/query-hooks/workspace-member-delete-one.pre-query.hook.ts
 msgid "Please use Settings to remove a workspace member."
 msgstr ""
 
@@ -3235,8 +3240,8 @@ msgid "Relation configuration is invalid."
 msgstr "Η ρύθμιση σχέσης δεν είναι έγκυρη."
 
 #. js-lingui-id: +bFtT5
-#: src/engine/metadata-modules/flat-field-metadata/utils/from-relation-create-field-input-to-flat-field-metadatas.util.ts
 #: src/engine/metadata-modules/flat-field-metadata/utils/from-morph-relation-create-field-input-to-flat-field-metadatas.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/utils/from-relation-create-field-input-to-flat-field-metadatas.util.ts
 msgid "Relation creation payload is required"
 msgstr "Απαιτείται περιεχόμενο δημιουργίας σχέσης"
 
@@ -3267,6 +3272,11 @@ msgstr "Τα απομακρυσμένα αντικείμενα δεν υποστ
 #: src/engine/core-modules/email-verification/email-verification-exception-filter.util.ts
 msgid "Request has expired, please try again."
 msgstr "Το αίτημα έχει λήξει, παρακαλούμε προσπαθήστε ξανά."
+
+#. js-lingui-id: SjzOjS
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Required integration is not connected."
+msgstr ""
 
 #. js-lingui-id: KPIUoa
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-agent-response-format.util.ts
@@ -3312,31 +3322,31 @@ msgid "Role must have at least one target."
 msgstr "Ο ρόλος πρέπει να έχει τουλάχιστον έναν στόχο."
 
 #. js-lingui-id: MvTCyk
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-target-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-role-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-row-level-permission-predicate-validator.service.ts
 msgid "Role not found"
 msgstr ""
 
 #. js-lingui-id: /BTyf+
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
-#: src/engine/metadata-modules/role/exceptions/role-target.exception.ts
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
 #: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
+#: src/engine/metadata-modules/role/exceptions/role-target.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 msgid "Role not found."
 msgstr "Ο ρόλος δεν βρέθηκε."
 
@@ -3400,8 +3410,8 @@ msgid "Row level permission predicate already exists"
 msgstr ""
 
 #. js-lingui-id: RwBHMj
-#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 #: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate-group.exception.ts
+#: src/engine/metadata-modules/row-level-permission-predicate/exceptions/row-level-permission-predicate.exception.ts
 msgid "Row level permission predicate feature is disabled."
 msgstr ""
 
@@ -3462,6 +3472,16 @@ msgstr ""
 msgid "Row level permission predicate with this universal identifier already exists"
 msgstr ""
 
+#. js-lingui-id: Oh6E+5
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Sandbox execution failed."
+msgstr ""
+
+#. js-lingui-id: i1c+QS
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Sandbox execution timed out."
+msgstr ""
+
 #. js-lingui-id: +5kO8P
 #: src/engine/api/graphql/graphql-query-runner/group-by/resolvers/utils/format-result-with-group-by-dimension-values.util.ts
 msgid "Saturday"
@@ -3487,6 +3507,11 @@ msgstr "Η εγγραφή είναι απενεργοποιημένη."
 msgid "Single sign-on authentication failed."
 msgstr "Η ταυτοποίηση μέσω SSO απέτυχε."
 
+#. js-lingui-id: tSMlKr
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Skill input validation failed."
+msgstr ""
+
 #. js-lingui-id: OhD7+a
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-skill-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-skill-validator.service.ts
@@ -3496,6 +3521,7 @@ msgid "Skill not found"
 msgstr ""
 
 #. js-lingui-id: 68ze54
+#: src/engine/core-modules/agent/skill-execution.exception.ts
 #: src/engine/metadata-modules/skill/skill.exception.ts
 msgid "Skill not found."
 msgstr ""
@@ -3712,8 +3738,8 @@ msgid "The initial version of a workflow can not be deleted"
 msgstr "Η αρχική έκδοση μιας ροής εργασίας δεν μπορεί να διαγραφεί"
 
 #. js-lingui-id: hx2IZ4
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 msgid "The object you are trying to set permissions for could not be found. It may have been deleted."
 msgstr "Το αντικείμενο για το οποίο προσπαθείτε να ορίσετε άδειες δεν μπορεί να βρεθεί. Μπορεί να έχει διαγραφεί."
 
@@ -3738,16 +3764,16 @@ msgid "The request is too complex to process. Please try reducing the amount of 
 msgstr "Το αίτημα είναι υπερβολικά πολύπλοκο για επεξεργασία. Παρακαλούμε προσπαθήστε να μειώσετε τον αριθμό των ζητούμενων resolvers ρίζας."
 
 #. js-lingui-id: Zi9X+u
-#: src/engine/metadata-modules/flat-role/utils/from-update-role-input-to-flat-role-to-update-or-throw.util.ts
 #: src/engine/metadata-modules/flat-role/utils/from-delete-role-input-to-flat-role-or-throw.util.ts
+#: src/engine/metadata-modules/flat-role/utils/from-update-role-input-to-flat-role-to-update-or-throw.util.ts
 msgid "The role you are looking for could not be found. It may have been deleted or you may not have access to it."
 msgstr "Ο ρόλος που ψάχνετε δεν μπορεί να βρεθεί. Μπορεί να έχει διαγραφεί ή μπορεί να μην έχετε πρόσβαση σε αυτόν."
 
 #. js-lingui-id: HRcugS
-#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
 msgid "The role you are trying to modify could not be found. It may have been deleted or you may not have access to it."
 msgstr "Ο ρόλος που προσπαθείτε να τροποποιήσετε δεν μπορεί να βρεθεί. Μπορεί να έχει διαγραφεί ή μπορεί να μην έχετε πρόσβαση σε αυτόν."
 
@@ -3867,8 +3893,8 @@ msgid "This method is not allowed."
 msgstr "Αυτή η μέθοδος δεν επιτρέπεται."
 
 #. js-lingui-id: /XKGep
-#: src/engine/metadata-modules/utils/exceptions/invalid-metadata.exception.ts
 #: src/engine/metadata-modules/field-metadata/field-metadata.exception.ts
+#: src/engine/metadata-modules/utils/exceptions/invalid-metadata.exception.ts
 msgid "This name is a reserved keyword."
 msgstr "Αυτό το όνομα είναι δεσμευμένη λέξη-κλειδί."
 
@@ -3878,9 +3904,9 @@ msgid "This name is not available."
 msgstr "Αυτό το όνομα δεν είναι διαθέσιμο."
 
 #. js-lingui-id: gPBck6
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
+#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 #: src/engine/metadata-modules/flat-object-metadata/validators/utils/validate-flat-object-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
-#: src/engine/metadata-modules/flat-field-metadata/validators/utils/validate-flat-field-metadata-name.util.ts
 msgid "This name is reserved. Use a different name or the system will add \"Custom\" suffix."
 msgstr "Το όνομα αυτό είναι δεσμευμένο. Χρησιμοποιήστε διαφορετικό όνομα ή το σύστημα θα προσθέσει το επίθημα \"Custom\"."
 
@@ -3921,12 +3947,12 @@ msgid "This record already exists. Please check your data and try again."
 msgstr "Αυτή η εγγραφή υπάρχει ήδη. Παρακαλώ ελέγξτε τα δεδομένα σας και δοκιμάστε ξανά."
 
 #. js-lingui-id: 0arbc4
-#: src/engine/api/common/common-query-runners/common-update-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-restore-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-merge-many-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-find-one-query-runner.service.ts
-#: src/engine/api/common/common-query-runners/common-destroy-one-query-runner.service.ts
 #: src/engine/api/common/common-query-runners/common-delete-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-destroy-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-find-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-merge-many-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-restore-one-query-runner.service.ts
+#: src/engine/api/common/common-query-runners/common-update-one-query-runner.service.ts
 msgid "This record does not exist or has been deleted."
 msgstr ""
 
@@ -3951,10 +3977,10 @@ msgid "This role cannot be edited."
 msgstr "Αυτός ο ρόλος δεν μπορεί να επεξεργαστεί."
 
 #. js-lingui-id: KoDdqN
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-is-editable.util.ts
-#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
-#: src/engine/metadata-modules/object-permission/object-permission.service.ts
 #: src/engine/metadata-modules/object-permission/field-permission/field-permission.service.ts
+#: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/metadata-modules/permission-flag/permission-flag.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-is-editable.util.ts
 msgid "This role cannot be modified because it is a system role. Only custom roles can be edited."
 msgstr "Αυτός ο ρόλος δεν μπορεί να τροποποιηθεί επειδή είναι ρόλος συστήματος. Μόνο προσαρμοσμένοι ρόλοι μπορούν να επεξεργαστούν."
 
@@ -4006,6 +4032,11 @@ msgstr "Πάρα πολλά αιτήματα. Δοκιμάστε ξανά αργ
 #. js-lingui-id: mfqtz7
 #: src/engine/core-modules/workspace-invitation/services/workspace-invitation.service.ts
 msgid "Too many workspace invitations sent. Please try again later."
+msgstr ""
+
+#. js-lingui-id: B/ZIX1
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "Tool execution failed during skill run."
 msgstr ""
 
 #. js-lingui-id: tEb/hR
@@ -4126,8 +4157,8 @@ msgid "User already has a role assigned."
 msgstr "Στον χρήστη έχει ήδη ανατεθεί ρόλος."
 
 #. js-lingui-id: l9dlVi
-#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 msgid "User does not have access to this workspace"
 msgstr "Ο χρήστης δεν έχει πρόσβαση σε αυτόν τον χώρο εργασίας"
 
@@ -4149,9 +4180,9 @@ msgid "User friendly error message"
 msgstr "Φιλικό προς τον χρήστη μήνυμα σφάλματος"
 
 #. js-lingui-id: pMOjQa
-#: src/engine/core-modules/auth/token/services/access-token.service.ts
-#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
 #: src/engine/core-modules/auth/services/auth.service.ts
+#: src/engine/core-modules/auth/strategies/jwt.auth.strategy.ts
+#: src/engine/core-modules/auth/token/services/access-token.service.ts
 msgid "User is not a member of the workspace."
 msgstr "Ο χρήστης δεν αποτελεί μέρος του χώρου εργασίας."
 
@@ -4161,9 +4192,9 @@ msgid "User is not part of the workspace"
 msgstr "Ο χρήστης δεν αποτελεί μέρος του χώρου εργασίας"
 
 #. js-lingui-id: siJgSI
-#: src/engine/core-modules/user/user.exception.ts
-#: src/engine/core-modules/sso/sso.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/sso/sso.exception.ts
+#: src/engine/core-modules/user/user.exception.ts
 msgid "User not found."
 msgstr "Ο χρήστης δεν βρέθηκε."
 
@@ -4178,11 +4209,11 @@ msgid "User was not created with email/password"
 msgstr "Ο χρήστης δεν δημιουργήθηκε με email/κωδικό πρόσβασης"
 
 #. js-lingui-id: lUEEso
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
-#: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
-#: src/engine/core-modules/user-workspace/user-workspace.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/auth/strategies/jwt.auth.strategy.spec.ts
+#: src/engine/core-modules/user-workspace/user-workspace.exception.ts
+#: src/engine/metadata-modules/ai/ai-agent/agent.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "User workspace not found."
 msgstr "Ο χώρος εργασίας χρήστη δεν βρέθηκε."
 
@@ -4229,9 +4260,9 @@ msgid "View field group parent view not found"
 msgstr ""
 
 #. js-lingui-id: uO9NF0
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field-group/utils/from-delete-view-field-group-input-to-flat-view-field-group-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 msgid "View field group to delete not found"
 msgstr ""
 
@@ -4241,9 +4272,9 @@ msgid "View field group to destroy not found"
 msgstr ""
 
 #. js-lingui-id: KpmBDs
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field-group/utils/from-update-view-field-group-input-to-flat-view-field-group-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 msgid "View field group to update not found"
 msgstr ""
 
@@ -4275,9 +4306,9 @@ msgid "View field related view object metadata not found"
 msgstr "Δεν βρέθηκαν μεταδεδομένα σχετικού αντικειμένου πεδίου προβολής"
 
 #. js-lingui-id: XJlyZS
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field/utils/from-delete-view-field-input-to-flat-view-field-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 msgid "View field to delete not found"
 msgstr "Δεν βρέθηκε πεδίο προβολής για διαγραφή"
 
@@ -4287,9 +4318,9 @@ msgid "View field to destroy not found"
 msgstr "Δεν βρέθηκε πεδίο προβολής για καταστροφή"
 
 #. js-lingui-id: Fpy/K1
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/metadata-modules/flat-view-field/utils/from-update-view-field-input-to-flat-view-field-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 msgid "View field to update not found"
 msgstr "Δεν βρέθηκε πεδίο προβολής για ενημέρωση"
 
@@ -4333,14 +4364,14 @@ msgid "View filter group hierarchy exceeds maximum depth of {VIEW_FILTER_GROUP_M
 msgstr ""
 
 #. js-lingui-id: eUPMYZ
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
 msgid "View filter group not found"
 msgstr ""
 
@@ -4388,9 +4419,9 @@ msgid "View group metadata with universal identifier {flatViewGroupUniversalIden
 msgstr ""
 
 #. js-lingui-id: JdAvYa
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-group/utils/from-delete-view-group-input-to-flat-view-group-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 msgid "View group to delete not found"
 msgstr "Δεν βρέθηκε ομάδα προβολής για διαγραφή"
 
@@ -4400,9 +4431,9 @@ msgid "View group to destroy not found"
 msgstr "Δεν βρέθηκε ομάδα προβολής για καταστροφή"
 
 #. js-lingui-id: UP/TXo
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 #: src/engine/metadata-modules/flat-view-group/utils/from-update-view-group-input-to-flat-view-group-to-update-or-throw.util.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
 msgid "View group to update not found"
 msgstr "Δεν βρέθηκε ομάδα προβολής για ενημέρωση"
 
@@ -4421,20 +4452,20 @@ msgid "View kanban aggregate field metadata not found"
 msgstr "Το μεταδεδομένο πεδίου συνολικής θέασης kanban δεν βρέθηκε"
 
 #. js-lingui-id: F4A9mL
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
 #: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-field-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-filter-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-group-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/services/flat-view-validator.service.ts
 msgid "View not found"
 msgstr "Δεν βρέθηκε προβολή"
 
@@ -4548,16 +4579,16 @@ msgid "Welcome to Twenty: Please Confirm Your Email"
 msgstr "Καλώς ήρθατε στο Twenty: Παρακαλώ επιβεβαιώστε το email σας"
 
 #. js-lingui-id: OHlJ1X
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget extends beyond grid height"
 msgstr ""
 
 #. js-lingui-id: PFI4iS
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget extends beyond grid width"
 msgstr ""
 
@@ -4582,8 +4613,8 @@ msgid "Widget position type must match the tab layout mode"
 msgstr ""
 
 #. js-lingui-id: D5gHL1
-#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 #: src/engine/metadata-modules/page-layout-widget/utils/validate-page-layout-widget-grid-position.util.ts
+#: src/engine/metadata-modules/page-layout-widget/utils/validate-widget-grid-position.util.ts
 msgid "Widget row exceeds grid height"
 msgstr ""
 
@@ -4680,8 +4711,8 @@ msgid "Workflow run not found."
 msgstr "Η εκτέλεση ροής εργασίας δεν βρέθηκε."
 
 #. js-lingui-id: dD9Vpa
-#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 #: src/modules/workflow/common/exceptions/workflow-version-step.exception.ts
+#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 msgid "Workflow step not found."
 msgstr "Το βήμα ροής εργασίας δεν βρέθηκε."
 
@@ -4691,8 +4722,8 @@ msgid "Workflow version does not contain at least one step"
 msgstr "Η έκδοση της ροής εργασίας δεν περιέχει τουλάχιστον ένα βήμα"
 
 #. js-lingui-id: k4DPlQ
-#: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
 #: src/modules/workflow/common/utils/assert-workflow-version-trigger-is-defined.util.ts
+#: src/modules/workflow/workflow-trigger/utils/assert-version-can-be-activated.util.ts
 msgid "Workflow version does not contain trigger"
 msgstr "Η έκδοση της ροής εργασίας δεν περιέχει ερέθισμα"
 
@@ -4749,13 +4780,13 @@ msgid "Workspace not found for subscription event."
 msgstr "Δεν βρέθηκε χώρος εργασίας για συμβάν συνδρομής."
 
 #. js-lingui-id: EhVOPs
-#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
-#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
-#: src/engine/core-modules/workspace/workspace.exception.ts
-#: src/engine/core-modules/tool/tools/send-email-tool/exceptions/send-email-tool.exception.ts
-#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
 #: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
+#: src/engine/core-modules/record-crud/exceptions/record-crud.exception.ts
+#: src/engine/core-modules/tool/tools/email-tool/exceptions/email-tool.exception.ts
+#: src/engine/core-modules/workspace/workspace.exception.ts
+#: src/engine/twenty-orm/exceptions/twenty-orm.exception.ts
+#: src/modules/workflow/workflow-executor/exceptions/workflow-step-executor.exception.ts
 msgid "Workspace not found."
 msgstr "Ο χώρος εργασίας δεν βρέθηκε."
 
@@ -4840,8 +4871,8 @@ msgid "You cannot change your own role. Please ask another administrator to upda
 msgstr "Δεν μπορείτε να αλλάξετε το δικό σας ρόλο. Παρακαλώ ζητήστε από άλλον διαχειριστή να ενημερώσει το ρόλο σας."
 
 #. js-lingui-id: y5haJ4
-#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-read-write-permissions-consistency.util.ts
 #: src/engine/metadata-modules/object-permission/object-permission.service.ts
+#: src/engine/workspace-manager/workspace-migration/workspace-migration-builder/validators/utils/validate-role-read-write-permissions-consistency.util.ts
 msgid "You cannot grant edit permissions without also granting read permissions. Please enable read access first."
 msgstr "Δεν μπορείτε να παραχωρηθείτε δικαιώματα επεξεργασίας χωρίς επίσης να παραχωρήσετε δικαιώματα ανάγνωσης. Παρακαλώ ενεργοποιήστε πρώτα την πρόσβαση ανάγνωσης."
 
@@ -4896,10 +4927,10 @@ msgid "You do not have permission to impersonate users. Please contact your work
 msgstr "Δεν έχετε δικαίωμα να προσωποποιήσετε χρήστες. Παρακαλώ επικοινωνήστε με τον διαχειριστή του workspace σας για πρόσβαση."
 
 #. js-lingui-id: q5OVn+
-#: src/engine/metadata-modules/permissions/permissions.exception.ts
-#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
-#: src/engine/core-modules/auth/auth.exception.ts
 #: src/engine/core-modules/application/application.exception.ts
+#: src/engine/core-modules/auth/auth.exception.ts
+#: src/engine/core-modules/logic-function/logic-function-trigger/triggers/route/exceptions/route-trigger.exception.ts
+#: src/engine/metadata-modules/permissions/permissions.exception.ts
 msgid "You do not have permission to perform this action."
 msgstr "Δεν έχετε δικαίωμα να εκτελέσετε αυτήν την ενέργεια."
 
@@ -4907,6 +4938,11 @@ msgstr "Δεν έχετε δικαίωμα να εκτελέσετε αυτήν 
 #: src/modules/workflow/common/exceptions/workflow-query-validation.exception.ts
 msgid "You do not have permission to perform this workflow action."
 msgstr "Δεν έχετε δικαίωμα να εκτελέσετε αυτήν την ενέργεια ροής εργασίας."
+
+#. js-lingui-id: 8cvENl
+#: src/engine/core-modules/agent/skill-execution.exception.ts
+msgid "You do not have permission to run this skill."
+msgstr ""
 
 #. js-lingui-id: 1dsy9v
 #: src/engine/core-modules/workspace/services/workspace.service.ts
@@ -4965,9 +5001,9 @@ msgid "Your Password Has Been Successfully Changed"
 msgstr "Ο κωδικός πρόσβασης άλλαξε με επιτυχία"
 
 #. js-lingui-id: XxkUFT
+#: src/engine/metadata-modules/permissions/permissions.service.ts
+#: src/engine/metadata-modules/permissions/permissions.service.ts
 #: src/engine/metadata-modules/user-role/user-role.service.ts
-#: src/engine/metadata-modules/permissions/permissions.service.ts
-#: src/engine/metadata-modules/permissions/permissions.service.ts
 msgid "Your role in this workspace could not be found. Please contact your workspace administrator."
 msgstr "Ο ρόλος σας σε αυτό το workspace δεν μπορεί να βρεθεί. Παρακαλώ επικοινωνήστε με τον διαχειριστή του workspace σας."
 
