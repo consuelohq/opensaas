@@ -174,13 +174,14 @@ const SQL_SELECT_NEXT_CADENCE_CANDIDATE = `
     END ASC,
     qi.position ASC
   LIMIT 1
+  FOR UPDATE OF qi SKIP LOCKED
 `;
 
 const SQL_UPDATE_ITEM_CALLING_AND_LEDGER = `
   WITH queue_item_update AS (
     UPDATE queue_items
     SET status = $1, attempts = attempts + 1, last_attempt_at = NOW()
-    WHERE id = $2
+    WHERE id = $2 AND status = 'pending'
     RETURNING id, queue_id, contact_id, last_attempt_at
   ),
   queue_context AS (
@@ -257,7 +258,10 @@ const selectNextCallableItem = async (
     };
   }
 
-  await client.query(SQL_UPDATE_ITEM_CALLING_AND_LEDGER, ['calling', selected.id]);
+  const claimed = await client.query(SQL_UPDATE_ITEM_CALLING_AND_LEDGER, ['calling', selected.id]);
+  if (claimed.rows.length === 0) {
+    return { nextItem: null, suppression: null };
+  }
   return {
     nextItem: { ...selected, status: 'calling' },
     suppression: null,
@@ -693,14 +697,13 @@ export const queueRoutes = (): RouteDefinition[] => {
             }
           }
 
-          const next = await client.query(SQL_NEXT_PENDING, [
-            req.params?.id,
-            'pending',
-          ]);
-          if (next.rows.length > 0) {
-            await client.query(SQL_UPDATE_ITEM_CALLING, ['calling', next.rows[0].id]);
+          const selection = await selectNextCallableItem(client, req.params?.id ?? '');
+          if (selection.nextItem !== null) {
             await client.query('COMMIT');
-            res.status(200).json({ nextItem: next.rows[0] });
+            res.status(200).json({ nextItem: selection.nextItem });
+          } else if (selection.suppression !== null) {
+            await client.query('COMMIT');
+            res.status(200).json({ nextItem: null, suppression: selection.suppression });
           } else {
             await client.query(SQL_UPDATE_QUEUE_STATUS, [
               'completed',
