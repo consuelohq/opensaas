@@ -33,6 +33,9 @@ CREATE TABLE queue_items (
   last_attempt_at TIMESTAMPTZ,
   call_outcome TEXT,
   call_duration_seconds INTEGER,
+  retry_strategy TEXT,
+  retry_scheduled_at TIMESTAMPTZ,
+  retry_reason TEXT,
   skip_reason TEXT,
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
