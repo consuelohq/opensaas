@@ -64,7 +64,6 @@ export const PlaygroundSetupForm = () => {
         {
           credentials: 'include',
           headers: { Authorization: `Bearer ${values.apiKeyForPlayground}` },
-          credentials: 'include',
         },
       );
 
