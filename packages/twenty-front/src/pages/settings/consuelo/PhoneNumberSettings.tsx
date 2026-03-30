@@ -162,12 +162,12 @@ export const PhoneNumberSettings = () => {
         </StyledAddButton>
       </StyledHeaderRow>
       <Card rounded>
-        {phoneNumbers.length === 0 ? (
+        {availableCallerIds.length === 0 ? (
           <StyledEmptyState>
             No phone numbers yet. Click &quot;Add Number&quot; to get started.
           </StyledEmptyState>
         ) : (
-          phoneNumbers.map((number) => (
+          availableCallerIds.map((number) => (
             <StyledRow key={number.phoneNumber}>
               <IconPhone size={16} />
               <StyledNumberInfo>

@@ -84,11 +84,11 @@ const StyledEmpty = styled.div`
 
 export const SettingsAIScripts = () => {
   const {
-    scripts,
+    coachingScripts: scripts,
     selectedScript,
     selectedScriptSections,
-    selectedScriptId,
-    setSelectedScriptId,
+    selectedCoachingScriptId: selectedScriptId,
+    setSelectedCoachingScriptId: setSelectedScriptId,
     createScript,
     updateScript,
     deleteScript,

@@ -63,6 +63,7 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
         label={t`Call from`}
         value={selectedCallerId ?? availableCallerIds[0].phoneNumber}
         onChange={(value) => setSelectedCallerId(value)}
+        disabled={localPresenceEnabled}
         options={availableCallerIds.map((option) => ({
           value: option.phoneNumber,
           label: option.friendlyName || option.phoneNumber,
