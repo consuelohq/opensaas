@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { useLingui } from '@lingui/react/macro';
@@ -57,8 +57,8 @@ const SUPPORT_EMAIL = 'support@consuelohq.com';
 
 const StyledHelpButton = styled.button`
   align-items: center;
-  background: ${({ theme }) => theme.background.transparent.light};
-  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  background: ${({ theme }) => theme.background.primary};
+  border: 1px solid ${({ theme }) => theme.border.color.strong};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ theme }) => theme.font.color.secondary};
   cursor: pointer;
@@ -70,9 +70,10 @@ const StyledHelpButton = styled.button`
     border-color ${({ theme }) => theme.animation.duration.normal}s,
     color ${({ theme }) => theme.animation.duration.normal}s;
   width: ${({ theme }) => theme.spacing(8)};
+  box-shadow: ${({ theme }) => theme.boxShadow.light};
 
   &:hover {
-    background: ${({ theme }) => theme.background.transparent.lighter};
+    background: ${({ theme }) => theme.background.transparent.light};
     border-color: ${({ theme }) => theme.border.color.strong};
     color: ${({ theme }) => theme.font.color.primary};
   }
@@ -126,11 +127,6 @@ const StyledUpdateTitle = styled.div`
   color: inherit;
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-`;
-
-const StyledUpdateMeta = styled.div`
-  color: ${({ theme }) => theme.font.color.tertiary};
-  font-size: ${({ theme }) => theme.font.size.xs};
 `;
 
 const StyledFullChangelogLink = styled.a`
@@ -197,6 +193,8 @@ const getDownloadItemIcon = (itemId: DownloadAppItemId) => {
 
 type HelpDropdownView = 'main' | 'apps';
 
+const DOWNLOAD_APPS_HOVER_DELAY_IN_MS = 1500;
+
 export const NavigationDrawerHelpDropdown = () => {
   const theme = useTheme();
   const { t } = useLingui();
@@ -219,39 +217,59 @@ export const NavigationDrawerHelpDropdown = () => {
 
   const [view, setView] = useState<HelpDropdownView>('main');
   const [direction, setDirection] = useState(1);
+  const openAppsTimeoutRef = useRef<number | null>(null);
 
   const commandSymbol = getOsControlSymbol();
 
   const changelogPreviewItems = [
     {
-      id: 'v0.4.2',
       title: t`Settings restructure, agent polish, and landing refresh`,
-      date: 'Mar 25, 2026',
     },
     {
-      id: 'v0.4.1',
       title: t`Launch site refresh and mercury positioning updates`,
-      date: 'Mar 24, 2026',
     },
     {
-      id: 'v0.4.0',
       title: t`GoHighLevel navigation, nav reorg, and docs updates`,
-      date: 'Mar 21, 2026',
     },
   ];
+
+  useEffect(() => {
+    return () => {
+      if (openAppsTimeoutRef.current !== null) {
+        window.clearTimeout(openAppsTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const clearOpenAppsTimeout = () => {
+    if (openAppsTimeoutRef.current !== null) {
+      window.clearTimeout(openAppsTimeoutRef.current);
+      openAppsTimeoutRef.current = null;
+    }
+  };
 
   const closeHelpDropdown = () => {
     closeDropdown(NAVIGATION_DRAWER_SUPPORT_DROPDOWN_ID);
   };
 
   const openAppsView = () => {
+    clearOpenAppsTimeout();
     setDirection(1);
     setView('apps');
   };
 
   const openMainView = () => {
+    clearOpenAppsTimeout();
     setDirection(-1);
     setView('main');
+  };
+
+  const handleDownloadAppsHoverStart = () => {
+    clearOpenAppsTimeout();
+
+    openAppsTimeoutRef.current = window.setTimeout(() => {
+      openAppsView();
+    }, DOWNLOAD_APPS_HOVER_DELAY_IN_MS);
   };
 
   const handleOpenSettings = () => {
@@ -366,6 +384,7 @@ export const NavigationDrawerHelpDropdown = () => {
                     onClick={handleOpenKeyboardShortcuts}
                     text={t`Keyboard shortcuts`}
                     contextualText={`${commandSymbol} /`}
+                    contextualTextPosition="right"
                   />
                   <MenuItem
                     LeftIcon={IconStatusChange}
@@ -375,7 +394,8 @@ export const NavigationDrawerHelpDropdown = () => {
                   <MenuItem
                     LeftIcon={IconDownload}
                     onClick={openAppsView}
-                    onMouseEnter={openAppsView}
+                    onMouseEnter={handleDownloadAppsHoverStart}
+                    onMouseLeave={clearOpenAppsTimeout}
                     text={t`Download apps`}
                     hasSubMenu={true}
                     isSubMenuOpened={view === 'apps'}
@@ -385,6 +405,7 @@ export const NavigationDrawerHelpDropdown = () => {
                     onClick={handleOpenSettings}
                     text={t`Settings`}
                     contextualText={t`G then S`}
+                    contextualTextPosition="right"
                   />
                   <MenuItem
                     LeftIcon={IconBrandDiscord}
@@ -400,13 +421,12 @@ export const NavigationDrawerHelpDropdown = () => {
                   {changelogPreviewItems.map((item) => (
                     <StyledUpdateLink
                       href={CONSUELO_CHANGELOG_URL}
-                      key={item.id}
+                      key={item.title}
                       onClick={closeHelpDropdown}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <StyledUpdateTitle>{item.title}</StyledUpdateTitle>
-                      <StyledUpdateMeta>{`${item.id} - ${item.date}`}</StyledUpdateMeta>
                     </StyledUpdateLink>
                   ))}
                   <StyledFullChangelogLink
@@ -445,6 +465,7 @@ export const NavigationDrawerHelpDropdown = () => {
                         contextualText={
                           item.type === 'command' ? t`Copy command` : undefined
                         }
+                        contextualTextPosition="right"
                       />
                     );
                   })}
@@ -469,6 +490,7 @@ export const NavigationDrawerHelpDropdown = () => {
       }
       dropdownComponents={dropdownContent}
       onClose={() => {
+        clearOpenAppsTimeout();
         setDirection(-1);
         setView('main');
       }}
