@@ -10,7 +10,7 @@ import {
 import { IconCloud } from '@tabler/icons-react';
 import { useRecoilValue } from 'recoil';
 import { Link } from 'react-router-dom';
-import { useLingui, Trans } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 
 import { twilioConfigStatusState } from '@/dialer/states/twilioConfigStatusState';
 
@@ -88,7 +88,6 @@ const StyledButton = styled.button`
 
 export const TwilioConfigStatus = () => {
   const status = useRecoilValue(twilioConfigStatusState);
-  useLingui();
 
   // loading or fully configured — render nothing
   if (!status || status.configured) return null;

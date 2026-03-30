@@ -577,6 +577,70 @@ private async getClient() {
 - commit format: `type(scope): description`
 - one PR per feature
 
+## github API — remote branch edits (no local checkout)
+
+**this is the default for editing files on any branch that isn't the current local branch.** never `git checkout` on the main worktree to fix a PR or push changes to a remote branch. use `gh api` instead.
+
+### the pattern: blob → tree → commit → update ref
+
+```bash
+# 1. get current branch HEAD
+HEAD_SHA=$(gh api repos/consuelohq/opensaas/git/ref/heads/<branch> --jq '.object.sha')
+TREE_SHA=$(gh api repos/consuelohq/opensaas/git/commits/$HEAD_SHA --jq '.tree.sha')
+
+# 2. create blobs for each file you're changing
+BLOB_SHA=$(gh api repos/consuelohq/opensaas/git/blobs \
+  -f content="$(base64 < /tmp/fixed-file.ts)" \
+  -f encoding=base64 --jq '.sha')
+
+# 3. create a new tree with the updated files
+NEW_TREE=$(gh api repos/consuelohq/opensaas/git/trees --input - <<EOF | jq -r '.sha'
+{
+  "base_tree": "$TREE_SHA",
+  "tree": [
+    {"path": "packages/api/src/routes/queues.ts", "mode": "100644", "type": "blob", "sha": "$BLOB_SHA"}
+  ]
+}
+EOF
+)
+
+# 4. create the commit (ko as author, suelo-kiro[bot] as committer)
+COMMIT_SHA=$(gh api repos/consuelohq/opensaas/git/commits --input - <<EOF | jq -r '.sha'
+{
+  "message": "fix(scope): description",
+  "tree": "$NEW_TREE",
+  "parents": ["$HEAD_SHA"],
+  "author": {"name": "kokayicobb", "email": "kokayicobb@users.noreply.github.com", "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"},
+  "committer": {"name": "suelo-kiro[bot]", "email": "260422584+suelo-kiro[bot]@users.noreply.github.com", "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
+}
+EOF
+)
+
+# 5. update the branch ref
+gh api repos/consuelohq/opensaas/git/refs/heads/<branch> -X PATCH -f sha=$COMMIT_SHA
+```
+
+### reading files from a remote branch
+
+```bash
+# get file content (base64 decoded)
+gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.content' | base64 -d > /tmp/file.ts
+
+# get file SHA (for reference)
+gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.sha'
+```
+
+### when to use what
+
+| scenario | method |
+|----------|--------|
+| fix files on a PR branch | github API (blob → tree → commit) |
+| code review follow-ups | github API |
+| need to run builds/tests/lint | `git worktree add /tmp/opensaas-<task> <branch>` |
+| work IS on the current local branch | local git (with pre-flight checks) |
+| create a PR | `gh pr create` (works without checkout) |
+| post PR comments/reviews | `gh pr comment` / `gh pr review` |
+
 ALl text must be localized with Lingui
 
 # context-mode — MANDATORY routing rules
