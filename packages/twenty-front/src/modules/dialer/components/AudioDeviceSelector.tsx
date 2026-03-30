@@ -1,9 +1,6 @@
 import styled from '@emotion/styled';
-import {
-  IconMicrophone,
-  IconVolume,
-  IconMicrophoneOff,
-} from 'twenty-ui/display';
+import { IconMicrophone, IconMicrophoneOff } from 'twenty-ui/display';
+import { IconVolume } from '@tabler/icons-react';
 import { useLingui } from '@lingui/react/macro';
 
 import { useAudioDevices } from '@/dialer/hooks/useAudioDevices';
