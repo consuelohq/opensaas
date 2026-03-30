@@ -389,6 +389,7 @@ without this, the server reads stale data from redis and your DB changes are inv
 
 ## critical rules
 
+0. **NEVER switch branches on the main worktree** — `/Users/kokayi/Dev/opensaas` is ko's working directory. no `git checkout`, `git switch`, `git merge`, `git reset`, or any branch-changing operation without pre-flight checks (`git status`, `pgrep -f opencode`, `git branch --show-current`). **default to github API** (`gh api`) for editing files on other branches — create blobs → trees → commits directly on the remote, zero local impact. worktrees (`git worktree add /tmp/opensaas-<task> <branch>`) are the fallback when you need a real filesystem (builds, tests, lint). main worktree is last resort, only when ko explicitly says to or the work IS on the current branch.
 1. **read CODING-STANDARDS.md** — contains all error tracking, logging, SQL, phone normalization, and code review rules
 2. **never use `console.log/error/warn`** — use structured logger
 3. **never interpolate user input into SQL** — parameterized queries only

@@ -86,7 +86,7 @@ const StyledButton = styled.button`
   }
 `;
 
-export const TwilioConfigStatusEffect = () => {
+export const TwilioConfigStatus = () => {
   const status = useRecoilValue(twilioConfigStatusState);
   useLingui();
 
