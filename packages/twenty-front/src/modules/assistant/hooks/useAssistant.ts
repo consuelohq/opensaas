@@ -21,10 +21,8 @@ type AssistantResponse = {
 };
 
 export const useAssistant = () => {
-  const [assistantMessages, setAssistantMessages] = useRecoilState(
-    assistantMessagesState,
-  );
-  const [assistantConversationId, setAssistantConversationId] = useRecoilState(
+  const [messages, setMessages] = useRecoilState(assistantMessagesState);
+  const [conversationId, setConversationId] = useRecoilState(
     assistantConversationIdState,
   );
   const setLoading = useSetRecoilState(assistantLoadingState);
