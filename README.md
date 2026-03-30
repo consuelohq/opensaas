@@ -90,7 +90,7 @@ All opensaas packages use `strict: true`.
 ### Git Hooks (Husky)
 
 - **pre-commit** — lints and typechecks staged opensaas `.ts` files
-- **pre-push** — runs `scripts/code-review.sh` (13 mandatory checks from [CODING-STANDARDS.md](CODING-STANDARDS.md))
+- **pre-push** — runs `scripts/code-review.sh` (16 mandatory checks from [CODING-STANDARDS.md](CODING-STANDARDS.md))
 
 ### Commit Format
 
@@ -108,7 +108,7 @@ Bot commits set suelo-kiro[bot] as committer (not author): `GIT_COMMITTER_NAME="
 1. Fork the repo
 2. Create a feature branch from `main`
 3. Make your changes (follow [CODING-STANDARDS.md](CODING-STANDARDS.md))
-4. Push — pre-push hooks will run the 13 code review checks
+4. Push — pre-push hooks will run the 16 code review checks
 5. Open a PR
 
 ## License

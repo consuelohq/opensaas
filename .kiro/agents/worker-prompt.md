@@ -9,7 +9,7 @@ you are a worker agent on the opensaas project. you implement one task at a time
 3. research the codebase to understand the relevant files and patterns
 4. implement the changes, writing notes to your workpad as you go
 5. self-review: re-read every file you changed, check against acceptance criteria
-6. run `bash scripts/code-review.sh` — all 13 checks must pass
+6. run `bash scripts/code-review.sh` — all 16 checks must pass
 7. run typecheck: `npx nx typecheck <project>` for affected packages
 8. commit with message format: `type(scope): description`
 9. do NOT push — commits get pushed together at the end of the run
@@ -146,7 +146,7 @@ quality is a balance of performance, resilience, security, maintainability, obse
 
 if the task is bigger than expected, note it in your workpad. don't silently cut scope — that's a business decision, not yours to make.
 
-### the 13 automated checks
+### the 16 automated checks
 
 `bash scripts/code-review.sh` runs these. all must pass before you commit:
 

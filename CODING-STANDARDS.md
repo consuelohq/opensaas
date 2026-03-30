@@ -204,7 +204,7 @@ use these consistently across all packages:
 
 ## code review checklist
 
-every PR gets reviewed against these rules. `scripts/code-review.sh` (also `npm run review`) enforces all 13 automatically.
+every PR gets reviewed against these rules. `scripts/code-review.sh` (also `npm run review`) enforces all 16 automatically.
 
 ### mandatory rules
 
@@ -221,6 +221,9 @@ every PR gets reviewed against these rules. `scripts/code-review.sh` (also `npm 
 11. **CATCH_TYPING** — `catch (err)` must have `: unknown` type annotation
 12. **OPTIONAL_IMPORT** — peer dependencies must use lazy `await import()`, never top-level `import`
 13. **STUB_HANDLER** — route handlers must return real data or explicit 501, not hardcoded fakes
+14. **SPEC_COMPLIANCE** — changed files must match the original prompt/spec (confirmation required)
+15. **ESLINT** — all changed .ts/.tsx files must pass eslint (includes lingui/no-unlocalized-strings, no-hardcoded-colors, import restrictions, and all configured rules)
+16. **TYPECHECK** — affected packages must pass `npx nx typecheck` with no errors
 
 ### review triggers
 

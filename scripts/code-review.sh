@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pre-push code review — enforces 14 mandatory rules from CODING-STANDARDS.md
+# pre-push code review — enforces 16 mandatory rules from CODING-STANDARDS.md
 # runs on changed files vs main. exit 1 = block push.
 set -euo pipefail
 
@@ -13,25 +13,19 @@ PASS=0
 FAIL=0
 WARNINGS=""
 
-# get changed .ts files vs main (only in packages/*/src, exclude deleted)
-# exclude twenty-front and twenty-server (upstream twenty code) but keep our dialer module
+# get changed .ts/.tsx files vs main (all packages, exclude deleted)
 # check committed diff first, then fall back to staged+unstaged (agent may not have committed yet)
-_ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
-if [ -z "$_ALL_CHANGED" ]; then
-  _ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR HEAD -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
+if [ -z "$CHANGED_FILES" ]; then
+  CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR HEAD -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
 fi
-if [ -z "$_ALL_CHANGED" ]; then
-  _ALL_CHANGED=$(git diff --name-only --diff-filter=ACMR --staged -- 'packages/*/src/**/*.ts' 2>/dev/null || echo "")
+if [ -z "$CHANGED_FILES" ]; then
+  CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR --staged -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
 fi
-CHANGED_FILES=$(echo "$_ALL_CHANGED" | grep -v '^packages/twenty-front/' | grep -v '^packages/twenty-server/' || true)
-# re-add our dialer module inside twenty-front
-_DIALER_FILES=$(echo "$_ALL_CHANGED" | grep '^packages/twenty-front/src/modules/dialer/' || true)
-if [ -n "$_DIALER_FILES" ]; then
-  CHANGED_FILES=$(printf '%s\n%s' "$CHANGED_FILES" "$_DIALER_FILES" | grep -v '^$' | sort -u)
-fi
+CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^$' | sort -u)
 
 if [ -z "$CHANGED_FILES" ]; then
-  echo -e "${GREEN}no changed .ts files to review${NC}"
+  echo -e "${GREEN}no changed .ts/.tsx files to review${NC}"
   exit 0
 fi
 
@@ -112,7 +106,7 @@ FAIL=0
 echo -n "  ERROR_HANDLING ... "
 while IFS= read -r file; do
   # skip test files — test functions intentionally let errors propagate to jest
-  echo "$file" | grep -qE '\.(spec|test)\.ts$' && continue
+  echo "$file" | grep -qE '\.(spec|test)\.(ts|tsx)$' && continue
   # find async functions, check if they contain try
   while IFS=: read -r lineno line; do
     # skip if wrapped in errorHandler (which provides try/catch)
@@ -155,7 +149,7 @@ echo -n "  SECRETS .......... "
 FAIL=0
 while IFS= read -r file; do
   # skip test files — test fixtures use fake tokens/keys
-  echo "$file" | grep -qE '\.(spec|test)\.ts$' && continue
+  echo "$file" | grep -qE '\.(spec|test)\.(ts|tsx)$' && continue
   while IFS=: read -r lineno line; do
     # skip env lookups and type annotations
     echo "$line" | grep -qE 'process\.env|getenv|\.env\b|: string|apiKey\?' && continue
@@ -323,9 +317,67 @@ fi
 SPEC_FAIL=$FAIL
 
 
+
+# 15. ESLINT — run eslint on all changed files (catches lingui, hardcoded colors, import restrictions, etc.)
+echo -n "  ESLINT ........... "
+FAIL=0
+ESLINT_OUTPUT=""
+if [ -n "$CHANGED_FILES" ]; then
+  # build file list as array to handle spaces in paths
+  ESLINT_FILE_LIST=""
+  while IFS= read -r file; do
+    [ -f "$file" ] && ESLINT_FILE_LIST="$ESLINT_FILE_LIST $file"
+  done <<< "$CHANGED_FILES"
+  if [ -n "$ESLINT_FILE_LIST" ]; then
+    ESLINT_OUTPUT=$(npx eslint --max-warnings 0 $ESLINT_FILE_LIST 2>&1) || FAIL=1
+  fi
+fi
+if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
+else
+  echo -e "${RED}FAIL${NC}"
+  WARNINGS="${WARNINGS}  ${RED}FAIL${NC} [ESLINT] eslint violations found:\n"
+  # show first 30 lines of eslint output to keep it readable
+  ESLINT_SUMMARY=$(echo "$ESLINT_OUTPUT" | head -30)
+  WARNINGS="${WARNINGS}${ESLINT_SUMMARY}\n"
+  if [ "$(echo "$ESLINT_OUTPUT" | wc -l)" -gt 30 ]; then
+    WARNINGS="${WARNINGS}  ... (truncated, run npx eslint on changed files for full output)\n"
+  fi
+fi
+ESLINT_FAIL=$FAIL
+
+# 16. TYPECHECK — run typecheck on affected packages
+echo -n "  TYPECHECK ........ "
+FAIL=0
+TYPECHECK_OUTPUT=""
+if [ -n "$CHANGED_FILES" ]; then
+  # extract unique package names from changed file paths
+  AFFECTED_PACKAGES=$(echo "$CHANGED_FILES" | sed 's|^packages/\([^/]*\)/.*|\1|' | sort -u)
+  while IFS= read -r pkg; do
+    [ -z "$pkg" ] && continue
+    # verify the package has a project.json (is an nx project)
+    [ ! -f "packages/$pkg/project.json" ] && continue
+    PKG_OUTPUT=$(npx nx typecheck "$pkg" 2>&1) || {
+      FAIL=1
+      TYPECHECK_OUTPUT="${TYPECHECK_OUTPUT}\n--- $pkg ---\n${PKG_OUTPUT}"
+    }
+  done <<< "$AFFECTED_PACKAGES"
+fi
+if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
+else
+  echo -e "${RED}FAIL${NC}"
+  WARNINGS="${WARNINGS}  ${RED}FAIL${NC} [TYPECHECK] type errors found:\n"
+  TC_SUMMARY=$(echo -e "$TYPECHECK_OUTPUT" | head -30)
+  WARNINGS="${WARNINGS}${TC_SUMMARY}\n"
+  if [ "$(echo -e "$TYPECHECK_OUTPUT" | wc -l)" -gt 30 ]; then
+    WARNINGS="${WARNINGS}  ... (truncated, run npx nx typecheck <package> for full output)\n"
+  fi
+fi
+TYPECHECK_FAIL=$FAIL
+
+
 # summary
-TOTAL_CHECKS=14
-TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL + SPEC_FAIL))
+TOTAL_CHECKS=16
+TOTAL_FAIL=$((LOGGING_FAIL + SENTRY_FAIL + PHONE_FAIL + SQL_FAIL + ERROR_FAIL + TYPE_FAIL + SECRETS_FAIL + TODO_FAIL + IMPORT_FAIL + ROUTE_FAIL + CATCH_FAIL + OPTIONAL_IMPORT_FAIL + STUB_FAIL + SPEC_FAIL + ESLINT_FAIL + TYPECHECK_FAIL))
 echo ""
 if [ $TOTAL_FAIL -gt 0 ]; then
   echo -e "${BOLD}violations:${NC}"

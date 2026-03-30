@@ -131,7 +131,7 @@ you are expensive. haiku  is free. act accordingly.
 - **linear epic**: DEV-878 (stabilization sprint) — parent of all current work
 - **commit**: `GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "msg"` — NEVER use `--author`, that steals ko's github credit
 - **bypass hooks**: `HUSKY=0` prefix on git commands
-- **coding standards**: 13 checks in `scripts/code-review.sh` — all must pass
+- **coding standards**: 16 checks in `scripts/code-review.sh` — all must pass
 
 ## railway commands (run these yourself via execute_bash)
 

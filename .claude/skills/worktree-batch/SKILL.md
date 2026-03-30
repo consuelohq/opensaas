@@ -108,7 +108,7 @@ AFTER WRITING CODE — MANDATORY SELF-REVIEW (DO NOT SKIP):
 1. re-read every file you created or modified. check for typos, missing imports, wrong paths
 2. open the linear spec again. go through EVERY acceptance criterion one by one. verify your code satisfies each
 3. run: npx tsc --noEmit -p packages/twenty-server/tsconfig.json 2>&1 | head -50 — fix ALL type errors
-4. run: bash scripts/code-review.sh — actually run the real script. do not simulate. all 13 checks must pass
+4. run: bash scripts/code-review.sh — actually run the real script. do not simulate. all 16 checks must pass
 5. if you fixed anything in steps 3-4, go back to step 1 and re-read the changed files
 6. run git diff --stat and verify ONLY expected files appear. revert anything unexpected
 

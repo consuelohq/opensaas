@@ -397,9 +397,9 @@ without this, the server reads stale data from redis and your DB changes are inv
 6. **config lives at `~/.consuelo/config.json`** — loaded via `loadConfig()` from `packages/cli/src/config.ts`
 7. **error format is consistent** — API: `{ error: { code, message } }`, CLI: `error()` + `process.exit(1)`
 
-## pre-push code review — 13 automated checks
+## pre-push code review — 16 automated checks
 
-`scripts/code-review.sh` (also `npm run review`) runs on every push. all 13 must pass:
+`scripts/code-review.sh` (also `npm run review`) runs on every push. all 16 must pass. checks all changed .ts/.tsx files across all packages.
 
 ## route ordering
 

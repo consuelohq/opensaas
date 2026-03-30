@@ -12,7 +12,7 @@ branch: `phase2-code-quality` is the active dev branch. PR #4 on github.
 
 ## coding standards — MANDATORY
 
-read `CODING-STANDARDS.md` at repo root for full details. these are the 13 rules enforced by `scripts/code-review.sh` (also `npm run review`):
+read `CODING-STANDARDS.md` at repo root for full details. these are the 16 rules enforced by `scripts/code-review.sh` (also `npm run review`) on all changed .ts/.tsx files across all packages:
 
 1. **LOGGING** — never use `console.*`. use structured logger. exceptions: `packages/cli/src/output.ts` and `packages/logger/src/**/*.ts`
 2. **SENTRY** — every HTTP error (4xx/5xx) and caught exception must have `Sentry.captureException()` or `Sentry.captureMessage()` within 10 lines
@@ -27,6 +27,9 @@ read `CODING-STANDARDS.md` at repo root for full details. these are the 13 rules
 11. **CATCH_TYPING** — `catch (err)` must have `: unknown` type annotation
 12. **OPTIONAL_IMPORT** — `peerDependencies` must use lazy `await import()`, never top-level `import`
 13. **STUB_HANDLER** — route handlers must return real data or explicit 501, not hardcoded fakes
+14. **SPEC_COMPLIANCE** — changed files must match the original prompt/spec (confirmation required)
+15. **ESLINT** — all changed files must pass eslint (includes lingui/no-unlocalized-strings, no-hardcoded-colors, import restrictions, and all configured rules)
+16. **TYPECHECK** — affected packages must pass `npx nx typecheck` with no errors
 
 ## git hooks (husky)
 
@@ -34,7 +37,7 @@ read `CODING-STANDARDS.md` at repo root for full details. these are the 13 rules
 runs `npx eslint` + `tsc --noEmit` on staged `.ts` files. catches console usage, sql injection patterns, explicit any, and type errors.
 
 ### pre-push (`.husky/pre-push`)
-runs `scripts/code-review.sh` — all 13 mandatory checks above against changed files vs `origin/main`. blocks push on any violation.
+runs `scripts/code-review.sh` — all 16 mandatory checks above against changed .ts/.tsx files vs `origin/main` across all packages. blocks push on any violation.
 
 ## eslint config (`eslint.config.js`)
 
