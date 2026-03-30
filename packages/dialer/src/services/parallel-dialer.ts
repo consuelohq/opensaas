@@ -6,19 +6,15 @@ import type {
   ParallelDialOptions,
   ParallelDialResult,
   ParallelCall,
+  ParallelTelemetry,
 } from '../types.js';
 import type TwilioClient from 'twilio';
 
 const GROUP_TTL_SECONDS = 300;
-const STAGGER_MS = 500;
 
-const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
-/**
- * Parallel dialer — initiates 3 concurrent outbound calls,
- * first human to answer wins, others terminated.
- * Redis-backed group state with atomic SETNX for race conditions.
- */
 export class ParallelDialerService {
   private client: ReturnType<typeof TwilioClient> | null = null;
   private credentials: TwilioCredentials;
@@ -53,22 +49,22 @@ export class ParallelDialerService {
       }
       throw new Error('Failed to generate unique group ID after 3 attempts');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Group ID generation failed';
+      const message =
+        err instanceof Error ? err.message : 'Group ID generation failed';
       throw new Error(message);
     }
   }
 
-  /** Initiate a parallel dial batch (3 concurrent calls with AMD) */
   async initiateGroup(opts: ParallelDialOptions): Promise<ParallelDialResult> {
     try {
       const client = await this.getClient();
       const groupId = await this.generateGroupId();
       const conferenceName = `${groupId}_${opts.queueId}`;
+      const createdAt = new Date().toISOString();
       const calls: ParallelCall[] = [];
 
-      // create 3 calls with ~500ms stagger
       for (let i = 0; i < opts.customerNumbers.length; i++) {
-        if (i > 0) await delay(STAGGER_MS);
+        if (i > 0) await delay(opts.profile.staggerMs);
 
         const call = await client.calls.create({
           to: opts.customerNumbers[i],
@@ -86,10 +82,10 @@ export class ParallelDialerService {
           position: i + 1,
           status: 'dialing',
           contactId: opts.contactIds?.[i],
+          dialStartedAt: new Date().toISOString(),
         };
         calls.push(parallelCall);
 
-        // reverse lookup: callSid → groupId
         await this.store.setCallMapping(call.sid, groupId, GROUP_TTL_SECONDS);
       }
 
@@ -101,7 +97,10 @@ export class ParallelDialerService {
         calls,
         queueId: opts.queueId,
         userId: opts.userId,
-        createdAt: new Date().toISOString(),
+        createdAt,
+        campaignSegment: opts.campaignSegment,
+        profile: opts.profile,
+        resolverReason: 'route-resolved',
       };
 
       await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
@@ -109,22 +108,27 @@ export class ParallelDialerService {
       return {
         groupId,
         conferenceName,
-        calls: calls.map((c) => ({
-          callSid: c.callSid,
-          customerNumber: c.customerNumber,
-          fromNumber: c.fromNumber,
-          position: c.position,
+        profileId: opts.profile.id,
+        calls: calls.map((call) => ({
+          callSid: call.callSid,
+          customerNumber: call.customerNumber,
+          fromNumber: call.fromNumber,
+          position: call.position,
           status: 'dialing' as const,
         })),
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Parallel dial initiation failed';
+      const message =
+        err instanceof Error ? err.message : 'Parallel dial initiation failed';
       throw new Error(message);
     }
   }
 
-  /** Handle twilio status callback — winner detection via atomic SETNX */
-  async handleStatusCallback(callSid: string, callStatus: string, answeredBy?: string): Promise<void> {
+  async handleStatusCallback(
+    callSid: string,
+    callStatus: string,
+    answeredBy?: string,
+  ): Promise<void> {
     try {
       const groupId = await this.store.getCallMapping(callSid);
       if (!groupId) return;
@@ -133,43 +137,73 @@ export class ParallelDialerService {
       if (!raw) return;
 
       const group: ParallelGroup = JSON.parse(raw);
-      const call = group.calls.find((c) => c.callSid === callSid);
+      const call = group.calls.find((item) => item.callSid === callSid);
       if (!call) return;
 
       call.status = callStatus;
-      if (answeredBy) call.amdResult = answeredBy === 'human' ? 'human' : answeredBy === 'unknown' ? 'unknown' : 'machine';
+      if (answeredBy) {
+        call.amdResult =
+          answeredBy === 'human'
+            ? 'human'
+            : answeredBy === 'unknown'
+              ? 'unknown'
+              : 'machine';
+      }
 
-      if (callStatus === 'in-progress' && (call.amdResult === 'human' || call.amdResult === 'unknown')) {
-        const won = await this.store.setWinnerIfAbsent(groupId, callSid, GROUP_TTL_SECONDS);
+      if (callStatus === 'in-progress') {
+        call.answeredAt = new Date().toISOString();
+      }
+
+      const isHumanLikeAnswer =
+        call.amdResult === 'human' ||
+        (group.profile.amdPolicy === 'human-or-unknown' && call.amdResult === 'unknown');
+
+      if (callStatus === 'in-progress' && isHumanLikeAnswer) {
+        const won = await this.store.setWinnerIfAbsent(
+          groupId,
+          callSid,
+          GROUP_TTL_SECONDS,
+        );
         if (won) {
           group.winnerSid = callSid;
           group.status = 'connected';
-          await this.terminateLosingCalls(group, callSid);
+          group.connectedAt = call.answeredAt ?? new Date().toISOString();
+          if (group.profile.terminationPolicy === 'winner-take-all') {
+            await this.terminateLosingCalls(group, callSid);
+          }
         } else {
           await this.terminateCall(callSid);
           call.status = 'completed';
+          call.terminatedAt = new Date().toISOString();
         }
       } else if (callStatus === 'in-progress' && call.amdResult === 'machine') {
         await this.terminateCall(callSid);
         call.status = 'completed';
+        call.terminatedAt = new Date().toISOString();
+      } else if (
+        ['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(callStatus)
+      ) {
+        call.terminatedAt = new Date().toISOString();
       }
 
-      // check if all calls resolved with no winner
-      const allResolved = group.calls.every((c) =>
-        ['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(c.status),
+      const allResolved = group.calls.every((item) =>
+        ['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
+          item.status,
+        ),
       );
       if (allResolved && !group.winnerSid) {
         group.status = 'completed';
+        group.completedAt = new Date().toISOString();
       }
 
       await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Status callback handling failed';
+      const message =
+        err instanceof Error ? err.message : 'Status callback handling failed';
       throw new Error(message);
     }
   }
 
-  /** Get current group state */
   async getGroup(groupId: string): Promise<ParallelGroup | null> {
     try {
       const raw = await this.store.getGroup(groupId);
@@ -181,7 +215,6 @@ export class ParallelDialerService {
     }
   }
 
-  /** Terminate all pending calls in a group */
   async terminateGroup(groupId: string): Promise<void> {
     try {
       const raw = await this.store.getGroup(groupId);
@@ -189,20 +222,26 @@ export class ParallelDialerService {
 
       const group: ParallelGroup = JSON.parse(raw);
       for (const call of group.calls) {
-        if (!['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(call.status)) {
+        if (
+          !['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
+            call.status,
+          )
+        ) {
           await this.terminateCall(call.callSid);
           call.status = 'completed';
+          call.terminatedAt = new Date().toISOString();
         }
       }
       group.status = 'completed';
+      group.completedAt = new Date().toISOString();
       await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Group termination failed';
+      const message =
+        err instanceof Error ? err.message : 'Group termination failed';
       throw new Error(message);
     }
   }
 
-  /** Generate conference TwiML for the winning customer leg */
   async generateCustomerTwiml(callSid: string): Promise<string | null> {
     try {
       const groupId = await this.store.getCallMapping(callSid);
@@ -226,7 +265,6 @@ export class ParallelDialerService {
     }
   }
 
-  /** Get groupId for a call SID (reverse lookup) */
   async getGroupIdForCall(callSid: string): Promise<string | null> {
     try {
       return await this.store.getCallMapping(callSid);
@@ -235,30 +273,76 @@ export class ParallelDialerService {
     }
   }
 
-  /** Get fromNumbers for non-winner calls (for lock release) */
   getReleasableNumbers(group: ParallelGroup): string[] {
     return group.calls
-      .filter((c) => c.callSid !== group.winnerSid)
-      .map((c) => c.fromNumber);
+      .filter((call) => call.callSid !== group.winnerSid)
+      .map((call) => call.fromNumber);
   }
 
-  /** Check if user meets parallel dialing requirements */
-  validateRequirements(numberCount: number): { valid: boolean; required: number; current: number; message?: string } {
-    const required = 3;
-    if (numberCount >= required) return { valid: true, required, current: numberCount };
-    return { valid: false, required, current: numberCount, message: `Need at least ${required} phone numbers` };
+  validateRequirements(numberCount: number, fanout = 3): {
+    valid: boolean;
+    required: number;
+    current: number;
+    message?: string;
+  } {
+    const required = fanout;
+    if (numberCount >= required) {
+      return { valid: true, required, current: numberCount };
+    }
+    return {
+      valid: false,
+      required,
+      current: numberCount,
+      message: `Need at least ${required} phone numbers`,
+    };
   }
 
-  private async terminateLosingCalls(group: ParallelGroup, winnerSid: string): Promise<void> {
+  computeTelemetry(group: ParallelGroup): ParallelTelemetry {
+    const winnerRate = group.winnerSid ? 1 : 0;
+    const wastedLegs = Math.max(group.calls.length - (group.winnerSid ? 1 : 0), 0);
+    const connectLatencyMs = group.connectedAt
+      ? Math.max(
+          0,
+          new Date(group.connectedAt).getTime() -
+            new Date(group.createdAt).getTime(),
+        )
+      : null;
+
+    return {
+      winnerRate,
+      wastedLegs,
+      connectLatencyMs,
+    };
+  }
+
+  async markTelemetryEmitted(groupId: string): Promise<void> {
+    const raw = await this.store.getGroup(groupId);
+    if (!raw) return;
+    const group: ParallelGroup = JSON.parse(raw);
+    group.telemetryEmittedAt = new Date().toISOString();
+    await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+  }
+
+  private async terminateLosingCalls(
+    group: ParallelGroup,
+    winnerSid: string,
+  ): Promise<void> {
     try {
       for (const call of group.calls) {
-        if (call.callSid !== winnerSid && !['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(call.status)) {
+        if (
+          call.callSid !== winnerSid &&
+          !['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
+            call.status,
+          )
+        ) {
           await this.terminateCall(call.callSid);
           call.status = 'completed';
+          call.terminatedAt = new Date().toISOString();
         }
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to terminate losing calls';
+      const message =
+        err instanceof Error ? err.message : 'Failed to terminate losing calls';
       throw new Error(message);
     }
   }
@@ -268,47 +352,74 @@ export class ParallelDialerService {
       const client = await this.getClient();
       await client.calls(callSid).update({ status: 'completed' });
     } catch (err: unknown) {
-      // call may already be completed — safe to ignore
+      return;
     }
   }
 }
 
-/** In-memory parallel store for testing / single-process use */
 export class InMemoryParallelStore implements ParallelStore {
   private groups = new Map<string, { data: string; expiresAt: number }>();
+
   private callMappings = new Map<string, { groupId: string; expiresAt: number }>();
+
   private winners = new Map<string, { callSid: string; expiresAt: number }>();
 
   async setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void> {
-    this.groups.set(groupId, { data, expiresAt: Date.now() + ttlSeconds * 1000 });
+    this.groups.set(groupId, {
+      data,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
   }
 
   async getGroup(groupId: string): Promise<string | null> {
     const entry = this.groups.get(groupId);
-    if (!entry || entry.expiresAt < Date.now()) { this.groups.delete(groupId); return null; }
+    if (!entry || entry.expiresAt < Date.now()) {
+      this.groups.delete(groupId);
+      return null;
+    }
     return entry.data;
   }
 
-  async setCallMapping(callSid: string, groupId: string, ttlSeconds: number): Promise<void> {
-    this.callMappings.set(callSid, { groupId, expiresAt: Date.now() + ttlSeconds * 1000 });
+  async setCallMapping(
+    callSid: string,
+    groupId: string,
+    ttlSeconds: number,
+  ): Promise<void> {
+    this.callMappings.set(callSid, {
+      groupId,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
   }
 
   async getCallMapping(callSid: string): Promise<string | null> {
     const entry = this.callMappings.get(callSid);
-    if (!entry || entry.expiresAt < Date.now()) { this.callMappings.delete(callSid); return null; }
+    if (!entry || entry.expiresAt < Date.now()) {
+      this.callMappings.delete(callSid);
+      return null;
+    }
     return entry.groupId;
   }
 
-  async setWinnerIfAbsent(groupId: string, callSid: string, ttlSeconds: number): Promise<boolean> {
+  async setWinnerIfAbsent(
+    groupId: string,
+    callSid: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
     const existing = this.winners.get(groupId);
     if (existing && existing.expiresAt >= Date.now()) return false;
-    this.winners.set(groupId, { callSid, expiresAt: Date.now() + ttlSeconds * 1000 });
+    this.winners.set(groupId, {
+      callSid,
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
     return true;
   }
 
   async getWinner(groupId: string): Promise<string | null> {
     const entry = this.winners.get(groupId);
-    if (!entry || entry.expiresAt < Date.now()) { this.winners.delete(groupId); return null; }
+    if (!entry || entry.expiresAt < Date.now()) {
+      this.winners.delete(groupId);
+      return null;
+    }
     return entry.callSid;
   }
 
