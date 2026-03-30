@@ -252,13 +252,34 @@ export const NavigationDrawerUpgradeModal = ({
       });
 
       if (!response.ok) {
-        throw new Error(`Upgrade request failed: ${response.status}`);
+        const httpError = new Error(
+          `Upgrade request failed: ${response.status}`,
+        );
+
+        captureException(httpError, {
+          extra: {
+            context: 'NavigationDrawerUpgradeModal',
+            endpoint,
+            responseStatus: response.status,
+          },
+        });
+
+        throw httpError;
       }
 
       const result = (await response.json()) as { url?: string };
 
       if (!result.url) {
-        throw new Error('Missing billing url');
+        const missingBillingUrlError = new Error('Missing billing url');
+
+        captureException(missingBillingUrlError, {
+          extra: {
+            context: 'NavigationDrawerUpgradeModal',
+            endpoint,
+          },
+        });
+
+        throw missingBillingUrlError;
       }
 
       window.location.href = result.url;
@@ -302,7 +323,7 @@ export const NavigationDrawerUpgradeModal = ({
             accent="tertiary"
             size="small"
             onClick={handleClose}
-            ariaLabel={t`Close upgrade modal`}
+            aria-label={t`Close upgrade modal`}
           />
         </StyledHeader>
 
