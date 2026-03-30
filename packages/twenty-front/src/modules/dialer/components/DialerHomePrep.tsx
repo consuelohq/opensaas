@@ -8,23 +8,20 @@ import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
 import { Button } from 'twenty-ui/input';
 
-import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { useAudioDevices } from '@/dialer/hooks/useAudioDevices';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
-import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { dialingModeState } from '@/dialer/states/dialingModeState';
 import { useOpenObjectRecordsSpreadsheetImportDialog } from '@/object-record/spreadsheet-import/hooks/useOpenObjectRecordsSpreadsheetImportDialog';
+import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { Select } from '@/ui/input/components/Select';
 import { TextInput } from '@/ui/input/components/TextInput';
-import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 
-import { IconList, IconRobot, IconUpload } from 'twenty-ui/display';
-
-import { FeatureFlagKey } from '~/generated-metadata/graphql';
+import { IconList, IconSettings, IconUpload } from 'twenty-ui/display';
 
 type OpportunityRecord = ObjectRecord & {
   id: string;
@@ -126,10 +123,9 @@ const StyledFooterActions = styled.div`
 
 export const DialerHomePrep = () => {
   const navigate = useNavigate();
-  const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
-  const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
   const [callAssistMode, setCallAssistMode] =
     useRecoilState(callAssistModeState);
+  const [dialingMode, setDialingMode] = useRecoilState(dialingModeState);
   const { selectedCoachingScriptId, setSelectedCoachingScriptId, coachingScripts } =
     useCoachingScripts();
   const { hasPermission } = useAudioDevices();
@@ -194,21 +190,13 @@ export const DialerHomePrep = () => {
             Icon={IconUpload}
             onClick={() => openObjectRecordsSpreadsheetImportDialog()}
           />
-          <Button
-            title={t`Ask AI`}
-            variant="secondary"
-            size="small"
-            Icon={IconRobot}
-            onClick={() => openAskAIPage({ resetNavigationStack: false })}
-            disabled={!isAiEnabled}
-          />
         </StyledActions>
       </StyledHeader>
 
       <StyledForm>
         {/* list selection */}
         <StyledFieldGroup>
-          <StyledLabel>{t`Choose a list`}</StyledLabel>
+          <StyledLabel>{t`Select a list`}</StyledLabel>
           {hasPhone ? (
             <StyledDisabledOverlay>
               <Select
@@ -228,11 +216,14 @@ export const DialerHomePrep = () => {
               label={t`List`}
               value={selectedListId}
               onChange={handleListChange}
-              options={listRecords.map((record) => ({
-                value: record.id,
-                label: record.name ?? t`Untitled list`,
-                Icon: IconList,
-              }))}
+              options={[
+                { value: '', label: t`— Select —`, Icon: IconList },
+                ...listRecords.map((record) => ({
+                  value: record.id,
+                  label: record.name ?? t`Untitled list`,
+                  Icon: IconList,
+                })),
+              ]}
             />
           )}
         </StyledFieldGroup>
@@ -266,6 +257,26 @@ export const DialerHomePrep = () => {
         <StyledFieldGroup>
           <StyledLabel>{t`Call setup`}</StyledLabel>
 
+          {/* 1. caller id + local presence */}
+          <CallerIdSelectCard dropdownId="dialer-home-caller-id" />
+
+          {/* mic permission — only shown when not yet granted */}
+          {!hasPermission && <AudioDeviceSelector />}
+
+          {/* 2. calling mode */}
+          <Select
+            dropdownId="dialer-home-dialing-mode"
+            fullWidth
+            label={t`Calling mode`}
+            value={dialingMode}
+            onChange={(value) => setDialingMode(value)}
+            options={[
+              { value: 'single', label: t`Single (one call at a time)` },
+              { value: 'parallel', label: t`Parallel / Power Dialer` },
+            ]}
+          />
+
+          {/* 3. assist mode */}
           <Select
             dropdownId="dialer-home-assist-mode"
             fullWidth
@@ -291,10 +302,6 @@ export const DialerHomePrep = () => {
               }))}
             />
           )}
-
-          <CallerIdSelectCard dropdownId="dialer-home-caller-id" />
-
-          {!hasPermission && <AudioDeviceSelector />}
         </StyledFieldGroup>
 
         {/* launch */}
@@ -305,13 +312,9 @@ export const DialerHomePrep = () => {
             disabled={!hasList && !hasPhone}
           />
           <Button
-            title={t`Manage scripts`}
+            title={t`Settings`}
             variant="secondary"
-            onClick={() => navigate(getSettingsPath(SettingsPath.AI))}
-          />
-          <Button
-            title={t`Phone settings`}
-            variant="secondary"
+            Icon={IconSettings}
             onClick={() =>
               navigate(getSettingsPath(SettingsPath.AccountsPhoneNumbers))
             }

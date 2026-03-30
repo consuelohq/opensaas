@@ -78,7 +78,9 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
           type="checkbox"
         />
         <IconWorld size={14} />
-        <span>{t`Prefer a local presence number when a matching area code exists.`}</span>
+        <span title={t`When enabled, we match the outbound caller ID to the closest area code available for the person being called.`}>
+          {t`Prefer local presence calling`}
+        </span>
       </StyledToggle>
     </StyledContainer>
   );
