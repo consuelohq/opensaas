@@ -4,36 +4,34 @@ import { isCommandMenuOpenedState } from '@/command-menu/states/isCommandMenuOpe
 import { MAIN_CONTEXT_STORE_INSTANCE_ID } from '@/context-store/constants/MainContextStoreInstanceId';
 import { contextStoreCurrentObjectMetadataItemIdComponentState } from '@/context-store/states/contextStoreCurrentObjectMetadataItemIdComponentState';
 import { useDefaultHomePagePath } from '@/navigation/hooks/useDefaultHomePagePath';
-import { useOpenSettingsMenu } from '@/navigation/hooks/useOpenSettings';
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { useRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentState';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
+import { AppPath } from 'twenty-shared/types';
 import {
   type IconComponent,
+  IconHome,
   IconList,
   IconSearch,
-  IconSettings,
 } from 'twenty-ui/display';
 import { NavigationBar } from 'twenty-ui/navigation';
-import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { currentMobileNavigationDrawerState } from '@/navigation/states/currentMobileNavigationDrawerState';
 
-type NavigationBarItemName = 'main' | 'search' | 'tasks' | 'settings';
+type NavigationBarItemName = 'main' | 'search' | 'home';
 
 export const MobileNavigationBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { defaultHomePagePath } = useDefaultHomePagePath();
   const [isCommandMenuOpened] = useRecoilState(isCommandMenuOpenedState);
   const { closeCommandMenu } = useCommandMenu();
   const { openRecordsSearchPage } = useOpenRecordsSearchPageInCommandMenu();
-  const isSettingsPage = useIsSettingsPage();
   const [isNavigationDrawerExpanded, setIsNavigationDrawerExpanded] =
     useRecoilState(isNavigationDrawerExpandedState);
   const [currentMobileNavigationDrawer, setCurrentMobileNavigationDrawer] =
     useRecoilState(currentMobileNavigationDrawerState);
-  const { openSettingsMenu } = useOpenSettingsMenu();
   const { alphaSortedActiveNonSystemObjectMetadataItems } =
     useFilteredObjectMetadataItems();
 
@@ -47,8 +45,8 @@ export const MobileNavigationBar = () => {
     ? currentMobileNavigationDrawer
     : isCommandMenuOpened
       ? 'search'
-      : isSettingsPage
-        ? 'settings'
+      : location.pathname === AppPath.Home
+        ? 'home'
         : 'main';
 
   const items: {
@@ -66,7 +64,7 @@ export const MobileNavigationBar = () => {
         );
         setCurrentMobileNavigationDrawer('main');
 
-        if (isSettingsPage) {
+        if (location.pathname === AppPath.Home) {
           navigate(defaultHomePagePath);
         }
       },
@@ -78,7 +76,7 @@ export const MobileNavigationBar = () => {
         setIsNavigationDrawerExpanded(false);
         closeCommandMenu();
 
-        if (isSettingsPage) {
+        if (location.pathname === AppPath.Home) {
           const firstObjectMetadataItem =
             alphaSortedActiveNonSystemObjectMetadataItems[0];
           if (firstObjectMetadataItem !== undefined) {
@@ -92,11 +90,12 @@ export const MobileNavigationBar = () => {
       },
     },
     {
-      name: 'settings',
-      Icon: IconSettings,
+      name: 'home',
+      Icon: IconHome,
       onClick: () => {
+        setIsNavigationDrawerExpanded(false);
         closeCommandMenu();
-        openSettingsMenu();
+        navigate(AppPath.Home);
       },
     },
   ];
