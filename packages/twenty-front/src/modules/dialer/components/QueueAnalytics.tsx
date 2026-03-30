@@ -18,23 +18,23 @@ const StyledGrid = styled.div`
 `;
 
 const StyledCard = styled.div`
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   display: flex;
   flex-direction: column;
   padding: ${({ theme }) => theme.spacing(2)};
-  background: ${({ theme }) => theme.background.secondary};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  border: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledCardValue = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledCardLabel = styled.span`
-  font-size: 11px;
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: 11px;
 `;
 
 const StyledOutcomeSection = styled.div`
@@ -45,16 +45,16 @@ const StyledOutcomeSection = styled.div`
 `;
 
 const StyledOutcomeRow = styled.div`
-  display: flex;
   align-items: center;
-  gap: ${({ theme }) => theme.spacing(1)};
+  display: flex;
   font-size: 12px;
+  gap: ${({ theme }) => theme.spacing(1)};
 `;
 
 const StyledOutcomeLabel = styled.span`
-  width: 90px;
   color: ${({ theme }) => theme.font.color.secondary};
   text-transform: capitalize;
+  width: 90px;
 `;
 
 const StyledOutcomeTrack = styled.div`
@@ -66,18 +66,18 @@ const StyledOutcomeTrack = styled.div`
 `;
 
 const StyledOutcomeFill = styled.div<{ width: number; color: string }>`
-  height: 100%;
-  width: ${({ width }) => width}%;
   background: ${({ color }) => color};
   border-radius: 4px;
+  height: 100%;
   transition: width 300ms ease;
+  width: ${({ width }) => width}%;
 `;
 
 const StyledOutcomeCount = styled.span`
-  width: 24px;
-  text-align: right;
   color: ${({ theme }) => theme.font.color.tertiary};
   font-size: 11px;
+  text-align: right;
+  width: 24px;
 `;
 
 const StyledSummary = styled.div`
@@ -90,14 +90,14 @@ const StyledSummary = styled.div`
 `;
 
 const StyledSummaryTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledSummaryDetail = styled.span`
-  font-size: 12px;
   color: ${({ theme }) => theme.font.color.secondary};
+  font-size: 12px;
 `;
 
 const StyledExportButton = styled.button`
@@ -213,8 +213,8 @@ const OutcomeChart = () => {
 // session summary (shown when queue completed)
 
 const QueueSessionSummary = () => {
-  const queue = useRecoilValue(activeQueueState);
-  const items = useRecoilValue(queueItemsState);
+  const activeQueue = useRecoilValue(activeQueueState);
+  const queueItems = useRecoilValue(queueItemsState);
   const { stats } = useQueueAnalytics();
 
   const handleExport = useCallback(() => {
@@ -266,7 +266,7 @@ const QueueSessionSummary = () => {
 // main component
 
 export const QueueAnalytics = () => {
-  const queue = useRecoilValue(activeQueueState);
+  const activeQueue = useRecoilValue(activeQueueState);
   if (!queue || queue.status === 'idle') return null;
 
   return (

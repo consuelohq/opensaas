@@ -15,7 +15,6 @@ import {
   transcriptState,
 } from '@/dialer/states/coachingState';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import styled from '@emotion/styled';
@@ -65,14 +64,14 @@ const StyledColumn = styled.div`
 `;
 
 export const DialerHomeLivePanel = () => {
-  const callState = useRecoilValue(callStateAtom);
-  const assistMode = useRecoilValue(callAssistModeState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const callAssistMode = useRecoilValue(callAssistModeState);
   const talkingPoints = useRecoilValue(talkingPointsState);
   const coachingError = useRecoilValue(coachingErrorState);
   const coachingLoading = useRecoilValue(coachingLoadingState);
   const transcript = useRecoilValue(transcriptState);
   const transcriptConnected = useRecoilValue(transcriptConnectedState);
-  const analysis = useRecoilValue(postCallAnalysisState);
+  const postCallAnalysis = useRecoilValue(postCallAnalysisState);
   const isAnalyzing = useRecoilValue(isAnalyzingState);
   const analysisError = useRecoilValue(analysisErrorState);
 

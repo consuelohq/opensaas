@@ -318,29 +318,37 @@ SPEC_FAIL=$FAIL
 
 
 
-# 15. ESLINT — run eslint on all changed files (catches lingui, hardcoded colors, import restrictions, etc.)
+# 15. ESLINT — run eslint per-package with correct config (catches lingui, hardcoded colors, import restrictions, etc.)
 echo -n "  ESLINT ........... "
 FAIL=0
 ESLINT_OUTPUT=""
 if [ -n "$CHANGED_FILES" ]; then
-  # build file list as array to handle spaces in paths
-  ESLINT_FILE_LIST=""
-  while IFS= read -r file; do
-    [ -f "$file" ] && ESLINT_FILE_LIST="$ESLINT_FILE_LIST $file"
-  done <<< "$CHANGED_FILES"
-  if [ -n "$ESLINT_FILE_LIST" ]; then
-    ESLINT_OUTPUT=$(npx eslint --max-warnings 0 $ESLINT_FILE_LIST 2>&1) || FAIL=1
-  fi
+  # group files by package and run eslint with each package's config
+  ESLINT_PACKAGES=$(echo "$CHANGED_FILES" | sed 's|^packages/\([^/]*\)/.*|\1|' | sort -u)
+  while IFS= read -r pkg; do
+    [ -z "$pkg" ] && continue
+    PKG_CONFIG="packages/$pkg/eslint.config.mjs"
+    [ ! -f "$PKG_CONFIG" ] && continue
+    # collect files for this package
+    PKG_FILES=""
+    while IFS= read -r file; do
+      case "$file" in packages/"$pkg"/*) [ -f "$file" ] && PKG_FILES="$PKG_FILES $file" ;; esac
+    done <<< "$CHANGED_FILES"
+    [ -z "$PKG_FILES" ] && continue
+    PKG_OUTPUT=$(npx eslint --config "$PKG_CONFIG" --max-warnings 0 $PKG_FILES 2>&1) || {
+      FAIL=1
+      ESLINT_OUTPUT="${ESLINT_OUTPUT}${PKG_OUTPUT}\n"
+    }
+  done <<< "$ESLINT_PACKAGES"
 fi
 if [ $FAIL -eq 0 ]; then echo -e "${GREEN}PASS${NC}"; PASS=$((PASS + 1))
 else
   echo -e "${RED}FAIL${NC}"
   WARNINGS="${WARNINGS}  ${RED}FAIL${NC} [ESLINT] eslint violations found:\n"
-  # show first 30 lines of eslint output to keep it readable
-  ESLINT_SUMMARY=$(echo "$ESLINT_OUTPUT" | head -30)
+  ESLINT_SUMMARY=$(echo -e "$ESLINT_OUTPUT" | head -30)
   WARNINGS="${WARNINGS}${ESLINT_SUMMARY}\n"
-  if [ "$(echo "$ESLINT_OUTPUT" | wc -l)" -gt 30 ]; then
-    WARNINGS="${WARNINGS}  ... (truncated, run npx eslint on changed files for full output)\n"
+  if [ "$(echo -e "$ESLINT_OUTPUT" | wc -l)" -gt 30 ]; then
+    WARNINGS="${WARNINGS}  ... (truncated, run npx nx lint:diff-with-main <package> for full output)\n"
   fi
 fi
 ESLINT_FAIL=$FAIL

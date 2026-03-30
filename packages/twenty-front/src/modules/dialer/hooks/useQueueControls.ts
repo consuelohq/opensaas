@@ -2,7 +2,6 @@ import { useCallback } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { captureException } from '@sentry/react';
 
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   activeQueueState,
   currentQueueIndexState,
@@ -12,12 +11,12 @@ import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import type { QueueItem } from '@/dialer/types/queue';
 
 export const useQueueControls = () => {
-  const [queue, setQueue] = useRecoilState(activeQueueState);
-  const [items, setItems] = useRecoilState(queueItemsState);
-  const [currentIndex, setCurrentIndex] = useRecoilState(
+  const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
+  const [queueItems, setQueueItems] = useRecoilState(queueItemsState);
+  const [currentQueueIndex, setCurrentQueueIndex] = useRecoilState(
     currentQueueIndexState,
   );
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const { connect, disconnect } = useTwilioDevice();
 
   const callContact = useCallback(

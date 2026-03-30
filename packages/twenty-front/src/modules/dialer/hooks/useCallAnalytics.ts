@@ -13,8 +13,9 @@ import { type CallMetrics } from '@/dialer/types/history';
 type AnalyticsPeriod = 'today' | 'week' | 'month';
 
 export const useCallAnalytics = () => {
-  const [metrics, setMetrics] = useRecoilState(callMetricsState);
-  const [loading, setLoading] = useRecoilState(metricsLoadingState);
+  const [callMetrics, setCallMetrics] = useRecoilState(callMetricsState);
+  const [metricsLoading, setMetricsLoading] =
+    useRecoilState(metricsLoadingState);
 
   const fetchMetrics = useCallback(
     async (period: AnalyticsPeriod) => {

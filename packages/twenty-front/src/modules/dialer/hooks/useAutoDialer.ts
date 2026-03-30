@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import { captureException } from '@sentry/react';
 
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   activeQueueState,
   currentQueueIndexState,
@@ -10,11 +9,7 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
-import type {
-  CallOutcome,
-  QueueItem,
-  QueueSettings,
-} from '@/dialer/types/queue';
+import type { QueueItem, QueueSettings } from '@/dialer/types/queue';
 
 const shouldRetry = (item: QueueItem, settings: QueueSettings): boolean => {
   if (item.attempts >= settings.maxAttempts) return false;
@@ -37,11 +32,11 @@ const getRetryDelay = (attempts: number): number =>
   Math.min(1000 * Math.pow(2, attempts - 1), 30000);
 
 export const useAutoDialer = () => {
-  const queue = useRecoilValue(activeQueueState);
-  const callState = useRecoilValue(callStateAtom);
-  const callOutcome = useRecoilValue(lastCallOutcomeState);
-  const items = useRecoilValue(queueItemsState);
-  const currentIndex = useRecoilValue(currentQueueIndexState);
+  const activeQueue = useRecoilValue(activeQueueState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const lastCallOutcome = useRecoilValue(lastCallOutcomeState);
+  const queueItems = useRecoilValue(queueItemsState);
+  const currentQueueIndex = useRecoilValue(currentQueueIndexState);
   const { advanceQueue, skipContact } = useQueueControls();
   const [countdown, setCountdown] = useState<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);

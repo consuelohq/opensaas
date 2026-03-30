@@ -7,7 +7,6 @@ import { captureException } from '@sentry/react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
@@ -71,11 +70,11 @@ const StyledSpinner = styled(IconLoader2)`
 `;
 
 export const CallButton = () => {
-  const callState = useRecoilValue(callStateAtom);
-  const rawNumber = useRecoilValue(phoneNumberState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const phoneNumber = useRecoilValue(phoneNumberState);
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
-  const contact = useRecoilValue(selectedContactState);
+  const selectedContact = useRecoilValue(selectedContactState);
   const setCallError = useSetRecoilState(callErrorState);
   const { connect, disconnect } = useTwilioDevice();
 

@@ -6,10 +6,10 @@ import { useRecoilState } from 'recoil';
 import { v4 } from 'uuid';
 
 export const useCoachingScripts = () => {
-  const [scripts, setScripts] = useRecoilState(coachingScriptsState);
-  const [selectedScriptId, setSelectedScriptId] = useRecoilState(
-    selectedCoachingScriptIdState,
-  );
+  const [coachingScripts, setCoachingScripts] =
+    useRecoilState(coachingScriptsState);
+  const [selectedCoachingScriptId, setSelectedCoachingScriptId] =
+    useRecoilState(selectedCoachingScriptIdState);
 
   const selectedScript = useMemo(
     () => scripts.find((script) => script.id === selectedScriptId) ?? null,
@@ -51,7 +51,9 @@ export const useCoachingScripts = () => {
   const deleteScript = useCallback(
     (scriptId: string) => {
       setScripts((currentScripts) => {
-        const remaining = currentScripts.filter((script) => script.id !== scriptId);
+        const remaining = currentScripts.filter(
+          (script) => script.id !== scriptId,
+        );
 
         if (selectedScriptId === scriptId) {
           setSelectedScriptId(remaining[0]?.id ?? null);

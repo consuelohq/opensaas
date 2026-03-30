@@ -60,9 +60,9 @@ const StyledHeaderLeft = styled.div`
 `;
 
 const StyledHeaderTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledContent = styled.div`
@@ -88,13 +88,13 @@ const StyledBadge = styled.span`
 `;
 
 const StyledPointCard = styled.div`
-  display: flex;
   align-items: flex-start;
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   padding: ${({ theme }) => theme.spacing(2)};
-  background: ${({ theme }) => theme.background.secondary};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  border: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledNumber = styled.span`
@@ -135,11 +135,11 @@ const StyledSectionToggle = styled.button`
 `;
 
 const StyledQuestionList = styled.ul`
-  margin: ${({ theme }) => theme.spacing(1)} 0 0;
-  padding-left: ${({ theme }) => theme.spacing(4)};
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin: ${({ theme }) => theme.spacing(1)} 0 0;
+  padding-left: ${({ theme }) => theme.spacing(4)};
 `;
 
 const StyledQuestionItem = styled.li`

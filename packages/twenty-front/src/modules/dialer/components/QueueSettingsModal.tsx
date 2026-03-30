@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
-import { IconX } from '@tabler/icons-react';
 
 import { activeQueueState } from '@/dialer/states/queueState';
 import type { CallQueue, QueueSettings } from '@/dialer/types/queue';
@@ -38,19 +37,19 @@ const StyledModalHeader = styled.div`
 `;
 
 const StyledModalBody = styled.div`
-  padding: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledSettingRow = styled.label`
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  justify-content: space-between;
 `;
 
 const StyledModalActions = styled.div`
@@ -75,14 +74,14 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
 `;
 
 const StyledNumberInput = styled.input`
-  width: 64px;
-  padding: 4px 8px;
+  background: ${({ theme }) => theme.background.secondary};
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: ${({ theme }) => theme.background.secondary};
   color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
+  padding: 4px 8px;
   text-align: right;
+  width: 64px;
 `;
 
 interface QueueSettingsModalProps {
@@ -96,7 +95,7 @@ export const QueueSettingsModal = ({
 }: QueueSettingsModalProps) => {
   const { t } = useLingui();
   const [settings, setSettings] = useState<QueueSettings>(queue.settings);
-  const [, setQueue] = useRecoilState(activeQueueState);
+  const [, setActiveQueue] = useRecoilState(activeQueueState);
 
   const update = useCallback(
     <TKey extends keyof QueueSettings>(

@@ -11,7 +11,9 @@ const POLL_INTERVAL_UNCONFIGURED = 5_000;
 const POLL_INTERVAL_CONFIGURED = 60_000;
 
 export const useTwilioConfigStatus = () => {
-  const [status, setStatus] = useRecoilState(twilioConfigStatusState);
+  const [twilioConfigStatus, setTwilioConfigStatus] = useRecoilState(
+    twilioConfigStatusState,
+  );
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchStatus = useCallback(async () => {

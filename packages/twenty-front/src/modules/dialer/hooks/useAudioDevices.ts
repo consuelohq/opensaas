@@ -31,9 +31,9 @@ const toDeviceInfo = (device: MediaDeviceInfo): AudioDeviceInfo => ({
 });
 
 export const useAudioDevices = (): UseAudioDevicesReturn => {
-  const [allDevices, setAllDevices] = useRecoilState(audioDevicesState);
-  const [selectedMic, setSelectedMicAtom] = useRecoilState(selectedMicState);
-  const [selectedSpeaker, setSelectedSpeakerAtom] =
+  const [audioDevices, setAudioDevices] = useRecoilState(audioDevicesState);
+  const [selectedMic, setSelectedMic] = useRecoilState(selectedMicState);
+  const [selectedSpeaker, setSelectedSpeaker] =
     useRecoilState(selectedSpeakerState);
   const initializedRef = useRef(false);
 

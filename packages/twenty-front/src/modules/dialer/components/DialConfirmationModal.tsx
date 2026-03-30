@@ -20,14 +20,14 @@ type DialConfirmationModalProps = {
 // consistent hue from string (same as ContactHeader)
 
 const StyledOverlay = styled.div`
-  position: absolute;
-  inset: 0;
   background: ${({ theme }) => theme.background.primary};
-  z-index: 10;
   display: flex;
   flex-direction: column;
-  padding: ${({ theme }) => theme.spacing(4)};
   gap: ${({ theme }) => theme.spacing(3)};
+  inset: 0;
+  padding: ${({ theme }) => theme.spacing(4)};
+  position: absolute;
+  z-index: 10;
 `;
 
 const StyledHeader = styled.div`
@@ -37,9 +37,9 @@ const StyledHeader = styled.div`
 `;
 
 const StyledTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: 14px;
   font-weight: 600;
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledCloseButton = styled.button`
@@ -93,8 +93,8 @@ const StyledName = styled.span`
 `;
 
 const StyledDetail = styled.span`
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
 const StyledDivider = styled.hr`
@@ -104,9 +104,9 @@ const StyledDivider = styled.hr`
 `;
 
 const StyledLabel = styled.span`
+  color: ${({ theme }) => theme.font.color.secondary};
   font-size: 12px;
   font-weight: 500;
-  color: ${({ theme }) => theme.font.color.secondary};
 `;
 
 const StyledSelect = styled.select`
@@ -168,7 +168,7 @@ export const DialConfirmationModal = ({
   onConfirm,
 }: DialConfirmationModalProps) => {
   const { t } = useLingui();
-  const contact = useRecoilValue(selectedContactState);
+  const selectedContact = useRecoilValue(selectedContactState);
   const phoneNumber = useRecoilValue(phoneNumberState);
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);

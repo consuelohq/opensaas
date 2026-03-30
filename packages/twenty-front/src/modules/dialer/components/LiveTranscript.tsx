@@ -48,41 +48,41 @@ const StyledHeaderLeft = styled.div`
 `;
 
 const StyledHeaderTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledDot = styled.span<{ connected: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
   background: ${({ connected, theme }) =>
     connected
       ? (theme.color.green ?? '#16a34a')
       : (theme.font.color.tertiary ?? '#999')};
+  border-radius: 50%;
+  height: 8px;
+  width: 8px;
 `;
 
 const StyledContent = styled.div`
-  max-height: 30vh;
-  overflow-y: auto;
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
+  aria-live: polite;
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
-  aria-live: polite;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledEntry = styled.div<{ isAgent: boolean }>`
+  align-self: ${({ isAgent }) => (isAgent ? 'flex-end' : 'flex-start')};
+  background: ${({ isAgent, theme }) =>
+    isAgent ? theme.background.secondary : theme.background.tertiary};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: ${({ isAgent, theme }) =>
-    isAgent ? theme.background.secondary : theme.background.tertiary};
-  align-self: ${({ isAgent }) => (isAgent ? 'flex-end' : 'flex-start')};
   max-width: 85%;
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledSpeaker = styled.span`

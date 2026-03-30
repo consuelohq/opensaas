@@ -126,7 +126,7 @@ const StyledEmpty = styled.div`
 `;
 
 export const ScriptAssistPanel = () => {
-  const assistMode = useRecoilValue(callAssistModeState);
+  const callAssistMode = useRecoilValue(callAssistModeState);
   const transcript = useRecoilValue(transcriptState);
   const { selectedScript, selectedScriptSections } = useCoachingScripts();
   const [activeSectionIndex, setActiveSectionIndex] = useState(0);

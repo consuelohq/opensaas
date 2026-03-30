@@ -4,7 +4,6 @@ import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { activeTransferState } from '@/dialer/states/activeTransferState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { conferenceSidState } from '@/dialer/states/conferenceState';
@@ -53,7 +52,7 @@ async function postJson(
 }
 
 export const useCallTransfer = (): UseCallTransferReturn => {
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const setActiveTransfer = useSetRecoilState(activeTransferState);
   const setIsOnHold = useSetRecoilState(isOnHoldState);
   const setConferenceSid = useSetRecoilState(conferenceSidState);

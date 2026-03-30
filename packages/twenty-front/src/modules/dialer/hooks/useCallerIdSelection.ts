@@ -7,19 +7,18 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 
 // whether the current selection was auto-matched by area code
 export const useCallerIdSelection = () => {
-  const availableNumbers = useRecoilValue(availableCallerIdsState);
+  const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const localPresenceEnabled = useRecoilValue(localPresenceEnabledState);
-  const contact = useRecoilValue(selectedContactState);
-  const [selectedCallerId, setSelectedCallerId] =
-    useRecoilState(selectedCallerIdState);
+  const selectedContact = useRecoilValue(selectedContactState);
+  const [selectedCallerId, setSelectedCallerId] = useRecoilState(
+    selectedCallerIdState,
+  );
 
   const contactPhone = contact?.phone ?? null;
 
   // extract area code from E.164 (+1XXXXXXXXXX)
   const contactAreaCode =
-    contactPhone && contactPhone.length >= 5
-      ? contactPhone.slice(2, 5)
-      : null;
+    contactPhone && contactPhone.length >= 5 ? contactPhone.slice(2, 5) : null;
 
   const matchedNumber = contactAreaCode
     ? availableNumbers.find((n) => n.areaCode === contactAreaCode)

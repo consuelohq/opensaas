@@ -4,7 +4,6 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   currentQueueIndexState,
   activeQueueState,
@@ -175,7 +174,7 @@ export const useOpportunityQueueWorkspace = ({
 
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
 
   const setActiveQueue = useSetRecoilState(activeQueueState);
   const setQueueItems = useSetRecoilState(queueItemsState);

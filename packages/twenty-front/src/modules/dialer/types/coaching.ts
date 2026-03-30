@@ -24,7 +24,12 @@ export type CallOutcome =
   | 'wrong_number'
   | 'other';
 
-export type MomentType = 'objection' | 'interest' | 'question' | 'commitment' | 'concern';
+export type MomentType =
+  | 'objection'
+  | 'interest'
+  | 'question'
+  | 'commitment'
+  | 'concern';
 
 export type SentimentLabel = 'positive' | 'neutral' | 'negative';
 

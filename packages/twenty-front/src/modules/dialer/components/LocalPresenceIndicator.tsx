@@ -8,7 +8,8 @@ const StyledContainer = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing(1.5)};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme }) => theme.background.tertiary};
   cursor: pointer;
@@ -31,25 +32,26 @@ const StyledLocalBadge = styled.span`
 `;
 
 const StyledDropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: ${({ theme }) => theme.spacing(0.5)};
   background: ${({ theme }) => theme.background.primary};
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   box-shadow: ${({ theme }) => theme.boxShadow.strong};
-  z-index: 10;
+  left: 0;
+  margin-top: ${({ theme }) => theme.spacing(0.5)};
   max-height: 200px;
   overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 10;
 `;
 
 const StyledOption = styled.div<{ isSelected: boolean }>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing(1.5)};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   cursor: pointer;
   font-size: ${({ theme }) => theme.font.size.sm};
   background: ${({ isSelected, theme }) =>
@@ -66,8 +68,12 @@ const StyledLabel = styled.span`
 `;
 
 export const LocalPresenceIndicator = () => {
-  const { selectedCallerId, setSelectedCallerId, availableNumbers, isLocalMatch } =
-    useCallerIdSelection();
+  const {
+    selectedCallerId,
+    setSelectedCallerId,
+    availableNumbers,
+    isLocalMatch,
+  } = useCallerIdSelection();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!selectedCallerId || availableNumbers.length === 0) return null;
@@ -80,7 +86,11 @@ export const LocalPresenceIndicator = () => {
     <StyledContainer onClick={() => setIsOpen(!isOpen)}>
       <IconPhone size={14} />
       <StyledLabel>From:</StyledLabel>
-      <span>{selected ? formatPhone(selected.phoneNumber) : formatPhone(selectedCallerId)}</span>
+      <span>
+        {selected
+          ? formatPhone(selected.phoneNumber)
+          : formatPhone(selectedCallerId)}
+      </span>
       {isLocalMatch && (
         <StyledLocalBadge>
           <IconMapPin size={10} style={{ marginRight: 2, verticalAlign: -1 }} />

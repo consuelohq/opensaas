@@ -1,5 +1,9 @@
 import { createState } from '@/ui/utilities/state/utils/createState';
-import { type CallAnalytics, type TalkingPoints, type TranscriptEntry } from '@/dialer/types/coaching';
+import {
+  type CallAnalytics,
+  type TalkingPoints,
+  type TranscriptEntry,
+} from '@/dialer/types/coaching';
 
 export const coachingLoadingState = createState<boolean>({
   key: 'coachingLoadingState',

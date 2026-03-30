@@ -74,8 +74,8 @@ const StyledButton = styled.button`
   }
 `;
 
-export const TwilioConfigStatus = () => {
-  const status = useRecoilValue(twilioConfigStatusState);
+export const TwilioConfigStatusEffect = () => {
+  const twilioConfigStatus = useRecoilValue(twilioConfigStatusState);
   const navigate = useNavigate();
 
   // loading or fully configured — render nothing
@@ -128,11 +128,7 @@ export const TwilioConfigStatus = () => {
     return (
       <StyledContainer>
         <StyledIcon color={hasError ? '#ef4444' : '#6b7280'}>
-          {hasError ? (
-            <IconAlertTriangle size={20} />
-          ) : (
-            <IconKey size={20} />
-          )}
+          {hasError ? <IconAlertTriangle size={20} /> : <IconKey size={20} />}
         </StyledIcon>
         <StyledTitle>
           {hasError
@@ -140,9 +136,7 @@ export const TwilioConfigStatus = () => {
             : 'Connect your Twilio account to start calling'}
         </StyledTitle>
         {hasError && (
-          <StyledSubtext>
-            Check your credentials in Settings
-          </StyledSubtext>
+          <StyledSubtext>Check your credentials in Settings</StyledSubtext>
         )}
         <StyledButton onClick={() => navigate('/settings/accounts')}>
           <IconSettings size={14} /> Go to Settings

@@ -3,7 +3,6 @@ import { css, keyframes } from '@emotion/react';
 import { useRecoilValue } from 'recoil';
 
 import { useCallDuration } from '@/dialer/hooks/useCallDuration';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
@@ -42,8 +41,8 @@ const StyledContainer = styled.div`
 `;
 
 const StyledAvatarWrapper = styled.div`
-  position: relative;
   flex-shrink: 0;
+  position: relative;
 `;
 
 const StyledAvatar = styled.div<{ bgColor: string }>`
@@ -100,15 +99,15 @@ const StyledDetail = styled.span`
 `;
 
 const StyledStatusLine = styled.span`
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.secondary};
+  font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
 export const ContactHeader = () => {
-  const callState = useRecoilValue(callStateAtom);
-  const contact = useRecoilValue(selectedContactState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const selectedContact = useRecoilValue(selectedContactState);
   const isOnHold = useRecoilValue(isOnHoldState);
-  const rawPhoneNumber = useRecoilValue(phoneNumberState);
+  const phoneNumber = useRecoilValue(phoneNumberState);
   const duration = useCallDuration();
 
   const displayStatus: DisplayStatus =

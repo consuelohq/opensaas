@@ -58,13 +58,13 @@ const fetchVoiceToken = async (): Promise<string> => {
 };
 
 export const useTwilioDevice = (): UseTwilioDeviceReturn => {
-  const [isReady, setIsReady] = useRecoilState(deviceReadyState);
-  const [error, setError] = useRecoilState(deviceErrorState);
+  const [deviceReady, setDeviceReady] = useRecoilState(deviceReadyState);
+  const [deviceError, setDeviceError] = useRecoilState(deviceErrorState);
   const [activeCall, setActiveCall] = useRecoilState(activeCallState);
   const [reconnecting, setReconnecting] = useRecoilState(reconnectingState);
   const setCallState = useSetRecoilState(callStateAtom);
   const setCallError = useSetRecoilState(callErrorState);
-  const configStatus = useRecoilValue(twilioConfigStatusState);
+  const twilioConfigStatus = useRecoilValue(twilioConfigStatusState);
 
   const { persistCurrentCall, clearPersistence, getConferenceNameByCallSid } =
     useCallPersistence();

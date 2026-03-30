@@ -20,7 +20,6 @@ import { TransferModal } from '@/dialer/components/TransferModal';
 import { useCallTransfer } from '@/dialer/hooks/useCallTransfer';
 import { useDialerHotkeys } from '@/dialer/hooks/useDialerHotkeys';
 import { activeCallState } from '@/dialer/states/activeCallState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { callErrorState } from '@/dialer/states/callErrorState';
 import { isMutedState } from '@/dialer/states/isMutedState';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
@@ -165,7 +164,7 @@ const StyledErrorDismiss = styled.button`
 
 export const InCallControls = () => {
   const { t } = useLingui();
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const [callError, setCallError] = useRecoilState(callErrorState);
   const [isMuted, setIsMuted] = useRecoilState(isMutedState);

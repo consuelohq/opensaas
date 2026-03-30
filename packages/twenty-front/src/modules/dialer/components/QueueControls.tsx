@@ -25,10 +25,10 @@ import { useGlobalHotkeys } from '@/ui/utilities/hotkey/hooks/useGlobalHotkeys';
 // region styled
 
 const StyledControls = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.border.color.light};
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-  border-top: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledButton = styled.button<{ danger?: boolean; accent?: boolean }>`
@@ -71,18 +71,18 @@ const StyledModal = styled.div`
 `;
 
 const StyledModalHeader = styled.div`
-  padding: ${({ theme }) => theme.spacing(3)};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
-  font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  font-size: ${({ theme }) => theme.font.size.md};
   color: ${({ theme }) => theme.font.color.primary};
+  font-size: ${({ theme }) => theme.font.size.md};
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledModalBody = styled.div`
-  padding: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledReasonButton = styled.button<{ selected?: boolean }>`
@@ -105,13 +105,13 @@ const StyledReasonButton = styled.button<{ selected?: boolean }>`
 `;
 
 const StyledCustomInput = styled.input`
-  width: 100%;
-  padding: ${({ theme }) => theme.spacing(2)};
+  background: ${({ theme }) => theme.background.secondary};
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: ${({ theme }) => theme.background.secondary};
   color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => theme.spacing(2)};
+  width: 100%;
 `;
 
 const StyledModalActions = styled.div`
@@ -132,13 +132,12 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
   cursor: pointer;
   background: ${({ accent, theme }) =>
     accent ? theme.color.blue : theme.background.tertiary};
-  color: ${({ accent, theme }) =>
-    accent ? '#fff' : theme.font.color.primary};
+  color: ${({ accent, theme }) => (accent ? '#fff' : theme.font.color.primary)};
 `;
 
 const StyledHint = styled.span`
-  font-size: 10px;
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: 10px;
 `;
 
 // endregion
@@ -210,7 +209,7 @@ const SkipReasonModal = ({
 
 export const QueueControls = () => {
   const { t } = useLingui();
-  const queue = useRecoilValue(activeQueueState);
+  const activeQueue = useRecoilValue(activeQueueState);
   const {
     startQueue,
     pauseQueue,

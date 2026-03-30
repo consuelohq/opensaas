@@ -19,9 +19,9 @@ export const useQueueAnalytics = (): {
   stats: QueueAggregatedStats | null;
   outcomeBreakdown: Record<QueueOutcome, number>;
 } => {
-  const items = useRecoilValue(queueItemsState);
-  const session = useRecoilValue(queueSessionState);
-  const [queue, setQueue] = useRecoilState(activeQueueState);
+  const queueItems = useRecoilValue(queueItemsState);
+  const queueSession = useRecoilValue(queueSessionState);
+  const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
 
   const stats = useMemo(() => {
     if (!queue) return null;

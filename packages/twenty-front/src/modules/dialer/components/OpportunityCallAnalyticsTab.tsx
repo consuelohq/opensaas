@@ -3,7 +3,6 @@ import { PostCallSummary } from '@/dialer/components/PostCallSummary';
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { RecordingPlayer } from '@/dialer/components/RecordingPlayer';
 import { type OpportunityWrapUpState } from '@/dialer/hooks/useOpportunityQueueWorkspace';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   analysisErrorState,
   isAnalyzingState,
@@ -83,13 +82,11 @@ export const OpportunityCallAnalyticsTab = ({
 }: OpportunityCallAnalyticsTabProps) => {
   const transcript = useRecoilValue(transcriptState);
   const transcriptConnected = useRecoilValue(transcriptConnectedState);
-  const analysis = useRecoilValue(postCallAnalysisState);
+  const postCallAnalysis = useRecoilValue(postCallAnalysisState);
   const isAnalyzing = useRecoilValue(isAnalyzingState);
   const analysisError = useRecoilValue(analysisErrorState);
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const [selectedDisposition, setSelectedDisposition] = useState('connected');
-
-
 
   useEffect(() => {
     setSelectedDisposition('connected');

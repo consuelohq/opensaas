@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useRecoilCallback, useRecoilValue } from 'recoil';
 
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   analysisErrorState,
   coachingErrorState,
@@ -15,7 +14,7 @@ import {
 } from '@/dialer/states/coachingState';
 
 export const useResetCoachingState = () => {
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const prevStatusRef = useRef(callState.status);
 
   const resetAll = useRecoilCallback(

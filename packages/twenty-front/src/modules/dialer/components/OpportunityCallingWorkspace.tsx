@@ -7,7 +7,6 @@ import { QueuePanel } from '@/dialer/components/QueuePanel';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useOpportunityQueueWorkspace } from '@/dialer/hooks/useOpportunityQueueWorkspace';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { PageLayoutInitializationQueryEffect } from '@/page-layout/components/PageLayoutInitializationQueryEffect';
 import { PageLayoutRelationWidgetsSyncEffect } from '@/page-layout/components/PageLayoutRelationWidgetsSyncEffect';
 import { PageLayoutMainContent } from '@/page-layout/PageLayoutMainContent';
@@ -75,10 +74,13 @@ type OpportunityCallingWorkspaceProps = {
 
 const OpportunityCallingWorkspaceContent = ({
   listId,
-}: Pick<OpportunityCallingWorkspaceProps, 'listId'>) => {
+}: OpportunityCallingWorkspaceContentProps<
+  OpportunityCallingWorkspaceProps,
+  'listId'
+>) => {
   const { currentPageLayout } = useCurrentPageLayout();
-  const assistMode = useRecoilValue(callAssistModeState);
-  const callState = useRecoilValue(callStateAtom);
+  const callAssistMode = useRecoilValue(callAssistModeState);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const { selectedScript } = useCoachingScripts();
   const { wrapUpState, continueList, endList } = useOpportunityQueueWorkspace({
     listId,

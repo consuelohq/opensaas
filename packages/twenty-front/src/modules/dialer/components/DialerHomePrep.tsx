@@ -138,7 +138,8 @@ export const DialerHomePrep = () => {
   const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
   const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
   const { status } = useTwilioConfigStatus();
-  const [assistMode, setAssistMode] = useRecoilState(callAssistModeState);
+  const [callAssistMode, setCallAssistMode] =
+    useRecoilState(callAssistModeState);
   const { selectedScriptId, setSelectedScriptId, scripts } =
     useCoachingScripts();
   const [source, setSource] = useState<HomeSource>('person');

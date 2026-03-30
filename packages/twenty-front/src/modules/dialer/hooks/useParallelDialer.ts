@@ -9,16 +9,15 @@ import {
   currentQueueIndexState,
   queueItemsState,
 } from '@/dialer/states/queueState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { ParallelCall } from '@/dialer/types/dialer';
 
 export const useParallelDialer = () => {
-  const [queue, setQueue] = useRecoilState(activeQueueState);
-  const [items, setItems] = useRecoilState(queueItemsState);
-  const [currentIndex, setCurrentIndex] = useRecoilState(
+  const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
+  const [queueItems, setQueueItems] = useRecoilState(queueItemsState);
+  const [currentQueueIndex, setCurrentQueueIndex] = useRecoilState(
     currentQueueIndexState,
   );
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);

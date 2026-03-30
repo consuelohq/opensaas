@@ -4,7 +4,6 @@ import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   coachingErrorState,
   coachingLoadingState,
@@ -23,7 +22,10 @@ const MAX_COACHING_REFRESHES = 10;
 const MIN_NEW_WORDS_THRESHOLD = 50;
 
 const countWords = (entries: TranscriptEntry[]): number =>
-  entries.reduce((sum, entry) => sum + entry.text.split(/\s+/).filter(Boolean).length, 0);
+  entries.reduce(
+    (sum, entry) => sum + entry.text.split(/\s+/).filter(Boolean).length,
+    0,
+  );
 
 // B6/W17: only send non-PII context — no name, phone, or email
 function buildContactContext(contact: DialerContact | null): string {
@@ -55,14 +57,14 @@ interface UseCoachingReturn {
 }
 
 export const useCoaching = (): UseCoachingReturn => {
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const transcript = useRecoilValue(transcriptState);
   const setLoading = useSetRecoilState(coachingLoadingState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
   const setError = useSetRecoilState(coachingErrorState);
-  const isLoading = useRecoilValue(coachingLoadingState);
+  const coachingLoading = useRecoilValue(coachingLoadingState);
   const talkingPoints = useRecoilValue(talkingPointsState);
-  const error = useRecoilValue(coachingErrorState);
+  const coachingError = useRecoilValue(coachingErrorState);
 
   const cache = useRef<Map<string, TalkingPoints>>(new Map());
   const lastCallSid = useRef<string | null>(null);

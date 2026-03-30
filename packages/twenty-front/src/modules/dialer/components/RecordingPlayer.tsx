@@ -47,19 +47,19 @@ const StyledProgressContainer = styled.div`
 `;
 
 const StyledProgressFill = styled.div<{ width: number }>`
-  height: 100%;
-  width: ${({ width }) => width}%;
   background: ${({ theme }) => theme.color.blue};
   border-radius: 2px;
+  height: 100%;
   transition: width 0.1s linear;
+  width: ${({ width }) => width}%;
 `;
 
 const StyledTime = styled.span`
-  font-size: ${({ theme }) => theme.font.size.xs};
   color: ${({ theme }) => theme.font.color.tertiary};
-  white-space: nowrap;
+  font-size: ${({ theme }) => theme.font.size.xs};
   min-width: 70px;
   text-align: right;
+  white-space: nowrap;
 `;
 
 const StyledError = styled.span`
@@ -84,7 +84,9 @@ const formatTime = (s: number): string => {
 
 export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [activeId, setActiveId] = useRecoilState(activePlaybackIdState);
+  const [activePlaybackId, setActivePlaybackId] = useRecoilState(
+    activePlaybackIdState,
+  );
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

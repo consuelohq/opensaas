@@ -10,7 +10,6 @@ import {
   IconX,
 } from '@tabler/icons-react';
 
-import { type CallQueue } from '@/dialer/types/queue';
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { QueueControls } from '@/dialer/components/QueueControls';
 import { QueueSettingsModal } from '@/dialer/components/QueueSettingsModal';
@@ -35,12 +34,12 @@ const StyledPanel = styled.div`
 `;
 
 const StyledHeaderRow = styled.div`
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   background: ${({ theme }) => theme.background.secondary};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
+  justify-content: space-between;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledHeaderLeft = styled.div`
@@ -50,9 +49,9 @@ const StyledHeaderLeft = styled.div`
 `;
 
 const StyledTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledSettingsButton = styled.button`
@@ -67,22 +66,22 @@ const StyledSettingsButton = styled.button`
 `;
 
 const StyledCategoryBadge = styled.span`
-  display: inline-flex;
-  padding: 2px 8px;
+  background: ${({ theme }) => theme.background.tertiary};
   border-radius: 999px;
+  color: ${({ theme }) => theme.font.color.secondary};
+  display: inline-flex;
   font-size: 11px;
   font-weight: 500;
-  background: ${({ theme }) => theme.background.tertiary};
-  color: ${({ theme }) => theme.font.color.secondary};
+  padding: 2px 8px;
 `;
 
 const StyledStats = styled.div`
-  display: flex;
   align-items: center;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
   gap: ${({ theme }) => theme.spacing(1)};
   padding: 0 ${({ theme }) => theme.spacing(3)};
-  font-size: ${({ theme }) => theme.font.size.sm};
-  color: ${({ theme }) => theme.font.color.tertiary};
 `;
 
 const StyledProgressTrack = styled.div`
@@ -94,11 +93,11 @@ const StyledProgressTrack = styled.div`
 `;
 
 const StyledProgressFill = styled.div<{ width: number }>`
-  height: 100%;
-  width: ${({ width }) => width}%;
   background: ${({ theme }) => theme.color.blue};
   border-radius: 2px;
+  height: 100%;
   transition: width 300ms ease;
+  width: ${({ width }) => width}%;
 `;
 
 const StyledBody = styled.div`
@@ -117,13 +116,13 @@ const StyledSectionLabel = styled.span`
 `;
 
 const StyledContactCard = styled.div<{ compact?: boolean }>`
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
   padding: ${({ theme }) => theme.spacing(2)};
-  background: ${({ theme }) => theme.background.secondary};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  border: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledContactName = styled.span`
@@ -136,26 +135,26 @@ const StyledContactName = styled.span`
 `;
 
 const StyledContactDetail = styled.span`
-  font-size: 12px;
   color: ${({ theme }) => theme.font.color.secondary};
+  font-size: 12px;
 `;
 
 const StyledAttemptBadge = styled.span`
+  background: ${({ theme }) => theme.background.tertiary};
+  border-radius: 999px;
+  color: ${({ theme }) => theme.font.color.tertiary};
   font-size: 11px;
   padding: 1px 6px;
-  border-radius: 999px;
-  background: ${({ theme }) => theme.background.tertiary};
-  color: ${({ theme }) => theme.font.color.tertiary};
 `;
 
 const StyledParallelStatus = styled.div`
+  background: ${({ theme }) => theme.background.secondary};
+  border: 1px solid ${({ theme }) => theme.border.color.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
   padding: ${({ theme }) => theme.spacing(2)};
-  background: ${({ theme }) => theme.background.secondary};
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  border: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledParallelHeader = styled.div`
@@ -177,11 +176,11 @@ const StyledParallelCall = styled.div`
 `;
 
 const StyledCallStatus = styled.span<{ status: string }>`
-  font-size: 11px;
   color: ${({ status, theme }) =>
     status === 'in-progress'
       ? (theme.color.green ?? '#16a34a')
       : theme.font.color.tertiary};
+  font-size: 11px;
 `;
 
 const StyledEmpty = styled.div`
@@ -226,19 +225,19 @@ const StyledModalHeader = styled.div`
 `;
 
 const StyledModalBody = styled.div`
-  padding: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledSettingRow = styled.label`
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  justify-content: space-between;
 `;
 
 const StyledModalActions = styled.div`
@@ -263,26 +262,26 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
 `;
 
 const StyledNumberInput = styled.input`
-  width: 64px;
-  padding: 4px 8px;
+  background: ${({ theme }) => theme.background.secondary};
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: ${({ theme }) => theme.background.secondary};
   color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
+  padding: 4px 8px;
   text-align: right;
+  width: 64px;
 `;
 
 const StyledCountdown = styled.div`
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   background: ${({ theme }) => theme.background.secondary};
   border-top: 1px solid ${({ theme }) => theme.border.color.light};
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.secondary};
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  gap: ${({ theme }) => theme.spacing(2)};
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledCountdownNumber = styled.span`
@@ -314,7 +313,7 @@ const ProgressBar = ({ value }: { value: number }) => (
 );
 
 const ParallelDialingStatus = () => {
-  const parallel = useRecoilValue(parallelDialingSelector);
+  const parallelDialing = useRecoilValue(parallelDialingSelector);
   if (!parallel?.isActive) return null;
 
   return (
@@ -345,10 +344,10 @@ const ParallelDialingStatus = () => {
 
 export const QueuePanel = () => {
   const { t } = useLingui();
-  const queue = useRecoilValue(activeQueueState);
-  const currentItem = useRecoilValue(currentQueueItemSelector);
-  const nextItem = useRecoilValue(nextQueueItemSelector);
-  const progress = useRecoilValue(queueProgressSelector);
+  const activeQueue = useRecoilValue(activeQueueState);
+  const currentQueueItem = useRecoilValue(currentQueueItemSelector);
+  const nextQueueItem = useRecoilValue(nextQueueItemSelector);
+  const queueProgress = useRecoilValue(queueProgressSelector);
   const [showSettings, setShowSettings] = useState(false);
   const { countdown, cancelAutoAdvance, isAutoAdvancing } = useAutoDialer();
 

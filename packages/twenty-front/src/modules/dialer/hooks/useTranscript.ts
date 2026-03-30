@@ -5,7 +5,6 @@ import { captureException } from '@sentry/react';
 import { cookieStorage } from '~/utils/cookie-storage';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   talkingPointsState,
   transcriptConnectedState,
@@ -51,13 +50,13 @@ interface UseTranscriptReturn {
 }
 
 export const useTranscript = (): UseTranscriptReturn => {
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const setTranscript = useSetRecoilState(transcriptState);
   const setConnected = useSetRecoilState(transcriptConnectedState);
   const setTranscriptError = useSetRecoilState(transcriptErrorState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
   const transcript = useRecoilValue(transcriptState);
-  const isConnected = useRecoilValue(transcriptConnectedState);
+  const transcriptConnected = useRecoilValue(transcriptConnectedState);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttempts = useRef(0);

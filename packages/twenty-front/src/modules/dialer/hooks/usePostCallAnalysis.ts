@@ -4,7 +4,6 @@ import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   analysisErrorState,
   isAnalyzingState,
@@ -38,14 +37,14 @@ interface UsePostCallAnalysisReturn {
 }
 
 export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const transcript = useRecoilValue(transcriptState);
   const setAnalysis = useSetRecoilState(postCallAnalysisState);
   const setIsAnalyzing = useSetRecoilState(isAnalyzingState);
   const setError = useSetRecoilState(analysisErrorState);
-  const analysis = useRecoilValue(postCallAnalysisState);
+  const postCallAnalysis = useRecoilValue(postCallAnalysisState);
   const isAnalyzing = useRecoilValue(isAnalyzingState);
-  const error = useRecoilValue(analysisErrorState);
+  const analysisError = useRecoilValue(analysisErrorState);
 
   const prevStatusRef = useRef(callState.status);
   const analyzedCallsRef = useRef<Set<string>>(new Set());

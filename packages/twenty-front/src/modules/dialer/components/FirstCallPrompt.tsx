@@ -13,9 +13,7 @@ const StyledContainer = styled.div<{ variant: 'prompt' | 'congrats' }>`
     variant === 'congrats' ? theme.color.green10 : theme.background.tertiary};
   border: 1px solid
     ${({ theme, variant }) =>
-      variant === 'congrats'
-        ? theme.color.green1
-        : theme.border.color.medium};
+      variant === 'congrats' ? theme.color.green1 : theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.md};
   display: flex;
   flex-direction: column;
@@ -71,9 +69,7 @@ export const FirstCallPrompt = ({ variant }: FirstCallPromptProps) => {
         <IconPhone size={20} />
       </StyledIcon>
       <StyledTitle>Make your first call</StyledTitle>
-      <StyledSubtext>
-        Try calling yourself to hear how it sounds.
-      </StyledSubtext>
+      <StyledSubtext>Try calling yourself to hear how it sounds.</StyledSubtext>
     </StyledContainer>
   );
 };

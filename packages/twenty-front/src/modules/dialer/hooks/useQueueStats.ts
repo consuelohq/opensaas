@@ -48,22 +48,20 @@ export const useQueueStats = (listId: string | undefined): QueueStatsResult => {
     const completed = records.filter((r) => r.status === 'COMPLETED').length;
     const skipped = records.filter((r) => r.status === 'SKIPPED').length;
 
-    const answered = records.filter(
-      (r) => r.disposition === 'ANSWERED',
-    );
-    const answerRate = attempted > 0
-      ? Math.round((answered.length / attempted) * 100)
-      : 0;
+    const answered = records.filter((r) => r.disposition === 'ANSWERED');
+    const answerRate =
+      attempted > 0 ? Math.round((answered.length / attempted) * 100) : 0;
 
     const answeredDurations = answered
       .map((r) => r.duration)
       .filter((d): d is number => d !== null && d > 0);
-    const avgDuration = answeredDurations.length > 0
-      ? Math.round(
-          answeredDurations.reduce((sum, d) => sum + d, 0) /
-            answeredDurations.length,
-        )
-      : 0;
+    const avgDuration =
+      answeredDurations.length > 0
+        ? Math.round(
+            answeredDurations.reduce((sum, d) => sum + d, 0) /
+              answeredDurations.length,
+          )
+        : 0;
 
     const dispositionBreakdown: Record<string, number> = {};
     for (const record of records) {

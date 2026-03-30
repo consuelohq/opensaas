@@ -4,7 +4,6 @@ import { useRecoilValue } from 'recoil';
 import { IconCalendar, IconLoader2, IconNote } from '@tabler/icons-react';
 
 import { useQuickActions } from '@/dialer/hooks/useQuickActions';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { type CallStatus } from '@/dialer/types/dialer';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
@@ -50,12 +49,12 @@ const StyledActionButton = styled.button<{ isDisabled?: boolean }>`
 `;
 
 const StyledPanel = styled.div`
+  background: ${({ theme }) => theme.background.secondary};
+  border-radius: ${({ theme }) => theme.border.radius.md};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(2)};
   padding: ${({ theme }) => theme.spacing(3)};
-  background: ${({ theme }) => theme.background.secondary};
-  border-radius: ${({ theme }) => theme.border.radius.md};
 `;
 
 const StyledTextarea = styled.textarea`
@@ -125,8 +124,8 @@ const getFollowUpDate = (days: number): Date => {
 };
 
 export const QuickActions = () => {
-  const callState = useRecoilValue(callStateAtom);
-  const contact = useRecoilValue(selectedContactState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const selectedContact = useRecoilValue(selectedContactState);
 
   const { saveNote, scheduleFollowUp, isSaving } = useQuickActions({
     contactId: contact?.id ?? null,

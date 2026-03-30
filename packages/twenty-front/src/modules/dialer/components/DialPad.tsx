@@ -4,7 +4,6 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { DIAL_PAD_KEYS } from '@/dialer/constants/dialerConstants';
 import { activeCallState } from '@/dialer/states/activeCallState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { type DialPadKey } from '@/dialer/types/dialer';
 import { formatPhone, stripNonDigits } from '@/dialer/utils/phoneFormat';
@@ -117,8 +116,8 @@ const StyledLetters = styled.span`
 `;
 
 export const DialPad = ({ onCall }: DialPadProps) => {
-  const [rawNumber, setRawNumber] = useRecoilState(phoneNumberState);
-  const callState = useRecoilValue(callStateAtom);
+  const [phoneNumber, setPhoneNumber] = useRecoilState(phoneNumberState);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const containerRef = useRef<HTMLDivElement>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -55,18 +55,18 @@ const StyledHeaderLeft = styled.div`
 `;
 
 const StyledHeaderTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledContent = styled.div`
-  padding: ${({ theme }) => theme.spacing(3)};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
   max-height: 40vh;
   overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledMetaRow = styled.div`
@@ -79,16 +79,16 @@ const StyledMetaRow = styled.div`
 `;
 
 const StyledScoreBadge = styled.span<{ score: number }>`
-  display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
   background: ${({ score }) =>
     score >= 70 ? '#dcfce7' : score >= 40 ? '#fef9c3' : '#fee2e2'};
+  border-radius: 999px;
   color: ${({ score }) =>
     score >= 70 ? '#16a34a' : score >= 40 ? '#a16207' : '#dc2626'};
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
 `;
 
 const StyledSummaryText = styled.p`
@@ -116,19 +116,19 @@ const StyledSectionLabel = styled.button`
 `;
 
 const StyledSectionTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  color: ${({ theme }) => theme.font.color.secondary};
 `;
 
 const StyledMomentItem = styled.div`
-  display: flex;
   align-items: flex-start;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(1)} 0;
-  font-size: ${({ theme }) => theme.font.size.sm};
   color: ${({ theme }) => theme.font.color.primary};
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  gap: ${({ theme }) => theme.spacing(2)};
   line-height: 1.4;
+  padding: ${({ theme }) => theme.spacing(1)} 0;
 `;
 
 const StyledMomentIcon = styled.span`
@@ -136,11 +136,11 @@ const StyledMomentIcon = styled.span`
 `;
 
 const StyledNextStepList = styled.ul`
-  margin: 0;
-  padding-left: ${({ theme }) => theme.spacing(4)};
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin: 0;
+  padding-left: ${({ theme }) => theme.spacing(4)};
 `;
 
 const StyledNextStepItem = styled.li`

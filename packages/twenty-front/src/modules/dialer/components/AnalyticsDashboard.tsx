@@ -25,9 +25,9 @@ const StyledHeader = styled.div`
 `;
 
 const StyledTitle = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledSelect = styled.select`
@@ -57,14 +57,14 @@ const StyledCard = styled.div`
 `;
 
 const StyledCardValue = styled.span`
+  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.lg};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  color: ${({ theme }) => theme.font.color.primary};
 `;
 
 const StyledCardLabel = styled.span`
-  font-size: ${({ theme }) => theme.font.size.xs};
   color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
 `;
 
 const StyledBars = styled.div`
@@ -94,10 +94,10 @@ const StyledBarTrack = styled.div`
 `;
 
 const StyledBarFill = styled.div<{ width: number; color: string }>`
-  height: 100%;
-  width: ${({ width }) => width}%;
   background: ${({ color }) => color};
   border-radius: 3px;
+  height: 100%;
+  width: ${({ width }) => width}%;
 `;
 
 const StyledLoading = styled.span`

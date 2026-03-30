@@ -62,19 +62,19 @@ const StyledEntry = styled.div<{ lowConfidence: boolean }>`
 `;
 
 const StyledTimestamp = styled.span`
-  font-size: ${({ theme }) => theme.font.size.xs};
   color: ${({ theme }) => theme.font.color.tertiary};
-  white-space: nowrap;
+  font-size: ${({ theme }) => theme.font.size.xs};
   min-width: 36px;
+  white-space: nowrap;
 `;
 
 const StyledSpeaker = styled.span<{ isAgent: boolean }>`
-  font-size: ${({ theme }) => theme.font.size.xs};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
   color: ${({ isAgent, theme }) =>
     isAgent ? theme.color.blue : theme.font.color.secondary};
-  white-space: nowrap;
+  font-size: ${({ theme }) => theme.font.size.xs};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
   min-width: 60px;
+  white-space: nowrap;
 `;
 
 const StyledText = styled.span`

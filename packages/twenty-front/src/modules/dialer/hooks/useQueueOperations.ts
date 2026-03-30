@@ -3,7 +3,10 @@ import { useRecoilValue } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
-import { currentQueueIndexState, queueSessionState } from '@/dialer/states/queueState';
+import {
+  currentQueueIndexState,
+  queueSessionState,
+} from '@/dialer/states/queueState';
 
 type RecordResultData = {
   disposition: string;
@@ -13,8 +16,8 @@ type RecordResultData = {
 
 export const useQueueOperations = () => {
   const { updateOneRecord } = useUpdateOneRecord();
-  const currentIndex = useRecoilValue(currentQueueIndexState);
-  const session = useRecoilValue(queueSessionState);
+  const currentQueueIndex = useRecoilValue(currentQueueIndexState);
+  const queueSession = useRecoilValue(queueSessionState);
 
   const startQueue = useCallback(
     async (listId: string) => {

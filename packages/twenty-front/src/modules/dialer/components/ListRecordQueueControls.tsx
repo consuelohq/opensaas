@@ -32,11 +32,11 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 };
 
 const StyledContainer = styled.div`
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
   padding: ${({ theme }) => theme.spacing(4)};
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
 `;
 
 const StyledTopRow = styled.div`
@@ -46,14 +46,14 @@ const StyledTopRow = styled.div`
 `;
 
 const StyledBadge = styled.span<{ status: string }>`
-  display: inline-flex;
   align-items: center;
-  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
+  background: ${({ status }) => STATUS_COLORS[status]?.bg ?? '#e5e7eb'};
   border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ status }) => STATUS_COLORS[status]?.text ?? '#374151'};
+  display: inline-flex;
   font-size: ${({ theme }) => theme.font.size.xs};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  background: ${({ status }) => STATUS_COLORS[status]?.bg ?? '#e5e7eb'};
-  color: ${({ status }) => STATUS_COLORS[status]?.text ?? '#374151'};
+  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledButtons = styled.div`
@@ -88,18 +88,18 @@ const StyledButton = styled.button<{ variant?: 'danger' | 'accent' }>`
 `;
 
 const StyledProgressBar = styled.div`
-  width: 100%;
-  height: 6px;
   background: ${({ theme }) => theme.background.tertiary};
   border-radius: 3px;
+  height: 6px;
   overflow: hidden;
+  width: 100%;
 `;
 
 const StyledProgressFill = styled.div<{ percent: number }>`
-  height: 100%;
-  width: ${({ percent }) => percent}%;
   background: ${({ theme }) => theme.color.blue};
+  height: 100%;
   transition: width 0.3s ease;
+  width: ${({ percent }) => percent}%;
 `;
 
 const StyledStats = styled.div`
@@ -120,8 +120,8 @@ const StyledStatLabel = styled.span`
 `;
 
 const StyledStatValue = styled.span`
-  font-weight: ${({ theme }) => theme.font.weight.semiBold};
   color: ${({ theme }) => theme.font.color.primary};
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
 `;
 
 // endregion
@@ -163,9 +163,7 @@ export const ListRecordQueueControls = ({
       const startTime = new Date(sessionStartedAt).getTime();
 
       const tick = () => {
-        setElapsedSeconds(
-          Math.round((Date.now() - startTime) / 1000),
-        );
+        setElapsedSeconds(Math.round((Date.now() - startTime) / 1000));
       };
 
       tick();

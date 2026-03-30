@@ -18,7 +18,6 @@ import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
 import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
 import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
@@ -137,7 +136,7 @@ export const DialerSidebar = () => {
   const { status: configStatus } = useTwilioConfigStatus();
   const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
   const setDialerSidebarOpen = useSetRecoilState(dialerSidebarOpenState);
-  const callState = useRecoilValue(callStateAtom);
+  const callStateAtom = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
   const { flowState } = useFirstCallFlow();
   const setReconnectPrompt = useSetRecoilState(reconnectPromptState);

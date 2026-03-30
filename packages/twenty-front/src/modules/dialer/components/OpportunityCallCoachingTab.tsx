@@ -3,7 +3,6 @@ import { ContactHeader } from '@/dialer/components/ContactHeader';
 import { InCallControls } from '@/dialer/components/InCallControls';
 import { ScriptAssistPanel } from '@/dialer/components/ScriptAssistPanel';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
   coachingErrorState,
   coachingLoadingState,
@@ -39,8 +38,8 @@ const StyledBadge = styled.span`
 `;
 
 export const OpportunityCallCoachingTab = () => {
-  const callState = useRecoilValue(callStateAtom);
-  const assistMode = useRecoilValue(callAssistModeState);
+  const callStateAtom = useRecoilValue(callStateAtom);
+  const callAssistMode = useRecoilValue(callAssistModeState);
   const talkingPoints = useRecoilValue(talkingPointsState);
   const coachingError = useRecoilValue(coachingErrorState);
   const coachingLoading = useRecoilValue(coachingLoadingState);
