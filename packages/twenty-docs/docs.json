@@ -131,6 +131,47 @@
                 ]
               },
               {
+                "group": "GraphQL API",
+                "icon": "code",
+                "pages": [
+                  "user-guide/graphql-api/overview",
+                  "user-guide/graphql-api/getting-started/setting-up-internal-workspace",
+                  {
+                    "group": "Analytics",
+                    "pages": [
+                      "user-guide/graphql-api/analytics/growth-metrics-dashboards",
+                      "user-guide/graphql-api/analytics/connecting-external-analytics",
+                      "user-guide/graphql-api/analytics/scheduled-reports"
+                    ]
+                  },
+                  {
+                    "group": "Automation",
+                    "pages": [
+                      "user-guide/graphql-api/automation/internal-workflows-overview",
+                      "user-guide/graphql-api/automation/data-cleanup-automation",
+                      "user-guide/graphql-api/automation/lead-scoring-setup",
+                      "user-guide/graphql-api/automation/slack-notifications"
+                    ]
+                  },
+                  {
+                    "group": "General",
+                    "pages": [
+                      "user-guide/graphql-api/general/internal-api-access",
+                      "user-guide/graphql-api/general/bulk-update-script",
+                      "user-guide/graphql-api/general/import-automation",
+                      "user-guide/graphql-api/general/export-analytics",
+                      "user-guide/graphql-api/general/rate-limits-and-best-practices"
+                    ]
+                  },
+                  {
+                    "group": "Troubleshooting",
+                    "pages": [
+                      "user-guide/graphql-api/troubleshooting/common-ops-issues"
+                    ]
+                  }
+                ]
+              },
+              {
                 "group": "HighLevel",
                 "icon": "plug",
                 "pages": [
@@ -489,47 +530,6 @@
                     "group": "How-Tos",
                     "pages": [
                       "user-guide/settings/how-tos/settings-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "GraphQL API",
-                "icon": "code",
-                "pages": [
-                  "user-guide/graphql-api/overview",
-                  "user-guide/graphql-api/getting-started/setting-up-internal-workspace",
-                  {
-                    "group": "Analytics",
-                    "pages": [
-                      "user-guide/graphql-api/analytics/growth-metrics-dashboards",
-                      "user-guide/graphql-api/analytics/connecting-external-analytics",
-                      "user-guide/graphql-api/analytics/scheduled-reports"
-                    ]
-                  },
-                  {
-                    "group": "Automation",
-                    "pages": [
-                      "user-guide/graphql-api/automation/internal-workflows-overview",
-                      "user-guide/graphql-api/automation/data-cleanup-automation",
-                      "user-guide/graphql-api/automation/lead-scoring-setup",
-                      "user-guide/graphql-api/automation/slack-notifications"
-                    ]
-                  },
-                  {
-                    "group": "General",
-                    "pages": [
-                      "user-guide/graphql-api/general/internal-api-access",
-                      "user-guide/graphql-api/general/bulk-update-script",
-                      "user-guide/graphql-api/general/import-automation",
-                      "user-guide/graphql-api/general/export-analytics",
-                      "user-guide/graphql-api/general/rate-limits-and-best-practices"
-                    ]
-                  },
-                  {
-                    "group": "Troubleshooting",
-                    "pages": [
-                      "user-guide/graphql-api/troubleshooting/common-ops-issues"
                     ]
                   }
                 ]
