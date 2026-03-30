@@ -87,4 +87,4 @@ xfs-*/
 
 .nx/polygraph
 .claude/worktrees
-.claude/settings.local.json
+.claude/settings.local.jsonesbuild-*
