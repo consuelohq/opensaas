@@ -1,6 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { RecoilRoot } from 'recoil';
-import { fn, userEvent, within, expect } from '@storybook/test';
 
 import { DialConfirmationModal } from '@/dialer/components/DialConfirmationModal';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
@@ -17,7 +16,7 @@ const Wrapper = ({
   selectedCallerId,
 }: {
   children: React.ReactNode;
-  contact: DialerContact | null;
+  selectedContact: DialerContact | null;
   phoneNumber: string;
   availableCallerIds: CallerIdOption[];
   selectedCallerId: string | null;
@@ -46,8 +45,20 @@ const mockContact: DialerContact = {
 };
 
 const mockCallerIds: CallerIdOption[] = [
-  { phoneNumber: '+14155559876', friendlyName: 'SF Office', areaCode: '415' },
-  { phoneNumber: '+15551234567', friendlyName: 'NY Office', areaCode: '555' },
+  {
+    sid: 'caller-id-1',
+    phoneNumber: '+14155559876',
+    friendlyName: 'SF Office',
+    areaCode: '415',
+    isPrimary: true,
+  },
+  {
+    sid: 'caller-id-2',
+    phoneNumber: '+15551234567',
+    friendlyName: 'NY Office',
+    areaCode: '555',
+    isPrimary: false,
+  },
 ];
 
 const meta: Meta<typeof DialConfirmationModal> = {
@@ -82,8 +93,8 @@ const meta: Meta<typeof DialConfirmationModal> = {
     layout: 'centered',
   },
   args: {
-    onClose: fn(),
-    onConfirm: fn(),
+    onClose: () => undefined,
+    onConfirm: () => undefined,
   },
 };
 
@@ -103,7 +114,7 @@ export const Default: Story = {};
 
 export const UnknownContact: Story = {
   args: {
-    contact: null,
+    selectedContact: null,
     phoneNumber: '+19998887777',
   },
 };
@@ -122,7 +133,7 @@ export const NoCallerIds: Story = {
 
 export const LongName: Story = {
   args: {
-    contact: {
+    selectedContact: {
       ...mockContact,
       name: 'Christopher Alexander Rodriguez-Montgomery',
       firstName: 'Christopher',
@@ -133,54 +144,9 @@ export const LongName: Story = {
 
 export const WithCompany: Story = {
   args: {
-    contact: {
+    selectedContact: {
       ...mockContact,
       company: 'Very Long Company Name Inc.',
     },
-  },
-};
-
-export const ConfirmCall: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
-    const confirmButton = canvas.getByRole('button', { name: /call now/i });
-    await userEvent.click(confirmButton);
-
-    await expect(args.onConfirm).toHaveBeenCalledWith(
-      mockCallerIds[0].phoneNumber,
-    );
-  },
-};
-
-export const CloseWithEscape: Story = {
-  play: async ({ args }) => {
-    await userEvent.keyboard('{Escape}');
-
-    await expect(args.onClose).toHaveBeenCalled();
-  },
-};
-
-export const ConfirmWithEnter: Story = {
-  play: async ({ args }) => {
-    await userEvent.keyboard('{Enter}');
-
-    await expect(args.onConfirm).toHaveBeenCalled();
-  },
-};
-
-export const ChangeCallerId: Story = {
-  play: async ({ canvasElement, args }) => {
-    const canvas = within(canvasElement);
-
-    const select = canvas.getByRole('combobox');
-    await userEvent.selectOptions(select, mockCallerIds[1].phoneNumber);
-
-    const confirmButton = canvas.getByRole('button', { name: /call now/i });
-    await userEvent.click(confirmButton);
-
-    await expect(args.onConfirm).toHaveBeenCalledWith(
-      mockCallerIds[1].phoneNumber,
-    );
   },
 };

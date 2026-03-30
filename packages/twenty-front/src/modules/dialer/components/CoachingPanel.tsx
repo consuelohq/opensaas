@@ -83,7 +83,7 @@ const StyledBadge = styled.span`
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-  background: ${({ theme }) => theme.background.transparent.green};
+  background: ${({ theme }) => theme.color.green}18;
   color: ${({ theme }) => theme.color.green};
 `;
 

@@ -44,11 +44,11 @@ const StyledBadge = styled.span<{ status: string }>`
   background: ${({ theme, status }) => {
     switch (status) {
       case 'ACTIVE':
-        return theme.background.transparent.green;
+        return theme.color.green + '18';
       case 'PAUSED':
-        return theme.background.transparent.yellow;
+        return theme.color.yellow + '18';
       case 'COMPLETED':
-        return theme.background.transparent.blue;
+        return theme.color.blue + '18';
       default:
         return theme.background.tertiary;
     }

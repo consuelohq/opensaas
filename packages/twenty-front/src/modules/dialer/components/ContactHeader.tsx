@@ -1,6 +1,5 @@
+import { css, keyframes, type Theme } from '@emotion/react';
 import styled from '@emotion/styled';
-import type { Theme } from '@emotion/react';
-import { css, keyframes } from '@emotion/react';
 import { useRecoilValue } from 'recoil';
 import { useLingui, Trans } from '@lingui/react/macro';
 import { msg } from '@lingui/core/macro';
@@ -129,7 +128,7 @@ const StyledStatusLine = styled.span`
 `;
 
 export const ContactHeader = () => {
-  const { _, t } = useLingui();
+  const { i18n, t } = useLingui();
   const callState = useRecoilValue(callStateAtom);
   const selectedContact = useRecoilValue(selectedContactState);
   const isOnHold = useRecoilValue(isOnHoldState);
@@ -164,7 +163,7 @@ export const ContactHeader = () => {
     .map((n) => n!.charAt(0).toUpperCase())
     .join('');
 
-  const label = config.label ? _(config.label) : null;
+  const label = config.label ? i18n._(config.label) : null;
   const contactName = selectedContact.name ?? t`Unknown`;
 
   return (

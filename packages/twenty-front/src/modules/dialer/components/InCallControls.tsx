@@ -133,7 +133,7 @@ const StyledSmallButton = styled.button<{ danger?: boolean }>`
 
 const StyledErrorBar = styled.div`
   align-items: center;
-  background: ${({ theme }) => theme.background.transparent.red};
+  background: ${({ theme }) => theme.color.red}15;
   border: 1px solid ${({ theme }) => theme.color.red};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme }) => theme.color.red};
@@ -174,7 +174,7 @@ export const InCallControls = () => {
   const activeCall = useRecoilValue(activeCallState);
   const [callError, setCallError] = useRecoilState(callErrorState);
   const [isMuted, setIsMuted] = useRecoilState(isMutedState);
-  const [isOnHold, setIsOnHold] = useRecoilState(isOnHoldState);
+  const isOnHold = useRecoilValue(isOnHoldState);
   const [isDTMFOpen, setIsDTMFOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
 

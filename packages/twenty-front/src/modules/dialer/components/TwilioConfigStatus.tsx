@@ -70,14 +70,18 @@ const StyledPulse = styled.span`
   font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
-const StyledButton = styled.button`
+const StyledLinkButton = styled(Link)`
   background: ${({ theme }) => theme.background.secondary};
   border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
+  display: inline-flex;
+  gap: ${({ theme }) => theme.spacing(1)};
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
+  align-items: center;
+  text-decoration: none;
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
   transition: background 120ms;
 
@@ -119,9 +123,9 @@ export const TwilioConfigStatus = () => {
         <StyledTitle>
           <Trans>Pick a phone number to start calling</Trans>
         </StyledTitle>
-        <StyledButton as={Link} to="/settings/accounts">
+        <StyledLinkButton to="/settings/accounts">
           <IconSettings size={14} /> <Trans>Go to Settings</Trans>
-        </StyledButton>
+        </StyledLinkButton>
       </StyledContainer>
     );
   }
@@ -163,9 +167,9 @@ export const TwilioConfigStatus = () => {
             <Trans>Check your credentials in Settings</Trans>
           </StyledSubtext>
         )}
-        <StyledButton as={Link} to="/settings/accounts">
+        <StyledLinkButton to="/settings/accounts">
           <IconSettings size={14} /> <Trans>Go to Settings</Trans>
-        </StyledButton>
+        </StyledLinkButton>
       </StyledContainer>
     );
   }

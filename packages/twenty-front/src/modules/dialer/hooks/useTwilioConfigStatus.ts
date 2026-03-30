@@ -45,7 +45,7 @@ export const useTwilioConfigStatus = () => {
 
     const startPolling = () => {
       if (pollRef.current) clearInterval(pollRef.current);
-      const interval = status?.configured
+      const interval = twilioConfigStatus?.configured
         ? POLL_INTERVAL_CONFIGURED
         : POLL_INTERVAL_UNCONFIGURED;
       pollRef.current = setInterval(fetchStatus, interval);
@@ -56,7 +56,7 @@ export const useTwilioConfigStatus = () => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [fetchStatus, status?.configured]);
+  }, [fetchStatus, twilioConfigStatus?.configured]);
 
-  return { status, refetch: fetchStatus };
+  return { status: twilioConfigStatus, refetch: fetchStatus };
 };

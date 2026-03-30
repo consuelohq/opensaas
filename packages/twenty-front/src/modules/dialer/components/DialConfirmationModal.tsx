@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
@@ -167,6 +168,7 @@ export const DialConfirmationModal = ({
   onClose,
   onConfirm,
 }: DialConfirmationModalProps) => {
+  const theme = useTheme();
   const { t } = useLingui();
   const selectedContact = useRecoilValue(selectedContactState);
   const phoneNumber = useRecoilValue(phoneNumberState);
@@ -203,7 +205,9 @@ export const DialConfirmationModal = ({
         .join('')
     : '?';
 
-  const avatarColor = selectedContact ? hashColor(selectedContact.id) : theme.color.gray;
+  const avatarColor = selectedContact
+    ? hashColor(selectedContact.id)
+    : theme.color.gray;
 
   return (
     <StyledOverlay>
@@ -218,7 +222,9 @@ export const DialConfirmationModal = ({
         <StyledAvatar bgColor={avatarColor}>{initials}</StyledAvatar>
         <StyledContactInfo>
           <StyledName>{selectedContact?.name ?? 'Unknown Number'}</StyledName>
-          {selectedContact?.company && <StyledDetail>{selectedContact.company}</StyledDetail>}
+          {selectedContact?.company && (
+            <StyledDetail>{selectedContact.company}</StyledDetail>
+          )}
           <StyledDetail>{formatPhone(phoneNumber)}</StyledDetail>
         </StyledContactInfo>
       </StyledContactRow>

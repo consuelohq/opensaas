@@ -83,10 +83,10 @@ const StyledScoreBadge = styled.span<{ score: number }>`
   align-items: center;
   background: ${({ theme, score }) =>
     score >= 70
-      ? theme.background.transparent.green
+      ? theme.color.green + '18'
       : score >= 40
-        ? theme.background.transparent.yellow
-        : theme.background.transparent.red};
+        ? theme.color.yellow + '18'
+        : theme.color.red + '18'};
   border-radius: 999px;
   color: ${({ theme, score }) =>
     score >= 70
