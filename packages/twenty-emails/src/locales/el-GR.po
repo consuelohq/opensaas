@@ -109,26 +109,6 @@ msgid "Verify Email"
 msgstr "Επαληθεύστε το Email"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Ο κωδικός έχει ενημερωθεί"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Αυτό είναι ένα επιβεβαίωση ότι ο κωδικός για τον λογαριασμό σας ({email}) άλλαξε με επιτυχία στις {formattedDate}."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Εάν δεν έχετε προβεί εσείς σε αυτήν την αλλαγή, παρακαλώ επικοινωνήστε άμεσα με τον ιδιοκτήτη του χώρου εργασίας σας."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr "Επαναφέρετε τον κωδικό σας 🗝"
@@ -152,6 +132,26 @@ msgstr "Ορίστε"
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
 msgstr "Αυτός ο σύνδεσμος ισχύει μόνο για τις επόμενες {duration}. Εάν ο σύνδεσμος δεν λειτουργεί, μπορείτε να χρησιμοποιήσετε τον σύνδεσμο επαλήθευσης σύνδεσης απευθείας:"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Ο κωδικός έχει ενημερωθεί"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Αυτό είναι ένα επιβεβαίωση ότι ο κωδικός για τον λογαριασμό σας ({email}) άλλαξε με επιτυχία στις {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Εάν δεν έχετε προβεί εσείς σε αυτήν την αλλαγή, παρακαλώ επικοινωνήστε άμεσα με τον ιδιοκτήτη του χώρου εργασίας σας."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
