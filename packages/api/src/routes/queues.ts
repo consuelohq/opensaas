@@ -95,6 +95,9 @@ const SQL_UPDATE_ITEM_CALLING =
 const SQL_GET_CALLING_ITEM =
   'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1';
 
+const SQL_NEXT_PENDING =
+  'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1';
+
 const SQL_UPDATE_ITEM_FOR_RETRY =
   'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *';
 
@@ -232,7 +235,7 @@ type QueueSelectionResult = {
 };
 
 const selectNextCallableItem = async (
-  client: { query: Pool['query'] },
+  client: { query: (text: string, values?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> },
   queueId: string,
 ): Promise<QueueSelectionResult> => {
   const candidate = await client.query(SQL_SELECT_NEXT_CADENCE_CANDIDATE, [
@@ -535,17 +538,41 @@ export const queueRoutes = (): RouteDefinition[] => {
             return;
           }
 
-        const selection = await selectNextCallableItem(db, req.params?.id ?? '');
-        res.status(200).json({
-          skipped: true,
-          nextItem: selection.nextItem,
-          suppression: selection.suppression,
-        });
-        (await getLogger()).info('queue.skipped', {
-          action: 'queue.skipped',
-          userId: auth.userId ?? 'anonymous',
-          outcome: 'success',
-        });
+          // Mark current calling item as skipped
+          const body = req.body as SkipBody | undefined;
+          const current = await client.query(
+            'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 LIMIT 1 FOR UPDATE SKIP LOCKED',
+            [req.params?.id, 'calling'],
+          );
+
+          if (current.rows.length > 0) {
+            await client.query(SQL_UPDATE_ITEM_SKIP, [
+              'skipped',
+              body?.reason ?? null,
+              current.rows[0].id,
+            ]);
+            await client.query(SQL_INCREMENT_SKIPPED, [req.params?.id]);
+          }
+
+          const selection = await selectNextCallableItem(client, req.params?.id ?? '');
+
+          await client.query('COMMIT');
+          res.status(200).json({
+            skipped: true,
+            nextItem: selection.nextItem,
+            suppression: selection.suppression,
+          });
+          (await getLogger()).info('queue.skipped', {
+            action: 'queue.skipped',
+            userId: auth.userId ?? 'anonymous',
+            outcome: 'success',
+          });
+        } catch (err: unknown) {
+          await client.query('ROLLBACK');
+          throw err;
+        } finally {
+          client.release();
+        }
       }),
     },
 

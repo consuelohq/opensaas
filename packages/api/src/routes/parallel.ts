@@ -453,8 +453,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
           action: 'parallel.terminated',
           userId,
           outcome: 'success',
-          profileId: strategy.profile.id,
-          strategyReason: strategy.reason,
+          profileId: group.profile.id,
+          strategyReason: group.resolverReason,
         });
       } catch (err: unknown) {
         Sentry.captureException(
