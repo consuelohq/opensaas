@@ -147,6 +147,12 @@ msgstr "{0, plural, one {# Object} other {# Objects}}"
 msgid "{0, plural, one {You do not have permission to access the {fieldsList} field} other {You do not have permission to access the {fieldsList} fields}}"
 msgstr "{0, plural, one {You do not have permission to access the {fieldsList} field} other {You do not have permission to access the {fieldsList} fields}}"
 
+#. js-lingui-id: unAwTo
+#. placeholder {0}: selectedScriptSections.length
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "{0} live sections detected"
+msgstr "{0} live sections detected"
+
 #. js-lingui-id: fvImQM
 #. placeholder {0}: selected.size
 #: src/modules/files/components/FileBrowser.tsx
@@ -182,6 +188,11 @@ msgstr "{appName} wants to access your account"
 #: src/modules/ai/components/internal/AIChatContextUsageButton.tsx
 msgid "{cachedPercent}% cached"
 msgstr "{cachedPercent}% cached"
+
+#. js-lingui-id: fG+64K
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "{characterCount} characters"
+msgstr "{characterCount} characters"
 
 #. js-lingui-id: zi5SHH
 #: src/modules/object-record/record-index/components/RecordIndexPageHeader.tsx
@@ -224,6 +235,11 @@ msgstr "{decimals, plural, one {E.g. {0} for {decimals} decimal} other {E.g. {1}
 #: src/modules/settings/admin-panel/health-status/hooks/useDeleteJobs.ts
 msgid "{deletedCount, plural, one {Successfully deleted {deletedCount} job} other {Successfully deleted {deletedCount} jobs}}"
 msgstr "{deletedCount, plural, one {Successfully deleted {deletedCount} job} other {Successfully deleted {deletedCount} jobs}}"
+
+#. js-lingui-id: BzFbxk
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "{downloadItemLabel} command copied"
+msgstr "{downloadItemLabel} command copied"
 
 #. js-lingui-id: 2Xxop4
 #: src/modules/billing/components/TrialCard.tsx
@@ -423,6 +439,35 @@ msgstr "{workflowRunIteratorSubStepIterationsCount, plural, one {# item} other {
 msgid "{workspaceMemberName} will be unassigned from the following role:"
 msgstr "{workspaceMemberName} will be unassigned from the following role:"
 
+#. js-lingui-id: UtbGDC
+#: src/pages/status/Status.tsx
+msgid "{workspaceName} call metrics"
+msgstr "{workspaceName} call metrics"
+
+#. js-lingui-id: X18ldX
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid ""
+"# Opening\n"
+"\n"
+"Introduce yourself and explain why you are calling.\n"
+"\n"
+"# Discovery\n"
+"\n"
+"Ask about the current workflow, goals, and blockers."
+msgstr ""
+"# Opening\n"
+"\n"
+"Introduce yourself and explain why you are calling.\n"
+"\n"
+"# Discovery\n"
+"\n"
+"Ask about the current workflow, goals, and blockers."
+
+#. js-lingui-id: xIr7AP
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "#{positionLabel}"
+msgstr "#{positionLabel}"
+
 #. js-lingui-id: CwstSL
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
@@ -440,6 +485,16 @@ msgstr "~{count} tokens"
 msgid "~{kTokens}k tokens"
 msgstr "~{kTokens}k tokens"
 
+#. js-lingui-id: be30i9
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "$0"
+msgstr "$0"
+
+#. js-lingui-id: tEP5ki
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "$20"
+msgstr "$20"
+
 #. js-lingui-id: Cx0xl3
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
@@ -452,6 +507,11 @@ msgstr "0"
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerCronForm.tsx
 msgid "0 */1 * * *"
 msgstr "0 */1 * * *"
+
+#. js-lingui-id: ZeP6Dy
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "1 seat"
+msgstr "1 seat"
 
 #. js-lingui-id: tEdOxj
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
@@ -535,6 +595,11 @@ msgstr "2FA Method has been deleted successfully."
 #: src/modules/settings/two-factor-authentication/components/DeleteTwoFactorAuthenticationMethod.tsx
 msgid "2FA Method Reset"
 msgstr "2FA Method Reset"
+
+#. js-lingui-id: TCoCNN
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "50 AI coaching minutes / month"
+msgstr "50 AI coaching minutes / month"
 
 #. js-lingui-id: 4lbHin
 #: src/modules/logic-functions/components/LogicFunctionExecutionResult.tsx
@@ -935,8 +1000,14 @@ msgstr "Add node"
 
 #. js-lingui-id: NeOuRn
 #: src/modules/activities/notes/components/NotesCard.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 msgid "Add note"
 msgstr "Add note"
+
+#. js-lingui-id: nxv8yE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Add Note"
+msgstr "Add Note"
 
 #. js-lingui-id: dEO3Zx
 #: src/pages/settings/data-model/SettingsObjects.tsx
@@ -1004,6 +1075,11 @@ msgstr "Add rule"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterAddFilterRuleSelect.tsx
 msgid "Add rule group"
 msgstr "Add rule group"
+
+#. js-lingui-id: u1jW2A
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Add script"
+msgstr "Add script"
 
 #. js-lingui-id: TdZwYb
 #: src/modules/workflow/workflow-steps/workflow-actions/find-records-action/components/WorkflowFindRecordsSorts.tsx
@@ -1259,6 +1335,23 @@ msgstr "Aggregate Chart"
 msgid "AI"
 msgstr "AI"
 
+#. js-lingui-id: jWbw9m
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallCoachingTab.tsx
+msgid "AI coaching"
+msgstr "AI coaching"
+
+#. js-lingui-id: 6FIhq8
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "AI Coaching"
+msgstr "AI Coaching"
+
+#. js-lingui-id: iIspfz
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "AI coaching is active"
+msgstr "AI coaching is active"
+
 #. js-lingui-id: kNfr85
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowAiAgentPromptTab.tsx
 #: src/pages/settings/ai/components/SettingsAgentSettingsTab.tsx
@@ -1290,6 +1383,11 @@ msgstr "AI request prep"
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowOutputSchemaBuilder.tsx
 msgid "AI Response Schema"
 msgstr "AI Response Schema"
+
+#. js-lingui-id: nuuKEk
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "AI-built list"
+msgstr "AI-built list"
 
 #. js-lingui-id: Zdun41
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
@@ -1567,6 +1665,21 @@ msgstr "An unexpected error occurred"
 msgid "An unexpected error occurred. Please try again."
 msgstr "An unexpected error occurred. Please try again."
 
+#. js-lingui-id: ZlwDi6
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Analytics"
+msgstr "Analytics"
+
+#. js-lingui-id: B5RGJ3
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Analyzing call..."
+msgstr "Analyzing call..."
+
+#. js-lingui-id: oApU45
+#: src/modules/dialer/types/coaching.ts
+msgid "Analyzing conversation..."
+msgstr "Analyzing conversation..."
+
 #. js-lingui-id: HZFm5R
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
 #: src/utils/date-utils.ts
@@ -1578,10 +1691,21 @@ msgstr "and"
 msgid "And"
 msgstr "And"
 
+#. js-lingui-id: 3P4xTz
+#: src/pages/status/Status.tsx
+msgid "Answer rate"
+msgstr "Answer rate"
+
 #. js-lingui-id: BxsPgw
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 msgid "Answer Rate"
 msgstr "Answer Rate"
+
+#. js-lingui-id: qJ/4UN
+#: src/pages/status/Status.tsx
+msgid "Answered vs total calls"
+msgstr "Answered vs total calls"
 
 #. js-lingui-id: KYvJeB
 #: src/modules/object-record/advanced-filter/components/AdvancedFilterSubFieldSelectMenu.tsx
@@ -1727,6 +1851,7 @@ msgstr "Applicability"
 
 #. js-lingui-id: IrC12v
 #: src/modules/workflow/workflow-steps/workflow-actions/utils/getActionHeaderTypeOrThrow.ts
+#: src/pages/status/Status.tsx
 msgid "Application"
 msgstr "Application"
 
@@ -1859,9 +1984,17 @@ msgstr "Ascending"
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/command-menu/hooks/useOpenAskAIPageInCommandMenu.ts
+#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
+#: src/pages/home/HomePage.tsx
+#: src/pages/object-record/RecordShowPage.tsx
 msgid "Ask AI"
 msgstr "Ask AI"
+
+#. js-lingui-id: 42QgR+
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Ask AI to find the best people to call, then turn that answer into your next list."
+msgstr "Ask AI to find the best people to call, then turn that answer into your next list."
 
 #. js-lingui-id: 2J838w
 #: src/modules/agent/components/AgentChatPanel.tsx
@@ -1927,6 +2060,11 @@ msgstr "Assigned to"
 #: src/modules/settings/roles/role/components/SettingsRole.tsx
 msgid "Assignment"
 msgstr "Assignment"
+
+#. js-lingui-id: ckQWXH
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Assist mode"
+msgstr "Assist mode"
 
 #. js-lingui-id: d/bvvp
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
@@ -2008,6 +2146,16 @@ msgstr "Attached Files"
 msgid "Attachments"
 msgstr "Attachments"
 
+#. js-lingui-id: vtW45i
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Attempt"
+msgstr "Attempt"
+
+#. js-lingui-id: pwk8Yy
+#: src/pages/status/Status.tsx
+msgid "Attention"
+msgstr "Attention"
+
 #. js-lingui-id: FH8ED9
 #: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
 msgid "Audio Devices"
@@ -2080,6 +2228,16 @@ msgstr "Authorized URI"
 msgid "Authorized URL copied to clipboard"
 msgstr "Authorized URL copied to clipboard"
 
+#. js-lingui-id: Qz9P8G
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-advance"
+msgstr "Auto-advance"
+
+#. js-lingui-id: Zo8UlQ
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-advance delay (ms)"
+msgstr "Auto-advance delay (ms)"
+
 #. js-lingui-id: 2zJkmL
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelDetails.tsx
 msgid "Auto-creation"
@@ -2089,6 +2247,11 @@ msgstr "Auto-creation"
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/hooks/useWorkflowAiAgentPermissionActions.ts
 msgid "Auto-generated role for {agentDisplayName}"
 msgstr "Auto-generated role for {agentDisplayName}"
+
+#. js-lingui-id: bOuV5g
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-skip voicemail"
+msgstr "Auto-skip voicemail"
 
 #. js-lingui-id: YRT7ZW
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelDetails.tsx
@@ -2132,8 +2295,20 @@ msgstr "Avatar file field not found for person object"
 msgid "Average"
 msgstr "Average"
 
+#. js-lingui-id: QPrDLU
+#: src/pages/status/Status.tsx
+msgid "Average connected call length"
+msgstr "Average connected call length"
+
+#. js-lingui-id: eQHj1l
+#: src/pages/status/Status.tsx
+msgid "Average duration"
+msgstr "Average duration"
+
 #. js-lingui-id: BdnYlL
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
 msgid "Avg Duration"
 msgstr "Avg Duration"
 
@@ -2144,6 +2319,7 @@ msgstr "Axis name"
 
 #. js-lingui-id: iH8pgl
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationVerification.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
 #: src/modules/spreadsheet-import/components/StepNavigationButton.tsx
 #: src/pages/onboarding/BookCall.tsx
 msgid "Back"
@@ -2153,6 +2329,11 @@ msgstr "Back"
 #: src/modules/ui/navigation/bread-crumb/components/MobileBreadcrumb.tsx
 msgid "Back to {linkText}"
 msgstr "Back to {linkText}"
+
+#. js-lingui-id: CsrMMF
+#: src/pages/status/Status.tsx
+msgid "Back to app"
+msgstr "Back to app"
 
 #. js-lingui-id: Dht9W3
 #: src/pages/not-found/NotFound.tsx
@@ -2178,6 +2359,11 @@ msgstr "Background Colors"
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Base Credits"
 msgstr "Base Credits"
+
+#. js-lingui-id: irl0Ym
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Basic analytics"
+msgstr "Basic analytics"
 
 #. js-lingui-id: PFohi3
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx
@@ -2213,6 +2399,16 @@ msgstr "between minute {start} and {end}"
 #: src/modules/workflow/workflow-trigger/utils/cron-to-human/descriptors/getDayOfMonthDescription.ts
 msgid "between the {startOrdinal} and {endOrdinal} of the month"
 msgstr "between the {startOrdinal} and {endOrdinal} of the month"
+
+#. js-lingui-id: aIkeAd
+#: src/pages/status/Status.tsx
+msgid "Billed monthly"
+msgstr "Billed monthly"
+
+#. js-lingui-id: zioora
+#: src/pages/status/Status.tsx
+msgid "Billed yearly"
+msgstr "Billed yearly"
 
 #. js-lingui-id: R+w/Va
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
@@ -2292,10 +2488,25 @@ msgstr "Brown"
 msgid "Build a dashboard that shows: (1) total pipeline value by stage for the last 3 months, (2) count of deals won vs lost per month, (3) average deal size. Use our standard pipeline stages."
 msgstr "Build a dashboard that shows: (1) total pipeline value by stage for the last 3 months, (2) count of deals won vs lost per month, (3) average deal size. Use our standard pipeline stages."
 
+#. js-lingui-id: gcfNIp
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build a targeted segment from saved views before you call."
+msgstr "Build a targeted segment from saved views before you call."
+
+#. js-lingui-id: 48nL8D
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build from a segment"
+msgstr "Build from a segment"
+
 #. js-lingui-id: 8SlslB
 #: src/modules/settings/data-model/fields/forms/morph-relation/components/SettingsDataModelFieldRelationJunctionForm.tsx
 msgid "Build many-to-many relations. <0>Learn more</0>"
 msgstr "Build many-to-many relations. <0>Learn more</0>"
+
+#. js-lingui-id: 69Zn2P
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build with Ask AI"
+msgstr "Build with Ask AI"
 
 #. js-lingui-id: +7fBMP
 #: src/pages/settings/ai/components/SettingsToolsTable.tsx
@@ -2317,6 +2528,12 @@ msgstr "bullet"
 msgid "Bullet List"
 msgstr "Bullet List"
 
+#. js-lingui-id: kVHATU
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Busy"
+msgstr "Busy"
+
 #. js-lingui-id: 8ds4Hj
 #: src/pages/settings/applications/components/SettingsAvailableApplicationCard.tsx
 msgid "by {author}"
@@ -2331,6 +2548,11 @@ msgstr "By using Consuelo, you agree to the"
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
 msgid "Bypass SSO"
 msgstr "Bypass SSO"
+
+#. js-lingui-id: AdYeYo
+#: src/pages/status/Status.tsx
+msgid "Cache and realtime layer"
+msgstr "Cache and realtime layer"
 
 #. js-lingui-id: PmmvzS
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterValue.tsx
@@ -2417,6 +2639,68 @@ msgstr "Calendar View"
 msgid "Calendars"
 msgstr "Calendars"
 
+#. js-lingui-id: 8hvxGX
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Call"
+msgstr "Call"
+
+#. js-lingui-id: wmZedK
+#. placeholder {0}: data.status === 'no-answer' ? 'was not answered' : data.status
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Call {0}"
+msgstr "Call {0}"
+
+#. js-lingui-id: Raps36
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Call {firstName}"
+msgstr "Call {firstName}"
+
+#. js-lingui-id: f8vZT3
+#: src/modules/dialer/types/coaching.ts
+msgid "Call ended"
+msgstr "Call ended"
+
+#. js-lingui-id: IlDNo3
+#: src/modules/dialer/types/coaching.ts
+msgid "Call failed — no coaching available"
+msgstr "Call failed — no coaching available"
+
+#. js-lingui-id: 3hhYok
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "Call from"
+msgstr "Call from"
+
+#. js-lingui-id: MSaZg8
+#: src/pages/status/Status.tsx
+msgid "Call minutes used"
+msgstr "Call minutes used"
+
+#. js-lingui-id: NJeFSK
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Call setup"
+msgstr "Call setup"
+
+#. js-lingui-id: UyyyDh
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Call Summary"
+msgstr "Call Summary"
+
+#. js-lingui-id: Knidbq
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Call timeout (s)"
+msgstr "Call timeout (s)"
+
+#. js-lingui-id: po2Fsn
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Call transfer (warm + cold)"
+msgstr "Call transfer (warm + cold)"
+
+#. js-lingui-id: TuIcJK
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Callback"
+msgstr "Callback"
+
 #. js-lingui-id: KH43tV
 #: src/modules/dialer/components/DialConfirmationModal.tsx
 msgid "Caller ID"
@@ -2426,6 +2710,26 @@ msgstr "Caller ID"
 #: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
 msgid "Calling & Presence"
 msgstr "Calling & Presence"
+
+#. js-lingui-id: VuSTpI
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Calls Made"
+msgstr "Calls Made"
+
+#. js-lingui-id: ARZ2hk
+#: src/pages/status/Status.tsx
+msgid "Calls this week"
+msgstr "Calls this week"
+
+#. js-lingui-id: XpCBio
+#: src/pages/status/Status.tsx
+msgid "Calls today"
+msgstr "Calls today"
+
+#. js-lingui-id: HOZrqu
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Calls/Hour"
+msgstr "Calls/Hour"
 
 #. js-lingui-id: msssZq
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -2441,8 +2745,11 @@ msgstr "Can't scan? Copy the"
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/dialer/components/DialConfirmationModal.tsx
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/dialer/components/QueueSettingsModal.tsx
+#: src/modules/dialer/components/QuickActions.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
@@ -2618,6 +2925,11 @@ msgstr "Check out our latest releases"
 msgid "Check verification"
 msgstr "Check verification"
 
+#. js-lingui-id: mrqfzo
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Check your credentials in Settings"
+msgstr "Check your credentials in Settings"
+
 #. js-lingui-id: AwAGI4
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
 msgid "Check your Emails"
@@ -2642,6 +2954,11 @@ msgstr "Chinese — Simplified"
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
 msgid "Chinese — Traditional"
 msgstr "Chinese — Traditional"
+
+#. js-lingui-id: AjtI8+
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Choose a list"
+msgstr "Choose a list"
 
 #. js-lingui-id: NFfUic
 #: src/pages/auth/SignInUp.tsx
@@ -2712,6 +3029,11 @@ msgstr "Chrome Extension"
 #: src/modules/ui/field/input/components/AddressInput.tsx
 msgid "City"
 msgstr "City"
+
+#. js-lingui-id: UVWACf
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Clarifying Questions"
+msgstr "Clarifying Questions"
 
 #. js-lingui-id: xCJdfg
 #: src/modules/dialer/components/HistoryFilter.tsx
@@ -2801,6 +3123,21 @@ msgstr "Close banner"
 msgid "Close command menu"
 msgstr "Close command menu"
 
+#. js-lingui-id: e6SyXV
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Close transfer"
+msgstr "Close transfer"
+
+#. js-lingui-id: gbbi5g
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Close upgrade modal"
+msgstr "Close upgrade modal"
+
+#. js-lingui-id: S5KF1o
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Coaching"
+msgstr "Coaching"
+
 #. js-lingui-id: EWPtMO
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/code-action/components/WorkflowEditActionCode.tsx
@@ -2816,6 +3153,11 @@ msgstr "Code Editor"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionCodeEditorTab.tsx
 msgid "Code your function"
 msgstr "Code your function"
+
+#. js-lingui-id: 56QffO
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Cold"
+msgstr "Cold"
 
 #. js-lingui-id: H86f9p
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -2904,12 +3246,18 @@ msgstr "Compact view"
 msgid "Companies"
 msgstr "Companies"
 
+#. js-lingui-id: bD8I7O
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Complete"
+msgstr "Complete"
+
 #. js-lingui-id: 3WrMP5
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
 msgid "Complete setup"
 msgstr "Complete setup"
 
 #. js-lingui-id: 2PsTzL
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/modules/workflow/workflow-diagram/utils/generateNodesAndEdgesForIteratorNode.ts
 #: src/modules/workflow/workflow-diagram/utils/generateNodesAndEdgesForIteratorNode.ts
 msgid "completed"
@@ -3078,6 +3426,11 @@ msgstr "Confirm role update"
 msgid "Confirm upgrade"
 msgstr "Confirm upgrade"
 
+#. js-lingui-id: Ts0Xe6
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "connect"
+msgstr "connect"
+
 #. js-lingui-id: D8ATlr
 #: src/modules/settings/accounts/components/SettingsNewAccountSection.tsx
 msgid "Connect a new account to your workspace"
@@ -3087,6 +3440,11 @@ msgstr "Connect a new account to your workspace"
 #: src/modules/settings/accounts/components/SettingsAccountsListEmptyStateCard.tsx
 msgid "Connect Account"
 msgstr "Connect Account"
+
+#. js-lingui-id: wrqmOs
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Connect Rate"
+msgstr "Connect Rate"
 
 #. js-lingui-id: Zgi9Fd
 #: src/modules/settings/accounts/components/SettingsAccountsListEmptyStateCard.tsx
@@ -3098,8 +3456,19 @@ msgstr "Connect with Google"
 msgid "Connect with Microsoft"
 msgstr "Connect with Microsoft"
 
+#. js-lingui-id: Y4s6EW
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Connect your Twilio account to start calling"
+msgstr "Connect your Twilio account to start calling"
+
 #. js-lingui-id: QHcLEN
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/LiveTranscript.tsx
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+#: src/pages/status/Status.tsx
 msgid "Connected"
 msgstr "Connected"
 
@@ -3107,6 +3476,12 @@ msgstr "Connected"
 #: src/pages/settings/accounts/SettingsAccounts.tsx
 msgid "Connected accounts"
 msgstr "Connected accounts"
+
+#. js-lingui-id: J28zul
+#: src/modules/dialer/components/CallButton.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Connecting..."
+msgstr "Connecting..."
 
 #. js-lingui-id: W4Kgwq
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
@@ -3138,6 +3513,12 @@ msgstr "Consider adding a filter to display more data."
 msgid "Consuelo fields"
 msgstr "Consuelo fields"
 
+#. js-lingui-id: HHUnvy
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/pages/status/Status.tsx
+msgid "Consuelo status"
+msgstr "Consuelo status"
+
 #. js-lingui-id: FbW/oJ
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Consulting with transfer target..."
@@ -3149,10 +3530,21 @@ msgstr "Consulting with transfer target..."
 msgid "Contact auto-creation"
 msgstr "Contact auto-creation"
 
+#. js-lingui-id: Bhgd0l
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Contact us"
+msgstr "Contact us"
+
 #. js-lingui-id: cByGGA
 #: src/modules/information-banner/components/billing/InformationBannerEndTrialPeriod.tsx
 msgid "Contact your admin to continue using Workflow or AI features."
 msgstr "Contact your admin to continue using Workflow or AI features."
+
+#. js-lingui-id: 1KaQjR
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Contact: {contactName}"
+msgstr "Contact: {contactName}"
 
 #. js-lingui-id: /5mghO
 #: src/modules/object-record/object-filter-dropdown/utils/getOperandLabel.ts
@@ -3207,6 +3599,11 @@ msgstr "Context size"
 msgid "Continue"
 msgstr "Continue"
 
+#. js-lingui-id: MeQyYN
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Continue list"
+msgstr "Continue list"
+
 #. js-lingui-id: RvVi9c
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Continue with Email"
@@ -3249,6 +3646,11 @@ msgstr "Conversations"
 msgid "Cook"
 msgstr "Cook"
 
+#. js-lingui-id: 1lIwja
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Cooldown between batches (ms)"
+msgstr "Cooldown between batches (ms)"
+
 #. js-lingui-id: FxVG/l
 #: src/hooks/useCopyToClipboard.tsx
 msgid "Copied to clipboard"
@@ -3273,6 +3675,11 @@ msgstr "Copy API key to clipboard"
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Copy code"
 msgstr "Copy code"
+
+#. js-lingui-id: Oos8fo
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Copy command"
+msgstr "Copy command"
 
 #. js-lingui-id: Es0ros
 #: src/pages/settings/applications/tabs/SettingsApplicationsCreateTab.tsx
@@ -3366,6 +3773,16 @@ msgstr "Could not delete approved access domain"
 #: src/hooks/useCopyToClipboard.tsx
 msgid "Couldn't copy to clipboard"
 msgstr "Couldn't copy to clipboard"
+
+#. js-lingui-id: +qJJQv
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Couldn't open billing right now"
+msgstr "Couldn't open billing right now"
+
+#. js-lingui-id: Cen5Fc
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Couldn't open that right now"
+msgstr "Couldn't open that right now"
 
 #. js-lingui-id: S2XvS+
 #: src/modules/ai/hooks/useAIChatFileUpload.ts
@@ -3468,6 +3885,11 @@ msgstr "Create a record"
 #: src/pages/settings/ai/components/SettingsAgentRoleTab.tsx
 msgid "Create a role to define permissions for this agent."
 msgstr "Create a role to define permissions for this agent."
+
+#. js-lingui-id: rlbLyg
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Create a script to start guiding calls."
+msgstr "Create a script to start guiding calls."
 
 #. js-lingui-id: Xn2Nlq
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
@@ -3604,6 +4026,11 @@ msgstr "Create Webhook"
 msgid "Create Workspace"
 msgstr "Create Workspace"
 
+#. js-lingui-id: 1JP2ON
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Create your first script"
+msgstr "Create your first script"
+
 #. js-lingui-id: 9chYz/
 #: src/pages/onboarding/CreateWorkspace.tsx
 msgid "Create your workspace"
@@ -3697,6 +4124,11 @@ msgstr "Cron will be triggered at UTC time"
 msgid "CRUD"
 msgstr "CRUD"
 
+#. js-lingui-id: sDljb5
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "CSV upload"
+msgstr "CSV upload"
+
 #. js-lingui-id: J1QT+3
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Cumulative"
@@ -3721,6 +4153,27 @@ msgstr "Currency Code"
 #: src/modules/billing/components/internal/SubscriptionInfoRowContainer.tsx
 msgid "Current"
 msgstr "Current"
+
+#. js-lingui-id: avtOg2
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Current Contact"
+msgstr "Current Contact"
+
+#. js-lingui-id: A+zoTy
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+#: src/pages/status/Status.tsx
+msgid "Current plan"
+msgstr "Current plan"
+
+#. js-lingui-id: AdSAUc
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Current section"
+msgstr "Current section"
+
+#. js-lingui-id: E8pqFQ
+#: src/pages/status/Status.tsx
+msgid "Current subscription usage this period"
+msgstr "Current subscription usage this period"
 
 #. js-lingui-id: 6YzXhC
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
@@ -3770,6 +4223,11 @@ msgstr "Custom tools created in your workspace"
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownCustomView.tsx
 msgid "Custom View"
 msgstr "Custom View"
+
+#. js-lingui-id: 876pfE
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Customer"
+msgstr "Customer"
 
 #. js-lingui-id: MNGIVW
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectFields.tsx
@@ -3916,6 +4374,11 @@ msgstr "Data on display"
 #: src/pages/settings/data-model/SettingsObjectFieldTable.tsx
 msgid "Data type"
 msgstr "Data type"
+
+#. js-lingui-id: JY5Oyv
+#: src/pages/status/Status.tsx
+msgid "Database"
+msgstr "Database"
 
 #. js-lingui-id: GEMJqo
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
@@ -4176,6 +4639,7 @@ msgstr "delete"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterOptionsDropdown.tsx
 #: src/pages/settings/ai/components/SettingsAgentEvalsTab.tsx
 #: src/pages/settings/ai/components/SettingsAgentEvalsTab.tsx
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
 #: src/pages/settings/ai/components/SettingsSkillInactiveMenuDropDown.tsx
 #: src/pages/settings/ai/SettingsSkillForm.tsx
 #: src/pages/settings/ai/SettingsSkillForm.tsx
@@ -4466,6 +4930,11 @@ msgstr "Details"
 msgid "Developers links"
 msgstr "Developers links"
 
+#. js-lingui-id: pW0zB9
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Dial a single number with coaching or script mode."
+msgstr "Dial a single number with coaching or script mode."
+
 #. js-lingui-id: ErTdky
 #: src/pages/settings/ai/SettingsAI.tsx
 msgid "Dialer"
@@ -4477,6 +4946,11 @@ msgstr "Dialer"
 msgid "Discard Draft"
 msgstr "Discard Draft"
 
+#. js-lingui-id: ZYnwzF
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Disconnected"
+msgstr "Disconnected"
+
 #. js-lingui-id: OdPOhy
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "Discord"
@@ -4486,6 +4960,11 @@ msgstr "Discord"
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 msgid "Discord Bot"
 msgstr "Discord Bot"
+
+#. js-lingui-id: D3lKO4
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Discord community"
+msgstr "Discord community"
 
 #. js-lingui-id: Xm/s+u
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelsGeneral.tsx
@@ -4512,16 +4991,31 @@ msgstr "Display Format"
 msgid "Display text on multiple lines"
 msgstr "Display text on multiple lines"
 
+#. js-lingui-id: qpsiH3
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "DNC"
+msgstr "DNC"
+
 #. js-lingui-id: RDL+lZ
 #: src/modules/settings/emailing-domains/components/SettingsEmailingDomainVerificationRecords.tsx
 msgid "DNS Records"
 msgstr "DNS Records"
+
+#. js-lingui-id: 9ZpjPy
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Do Not Call"
+msgstr "Do Not Call"
 
 #. js-lingui-id: ji7sqw
 #: src/modules/spreadsheet-import/components/MatchColumnSelectFieldSelectDropdownContent.tsx
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/components/TemplateColumn.tsx
 msgid "Do not import"
 msgstr "Do not import"
+
+#. js-lingui-id: TbjyhA
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Docs"
+msgstr "Docs"
 
 #. js-lingui-id: TvY/XA
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
@@ -4586,6 +5080,11 @@ msgstr "Don't create contacts from/to Gmail, Outlook emails"
 msgid "Don't sync emails from team@ support@ noreply@..."
 msgstr "Don't sync emails from team@ support@ noreply@..."
 
+#. js-lingui-id: DPfwMq
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Done"
+msgstr "Done"
+
 #. js-lingui-id: bd+DPX
 #: src/modules/settings/experience/components/NumberFormatSelect.tsx
 msgid "Dots and comma - {dotsAndCommaExample}"
@@ -4607,6 +5106,12 @@ msgstr "Download"
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Download {filename}"
 msgstr "Download {filename}"
+
+#. js-lingui-id: 1H3OwS
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Download apps"
+msgstr "Download apps"
 
 #. js-lingui-id: WcWS//
 #: src/modules/settings/security/components/SSO/SettingsSSOSAMLForm.tsx
@@ -4690,6 +5195,11 @@ msgstr "Duplicate Workflow"
 #: src/modules/object-record/record-field-list/record-detail-section/duplicate/components/RecordDetailDuplicatesSection.tsx
 msgid "Duplicates"
 msgstr "Duplicates"
+
+#. js-lingui-id: N23Lnm
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Duration:"
+msgstr "Duration:"
 
 #. js-lingui-id: KIjvtr
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
@@ -4864,6 +5374,11 @@ msgstr "Editor"
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
 msgid "Eighth"
 msgstr "Eighth"
+
+#. js-lingui-id: JFnJqF
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Elapsed"
+msgstr "Elapsed"
 
 #. js-lingui-id: RvmROw
 #: src/modules/workflow/workflow-steps/workflow-actions/if-else-action/utils/getBranchLabel.ts
@@ -5079,13 +5594,29 @@ msgstr "Enable model-specific features"
 
 #. js-lingui-id: xDr/ct
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 msgid "End"
 msgstr "End"
+
+#. js-lingui-id: cEyYbs
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "End call"
+msgstr "End call"
+
+#. js-lingui-id: b41QzP
+#: src/modules/dialer/components/CallButton.tsx
+msgid "End Call"
+msgstr "End Call"
 
 #. js-lingui-id: VFv2ZC
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "End Date"
 msgstr "End Date"
+
+#. js-lingui-id: 8aToqE
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "End list"
+msgstr "End list"
 
 #. js-lingui-id: k1i50B
 #: src/modules/information-banner/components/billing/InformationBannerEndTrialPeriod.tsx
@@ -5096,6 +5627,11 @@ msgstr "End Trial Period"
 #: src/modules/information-banner/components/billing/InformationBannerEndTrialPeriod.tsx
 msgid "End trial period to continue using Workflow or AI features."
 msgstr "End trial period to continue using Workflow or AI features."
+
+#. js-lingui-id: 237hSL
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Ended"
+msgstr "Ended"
 
 #. js-lingui-id: T3juzf
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
@@ -5129,9 +5665,15 @@ msgid "Enter a JSON object"
 msgstr "Enter a JSON object"
 
 #. js-lingui-id: u2fAme
+#: src/modules/dialer/components/DialPad.tsx
 #: src/modules/object-record/record-field/ui/form-types/components/FormNumberFieldInput.tsx
 msgid "Enter a number"
 msgstr "Enter a number"
+
+#. js-lingui-id: 33JTE4
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Enter a number to call"
+msgstr "Enter a number to call"
 
 #. js-lingui-id: 93ebCf
 #: src/modules/object-record/record-field/ui/form-types/components/FormUuidFieldInput.tsx
@@ -5247,9 +5789,15 @@ msgid "Enter one option per line. Each line will become a new option."
 msgstr "Enter one option per line. Each line will become a new option."
 
 #. js-lingui-id: waLOUb
+#: src/modules/dialer/components/TransferModal.tsx
 #: src/modules/object-record/record-field/ui/form-types/components/FormPhoneFieldInput.tsx
 msgid "Enter phone number"
 msgstr "Enter phone number"
+
+#. js-lingui-id: uHkhR6
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Enter reason..."
+msgstr "Enter reason..."
 
 #. js-lingui-id: xCiJkz
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestTestVariableInput.tsx
@@ -5632,6 +6180,11 @@ msgstr "Execution history will appear here once skills are run."
 msgid "Existing Field"
 msgstr "Existing Field"
 
+#. js-lingui-id: /j5GKq
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Existing list"
+msgstr "Existing list"
+
 #. js-lingui-id: fV7V51
 #: src/pages/settings/data-model/SettingsObjects.tsx
 msgid "Existing objects"
@@ -5757,6 +6310,7 @@ msgid "Export ({percentageValue}%)"
 msgstr "Export ({percentageValue}%)"
 
 #. js-lingui-id: 2KAI4N
+#: src/modules/dialer/components/QueueAnalytics.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
 msgid "Export CSV"
 msgstr "Export CSV"
@@ -5841,6 +6395,8 @@ msgstr "Extra Credits Used"
 
 #. js-lingui-id: 7Bj3x9
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
 msgid "Failed"
@@ -5976,6 +6532,11 @@ msgstr "Failed to retry jobs. Please try again later."
 msgid "Failed to save navigation layout"
 msgstr "Failed to save navigation layout"
 
+#. js-lingui-id: dn3BBw
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Failed to save note"
+msgstr "Failed to save note"
+
 #. js-lingui-id: y3HIOa
 #: src/pages/settings/ai/SettingsAgentForm.tsx
 #: src/pages/settings/ai/SettingsAgentForm.tsx
@@ -5986,6 +6547,16 @@ msgstr "Failed to save role permissions: {errorMessage}"
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Failed to save workspace instructions"
 msgstr "Failed to save workspace instructions"
+
+#. js-lingui-id: GcmWm9
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Failed to schedule follow-up"
+msgstr "Failed to schedule follow-up"
+
+#. js-lingui-id: D+q8JX
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Failed to toggle hold"
+msgstr "Failed to toggle hold"
 
 #. js-lingui-id: YMSYb+
 #: src/pages/settings/ai/components/SettingsAIRouterSettings.tsx
@@ -6258,6 +6829,11 @@ msgstr "Filter by record ID"
 msgid "Filter group rule options"
 msgstr "Filter group rule options"
 
+#. js-lingui-id: 4yK0oz
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Filtered segment"
+msgstr "Filtered segment"
+
 #. js-lingui-id: cSev+j
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
 msgid "Filters"
@@ -6279,6 +6855,11 @@ msgstr "Finish flow with errors"
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 msgid "Finish Setup"
 msgstr "Finish Setup"
+
+#. js-lingui-id: 8jUiZQ
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Finish your phone setup before starting outbound calls."
+msgstr "Finish your phone setup before starting outbound calls."
 
 #. js-lingui-id: eYwdpC
 #: src/modules/ai/components/ReasoningSummaryDisplay.tsx
@@ -6315,6 +6896,11 @@ msgstr "First 2 lines"
 msgid "First 5 lines"
 msgstr "First 5 lines"
 
+#. js-lingui-id: V5LY69
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "First call complete!"
+msgstr "First call complete!"
+
 #. js-lingui-id: kODvZJ
 #: src/modules/object-record/record-field/ui/form-types/components/FormFullNameFieldInput.tsx
 #: src/modules/settings/members/components/MemberNameFields.tsx
@@ -6328,6 +6914,12 @@ msgstr "First Name"
 #: src/pages/onboarding/CreateProfile.tsx
 msgid "First name can not be empty"
 msgstr "First name can not be empty"
+
+#. js-lingui-id: +5SexD
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Fixing automatically..."
+msgstr "Fixing automatically..."
 
 #. js-lingui-id: ylQd2j
 #: src/modules/command-menu/pages/workflow/action/components/CommandMenuWorkflowSelectAction.tsx
@@ -6350,6 +6942,21 @@ msgstr "Folder name"
 #: src/modules/settings/accounts/components/message-folders/SettingsAccountsMessageFoldersCard.tsx
 msgid "Folders"
 msgstr "Folders"
+
+#. js-lingui-id: aEWxtk
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Follow up"
+msgstr "Follow up"
+
+#. js-lingui-id: 1ncUZE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Follow-up"
+msgstr "Follow-up"
+
+#. js-lingui-id: QOXxtE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Follow-up scheduled"
+msgstr "Follow-up scheduled"
 
 #. js-lingui-id: glx6on
 #: src/modules/auth/sign-in-up/components/SignInUpWorkspaceScopeForm.tsx
@@ -6390,6 +6997,16 @@ msgstr "fourth"
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
 msgid "Fourth"
 msgstr "Fourth"
+
+#. js-lingui-id: bxJ6a0
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Free forever"
+msgstr "Free forever"
+
+#. js-lingui-id: xYSDvt
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Free plan"
+msgstr "Free plan"
 
 #. js-lingui-id: aUj1gh
 #: src/modules/ai/components/AIChatCreditsExhaustedMessage.tsx
@@ -6433,6 +7050,21 @@ msgstr "Front Components"
 msgid "Full access"
 msgstr "Full access"
 
+#. js-lingui-id: 9lSqNI
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Full analytics and reporting"
+msgstr "Full analytics and reporting"
+
+#. js-lingui-id: PVP87I
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Full changelog"
+msgstr "Full changelog"
+
+#. js-lingui-id: 5k+3dL
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Full CRM (contacts, companies, pipeline)"
+msgstr "Full CRM (contacts, companies, pipeline)"
+
 #. js-lingui-id: AHOl4W
 #: src/modules/settings/logic-functions/components/SettingsLogicFunctionLabelContainer.tsx
 msgid "Function name"
@@ -6453,6 +7085,11 @@ msgstr "Functions"
 #: src/utils/title-utils.ts
 msgid "Functions - Settings"
 msgstr "Functions - Settings"
+
+#. js-lingui-id: NHHCo+
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "G then S"
+msgstr "G then S"
 
 #. js-lingui-id: vYj1cC
 #: src/modules/command-menu/pages/page-layout/constants/GraphTypeInformation.ts
@@ -6554,6 +7191,8 @@ msgstr "Go to runs"
 
 #. js-lingui-id: mT57+Q
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
 #: src/modules/object-record/record-table/empty-state/components/RecordTableEmptyStateRemote.tsx
 #: src/modules/views/view-picker/components/ViewPickerCreateButton.tsx
 #: src/modules/views/view-picker/components/ViewPickerCreateButton.tsx
@@ -6576,6 +7215,11 @@ msgstr "Go to Workflows"
 msgid "GoHighLevel"
 msgstr "GoHighLevel"
 
+#. js-lingui-id: uv/r+w
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "GoHighLevel navigation, nav reorg, and docs updates"
+msgstr "GoHighLevel navigation, nav reorg, and docs updates"
+
 #. js-lingui-id: FYlHHU
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Gold"
@@ -6596,6 +7240,11 @@ msgstr "Google OIDC"
 #: src/modules/settings/workspace/components/ToggleImpersonate.tsx
 msgid "Grant access to your workspace so we can troubleshoot problems."
 msgstr "Grant access to your workspace so we can troubleshoot problems."
+
+#. js-lingui-id: U7juEo
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Grant microphone access"
+msgstr "Grant microphone access"
 
 #. js-lingui-id: WUgtid
 #: src/modules/settings/roles/role-permissions/object-level-permissions/object-form/components/SettingsRolePermissionsObjectLevelObjectFormObjectLevelTableRow.tsx
@@ -6667,6 +7316,11 @@ msgstr "Group by"
 msgid "Group sorting"
 msgstr "Group sorting"
 
+#. js-lingui-id: IAq/yr
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Growth"
+msgstr "Growth"
+
 #. js-lingui-id: eKiSkN
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
 msgid "h1"
@@ -6730,10 +7384,20 @@ msgstr "Heading 3"
 msgid "Health Status"
 msgstr "Health Status"
 
+#. js-lingui-id: yGS9cI
+#: src/pages/status/Status.tsx
+msgid "Healthy"
+msgstr "Healthy"
+
 #. js-lingui-id: 3oTCgM
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
 msgid "Hebrew"
 msgstr "Hebrew"
+
+#. js-lingui-id: c3XJ18
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Help"
+msgstr "Help"
 
 #. js-lingui-id: D+zLDD
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownHiddenRecordGroupsContent.tsx
@@ -6818,8 +7482,15 @@ msgstr "History"
 
 #. js-lingui-id: YJMNeo
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/InCallControls.tsx
 msgid "Hold"
 msgstr "Hold"
+
+#. js-lingui-id: i0qMbr
+#: src/modules/navigation/components/MainNavigationDrawerFixedItems.tsx
+#: src/pages/home/HomePage.tsx
+msgid "Home"
+msgstr "Home"
 
 #. js-lingui-id: Xkd22/
 #: src/modules/command-menu/pages/page-layout/constants/GraphTypeInformation.ts
@@ -6836,6 +7507,11 @@ msgstr "Hours"
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerCronForm.tsx
 msgid "Hours between triggers"
 msgstr "Hours between triggers"
+
+#. js-lingui-id: 4+3tRX
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "How can we help?"
+msgstr "How can we help?"
 
 #. js-lingui-id: B06Bgk
 #: src/pages/onboarding/CreateProfile.tsx
@@ -7000,6 +7676,11 @@ msgstr "IMAP Username (Optional)"
 msgid "imap.example.com"
 msgstr "imap.example.com"
 
+#. js-lingui-id: l6m/sx
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Immediately connects the customer to the new number. You will be disconnected."
+msgstr "Immediately connects the customer to the new number. You will be disconnected."
+
 #. js-lingui-id: tSVr6t
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
 #: src/modules/settings/members/components/MemberInfosTab.tsx
@@ -7023,12 +7704,23 @@ msgstr "Impersonation is disabled for this workspace"
 msgid "Import"
 msgstr "Import"
 
+#. js-lingui-id: jRQolr
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Import a CSV"
+msgstr "Import a CSV"
+
+#. js-lingui-id: tCjaoY
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Import a fresh batch of leads and turn them into the next call run."
+msgstr "Import a fresh batch of leads and turn them into the next call run."
+
 #. js-lingui-id: sqOGcv
 #: src/modules/settings/accounts/components/SettingsAccountsMessageFolderCard.tsx
 msgid "Import all emails"
 msgstr "Import all emails"
 
 #. js-lingui-id: 2CeOI3
+#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
 msgid "Import CSV"
 msgstr "Import CSV"
@@ -7067,6 +7759,11 @@ msgstr "Importing Data ..."
 #: src/modules/settings/developers/utils/formatExpiration.ts
 msgid "In {dateDiff}"
 msgstr "In {dateDiff}"
+
+#. js-lingui-id: KWsaZ7
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "In 2 days"
+msgstr "In 2 days"
 
 #. js-lingui-id: NoNwIX
 #: src/modules/settings/data-model/object-details/components/SettingsObjectRelationsTable.tsx
@@ -7576,6 +8273,11 @@ msgstr "Join {workspaceName} team"
 msgid "JSON"
 msgstr "JSON"
 
+#. js-lingui-id: ey/ZPa
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Jump into the fullscreen list workspace and start dialing."
+msgstr "Jump into the fullscreen list workspace and start dialing."
+
 #. js-lingui-id: OGXtL8
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownLayoutContent.tsx
 #: src/modules/views/view-picker/constants/ViewPickerTypeSelectOptions.ts
@@ -7588,6 +8290,11 @@ msgstr "Kanban"
 msgid "Key"
 msgstr "Key"
 
+#. js-lingui-id: vGzLMn
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Key Moments"
+msgstr "Key Moments"
+
 #. js-lingui-id: VOAmkS
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/BodyInput.tsx
 msgid "Key/Value"
@@ -7595,10 +8302,12 @@ msgstr "Key/Value"
 
 #. js-lingui-id: 77Emn0
 #: src/modules/keyboard-shortcut-menu/components/KeyboardShortcutMenuDialog.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
 msgid "Keyboard shortcuts"
 msgstr "Keyboard shortcuts"
 
 #. js-lingui-id: jw/t1m
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Keypad"
 msgstr "Keypad"
@@ -7738,6 +8447,11 @@ msgstr "Launch"
 msgid "Launch manually"
 msgstr "Launch manually"
 
+#. js-lingui-id: 7FzvjE
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Launch site refresh and mercury positioning updates"
+msgstr "Launch site refresh and mercury positioning updates"
+
 #. js-lingui-id: rdU729
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutFieldsLayout.tsx
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutFieldsSettings.tsx
@@ -7856,6 +8570,11 @@ msgstr "Limit must be greater than 0."
 msgid "Line Chart"
 msgstr "Line Chart"
 
+#. js-lingui-id: QGRmAn
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "lines"
+msgstr "lines"
+
 #. js-lingui-id: LdyooL
 #: src/modules/command-menu/components/CommandMenuLinkInfo.tsx
 msgid "link"
@@ -7902,6 +8621,11 @@ msgstr "linked an email with"
 msgid "list"
 msgstr "list"
 
+#. js-lingui-id: 2BBAbc
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "List"
+msgstr "List"
+
 #. js-lingui-id: 5Kn+XX
 #: src/pages/settings/applications/components/SettingsApplicationsTable.tsx
 msgid "List installed applications. Use filter to search for a specific application"
@@ -7911,6 +8635,11 @@ msgstr "List installed applications. Use filter to search for a specific applica
 #: src/modules/files/components/FileBrowser.tsx
 msgid "List view"
 msgstr "List view"
+
+#. js-lingui-id: 95r17U
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Listening..."
+msgstr "Listening..."
 
 #. js-lingui-id: HhVDr2
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -7926,6 +8655,11 @@ msgstr "Listings"
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Lists"
 msgstr "Lists"
+
+#. js-lingui-id: 9ZCJl8
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Live Transcript"
+msgstr "Live Transcript"
 
 #. js-lingui-id: C5bVie
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerWebhookForm.tsx
@@ -7989,6 +8723,11 @@ msgstr "Loading jobs..."
 msgid "Loading metrics data..."
 msgstr "Loading metrics data..."
 
+#. js-lingui-id: GIxe3b
+#: src/pages/status/Status.tsx
+msgid "Loading metrics..."
+msgstr "Loading metrics..."
+
 #. js-lingui-id: tVSmFT
 #: src/modules/activities/components/CustomResolverFetchMoreLoader.tsx
 #: src/modules/object-record/record-picker/multiple-record-picker/components/MultipleRecordPickerFetchMoreLoader.tsx
@@ -7996,6 +8735,11 @@ msgstr "Loading metrics data..."
 #: src/pages/settings/security/event-logs/components/EventLogResultsTable.tsx
 msgid "Loading more..."
 msgstr "Loading more..."
+
+#. js-lingui-id: HL9fuU
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Loading people..."
+msgstr "Loading people..."
 
 #. js-lingui-id: WdmJIX
 #: src/modules/files/components/FilePreview.tsx
@@ -8037,6 +8781,11 @@ msgstr "Loading..."
 #: src/modules/agent/components/ConversationList.tsx
 msgid "Loading…"
 msgstr "Loading…"
+
+#. js-lingui-id: RFbt85
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Local presence dialing"
+msgstr "Local presence dialing"
 
 #. js-lingui-id: 8NbHF7
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
@@ -8128,10 +8877,20 @@ msgstr "Mail Account"
 msgid "Make HTTP requests to external APIs"
 msgstr "Make HTTP requests to external APIs"
 
+#. js-lingui-id: 4fyGf5
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "Make your first call"
+msgstr "Make your first call"
+
 #. js-lingui-id: n0FHLv
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
 msgid "Manage API keys and webhooks"
 msgstr "Manage API keys and webhooks"
+
+#. js-lingui-id: +nqVyF
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Manage billing"
+msgstr "Manage billing"
 
 #. js-lingui-id: IT5nsa
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
@@ -8142,6 +8901,11 @@ msgstr "Manage billing and subscriptions"
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Manage billing information"
 msgstr "Manage billing information"
+
+#. js-lingui-id: kBrc1S
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Manage coachingScripts"
+msgstr "Manage coachingScripts"
 
 #. js-lingui-id: U8dG4j
 #: src/modules/views/view-picker/components/ViewPickerOptionDropdown.tsx
@@ -8178,6 +8942,11 @@ msgstr "Manage support access settings"
 #: src/pages/settings/members/SettingsWorkspaceMembers.tsx
 msgid "Manage the members of your workspace here"
 msgstr "Manage the members of your workspace here"
+
+#. js-lingui-id: kXaZ6X
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Manage the scripts your team can use during calls."
+msgstr "Manage the scripts your team can use during calls."
 
 #. js-lingui-id: /berfj
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
@@ -8228,10 +8997,20 @@ msgstr "Max"
 msgid "Max {0} per file"
 msgstr "Max {0} per file"
 
+#. js-lingui-id: Qcvxoe
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Max attempts"
+msgstr "Max attempts"
+
 #. js-lingui-id: HFjNu6
 #: src/modules/spreadsheet-import/steps/components/UploadStep/components/DropZone.tsx
 msgid "Max import capacity: {formatSpreadsheetMaxRecordImportCapacity} records. Otherwise, consider splitting your file or using the API."
 msgstr "Max import capacity: {formatSpreadsheetMaxRecordImportCapacity} records. Otherwise, consider splitting your file or using the API."
+
+#. js-lingui-id: wmdPgS
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Max parallel lines"
+msgstr "Max parallel lines"
 
 #. js-lingui-id: 2ICF9k
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
@@ -8400,6 +9179,27 @@ msgstr "Metered tier switching has been cancelled."
 msgid "Method"
 msgstr "Method"
 
+#. js-lingui-id: 1iY5xv
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Microphone"
+msgstr "Microphone"
+
+#. js-lingui-id: Znbzy/
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone access failed."
+msgstr "Microphone access failed."
+
+#. js-lingui-id: Fffs4/
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone permission denied. Enable it in browser settings."
+msgstr "Microphone permission denied. Enable it in browser settings."
+
+#. js-lingui-id: NARhL+
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone permission required to make calls"
+msgstr "Microphone permission required to make calls"
+
 #. js-lingui-id: 6cH65H
 #: src/modules/settings/security/components/SettingsSecurityAuthBypassOptionsList.tsx
 #: src/modules/settings/security/components/SettingsSecurityAuthProvidersOptionsList.tsx
@@ -8520,6 +9320,11 @@ msgstr "More options"
 msgid "Move down"
 msgstr "Move down"
 
+#. js-lingui-id: PMdWUN
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling."
+msgstr "Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling."
+
 #. js-lingui-id: iSLA/r
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutTabSettings.tsx
 #: src/modules/object-record/record-group/hooks/useRecordGroupActions.ts
@@ -8549,6 +9354,11 @@ msgstr "Move to folder"
 msgid "Move up"
 msgstr "Move up"
 
+#. js-lingui-id: QlTOaI
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Multi-line dialing"
+msgstr "Multi-line dialing"
+
 #. js-lingui-id: asWVA5
 #: src/modules/object-record/spreadsheet-import/utils/getSpreadSheetFieldValidationDefinitions.ts
 msgid "must be a number"
@@ -8570,6 +9380,7 @@ msgid "must be an array of valid emails"
 msgstr "must be an array of valid emails"
 
 #. js-lingui-id: R7SsBE
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Mute"
 msgstr "Mute"
@@ -8865,16 +9676,32 @@ msgstr "New widget"
 #. js-lingui-id: hXzOVo
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationProvision.tsx
 #: src/modules/billing/components/internal/SubscriptionInfoRowContainer.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
 msgid "Next"
 msgstr "Next"
+
+#. js-lingui-id: n7cIUm
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Next call in"
+msgstr "Next call in"
 
 #. js-lingui-id: AxNmtI
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 #: src/modules/spreadsheet-import/steps/components/SelectSheetStep/SelectSheetStep.tsx
 msgid "Next Step"
 msgstr "Next Step"
+
+#. js-lingui-id: HeFWjW
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Next Steps"
+msgstr "Next Steps"
+
+#. js-lingui-id: IT903p
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Next week"
+msgstr "Next week"
 
 #. js-lingui-id: ulck7h
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
@@ -8937,6 +9764,22 @@ msgstr "No agents match your search"
 msgid "No analytics data available"
 msgstr "No analytics data available"
 
+#. js-lingui-id: 5P+oLK
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "No answer"
+msgstr "No answer"
+
+#. js-lingui-id: 4JcNPM
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "No Answer"
+msgstr "No Answer"
+
+#. js-lingui-id: blBxAD
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "No answer detected. The next call is being prepared automatically."
+msgstr "No answer detected. The next call is being prepared automatically."
+
 #. js-lingui-id: 9mx36q
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentTable.tsx
 msgid "No API keys assigned"
@@ -8962,6 +9805,11 @@ msgstr "No applications available"
 msgid "No available fields to select"
 msgstr "No available fields to select"
 
+#. js-lingui-id: 4gTljm
+#: src/pages/status/Status.tsx
+msgid "No billing interval"
+msgstr "No billing interval"
+
 #. js-lingui-id: V/RzSE
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/BodyInput.tsx
 msgid "No body"
@@ -8972,10 +9820,20 @@ msgstr "No body"
 msgid "No Call History"
 msgstr "No Call History"
 
+#. js-lingui-id: +Zdr4A
+#: src/modules/dialer/components/CallButton.tsx
+msgid "No caller ID available. Add a phone number in Settings → Dialer."
+msgstr "No caller ID available. Add a phone number in Settings → Dialer."
+
 #. js-lingui-id: OTe3RI
 #: src/pages/settings/domains/SettingsDomain.tsx
 msgid "No change detected"
 msgstr "No change detected"
+
+#. js-lingui-id: UcK6+0
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "No coaching available"
+msgstr "No coaching available"
 
 #. js-lingui-id: wgUPZ1
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
@@ -8991,6 +9849,11 @@ msgstr "No compatible fields"
 #: src/modules/settings/admin-panel/config-variables/components/SettingsAdminConfigVariables.tsx
 msgid "No config variables match your current filters. Try adjusting your filters or search criteria."
 msgstr "No config variables match your current filters. Try adjusting your filters or search criteria."
+
+#. js-lingui-id: OIwTpG
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "No contact selected"
+msgstr "No contact selected"
 
 #. js-lingui-id: PlVbP6
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -9179,11 +10042,21 @@ msgstr "No jobs were deleted{errorDetails}"
 msgid "No jobs were retried{errorDetails}"
 msgstr "No jobs were retried{errorDetails}"
 
+#. js-lingui-id: H5gNEn
+#: src/pages/status/Status.tsx
+msgid "No known issues are affecting the core platform right now."
+msgstr "No known issues are affecting the core platform right now."
+
 #. js-lingui-id: OcMef3
 #: src/modules/settings/admin-panel/components/SettingsAdminVersionContainer.tsx
 #: src/pages/settings/applications/components/SettingsApplicationVersionContainer.tsx
 msgid "No latest version found"
 msgstr "No latest version found"
+
+#. js-lingui-id: vbSeWy
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "No list members have been loaded for this list yet."
+msgstr "No list members have been loaded for this list yet."
 
 #. js-lingui-id: 5sf2dF
 #: src/pages/settings/ai/components/SettingsAgentLogsTab.tsx
@@ -9215,6 +10088,11 @@ msgstr "No messages found for this turn"
 msgid "No metrics data available"
 msgstr "No metrics data available"
 
+#. js-lingui-id: R6LXlZ
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "No microphone found. Connect a mic and try again."
+msgstr "No microphone found. Connect a mic and try again."
+
 #. js-lingui-id: UWZZdQ
 #: src/pages/settings/ai/components/SettingsAgentSettingsTab.tsx
 #: src/pages/settings/ai/components/SettingsAIRouterSettings.tsx
@@ -9241,6 +10119,11 @@ msgstr "No objects with views found"
 #: src/modules/ui/field/input/components/MultiSelectInput.tsx
 msgid "No option found"
 msgstr "No option found"
+
+#. js-lingui-id: Z05gDK
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "No outbound numbers are available yet. Add a number in phone settings to start calling."
+msgstr "No outbound numbers are available yet. Add a number in phone settings to start calling."
 
 #. js-lingui-id: XRc1G9
 #: src/modules/ai/components/TerminalOutput.tsx
@@ -9459,6 +10342,21 @@ msgstr "Not Found"
 msgid "Not installed"
 msgstr "Not installed"
 
+#. js-lingui-id: o6bxVA
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Not Int."
+msgstr "Not Int."
+
+#. js-lingui-id: HsDv15
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Not interested"
+msgstr "Not interested"
+
+#. js-lingui-id: Ir/MDX
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Not Interested"
+msgstr "Not Interested"
+
 #. js-lingui-id: 51G4/+
 #: src/modules/activities/calendar/components/CalendarEventNotSharedContent.tsx
 #: src/modules/activities/emails/components/EmailThreadNotShared.tsx
@@ -9475,6 +10373,11 @@ msgstr "Not shared by {notSharedByFullName}"
 #: src/modules/settings/accounts/components/SettingsAccountsConnectedAccountsRowRightContainer.tsx
 msgid "Not synced"
 msgstr "Not synced"
+
+#. js-lingui-id: gFrJOJ
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Note saved"
+msgstr "Note saved"
 
 #. js-lingui-id: 1DBGsz
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
@@ -9514,6 +10417,11 @@ msgstr "Number"
 #: src/modules/settings/experience/components/NumberFormatSelect.tsx
 msgid "Number format"
 msgstr "Number format"
+
+#. js-lingui-id: JI/ARt
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Number in use by another agent"
+msgstr "Number in use by another agent"
 
 #. js-lingui-id: +cbzNC
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -9607,6 +10515,16 @@ msgstr "Object unique fields"
 msgid "Object-Level"
 msgstr "Object-Level"
 
+#. js-lingui-id: vb/dVr
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Objection"
+msgstr "Objection"
+
+#. js-lingui-id: 9oBHR+
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Objection Handling"
+msgstr "Objection Handling"
+
 #. js-lingui-id: Oq4fl6
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 msgid "objects"
@@ -9639,6 +10557,7 @@ msgid "Objects and fields permissions settings"
 msgstr "Objects and fields permissions settings"
 
 #. js-lingui-id: BwJKBw
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "of"
 msgstr "of"
@@ -9657,6 +10576,11 @@ msgstr "ol"
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Omit zero values"
 msgstr "Omit zero values"
+
+#. js-lingui-id: R+YFk2
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "On Hold"
+msgstr "On Hold"
 
 #. js-lingui-id: jcwJgk
 #: src/modules/workflow/workflow-trigger/utils/cron-to-human/descriptors/getDayOfMonthDescription.ts
@@ -9714,6 +10638,11 @@ msgstr "On which object(s) should this trigger be available"
 msgid "Onboarding call"
 msgstr "Onboarding call"
 
+#. js-lingui-id: +xmpL1
+#: src/pages/status/Status.tsx
+msgid "One or more services need attention. Refresh this page or open support if something looks off."
+msgstr "One or more services need attention. Refresh this page or open support if something looks off."
+
 #. js-lingui-id: zii2Qj
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarVisibilitySettingsCard.tsx
 msgid "Only date & participants will be shared with your team."
@@ -9767,6 +10696,16 @@ msgstr "Only the timestamp & participants will be shared with your team."
 msgid "Open"
 msgstr "Open"
 
+#. js-lingui-id: y7f063
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open {personLabel}"
+msgstr "Open {personLabel}"
+
+#. js-lingui-id: YPMEpM
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Open AI settings"
+msgstr "Open AI settings"
+
 #. js-lingui-id: JG4LoU
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldOnClickActionForm.tsx
 msgid "Open as link"
@@ -9776,6 +10715,11 @@ msgstr "Open as link"
 #: src/modules/ui/layout/page-header/components/PageHeaderToggleCommandMenuButton.tsx
 msgid "Open command menu"
 msgstr "Open command menu"
+
+#. js-lingui-id: 3DtwqU
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open fullscreen workspace"
+msgstr "Open fullscreen workspace"
 
 #. js-lingui-id: pZZH4Q
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
@@ -9798,10 +10742,20 @@ msgstr "Open in Roles"
 msgid "Open Outlook"
 msgstr "Open Outlook"
 
+#. js-lingui-id: R4wqwI
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open your people view, apply the right filters, and save the segment you want to call."
+msgstr "Open your people view, apply the right filters, and save the segment you want to call."
+
 #. js-lingui-id: OV5wZZ
 #: src/modules/object-metadata/components/NavigationDrawerOpenedSection.tsx
 msgid "Opened"
 msgstr "Opened"
+
+#. js-lingui-id: ulxsKN
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Opening email because feedback isn't ready yet"
+msgstr "Opening email because feedback isn't ready yet"
 
 #. js-lingui-id: 8m1COB
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminHealthStatusRightContainer.tsx
@@ -9874,6 +10828,7 @@ msgstr "Organize"
 
 #. js-lingui-id: /IX/7x
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNewSidebarItemMainMenu.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/page-layout/hooks/useTemporaryFieldsConfiguration.ts
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/admin-panel/SettingsAdmin.tsx
@@ -9920,6 +10875,11 @@ msgstr "Our team can help you set up your workspace to match your specific needs
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminHealthStatusRightContainer.tsx
 msgid "Outage"
 msgstr "Outage"
+
+#. js-lingui-id: 1xukgM
+#: src/pages/status/Status.tsx
+msgid "Outbound calls started today"
+msgstr "Outbound calls started today"
 
 #. js-lingui-id: g6zGjM
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
@@ -10014,6 +10974,16 @@ msgstr "paragraph"
 msgid "Paragraph"
 msgstr "Paragraph"
 
+#. js-lingui-id: 35g+WH
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Parallel dialing"
+msgstr "Parallel dialing"
+
+#. js-lingui-id: wlwJea
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Parallel Dialing"
+msgstr "Parallel Dialing"
+
 #. js-lingui-id: 8ZsakT
 #: src/modules/auth/sign-in-up/components/internal/SignInUpPasswordField.tsx
 #: src/modules/settings/security/components/SettingsSecurityAuthBypassOptionsList.tsx
@@ -10052,7 +11022,14 @@ msgstr "Paste the code below"
 msgid "Path"
 msgstr "Path"
 
+#. js-lingui-id: IgrLD/
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Pause"
+msgstr "Pause"
+
 #. js-lingui-id: UbRKMZ
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
 #: src/modules/settings/domains/components/SettingsPublicDomainsListCard.tsx
 #: src/modules/settings/security/components/approvedAccessDomains/SettingsApprovedAccessDomainsListCard.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
@@ -10062,6 +11039,8 @@ msgstr "Pending"
 #. js-lingui-id: 1wdjme
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/action-menu/mock/action-menu-actions.mock.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
 msgid "People"
 msgstr "People"
 
@@ -10074,6 +11053,11 @@ msgstr "People I’ve sent emails to and received emails from."
 #: src/modules/settings/accounts/components/SettingsAccountsMessageAutoCreationCard.tsx
 msgid "People I’ve sent emails to."
 msgstr "People I’ve sent emails to."
+
+#. js-lingui-id: tva9zF
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Per seat / month"
+msgstr "Per seat / month"
 
 #. js-lingui-id: SrVzRe
 #: src/modules/object-record/record-board/record-board-column/components/RecordBoardColumnHeaderAggregateDropdownContent.tsx
@@ -10165,6 +11149,11 @@ msgstr "Permissions"
 msgid "Permissions · {objectLabelSingular}"
 msgstr "Permissions · {objectLabelSingular}"
 
+#. js-lingui-id: ceyqQZ
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Person {positionLabel}"
+msgstr "Person {positionLabel}"
+
 #. js-lingui-id: zmwvG2
 #: src/modules/object-record/record-field/ui/meta-types/input/components/PhonesFieldInput.tsx
 msgid "Phone"
@@ -10189,11 +11178,37 @@ msgstr "Phone number copied to clipboard"
 msgid "Phone Numbers"
 msgstr "Phone Numbers"
 
+#. js-lingui-id: FjnwJb
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Phone settings"
+msgstr "Phone settings"
+
+#. js-lingui-id: 6l9inc
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Phone system error"
+msgstr "Phone system error"
+
+#. js-lingui-id: fTQd9O
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Phone system needs repair"
+msgstr "Phone system needs repair"
+
+#. js-lingui-id: 6vzpbz
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Phone unavailable"
+msgstr "Phone unavailable"
+
 #. js-lingui-id: vqKcU0
 #: src/modules/workflow/workflow-steps/components/WorkflowDropdownStepOutputItems.tsx
 #: src/modules/workflow/workflow-variables/components/WorkflowVariablesDropdownStepItems.tsx
 msgid "Pick a {objectLabel} record"
 msgstr "Pick a {objectLabel} record"
+
+#. js-lingui-id: tH1jeo
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Pick a phone number to start calling"
+msgstr "Pick a phone number to start calling"
 
 #. js-lingui-id: JqqNlC
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNewSidebarItemViewPickerSubView.tsx
@@ -10245,6 +11260,11 @@ msgstr "Plan"
 #: src/modules/billing/components/SettingsBillingSubscriptionInfo.tsx
 msgid "Plan switching has been cancelled."
 msgstr "Plan switching has been cancelled."
+
+#. js-lingui-id: mrJzmx
+#: src/pages/status/Status.tsx
+msgid "Platform health"
+msgstr "Platform health"
 
 #. js-lingui-id: 574fPg
 #: src/modules/dialer/components/CallHistoryList.tsx
@@ -10361,6 +11381,16 @@ msgstr "Post Code"
 msgid "Postcode"
 msgstr "Postcode"
 
+#. js-lingui-id: 3ISz+f
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Power dialer"
+msgstr "Power dialer"
+
+#. js-lingui-id: 8roEn3
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "Prefer a local presence number when a matching area code exists."
+msgstr "Prefer a local presence number when a matching area code exists."
+
 #. js-lingui-id: /v6Rp9
 #: src/pages/onboarding/CreateWorkspace.tsx
 msgid "Prefilling your workspace data..."
@@ -10370,6 +11400,11 @@ msgstr "Prefilling your workspace data..."
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Prefix"
 msgstr "Prefix"
+
+#. js-lingui-id: lOExXj
+#: src/modules/dialer/types/coaching.ts
+msgid "Preparing coaching..."
+msgstr "Preparing coaching..."
 
 #. js-lingui-id: ut1ZY+
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldIsUniqueForm.tsx
@@ -10420,6 +11455,11 @@ msgstr "Primary Link Label"
 msgid "Primary Link URL"
 msgstr "Primary Link URL"
 
+#. js-lingui-id: DgeCXX
+#: src/pages/status/Status.tsx
+msgid "Primary persistence layer"
+msgstr "Primary persistence layer"
+
 #. js-lingui-id: rW8PxS
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Prioritized"
@@ -10431,6 +11471,7 @@ msgid "Priority"
 msgstr "Priority"
 
 #. js-lingui-id: k62X/2
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Priority support"
 msgstr "Priority support"
@@ -10470,6 +11511,11 @@ msgstr "Profile - Settings"
 #: src/modules/settings/security/components/SettingsSecurityEditableProfileFields.tsx
 msgid "Profile Picture"
 msgstr "Profile Picture"
+
+#. js-lingui-id: CP3D8G
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Progress"
+msgstr "Progress"
 
 #. js-lingui-id: W9uQXX
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowEditActionAiAgent.tsx
@@ -10541,15 +11587,30 @@ msgstr "Public domain successfully deleted"
 msgid "Public Domains"
 msgstr "Public Domains"
 
+#. js-lingui-id: lGup4n
+#: src/pages/status/Status.tsx
+msgid "Public health endpoint"
+msgstr "Public health endpoint"
+
 #. js-lingui-id: mF9LxA
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Purple"
 msgstr "Purple"
 
+#. js-lingui-id: 63aBi+
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Puts the customer on hold while you speak with the new party first."
+msgstr "Puts the customer on hold while you speak with the new party first."
+
 #. js-lingui-id: GUpZQM
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Python Code Execution"
 msgstr "Python Code Execution"
+
+#. js-lingui-id: hi3Du/
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Qualified"
+msgstr "Qualified"
 
 #. js-lingui-id: 2vudsu
 #: src/modules/command-menu/pages/page-layout/utils/getDateGranularityLabel.ts
@@ -10566,6 +11627,21 @@ msgstr "Quarter of the year"
 #: src/modules/command-menu/pages/page-layout/utils/getDateGranularityPluralLabel.ts
 msgid "quarters"
 msgstr "quarters"
+
+#. js-lingui-id: b24kPi
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Queue"
+msgstr "Queue"
+
+#. js-lingui-id: pbgfBb
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Queue Complete"
+msgstr "Queue Complete"
+
+#. js-lingui-id: a8/TmH
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Queue complete!"
+msgstr "Queue complete!"
 
 #. js-lingui-id: /IUt/5
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminWorkerHealthStatus.tsx
@@ -10650,6 +11726,11 @@ msgstr "Receive an email containing password update link"
 msgid "Recent Events (oldest → newest)"
 msgstr "Recent Events (oldest → newest)"
 
+#. js-lingui-id: WEYdDv
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Recommended"
+msgstr "Recommended"
+
 #. js-lingui-id: gcoiFh
 #: src/modules/information-banner/components/reconnect-account/InformationBannerReconnectAccountEmailAliases.tsx
 #: src/modules/information-banner/components/reconnect-account/InformationBannerReconnectAccountInsufficientPermissions.tsx
@@ -10726,6 +11807,11 @@ msgstr "Record Type"
 msgid "Record-level"
 msgstr "Record-level"
 
+#. js-lingui-id: SaWpbi
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Recording playback will appear here when a recording is available."
+msgstr "Recording playback will appear here when a recording is available."
+
 #. js-lingui-id: PWlTvh
 #: src/modules/settings/roles/role-permissions/object-level-permissions/components/SettingsRolePermissionsObjectLevelTableHeader.tsx
 msgid "Records"
@@ -10752,8 +11838,14 @@ msgstr "Redirect Url copied to clipboard"
 msgid "Redirection URI"
 msgstr "Redirection URI"
 
+#. js-lingui-id: DTAXY+
+#: src/pages/status/Status.tsx
+msgid "Redis"
+msgstr "Redis"
+
 #. js-lingui-id: lCF0wC
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
+#: src/pages/status/Status.tsx
 msgid "Refresh"
 msgstr "Refresh"
 
@@ -11015,6 +12107,7 @@ msgid "Reset variable"
 msgstr "Reset variable"
 
 #. js-lingui-id: ZlCDf+
+#: src/modules/dialer/components/CoachingPanel.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestExecutionResult.tsx
 msgid "Response"
 msgstr "Response"
@@ -11031,6 +12124,7 @@ msgid "REST"
 msgstr "REST"
 
 #. js-lingui-id: 6z9W13
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 msgid "Restart"
 msgstr "Restart"
@@ -11040,6 +12134,11 @@ msgstr "Restart"
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 msgid "Restart Import"
 msgstr "Restart Import"
+
+#. js-lingui-id: ZQl2hf
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Restart Queue"
+msgstr "Restart Queue"
 
 #. js-lingui-id: o7CJMO
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -11097,6 +12196,9 @@ msgid "Results"
 msgstr "Results"
 
 #. js-lingui-id: v39wLo
+#: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
 msgid "Resume"
 msgstr "Resume"
@@ -11105,6 +12207,7 @@ msgstr "Resume"
 #: src/modules/ai/components/AIChatErrorMessage.tsx
 #: src/modules/dialer/components/CallHistoryList.tsx
 #: src/modules/dialer/components/CallHistoryList.tsx
+#: src/modules/dialer/components/CoachingPanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobRowDropdownMenu.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminRetryJobsConfirmationModal.tsx
 msgid "Retry"
@@ -11114,6 +12217,11 @@ msgstr "Retry"
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Retry All Failed"
 msgstr "Retry All Failed"
+
+#. js-lingui-id: GWWped
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Retry Analysis"
+msgstr "Retry Analysis"
 
 #. js-lingui-id: ZbpKL+
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminJobDetailsExpandable.tsx
@@ -11137,6 +12245,16 @@ msgstr "Revoked for this object"
 #: src/modules/page-layout/utils/getWidgetTitle.ts
 msgid "Rich Text"
 msgstr "Rich Text"
+
+#. js-lingui-id: M5mE2U
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Ringing"
+msgstr "Ringing"
+
+#. js-lingui-id: EG7dfZ
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Ringing..."
+msgstr "Ringing..."
 
 #. js-lingui-id: E1BXUR
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -11190,6 +12308,11 @@ msgstr "Role updated successfully"
 #: src/pages/settings/roles/SettingsRoleAddObjectLevel.tsx
 msgid "Roles"
 msgstr "Roles"
+
+#. js-lingui-id: etnrj0
+#: src/pages/status/Status.tsx
+msgid "Rolling seven day call count"
+msgstr "Rolling seven day call count"
 
 #. js-lingui-id: Qz0FZ3
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
@@ -11274,6 +12397,7 @@ msgstr "Saturday"
 #. js-lingui-id: tfDRzk
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
+#: src/modules/dialer/components/QueueSettingsModal.tsx
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableActionButtons.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/SaveButton.tsx
 msgid "Save"
@@ -11289,15 +12413,36 @@ msgstr "Save as new view"
 msgid "Save Dashboard"
 msgstr "Save Dashboard"
 
+#. js-lingui-id: NK4dHx
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save Note"
+msgstr "Save Note"
+
 #. js-lingui-id: BZVCCj
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Save Page Layout"
 msgstr "Save Page Layout"
 
+#. js-lingui-id: 54mCVg
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save selectedContact first"
+msgstr "Save selectedContact first"
+
+#. js-lingui-id: JP43yH
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save selectedContact first to add notes"
+msgstr "Save selectedContact first to add notes"
+
 #. js-lingui-id: gmB6oO
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/workflow/workflow-trigger/components/CronExpressionHelper.tsx
 msgid "Schedule"
 msgstr "Schedule"
+
+#. js-lingui-id: 0QEvCe
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Schedule follow-up"
+msgstr "Schedule follow-up"
 
 #. js-lingui-id: QJ8HBJ
 #: src/modules/settings/playground/components/PlaygroundSetupForm.tsx
@@ -11315,6 +12460,50 @@ msgstr "Schema name"
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 msgid "Score"
 msgstr "Score"
+
+#. js-lingui-id: HvRBc1
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Score:"
+msgstr "Score:"
+
+#. js-lingui-id: Zi7dyz
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Script"
+msgstr "Script"
+
+#. js-lingui-id: loryjr
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Script content"
+msgstr "Script content"
+
+#. js-lingui-id: 3wD/5r
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallCoachingTab.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Script mode"
+msgstr "Script mode"
+
+#. js-lingui-id: b5kSE5
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Script mode is active"
+msgstr "Script mode is active"
+
+#. js-lingui-id: DHZSYm
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Script mode is active - {activeScriptLabel}"
+msgstr "Script mode is active - {activeScriptLabel}"
+
+#. js-lingui-id: NZPZ1p
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Script name"
+msgstr "Script name"
+
+#. js-lingui-id: U5+TsX
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+#: src/pages/settings/ai/SettingsAI.tsx
+msgid "Scripts"
+msgstr "Scripts"
 
 #. js-lingui-id: A1taO8
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
@@ -11636,6 +12825,11 @@ msgstr "See active version"
 msgid "See all {relationLabelPlural} linked to this record"
 msgstr "See all {relationLabelPlural} linked to this record"
 
+#. js-lingui-id: bSNSR8
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "See all plans"
+msgstr "See all plans"
+
 #. js-lingui-id: f4Lu+X
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 msgid "See deleted dashboards"
@@ -11753,6 +12947,11 @@ msgstr "Select a file to attach"
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNavigationMenuItemEditPage.tsx
 msgid "Select a navigation item to edit"
 msgstr "Select a navigation item to edit"
+
+#. js-lingui-id: 2z0z+w
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Select a script in AI settings to guide the call."
+msgstr "Select a script in AI settings to guide the call."
 
 #. js-lingui-id: jL3gox
 #: src/modules/object-record/record-field/ui/form-types/components/FormBooleanFieldInput.tsx
@@ -11910,6 +13109,11 @@ msgstr "Send Email"
 msgid "Send emails via connected accounts"
 msgstr "Send emails via connected accounts"
 
+#. js-lingui-id: RoafuO
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Send feedback"
+msgstr "Send feedback"
+
 #. js-lingui-id: asU5VT
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestExecutionResult.tsx
 msgid "Sending request..."
@@ -12012,10 +13216,16 @@ msgstr "Set your application configuration variables"
 msgid "Setting up your database..."
 msgstr "Setting up your database..."
 
+#. js-lingui-id: uVllZH
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Setting up your phone system..."
+msgstr "Setting up your phone system..."
+
 #. js-lingui-id: Tz0i8g
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutTabSettings.tsx
-#: src/modules/navigation/components/MainNavigationDrawerFixedItems.tsx
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
 #: src/modules/object-record/record-merge/hooks/useMergeRecordsContainerTabs.ts
 #: src/modules/settings/accounts/components/SettingsAccountsSettingsSection.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/components/SettingsRolePermissionsSettingsSection.tsx
@@ -12039,6 +13249,11 @@ msgstr "Settings All Access"
 #: src/modules/settings/roles/role-permissions/permission-flags/components/SettingsRolePermissionsSettingsSection.tsx
 msgid "Settings permissions"
 msgstr "Settings permissions"
+
+#. js-lingui-id: RceylA
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Settings restructure, agent polish, and landing refresh"
+msgstr "Settings restructure, agent polish, and landing refresh"
 
 #. js-lingui-id: rl/5Qa
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
@@ -12137,10 +13352,20 @@ msgstr "Sign in"
 msgid "Sign in or Create an account"
 msgstr "Sign in or Create an account"
 
+#. js-lingui-id: 8Y/GY3
+#: src/pages/status/Status.tsx
+msgid "Sign in with a workspace session to see Twilio and call usage details."
+msgstr "Sign in with a workspace session to see Twilio and call usage details."
+
 #. js-lingui-id: e+RpCP
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Sign up"
 msgstr "Sign up"
+
+#. js-lingui-id: U+Kov1
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Single call"
+msgstr "Single call"
 
 #. js-lingui-id: BZdVGR
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectForm.tsx
@@ -12218,6 +13443,8 @@ msgid "Skills"
 msgstr "Skills"
 
 #. js-lingui-id: 6Uau97
+#: src/modules/dialer/components/QueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/pages/onboarding/BookCall.tsx
 #: src/pages/onboarding/InviteTeam.tsx
 msgid "Skip"
@@ -12227,6 +13454,11 @@ msgstr "Skip"
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
 msgid "Skip creating a Name field "
 msgstr "Skip creating a Name field "
+
+#. js-lingui-id: KiEgVu
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Skip no-answer"
+msgstr "Skip no-answer"
 
 #. js-lingui-id: e1zVP1
 #: src/modules/dialer/components/QueueControls.tsx
@@ -12357,6 +13589,12 @@ msgstr "Spaces and comma - {spacesAndCommaExample}"
 msgid "Spanish"
 msgstr "Spanish"
 
+#. js-lingui-id: zuoIYL
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Speaker"
+msgstr "Speaker"
+
 #. js-lingui-id: vnS6Rf
 #: src/pages/settings/security/SettingsSecurity.tsx
 msgid "SSO"
@@ -12408,15 +13646,41 @@ msgstr "Standard tools available to AI agents"
 msgid "Start"
 msgstr "Start"
 
+#. js-lingui-id: xjxSrm
+#: src/modules/dialer/types/coaching.ts
+msgid "Start a call to receive coaching"
+msgstr "Start a call to receive coaching"
+
 #. js-lingui-id: GE4F4y
 #: src/modules/agent/components/AgentComposer.tsx
 msgid "Start a new conversation"
 msgstr "Start a new conversation"
 
+#. js-lingui-id: Zwg92u
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Start a one-off call, launch a list, or prepare your next outreach session from one place."
+msgstr "Start a one-off call, launch a list, or prepare your next outreach session from one place."
+
 #. js-lingui-id: D3iCkb
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "Start Date"
 msgstr "Start Date"
+
+#. js-lingui-id: WI/6No
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+msgid "Start new call"
+msgstr "Start new call"
+
+#. js-lingui-id: HQRicQ
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Start Queue"
+msgstr "Start Queue"
+
+#. js-lingui-id: R2COzC
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Start transfer"
+msgstr "Start transfer"
 
 #. js-lingui-id: s+K73L
 #: src/modules/billing/components/SettingsBillingSubscriptionInfo.tsx
@@ -12443,6 +13707,7 @@ msgstr "State"
 #: src/modules/settings/components/SettingsDnsRecordsTable.tsx
 #: src/pages/settings/admin-panel/SettingsAdminIndicatorHealthStatus.tsx
 #: src/pages/skills/SkillDetailPage.tsx
+#: src/utils/title-utils.ts
 msgid "Status"
 msgstr "Status"
 
@@ -12459,6 +13724,8 @@ msgstr "Step filter options"
 #. js-lingui-id: ygCKqB
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowRunsActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowRunsActionsConfig.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 msgid "Stop"
 msgstr "Stop"
 
@@ -13197,6 +14464,11 @@ msgstr "This setting can only be configured through environment variables."
 msgid "This should never happen"
 msgstr "This should never happen"
 
+#. js-lingui-id: JazPIJ
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "This takes about 30 seconds on first use."
+msgstr "This takes about 30 seconds on first use."
+
 #. js-lingui-id: MMGDfe
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
 msgid "This value will be saved to the database."
@@ -13339,6 +14611,7 @@ msgid "Tomato"
 msgstr "Tomato"
 
 #. js-lingui-id: BRMXj0
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/localization/utils/formatDateISOStringToRelativeDate.ts
 msgid "Tomorrow"
 msgstr "Tomorrow"
@@ -13405,13 +14678,25 @@ msgstr "Total Jobs"
 msgid "Total time"
 msgstr "Total time"
 
+#. js-lingui-id: Py12OG
+#: src/pages/status/Status.tsx
+msgid "Track app health, Twilio connectivity, and workspace calling metrics from one place."
+msgstr "Track app health, Twilio connectivity, and workspace calling metrics from one place."
+
 #. js-lingui-id: YT/cKI
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Track your {intervalLabel} workflow credit consumption."
 msgstr "Track your {intervalLabel} workflow credit consumption."
 
+#. js-lingui-id: tXXo3X
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Transcript will appear when connected"
+msgstr "Transcript will appear when connected"
+
 #. js-lingui-id: zPGNJm
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/TransferModal.tsx
 msgid "Transfer"
 msgstr "Transfer"
 
@@ -13419,6 +14704,11 @@ msgstr "Transfer"
 #: src/modules/dialer/components/TransferModal.tsx
 msgid "Transfer Call"
 msgstr "Transfer Call"
+
+#. js-lingui-id: es+Zrf
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Transferring..."
+msgstr "Transferring..."
 
 #. js-lingui-id: lhkaAC
 #: src/modules/billing/components/internal/PlansTags.tsx
@@ -13498,6 +14788,11 @@ msgstr "True"
 msgid "Try a different search term"
 msgstr "Try a different search term"
 
+#. js-lingui-id: CHhICG
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "Try calling yourself to hear how it sounds."
+msgstr "Try calling yourself to hear how it sounds."
+
 #. js-lingui-id: haaL9N
 #: src/pages/settings/developers/api-keys/SettingsApiKeys.tsx
 #: src/pages/settings/workspace/SettingsApiWebhooks.tsx
@@ -13556,6 +14851,16 @@ msgstr "Turn Not Found"
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Turquoise"
 msgstr "Turquoise"
+
+#. js-lingui-id: Wy25yg
+#: src/pages/status/Status.tsx
+msgid "Twilio"
+msgstr "Twilio"
+
+#. js-lingui-id: NWp3kO
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Twilio connection failed"
+msgstr "Twilio connection failed"
 
 #. js-lingui-id: YIjS4q
 #: src/pages/settings/ai/components/SettingsAgentModelCapabilities.tsx
@@ -13616,6 +14921,11 @@ msgstr "Type anything..."
 msgid "Type to search records"
 msgstr "Type to search records"
 
+#. js-lingui-id: IxyhWx
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Type your note..."
+msgstr "Type your note..."
+
 #. js-lingui-id: 4KcBEY
 #: src/pages/settings/applications/tabs/SettingsAvailableApplicationDetailContentTab.tsx
 msgid "UI components provided by this app"
@@ -13640,6 +14950,12 @@ msgstr "Unable to delete member right now"
 #: src/modules/client-config/components/ClientConfigProvider.tsx
 msgid "Unable to Reach Back-end"
 msgstr "Unable to Reach Back-end"
+
+#. js-lingui-id: jqzUyM
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+msgid "Unavailable"
+msgstr "Unavailable"
 
 #. js-lingui-id: b2vAoQ
 #: src/pages/skills/SkillDetailPage.tsx
@@ -13706,9 +15022,17 @@ msgid "unit"
 msgstr "unit"
 
 #. js-lingui-id: Ef7StM
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminVersionContainer.tsx
 #: src/pages/settings/applications/components/SettingsApplicationVersionContainer.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -13744,17 +15068,32 @@ msgstr "Unknown object"
 msgid "Unknown Skill"
 msgstr "Unknown Skill"
 
+#. js-lingui-id: Me/1aO
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Unlimited AI coaching"
+msgstr "Unlimited AI coaching"
+
 #. js-lingui-id: GQCXQS
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Unlimited contacts"
 msgstr "Unlimited contacts"
 
+#. js-lingui-id: i5yNAO
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Unlimited seats"
+msgstr "Unlimited seats"
+
 #. js-lingui-id: WDcQq9
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownCustomView.tsx
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownVisibilityContent.tsx
 msgid "Unlisted"
 msgstr "Unlisted"
+
+#. js-lingui-id: rn6SBY
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Unmute"
+msgstr "Unmute"
 
 #. js-lingui-id: eQMhFX
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
@@ -13795,6 +15134,11 @@ msgstr "Untitled {labelSingular}"
 msgid "Untitled iFrame"
 msgstr "Untitled iFrame"
 
+#. js-lingui-id: PMPun8
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Untitled list"
+msgstr "Untitled list"
+
 #. js-lingui-id: xzOKup
 #: src/modules/settings/roles/role/components/SettingsRoleCreateEffect.tsx
 msgid "Untitled role"
@@ -13805,6 +15149,17 @@ msgstr "Untitled role"
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx
 msgid "Untitled Workflow"
 msgstr "Untitled Workflow"
+
+#. js-lingui-id: n+PHuv
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+msgid "Up"
+msgstr "Up"
+
+#. js-lingui-id: SrfROI
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Up next"
+msgstr "Up next"
 
 #. js-lingui-id: bf8hei
 #: src/modules/dialer/components/QueuePanel.tsx
@@ -13894,6 +15249,16 @@ msgstr "Upgrade to access"
 msgid "Upgrade to Enterprise to access audit logs"
 msgstr "Upgrade to Enterprise to access audit logs"
 
+#. js-lingui-id: lINsE/
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Upgrade to Growth"
+msgstr "Upgrade to Growth"
+
+#. js-lingui-id: qAWquf
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Upgrade your workspace"
+msgstr "Upgrade your workspace"
+
 #. js-lingui-id: ONWvwQ
 #: src/modules/ui/input/components/ImageInput.tsx
 msgid "Upload"
@@ -13903,6 +15268,11 @@ msgstr "Upload"
 #: src/modules/spreadsheet-import/steps/components/UploadStep/components/DropZone.tsx
 msgid "Upload .xlsx, .xls or .csv file"
 msgstr "Upload .xlsx, .xls or .csv file"
+
+#. js-lingui-id: 7h2CW5
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Upload a CSV into {personLabelLowercase} first, then turn the imported records into your next calling list."
+msgstr "Upload a CSV into {personLabelLowercase} first, then turn the imported records into your next calling list."
 
 #. js-lingui-id: 2IXDgU
 #: src/modules/advanced-text-editor/components/WorkflowSendEmailAttachments.tsx
@@ -13964,10 +15334,20 @@ msgstr "URL to Embed"
 msgid "Use as draft"
 msgstr "Use as draft"
 
+#. js-lingui-id: NVEXAn
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Use Ask AI to figure out who should be called next."
+msgstr "Use Ask AI to figure out who should be called next."
+
 #. js-lingui-id: 6kLyt5
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationProvision.tsx
 msgid "Use authenticator apps and browser extensions like 1Password, Authy, Microsoft Authenticator to generate one-time passwords"
 msgstr "Use authenticator apps and browser extensions like 1Password, Authy, Microsoft Authenticator to generate one-time passwords"
+
+#. js-lingui-id: ke/UO7
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Use markdown headings to break the script into sections for live guidance."
+msgstr "Use markdown headings to break the script into sections for live guidance."
 
 #. js-lingui-id: c6uZUV
 #: src/modules/object-record/record-table/empty-state/utils/getEmptyStateSubTitle.ts
@@ -14305,6 +15685,18 @@ msgstr "Visible to you"
 msgid "Visualize"
 msgstr "Visualize"
 
+#. js-lingui-id: BzL3tV
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Voicemail"
+msgstr "Voicemail"
+
+#. js-lingui-id: GcDULT
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Voicemail skip delay (ms)"
+msgstr "Voicemail skip delay (ms)"
+
 #. js-lingui-id: uUehLT
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Waiting"
@@ -14319,6 +15711,11 @@ msgstr "Waiting Children"
 #: src/modules/ai/components/TerminalOutput.tsx
 msgid "Waiting for output..."
 msgstr "Waiting for output..."
+
+#. js-lingui-id: Wtu1aS
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Warm"
+msgstr "Warm"
 
 #. js-lingui-id: r6y+jM
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
@@ -14374,6 +15771,16 @@ msgstr "We will send a POST request to this endpoint for each new event in appli
 #: src/pages/settings/security/SettingsSecurityApprovedAccessDomain.tsx
 msgid "We will send your a link to verify domain ownership"
 msgstr "We will send your a link to verify domain ownership"
+
+#. js-lingui-id: ucMpSd
+#: src/pages/status/Status.tsx
+msgid "We're fully operational"
+msgstr "We're fully operational"
+
+#. js-lingui-id: 9Px8Ad
+#: src/pages/status/Status.tsx
+msgid "We're seeing degraded service"
+msgstr "We're seeing degraded service"
 
 #. js-lingui-id: X56YGk
 #: src/pages/onboarding/PaymentSuccess.tsx
@@ -14476,6 +15883,11 @@ msgstr "What can I help you with?"
 msgid "What this API can do: Select a user role to define its permissions."
 msgstr "What this API can do: Select a user role to define its permissions."
 
+#. js-lingui-id: 3ePd3I
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "What's new"
+msgstr "What's new"
+
 #. js-lingui-id: m7GziZ
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "When a deal's stage changes to Closed Won, create a task assigned to the deal owner, due 7 days after the close date, with title \"Post-sale check-in\" and the company name in the description."
@@ -14508,6 +15920,11 @@ msgstr "When the key will be disabled"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterLogicalOperatorCell.tsx
 msgid "Where"
 msgstr "Where"
+
+#. js-lingui-id: y8hlkk
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Who do you want to call?"
+msgstr "Who do you want to call?"
 
 #. js-lingui-id: fANaAS
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutWidgetTypeSelect.tsx
@@ -14619,6 +16036,11 @@ msgstr "Workflows"
 msgid "Workspace"
 msgstr "Workspace"
 
+#. js-lingui-id: lCw18+
+#: src/pages/status/Status.tsx
+msgid "Workspace call metrics"
+msgstr "Workspace call metrics"
+
 #. js-lingui-id: fQ8teq
 #: src/modules/auth/sign-in-up/hooks/useSignUpInNewWorkspace.ts
 msgid "Workspace creation failed"
@@ -14665,6 +16087,11 @@ msgstr "Workspace Member"
 msgid "Workspace name"
 msgstr "Workspace name"
 
+#. js-lingui-id: 1xiExk
+#: src/pages/status/Status.tsx
+msgid "Workspace telephony health"
+msgstr "Workspace telephony health"
+
 #. js-lingui-id: QZi0YX
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownVisibilityContent.tsx
 msgid "Workspace views require manage views permission"
@@ -14685,6 +16112,11 @@ msgstr "Would you like to remove {recordGroupSort} group sorting?"
 msgid "Wrap on record pages"
 msgstr "Wrap on record pages"
 
+#. js-lingui-id: 2NpTry
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Wrap up this call"
+msgstr "Wrap up this call"
+
 #. js-lingui-id: Q9pNST
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldDescriptionForm.tsx
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -14704,6 +16136,16 @@ msgstr "Write a description for this agent"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionCodeEditorTab.tsx
 msgid "Write your function (in typescript) below"
 msgstr "Write your function (in typescript) below"
+
+#. js-lingui-id: Yx1pR4
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Wrong #"
+msgstr "Wrong #"
+
+#. js-lingui-id: 0H4CtI
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Wrong Number"
+msgstr "Wrong Number"
 
 #. js-lingui-id: SHqkdn
 #: src/modules/command-menu/pages/page-layout/constants/ChartSettingsHeadings.ts
@@ -14761,6 +16203,11 @@ msgstr "yes"
 msgid "Yesterday"
 msgstr "Yesterday"
 
+#. js-lingui-id: kWJmRL
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "You"
+msgstr "You"
+
 #. js-lingui-id: lWUeEt
 #: src/modules/auth/sign-in-up/hooks/useWorkspaceFromInviteHash.ts
 msgid "You already belong to the workspace {workspaceDisplayName}"
@@ -14790,6 +16237,11 @@ msgstr "You can see the function logic in your application settings."
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 msgid "You can set up any combination of IMAP (receiving emails), SMTP (sending emails), and CalDAV (calendar sync)."
 msgstr "You can set up any combination of IMAP (receiving emails), SMTP (sending emails), and CalDAV (calendar sync)."
+
+#. js-lingui-id: a5P84t
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "You can start with the free CRM, then turn on hosted calling and AI when your team is ready."
+msgstr "You can start with the free CRM, then turn on hosted calling and AI when your team is ready."
 
 #. js-lingui-id: eqUj2Z
 #: src/modules/page-layout/widgets/components/PageLayoutWidgetForbiddenDisplay.tsx
@@ -14840,6 +16292,11 @@ msgstr "You will lose all your mappings."
 #: src/pages/settings/domains/SettingsDomain.tsx
 msgid "You're about to change your workspace subdomain. This action will log out all users."
 msgstr "You're about to change your workspace subdomain. This action will log out all users."
+
+#. js-lingui-id: 9tRLdq
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "You're all set. Happy calling."
+msgstr "You're all set. Happy calling."
 
 #. js-lingui-id: nIF+FL
 #: src/pages/onboarding/PaymentSuccess.tsx

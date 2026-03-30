@@ -152,6 +152,12 @@ msgstr "{0, plural, one {# Об'єкт} few {# Об'єкти} many {# Об'єк�
 msgid "{0, plural, one {You do not have permission to access the {fieldsList} field} other {You do not have permission to access the {fieldsList} fields}}"
 msgstr "{0, plural, one {Ви не маєте доступу до поля {fieldsList}} few {Ви не маєте доступу до полів {fieldsList}} many {Ви не маєте доступу до полів {fieldsList}} other {Ви не маєте доступу до полів {fieldsList}}}"
 
+#. js-lingui-id: unAwTo
+#. placeholder {0}: selectedScriptSections.length
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "{0} live sections detected"
+msgstr ""
+
 #. js-lingui-id: fvImQM
 #. placeholder {0}: selected.size
 #: src/modules/files/components/FileBrowser.tsx
@@ -186,6 +192,11 @@ msgstr "{appName} хоче отримати доступ до вашого об�
 #. js-lingui-id: SU5Crx
 #: src/modules/ai/components/internal/AIChatContextUsageButton.tsx
 msgid "{cachedPercent}% cached"
+msgstr ""
+
+#. js-lingui-id: fG+64K
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "{characterCount} characters"
 msgstr ""
 
 #. js-lingui-id: zi5SHH
@@ -229,6 +240,11 @@ msgstr ""
 #: src/modules/settings/admin-panel/health-status/hooks/useDeleteJobs.ts
 msgid "{deletedCount, plural, one {Successfully deleted {deletedCount} job} other {Successfully deleted {deletedCount} jobs}}"
 msgstr "{deletedCount, plural, one {Успішно видалено {deletedCount} завдання} few {Успішно видалено {deletedCount} завдання} many {Успішно видалено {deletedCount} завдань} other {Успішно видалено {deletedCount} завдань}}"
+
+#. js-lingui-id: BzFbxk
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "{downloadItemLabel} command copied"
+msgstr ""
 
 #. js-lingui-id: 2Xxop4
 #: src/modules/billing/components/TrialCard.tsx
@@ -428,6 +444,28 @@ msgstr "{workflowRunIteratorSubStepIterationsCount, plural, one {# елемен�
 msgid "{workspaceMemberName} will be unassigned from the following role:"
 msgstr "{workspaceMemberName} буде позбавлений наступної ролі:"
 
+#. js-lingui-id: UtbGDC
+#: src/pages/status/Status.tsx
+msgid "{workspaceName} call metrics"
+msgstr ""
+
+#. js-lingui-id: X18ldX
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid ""
+"# Opening\n"
+"\n"
+"Introduce yourself and explain why you are calling.\n"
+"\n"
+"# Discovery\n"
+"\n"
+"Ask about the current workflow, goals, and blockers."
+msgstr ""
+
+#. js-lingui-id: xIr7AP
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "#{positionLabel}"
+msgstr ""
+
 #. js-lingui-id: CwstSL
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
@@ -445,6 +483,16 @@ msgstr ""
 msgid "~{kTokens}k tokens"
 msgstr ""
 
+#. js-lingui-id: be30i9
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "$0"
+msgstr ""
+
+#. js-lingui-id: tEP5ki
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "$20"
+msgstr ""
+
 #. js-lingui-id: Cx0xl3
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
@@ -457,6 +505,11 @@ msgstr "0"
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerCronForm.tsx
 msgid "0 */1 * * *"
 msgstr "0 */1 * * *"
+
+#. js-lingui-id: ZeP6Dy
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "1 seat"
+msgstr ""
 
 #. js-lingui-id: tEdOxj
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
@@ -540,6 +593,11 @@ msgstr "Метод 2ФА успішно видалено."
 #: src/modules/settings/two-factor-authentication/components/DeleteTwoFactorAuthenticationMethod.tsx
 msgid "2FA Method Reset"
 msgstr "Скидання методу 2ФА"
+
+#. js-lingui-id: TCoCNN
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "50 AI coaching minutes / month"
+msgstr ""
 
 #. js-lingui-id: 4lbHin
 #: src/modules/logic-functions/components/LogicFunctionExecutionResult.tsx
@@ -940,8 +998,14 @@ msgstr "Додати вузол"
 
 #. js-lingui-id: NeOuRn
 #: src/modules/activities/notes/components/NotesCard.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 msgid "Add note"
 msgstr "Додати примітку"
+
+#. js-lingui-id: nxv8yE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Add Note"
+msgstr ""
 
 #. js-lingui-id: dEO3Zx
 #: src/pages/settings/data-model/SettingsObjects.tsx
@@ -1009,6 +1073,11 @@ msgstr "Додати правило"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterAddFilterRuleSelect.tsx
 msgid "Add rule group"
 msgstr "Додати групу правил"
+
+#. js-lingui-id: u1jW2A
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Add script"
+msgstr ""
 
 #. js-lingui-id: TdZwYb
 #: src/modules/workflow/workflow-steps/workflow-actions/find-records-action/components/WorkflowFindRecordsSorts.tsx
@@ -1264,6 +1333,23 @@ msgstr ""
 msgid "AI"
 msgstr "ШІ"
 
+#. js-lingui-id: jWbw9m
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallCoachingTab.tsx
+msgid "AI coaching"
+msgstr ""
+
+#. js-lingui-id: 6FIhq8
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "AI Coaching"
+msgstr ""
+
+#. js-lingui-id: iIspfz
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "AI coaching is active"
+msgstr ""
+
 #. js-lingui-id: kNfr85
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowAiAgentPromptTab.tsx
 #: src/pages/settings/ai/components/SettingsAgentSettingsTab.tsx
@@ -1295,6 +1381,11 @@ msgstr "Підготовка запиту ШІ"
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowOutputSchemaBuilder.tsx
 msgid "AI Response Schema"
 msgstr "Схема відповіді ІІ"
+
+#. js-lingui-id: nuuKEk
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "AI-built list"
+msgstr ""
 
 #. js-lingui-id: Zdun41
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
@@ -1572,6 +1663,21 @@ msgstr "Сталася несподівана помилка"
 msgid "An unexpected error occurred. Please try again."
 msgstr ""
 
+#. js-lingui-id: ZlwDi6
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Analytics"
+msgstr ""
+
+#. js-lingui-id: B5RGJ3
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Analyzing call..."
+msgstr ""
+
+#. js-lingui-id: oApU45
+#: src/modules/dialer/types/coaching.ts
+msgid "Analyzing conversation..."
+msgstr ""
+
 #. js-lingui-id: HZFm5R
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
 #: src/utils/date-utils.ts
@@ -1583,9 +1689,20 @@ msgstr "та"
 msgid "And"
 msgstr "Та"
 
+#. js-lingui-id: 3P4xTz
+#: src/pages/status/Status.tsx
+msgid "Answer rate"
+msgstr ""
+
 #. js-lingui-id: BxsPgw
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 msgid "Answer Rate"
+msgstr ""
+
+#. js-lingui-id: qJ/4UN
+#: src/pages/status/Status.tsx
+msgid "Answered vs total calls"
 msgstr ""
 
 #. js-lingui-id: KYvJeB
@@ -1732,6 +1849,7 @@ msgstr "Застосовність"
 
 #. js-lingui-id: IrC12v
 #: src/modules/workflow/workflow-steps/workflow-actions/utils/getActionHeaderTypeOrThrow.ts
+#: src/pages/status/Status.tsx
 msgid "Application"
 msgstr ""
 
@@ -1864,9 +1982,17 @@ msgstr "За зростанням"
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/command-menu/hooks/useOpenAskAIPageInCommandMenu.ts
+#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
+#: src/pages/home/HomePage.tsx
+#: src/pages/object-record/RecordShowPage.tsx
 msgid "Ask AI"
 msgstr "Запитати AI"
+
+#. js-lingui-id: 42QgR+
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Ask AI to find the best people to call, then turn that answer into your next list."
+msgstr ""
 
 #. js-lingui-id: 2J838w
 #: src/modules/agent/components/AgentChatPanel.tsx
@@ -1932,6 +2058,11 @@ msgstr "Призначено"
 #: src/modules/settings/roles/role/components/SettingsRole.tsx
 msgid "Assignment"
 msgstr "Призначення"
+
+#. js-lingui-id: ckQWXH
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Assist mode"
+msgstr ""
 
 #. js-lingui-id: d/bvvp
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
@@ -2013,6 +2144,16 @@ msgstr ""
 msgid "Attachments"
 msgstr "Вкладення"
 
+#. js-lingui-id: vtW45i
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Attempt"
+msgstr ""
+
+#. js-lingui-id: pwk8Yy
+#: src/pages/status/Status.tsx
+msgid "Attention"
+msgstr ""
+
 #. js-lingui-id: FH8ED9
 #: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
 msgid "Audio Devices"
@@ -2085,6 +2226,16 @@ msgstr "Авторизований URI"
 msgid "Authorized URL copied to clipboard"
 msgstr "Авторизований URL скопійовано в буфер обміну"
 
+#. js-lingui-id: Qz9P8G
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-advance"
+msgstr ""
+
+#. js-lingui-id: Zo8UlQ
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-advance delay (ms)"
+msgstr ""
+
 #. js-lingui-id: 2zJkmL
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarChannelDetails.tsx
 msgid "Auto-creation"
@@ -2093,6 +2244,11 @@ msgstr "Авто-створення"
 #. js-lingui-id: HX/jD4
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/hooks/useWorkflowAiAgentPermissionActions.ts
 msgid "Auto-generated role for {agentDisplayName}"
+msgstr ""
+
+#. js-lingui-id: bOuV5g
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Auto-skip voicemail"
 msgstr ""
 
 #. js-lingui-id: YRT7ZW
@@ -2137,8 +2293,20 @@ msgstr ""
 msgid "Average"
 msgstr "Середнє"
 
+#. js-lingui-id: QPrDLU
+#: src/pages/status/Status.tsx
+msgid "Average connected call length"
+msgstr ""
+
+#. js-lingui-id: eQHj1l
+#: src/pages/status/Status.tsx
+msgid "Average duration"
+msgstr ""
+
 #. js-lingui-id: BdnYlL
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
 msgid "Avg Duration"
 msgstr ""
 
@@ -2149,6 +2317,7 @@ msgstr "Назва осі"
 
 #. js-lingui-id: iH8pgl
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationVerification.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
 #: src/modules/spreadsheet-import/components/StepNavigationButton.tsx
 #: src/pages/onboarding/BookCall.tsx
 msgid "Back"
@@ -2158,6 +2327,11 @@ msgstr "Назад"
 #: src/modules/ui/navigation/bread-crumb/components/MobileBreadcrumb.tsx
 msgid "Back to {linkText}"
 msgstr "Назад до {linkText}"
+
+#. js-lingui-id: CsrMMF
+#: src/pages/status/Status.tsx
+msgid "Back to app"
+msgstr ""
 
 #. js-lingui-id: Dht9W3
 #: src/pages/not-found/NotFound.tsx
@@ -2182,6 +2356,11 @@ msgstr "Кольори фону"
 #. js-lingui-id: EbQe8o
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Base Credits"
+msgstr ""
+
+#. js-lingui-id: irl0Ym
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Basic analytics"
 msgstr ""
 
 #. js-lingui-id: PFohi3
@@ -2218,6 +2397,16 @@ msgstr "між хвилиною {start} та {end}"
 #: src/modules/workflow/workflow-trigger/utils/cron-to-human/descriptors/getDayOfMonthDescription.ts
 msgid "between the {startOrdinal} and {endOrdinal} of the month"
 msgstr "між {startOrdinal} та {endOrdinal} числами місяця"
+
+#. js-lingui-id: aIkeAd
+#: src/pages/status/Status.tsx
+msgid "Billed monthly"
+msgstr ""
+
+#. js-lingui-id: zioora
+#: src/pages/status/Status.tsx
+msgid "Billed yearly"
+msgstr ""
 
 #. js-lingui-id: R+w/Va
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
@@ -2297,9 +2486,24 @@ msgstr "Коричневий"
 msgid "Build a dashboard that shows: (1) total pipeline value by stage for the last 3 months, (2) count of deals won vs lost per month, (3) average deal size. Use our standard pipeline stages."
 msgstr ""
 
+#. js-lingui-id: gcfNIp
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build a targeted segment from saved views before you call."
+msgstr ""
+
+#. js-lingui-id: 48nL8D
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build from a segment"
+msgstr ""
+
 #. js-lingui-id: 8SlslB
 #: src/modules/settings/data-model/fields/forms/morph-relation/components/SettingsDataModelFieldRelationJunctionForm.tsx
 msgid "Build many-to-many relations. <0>Learn more</0>"
+msgstr ""
+
+#. js-lingui-id: 69Zn2P
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Build with Ask AI"
 msgstr ""
 
 #. js-lingui-id: +7fBMP
@@ -2322,6 +2526,12 @@ msgstr ""
 msgid "Bullet List"
 msgstr ""
 
+#. js-lingui-id: kVHATU
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Busy"
+msgstr ""
+
 #. js-lingui-id: 8ds4Hj
 #: src/pages/settings/applications/components/SettingsAvailableApplicationCard.tsx
 msgid "by {author}"
@@ -2336,6 +2546,11 @@ msgstr ""
 #: src/modules/auth/sign-in-up/components/FooterNote.tsx
 msgid "Bypass SSO"
 msgstr "Обхід SSO"
+
+#. js-lingui-id: AdYeYo
+#: src/pages/status/Status.tsx
+msgid "Cache and realtime layer"
+msgstr ""
 
 #. js-lingui-id: PmmvzS
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterValue.tsx
@@ -2422,6 +2637,68 @@ msgstr "Перегляд календаря"
 msgid "Calendars"
 msgstr "Календарі"
 
+#. js-lingui-id: 8hvxGX
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Call"
+msgstr ""
+
+#. js-lingui-id: wmZedK
+#. placeholder {0}: data.status === 'no-answer' ? 'was not answered' : data.status
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Call {0}"
+msgstr ""
+
+#. js-lingui-id: Raps36
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Call {firstName}"
+msgstr ""
+
+#. js-lingui-id: f8vZT3
+#: src/modules/dialer/types/coaching.ts
+msgid "Call ended"
+msgstr ""
+
+#. js-lingui-id: IlDNo3
+#: src/modules/dialer/types/coaching.ts
+msgid "Call failed — no coaching available"
+msgstr ""
+
+#. js-lingui-id: 3hhYok
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "Call from"
+msgstr ""
+
+#. js-lingui-id: MSaZg8
+#: src/pages/status/Status.tsx
+msgid "Call minutes used"
+msgstr ""
+
+#. js-lingui-id: NJeFSK
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Call setup"
+msgstr ""
+
+#. js-lingui-id: UyyyDh
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Call Summary"
+msgstr ""
+
+#. js-lingui-id: Knidbq
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Call timeout (s)"
+msgstr ""
+
+#. js-lingui-id: po2Fsn
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Call transfer (warm + cold)"
+msgstr ""
+
+#. js-lingui-id: TuIcJK
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Callback"
+msgstr ""
+
 #. js-lingui-id: KH43tV
 #: src/modules/dialer/components/DialConfirmationModal.tsx
 msgid "Caller ID"
@@ -2430,6 +2707,26 @@ msgstr ""
 #. js-lingui-id: saW1OG
 #: src/modules/settings/accounts/components/SettingsAccountsPhoneNumbersContent.tsx
 msgid "Calling & Presence"
+msgstr ""
+
+#. js-lingui-id: VuSTpI
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Calls Made"
+msgstr ""
+
+#. js-lingui-id: ARZ2hk
+#: src/pages/status/Status.tsx
+msgid "Calls this week"
+msgstr ""
+
+#. js-lingui-id: XpCBio
+#: src/pages/status/Status.tsx
+msgid "Calls today"
+msgstr ""
+
+#. js-lingui-id: HOZrqu
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Calls/Hour"
 msgstr ""
 
 #. js-lingui-id: msssZq
@@ -2446,8 +2743,11 @@ msgstr "Не можете сканувати? Скопіюйте"
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/dialer/components/DialConfirmationModal.tsx
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/dialer/components/QueueSettingsModal.tsx
+#: src/modules/dialer/components/QuickActions.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/CancelButton.tsx
@@ -2623,6 +2923,11 @@ msgstr "Перегляньте наші останні релізи"
 msgid "Check verification"
 msgstr "Перевірка підтвердження"
 
+#. js-lingui-id: mrqfzo
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Check your credentials in Settings"
+msgstr ""
+
 #. js-lingui-id: AwAGI4
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
 msgid "Check your Emails"
@@ -2647,6 +2952,11 @@ msgstr "Китайська — спрощена"
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
 msgid "Chinese — Traditional"
 msgstr "Китайська — традиційна"
+
+#. js-lingui-id: AjtI8+
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Choose a list"
+msgstr ""
 
 #. js-lingui-id: NFfUic
 #: src/pages/auth/SignInUp.tsx
@@ -2717,6 +3027,11 @@ msgstr ""
 #: src/modules/ui/field/input/components/AddressInput.tsx
 msgid "City"
 msgstr "Місто"
+
+#. js-lingui-id: UVWACf
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Clarifying Questions"
+msgstr ""
 
 #. js-lingui-id: xCJdfg
 #: src/modules/dialer/components/HistoryFilter.tsx
@@ -2806,6 +3121,21 @@ msgstr "Закрити банер"
 msgid "Close command menu"
 msgstr "Закрити командне меню"
 
+#. js-lingui-id: e6SyXV
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Close transfer"
+msgstr ""
+
+#. js-lingui-id: gbbi5g
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Close upgrade modal"
+msgstr ""
+
+#. js-lingui-id: S5KF1o
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Coaching"
+msgstr ""
+
 #. js-lingui-id: EWPtMO
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/code-action/components/WorkflowEditActionCode.tsx
@@ -2821,6 +3151,11 @@ msgstr "Редактор коду"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionCodeEditorTab.tsx
 msgid "Code your function"
 msgstr "Закодуйте свою функцію"
+
+#. js-lingui-id: 56QffO
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Cold"
+msgstr ""
 
 #. js-lingui-id: H86f9p
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -2909,12 +3244,18 @@ msgstr "Компактний вигляд"
 msgid "Companies"
 msgstr "Компанії"
 
+#. js-lingui-id: bD8I7O
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Complete"
+msgstr ""
+
 #. js-lingui-id: 3WrMP5
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
 msgid "Complete setup"
 msgstr ""
 
 #. js-lingui-id: 2PsTzL
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/modules/workflow/workflow-diagram/utils/generateNodesAndEdgesForIteratorNode.ts
 #: src/modules/workflow/workflow-diagram/utils/generateNodesAndEdgesForIteratorNode.ts
 msgid "completed"
@@ -3083,6 +3424,11 @@ msgstr "Підтвердити оновлення ролі"
 msgid "Confirm upgrade"
 msgstr "Підтвердити оновлення"
 
+#. js-lingui-id: Ts0Xe6
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "connect"
+msgstr ""
+
 #. js-lingui-id: D8ATlr
 #: src/modules/settings/accounts/components/SettingsNewAccountSection.tsx
 msgid "Connect a new account to your workspace"
@@ -3092,6 +3438,11 @@ msgstr "Під'єднайте новий обліковий запис до ва
 #: src/modules/settings/accounts/components/SettingsAccountsListEmptyStateCard.tsx
 msgid "Connect Account"
 msgstr "Під'єднати обліковий запис"
+
+#. js-lingui-id: wrqmOs
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Connect Rate"
+msgstr ""
 
 #. js-lingui-id: Zgi9Fd
 #: src/modules/settings/accounts/components/SettingsAccountsListEmptyStateCard.tsx
@@ -3103,8 +3454,19 @@ msgstr "Під'єднатися через Google"
 msgid "Connect with Microsoft"
 msgstr "Під'єднатися через Microsoft"
 
+#. js-lingui-id: Y4s6EW
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Connect your Twilio account to start calling"
+msgstr ""
+
 #. js-lingui-id: QHcLEN
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/LiveTranscript.tsx
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/pages/settings/consuelo/ChromeExtensionSettings.tsx
+#: src/pages/status/Status.tsx
 msgid "Connected"
 msgstr ""
 
@@ -3112,6 +3474,12 @@ msgstr ""
 #: src/pages/settings/accounts/SettingsAccounts.tsx
 msgid "Connected accounts"
 msgstr "Під'єднані облікові записи"
+
+#. js-lingui-id: J28zul
+#: src/modules/dialer/components/CallButton.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Connecting..."
+msgstr ""
 
 #. js-lingui-id: W4Kgwq
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
@@ -3143,6 +3511,12 @@ msgstr ""
 msgid "Consuelo fields"
 msgstr ""
 
+#. js-lingui-id: HHUnvy
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/pages/status/Status.tsx
+msgid "Consuelo status"
+msgstr ""
+
 #. js-lingui-id: FbW/oJ
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Consulting with transfer target..."
@@ -3154,10 +3528,21 @@ msgstr ""
 msgid "Contact auto-creation"
 msgstr "Автоматичне створення контактів"
 
+#. js-lingui-id: Bhgd0l
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Contact us"
+msgstr ""
+
 #. js-lingui-id: cByGGA
 #: src/modules/information-banner/components/billing/InformationBannerEndTrialPeriod.tsx
 msgid "Contact your admin to continue using Workflow or AI features."
 msgstr "Зверніться до свого адміністратора, щоб продовжити використовувати функції робочих процесів або ШІ."
+
+#. js-lingui-id: 1KaQjR
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Contact: {contactName}"
+msgstr ""
 
 #. js-lingui-id: /5mghO
 #: src/modules/object-record/object-filter-dropdown/utils/getOperandLabel.ts
@@ -3212,6 +3597,11 @@ msgstr "Розмір контексту"
 msgid "Continue"
 msgstr "Продовжити"
 
+#. js-lingui-id: MeQyYN
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Continue list"
+msgstr ""
+
 #. js-lingui-id: RvVi9c
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Continue with Email"
@@ -3254,6 +3644,11 @@ msgstr ""
 msgid "Cook"
 msgstr "Cook"
 
+#. js-lingui-id: 1lIwja
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Cooldown between batches (ms)"
+msgstr ""
+
 #. js-lingui-id: FxVG/l
 #: src/hooks/useCopyToClipboard.tsx
 msgid "Copied to clipboard"
@@ -3278,6 +3673,11 @@ msgstr ""
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Copy code"
 msgstr "Копіювати код"
+
+#. js-lingui-id: Oos8fo
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Copy command"
+msgstr ""
 
 #. js-lingui-id: Es0ros
 #: src/pages/settings/applications/tabs/SettingsApplicationsCreateTab.tsx
@@ -3371,6 +3771,16 @@ msgstr "Не вдалося видалити затверджений домен
 #: src/hooks/useCopyToClipboard.tsx
 msgid "Couldn't copy to clipboard"
 msgstr "Не вдалося скопіювати в буфер обміну"
+
+#. js-lingui-id: +qJJQv
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Couldn't open billing right now"
+msgstr ""
+
+#. js-lingui-id: Cen5Fc
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Couldn't open that right now"
+msgstr ""
 
 #. js-lingui-id: S2XvS+
 #: src/modules/ai/hooks/useAIChatFileUpload.ts
@@ -3472,6 +3882,11 @@ msgstr ""
 #. js-lingui-id: ZITKtg
 #: src/pages/settings/ai/components/SettingsAgentRoleTab.tsx
 msgid "Create a role to define permissions for this agent."
+msgstr ""
+
+#. js-lingui-id: rlbLyg
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Create a script to start guiding calls."
 msgstr ""
 
 #. js-lingui-id: Xn2Nlq
@@ -3609,6 +4024,11 @@ msgstr "Створити Webhook"
 msgid "Create Workspace"
 msgstr "Створити робочий простір"
 
+#. js-lingui-id: 1JP2ON
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Create your first script"
+msgstr ""
+
 #. js-lingui-id: 9chYz/
 #: src/pages/onboarding/CreateWorkspace.tsx
 msgid "Create your workspace"
@@ -3702,6 +4122,11 @@ msgstr ""
 msgid "CRUD"
 msgstr ""
 
+#. js-lingui-id: sDljb5
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "CSV upload"
+msgstr ""
+
 #. js-lingui-id: J1QT+3
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Cumulative"
@@ -3726,6 +4151,27 @@ msgstr "Код валюти"
 #: src/modules/billing/components/internal/SubscriptionInfoRowContainer.tsx
 msgid "Current"
 msgstr "Зараз"
+
+#. js-lingui-id: avtOg2
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Current Contact"
+msgstr ""
+
+#. js-lingui-id: A+zoTy
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+#: src/pages/status/Status.tsx
+msgid "Current plan"
+msgstr ""
+
+#. js-lingui-id: AdSAUc
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Current section"
+msgstr ""
+
+#. js-lingui-id: E8pqFQ
+#: src/pages/status/Status.tsx
+msgid "Current subscription usage this period"
+msgstr ""
 
 #. js-lingui-id: 6YzXhC
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
@@ -3775,6 +4221,11 @@ msgstr ""
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownCustomView.tsx
 msgid "Custom View"
 msgstr "Користувацький перегляд"
+
+#. js-lingui-id: 876pfE
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Customer"
+msgstr ""
 
 #. js-lingui-id: MNGIVW
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectFields.tsx
@@ -3921,6 +4372,11 @@ msgstr "Дані на екрані"
 #: src/pages/settings/data-model/SettingsObjectFieldTable.tsx
 msgid "Data type"
 msgstr "Тип даних"
+
+#. js-lingui-id: JY5Oyv
+#: src/pages/status/Status.tsx
+msgid "Database"
+msgstr ""
 
 #. js-lingui-id: GEMJqo
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
@@ -4181,6 +4637,7 @@ msgstr "видалити"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterOptionsDropdown.tsx
 #: src/pages/settings/ai/components/SettingsAgentEvalsTab.tsx
 #: src/pages/settings/ai/components/SettingsAgentEvalsTab.tsx
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
 #: src/pages/settings/ai/components/SettingsSkillInactiveMenuDropDown.tsx
 #: src/pages/settings/ai/SettingsSkillForm.tsx
 #: src/pages/settings/ai/SettingsSkillForm.tsx
@@ -4471,6 +4928,11 @@ msgstr "Деталі"
 msgid "Developers links"
 msgstr ""
 
+#. js-lingui-id: pW0zB9
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Dial a single number with coaching or script mode."
+msgstr ""
+
 #. js-lingui-id: ErTdky
 #: src/pages/settings/ai/SettingsAI.tsx
 msgid "Dialer"
@@ -4482,6 +4944,11 @@ msgstr ""
 msgid "Discard Draft"
 msgstr "Відмінити чернетку"
 
+#. js-lingui-id: ZYnwzF
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Disconnected"
+msgstr ""
+
 #. js-lingui-id: OdPOhy
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "Discord"
@@ -4490,6 +4957,11 @@ msgstr ""
 #. js-lingui-id: lxXSWc
 #: src/pages/settings/dialer/SettingsDialerDiscord.tsx
 msgid "Discord Bot"
+msgstr ""
+
+#. js-lingui-id: D3lKO4
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Discord community"
 msgstr ""
 
 #. js-lingui-id: Xm/s+u
@@ -4517,16 +4989,31 @@ msgstr "Формат відображення"
 msgid "Display text on multiple lines"
 msgstr "Відображати текст на кількох рядках"
 
+#. js-lingui-id: qpsiH3
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "DNC"
+msgstr ""
+
 #. js-lingui-id: RDL+lZ
 #: src/modules/settings/emailing-domains/components/SettingsEmailingDomainVerificationRecords.tsx
 msgid "DNS Records"
 msgstr "DNS записи"
+
+#. js-lingui-id: 9ZpjPy
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Do Not Call"
+msgstr ""
 
 #. js-lingui-id: ji7sqw
 #: src/modules/spreadsheet-import/components/MatchColumnSelectFieldSelectDropdownContent.tsx
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/components/TemplateColumn.tsx
 msgid "Do not import"
 msgstr "Не імпортувати"
+
+#. js-lingui-id: TbjyhA
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Docs"
+msgstr ""
 
 #. js-lingui-id: TvY/XA
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
@@ -4591,6 +5078,11 @@ msgstr "Не створювати контакти до/з Gmail, листів O
 msgid "Don't sync emails from team@ support@ noreply@..."
 msgstr "Не синхронізувати листи з team@ support@ noreply@..."
 
+#. js-lingui-id: DPfwMq
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Done"
+msgstr ""
+
 #. js-lingui-id: bd+DPX
 #: src/modules/settings/experience/components/NumberFormatSelect.tsx
 msgid "Dots and comma - {dotsAndCommaExample}"
@@ -4612,6 +5104,12 @@ msgstr "Завантажити"
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Download {filename}"
 msgstr "Завантажити {filename}"
+
+#. js-lingui-id: 1H3OwS
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Download apps"
+msgstr ""
 
 #. js-lingui-id: WcWS//
 #: src/modules/settings/security/components/SSO/SettingsSSOSAMLForm.tsx
@@ -4695,6 +5193,11 @@ msgstr ""
 #: src/modules/object-record/record-field-list/record-detail-section/duplicate/components/RecordDetailDuplicatesSection.tsx
 msgid "Duplicates"
 msgstr "Дублети"
+
+#. js-lingui-id: N23Lnm
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Duration:"
+msgstr ""
 
 #. js-lingui-id: KIjvtr
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
@@ -4869,6 +5372,11 @@ msgstr ""
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
 msgid "Eighth"
 msgstr "Восьмий"
+
+#. js-lingui-id: JFnJqF
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Elapsed"
+msgstr ""
 
 #. js-lingui-id: RvmROw
 #: src/modules/workflow/workflow-steps/workflow-actions/if-else-action/utils/getBranchLabel.ts
@@ -5084,12 +5592,28 @@ msgstr "Увімкнути функції, специфічні для моде�
 
 #. js-lingui-id: xDr/ct
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 msgid "End"
+msgstr ""
+
+#. js-lingui-id: cEyYbs
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "End call"
+msgstr ""
+
+#. js-lingui-id: b41QzP
+#: src/modules/dialer/components/CallButton.tsx
+msgid "End Call"
 msgstr ""
 
 #. js-lingui-id: VFv2ZC
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "End Date"
+msgstr ""
+
+#. js-lingui-id: 8aToqE
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "End list"
 msgstr ""
 
 #. js-lingui-id: k1i50B
@@ -5101,6 +5625,11 @@ msgstr "Завершити пробний період"
 #: src/modules/information-banner/components/billing/InformationBannerEndTrialPeriod.tsx
 msgid "End trial period to continue using Workflow or AI features."
 msgstr "Завершіть пробний період, щоб продовжити використовувати функції робочих процесів або ШІ."
+
+#. js-lingui-id: 237hSL
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Ended"
+msgstr ""
 
 #. js-lingui-id: T3juzf
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
@@ -5134,9 +5663,15 @@ msgid "Enter a JSON object"
 msgstr "Введіть об’єкт JSON"
 
 #. js-lingui-id: u2fAme
+#: src/modules/dialer/components/DialPad.tsx
 #: src/modules/object-record/record-field/ui/form-types/components/FormNumberFieldInput.tsx
 msgid "Enter a number"
 msgstr "Введіть число"
+
+#. js-lingui-id: 33JTE4
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Enter a number to call"
+msgstr ""
 
 #. js-lingui-id: 93ebCf
 #: src/modules/object-record/record-field/ui/form-types/components/FormUuidFieldInput.tsx
@@ -5252,9 +5787,15 @@ msgid "Enter one option per line. Each line will become a new option."
 msgstr ""
 
 #. js-lingui-id: waLOUb
+#: src/modules/dialer/components/TransferModal.tsx
 #: src/modules/object-record/record-field/ui/form-types/components/FormPhoneFieldInput.tsx
 msgid "Enter phone number"
 msgstr "Введіть номер телефону"
+
+#. js-lingui-id: uHkhR6
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Enter reason..."
+msgstr ""
 
 #. js-lingui-id: xCiJkz
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestTestVariableInput.tsx
@@ -5637,6 +6178,11 @@ msgstr ""
 msgid "Existing Field"
 msgstr "Існуюче поле"
 
+#. js-lingui-id: /j5GKq
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Existing list"
+msgstr ""
+
 #. js-lingui-id: fV7V51
 #: src/pages/settings/data-model/SettingsObjects.tsx
 msgid "Existing objects"
@@ -5762,6 +6308,7 @@ msgid "Export ({percentageValue}%)"
 msgstr "Експорт ({percentageValue}%)"
 
 #. js-lingui-id: 2KAI4N
+#: src/modules/dialer/components/QueueAnalytics.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
 msgid "Export CSV"
 msgstr "Експорт CSV"
@@ -5846,6 +6393,8 @@ msgstr "Додаткові використані кредити"
 
 #. js-lingui-id: 7Bj3x9
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
 msgid "Failed"
@@ -5981,6 +6530,11 @@ msgstr "Не вдалося повторити завдання. Будь лас
 msgid "Failed to save navigation layout"
 msgstr ""
 
+#. js-lingui-id: dn3BBw
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Failed to save note"
+msgstr ""
+
 #. js-lingui-id: y3HIOa
 #: src/pages/settings/ai/SettingsAgentForm.tsx
 #: src/pages/settings/ai/SettingsAgentForm.tsx
@@ -5990,6 +6544,16 @@ msgstr ""
 #. js-lingui-id: 9ryUyP
 #: src/pages/settings/ai/SettingsAIPrompts.tsx
 msgid "Failed to save workspace instructions"
+msgstr ""
+
+#. js-lingui-id: GcmWm9
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Failed to schedule follow-up"
+msgstr ""
+
+#. js-lingui-id: D+q8JX
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Failed to toggle hold"
 msgstr ""
 
 #. js-lingui-id: YMSYb+
@@ -6263,6 +6827,11 @@ msgstr ""
 msgid "Filter group rule options"
 msgstr "Параметри правила групи фільтра"
 
+#. js-lingui-id: 4yK0oz
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Filtered segment"
+msgstr ""
+
 #. js-lingui-id: cSev+j
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
 msgid "Filters"
@@ -6283,6 +6852,11 @@ msgstr "Завершити потік з помилками"
 #. js-lingui-id: 8BwQeU
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 msgid "Finish Setup"
+msgstr ""
+
+#. js-lingui-id: 8jUiZQ
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Finish your phone setup before starting outbound calls."
 msgstr ""
 
 #. js-lingui-id: eYwdpC
@@ -6320,6 +6894,11 @@ msgstr "Перші 2 рядки"
 msgid "First 5 lines"
 msgstr "Перші 5 рядків"
 
+#. js-lingui-id: V5LY69
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "First call complete!"
+msgstr ""
+
 #. js-lingui-id: kODvZJ
 #: src/modules/object-record/record-field/ui/form-types/components/FormFullNameFieldInput.tsx
 #: src/modules/settings/members/components/MemberNameFields.tsx
@@ -6333,6 +6912,12 @@ msgstr "Ім’я"
 #: src/pages/onboarding/CreateProfile.tsx
 msgid "First name can not be empty"
 msgstr "Ім’я не може бути порожнім"
+
+#. js-lingui-id: +5SexD
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Fixing automatically..."
+msgstr ""
 
 #. js-lingui-id: ylQd2j
 #: src/modules/command-menu/pages/workflow/action/components/CommandMenuWorkflowSelectAction.tsx
@@ -6355,6 +6940,21 @@ msgstr ""
 #: src/modules/settings/accounts/components/message-folders/SettingsAccountsMessageFoldersCard.tsx
 msgid "Folders"
 msgstr "Папки"
+
+#. js-lingui-id: aEWxtk
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Follow up"
+msgstr ""
+
+#. js-lingui-id: 1ncUZE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Follow-up"
+msgstr ""
+
+#. js-lingui-id: QOXxtE
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Follow-up scheduled"
+msgstr ""
 
 #. js-lingui-id: glx6on
 #: src/modules/auth/sign-in-up/components/SignInUpWorkspaceScopeForm.tsx
@@ -6395,6 +6995,16 @@ msgstr "четвертий"
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
 msgid "Fourth"
 msgstr "Четвертий"
+
+#. js-lingui-id: bxJ6a0
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Free forever"
+msgstr ""
+
+#. js-lingui-id: xYSDvt
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Free plan"
+msgstr ""
 
 #. js-lingui-id: aUj1gh
 #: src/modules/ai/components/AIChatCreditsExhaustedMessage.tsx
@@ -6438,6 +7048,21 @@ msgstr ""
 msgid "Full access"
 msgstr "Повний доступ"
 
+#. js-lingui-id: 9lSqNI
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Full analytics and reporting"
+msgstr ""
+
+#. js-lingui-id: PVP87I
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Full changelog"
+msgstr ""
+
+#. js-lingui-id: 5k+3dL
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Full CRM (contacts, companies, pipeline)"
+msgstr ""
+
 #. js-lingui-id: AHOl4W
 #: src/modules/settings/logic-functions/components/SettingsLogicFunctionLabelContainer.tsx
 msgid "Function name"
@@ -6458,6 +7083,11 @@ msgstr "Функції"
 #: src/utils/title-utils.ts
 msgid "Functions - Settings"
 msgstr "Функції - Налаштування"
+
+#. js-lingui-id: NHHCo+
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "G then S"
+msgstr ""
 
 #. js-lingui-id: vYj1cC
 #: src/modules/command-menu/pages/page-layout/constants/GraphTypeInformation.ts
@@ -6559,6 +7189,8 @@ msgstr "Перейти до запусків"
 
 #. js-lingui-id: mT57+Q
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
 #: src/modules/object-record/record-table/empty-state/components/RecordTableEmptyStateRemote.tsx
 #: src/modules/views/view-picker/components/ViewPickerCreateButton.tsx
 #: src/modules/views/view-picker/components/ViewPickerCreateButton.tsx
@@ -6581,6 +7213,11 @@ msgstr "Перейти до робочих процесів"
 msgid "GoHighLevel"
 msgstr ""
 
+#. js-lingui-id: uv/r+w
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "GoHighLevel navigation, nav reorg, and docs updates"
+msgstr ""
+
 #. js-lingui-id: FYlHHU
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Gold"
@@ -6601,6 +7238,11 @@ msgstr "Google OIDC"
 #: src/modules/settings/workspace/components/ToggleImpersonate.tsx
 msgid "Grant access to your workspace so we can troubleshoot problems."
 msgstr "Надати доступ до вашого робочого простору, щоб ми могли вирішити проблеми."
+
+#. js-lingui-id: U7juEo
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Grant microphone access"
+msgstr ""
 
 #. js-lingui-id: WUgtid
 #: src/modules/settings/roles/role-permissions/object-level-permissions/object-form/components/SettingsRolePermissionsObjectLevelObjectFormObjectLevelTableRow.tsx
@@ -6672,6 +7314,11 @@ msgstr "Групувати за"
 msgid "Group sorting"
 msgstr "Сортування групи"
 
+#. js-lingui-id: IAq/yr
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Growth"
+msgstr ""
+
 #. js-lingui-id: eKiSkN
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
 msgid "h1"
@@ -6735,10 +7382,20 @@ msgstr ""
 msgid "Health Status"
 msgstr "Стан здоров'я"
 
+#. js-lingui-id: yGS9cI
+#: src/pages/status/Status.tsx
+msgid "Healthy"
+msgstr ""
+
 #. js-lingui-id: 3oTCgM
 #: src/pages/settings/profile/appearance/components/LocalePicker.tsx
 msgid "Hebrew"
 msgstr "Іврит"
+
+#. js-lingui-id: c3XJ18
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Help"
+msgstr ""
 
 #. js-lingui-id: D+zLDD
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownHiddenRecordGroupsContent.tsx
@@ -6823,7 +7480,14 @@ msgstr ""
 
 #. js-lingui-id: YJMNeo
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/InCallControls.tsx
 msgid "Hold"
+msgstr ""
+
+#. js-lingui-id: i0qMbr
+#: src/modules/navigation/components/MainNavigationDrawerFixedItems.tsx
+#: src/pages/home/HomePage.tsx
+msgid "Home"
 msgstr ""
 
 #. js-lingui-id: Xkd22/
@@ -6841,6 +7505,11 @@ msgstr "Години"
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerCronForm.tsx
 msgid "Hours between triggers"
 msgstr "Години між запуском"
+
+#. js-lingui-id: 4+3tRX
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "How can we help?"
+msgstr ""
 
 #. js-lingui-id: B06Bgk
 #: src/pages/onboarding/CreateProfile.tsx
@@ -7005,6 +7674,11 @@ msgstr ""
 msgid "imap.example.com"
 msgstr "imap.example.com"
 
+#. js-lingui-id: l6m/sx
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Immediately connects the customer to the new number. You will be disconnected."
+msgstr ""
+
 #. js-lingui-id: tSVr6t
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
 #: src/modules/settings/members/components/MemberInfosTab.tsx
@@ -7028,12 +7702,23 @@ msgstr "Імперсонізацію вимкнено для цього робо
 msgid "Import"
 msgstr "Імпорт"
 
+#. js-lingui-id: jRQolr
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Import a CSV"
+msgstr ""
+
+#. js-lingui-id: tCjaoY
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Import a fresh batch of leads and turn them into the next call run."
+msgstr ""
+
 #. js-lingui-id: sqOGcv
 #: src/modules/settings/accounts/components/SettingsAccountsMessageFolderCard.tsx
 msgid "Import all emails"
 msgstr "Імпортуйте всі електронні листи"
 
 #. js-lingui-id: 2CeOI3
+#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
 msgid "Import CSV"
 msgstr "Імпорт CSV"
@@ -7072,6 +7757,11 @@ msgstr "Імпорт даних ..."
 #: src/modules/settings/developers/utils/formatExpiration.ts
 msgid "In {dateDiff}"
 msgstr "За {dateDiff}"
+
+#. js-lingui-id: KWsaZ7
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "In 2 days"
+msgstr ""
 
 #. js-lingui-id: NoNwIX
 #: src/modules/settings/data-model/object-details/components/SettingsObjectRelationsTable.tsx
@@ -7581,6 +8271,11 @@ msgstr "Приєднатися до команди {workspaceName}"
 msgid "JSON"
 msgstr ""
 
+#. js-lingui-id: ey/ZPa
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Jump into the fullscreen list workspace and start dialing."
+msgstr ""
+
 #. js-lingui-id: OGXtL8
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownLayoutContent.tsx
 #: src/modules/views/view-picker/constants/ViewPickerTypeSelectOptions.ts
@@ -7593,6 +8288,11 @@ msgstr "Канбан"
 msgid "Key"
 msgstr "Ключ"
 
+#. js-lingui-id: vGzLMn
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Key Moments"
+msgstr ""
+
 #. js-lingui-id: VOAmkS
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/BodyInput.tsx
 msgid "Key/Value"
@@ -7600,10 +8300,12 @@ msgstr "Ключ/Значення"
 
 #. js-lingui-id: 77Emn0
 #: src/modules/keyboard-shortcut-menu/components/KeyboardShortcutMenuDialog.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
 msgid "Keyboard shortcuts"
 msgstr "Гарячі клавіші"
 
 #. js-lingui-id: jw/t1m
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Keypad"
 msgstr ""
@@ -7743,6 +8445,11 @@ msgstr "Запустити"
 msgid "Launch manually"
 msgstr "Запустити вручну"
 
+#. js-lingui-id: 7FzvjE
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Launch site refresh and mercury positioning updates"
+msgstr ""
+
 #. js-lingui-id: rdU729
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutFieldsLayout.tsx
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutFieldsSettings.tsx
@@ -7861,6 +8568,11 @@ msgstr ""
 msgid "Line Chart"
 msgstr "Лінійна діаграма"
 
+#. js-lingui-id: QGRmAn
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "lines"
+msgstr ""
+
 #. js-lingui-id: LdyooL
 #: src/modules/command-menu/components/CommandMenuLinkInfo.tsx
 msgid "link"
@@ -7907,6 +8619,11 @@ msgstr "Пов’язано електронний лист із"
 msgid "list"
 msgstr ""
 
+#. js-lingui-id: 2BBAbc
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "List"
+msgstr ""
+
 #. js-lingui-id: 5Kn+XX
 #: src/pages/settings/applications/components/SettingsApplicationsTable.tsx
 msgid "List installed applications. Use filter to search for a specific application"
@@ -7915,6 +8632,11 @@ msgstr "Список встановлених застосунків. Скори
 #. js-lingui-id: 5NZpX8
 #: src/modules/files/components/FileBrowser.tsx
 msgid "List view"
+msgstr ""
+
+#. js-lingui-id: 95r17U
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Listening..."
 msgstr ""
 
 #. js-lingui-id: HhVDr2
@@ -7930,6 +8652,11 @@ msgstr "Списки"
 #. js-lingui-id: h16FyT
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Lists"
+msgstr ""
+
+#. js-lingui-id: 9ZCJl8
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Live Transcript"
 msgstr ""
 
 #. js-lingui-id: C5bVie
@@ -7994,6 +8721,11 @@ msgstr "Завантаження завдань..."
 msgid "Loading metrics data..."
 msgstr "Завантаження даних метрик..."
 
+#. js-lingui-id: GIxe3b
+#: src/pages/status/Status.tsx
+msgid "Loading metrics..."
+msgstr ""
+
 #. js-lingui-id: tVSmFT
 #: src/modules/activities/components/CustomResolverFetchMoreLoader.tsx
 #: src/modules/object-record/record-picker/multiple-record-picker/components/MultipleRecordPickerFetchMoreLoader.tsx
@@ -8001,6 +8733,11 @@ msgstr "Завантаження даних метрик..."
 #: src/pages/settings/security/event-logs/components/EventLogResultsTable.tsx
 msgid "Loading more..."
 msgstr "Завантаження ще..."
+
+#. js-lingui-id: HL9fuU
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Loading people..."
+msgstr ""
 
 #. js-lingui-id: WdmJIX
 #: src/modules/files/components/FilePreview.tsx
@@ -8041,6 +8778,11 @@ msgstr "Завантаження..."
 #. js-lingui-id: Pwqkdw
 #: src/modules/agent/components/ConversationList.tsx
 msgid "Loading…"
+msgstr ""
+
+#. js-lingui-id: RFbt85
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Local presence dialing"
 msgstr ""
 
 #. js-lingui-id: 8NbHF7
@@ -8133,10 +8875,20 @@ msgstr "Обліковий запис пошти"
 msgid "Make HTTP requests to external APIs"
 msgstr ""
 
+#. js-lingui-id: 4fyGf5
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "Make your first call"
+msgstr ""
+
 #. js-lingui-id: n0FHLv
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
 msgid "Manage API keys and webhooks"
 msgstr "Керувати API ключами та webhooks"
+
+#. js-lingui-id: +nqVyF
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Manage billing"
+msgstr ""
 
 #. js-lingui-id: IT5nsa
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useSettingsRolePermissionFlagConfig.ts
@@ -8147,6 +8899,11 @@ msgstr "Керуйте обліковою інформацією та перед
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Manage billing information"
 msgstr "Керування платіжною інформацією"
+
+#. js-lingui-id: kBrc1S
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Manage coachingScripts"
+msgstr ""
 
 #. js-lingui-id: U8dG4j
 #: src/modules/views/view-picker/components/ViewPickerOptionDropdown.tsx
@@ -8183,6 +8940,11 @@ msgstr "Керування налаштуваннями доступу служ�
 #: src/pages/settings/members/SettingsWorkspaceMembers.tsx
 msgid "Manage the members of your workspace here"
 msgstr "Тут ви можете управляти членами свого робочого простору"
+
+#. js-lingui-id: kXaZ6X
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Manage the scripts your team can use during calls."
+msgstr ""
 
 #. js-lingui-id: /berfj
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
@@ -8233,10 +8995,20 @@ msgstr "Максимум"
 msgid "Max {0} per file"
 msgstr ""
 
+#. js-lingui-id: Qcvxoe
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Max attempts"
+msgstr ""
+
 #. js-lingui-id: HFjNu6
 #: src/modules/spreadsheet-import/steps/components/UploadStep/components/DropZone.tsx
 msgid "Max import capacity: {formatSpreadsheetMaxRecordImportCapacity} records. Otherwise, consider splitting your file or using the API."
 msgstr "Макс. ємність імпорту: {formatSpreadsheetMaxRecordImportCapacity} записів. В іншому випадку, розділіть ваш файл або використовуйте API."
+
+#. js-lingui-id: wmdPgS
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Max parallel lines"
+msgstr ""
 
 #. js-lingui-id: 2ICF9k
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
@@ -8405,6 +9177,27 @@ msgstr "Перемикання тарифу з лічильником скасо
 msgid "Method"
 msgstr "Метод"
 
+#. js-lingui-id: 1iY5xv
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Microphone"
+msgstr ""
+
+#. js-lingui-id: Znbzy/
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone access failed."
+msgstr ""
+
+#. js-lingui-id: Fffs4/
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone permission denied. Enable it in browser settings."
+msgstr ""
+
+#. js-lingui-id: NARhL+
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "Microphone permission required to make calls"
+msgstr ""
+
 #. js-lingui-id: 6cH65H
 #: src/modules/settings/security/components/SettingsSecurityAuthBypassOptionsList.tsx
 #: src/modules/settings/security/components/SettingsSecurityAuthProvidersOptionsList.tsx
@@ -8525,6 +9318,11 @@ msgstr "Більше опцій"
 msgid "Move down"
 msgstr ""
 
+#. js-lingui-id: PMdWUN
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling."
+msgstr ""
+
 #. js-lingui-id: iSLA/r
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutTabSettings.tsx
 #: src/modules/object-record/record-group/hooks/useRecordGroupActions.ts
@@ -8554,6 +9352,11 @@ msgstr ""
 msgid "Move up"
 msgstr ""
 
+#. js-lingui-id: QlTOaI
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Multi-line dialing"
+msgstr ""
+
 #. js-lingui-id: asWVA5
 #: src/modules/object-record/spreadsheet-import/utils/getSpreadSheetFieldValidationDefinitions.ts
 msgid "must be a number"
@@ -8575,6 +9378,7 @@ msgid "must be an array of valid emails"
 msgstr "повинен бути масивом дійсних електронних адрес"
 
 #. js-lingui-id: R7SsBE
+#: src/modules/dialer/components/InCallControls.tsx
 #: src/modules/dialer/components/InCallControls.tsx
 msgid "Mute"
 msgstr ""
@@ -8870,16 +9674,32 @@ msgstr ""
 #. js-lingui-id: hXzOVo
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationProvision.tsx
 #: src/modules/billing/components/internal/SubscriptionInfoRowContainer.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
 msgid "Next"
 msgstr "Далі"
+
+#. js-lingui-id: n7cIUm
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Next call in"
+msgstr ""
 
 #. js-lingui-id: AxNmtI
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 #: src/modules/spreadsheet-import/steps/components/SelectSheetStep/SelectSheetStep.tsx
 msgid "Next Step"
 msgstr "Наступний крок"
+
+#. js-lingui-id: HeFWjW
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Next Steps"
+msgstr ""
+
+#. js-lingui-id: IT903p
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Next week"
+msgstr ""
 
 #. js-lingui-id: ulck7h
 #: src/modules/object-record/record-merge/utils/getPositionWordLabel.ts
@@ -8942,6 +9762,22 @@ msgstr "Жоден агент не відповідає вашому запит�
 msgid "No analytics data available"
 msgstr ""
 
+#. js-lingui-id: 5P+oLK
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "No answer"
+msgstr ""
+
+#. js-lingui-id: 4JcNPM
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "No Answer"
+msgstr ""
+
+#. js-lingui-id: blBxAD
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "No answer detected. The next call is being prepared automatically."
+msgstr ""
+
 #. js-lingui-id: 9mx36q
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentTable.tsx
 msgid "No API keys assigned"
@@ -8967,6 +9803,11 @@ msgstr ""
 msgid "No available fields to select"
 msgstr "Немає доступних полів для вибору"
 
+#. js-lingui-id: 4gTljm
+#: src/pages/status/Status.tsx
+msgid "No billing interval"
+msgstr ""
+
 #. js-lingui-id: V/RzSE
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/BodyInput.tsx
 msgid "No body"
@@ -8977,10 +9818,20 @@ msgstr "Без тіла"
 msgid "No Call History"
 msgstr ""
 
+#. js-lingui-id: +Zdr4A
+#: src/modules/dialer/components/CallButton.tsx
+msgid "No caller ID available. Add a phone number in Settings → Dialer."
+msgstr ""
+
 #. js-lingui-id: OTe3RI
 #: src/pages/settings/domains/SettingsDomain.tsx
 msgid "No change detected"
 msgstr "Змін не виявлено"
+
+#. js-lingui-id: UcK6+0
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "No coaching available"
+msgstr ""
 
 #. js-lingui-id: wgUPZ1
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
@@ -8996,6 +9847,11 @@ msgstr ""
 #: src/modules/settings/admin-panel/config-variables/components/SettingsAdminConfigVariables.tsx
 msgid "No config variables match your current filters. Try adjusting your filters or search criteria."
 msgstr "Жодних змінних конфігурації, що відповідають вашим поточним фільтрам, не знайдено. Спробуйте змінити фільтри або критерії пошуку."
+
+#. js-lingui-id: OIwTpG
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "No contact selected"
+msgstr ""
 
 #. js-lingui-id: PlVbP6
 #: src/modules/ai/components/RoutingDebugDisplay.tsx
@@ -9184,11 +10040,21 @@ msgstr "Жодне завдання не було видалено{errorDetails}
 msgid "No jobs were retried{errorDetails}"
 msgstr "Жодне завдання не було повторено{errorDetails}"
 
+#. js-lingui-id: H5gNEn
+#: src/pages/status/Status.tsx
+msgid "No known issues are affecting the core platform right now."
+msgstr ""
+
 #. js-lingui-id: OcMef3
 #: src/modules/settings/admin-panel/components/SettingsAdminVersionContainer.tsx
 #: src/pages/settings/applications/components/SettingsApplicationVersionContainer.tsx
 msgid "No latest version found"
 msgstr "Нову версію не знайдено"
+
+#. js-lingui-id: vbSeWy
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "No list members have been loaded for this list yet."
+msgstr ""
 
 #. js-lingui-id: 5sf2dF
 #: src/pages/settings/ai/components/SettingsAgentLogsTab.tsx
@@ -9220,6 +10086,11 @@ msgstr ""
 msgid "No metrics data available"
 msgstr "Дані метрик недоступні"
 
+#. js-lingui-id: R6LXlZ
+#: src/modules/dialer/hooks/useTwilioDevice.ts
+msgid "No microphone found. Connect a mic and try again."
+msgstr ""
+
 #. js-lingui-id: UWZZdQ
 #: src/pages/settings/ai/components/SettingsAgentSettingsTab.tsx
 #: src/pages/settings/ai/components/SettingsAIRouterSettings.tsx
@@ -9246,6 +10117,11 @@ msgstr ""
 #: src/modules/ui/field/input/components/MultiSelectInput.tsx
 msgid "No option found"
 msgstr "Опцій не знайдено"
+
+#. js-lingui-id: Z05gDK
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "No outbound numbers are available yet. Add a number in phone settings to start calling."
+msgstr ""
 
 #. js-lingui-id: XRc1G9
 #: src/modules/ai/components/TerminalOutput.tsx
@@ -9464,6 +10340,21 @@ msgstr "Не знайдено"
 msgid "Not installed"
 msgstr ""
 
+#. js-lingui-id: o6bxVA
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Not Int."
+msgstr ""
+
+#. js-lingui-id: HsDv15
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Not interested"
+msgstr ""
+
+#. js-lingui-id: Ir/MDX
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Not Interested"
+msgstr ""
+
 #. js-lingui-id: 51G4/+
 #: src/modules/activities/calendar/components/CalendarEventNotSharedContent.tsx
 #: src/modules/activities/emails/components/EmailThreadNotShared.tsx
@@ -9480,6 +10371,11 @@ msgstr "Не поділився {notSharedByFullName}"
 #: src/modules/settings/accounts/components/SettingsAccountsConnectedAccountsRowRightContainer.tsx
 msgid "Not synced"
 msgstr "Не синхронізовано"
+
+#. js-lingui-id: gFrJOJ
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Note saved"
+msgstr ""
 
 #. js-lingui-id: 1DBGsz
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
@@ -9519,6 +10415,11 @@ msgstr "Число"
 #: src/modules/settings/experience/components/NumberFormatSelect.tsx
 msgid "Number format"
 msgstr "Формат числа"
+
+#. js-lingui-id: JI/ARt
+#: src/modules/dialer/components/CallButton.tsx
+msgid "Number in use by another agent"
+msgstr ""
 
 #. js-lingui-id: +cbzNC
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -9612,6 +10513,16 @@ msgstr "Унікальні поля об'єкта"
 msgid "Object-Level"
 msgstr "Рівень об'єкта"
 
+#. js-lingui-id: vb/dVr
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Objection"
+msgstr ""
+
+#. js-lingui-id: 9oBHR+
+#: src/modules/dialer/components/CoachingPanel.tsx
+msgid "Objection Handling"
+msgstr ""
+
 #. js-lingui-id: Oq4fl6
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
 msgid "objects"
@@ -9644,6 +10555,7 @@ msgid "Objects and fields permissions settings"
 msgstr "Налаштування дозволів для об'єктів і полів"
 
 #. js-lingui-id: BwJKBw
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "of"
 msgstr "з"
@@ -9662,6 +10574,11 @@ msgstr ""
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Omit zero values"
 msgstr "Пропускати нульові значення"
+
+#. js-lingui-id: R+YFk2
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "On Hold"
+msgstr ""
 
 #. js-lingui-id: jcwJgk
 #: src/modules/workflow/workflow-trigger/utils/cron-to-human/descriptors/getDayOfMonthDescription.ts
@@ -9719,6 +10636,11 @@ msgstr "На яких об'єктах має бути доступний цей 
 msgid "Onboarding call"
 msgstr "Вступний дзвінок"
 
+#. js-lingui-id: +xmpL1
+#: src/pages/status/Status.tsx
+msgid "One or more services need attention. Refresh this page or open support if something looks off."
+msgstr ""
+
 #. js-lingui-id: zii2Qj
 #: src/modules/settings/accounts/components/SettingsAccountsCalendarVisibilitySettingsCard.tsx
 msgid "Only date & participants will be shared with your team."
@@ -9772,6 +10694,16 @@ msgstr "Лише відмітка часу та учасники будуть п
 msgid "Open"
 msgstr "Відкрити"
 
+#. js-lingui-id: y7f063
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open {personLabel}"
+msgstr ""
+
+#. js-lingui-id: YPMEpM
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Open AI settings"
+msgstr ""
+
 #. js-lingui-id: JG4LoU
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldOnClickActionForm.tsx
 msgid "Open as link"
@@ -9781,6 +10713,11 @@ msgstr "Відкрити як посилання"
 #: src/modules/ui/layout/page-header/components/PageHeaderToggleCommandMenuButton.tsx
 msgid "Open command menu"
 msgstr "Відкрити командне меню"
+
+#. js-lingui-id: 3DtwqU
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open fullscreen workspace"
+msgstr ""
 
 #. js-lingui-id: pZZH4Q
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
@@ -9803,10 +10740,20 @@ msgstr "Відкрити в розділі «Ролі»"
 msgid "Open Outlook"
 msgstr "Відкрити Outlook"
 
+#. js-lingui-id: R4wqwI
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Open your people view, apply the right filters, and save the segment you want to call."
+msgstr ""
+
 #. js-lingui-id: OV5wZZ
 #: src/modules/object-metadata/components/NavigationDrawerOpenedSection.tsx
 msgid "Opened"
 msgstr "Відкрився"
+
+#. js-lingui-id: ulxsKN
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Opening email because feedback isn't ready yet"
+msgstr ""
 
 #. js-lingui-id: 8m1COB
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminHealthStatusRightContainer.tsx
@@ -9879,6 +10826,7 @@ msgstr ""
 
 #. js-lingui-id: /IX/7x
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNewSidebarItemMainMenu.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/page-layout/hooks/useTemporaryFieldsConfiguration.ts
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 #: src/pages/settings/admin-panel/SettingsAdmin.tsx
@@ -9925,6 +10873,11 @@ msgstr "Наша команда може допомогти налаштуват
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminHealthStatusRightContainer.tsx
 msgid "Outage"
 msgstr "Збій"
+
+#. js-lingui-id: 1xukgM
+#: src/pages/status/Status.tsx
+msgid "Outbound calls started today"
+msgstr ""
 
 #. js-lingui-id: g6zGjM
 #: src/modules/dialer/components/AnalyticsDashboard.tsx
@@ -10019,6 +10972,16 @@ msgstr ""
 msgid "Paragraph"
 msgstr "Абзац"
 
+#. js-lingui-id: 35g+WH
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Parallel dialing"
+msgstr ""
+
+#. js-lingui-id: wlwJea
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Parallel Dialing"
+msgstr ""
+
 #. js-lingui-id: 8ZsakT
 #: src/modules/auth/sign-in-up/components/internal/SignInUpPasswordField.tsx
 #: src/modules/settings/security/components/SettingsSecurityAuthBypassOptionsList.tsx
@@ -10057,7 +11020,14 @@ msgstr "Вставте код нижче"
 msgid "Path"
 msgstr "Шлях"
 
+#. js-lingui-id: IgrLD/
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Pause"
+msgstr ""
+
 #. js-lingui-id: UbRKMZ
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
 #: src/modules/settings/domains/components/SettingsPublicDomainsListCard.tsx
 #: src/modules/settings/security/components/approvedAccessDomains/SettingsApprovedAccessDomainsListCard.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
@@ -10067,6 +11037,8 @@ msgstr "В очікуванні"
 #. js-lingui-id: 1wdjme
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/action-menu/mock/action-menu-actions.mock.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
 msgid "People"
 msgstr "Особи"
 
@@ -10079,6 +11051,11 @@ msgstr "Люди, яким я відправляв листи, і від яки�
 #: src/modules/settings/accounts/components/SettingsAccountsMessageAutoCreationCard.tsx
 msgid "People I’ve sent emails to."
 msgstr "Люди, яким я відправляв листи."
+
+#. js-lingui-id: tva9zF
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Per seat / month"
+msgstr ""
 
 #. js-lingui-id: SrVzRe
 #: src/modules/object-record/record-board/record-board-column/components/RecordBoardColumnHeaderAggregateDropdownContent.tsx
@@ -10170,6 +11147,11 @@ msgstr "Дозволи"
 msgid "Permissions · {objectLabelSingular}"
 msgstr "Дозволи · {objectLabelSingular}"
 
+#. js-lingui-id: ceyqQZ
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Person {positionLabel}"
+msgstr ""
+
 #. js-lingui-id: zmwvG2
 #: src/modules/object-record/record-field/ui/meta-types/input/components/PhonesFieldInput.tsx
 msgid "Phone"
@@ -10194,11 +11176,37 @@ msgstr "Номер телефону скопійовано в буфер обм�
 msgid "Phone Numbers"
 msgstr ""
 
+#. js-lingui-id: FjnwJb
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Phone settings"
+msgstr ""
+
+#. js-lingui-id: 6l9inc
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Phone system error"
+msgstr ""
+
+#. js-lingui-id: fTQd9O
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Phone system needs repair"
+msgstr ""
+
+#. js-lingui-id: 6vzpbz
+#: src/modules/dialer/components/OpportunityCallPeopleTab.tsx
+msgid "Phone unavailable"
+msgstr ""
+
 #. js-lingui-id: vqKcU0
 #: src/modules/workflow/workflow-steps/components/WorkflowDropdownStepOutputItems.tsx
 #: src/modules/workflow/workflow-variables/components/WorkflowVariablesDropdownStepItems.tsx
 msgid "Pick a {objectLabel} record"
 msgstr "Виберіть запис {objectLabel}"
+
+#. js-lingui-id: tH1jeo
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Pick a phone number to start calling"
+msgstr ""
 
 #. js-lingui-id: JqqNlC
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNewSidebarItemViewPickerSubView.tsx
@@ -10250,6 +11258,11 @@ msgstr "План"
 #: src/modules/billing/components/SettingsBillingSubscriptionInfo.tsx
 msgid "Plan switching has been cancelled."
 msgstr "Перемикання плану скасовано."
+
+#. js-lingui-id: mrJzmx
+#: src/pages/status/Status.tsx
+msgid "Platform health"
+msgstr ""
 
 #. js-lingui-id: 574fPg
 #: src/modules/dialer/components/CallHistoryList.tsx
@@ -10366,6 +11379,16 @@ msgstr "Поштовий індекс"
 msgid "Postcode"
 msgstr "Поштовий код"
 
+#. js-lingui-id: 3ISz+f
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Power dialer"
+msgstr ""
+
+#. js-lingui-id: 8roEn3
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "Prefer a local presence number when a matching area code exists."
+msgstr ""
+
 #. js-lingui-id: /v6Rp9
 #: src/pages/onboarding/CreateWorkspace.tsx
 msgid "Prefilling your workspace data..."
@@ -10375,6 +11398,11 @@ msgstr "Попереднє заповнення даних вашого робо
 #: src/modules/command-menu/pages/page-layout/constants/settings/ChartConfigurationSettingLabels.ts
 msgid "Prefix"
 msgstr "Префікс"
+
+#. js-lingui-id: lOExXj
+#: src/modules/dialer/types/coaching.ts
+msgid "Preparing coaching..."
+msgstr ""
 
 #. js-lingui-id: ut1ZY+
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldIsUniqueForm.tsx
@@ -10425,6 +11453,11 @@ msgstr "Мітка основного посилання"
 msgid "Primary Link URL"
 msgstr "URL основного посилання"
 
+#. js-lingui-id: DgeCXX
+#: src/pages/status/Status.tsx
+msgid "Primary persistence layer"
+msgstr ""
+
 #. js-lingui-id: rW8PxS
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Prioritized"
@@ -10436,6 +11469,7 @@ msgid "Priority"
 msgstr "Пріоритет"
 
 #. js-lingui-id: k62X/2
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Priority support"
 msgstr ""
@@ -10474,6 +11508,11 @@ msgstr "Профіль - Налаштування"
 #. js-lingui-id: Szskbr
 #: src/modules/settings/security/components/SettingsSecurityEditableProfileFields.tsx
 msgid "Profile Picture"
+msgstr ""
+
+#. js-lingui-id: CP3D8G
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+msgid "Progress"
 msgstr ""
 
 #. js-lingui-id: W9uQXX
@@ -10546,15 +11585,30 @@ msgstr "Публічний домен успішно видалено"
 msgid "Public Domains"
 msgstr "Публічні домени"
 
+#. js-lingui-id: lGup4n
+#: src/pages/status/Status.tsx
+msgid "Public health endpoint"
+msgstr ""
+
 #. js-lingui-id: mF9LxA
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Purple"
 msgstr "Фіолетовий"
 
+#. js-lingui-id: 63aBi+
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Puts the customer on hold while you speak with the new party first."
+msgstr ""
+
 #. js-lingui-id: GUpZQM
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
 msgid "Python Code Execution"
 msgstr "Виконання коду Python"
+
+#. js-lingui-id: hi3Du/
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Qualified"
+msgstr ""
 
 #. js-lingui-id: 2vudsu
 #: src/modules/command-menu/pages/page-layout/utils/getDateGranularityLabel.ts
@@ -10570,6 +11624,21 @@ msgstr "Квартал року"
 #: src/modules/command-menu/pages/page-layout/utils/getDateGranularityPluralLabel.ts
 #: src/modules/command-menu/pages/page-layout/utils/getDateGranularityPluralLabel.ts
 msgid "quarters"
+msgstr ""
+
+#. js-lingui-id: b24kPi
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Queue"
+msgstr ""
+
+#. js-lingui-id: pbgfBb
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Queue Complete"
+msgstr ""
+
+#. js-lingui-id: a8/TmH
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Queue complete!"
 msgstr ""
 
 #. js-lingui-id: /IUt/5
@@ -10655,6 +11724,11 @@ msgstr "Отримати лист з посиланням для оновлен�
 msgid "Recent Events (oldest → newest)"
 msgstr "Нещодавні події (найстаріша → найновіша)"
 
+#. js-lingui-id: WEYdDv
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Recommended"
+msgstr ""
+
 #. js-lingui-id: gcoiFh
 #: src/modules/information-banner/components/reconnect-account/InformationBannerReconnectAccountEmailAliases.tsx
 #: src/modules/information-banner/components/reconnect-account/InformationBannerReconnectAccountInsufficientPermissions.tsx
@@ -10731,6 +11805,11 @@ msgstr "Тип запису"
 msgid "Record-level"
 msgstr ""
 
+#. js-lingui-id: SaWpbi
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Recording playback will appear here when a recording is available."
+msgstr ""
+
 #. js-lingui-id: PWlTvh
 #: src/modules/settings/roles/role-permissions/object-level-permissions/components/SettingsRolePermissionsObjectLevelTableHeader.tsx
 msgid "Records"
@@ -10757,8 +11836,14 @@ msgstr "URL перенаправлення скопійовано в буфер 
 msgid "Redirection URI"
 msgstr "URI переадресації"
 
+#. js-lingui-id: DTAXY+
+#: src/pages/status/Status.tsx
+msgid "Redis"
+msgstr ""
+
 #. js-lingui-id: lCF0wC
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
+#: src/pages/status/Status.tsx
 msgid "Refresh"
 msgstr ""
 
@@ -11020,6 +12105,7 @@ msgid "Reset variable"
 msgstr "Скинути змінну"
 
 #. js-lingui-id: ZlCDf+
+#: src/modules/dialer/components/CoachingPanel.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestExecutionResult.tsx
 msgid "Response"
 msgstr "Відповідь"
@@ -11036,6 +12122,7 @@ msgid "REST"
 msgstr "ВІДПОЧИНОК"
 
 #. js-lingui-id: 6z9W13
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 msgid "Restart"
 msgstr "Перезапустити"
@@ -11045,6 +12132,11 @@ msgstr "Перезапустити"
 #: src/modules/spreadsheet-import/steps/components/MatchColumnsStep/MatchColumnsStep.tsx
 msgid "Restart Import"
 msgstr "Перезапустити імпорт"
+
+#. js-lingui-id: ZQl2hf
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Restart Queue"
+msgstr ""
 
 #. js-lingui-id: o7CJMO
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -11102,6 +12194,9 @@ msgid "Results"
 msgstr "Результати"
 
 #. js-lingui-id: v39wLo
+#: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
 msgid "Resume"
 msgstr "Продовжити"
@@ -11110,6 +12205,7 @@ msgstr "Продовжити"
 #: src/modules/ai/components/AIChatErrorMessage.tsx
 #: src/modules/dialer/components/CallHistoryList.tsx
 #: src/modules/dialer/components/CallHistoryList.tsx
+#: src/modules/dialer/components/CoachingPanel.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobRowDropdownMenu.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminRetryJobsConfirmationModal.tsx
 msgid "Retry"
@@ -11119,6 +12215,11 @@ msgstr "Повторити спробу"
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Retry All Failed"
 msgstr "Повторити всі невдалі"
+
+#. js-lingui-id: GWWped
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Retry Analysis"
+msgstr ""
 
 #. js-lingui-id: ZbpKL+
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminJobDetailsExpandable.tsx
@@ -11142,6 +12243,16 @@ msgstr "Скасовано для цього об'єкта"
 #: src/modules/page-layout/utils/getWidgetTitle.ts
 msgid "Rich Text"
 msgstr "Форматований текст"
+
+#. js-lingui-id: M5mE2U
+#: src/modules/dialer/components/QueuePanel.tsx
+msgid "Ringing"
+msgstr ""
+
+#. js-lingui-id: EG7dfZ
+#: src/modules/dialer/components/ContactHeader.tsx
+msgid "Ringing..."
+msgstr ""
 
 #. js-lingui-id: E1BXUR
 #: src/modules/metadata-error-handler/hooks/useMetadataErrorHandler.ts
@@ -11195,6 +12306,11 @@ msgstr "Роль успішно оновлено"
 #: src/pages/settings/roles/SettingsRoleAddObjectLevel.tsx
 msgid "Roles"
 msgstr "Ролі"
+
+#. js-lingui-id: etnrj0
+#: src/pages/status/Status.tsx
+msgid "Rolling seven day call count"
+msgstr ""
 
 #. js-lingui-id: Qz0FZ3
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
@@ -11279,6 +12395,7 @@ msgstr "Субота"
 #. js-lingui-id: tfDRzk
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
+#: src/modules/dialer/components/QueueSettingsModal.tsx
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableActionButtons.tsx
 #: src/modules/settings/components/SaveAndCancelButtons/SaveButton.tsx
 msgid "Save"
@@ -11294,15 +12411,36 @@ msgstr "Зберегти як новий перегляд"
 msgid "Save Dashboard"
 msgstr "Зберегти інформаційну панель"
 
+#. js-lingui-id: NK4dHx
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save Note"
+msgstr ""
+
 #. js-lingui-id: BZVCCj
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 msgid "Save Page Layout"
 msgstr ""
 
+#. js-lingui-id: 54mCVg
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save selectedContact first"
+msgstr ""
+
+#. js-lingui-id: JP43yH
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Save selectedContact first to add notes"
+msgstr ""
+
 #. js-lingui-id: gmB6oO
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/workflow/workflow-trigger/components/CronExpressionHelper.tsx
 msgid "Schedule"
 msgstr "Розклад"
+
+#. js-lingui-id: 0QEvCe
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Schedule follow-up"
+msgstr ""
 
 #. js-lingui-id: QJ8HBJ
 #: src/modules/settings/playground/components/PlaygroundSetupForm.tsx
@@ -11319,6 +12457,50 @@ msgstr "Ім'я схеми"
 #: src/pages/settings/ai/components/SettingsAgentLogsTab.tsx
 #: src/pages/settings/ai/SettingsAgentTurnDetail.tsx
 msgid "Score"
+msgstr ""
+
+#. js-lingui-id: HvRBc1
+#: src/modules/dialer/components/PostCallSummary.tsx
+msgid "Score:"
+msgstr ""
+
+#. js-lingui-id: Zi7dyz
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Script"
+msgstr ""
+
+#. js-lingui-id: loryjr
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Script content"
+msgstr ""
+
+#. js-lingui-id: 3wD/5r
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/dialer/components/OpportunityCallCoachingTab.tsx
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Script mode"
+msgstr ""
+
+#. js-lingui-id: b5kSE5
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Script mode is active"
+msgstr ""
+
+#. js-lingui-id: DHZSYm
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+msgid "Script mode is active - {activeScriptLabel}"
+msgstr ""
+
+#. js-lingui-id: NZPZ1p
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Script name"
+msgstr ""
+
+#. js-lingui-id: U5+TsX
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+#: src/pages/settings/ai/SettingsAI.tsx
+msgid "Scripts"
 msgstr ""
 
 #. js-lingui-id: A1taO8
@@ -11641,6 +12823,11 @@ msgstr "Переглянути активну версію"
 msgid "See all {relationLabelPlural} linked to this record"
 msgstr ""
 
+#. js-lingui-id: bSNSR8
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "See all plans"
+msgstr ""
+
 #. js-lingui-id: f4Lu+X
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
 msgid "See deleted dashboards"
@@ -11757,6 +12944,11 @@ msgstr ""
 #. js-lingui-id: dtAvBz
 #: src/modules/command-menu/pages/navigation-menu-item/components/CommandMenuNavigationMenuItemEditPage.tsx
 msgid "Select a navigation item to edit"
+msgstr ""
+
+#. js-lingui-id: 2z0z+w
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Select a script in AI settings to guide the call."
 msgstr ""
 
 #. js-lingui-id: jL3gox
@@ -11915,6 +13107,11 @@ msgstr "Надіслати електронний лист"
 msgid "Send emails via connected accounts"
 msgstr "Дозволити надсилання листів за допомогою підключених облікових записів"
 
+#. js-lingui-id: RoafuO
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Send feedback"
+msgstr ""
+
 #. js-lingui-id: asU5VT
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestExecutionResult.tsx
 msgid "Sending request..."
@@ -12017,10 +13214,16 @@ msgstr "Встановіть змінні конфігурації вашого 
 msgid "Setting up your database..."
 msgstr "Налаштування вашої бази даних..."
 
+#. js-lingui-id: uVllZH
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Setting up your phone system..."
+msgstr ""
+
 #. js-lingui-id: Tz0i8g
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutTabSettings.tsx
-#: src/modules/navigation/components/MainNavigationDrawerFixedItems.tsx
+#: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
 #: src/modules/object-record/record-merge/hooks/useMergeRecordsContainerTabs.ts
 #: src/modules/settings/accounts/components/SettingsAccountsSettingsSection.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/components/SettingsRolePermissionsSettingsSection.tsx
@@ -12044,6 +13247,11 @@ msgstr "Повний доступ до налаштувань"
 #: src/modules/settings/roles/role-permissions/permission-flags/components/SettingsRolePermissionsSettingsSection.tsx
 msgid "Settings permissions"
 msgstr "Налаштування дозволів"
+
+#. js-lingui-id: RceylA
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "Settings restructure, agent polish, and landing refresh"
+msgstr ""
 
 #. js-lingui-id: rl/5Qa
 #: src/pages/settings/applications/SettingsAvailableApplicationDetails.tsx
@@ -12142,10 +13350,20 @@ msgstr "Увійти"
 msgid "Sign in or Create an account"
 msgstr "Увійти або Створити аккаунт"
 
+#. js-lingui-id: 8Y/GY3
+#: src/pages/status/Status.tsx
+msgid "Sign in with a workspace session to see Twilio and call usage details."
+msgstr ""
+
 #. js-lingui-id: e+RpCP
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Sign up"
 msgstr "Зареєструватися"
+
+#. js-lingui-id: U+Kov1
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Single call"
+msgstr ""
 
 #. js-lingui-id: BZdVGR
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectForm.tsx
@@ -12223,6 +13441,8 @@ msgid "Skills"
 msgstr ""
 
 #. js-lingui-id: 6Uau97
+#: src/modules/dialer/components/QueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
 #: src/pages/onboarding/BookCall.tsx
 #: src/pages/onboarding/InviteTeam.tsx
 msgid "Skip"
@@ -12231,6 +13451,11 @@ msgstr "Пропустити"
 #. js-lingui-id: TyudBs
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
 msgid "Skip creating a Name field "
+msgstr ""
+
+#. js-lingui-id: KiEgVu
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Skip no-answer"
 msgstr ""
 
 #. js-lingui-id: e1zVP1
@@ -12362,6 +13587,12 @@ msgstr "Пробіли і кома - {spacesAndCommaExample}"
 msgid "Spanish"
 msgstr "Іспанська"
 
+#. js-lingui-id: zuoIYL
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+#: src/modules/dialer/components/AudioDeviceSelector.tsx
+msgid "Speaker"
+msgstr ""
+
 #. js-lingui-id: vnS6Rf
 #: src/pages/settings/security/SettingsSecurity.tsx
 msgid "SSO"
@@ -12413,14 +13644,40 @@ msgstr ""
 msgid "Start"
 msgstr "Почати"
 
+#. js-lingui-id: xjxSrm
+#: src/modules/dialer/types/coaching.ts
+msgid "Start a call to receive coaching"
+msgstr ""
+
 #. js-lingui-id: GE4F4y
 #: src/modules/agent/components/AgentComposer.tsx
 msgid "Start a new conversation"
 msgstr ""
 
+#. js-lingui-id: Zwg92u
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Start a one-off call, launch a list, or prepare your next outreach session from one place."
+msgstr ""
+
 #. js-lingui-id: D3iCkb
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "Start Date"
+msgstr ""
+
+#. js-lingui-id: WI/6No
+#: src/modules/dialer/components/DialerHomeLivePanel.tsx
+msgid "Start new call"
+msgstr ""
+
+#. js-lingui-id: HQRicQ
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Start Queue"
+msgstr ""
+
+#. js-lingui-id: R2COzC
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Start transfer"
 msgstr ""
 
 #. js-lingui-id: s+K73L
@@ -12448,6 +13705,7 @@ msgstr "Стан"
 #: src/modules/settings/components/SettingsDnsRecordsTable.tsx
 #: src/pages/settings/admin-panel/SettingsAdminIndicatorHealthStatus.tsx
 #: src/pages/skills/SkillDetailPage.tsx
+#: src/utils/title-utils.ts
 msgid "Status"
 msgstr "Статус"
 
@@ -12464,6 +13722,8 @@ msgstr "Параметри фільтра кроку"
 #. js-lingui-id: ygCKqB
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowRunsActionsConfig.tsx
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowRunsActionsConfig.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
+#: src/modules/dialer/components/ListRecordQueueControls.tsx
 msgid "Stop"
 msgstr "Зупинити"
 
@@ -13202,6 +14462,11 @@ msgstr "Ця настройка може бути сконфігурована �
 msgid "This should never happen"
 msgstr "Це не повинно ніколи трапитися"
 
+#. js-lingui-id: JazPIJ
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "This takes about 30 seconds on first use."
+msgstr ""
+
 #. js-lingui-id: MMGDfe
 #: src/modules/settings/admin-panel/config-variables/components/ConfigVariableHelpText.tsx
 msgid "This value will be saved to the database."
@@ -13344,6 +14609,7 @@ msgid "Tomato"
 msgstr "Томатний"
 
 #. js-lingui-id: BRMXj0
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/localization/utils/formatDateISOStringToRelativeDate.ts
 msgid "Tomorrow"
 msgstr "Завтра"
@@ -13410,19 +14676,36 @@ msgstr "Усього завдань"
 msgid "Total time"
 msgstr "Загальний час"
 
+#. js-lingui-id: Py12OG
+#: src/pages/status/Status.tsx
+msgid "Track app health, Twilio connectivity, and workspace calling metrics from one place."
+msgstr ""
+
 #. js-lingui-id: YT/cKI
 #: src/modules/billing/components/SettingsBillingCreditsSection.tsx
 msgid "Track your {intervalLabel} workflow credit consumption."
 msgstr "Відстежуйте споживання кредитів у робочих процесах за {intervalLabel}."
 
+#. js-lingui-id: tXXo3X
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "Transcript will appear when connected"
+msgstr ""
+
 #. js-lingui-id: zPGNJm
 #: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/InCallControls.tsx
+#: src/modules/dialer/components/TransferModal.tsx
 msgid "Transfer"
 msgstr ""
 
 #. js-lingui-id: BD6DfP
 #: src/modules/dialer/components/TransferModal.tsx
 msgid "Transfer Call"
+msgstr ""
+
+#. js-lingui-id: es+Zrf
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Transferring..."
 msgstr ""
 
 #. js-lingui-id: lhkaAC
@@ -13503,6 +14786,11 @@ msgstr "Істинно"
 msgid "Try a different search term"
 msgstr ""
 
+#. js-lingui-id: CHhICG
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "Try calling yourself to hear how it sounds."
+msgstr ""
+
 #. js-lingui-id: haaL9N
 #: src/pages/settings/developers/api-keys/SettingsApiKeys.tsx
 #: src/pages/settings/workspace/SettingsApiWebhooks.tsx
@@ -13561,6 +14849,16 @@ msgstr ""
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectFormOptionRow.tsx
 msgid "Turquoise"
 msgstr "Бірюзовий"
+
+#. js-lingui-id: Wy25yg
+#: src/pages/status/Status.tsx
+msgid "Twilio"
+msgstr ""
+
+#. js-lingui-id: NWp3kO
+#: src/modules/dialer/components/TwilioConfigStatus.tsx
+msgid "Twilio connection failed"
+msgstr ""
 
 #. js-lingui-id: YIjS4q
 #: src/pages/settings/ai/components/SettingsAgentModelCapabilities.tsx
@@ -13621,6 +14919,11 @@ msgstr "Наберіть щось..."
 msgid "Type to search records"
 msgstr ""
 
+#. js-lingui-id: IxyhWx
+#: src/modules/dialer/components/QuickActions.tsx
+msgid "Type your note..."
+msgstr ""
+
 #. js-lingui-id: 4KcBEY
 #: src/pages/settings/applications/tabs/SettingsAvailableApplicationDetailContentTab.tsx
 msgid "UI components provided by this app"
@@ -13645,6 +14948,12 @@ msgstr ""
 #: src/modules/client-config/components/ClientConfigProvider.tsx
 msgid "Unable to Reach Back-end"
 msgstr "Неможливо дістатися до бекенду"
+
+#. js-lingui-id: jqzUyM
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+msgid "Unavailable"
+msgstr ""
 
 #. js-lingui-id: b2vAoQ
 #: src/pages/skills/SkillDetailPage.tsx
@@ -13711,9 +15020,17 @@ msgid "unit"
 msgstr "одиниця"
 
 #. js-lingui-id: Ef7StM
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/ContactHeader.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
+#: src/modules/dialer/components/QueuePanel.tsx
+#: src/modules/dialer/components/QuickActions.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminVersionContainer.tsx
 #: src/pages/settings/applications/components/SettingsApplicationVersionContainer.tsx
 #: src/pages/settings/emailing-domains/utils/getEmailingDomainStatusText.ts
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
 msgid "Unknown"
 msgstr "Невідомо"
 
@@ -13749,17 +15066,32 @@ msgstr ""
 msgid "Unknown Skill"
 msgstr ""
 
+#. js-lingui-id: Me/1aO
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Unlimited AI coaching"
+msgstr ""
+
 #. js-lingui-id: GQCXQS
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 #: src/pages/onboarding/internal/ChooseYourPlanContent.tsx
 msgid "Unlimited contacts"
 msgstr "Необмежена кількість контактів"
 
+#. js-lingui-id: i5yNAO
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Unlimited seats"
+msgstr ""
+
 #. js-lingui-id: WDcQq9
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownCustomView.tsx
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownVisibilityContent.tsx
 msgid "Unlisted"
 msgstr "Не перелічено"
+
+#. js-lingui-id: rn6SBY
+#: src/modules/dialer/components/InCallControls.tsx
+msgid "Unmute"
+msgstr ""
 
 #. js-lingui-id: eQMhFX
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
@@ -13800,6 +15132,11 @@ msgstr "Без назви {labelSingular}"
 msgid "Untitled iFrame"
 msgstr "Без назви iFrame"
 
+#. js-lingui-id: PMPun8
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Untitled list"
+msgstr ""
+
 #. js-lingui-id: xzOKup
 #: src/modules/settings/roles/role/components/SettingsRoleCreateEffect.tsx
 msgid "Untitled role"
@@ -13810,6 +15147,17 @@ msgstr "Неназвана роль"
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowEditActionEmailBase.tsx
 msgid "Untitled Workflow"
 msgstr "Неназваний робочий процес"
+
+#. js-lingui-id: n+PHuv
+#: src/pages/status/Status.tsx
+#: src/pages/status/Status.tsx
+msgid "Up"
+msgstr ""
+
+#. js-lingui-id: SrfROI
+#: src/modules/dialer/components/ScriptAssistPanel.tsx
+msgid "Up next"
+msgstr ""
 
 #. js-lingui-id: bf8hei
 #: src/modules/dialer/components/QueuePanel.tsx
@@ -13899,6 +15247,16 @@ msgstr ""
 msgid "Upgrade to Enterprise to access audit logs"
 msgstr ""
 
+#. js-lingui-id: lINsE/
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Upgrade to Growth"
+msgstr ""
+
+#. js-lingui-id: qAWquf
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Upgrade your workspace"
+msgstr ""
+
 #. js-lingui-id: ONWvwQ
 #: src/modules/ui/input/components/ImageInput.tsx
 msgid "Upload"
@@ -13908,6 +15266,11 @@ msgstr "Завантажити"
 #: src/modules/spreadsheet-import/steps/components/UploadStep/components/DropZone.tsx
 msgid "Upload .xlsx, .xls or .csv file"
 msgstr "Завантажити файл .xlsx, .xls або .csv"
+
+#. js-lingui-id: 7h2CW5
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Upload a CSV into {personLabelLowercase} first, then turn the imported records into your next calling list."
+msgstr ""
 
 #. js-lingui-id: 2IXDgU
 #: src/modules/advanced-text-editor/components/WorkflowSendEmailAttachments.tsx
@@ -13969,10 +15332,20 @@ msgstr "URL для впровадження"
 msgid "Use as draft"
 msgstr "Використовувати як чернетку"
 
+#. js-lingui-id: NVEXAn
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Use Ask AI to figure out who should be called next."
+msgstr ""
+
 #. js-lingui-id: 6kLyt5
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationProvision.tsx
 msgid "Use authenticator apps and browser extensions like 1Password, Authy, Microsoft Authenticator to generate one-time passwords"
 msgstr "Використовуйте додатки для аутентифікації та розширення браузера, такі як 1Password, Authy, Microsoft Authenticator для генерації одноразових паролів"
+
+#. js-lingui-id: ke/UO7
+#: src/pages/settings/ai/components/SettingsAIScripts.tsx
+msgid "Use markdown headings to break the script into sections for live guidance."
+msgstr ""
 
 #. js-lingui-id: c6uZUV
 #: src/modules/object-record/record-table/empty-state/utils/getEmptyStateSubTitle.ts
@@ -14310,6 +15683,18 @@ msgstr "Видно тільки вам"
 msgid "Visualize"
 msgstr "Візуалізувати"
 
+#. js-lingui-id: BzL3tV
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+#: src/modules/dialer/components/QueueAnalytics.tsx
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Voicemail"
+msgstr ""
+
+#. js-lingui-id: GcDULT
+#: src/modules/dialer/components/QueueSettingsModal.tsx
+msgid "Voicemail skip delay (ms)"
+msgstr ""
+
 #. js-lingui-id: uUehLT
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
 msgid "Waiting"
@@ -14324,6 +15709,11 @@ msgstr "Очікування дітей"
 #: src/modules/ai/components/TerminalOutput.tsx
 msgid "Waiting for output..."
 msgstr "Очікування виводу..."
+
+#. js-lingui-id: Wtu1aS
+#: src/modules/dialer/components/TransferModal.tsx
+msgid "Warm"
+msgstr ""
 
 #. js-lingui-id: r6y+jM
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
@@ -14379,6 +15769,16 @@ msgstr "Ми будемо надсилати POST запити на цей кі�
 #: src/pages/settings/security/SettingsSecurityApprovedAccessDomain.tsx
 msgid "We will send your a link to verify domain ownership"
 msgstr "Ми надішлемо вам посилання для перевірки права власності на домен"
+
+#. js-lingui-id: ucMpSd
+#: src/pages/status/Status.tsx
+msgid "We're fully operational"
+msgstr ""
+
+#. js-lingui-id: 9Px8Ad
+#: src/pages/status/Status.tsx
+msgid "We're seeing degraded service"
+msgstr ""
 
 #. js-lingui-id: X56YGk
 #: src/pages/onboarding/PaymentSuccess.tsx
@@ -14481,6 +15881,11 @@ msgstr ""
 msgid "What this API can do: Select a user role to define its permissions."
 msgstr "Що може виконувати цей API: Виберіть роль користувача для визначення його прав доступу."
 
+#. js-lingui-id: 3ePd3I
+#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
+msgid "What's new"
+msgstr ""
+
 #. js-lingui-id: m7GziZ
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "When a deal's stage changes to Closed Won, create a task assigned to the deal owner, due 7 days after the close date, with title \"Post-sale check-in\" and the company name in the description."
@@ -14513,6 +15918,11 @@ msgstr "Коли ключ буде відключено"
 #: src/modules/workflow/workflow-steps/filters/components/WorkflowStepFilterLogicalOperatorCell.tsx
 msgid "Where"
 msgstr "Де"
+
+#. js-lingui-id: y8hlkk
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Who do you want to call?"
+msgstr ""
 
 #. js-lingui-id: fANaAS
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutWidgetTypeSelect.tsx
@@ -14624,6 +16034,11 @@ msgstr "Робочі процеси"
 msgid "Workspace"
 msgstr "Працевлаштування"
 
+#. js-lingui-id: lCw18+
+#: src/pages/status/Status.tsx
+msgid "Workspace call metrics"
+msgstr ""
+
 #. js-lingui-id: fQ8teq
 #: src/modules/auth/sign-in-up/hooks/useSignUpInNewWorkspace.ts
 msgid "Workspace creation failed"
@@ -14670,6 +16085,11 @@ msgstr ""
 msgid "Workspace name"
 msgstr "Назва працевлаштування"
 
+#. js-lingui-id: 1xiExk
+#: src/pages/status/Status.tsx
+msgid "Workspace telephony health"
+msgstr ""
+
 #. js-lingui-id: QZi0YX
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownVisibilityContent.tsx
 msgid "Workspace views require manage views permission"
@@ -14690,6 +16110,11 @@ msgstr "Вам потрібно видалити сортування {recordGro
 msgid "Wrap on record pages"
 msgstr "Обернути на сторінках записів"
 
+#. js-lingui-id: 2NpTry
+#: src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx
+msgid "Wrap up this call"
+msgstr ""
+
 #. js-lingui-id: Q9pNST
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldDescriptionForm.tsx
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -14709,6 +16134,16 @@ msgstr "Напишіть опис для цього агента"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionCodeEditorTab.tsx
 msgid "Write your function (in typescript) below"
 msgstr "Напишіть свою функцію (TypeScript) нижче"
+
+#. js-lingui-id: Yx1pR4
+#: src/modules/dialer/components/QueueAnalytics.tsx
+msgid "Wrong #"
+msgstr ""
+
+#. js-lingui-id: 0H4CtI
+#: src/modules/dialer/components/QueueControls.tsx
+msgid "Wrong Number"
+msgstr ""
 
 #. js-lingui-id: SHqkdn
 #: src/modules/command-menu/pages/page-layout/constants/ChartSettingsHeadings.ts
@@ -14766,6 +16201,11 @@ msgstr "так"
 msgid "Yesterday"
 msgstr "Учора"
 
+#. js-lingui-id: kWJmRL
+#: src/modules/dialer/components/LiveTranscript.tsx
+msgid "You"
+msgstr ""
+
 #. js-lingui-id: lWUeEt
 #: src/modules/auth/sign-in-up/hooks/useWorkspaceFromInviteHash.ts
 msgid "You already belong to the workspace {workspaceDisplayName}"
@@ -14795,6 +16235,11 @@ msgstr ""
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 msgid "You can set up any combination of IMAP (receiving emails), SMTP (sending emails), and CalDAV (calendar sync)."
 msgstr "Ви можете налаштувати будь-яку комбінацію IMAP (отримання листів), SMTP (надсилання листів) і CalDAV (синхронізація календаря)."
+
+#. js-lingui-id: a5P84t
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "You can start with the free CRM, then turn on hosted calling and AI when your team is ready."
+msgstr ""
 
 #. js-lingui-id: eqUj2Z
 #: src/modules/page-layout/widgets/components/PageLayoutWidgetForbiddenDisplay.tsx
@@ -14845,6 +16290,11 @@ msgstr "Ви втратите всі свої зіставлення."
 #: src/pages/settings/domains/SettingsDomain.tsx
 msgid "You're about to change your workspace subdomain. This action will log out all users."
 msgstr "Ви збираєтесь змінити піддомен вашого робочого простору. Ця дія призведе до виходу всіх користувачів."
+
+#. js-lingui-id: 9tRLdq
+#: src/modules/dialer/components/FirstCallPrompt.tsx
+msgid "You're all set. Happy calling."
+msgstr ""
 
 #. js-lingui-id: nIF+FL
 #: src/pages/onboarding/PaymentSuccess.tsx
