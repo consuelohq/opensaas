@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import { useLingui } from '@lingui/react/macro';
+import { useLingui, Trans } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 
 import { activeQueueState } from '@/dialer/states/queueState';
@@ -70,7 +70,8 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
   cursor: pointer;
   background: ${({ accent, theme }) =>
     accent ? theme.color.blue : theme.background.tertiary};
-  color: ${({ accent, theme }) => (accent ? '#fff' : theme.font.color.primary)};
+  color: ${({ accent, theme }) =>
+    accent ? theme.font.color.inverted : theme.font.color.primary};
 `;
 
 const StyledNumberInput = styled.input`
@@ -108,9 +109,9 @@ export const QueueSettingsModal = ({
   );
 
   const handleSave = useCallback(() => {
-    setQueue((prev) => (prev ? { ...prev, settings } : null));
+    setActiveQueue((prev) => (prev ? { ...prev, settings } : null));
     onClose();
-  }, [settings, setQueue, onClose]);
+  }, [settings, setActiveQueue, onClose]);
 
   return (
     <StyledOverlay onClick={onClose}>
@@ -118,7 +119,7 @@ export const QueueSettingsModal = ({
         <StyledModalHeader>{t`Queue Settings`}</StyledModalHeader>
         <StyledModalBody>
           <StyledSettingRow>
-            Auto-advance
+            <Trans>Auto-advance</Trans>
             <input
               type="checkbox"
               checked={settings.autoAdvance}
@@ -126,7 +127,7 @@ export const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           <StyledSettingRow>
-            Auto-advance delay (ms)
+            <Trans>Auto-advance delay (ms)</Trans>
             <StyledNumberInput
               type="number"
               value={settings.autoAdvanceDelay}
@@ -136,7 +137,7 @@ export const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           <StyledSettingRow>
-            Skip no-answer
+            <Trans>Skip no-answer</Trans>
             <input
               type="checkbox"
               checked={settings.skipNoAnswer}
@@ -144,7 +145,7 @@ export const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           <StyledSettingRow>
-            Max attempts
+            <Trans>Max attempts</Trans>
             <StyledNumberInput
               type="number"
               value={settings.maxAttempts}
@@ -152,7 +153,7 @@ export const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           <StyledSettingRow>
-            Call timeout (s)
+            <Trans>Call timeout (s)</Trans>
             <StyledNumberInput
               type="number"
               value={settings.callTimeout}
@@ -160,7 +161,7 @@ export const QueueSettingsModal = ({
             />
           </StyledSettingRow>
           <StyledSettingRow>
-            Auto-skip voicemail
+            <Trans>Auto-skip voicemail</Trans>
             <input
               type="checkbox"
               checked={settings.autoSkipVoicemail}
@@ -169,7 +170,7 @@ export const QueueSettingsModal = ({
           </StyledSettingRow>
           {settings.autoSkipVoicemail && (
             <StyledSettingRow>
-              Voicemail skip delay (ms)
+              <Trans>Voicemail skip delay (ms)</Trans>
               <StyledNumberInput
                 type="number"
                 value={settings.voicemailSkipDelay}
@@ -180,7 +181,7 @@ export const QueueSettingsModal = ({
             </StyledSettingRow>
           )}
           <StyledSettingRow>
-            Parallel dialing
+            <Trans>Parallel dialing</Trans>
             <input
               type="checkbox"
               checked={settings.parallelDialingEnabled}
@@ -192,7 +193,7 @@ export const QueueSettingsModal = ({
           {settings.parallelDialingEnabled && (
             <>
               <StyledSettingRow>
-                Max parallel lines
+                <Trans>Max parallel lines</Trans>
                 <StyledNumberInput
                   type="number"
                   value={settings.parallelDialingMaxLines}
@@ -202,7 +203,7 @@ export const QueueSettingsModal = ({
                 />
               </StyledSettingRow>
               <StyledSettingRow>
-                Cooldown between batches (ms)
+                <Trans>Cooldown between batches (ms)</Trans>
                 <StyledNumberInput
                   type="number"
                   value={settings.parallelDialingCooldown}
@@ -217,7 +218,7 @@ export const QueueSettingsModal = ({
         <StyledModalActions>
           <StyledModalButton onClick={onClose}>{t`Cancel`}</StyledModalButton>
           <StyledModalButton accent onClick={handleSave}>
-            Save
+            <Trans>Save</Trans>
           </StyledModalButton>
         </StyledModalActions>
       </StyledModal>

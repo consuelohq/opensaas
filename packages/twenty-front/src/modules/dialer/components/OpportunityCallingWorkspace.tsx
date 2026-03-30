@@ -7,6 +7,7 @@ import { QueuePanel } from '@/dialer/components/QueuePanel';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useOpportunityQueueWorkspace } from '@/dialer/hooks/useOpportunityQueueWorkspace';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { PageLayoutInitializationQueryEffect } from '@/page-layout/components/PageLayoutInitializationQueryEffect';
 import { PageLayoutRelationWidgetsSyncEffect } from '@/page-layout/components/PageLayoutRelationWidgetsSyncEffect';
 import { PageLayoutMainContent } from '@/page-layout/PageLayoutMainContent';
@@ -21,8 +22,8 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { SettingsPath } from 'twenty-shared/types';
 import { getSettingsPath } from 'twenty-shared/utils';
-import { IconChartBar } from '@tabler/icons-react';
 import {
+  IconChartBar,
   IconLayoutSidebarRightCollapse,
   IconList,
   IconSettings,
@@ -74,13 +75,10 @@ type OpportunityCallingWorkspaceProps = {
 
 const OpportunityCallingWorkspaceContent = ({
   listId,
-}: OpportunityCallingWorkspaceContentProps<
-  OpportunityCallingWorkspaceProps,
-  'listId'
->) => {
+}: Pick<OpportunityCallingWorkspaceProps, 'listId'>) => {
   const { currentPageLayout } = useCurrentPageLayout();
   const callAssistMode = useRecoilValue(callAssistModeState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const { selectedScript } = useCoachingScripts();
   const { wrapUpState, continueList, endList } = useOpportunityQueueWorkspace({
     listId,
@@ -159,7 +157,7 @@ const OpportunityCallingWorkspaceContent = ({
               />
               <AudioDeviceSelector />
               <div>
-                {assistMode === 'script'
+                {callAssistMode === 'script'
                   ? activeScriptLabel
                     ? t`Script mode is active - ${activeScriptLabel}`
                     : t`Script mode is active`

@@ -8,6 +8,7 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { QueueItem } from '@/dialer/types/queue';
 
 export const useQueueControls = () => {
@@ -16,12 +17,12 @@ export const useQueueControls = () => {
   const [currentQueueIndex, setCurrentQueueIndex] = useRecoilState(
     currentQueueIndexState,
   );
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const { connect, disconnect } = useTwilioDevice();
 
   const callContact = useCallback(
     async (item: QueueItem) => {
-      setItems((prev) =>
+      setQueueItems((prev) =>
         prev.map((i) =>
           i.id === item.id
             ? {
@@ -43,7 +44,7 @@ export const useQueueControls = () => {
             extra: { context: 'callContact', contactId: item.contactId },
           });
           // call initiation failed — mark item as failed
-          setItems((prev) =>
+          setQueueItems((prev) =>
             prev.map((i) =>
               i.id === item.id ? { ...i, status: 'failed' as const } : i,
             ),
@@ -51,15 +52,15 @@ export const useQueueControls = () => {
         }
       }
     },
-    [callState.fromNumber, connect, setItems],
+    [callState.fromNumber, connect, setQueueItems],
   );
 
   const advanceQueue = useCallback(async () => {
     try {
-      const nextIndex = currentIndex + 1;
+      const nextIndex = currentQueueIndex + 1;
 
-      if (nextIndex >= items.length) {
-        setQueue((prev) =>
+      if (nextIndex >= queueItems.length) {
+        setActiveQueue((prev) =>
           prev
             ? {
                 ...prev,
@@ -71,10 +72,10 @@ export const useQueueControls = () => {
         return;
       }
 
-      setCurrentIndex(nextIndex);
+      setCurrentQueueIndex(nextIndex);
 
-      if (queue?.status === 'active') {
-        const nextItem = items[nextIndex];
+      if (activeQueue?.status === 'active') {
+        const nextItem = queueItems[nextIndex];
         if (nextItem) {
           await callContact(nextItem);
         }
@@ -83,66 +84,66 @@ export const useQueueControls = () => {
       captureException(err, { extra: { context: 'advanceQueue' } });
     }
   }, [
-    currentIndex,
-    items,
-    queue?.status,
-    setQueue,
-    setCurrentIndex,
+    currentQueueIndex,
+    queueItems,
+    activeQueue?.status,
+    setActiveQueue,
+    setCurrentQueueIndex,
     callContact,
   ]);
 
   const startQueue = useCallback(async () => {
-    if (!queue) return;
+    if (!activeQueue) return;
 
     try {
-      setQueue({
-        ...queue,
+      setActiveQueue({
+        ...activeQueue,
         status: 'active',
         startedAt: new Date().toISOString(),
       });
 
-      const firstItem = items[0];
+      const firstItem = queueItems[0];
       if (firstItem) {
         await callContact(firstItem);
       }
     } catch (err: unknown) {
       captureException(err, { extra: { context: 'startQueue' } });
       // start failed — revert to idle
-      setQueue((prev) => (prev ? { ...prev, status: 'idle' } : null));
+      setActiveQueue((prev) => (prev ? { ...prev, status: 'idle' } : null));
     }
-  }, [queue, items, setQueue, callContact]);
+  }, [activeQueue, queueItems, setActiveQueue, callContact]);
 
   const pauseQueue = useCallback(() => {
-    if (!queue) return;
-    setQueue({ ...queue, status: 'paused' });
-  }, [queue, setQueue]);
+    if (!activeQueue) return;
+    setActiveQueue({ ...activeQueue, status: 'paused' });
+  }, [activeQueue, setActiveQueue]);
 
   const resumeQueue = useCallback(async () => {
-    if (!queue) return;
+    if (!activeQueue) return;
 
     try {
-      setQueue({ ...queue, status: 'active' });
+      setActiveQueue({ ...activeQueue, status: 'active' });
 
-      const currentItem = items[currentIndex];
+      const currentItem = queueItems[currentQueueIndex];
       if (currentItem && currentItem.status === 'pending') {
         await callContact(currentItem);
       }
     } catch (err: unknown) {
       captureException(err, { extra: { context: 'resumeQueue' } });
       // resume failed — revert to paused
-      setQueue((prev) => (prev ? { ...prev, status: 'paused' } : null));
+      setActiveQueue((prev) => (prev ? { ...prev, status: 'paused' } : null));
     }
-  }, [queue, items, currentIndex, setQueue, callContact]);
+  }, [activeQueue, queueItems, currentQueueIndex, setActiveQueue, callContact]);
 
   const skipContact = useCallback(
     async (reason?: string) => {
       try {
-        const currentItem = items[currentIndex];
+        const currentItem = queueItems[currentQueueIndex];
         if (!currentItem) return;
 
-        setItems((prev) =>
+        setQueueItems((prev) =>
           prev.map((item, i) =>
-            i === currentIndex
+            i === currentQueueIndex
               ? {
                   ...item,
                   status: 'skipped' as const,
@@ -153,7 +154,7 @@ export const useQueueControls = () => {
           ),
         );
 
-        setQueue((prev) =>
+        setActiveQueue((prev) =>
           prev ? { ...prev, skippedContacts: prev.skippedContacts + 1 } : null,
         );
 
@@ -163,22 +164,22 @@ export const useQueueControls = () => {
         captureException(err, { extra: { context: 'skipContact', reason } });
       }
     },
-    [items, currentIndex, setItems, setQueue, disconnect, advanceQueue],
+    [queueItems, currentQueueIndex, setQueueItems, setActiveQueue, disconnect, advanceQueue],
   );
 
   const endQueue = useCallback(() => {
     disconnect();
-    setQueue((prev) =>
+    setActiveQueue((prev) =>
       prev
         ? { ...prev, status: 'stopped', completedAt: new Date().toISOString() }
         : null,
     );
-  }, [disconnect, setQueue]);
+  }, [disconnect, setActiveQueue]);
 
   const restartQueue = useCallback(() => {
-    if (!queue) return;
+    if (!activeQueue) return;
 
-    setItems((prev) =>
+    setQueueItems((prev) =>
       prev.map((item) => ({
         ...item,
         status: 'pending' as const,
@@ -191,8 +192,8 @@ export const useQueueControls = () => {
       })),
     );
 
-    setQueue({
-      ...queue,
+    setActiveQueue({
+      ...activeQueue,
       status: 'idle',
       completedContacts: 0,
       skippedContacts: 0,
@@ -201,18 +202,18 @@ export const useQueueControls = () => {
       aggregatedStats: null,
     });
 
-    setCurrentIndex(0);
-  }, [queue, setItems, setQueue, setCurrentIndex]);
+    setCurrentQueueIndex(0);
+  }, [activeQueue, setQueueItems, setActiveQueue, setCurrentQueueIndex]);
 
   // STUB: backend route POST /v1/queues/:id/assign not yet implemented (DEV-733)
   const assignQueue = useCallback(
     async (_userId: string) => {
-      if (!queue) return;
-      setQueue(null);
-      setItems([]);
-      setCurrentIndex(0);
+      if (!activeQueue) return;
+      setActiveQueue(null);
+      setQueueItems([]);
+      setCurrentQueueIndex(0);
     },
-    [queue, setQueue, setItems, setCurrentIndex],
+    [activeQueue, setActiveQueue, setQueueItems, setCurrentQueueIndex],
   );
 
   return {
@@ -224,9 +225,9 @@ export const useQueueControls = () => {
     endQueue,
     restartQueue,
     assignQueue,
-    isActive: queue?.status === 'active',
-    isPaused: queue?.status === 'paused',
-    isCompleted: queue?.status === 'completed',
-    canRestart: queue?.status === 'completed' || queue?.status === 'stopped',
+    isActive: activeQueue?.status === 'active',
+    isPaused: activeQueue?.status === 'paused',
+    isCompleted: activeQueue?.status === 'completed',
+    canRestart: activeQueue?.status === 'completed' || activeQueue?.status === 'stopped',
   };
 };

@@ -145,9 +145,12 @@ export class SkillController {
     }
 
     if (query.search) {
-      qb.andWhere('(skill.name ILIKE :search OR skill.description ILIKE :search)', {
-        search: `%${query.search}%`,
-      });
+      qb.andWhere(
+        '(skill.name ILIKE :search OR skill.description ILIKE :search)',
+        {
+          search: `%${query.search}%`,
+        },
+      );
     }
 
     const [skills, total] = await qb

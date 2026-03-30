@@ -7,9 +7,7 @@ import type { SignedFileOutput } from 'src/engine/api/common/common-args-process
 import { type FilesFieldService } from 'src/engine/core-modules/file/files-field/files-field.service';
 import { type FlatFieldMetadata } from 'src/engine/metadata-modules/flat-field-metadata/types/flat-field-metadata.type';
 
-export class FilesFieldQueryResultGetterHandler
-  implements QueryResultGetterHandlerInterface
-{
+export class FilesFieldQueryResultGetterHandler implements QueryResultGetterHandlerInterface {
   constructor(private readonly filesFieldService: FilesFieldService) {}
 
   async handle(

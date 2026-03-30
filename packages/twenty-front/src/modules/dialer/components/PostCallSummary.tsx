@@ -8,7 +8,8 @@ import {
   IconLoader2,
   IconMinus,
   IconPlus,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
 
 import { type CallAnalytics, type MomentType } from '@/dialer/types/coaching';
 import { formatDurationTimer } from '@/dialer/utils/callDuration';
@@ -80,11 +81,19 @@ const StyledMetaRow = styled.div`
 
 const StyledScoreBadge = styled.span<{ score: number }>`
   align-items: center;
-  background: ${({ score }) =>
-    score >= 70 ? '#dcfce7' : score >= 40 ? '#fef9c3' : '#fee2e2'};
+  background: ${({ theme, score }) =>
+    score >= 70
+      ? theme.background.transparent.green
+      : score >= 40
+        ? theme.background.transparent.yellow
+        : theme.background.transparent.red};
   border-radius: 999px;
-  color: ${({ score }) =>
-    score >= 70 ? '#16a34a' : score >= 40 ? '#a16207' : '#dc2626'};
+  color: ${({ theme, score }) =>
+    score >= 70
+      ? theme.color.green
+      : score >= 40
+        ? theme.color.yellow
+        : theme.color.red};
   display: inline-flex;
   font-size: 12px;
   font-weight: 600;
@@ -212,6 +221,7 @@ export const PostCallSummary = ({
   error,
   onRetry,
 }: PostCallSummaryProps) => {
+  const { t } = useLingui();
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -238,7 +248,7 @@ export const PostCallSummary = ({
       return (
         <StyledEmpty>
           <StyledSpinner size={20} />
-          <span>Analyzing call...</span>
+          <span>{t`Analyzing call...`}</span>
         </StyledEmpty>
       );
     }
@@ -251,7 +261,7 @@ export const PostCallSummary = ({
           <span>{error}</span>
           {onRetry && (
             <StyledRetryButton onClick={onRetry}>
-              Retry Analysis
+              {t`Retry Analysis`}
             </StyledRetryButton>
           )}
         </StyledEmpty>
@@ -263,10 +273,12 @@ export const PostCallSummary = ({
     return (
       <>
         <StyledMetaRow>
-          <span>Duration: {formatDurationTimer(analysis.duration)}</span>
+          <span>
+            {t`Duration:`} {formatDurationTimer(analysis.duration)}
+          </span>
           <span>•</span>
           <span>
-            Score:{' '}
+            {t`Score:`}{' '}
             <StyledScoreBadge score={analysis.performanceScore}>
               {analysis.performanceScore}/100
             </StyledScoreBadge>
@@ -291,7 +303,7 @@ export const PostCallSummary = ({
               ) : (
                 <IconChevronDown size={14} />
               )}
-              Key Moments ({analysis.keyMoments.length})
+              {t`Key Moments`} ({analysis.keyMoments.length})
             </StyledSectionLabel>
             {momentsOpen &&
               analysis.keyMoments.map((moment, i) => (
@@ -307,7 +319,7 @@ export const PostCallSummary = ({
 
         {analysis.nextSteps.length > 0 && (
           <div>
-            <StyledSectionTitle>Next Steps</StyledSectionTitle>
+            <StyledSectionTitle>{t`Next Steps`}</StyledSectionTitle>
             <StyledNextStepList>
               {analysis.nextSteps.map((step, i) => (
                 <StyledNextStepItem key={i}>{step}</StyledNextStepItem>
@@ -327,7 +339,7 @@ export const PostCallSummary = ({
       <StyledHeader onClick={toggleExpanded} aria-expanded={isExpanded}>
         <StyledHeaderLeft>
           <IconChartBar size={16} />
-          <StyledHeaderTitle>Call Summary</StyledHeaderTitle>
+          <StyledHeaderTitle>{t`Call Summary`}</StyledHeaderTitle>
         </StyledHeaderLeft>
         {isExpanded ? <IconMinus size={14} /> : <IconPlus size={14} />}
       </StyledHeader>

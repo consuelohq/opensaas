@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useRecoilState } from 'recoil';
-// eslint-disable-next-line no-restricted-imports -- twenty-ui module resolution broken (DEV-788)
-import { IconFilter, IconX } from '@tabler/icons-react';
+
+import { IconFilter, IconX } from 'twenty-ui/display';
 
 import { historyFiltersState } from '@/dialer/states/historyState';
 import {

@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 
-import { IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 @ObjectType('DiscordBotConfig')
 export class DiscordBotConfigDto {

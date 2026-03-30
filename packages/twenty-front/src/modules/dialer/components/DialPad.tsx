@@ -1,10 +1,12 @@
 import styled from '@emotion/styled';
 import { useCallback, useEffect, useRef } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { useLingui } from '@lingui/react/macro';
 
 import { DIAL_PAD_KEYS } from '@/dialer/constants/dialerConstants';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type DialPadKey } from '@/dialer/types/dialer';
 import { formatPhone, stripNonDigits } from '@/dialer/utils/phoneFormat';
 
@@ -116,8 +118,9 @@ const StyledLetters = styled.span`
 `;
 
 export const DialPad = ({ onCall }: DialPadProps) => {
+  const { t } = useLingui();
   const [phoneNumber, setPhoneNumber] = useRecoilState(phoneNumberState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const activeCall = useRecoilValue(activeCallState);
   const containerRef = useRef<HTMLDivElement>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -125,7 +128,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
   const isCallActive = callState.status === 'active';
   const isDialDisabled =
     callState.status === 'connecting' || callState.status === 'ringing';
-  const digits = stripNonDigits(rawNumber);
+  const digits = stripNonDigits(phoneNumber);
   const hasDigits = digits.length > 0;
 
   const handleKeyPress = useCallback(
@@ -139,9 +142,9 @@ export const DialPad = ({ onCall }: DialPadProps) => {
 
         return;
       }
-      setRawNumber((previous) => previous + key.digit);
+      setPhoneNumber((previous) => previous + key.digit);
     },
-    [isCallActive, isDialDisabled, activeCall, setRawNumber],
+    [isCallActive, isDialDisabled, activeCall, setPhoneNumber],
   );
 
   const handlePressStart = useCallback(
@@ -152,12 +155,12 @@ export const DialPad = ({ onCall }: DialPadProps) => {
           if (isCallActive) {
             activeCall?.sendDigits('+');
           } else {
-            setRawNumber((prev) => prev + '+');
+            setPhoneNumber((prev) => prev + '+');
           }
         }, 500);
       }
     },
-    [isCallActive, activeCall, setRawNumber],
+    [isCallActive, activeCall, setPhoneNumber],
   );
 
   const handlePressEnd = useCallback(
@@ -178,12 +181,12 @@ export const DialPad = ({ onCall }: DialPadProps) => {
   }, []);
 
   const handleBackspace = useCallback(() => {
-    setRawNumber((previous) => previous.slice(0, -1));
-  }, [setRawNumber]);
+    setPhoneNumber((previous) => previous.slice(0, -1));
+  }, [setPhoneNumber]);
 
   const handleClear = useCallback(() => {
-    setRawNumber('');
-  }, [setRawNumber]);
+    setPhoneNumber('');
+  }, [setPhoneNumber]);
 
   // keyboard input
   useEffect(() => {
@@ -203,7 +206,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
       } else if (event.key === 'Escape') {
         handleClear();
       } else if (event.key === 'Enter' && hasDigits && onCall) {
-        onCall(rawNumber);
+        onCall(phoneNumber);
       }
     };
 
@@ -215,7 +218,7 @@ export const DialPad = ({ onCall }: DialPadProps) => {
     handleBackspace,
     handleClear,
     hasDigits,
-    rawNumber,
+    phoneNumber,
     onCall,
   ]);
 
@@ -228,8 +231,8 @@ export const DialPad = ({ onCall }: DialPadProps) => {
     <StyledContainer ref={containerRef} tabIndex={-1}>
       <StyledInputRow>
         <StyledPhoneDisplay
-          value={hasDigits ? formatPhone(rawNumber) : ''}
-          placeholder="Enter a number"
+          value={hasDigits ? formatPhone(phoneNumber) : ''}
+          placeholder={t`Enter a number`}
           readOnly
           aria-label="Phone number"
         />

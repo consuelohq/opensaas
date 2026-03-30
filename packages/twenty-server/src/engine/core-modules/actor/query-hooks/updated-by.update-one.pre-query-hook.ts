@@ -16,9 +16,7 @@ import {
 import { type AuthContext } from 'src/engine/core-modules/auth/types/auth-context.type';
 
 @WorkspaceQueryHook(`*.updateOne`)
-export class UpdatedByUpdateOnePreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class UpdatedByUpdateOnePreQueryHook implements WorkspacePreQueryHookInstance {
   constructor(
     private readonly actorFromAuthContextService: ActorFromAuthContextService,
   ) {}

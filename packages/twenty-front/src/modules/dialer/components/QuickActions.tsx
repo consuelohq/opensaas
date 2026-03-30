@@ -1,19 +1,22 @@
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { IconCalendar, IconLoader2, IconNote } from '@tabler/icons-react';
+import { IconCalendar, IconLoader2, IconNote } from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
+import { msg } from '@lingui/core/macro';
 
 import { useQuickActions } from '@/dialer/hooks/useQuickActions';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type CallStatus } from '@/dialer/types/dialer';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 
 const VISIBLE_STATUSES = new Set<CallStatus>(['active', 'ended']);
 
 const FOLLOW_UP_OPTIONS = [
-  { label: 'Tomorrow', days: 1 },
-  { label: 'In 2 days', days: 2 },
-  { label: 'Next week', days: 7 },
+  { label: msg`Tomorrow`, days: 1 },
+  { label: msg`In 2 days`, days: 2 },
+  { label: msg`Next week`, days: 7 },
 ] as const;
 
 const StyledContainer = styled.div`
@@ -89,7 +92,7 @@ const StyledSmallButton = styled.button<{ primary?: boolean }>`
   background: ${({ primary, theme }) =>
     primary ? theme.color.blue : 'transparent'};
   color: ${({ primary, theme }) =>
-    primary ? '#fff' : theme.font.color.secondary};
+    primary ? theme.font.color.inverted : theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
   cursor: pointer;
 
@@ -124,11 +127,12 @@ const getFollowUpDate = (days: number): Date => {
 };
 
 export const QuickActions = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const { t } = useLingui();
+  const callState = useRecoilValue(callStateAtom);
   const selectedContact = useRecoilValue(selectedContactState);
 
   const { saveNote, scheduleFollowUp, isSaving } = useQuickActions({
-    contactId: contact?.id ?? null,
+    contactId: selectedContact?.id ?? null,
     callSid: callState.callSid,
   });
 
@@ -139,37 +143,38 @@ export const QuickActions = () => {
   const [noteContent, setNoteContent] = useState('');
   const [selectedDays, setSelectedDays] = useState<number | null>(null);
 
-  const hasContact = contact !== null;
+  const hasContact = selectedContact !== null;
 
   const handleSaveNote = useCallback(async () => {
     const ok = await saveNote(noteContent);
     if (ok) {
-      enqueueSuccessSnackBar({ message: 'Note saved' });
+      enqueueSuccessSnackBar({ message: t`Note saved` });
       setNoteContent('');
       setNoteOpen(false);
     } else {
-      enqueueErrorSnackBar({ message: 'Failed to save note' });
+      enqueueErrorSnackBar({ message: t`Failed to save note` });
     }
-  }, [noteContent, saveNote, enqueueSuccessSnackBar, enqueueErrorSnackBar]);
+  }, [noteContent, saveNote, enqueueSuccessSnackBar, enqueueErrorSnackBar, t]);
 
   const handleSchedule = useCallback(async () => {
     if (selectedDays === null) return;
     const dueAt = getFollowUpDate(selectedDays);
-    const name = contact?.name ?? contact?.firstName ?? 'Unknown';
+    const name = selectedContact?.name ?? selectedContact?.firstName ?? t`Unknown`;
     const ok = await scheduleFollowUp(dueAt, name);
     if (ok) {
-      enqueueSuccessSnackBar({ message: 'Follow-up scheduled' });
+      enqueueSuccessSnackBar({ message: t`Follow-up scheduled` });
       setSelectedDays(null);
       setFollowUpOpen(false);
     } else {
-      enqueueErrorSnackBar({ message: 'Failed to schedule follow-up' });
+      enqueueErrorSnackBar({ message: t`Failed to schedule follow-up` });
     }
   }, [
     selectedDays,
-    contact,
+    selectedContact,
     scheduleFollowUp,
     enqueueSuccessSnackBar,
     enqueueErrorSnackBar,
+    t,
   ]);
 
   const handleNoteKeyDown = useCallback(
@@ -194,10 +199,10 @@ export const QuickActions = () => {
             setNoteOpen((p) => !p);
             setFollowUpOpen(false);
           }}
-          title={hasContact ? 'Add note' : 'Save contact first to add notes'}
+          title={hasContact ? t`Add note` : t`Save selectedContact first to add notes`}
         >
           <IconNote size={16} />
-          Add Note
+          {t`Add Note`}
         </StyledActionButton>
         <StyledActionButton
           isDisabled={!hasContact}
@@ -206,17 +211,17 @@ export const QuickActions = () => {
             setFollowUpOpen((p) => !p);
             setNoteOpen(false);
           }}
-          title={hasContact ? 'Schedule follow-up' : 'Save contact first'}
+          title={hasContact ? t`Schedule follow-up` : t`Save selectedContact first`}
         >
           <IconCalendar size={16} />
-          Follow-up
+          {t`Follow-up`}
         </StyledActionButton>
       </StyledRow>
 
       {noteOpen && hasContact && (
         <StyledPanel>
           <StyledTextarea
-            placeholder="Type your note..."
+            placeholder={t`Type your note...`}
             value={noteContent}
             onChange={(e) => setNoteContent(e.target.value)}
             onKeyDown={handleNoteKeyDown}
@@ -225,14 +230,14 @@ export const QuickActions = () => {
           />
           <StyledButtonRow>
             <StyledSmallButton onClick={() => setNoteOpen(false)}>
-              Cancel
+              {t`Cancel`}
             </StyledSmallButton>
             <StyledSmallButton
               primary
               disabled={!noteContent.trim() || isSaving}
               onClick={handleSaveNote}
             >
-              {isSaving ? <IconLoader2 size={14} /> : 'Save Note'}
+              {isSaving ? <IconLoader2 size={14} /> : t`Save Note`}
             </StyledSmallButton>
           </StyledButtonRow>
         </StyledPanel>
@@ -247,20 +252,20 @@ export const QuickActions = () => {
                 selected={selectedDays === days}
                 onClick={() => setSelectedDays(days)}
               >
-                {label}
+                {t(label)}
               </StyledDateOption>
             ))}
           </StyledRow>
           <StyledButtonRow>
             <StyledSmallButton onClick={() => setFollowUpOpen(false)}>
-              Cancel
+              {t`Cancel`}
             </StyledSmallButton>
             <StyledSmallButton
               primary
               disabled={selectedDays === null || isSaving}
               onClick={handleSchedule}
             >
-              {isSaving ? <IconLoader2 size={14} /> : 'Schedule'}
+              {isSaving ? <IconLoader2 size={14} /> : t`Schedule`}
             </StyledSmallButton>
           </StyledButtonRow>
         </StyledPanel>

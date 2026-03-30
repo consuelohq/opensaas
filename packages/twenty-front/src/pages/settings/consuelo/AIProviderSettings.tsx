@@ -8,9 +8,7 @@ import { useCallback, useState } from 'react';
 import {
   IconBolt,
   IconCheck,
-  IconKey,
   IconMessage,
-  IconPlayerPlay,
   IconRobot,
   IconSettings,
   IconX,

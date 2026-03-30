@@ -8,7 +8,7 @@ import {
   IconSettings,
   IconUser,
   IconX,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
 import { QueueControls } from '@/dialer/components/QueueControls';
@@ -177,9 +177,7 @@ const StyledParallelCall = styled.div`
 
 const StyledCallStatus = styled.span<{ status: string }>`
   color: ${({ status, theme }) =>
-    status === 'in-progress'
-      ? (theme.color.green ?? '#16a34a')
-      : theme.font.color.tertiary};
+    status === 'in-progress' ? theme.color.green : theme.font.color.tertiary};
   font-size: 11px;
 `;
 
@@ -258,7 +256,8 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
   cursor: pointer;
   background: ${({ accent, theme }) =>
     accent ? theme.color.blue : theme.background.tertiary};
-  color: ${({ accent, theme }) => (accent ? '#fff' : theme.font.color.primary)};
+  color: ${({ accent, theme }) =>
+    accent ? theme.font.color.inverted : theme.font.color.primary};
 `;
 
 const StyledNumberInput = styled.input`
@@ -313,26 +312,27 @@ const ProgressBar = ({ value }: { value: number }) => (
 );
 
 const ParallelDialingStatus = () => {
+  const { t } = useLingui();
   const parallelDialing = useRecoilValue(parallelDialingSelector);
-  if (!parallel?.isActive) return null;
+  if (!parallelDialing?.isActive) return null;
 
   return (
     <StyledParallelStatus>
       <StyledParallelHeader>
         <IconPhoneCall size={14} />
-        Parallel Dialing
+        {t`Parallel Dialing`}
         <StyledCategoryBadge>
-          {parallel.activeCalls.length} lines
+          {parallelDialing.activeCalls.length} {t`lines`}
         </StyledCategoryBadge>
       </StyledParallelHeader>
-      {parallel.activeCalls.map((call) => (
+      {parallelDialing.activeCalls.map((call) => (
         <StyledParallelCall key={call.callSid}>
           <span>{call.customerNumber}</span>
           <StyledCallStatus status={call.status}>
-            {call.status === 'ringing' && '📞 Ringing'}
-            {call.status === 'in-progress' && '✅ Connected'}
-            {call.status === 'completed' && 'Done'}
-            {call.status === 'failed' && 'Failed'}
+            {call.status === 'ringing' && `📞 ${t`Ringing`}`}
+            {call.status === 'in-progress' && `✅ ${t`Connected`}`}
+            {call.status === 'completed' && t`Done`}
+            {call.status === 'failed' && t`Failed`}
           </StyledCallStatus>
         </StyledParallelCall>
       ))}
@@ -351,7 +351,7 @@ export const QueuePanel = () => {
   const [showSettings, setShowSettings] = useState(false);
   const { countdown, cancelAutoAdvance, isAutoAdvancing } = useAutoDialer();
 
-  if (!queue) return null;
+  if (!activeQueue) return null;
 
   return (
     <StyledPanel>
@@ -359,9 +359,9 @@ export const QueuePanel = () => {
       <StyledHeaderRow>
         <StyledHeaderLeft>
           <IconList size={16} />
-          <StyledTitle>{queue.name || 'Queue'}</StyledTitle>
-          {queue.category !== 'all' && (
-            <StyledCategoryBadge>{queue.category}</StyledCategoryBadge>
+          <StyledTitle>{activeQueue.name || t`Queue`}</StyledTitle>
+          {activeQueue.category !== 'all' && (
+            <StyledCategoryBadge>{activeQueue.category}</StyledCategoryBadge>
           )}
         </StyledHeaderLeft>
         <StyledSettingsButton
@@ -372,53 +372,56 @@ export const QueuePanel = () => {
         </StyledSettingsButton>
       </StyledHeaderRow>
 
-      {/* stats + progress */}
+      {/* stats + queueProgress */}
       <StyledStats>
         <span>
-          {progress?.completed ?? 0}/{progress?.total ?? 0} completed
+          {queueProgress?.completed ?? 0}/{queueProgress?.total ?? 0} {t`completed`}
         </span>
         <span>•</span>
-        <span>{queue.aggregatedStats?.answerRatePercentage ?? 0}% connect</span>
+        <span>
+          {activeQueue.aggregatedStats?.answerRatePercentage ?? 0}% {t`connect`}
+        </span>
       </StyledStats>
-      <ProgressBar value={progress?.percentComplete ?? 0} />
+      <ProgressBar value={queueProgress?.percentComplete ?? 0} />
 
       {/* analytics */}
       <QueueAnalytics />
 
       <StyledBody>
-        {/* parallel dialing */}
-        {queue.parallelDialingEnabled && <ParallelDialingStatus />}
+        {/* parallelDialing dialing */}
+        {activeQueue.parallelDialingEnabled && <ParallelDialingStatus />}
 
         {/* current contact */}
-        {currentItem ? (
+        {currentQueueItem ? (
           <>
             <StyledSectionLabel>{t`Now Calling`}</StyledSectionLabel>
             <StyledContactCard>
               <StyledContactName>
                 <IconUser size={14} />
-                {currentItem.contact.name ?? 'Unknown'}
-                {currentItem.attempts > 1 && (
+                {currentQueueItem.contact.name ?? t`Unknown`}
+                {currentQueueItem.attempts > 1 && (
                   <StyledAttemptBadge>
-                    Attempt {currentItem.attempts}/{queue.settings.maxAttempts}
+                    {t`Attempt`} {currentQueueItem.attempts}/
+                    {activeQueue.settings.maxAttempts}
                   </StyledAttemptBadge>
                 )}
               </StyledContactName>
-              {currentItem.contact.company && (
+              {currentQueueItem.contact.company && (
                 <StyledContactDetail>
-                  {currentItem.contact.company}
+                  {currentQueueItem.contact.company}
                 </StyledContactDetail>
               )}
               <StyledContactDetail>
-                {currentItem.contact.phone}
+                {currentQueueItem.contact.phone}
               </StyledContactDetail>
-              {currentItem.contact.timezone && (
+              {currentQueueItem.contact.timezone && (
                 <StyledContactDetail>
-                  🕐 {currentItem.contact.timezone}
+                  🕐 {currentQueueItem.contact.timezone}
                 </StyledContactDetail>
               )}
-              {currentItem.contact.lastNote && (
+              {currentQueueItem.contact.lastNote && (
                 <StyledContactDetail>
-                  📝 {currentItem.contact.lastNote}
+                  📝 {currentQueueItem.contact.lastNote}
                 </StyledContactDetail>
               )}
             </StyledContactCard>
@@ -426,22 +429,22 @@ export const QueuePanel = () => {
         ) : (
           <StyledEmpty>
             <IconList size={20} />
-            <span>Queue complete!</span>
+            <span>{t`Queue complete!`}</span>
           </StyledEmpty>
         )}
 
         {/* next contact */}
-        {nextItem && (
+        {nextQueueItem && (
           <>
             <StyledSectionLabel>{t`Up Next`}</StyledSectionLabel>
             <StyledContactCard compact>
               <StyledContactName>
                 <IconUser size={14} />
-                {nextItem.contact.name ?? 'Unknown'}
+                {nextQueueItem.contact.name ?? t`Unknown`}
               </StyledContactName>
-              {nextItem.contact.company && (
+              {nextQueueItem.contact.company && (
                 <StyledContactDetail>
-                  {nextItem.contact.company}
+                  {nextQueueItem.contact.company}
                 </StyledContactDetail>
               )}
             </StyledContactCard>
@@ -452,7 +455,7 @@ export const QueuePanel = () => {
       {/* auto-advance countdown */}
       {isAutoAdvancing && (
         <StyledCountdown>
-          Next call in{' '}
+          {t`Next call in`}{' '}
           <StyledCountdownNumber>{countdown}</StyledCountdownNumber>s
           <StyledCancelButton
             onClick={cancelAutoAdvance}
@@ -469,7 +472,7 @@ export const QueuePanel = () => {
       {/* settings modal */}
       {showSettings && (
         <QueueSettingsModal
-          queue={queue}
+          queue={activeQueue}
           onClose={() => setShowSettings(false)}
         />
       )}

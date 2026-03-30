@@ -281,13 +281,14 @@ export class PageLayoutWidgetService {
         flatEntityToUpdate: [],
         flatEntityToDelete: [],
       },
-errorMessage:
-      'Multiple validation errors occurred while creating page layout widget',
+      errorMessage:
+        'Multiple validation errors occurred while creating page layout widget',
     });
 
     const recomputedMaps = await this.getFlatPageLayoutWidgetMaps(workspaceId);
 
-    const universalIdentifier = flatPageLayoutWidgetToCreate.universalIdentifier;
+    const universalIdentifier =
+      flatPageLayoutWidgetToCreate.universalIdentifier;
 
     const createdWidget = findFlatEntityByUniversalIdentifierOrThrow({
       universalIdentifier,
@@ -391,17 +392,18 @@ errorMessage:
     await this.validateAndRunWidgetMigration({
       workspaceId,
       operations: {
-flatEntityToCreate: [],
-      flatEntityToUpdate: [flatPageLayoutWidgetToUpdate],
-      flatEntityToDelete: [],
-    },
-    errorMessage:
-      'Multiple validation errors occurred while updating page layout widget',
+        flatEntityToCreate: [],
+        flatEntityToUpdate: [flatPageLayoutWidgetToUpdate],
+        flatEntityToDelete: [],
+      },
+      errorMessage:
+        'Multiple validation errors occurred while updating page layout widget',
     });
 
     const recomputedMaps = await this.getFlatPageLayoutWidgetMaps(workspaceId);
 
-    const universalIdentifier = flatPageLayoutWidgetToUpdate.universalIdentifier;
+    const universalIdentifier =
+      flatPageLayoutWidgetToUpdate.universalIdentifier;
 
     const updatedWidget = findFlatEntityByUniversalIdentifierOrThrow({
       universalIdentifier,

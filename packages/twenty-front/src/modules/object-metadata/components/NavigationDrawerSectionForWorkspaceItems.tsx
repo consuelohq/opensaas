@@ -162,22 +162,114 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
         <>
           {headerContent}
           <Droppable
-          droppableId={
-            NavigationMenuItemDroppableIds.WORKSPACE_ORPHAN_NAVIGATION_MENU_ITEMS
-          }
-          isDropDisabled={workspaceDropDisabled}
-        >
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              // eslint-disable-next-line react/jsx-props-no-spreading
-              {...provided.droppableProps}
-            >
-              {filteredItems.map((item, index) => {
-                const type = item.itemType;
-                const editModeProps = getEditModeProps(item);
+            droppableId={
+              NavigationMenuItemDroppableIds.WORKSPACE_ORPHAN_NAVIGATION_MENU_ITEMS
+            }
+            isDropDisabled={workspaceDropDisabled}
+          >
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...provided.droppableProps}
+              >
+                {filteredItems.map((item, index) => {
+                  const type = item.itemType;
+                  const editModeProps = getEditModeProps(item);
 
-                if (type === 'folder') {
+                  if (type === 'folder') {
+                    return (
+                      <NavigationItemDropTarget
+                        key={item.id}
+                        folderId={null}
+                        index={index}
+                        sectionId={NavigationSections.WORKSPACE}
+                      >
+                        <DraggableItem
+                          draggableId={item.id}
+                          index={index}
+                          isInsideScrollableContainer
+                          isDragDisabled={!isEditMode}
+                          disableInteractiveElementBlocking={isEditMode}
+                          itemComponent={
+                            <WorkspaceNavigationMenuItemsFolder
+                              folderId={item.id}
+                              folderName={item.name ?? 'Folder'}
+                              navigationMenuItems={
+                                folderChildrenById.get(item.id) ?? []
+                              }
+                              isGroup={folderCount > 1}
+                              isEditMode={isEditMode}
+                              isSelectedInEditMode={
+                                editModeProps.isSelectedInEditMode
+                              }
+                              onEditModeClick={editModeProps.onEditModeClick}
+                              onNavigationMenuItemClick={
+                                onNavigationMenuItemClick
+                              }
+                              selectedNavigationMenuItemId={
+                                selectedNavigationMenuItemId
+                              }
+                              isDragging={isDragging}
+                            />
+                          }
+                        />
+                      </NavigationItemDropTarget>
+                    );
+                  }
+
+                  if (type === 'link') {
+                    const linkItem = item as ProcessedNavigationMenuItem;
+                    const iconColors = getNavigationMenuItemIconColors(theme);
+                    return (
+                      <NavigationItemDropTarget
+                        key={item.id}
+                        folderId={null}
+                        index={index}
+                        sectionId={NavigationSections.WORKSPACE}
+                      >
+                        <DraggableItem
+                          draggableId={item.id}
+                          index={index}
+                          isInsideScrollableContainer
+                          isDragDisabled={!isEditMode}
+                          disableInteractiveElementBlocking={isEditMode}
+                          itemComponent={
+                            <NavigationDrawerItem
+                              label={linkItem.labelIdentifier}
+                              to={
+                                isEditMode || isDragging
+                                  ? undefined
+                                  : linkItem.link
+                              }
+                              onClick={
+                                isEditMode
+                                  ? editModeProps.onEditModeClick
+                                  : undefined
+                              }
+                              Icon={IconLink}
+                              iconBackgroundColor={iconColors.link}
+                              active={false}
+                              isSelectedInEditMode={
+                                editModeProps.isSelectedInEditMode
+                              }
+                              isDragging={isDragging}
+                              triggerEvent="CLICK"
+                            />
+                          }
+                        />
+                      </NavigationItemDropTarget>
+                    );
+                  }
+
+                  const objectMetadataItem =
+                    getObjectMetadataForNavigationMenuItem(
+                      item as ProcessedNavigationMenuItem,
+                      objectMetadataItems,
+                      views,
+                    );
+                  if (!objectMetadataItem) return null;
+
                   return (
                     <NavigationItemDropTarget
                       key={item.id}
@@ -192,143 +284,51 @@ export const NavigationDrawerSectionForWorkspaceItems = ({
                         isDragDisabled={!isEditMode}
                         disableInteractiveElementBlocking={isEditMode}
                         itemComponent={
-                          <WorkspaceNavigationMenuItemsFolder
-                            folderId={item.id}
-                            folderName={item.name ?? 'Folder'}
-                            navigationMenuItems={
-                              folderChildrenById.get(item.id) ?? []
+                          <NavigationDrawerItemForObjectMetadataItem
+                            objectMetadataItem={objectMetadataItem}
+                            navigationMenuItem={
+                              item as ProcessedNavigationMenuItem
                             }
-                            isGroup={folderCount > 1}
                             isEditMode={isEditMode}
                             isSelectedInEditMode={
                               editModeProps.isSelectedInEditMode
                             }
                             onEditModeClick={editModeProps.onEditModeClick}
-                            onNavigationMenuItemClick={
-                              onNavigationMenuItemClick
-                            }
-                            selectedNavigationMenuItemId={
-                              selectedNavigationMenuItemId
-                            }
                             isDragging={isDragging}
-                          />
-                        }
-                      />
-                    </NavigationItemDropTarget>
-                  );
-                }
-
-                if (type === 'link') {
-                  const linkItem = item as ProcessedNavigationMenuItem;
-                  const iconColors = getNavigationMenuItemIconColors(theme);
-                  return (
-                    <NavigationItemDropTarget
-                      key={item.id}
-                      folderId={null}
-                      index={index}
-                      sectionId={NavigationSections.WORKSPACE}
-                    >
-                      <DraggableItem
-                        draggableId={item.id}
-                        index={index}
-                        isInsideScrollableContainer
-                        isDragDisabled={!isEditMode}
-                        disableInteractiveElementBlocking={isEditMode}
-                        itemComponent={
-                          <NavigationDrawerItem
-                            label={linkItem.labelIdentifier}
-                            to={
-                              isEditMode || isDragging
-                                ? undefined
-                                : linkItem.link
-                            }
-                            onClick={
-                              isEditMode
-                                ? editModeProps.onEditModeClick
+                            onActiveItemClickWhenNotInEditMode={
+                              onActiveObjectMetadataItemClick
+                                ? () =>
+                                    onActiveObjectMetadataItemClick(
+                                      objectMetadataItem,
+                                      item.id,
+                                    )
                                 : undefined
                             }
-                            Icon={IconLink}
-                            iconBackgroundColor={iconColors.link}
-                            active={false}
-                            isSelectedInEditMode={
-                              editModeProps.isSelectedInEditMode
-                            }
-                            isDragging={isDragging}
-                            triggerEvent="CLICK"
                           />
                         }
                       />
                     </NavigationItemDropTarget>
                   );
-                }
-
-                const objectMetadataItem =
-                  getObjectMetadataForNavigationMenuItem(
-                    item as ProcessedNavigationMenuItem,
-                    objectMetadataItems,
-                    views,
-                  );
-                if (!objectMetadataItem) return null;
-
-                return (
-                  <NavigationItemDropTarget
-                    key={item.id}
-                    folderId={null}
-                    index={index}
-                    sectionId={NavigationSections.WORKSPACE}
-                  >
-                    <DraggableItem
-                      draggableId={item.id}
-                      index={index}
-                      isInsideScrollableContainer
-                      isDragDisabled={!isEditMode}
-                      disableInteractiveElementBlocking={isEditMode}
-                      itemComponent={
-                        <NavigationDrawerItemForObjectMetadataItem
-                          objectMetadataItem={objectMetadataItem}
-                          navigationMenuItem={
-                            item as ProcessedNavigationMenuItem
-                          }
-                          isEditMode={isEditMode}
-                          isSelectedInEditMode={
-                            editModeProps.isSelectedInEditMode
-                          }
-                          onEditModeClick={editModeProps.onEditModeClick}
-                          isDragging={isDragging}
-                          onActiveItemClickWhenNotInEditMode={
-                            onActiveObjectMetadataItemClick
-                              ? () =>
-                                  onActiveObjectMetadataItemClick(
-                                    objectMetadataItem,
-                                    item.id,
-                                  )
-                              : undefined
-                          }
-                        />
-                      }
+                })}
+                <NavigationItemDropTarget
+                  folderId={null}
+                  index={filteredItems.length}
+                  sectionId={NavigationSections.WORKSPACE}
+                  compact={!!(isEditMode && onAddMenuItem)}
+                >
+                  {isEditMode && onAddMenuItem && (
+                    <NavigationDrawerItem
+                      Icon={IconPlus}
+                      label={t`Add menu item`}
+                      onClick={onAddMenuItem}
+                      triggerEvent="CLICK"
                     />
-                  </NavigationItemDropTarget>
-                );
-              })}
-              <NavigationItemDropTarget
-                folderId={null}
-                index={filteredItems.length}
-                sectionId={NavigationSections.WORKSPACE}
-                compact={!!(isEditMode && onAddMenuItem)}
-              >
-                {isEditMode && onAddMenuItem && (
-                  <NavigationDrawerItem
-                    Icon={IconPlus}
-                    label={t`Add menu item`}
-                    onClick={onAddMenuItem}
-                    triggerEvent="CLICK"
-                  />
-                )}
-              </NavigationItemDropTarget>
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+                  )}
+                </NavigationItemDropTarget>
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
           {footerContent}
         </>
       )}

@@ -40,7 +40,9 @@ const uploadToPresignedUrl = (
       }
     });
 
-    xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+    xhr.addEventListener('error', () =>
+      reject(new Error('Network error during upload')),
+    );
     xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
 
     xhr.send(file);
@@ -48,7 +50,7 @@ const uploadToPresignedUrl = (
 };
 
 export const useFileUploadToStorage = () => {
-  const [uploads, setUploads] = useRecoilState(fileUploadsState);
+  const [fileUploads, setFileUploads] = useRecoilState(fileUploadsState);
   const { enqueueErrorSnackBar } = useSnackBar();
 
   const updateUpload = useCallback(
@@ -160,9 +162,7 @@ export const useFileUploadToStorage = () => {
         );
 
         if (!recordResponse.ok) {
-          const errorData = (await recordResponse
-            .json()
-            .catch(() => null)) as {
+          const errorData = (await recordResponse.json().catch(() => null)) as {
             error?: { message?: string };
           } | null;
           throw new Error(
@@ -181,8 +181,7 @@ export const useFileUploadToStorage = () => {
 
         return record;
       } catch (err: unknown) {
-        const message =
-          err instanceof Error ? err.message : 'Upload failed';
+        const message = err instanceof Error ? err.message : 'Upload failed';
         updateUpload(id, { status: 'error', errorMessage: message });
         enqueueErrorSnackBar({ message: `${file.name}: ${message}` });
         return null;
@@ -199,9 +198,7 @@ export const useFileUploadToStorage = () => {
       const results = await Promise.all(
         files.map((file) => uploadFile(file, options)),
       );
-      return results.filter(
-        (record): record is FileRecord => record !== null,
-      );
+      return results.filter((record): record is FileRecord => record !== null);
     },
     [uploadFile],
   );

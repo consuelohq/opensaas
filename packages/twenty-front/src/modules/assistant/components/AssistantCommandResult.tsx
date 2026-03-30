@@ -14,7 +14,8 @@ const StyledCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   background: ${({ theme }) => theme.background.tertiary};
   border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
   font-weight: ${({ theme }) => theme.font.weight.medium};
@@ -24,45 +25,44 @@ const StyledCardHeader = styled.div`
 `;
 
 const StyledCardBody = styled.div`
-  padding: ${({ theme }) => theme.spacing(2)};
   max-height: 200px;
   overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing(2)};
 `;
 
 const StyledTable = styled.table`
-  width: 100%;
   border-collapse: collapse;
+  width: 100%;
 
   th,
   td {
-    text-align: left;
-    padding: ${({ theme }) => theme.spacing(0.5)} ${({ theme }) => theme.spacing(1)};
     border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
     color: ${({ theme }) => theme.font.color.primary};
+    padding: ${({ theme }) => theme.spacing(0.5)}
+      ${({ theme }) => theme.spacing(1)};
+    text-align: left;
   }
 
   th {
-    font-weight: ${({ theme }) => theme.font.weight.medium};
     color: ${({ theme }) => theme.font.color.secondary};
+    font-weight: ${({ theme }) => theme.font.weight.medium};
   }
 `;
 
 const StyledPre = styled.pre`
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
   color: ${({ theme }) => theme.font.color.primary};
   font-family: ${({ theme }) => theme.font.family};
   font-size: ${({ theme }) => theme.font.size.xs};
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 `;
 
 type AssistantCommandResultProps = {
   command: ExecutedCommand;
 };
 
-const isArrayOfObjects = (
-  val: unknown,
-): val is Record<string, unknown>[] =>
+const isArrayOfObjects = (val: unknown): val is Record<string, unknown>[] =>
   Array.isArray(val) &&
   val.length > 0 &&
   typeof val[0] === 'object' &&

@@ -51,7 +51,7 @@ export const GHLFieldMapping = ({
   title,
   description,
 }: GHLFieldMappingProps) => {
-  const fieldMappings = useRecoilValue(ghlFieldMappingsState);
+  const ghlFieldMappings = useRecoilValue(ghlFieldMappingsState);
 
   return (
     <StyledSection>

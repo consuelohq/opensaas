@@ -8,7 +8,7 @@ import {
 } from '~/generated-metadata/graphql';
 
 export const useAgentConversations = () => {
-  const [currentThreadId, setCurrentThreadId] = useRecoilState(
+  const [currentAIChatThread, setCurrentAIChatThread] = useRecoilState(
     currentAIChatThreadState,
   );
 

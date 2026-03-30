@@ -1,6 +1,9 @@
 // GHL integration types — DEV-1094, DEV-1095
 
-export type GHLSyncDirection = 'ghl-to-twenty' | 'twenty-to-ghl' | 'bidirectional';
+export type GHLSyncDirection =
+  | 'ghl-to-twenty'
+  | 'twenty-to-ghl'
+  | 'bidirectional';
 
 export type GHLConflictResolution = 'newest' | 'ghl-wins' | 'twenty-wins';
 
@@ -73,7 +76,12 @@ export type GHLPipelineStageMapping = {
   twentyStageName: string | null;
 };
 
-export type GHLLoadingState = 'idle' | 'loading' | 'syncing' | 'importing' | 'saving';
+export type GHLLoadingState =
+  | 'idle'
+  | 'loading'
+  | 'syncing'
+  | 'importing'
+  | 'saving';
 
 // click-to-call postMessage protocol — DEV-1206
 export type GHLClickToCallContact = {

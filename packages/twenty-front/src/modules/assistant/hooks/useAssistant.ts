@@ -21,8 +21,10 @@ type AssistantResponse = {
 };
 
 export const useAssistant = () => {
-  const [messages, setMessages] = useRecoilState(assistantMessagesState);
-  const [conversationId, setConversationId] = useRecoilState(
+  const [assistantMessages, setAssistantMessages] = useRecoilState(
+    assistantMessagesState,
+  );
+  const [assistantConversationId, setAssistantConversationId] = useRecoilState(
     assistantConversationIdState,
   );
   const setLoading = useSetRecoilState(assistantLoadingState);
@@ -54,14 +56,17 @@ export const useAssistant = () => {
           return;
         }
 
-        const res = await authenticatedFetch(`${REACT_APP_SERVER_BASE_URL}/v1/assistant`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: text,
-            ...(conversationId ? { conversationId } : {}),
-          }),
-        });
+        const res = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/assistant`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: text,
+              ...(conversationId ? { conversationId } : {}),
+            }),
+          },
+        );
 
         if (!res.ok) {
           const errBody = (await res.json().catch(() => null)) as {

@@ -126,8 +126,9 @@ export class UpdateListViewsCommand extends ActiveOrSuspendedWorkspacesMigration
     const fieldByName = new Map(fieldMetadatas.map((f) => [f.name, f]));
 
     // Build old field ID set for removal
-    const oldFieldIds = OLD_FIELD_NAMES.map((name) => fieldByName.get(name)?.id)
-      .filter((id): id is string => id !== undefined);
+    const oldFieldIds = OLD_FIELD_NAMES.map(
+      (name) => fieldByName.get(name)?.id,
+    ).filter((id): id is string => id !== undefined);
 
     for (const view of views) {
       const newName = VIEW_NAME_MAP[view.name];
@@ -229,8 +230,6 @@ export class UpdateListViewsCommand extends ActiveOrSuspendedWorkspacesMigration
       }
     }
 
-    this.logger.log(
-      `Updated List views for workspace ${workspaceId}`,
-    );
+    this.logger.log(`Updated List views for workspace ${workspaceId}`);
   }
 }

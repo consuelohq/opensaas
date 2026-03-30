@@ -9,7 +9,8 @@ import {
   IconMinus,
   IconPlus,
   IconTargetArrow,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
 
 import { type CallStatus } from '@/dialer/types/dialer';
 import {
@@ -83,8 +84,8 @@ const StyledBadge = styled.span`
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-  background: ${({ theme }) => theme.color.green10 ?? '#dcfce7'};
-  color: ${({ theme }) => theme.color.green ?? '#16a34a'};
+  background: ${({ theme }) => theme.background.transparent.green};
+  color: ${({ theme }) => theme.color.green};
 `;
 
 const StyledPointCard = styled.div`
@@ -107,8 +108,8 @@ const StyledNumber = styled.span`
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  background: ${({ theme }) => theme.color.green ?? '#16a34a'};
-  color: #fff;
+  background: ${({ theme }) => theme.color.green};
+  color: ${({ theme }) => theme.font.color.inverted};
 `;
 
 const StyledPointText = styled.span`
@@ -253,6 +254,7 @@ export const CoachingPanel = ({
   error,
   onRetry,
 }: CoachingPanelProps) => {
+  const { t } = useLingui();
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -297,21 +299,20 @@ export const CoachingPanel = ({
           <IconAlertTriangle size={20} />
           <span>{error}</span>
           {onRetry && (
-            <StyledRetryButton onClick={onRetry}>Retry</StyledRetryButton>
+            <StyledRetryButton onClick={onRetry}>{t`Retry`}</StyledRetryButton>
           )}
         </StyledEmpty>
       );
     }
 
     if (!hasPoints) {
-      const message =
-        COACHING_EMPTY_MESSAGES[callStatus] ?? 'No coaching available';
+      const message = COACHING_EMPTY_MESSAGES[callStatus];
       const showSpinner = callStatus === 'active';
 
       return (
         <StyledEmpty>
           {showSpinner ? <StyledSpinner size={20} /> : <IconBulb size={20} />}
-          <span>{message}</span>
+          <span>{message ? t(message) : t`No coaching available`}</span>
         </StyledEmpty>
       );
     }
@@ -340,7 +341,8 @@ export const CoachingPanel = ({
               ) : (
                 <IconChevronDown size={14} />
               )}
-              Clarifying Questions ({talkingPoints.clarifying_questions.length})
+              {t`Clarifying Questions`} (
+              {talkingPoints.clarifying_questions.length})
             </StyledSectionToggle>
             {questionsOpen && (
               <StyledQuestionList>
@@ -363,14 +365,15 @@ export const CoachingPanel = ({
               ) : (
                 <IconChevronDown size={14} />
               )}
-              Objection Handling ({talkingPoints.objection_responses.length})
+              {t`Objection Handling`} (
+              {talkingPoints.objection_responses.length})
             </StyledSectionToggle>
             {objectionsOpen &&
               talkingPoints.objection_responses.map((item, i) => (
                 <StyledObjectionCard key={i}>
-                  <StyledObjectionLabel>Objection</StyledObjectionLabel>
+                  <StyledObjectionLabel>{t`Objection`}</StyledObjectionLabel>
                   <StyledObjectionText>{item.objection}</StyledObjectionText>
-                  <StyledObjectionLabel>Response</StyledObjectionLabel>
+                  <StyledObjectionLabel>{t`Response`}</StyledObjectionLabel>
                   <StyledObjectionText>{item.response}</StyledObjectionText>
                 </StyledObjectionCard>
               ))}
@@ -385,7 +388,7 @@ export const CoachingPanel = ({
       <StyledHeader onClick={toggleExpanded} aria-expanded={isExpanded}>
         <StyledHeaderLeft>
           <IconTargetArrow size={16} />
-          <StyledHeaderTitle>AI Coaching</StyledHeaderTitle>
+          <StyledHeaderTitle>{t`AI Coaching`}</StyledHeaderTitle>
         </StyledHeaderLeft>
         {isExpanded ? <IconMinus size={14} /> : <IconPlus size={14} />}
       </StyledHeader>

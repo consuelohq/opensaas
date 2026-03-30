@@ -35,19 +35,19 @@ type CallerIdSelectCardProps = {
 export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
   useAvailableCallerIds();
 
-  const { availableNumbers, selectedCallerId, setSelectedCallerId } =
+  const { availableCallerIds, selectedCallerId, setSelectedCallerId } =
     useCallerIdSelection();
   const [localPresenceEnabled, setLocalPresenceEnabled] = useRecoilState(
     localPresenceEnabledState,
   );
 
   useEffect(() => {
-    if (!selectedCallerId && availableNumbers.length > 0) {
-      setSelectedCallerId(availableNumbers[0].phoneNumber);
+    if (!selectedCallerId && availableCallerIds.length > 0) {
+      setSelectedCallerId(availableCallerIds[0].phoneNumber);
     }
-  }, [availableNumbers, selectedCallerId, setSelectedCallerId]);
+  }, [availableCallerIds, selectedCallerId, setSelectedCallerId]);
 
-  if (availableNumbers.length === 0) {
+  if (availableCallerIds.length === 0) {
     return (
       <StyledMessage>
         {t`No outbound numbers are available yet. Add a number in phone settings to start calling.`}
@@ -61,9 +61,9 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
         dropdownId={dropdownId}
         fullWidth
         label={t`Call from`}
-        value={selectedCallerId ?? availableNumbers[0].phoneNumber}
+        value={selectedCallerId ?? availableCallerIds[0].phoneNumber}
         onChange={(value) => setSelectedCallerId(value)}
-        options={availableNumbers.map((option) => ({
+        options={availableCallerIds.map((option) => ({
           value: option.phoneNumber,
           label: option.friendlyName || option.phoneNumber,
           Icon: IconPhone,

@@ -1,6 +1,7 @@
 import styled from '@emotion/styled';
 import { keyframes } from '@emotion/react';
-import { IconPhone, IconCheck } from '@tabler/icons-react';
+import { IconPhone, IconCheck } from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
 
 const pulse = keyframes`
   0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
@@ -25,10 +26,10 @@ const StyledContainer = styled.div<{ variant: 'prompt' | 'congrats' }>`
 
 const StyledIcon = styled.div<{ variant: 'prompt' | 'congrats' }>`
   align-items: center;
-  background: ${({ variant }) =>
-    variant === 'congrats' ? '#22c55e' : '#3b82f6'};
+  background: ${({ theme, variant }) =>
+    variant === 'congrats' ? theme.color.green : theme.color.blue};
   border-radius: 50%;
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   display: flex;
   height: 40px;
   justify-content: center;
@@ -51,14 +52,16 @@ type FirstCallPromptProps = {
 };
 
 export const FirstCallPrompt = ({ variant }: FirstCallPromptProps) => {
+  const { t } = useLingui();
+
   if (variant === 'congrats') {
     return (
       <StyledContainer variant="congrats">
         <StyledIcon variant="congrats">
           <IconCheck size={20} />
         </StyledIcon>
-        <StyledTitle>First call complete!</StyledTitle>
-        <StyledSubtext>You're all set. Happy calling.</StyledSubtext>
+        <StyledTitle>{t`First call complete!`}</StyledTitle>
+        <StyledSubtext>{t`You're all set. Happy calling.`}</StyledSubtext>
       </StyledContainer>
     );
   }
@@ -68,8 +71,8 @@ export const FirstCallPrompt = ({ variant }: FirstCallPromptProps) => {
       <StyledIcon variant="prompt">
         <IconPhone size={20} />
       </StyledIcon>
-      <StyledTitle>Make your first call</StyledTitle>
-      <StyledSubtext>Try calling yourself to hear how it sounds.</StyledSubtext>
+      <StyledTitle>{t`Make your first call`}</StyledTitle>
+      <StyledSubtext>{t`Try calling yourself to hear how it sounds.`}</StyledSubtext>
     </StyledContainer>
   );
 };

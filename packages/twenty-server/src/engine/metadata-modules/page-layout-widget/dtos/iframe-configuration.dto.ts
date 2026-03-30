@@ -6,9 +6,7 @@ import { WidgetConfigurationType } from 'src/engine/metadata-modules/page-layout
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('IframeConfiguration')
-export class IframeConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class IframeConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.IFRAME])
   @IsNotEmpty()

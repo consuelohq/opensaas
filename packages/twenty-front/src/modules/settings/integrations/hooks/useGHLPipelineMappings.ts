@@ -84,7 +84,9 @@ export const useGHLPipelineMappings = () => {
       setMappings(data.mappings ?? []);
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : 'Failed to fetch pipeline mappings';
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch pipeline mappings';
 
       Sentry.captureException(err, {
         tags: {
@@ -115,7 +117,9 @@ export const useGHLPipelineMappings = () => {
         setMappings(mappings);
       } catch (err: unknown) {
         const message =
-          err instanceof Error ? err.message : 'Failed to save pipeline mappings';
+          err instanceof Error
+            ? err.message
+            : 'Failed to save pipeline mappings';
 
         Sentry.captureException(err, {
           tags: {

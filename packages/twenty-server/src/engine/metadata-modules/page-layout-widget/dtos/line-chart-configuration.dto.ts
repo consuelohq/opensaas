@@ -29,9 +29,7 @@ import { ChartFilter } from 'src/engine/metadata-modules/page-layout-widget/type
 import { PageLayoutWidgetConfigurationBase } from 'src/engine/metadata-modules/page-layout-widget/types/page-layout-widget-configurationt-base.type';
 
 @ObjectType('LineChartConfiguration')
-export class LineChartConfigurationDTO
-  implements PageLayoutWidgetConfigurationBase
-{
+export class LineChartConfigurationDTO implements PageLayoutWidgetConfigurationBase {
   @Field(() => WidgetConfigurationType)
   @IsIn([WidgetConfigurationType.LINE_CHART])
   @IsNotEmpty()

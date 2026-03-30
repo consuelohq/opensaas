@@ -1,13 +1,7 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { IconArrowUp, IconPlayerStop } from '@tabler/icons-react';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAgentSkills } from '@/agent/hooks/useAgentSkills';
 import { useComposerRuntime, useThreadRuntime } from '@assistant-ui/react';
@@ -68,7 +62,8 @@ const StyledPopoverHeader = styled.div`
   color: ${({ theme }) => theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.xs};
   font-weight: ${({ theme }) => theme.font.weight.medium};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
   text-transform: uppercase;
 `;
 
@@ -79,7 +74,8 @@ const StyledPopoverItem = styled.div<{ isHighlighted: boolean }>`
   cursor: pointer;
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(1.5)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1.5)}
+    ${({ theme }) => theme.spacing(2)};
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.lighter};
@@ -120,9 +116,7 @@ export const AgentComposer = () => {
   const isRunning = threadRuntime.getState().isRunning;
 
   const slashItems = useMemo((): SlashItem[] => {
-    const query = input.startsWith('/')
-      ? input.slice(1).toLowerCase()
-      : '';
+    const query = input.startsWith('/') ? input.slice(1).toLowerCase() : '';
 
     const commands: SlashItem[] = [
       {

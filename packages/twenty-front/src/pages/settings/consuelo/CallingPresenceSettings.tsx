@@ -1,7 +1,10 @@
 import { SettingsOptionCardContentSelect } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentSelect';
 import { SettingsOptionCardContentToggle } from '~/modules/settings/components/SettingsOptions/SettingsOptionCardContentToggle';
 import { useUserPreferences } from '~/modules/settings/hooks/useUserPreferences';
-import type { CallingMode, DialerPreferences } from '~/modules/settings/types/preferences';
+import type {
+  CallingMode,
+  DialerPreferences,
+} from '~/modules/settings/types/preferences';
 import { Select } from '~/modules/ui/input/components/Select';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import styled from '@emotion/styled';
@@ -76,7 +79,9 @@ const PARALLEL_LINES_OPTIONS = [2, 3, 4, 5].map((n) => ({
 export const CallingPresenceSettings = () => {
   const { preferences, updatePreferences } = useUserPreferences();
   const [previewPhone, setPreviewPhone] = useState('');
-  const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
+  const [previewResult, setPreviewResult] = useState<PreviewResult | null>(
+    null,
+  );
   const [previewLoading, setPreviewLoading] = useState(false);
 
   const updateDialer = useCallback(
@@ -196,8 +201,9 @@ export const CallingPresenceSettings = () => {
             {previewResult && (
               <StyledPreviewResult>
                 <div>
-                  Caller ID: <strong>{previewResult.selectedNumber ?? 'None'}</strong>
-                  {' '}({previewResult.areaCode})
+                  Caller ID:{' '}
+                  <strong>{previewResult.selectedNumber ?? 'None'}</strong> (
+                  {previewResult.areaCode})
                 </div>
                 <div style={{ marginTop: 4 }}>
                   <StyledMatchBadge isMatch={previewResult.localMatch}>

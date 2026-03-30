@@ -7,7 +7,7 @@ import { TextInput } from '@/ui/input/components/TextInput';
 import { TextArea } from '@/ui/input/components/TextArea';
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
-import { IconClock, IconMicrophone, IconUser, IconWorld } from '@tabler/icons-react';
+import { IconClock, IconWorld } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
 import { Card, Section } from 'twenty-ui/layout';
 

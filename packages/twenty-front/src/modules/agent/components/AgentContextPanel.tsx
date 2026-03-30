@@ -22,7 +22,9 @@ const StyledContainer = styled.div`
 
 export const AgentContextPanel = () => {
   const { t } = useLingui();
-  const collapsed = useRecoilValue(agentContextPanelCollapsedState);
+  const agentContextPanelCollapsed = useRecoilValue(
+    agentContextPanelCollapsedState,
+  );
   const { selectedConversationId, selectConversation } =
     useAgentConversations();
 

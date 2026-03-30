@@ -26,7 +26,7 @@ jest.mock('@twilio/voice-sdk', () => {
     audio: mockDeviceAudio,
     state: 'registered',
   }));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   (DeviceMock as any).State = { Registered: 'registered' }; // HACK: twilio Device mock needs State enum
   return { Device: DeviceMock, Call: jest.fn() };
 });
@@ -87,8 +87,8 @@ describe('useTwilioDevice', () => {
   it('should return initial state before config is loaded', () => {
     const { result } = renderHookWithRecoil(() => useTwilioDevice());
 
-    expect(result.current.isReady).toBe(false);
-    expect(result.current.error).toBeNull();
+    expect(result.current.deviceReady).toBe(false);
+    expect(result.current.deviceError).toBeNull();
     expect(result.current.activeCall).toBeNull();
     expect(result.current.reconnecting).toBe(false);
   });
@@ -132,7 +132,7 @@ describe('useTwilioDevice', () => {
       registeredCall[1]();
     });
 
-    expect(result.current.isReady).toBe(true);
+    expect(result.current.deviceReady).toBe(true);
   });
 
   it('should set error when device fires error event', async () => {
@@ -153,8 +153,8 @@ describe('useTwilioDevice', () => {
       errorCall[1]({ message: 'Connection lost', code: 31005 });
     });
 
-    expect(result.current.isReady).toBe(false);
-    expect(result.current.error).toBe('Connection lost');
+    expect(result.current.deviceReady).toBe(false);
+    expect(result.current.deviceError).toBe('Connection lost');
   });
 
   it('should throw when connect is called without device', async () => {
@@ -173,7 +173,7 @@ describe('useTwilioDevice', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.error).toBe('Network error');
+      expect(result.current.deviceError).toBe('Network error');
     });
   });
 
@@ -187,7 +187,7 @@ describe('useTwilioDevice', () => {
     });
 
     await waitFor(() => {
-      expect(result.current.error).toBe('No token in response');
+      expect(result.current.deviceError).toBe('No token in response');
     });
   });
 

@@ -7,7 +7,6 @@ import { InCallControls } from '@/dialer/components/InCallControls';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { activeCallState } from '@/dialer/states/activeCallState';
 import { isMutedState } from '@/dialer/states/isMutedState';
-import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 
 // mock useCallTransfer
 const mockInitiateTransfer = jest.fn();
@@ -16,7 +15,12 @@ const mockCancelTransfer = jest.fn();
 const mockToggleHold = jest.fn();
 jest.mock('@/dialer/hooks/useCallTransfer', () => ({
   useCallTransfer: () => ({
-    transferState: { status: 'idle', transferCallSid: null, conferenceSid: null, error: null },
+    transferState: {
+      status: 'idle',
+      transferCallSid: null,
+      conferenceSid: null,
+      error: null,
+    },
     holdError: null,
     initiateTransfer: mockInitiateTransfer,
     completeTransfer: mockCompleteTransfer,
@@ -44,9 +48,17 @@ jest.mock('@/dialer/components/DialPad', () => ({
 }));
 
 jest.mock('@/dialer/components/TransferModal', () => ({
-  TransferModal: ({ onTransfer, onClose }: { onTransfer: (to: string, type: string) => void; onClose: () => void }) => (
+  TransferModal: ({
+    onTransfer,
+    onClose,
+  }: {
+    onTransfer: (to: string, type: string) => void;
+    onClose: () => void;
+  }) => (
     <div data-testid="transfer-modal">
-      <button onClick={() => onTransfer('+15559999999', 'cold')}>Transfer</button>
+      <button onClick={() => onTransfer('+15559999999', 'cold')}>
+        Transfer
+      </button>
       <button onClick={onClose}>Close</button>
     </div>
   ),
@@ -72,7 +84,7 @@ const activeState = (snap: MutableSnapshot) => {
     parallelGroupId: null,
     transferId: null,
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   snap.set(activeCallState, mockActiveCall as any);
 };
 

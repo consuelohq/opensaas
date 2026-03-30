@@ -13,9 +13,7 @@ import { I18nService } from 'src/engine/core-modules/i18n/i18n.service';
 import { fieldMetadataGraphqlApiExceptionHandler } from 'src/engine/metadata-modules/field-metadata/utils/field-metadata-graphql-api-exception-handler.util';
 
 @Injectable()
-export class FieldMetadataGraphqlApiExceptionInterceptor
-  implements NestInterceptor
-{
+export class FieldMetadataGraphqlApiExceptionInterceptor implements NestInterceptor {
   constructor(private readonly i18nService: I18nService) {}
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

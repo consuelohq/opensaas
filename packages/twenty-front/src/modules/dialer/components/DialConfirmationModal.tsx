@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { IconPhone, IconX } from '@tabler/icons-react';
+import { IconPhone, IconX } from 'twenty-ui/display';
 
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
@@ -69,7 +69,7 @@ const StyledAvatar = styled.div<{ bgColor: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   font-weight: 600;
   font-size: ${({ theme }) => theme.font.size.sm};
   background: ${({ bgColor }) => bgColor};
@@ -151,15 +151,15 @@ const StyledConfirmButton = styled.button<{ isDisabled: boolean }>`
   padding: ${({ theme }) => theme.spacing(3)};
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  background: #22c55e;
-  color: #fff;
+  background: ${({ theme }) => theme.color.green};
+  color: ${({ theme }) => theme.font.color.inverted};
   font-size: 14px;
   font-weight: 500;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   opacity: ${({ isDisabled }) => (isDisabled ? 0.5 : 1)};
 
   &:hover:not(:disabled) {
-    background: #16a34a;
+    background: ${({ theme }) => theme.color.green};
   }
 `;
 
@@ -196,14 +196,14 @@ export const DialConfirmationModal = ({
     dependencies: [handleConfirm],
   });
 
-  const initials = contact
-    ? [contact.firstName, contact.lastName]
+  const initials = selectedContact
+    ? [selectedContact.firstName, selectedContact.lastName]
         .filter(Boolean)
         .map((n) => n!.charAt(0).toUpperCase())
         .join('')
     : '?';
 
-  const avatarColor = contact ? hashColor(contact.id) : '#374151';
+  const avatarColor = selectedContact ? hashColor(selectedContact.id) : theme.color.gray;
 
   return (
     <StyledOverlay>
@@ -217,8 +217,8 @@ export const DialConfirmationModal = ({
       <StyledContactRow>
         <StyledAvatar bgColor={avatarColor}>{initials}</StyledAvatar>
         <StyledContactInfo>
-          <StyledName>{contact?.name ?? 'Unknown Number'}</StyledName>
-          {contact?.company && <StyledDetail>{contact.company}</StyledDetail>}
+          <StyledName>{selectedContact?.name ?? 'Unknown Number'}</StyledName>
+          {selectedContact?.company && <StyledDetail>{selectedContact.company}</StyledDetail>}
           <StyledDetail>{formatPhone(phoneNumber)}</StyledDetail>
         </StyledContactInfo>
       </StyledContactRow>

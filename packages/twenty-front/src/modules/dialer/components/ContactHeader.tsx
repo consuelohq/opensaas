@@ -1,11 +1,15 @@
 import styled from '@emotion/styled';
+import type { Theme } from '@emotion/react';
 import { css, keyframes } from '@emotion/react';
 import { useRecoilValue } from 'recoil';
+import { useLingui, Trans } from '@lingui/react/macro';
+import { msg } from '@lingui/core/macro';
 
 import { useCallDuration } from '@/dialer/hooks/useCallDuration';
 import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type CallStatus } from '@/dialer/types/dialer';
 import { formatDurationTimer } from '@/dialer/utils/callDuration';
 import { formatPhone } from '@/dialer/utils/phoneFormat';
@@ -20,15 +24,36 @@ type DisplayStatus = CallStatus | 'on-hold';
 
 const STATUS_CONFIG: Record<
   DisplayStatus,
-  { color: string; label: string; pulses: boolean }
+  {
+    colorKey: 'transparent' | 'yellow' | 'green' | 'orange' | 'gray' | 'red';
+    label: ReturnType<typeof msg> | null;
+    pulses: boolean;
+  }
 > = {
-  idle: { color: 'transparent', label: '', pulses: false },
-  connecting: { color: '#eab308', label: 'Connecting...', pulses: true },
-  ringing: { color: '#eab308', label: 'Ringing...', pulses: true },
-  active: { color: '#22c55e', label: 'Connected', pulses: false },
-  'on-hold': { color: '#f97316', label: 'On Hold', pulses: false },
-  ended: { color: '#6b7280', label: 'Ended', pulses: false },
-  failed: { color: '#ef4444', label: 'Failed', pulses: false },
+  idle: { colorKey: 'transparent', label: null, pulses: false },
+  connecting: { colorKey: 'yellow', label: msg`Connecting...`, pulses: true },
+  ringing: { colorKey: 'yellow', label: msg`Ringing...`, pulses: true },
+  active: { colorKey: 'green', label: msg`Connected`, pulses: false },
+  'on-hold': { colorKey: 'orange', label: msg`On Hold`, pulses: false },
+  ended: { colorKey: 'gray', label: msg`Ended`, pulses: false },
+  failed: { colorKey: 'red', label: msg`Failed`, pulses: false },
+};
+
+const getStatusColor = (theme: Theme, colorKey: string): string => {
+  switch (colorKey) {
+    case 'yellow':
+      return theme.color.yellow;
+    case 'green':
+      return theme.color.green;
+    case 'orange':
+      return theme.color.orange;
+    case 'gray':
+      return theme.color.gray;
+    case 'red':
+      return theme.color.red;
+    default:
+      return 'transparent';
+  }
 };
 
 // derive a consistent hue from a string
@@ -52,13 +77,13 @@ const StyledAvatar = styled.div<{ bgColor: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   font-weight: 600;
   font-size: ${({ theme }) => theme.font.size.md};
   background: ${({ bgColor }) => bgColor};
 `;
 
-const StyledStatusDot = styled.div<{ dotColor: string; pulses: boolean }>`
+const StyledStatusDot = styled.div<{ colorKey: string; pulses: boolean }>`
   position: absolute;
   bottom: 0;
   right: 0;
@@ -66,7 +91,7 @@ const StyledStatusDot = styled.div<{ dotColor: string; pulses: boolean }>`
   height: 12px;
   border-radius: 50%;
   border: 2px solid ${({ theme }) => theme.background.primary};
-  background: ${({ dotColor }) => dotColor};
+  background: ${({ theme, colorKey }) => getStatusColor(theme, colorKey)};
   ${({ pulses }) =>
     pulses &&
     css`
@@ -104,7 +129,8 @@ const StyledStatusLine = styled.span`
 `;
 
 export const ContactHeader = () => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const { _, t } = useLingui();
+  const callState = useRecoilValue(callStateAtom);
   const selectedContact = useRecoilValue(selectedContactState);
   const isOnHold = useRecoilValue(isOnHoldState);
   const phoneNumber = useRecoilValue(phoneNumberState);
@@ -117,46 +143,55 @@ export const ContactHeader = () => {
   const showDuration =
     displayStatus === 'active' || displayStatus === 'on-hold';
 
-  if (!contact) {
+  if (!selectedContact) {
     return (
-      <StyledContainer aria-label="No contact selected">
+      <StyledContainer aria-label={t`No contact selected`}>
         <StyledInfo>
           <StyledName>
-            {rawPhoneNumber
-              ? formatPhone(rawPhoneNumber)
-              : 'Enter a number to call'}
+            {phoneNumber ? (
+              formatPhone(phoneNumber)
+            ) : (
+              <Trans>Enter a number to call</Trans>
+            )}
           </StyledName>
         </StyledInfo>
       </StyledContainer>
     );
   }
 
-  const initials = [contact.firstName, contact.lastName]
+  const initials = [selectedContact.firstName, selectedContact.lastName]
     .filter(Boolean)
     .map((n) => n!.charAt(0).toUpperCase())
     .join('');
 
+  const label = config.label ? _(config.label) : null;
+  const contactName = selectedContact.name ?? t`Unknown`;
+
   return (
-    <StyledContainer aria-label={`Contact: ${contact.name ?? 'Unknown'}`}>
+    <StyledContainer aria-label={t`Contact: ${contactName}`}>
       <StyledAvatarWrapper>
-        <StyledAvatar bgColor={hashColor(contact.id)}>
+        <StyledAvatar bgColor={hashColor(selectedContact.id)}>
           {initials || '?'}
         </StyledAvatar>
-        {config.label && (
+        {label && (
           <StyledStatusDot
-            dotColor={config.color}
+            colorKey={config.colorKey}
             pulses={config.pulses}
-            aria-label={config.label}
+            aria-label={label}
           />
         )}
       </StyledAvatarWrapper>
       <StyledInfo>
-        <StyledName>{contact.name ?? 'Unknown'}</StyledName>
-        {contact.company && <StyledDetail>{contact.company}</StyledDetail>}
-        <StyledDetail>{formatPhone(contact.phone)}</StyledDetail>
-        {config.label && (
+        <StyledName>
+          {selectedContact.name ?? <Trans>Unknown</Trans>}
+        </StyledName>
+        {selectedContact.company && (
+          <StyledDetail>{selectedContact.company}</StyledDetail>
+        )}
+        <StyledDetail>{formatPhone(selectedContact.phone)}</StyledDetail>
+        {label && (
           <StyledStatusLine>
-            {config.label}
+            {label}
             {showDuration && ` • ${formatDurationTimer(duration)}`}
           </StyledStatusLine>
         )}

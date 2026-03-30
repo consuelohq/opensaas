@@ -3,9 +3,15 @@ import styled from '@emotion/styled';
 
 const StyledShimmer = styled.span`
   @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
+    0% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
   }
 
   animation: shimmer 1.5s ease-in-out infinite;
@@ -43,8 +49,7 @@ export const LoadSkillToolUI = makeAssistantToolUI({
 export const ExecuteToolToolUI = makeAssistantToolUI({
   toolName: 'execute_tool',
   render: ({ args, status }) => {
-    const toolName =
-      (args as Record<string, unknown>)?.toolName ?? 'tool';
+    const toolName = (args as Record<string, unknown>)?.toolName ?? 'tool';
 
     if (status.type === 'running') {
       return <StyledShimmer>Running {String(toolName)}…</StyledShimmer>;
@@ -65,7 +70,13 @@ export const FindPeopleToolUI = makeAssistantToolUI({
   },
 });
 
-export const ToolFallbackUI = ({ toolName, isRunning }: { toolName: string; isRunning: boolean }) => {
+export const ToolFallbackUI = ({
+  toolName,
+  isRunning,
+}: {
+  toolName: string;
+  isRunning: boolean;
+}) => {
   if (!isRunning) {
     return null;
   }

@@ -24,26 +24,26 @@ export const useQueueAnalytics = (): {
   const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
 
   const stats = useMemo(() => {
-    if (!queue) return null;
-    return calculateAggregatedStats(items, session?.startedAt ?? null);
-  }, [items, session?.startedAt, queue]);
+    if (!activeQueue) return null;
+    return calculateAggregatedStats(queueItems, queueSession?.startedAt ?? null);
+  }, [queueItems, queueSession?.startedAt, activeQueue]);
 
   const outcomeBreakdown = useMemo(
-    () => calculateOutcomeBreakdown(items),
-    [items],
+    () => calculateOutcomeBreakdown(queueItems),
+    [queueItems],
   );
 
-  // sync aggregatedStats back to queue atom
+  // sync aggregatedStats back to activeQueue atom
   useEffect(() => {
-    if (!stats || !queue) return;
+    if (!stats || !activeQueue) return;
     if (
-      queue.aggregatedStats?.answeredCount === stats.answeredCount &&
-      queue.aggregatedStats?.noAnswerCount === stats.noAnswerCount
+      activeQueue.aggregatedStats?.answeredCount === stats.answeredCount &&
+      activeQueue.aggregatedStats?.noAnswerCount === stats.noAnswerCount
     ) {
       return;
     }
-    setQueue((prev) => (prev ? { ...prev, aggregatedStats: stats } : null));
-  }, [stats, queue, setQueue]);
+    setActiveQueue((prev) => (prev ? { ...prev, aggregatedStats: stats } : null));
+  }, [stats, activeQueue, setActiveQueue]);
 
   return { stats, outcomeBreakdown };
 };

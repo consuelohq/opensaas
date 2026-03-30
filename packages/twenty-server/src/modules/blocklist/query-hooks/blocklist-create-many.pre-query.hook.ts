@@ -14,9 +14,7 @@ import {
 import { WorkspaceNotFoundDefaultError } from 'src/engine/core-modules/workspace/workspace.exception';
 
 @WorkspaceQueryHook(`blocklist.createMany`)
-export class BlocklistCreateManyPreQueryHook
-  implements WorkspacePreQueryHookInstance
-{
+export class BlocklistCreateManyPreQueryHook implements WorkspacePreQueryHookInstance {
   constructor(
     private readonly blocklistValidationService: BlocklistValidationService,
   ) {}

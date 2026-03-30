@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
-import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
+import { IconPlayerPause, IconPlayerPlay } from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -96,11 +96,11 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
 
   // pause when another player takes over
   useEffect(() => {
-    if (activeId !== callId && playing) {
+    if (activePlaybackId !== callId && playing) {
       audioRef.current?.pause();
       setPlaying(false);
     }
-  }, [activeId, callId, playing]);
+  }, [activePlaybackId, callId, playing]);
 
   const fetchUrl = useCallback(async (): Promise<string | null> => {
     if (url) return url;
@@ -157,13 +157,13 @@ export const RecordingPlayer = ({ callId, duration }: RecordingPlayerProps) => {
     }
 
     try {
-      setActiveId(callId);
+      setActivePlaybackId(callId);
       await audioRef.current.play();
       setPlaying(true);
     } catch (err: unknown) {
       setError('Playback error');
     }
-  }, [loading, playing, url, fetchUrl, callId, setActiveId]);
+  }, [loading, playing, url, fetchUrl, callId, setActivePlaybackId]);
 
   const seek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {

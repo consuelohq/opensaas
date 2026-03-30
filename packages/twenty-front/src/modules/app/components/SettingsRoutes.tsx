@@ -403,11 +403,11 @@ const SettingsRoleAddObjectLevel = lazy(() =>
 );
 
 const SettingsAccountsPhoneNumbers = lazy(() =>
-  import(
-    '~/pages/settings/accounts/SettingsAccountsPhoneNumbers'
-  ).then((module) => ({
-    default: module.SettingsAccountsPhoneNumbers,
-  })),
+  import('~/pages/settings/accounts/SettingsAccountsPhoneNumbers').then(
+    (module) => ({
+      default: module.SettingsAccountsPhoneNumbers,
+    }),
+  ),
 );
 
 const SettingsNotifications = lazy(() =>
@@ -449,11 +449,11 @@ const SettingsDialerGHL = lazy(() =>
 );
 
 const SettingsDialerChromeExtension = lazy(() =>
-  import(
-    '~/pages/settings/dialer/SettingsDialerChromeExtension'
-  ).then((module) => ({
-    default: module.SettingsDialerChromeExtension,
-  })),
+  import('~/pages/settings/dialer/SettingsDialerChromeExtension').then(
+    (module) => ({
+      default: module.SettingsDialerChromeExtension,
+    }),
+  ),
 );
 
 const SettingsDialerDiscord = lazy(() =>
@@ -710,7 +710,10 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
       <Route
         path={SettingsPath.Dialer}
         element={
-          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+          <Navigate
+            to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)}
+            replace
+          />
         }
       />
       <Route
@@ -722,19 +725,28 @@ export const SettingsRoutes = ({ isAdminPageEnabled }: SettingsRoutesProps) => (
       <Route
         path={SettingsPath.DialerPhoneNumbers}
         element={
-          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+          <Navigate
+            to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)}
+            replace
+          />
         }
       />
       <Route
         path={SettingsPath.DialerCalling}
         element={
-          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+          <Navigate
+            to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)}
+            replace
+          />
         }
       />
       <Route
         path={SettingsPath.DialerAudio}
         element={
-          <Navigate to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)} replace />
+          <Navigate
+            to={getSettingsPath(SettingsPath.AccountsPhoneNumbers)}
+            replace
+          />
         }
       />
       <Route

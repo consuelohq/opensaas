@@ -4,19 +4,19 @@ import styled from '@emotion/styled';
 import { lazy, Suspense } from 'react';
 
 const CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher = lazy(() =>
-  import(
-    '@/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher'
-  ).then((module) => ({
-    default: module.CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher,
-  })),
+  import('@/navigation-menu-item/components/CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher').then(
+    (module) => ({
+      default: module.CurrentWorkspaceMemberNavigationMenuItemFoldersDispatcher,
+    }),
+  ),
 );
 
 const WorkspaceNavigationMenuItemsDispatcher = lazy(() =>
-  import(
-    '@/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher'
-  ).then((module) => ({
-    default: module.WorkspaceNavigationMenuItemsDispatcher,
-  })),
+  import('@/navigation-menu-item/components/WorkspaceNavigationMenuItemsDispatcher').then(
+    (module) => ({
+      default: module.WorkspaceNavigationMenuItemsDispatcher,
+    }),
+  ),
 );
 
 const StyledScrollableItemsContainer = styled.div`

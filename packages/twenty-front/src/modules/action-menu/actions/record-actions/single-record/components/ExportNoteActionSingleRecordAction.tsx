@@ -32,9 +32,8 @@ export const ExportNoteActionSingleRecordAction = () => {
       console.warn(initialBody);
     }
 
-    const { exportBlockNoteEditorToPdf } = await import(
-      '@/action-menu/actions/record-actions/single-record/utils/exportBlockNoteEditorToPdf'
-    );
+    const { exportBlockNoteEditorToPdf } =
+      await import('@/action-menu/actions/record-actions/single-record/utils/exportBlockNoteEditorToPdf');
 
     await exportBlockNoteEditorToPdf(parsedBody, filename);
 

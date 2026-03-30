@@ -1,7 +1,7 @@
 import { useLingui } from '@lingui/react/macro';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
-import { IconChartBar } from '@tabler/icons-react';
+import { IconChartBar } from 'twenty-ui/display';
 
 import {
   useCallAnalytics,
@@ -114,6 +114,7 @@ const PERIOD_OPTIONS: { value: AnalyticsPeriod; label: string }[] = [
   { value: 'month', label: 'This Month' },
 ];
 
+/* eslint-disable twenty/no-hardcoded-colors */
 const OUTCOME_COLORS: Record<string, string> = {
   answered: '#22c55e',
   voicemail: '#eab308',
@@ -121,10 +122,11 @@ const OUTCOME_COLORS: Record<string, string> = {
 };
 
 const DEFAULT_COLOR = '#6b7280';
+/* eslint-enable twenty/no-hardcoded-colors */
 
 export const AnalyticsDashboard = () => {
   const { t } = useLingui();
-  const { metrics, loading, fetchMetrics } = useCallAnalytics();
+  const { callMetrics: metrics, metricsLoading: loading, fetchMetrics } = useCallAnalytics();
   const [period, setPeriod] = useState<AnalyticsPeriod>('week');
 
   useEffect(() => {

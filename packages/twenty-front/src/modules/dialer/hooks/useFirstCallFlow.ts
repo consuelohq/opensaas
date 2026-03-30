@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 
 import { deviceReadyState } from '@/dialer/states/deviceReadyState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 
 const STORAGE_KEY = 'dialer_first_call_completed';
 const CONGRATS_DURATION_MS = 4_000;
@@ -29,7 +30,7 @@ type UseFirstCallFlowReturn = {
 };
 
 export const useFirstCallFlow = (): UseFirstCallFlowReturn => {
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const deviceReady = useRecoilValue(deviceReadyState);
   const previousStatusRef = useRef(callState.status);
   const [flowState, setFlowState] = useState<FirstCallFlowState>(() =>

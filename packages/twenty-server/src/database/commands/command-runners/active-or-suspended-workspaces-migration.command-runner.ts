@@ -13,8 +13,8 @@ export type ActiveOrSuspendedWorkspacesMigrationCommandOptions =
   WorkspacesMigrationCommandOptions;
 
 export abstract class ActiveOrSuspendedWorkspacesMigrationCommandRunner<
-  Options extends
-    ActiveOrSuspendedWorkspacesMigrationCommandOptions = ActiveOrSuspendedWorkspacesMigrationCommandOptions,
+  Options extends ActiveOrSuspendedWorkspacesMigrationCommandOptions =
+    ActiveOrSuspendedWorkspacesMigrationCommandOptions,
 > extends WorkspacesMigrationCommandRunner<Options> {
   constructor(
     protected readonly workspaceRepository: Repository<WorkspaceEntity>,

@@ -39,9 +39,9 @@ const StyledMeterRow = styled.div`
 `;
 
 const StyledMeterHeader = styled.div`
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 `;
 
 const StyledMeterLabel = styled.span`
@@ -63,12 +63,12 @@ const StyledBarBackground = styled.div`
 `;
 
 const StyledBarFill = styled.div<{ percentage: number; isHigh: boolean }>`
-  height: 100%;
-  width: ${({ percentage }) => Math.min(percentage, 100)}%;
   background: ${({ isHigh, theme }) =>
     isHigh ? theme.color.red : theme.color.blue};
   border-radius: 4px;
+  height: 100%;
   transition: width 0.3s ease;
+  width: ${({ percentage }) => Math.min(percentage, 100)}%;
 `;
 
 const StyledPeriod = styled.span`

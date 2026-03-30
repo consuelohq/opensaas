@@ -9,6 +9,7 @@ import {
   currentQueueIndexState,
   queueItemsState,
 } from '@/dialer/states/queueState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { ParallelCall } from '@/dialer/types/dialer';
 
 export const useParallelDialer = () => {
@@ -17,7 +18,7 @@ export const useParallelDialer = () => {
   const [currentQueueIndex, setCurrentQueueIndex] = useRecoilState(
     currentQueueIndexState,
   );
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -31,7 +32,7 @@ export const useParallelDialer = () => {
 
   const handleWinner = useCallback(
     (winner: ParallelCall, allCalls: ParallelCall[]) => {
-      setItems((prev) =>
+      setQueueItems((prev) =>
         prev.map((item) => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
           if (!call) return item;
@@ -50,19 +51,19 @@ export const useParallelDialer = () => {
         }),
       );
 
-      setQueue((prev) =>
+      setActiveQueue((prev) =>
         prev
           ? { ...prev, parallelDialingActive: false, parallelActiveCalls: [] }
           : null,
       );
       setIsDialing(false);
     },
-    [setItems, setQueue],
+    [setQueueItems, setActiveQueue],
   );
 
   const handleAllFailed = useCallback(
     (allCalls: ParallelCall[]) => {
-      setItems((prev) =>
+      setQueueItems((prev) =>
         prev.map((item) => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
           if (!call) return item;
@@ -74,18 +75,18 @@ export const useParallelDialer = () => {
         }),
       );
 
-      const cooldown = queue?.settings.parallelDialingCooldown ?? 2000;
+      const cooldown = activeQueue?.settings.parallelDialingCooldown ?? 2000;
       setTimeout(() => {
-        const nextIdx = currentIndex + allCalls.length;
-        setCurrentIndex(nextIdx);
+        const nextIdx = currentQueueIndex + allCalls.length;
+        setCurrentQueueIndex(nextIdx);
         setIsDialing(false);
       }, cooldown);
     },
     [
-      queue?.settings.parallelDialingCooldown,
-      currentIndex,
-      setItems,
-      setCurrentIndex,
+      activeQueue?.settings.parallelDialingCooldown,
+      currentQueueIndex,
+      setQueueItems,
+      setCurrentQueueIndex,
     ],
   );
 
@@ -132,18 +133,18 @@ export const useParallelDialer = () => {
   );
 
   const startParallelBatch = useCallback(async () => {
-    if (!queue?.parallelDialingEnabled || isDialing) return;
+    if (!activeQueue?.parallelDialingEnabled || isDialing) return;
 
-    const maxLines = queue.settings.parallelDialingMaxLines;
-    const batchItems = items
-      .slice(currentIndex, currentIndex + maxLines)
+    const maxLines = activeQueue.settings.parallelDialingMaxLines;
+    const batchItems = queueItems
+      .slice(currentQueueIndex, currentQueueIndex + maxLines)
       .filter((item) => item.status === 'pending');
 
     if (batchItems.length === 0) return;
 
     setIsDialing(true);
 
-    setItems((prev) =>
+    setQueueItems((prev) =>
       prev.map((item) =>
         batchItems.find((b) => b.id === item.id)
           ? {
@@ -163,7 +164,7 @@ export const useParallelDialer = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            queueId: queue.id,
+            queueId: activeQueue.id,
             contacts: batchItems.map((item) => ({
               contactId: item.contactId,
               phone: item.contact.phone,
@@ -175,7 +176,7 @@ export const useParallelDialer = () => {
 
       const { groupId, calls } = await res.json();
 
-      setQueue((prev) =>
+      setActiveQueue((prev) =>
         prev
           ? {
               ...prev,
@@ -191,11 +192,11 @@ export const useParallelDialer = () => {
       startPolling(groupId);
     } catch (err: unknown) {
       captureException(err, {
-        extra: { context: 'startParallelBatch', queueId: queue?.id },
+        extra: { context: 'startParallelBatch', queueId: activeQueue?.id },
       });
       setIsDialing(false);
-      // revert items to pending on failure
-      setItems((prev) =>
+      // revert queueItems to pending on failure
+      setQueueItems((prev) =>
         prev.map((item) =>
           batchItems.find((b) => b.id === item.id)
             ? { ...item, status: 'pending' as const }
@@ -204,19 +205,19 @@ export const useParallelDialer = () => {
       );
     }
   }, [
-    queue,
+    activeQueue,
     isDialing,
-    items,
-    currentIndex,
+    queueItems,
+    currentQueueIndex,
     callState.fromNumber,
-    setItems,
-    setQueue,
+    setQueueItems,
+    setActiveQueue,
     startPolling,
   ]);
 
   const cancelParallelDial = useCallback(async () => {
     clearPoll();
-    const groupId = queue?.parallelGroupId;
+    const groupId = activeQueue?.parallelGroupId;
     if (groupId) {
       try {
         await authenticatedFetch(
@@ -234,7 +235,7 @@ export const useParallelDialer = () => {
     }
     setIsDialing(false);
     setActiveCalls([]);
-    setQueue((prev) =>
+    setActiveQueue((prev) =>
       prev
         ? {
             ...prev,
@@ -244,7 +245,7 @@ export const useParallelDialer = () => {
           }
         : null,
     );
-  }, [clearPoll, queue?.parallelGroupId, setQueue]);
+  }, [clearPoll, activeQueue?.parallelGroupId, setActiveQueue]);
 
   // cleanup on unmount
   useEffect(() => {

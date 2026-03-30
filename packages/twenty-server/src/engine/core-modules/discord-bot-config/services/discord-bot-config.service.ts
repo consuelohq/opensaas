@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Repository } from 'typeorm';
 
 import { DiscordBotConfigEntity } from 'src/engine/core-modules/discord-bot-config/discord-bot-config.entity';
@@ -55,6 +56,7 @@ export class DiscordBotConfigService {
       if (encryptedClientSecret !== undefined) {
         config.clientSecret = encryptedClientSecret;
       }
+
       return await this.discordBotConfigRepository.save(config);
     }
 
@@ -117,6 +119,7 @@ export class DiscordBotConfigService {
 
   getInteractionsEndpointUrl(): string {
     const baseUrl = this.environmentConfigDriver.get('SERVER_URL') || '';
+
     return `${baseUrl}/v1/webhooks/discord`;
   }
 
@@ -133,11 +136,13 @@ export class DiscordBotConfigService {
     field: 'botToken' | 'clientSecret',
   ): Promise<string | null> {
     const config = await this.findByWorkspaceId(workspaceId);
+
     if (!config) {
       return null;
     }
 
     const value = config[field];
+
     if (!value) {
       return null;
     }

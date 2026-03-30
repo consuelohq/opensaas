@@ -4,7 +4,8 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconMicrophone,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
 
 import { type TranscriptEntry } from '@/dialer/types/coaching';
 
@@ -55,9 +56,7 @@ const StyledHeaderTitle = styled.span`
 
 const StyledDot = styled.span<{ connected: boolean }>`
   background: ${({ connected, theme }) =>
-    connected
-      ? (theme.color.green ?? '#16a34a')
-      : (theme.font.color.tertiary ?? '#999')};
+    connected ? theme.color.green : theme.font.color.tertiary};
   border-radius: 50%;
   height: 8px;
   width: 8px;
@@ -115,6 +114,7 @@ export const LiveTranscript = ({
   transcript,
   isConnected,
 }: LiveTranscriptProps) => {
+  const { t } = useLingui();
   const [isExpanded, setIsExpanded] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === 'true';
@@ -155,11 +155,11 @@ export const LiveTranscript = ({
       <StyledHeader onClick={toggleExpanded} aria-expanded={isExpanded}>
         <StyledHeaderLeft>
           <IconMicrophone size={16} />
-          <StyledHeaderTitle>Live Transcript</StyledHeaderTitle>
+          <StyledHeaderTitle>{t`Live Transcript`}</StyledHeaderTitle>
           <StyledDot
             connected={isConnected}
             role="status"
-            aria-label={isConnected ? 'Connected' : 'Disconnected'}
+            aria-label={isConnected ? t`Connected` : t`Disconnected`}
           />
         </StyledHeaderLeft>
         {isExpanded ? (
@@ -175,15 +175,15 @@ export const LiveTranscript = ({
               <IconMicrophone size={20} />
               <span>
                 {isConnected
-                  ? 'Listening...'
-                  : 'Transcript will appear when connected'}
+                  ? t`Listening...`
+                  : t`Transcript will appear when connected`}
               </span>
             </StyledEmpty>
           ) : (
             transcript.map((entry) => (
               <StyledEntry key={entry.id} isAgent={entry.speaker === 'agent'}>
                 <StyledSpeaker>
-                  {entry.speaker === 'agent' ? 'You' : 'Customer'}
+                  {entry.speaker === 'agent' ? t`You` : t`Customer`}
                 </StyledSpeaker>
                 <StyledText>{entry.text}</StyledText>
               </StyledEntry>

@@ -66,14 +66,62 @@ export type UserPreferences = {
 };
 
 export const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
-  { id: 'toggle-sidebar', action: 'toggleDialer', description: 'Toggle dialer sidebar', keys: 'Cmd+D', customizable: true },
-  { id: 'mute', action: 'toggleMute', description: 'Toggle mute', keys: 'M', customizable: true },
-  { id: 'hold', action: 'toggleHold', description: 'Toggle hold', keys: 'H', customizable: true },
-  { id: 'transfer', action: 'openTransfer', description: 'Open transfer dialog', keys: 'T', customizable: true },
-  { id: 'end-call', action: 'endCall', description: 'End call / close modal', keys: 'Escape', customizable: false },
-  { id: 'call-contact', action: 'callContact', description: 'Call selected contact', keys: 'Cmd+Shift+C', customizable: true },
-  { id: 'calling-mode', action: 'toggleCallingMode', description: 'Toggle calling mode', keys: 'Cmd+Shift+M', customizable: true },
-  { id: 'search', action: 'commandMenu', description: 'Command menu', keys: 'Cmd+K', customizable: false },
+  {
+    id: 'toggle-sidebar',
+    action: 'toggleDialer',
+    description: 'Toggle dialer sidebar',
+    keys: 'Cmd+D',
+    customizable: true,
+  },
+  {
+    id: 'mute',
+    action: 'toggleMute',
+    description: 'Toggle mute',
+    keys: 'M',
+    customizable: true,
+  },
+  {
+    id: 'hold',
+    action: 'toggleHold',
+    description: 'Toggle hold',
+    keys: 'H',
+    customizable: true,
+  },
+  {
+    id: 'transfer',
+    action: 'openTransfer',
+    description: 'Open transfer dialog',
+    keys: 'T',
+    customizable: true,
+  },
+  {
+    id: 'end-call',
+    action: 'endCall',
+    description: 'End call / close modal',
+    keys: 'Escape',
+    customizable: false,
+  },
+  {
+    id: 'call-contact',
+    action: 'callContact',
+    description: 'Call selected contact',
+    keys: 'Cmd+Shift+C',
+    customizable: true,
+  },
+  {
+    id: 'calling-mode',
+    action: 'toggleCallingMode',
+    description: 'Toggle calling mode',
+    keys: 'Cmd+Shift+M',
+    customizable: true,
+  },
+  {
+    id: 'search',
+    action: 'commandMenu',
+    description: 'Command menu',
+    keys: 'Cmd+K',
+    customizable: false,
+  },
 ];
 
 export const DEFAULT_PREFERENCES: UserPreferences = {

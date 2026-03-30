@@ -118,7 +118,7 @@ const StyledModalBackdrop = styled.div`
 
 export const PhoneNumberSettings = () => {
   const { refetch } = useAvailableCallerIds();
-  const phoneNumbers = useRecoilValue(availableCallerIdsState);
+  const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
   const [showModal, setShowModal] = useState(false);
   const { release } = useReleaseNumber();
@@ -173,9 +173,7 @@ export const PhoneNumberSettings = () => {
               <StyledNumberInfo>
                 <StyledPhoneNumber>{number.phoneNumber}</StyledPhoneNumber>
                 {number.friendlyName && (
-                  <StyledFriendlyName>
-                    {number.friendlyName}
-                  </StyledFriendlyName>
+                  <StyledFriendlyName>{number.friendlyName}</StyledFriendlyName>
                 )}
               </StyledNumberInfo>
               {number.areaCode && (

@@ -5,9 +5,7 @@ import {
   DEFAULT_SMART_MODEL,
 } from 'src/engine/metadata-modules/ai/ai-models/constants/ai-models.const';
 
-export class AddFastAndSmartModelsToWorkspace1763997530458
-  implements MigrationInterface
-{
+export class AddFastAndSmartModelsToWorkspace1763997530458 implements MigrationInterface {
   name = 'AddFastAndSmartModelsToWorkspace1763997530458';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

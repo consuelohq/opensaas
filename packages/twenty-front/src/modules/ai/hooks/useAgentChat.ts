@@ -105,8 +105,7 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
       : uiMessages;
 
   const getAuthHeaders = useCallback((): Record<string, string> => {
-    const token =
-      getTokenPair()?.accessOrWorkspaceAgnosticToken.token;
+    const token = getTokenPair()?.accessOrWorkspaceAgnosticToken.token;
 
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, []);
@@ -262,7 +261,6 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
           ]);
         };
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const { done, value } = await reader.read();
 
@@ -339,10 +337,8 @@ export const useAgentChat = (uiMessages: ExtendedUIMessage[]) => {
                   },
                   conversationSize: prev?.conversationSize ?? 0,
                   contextWindowTokens: prev?.contextWindowTokens ?? 0,
-                  inputTokens:
-                    (prev?.inputTokens ?? 0) + event.inputTokens,
-                  outputTokens:
-                    (prev?.outputTokens ?? 0) + event.outputTokens,
+                  inputTokens: (prev?.inputTokens ?? 0) + event.inputTokens,
+                  outputTokens: (prev?.outputTokens ?? 0) + event.outputTokens,
                   inputCredits: prev?.inputCredits ?? 0,
                   outputCredits: prev?.outputCredits ?? 0,
                 }));

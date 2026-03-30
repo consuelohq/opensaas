@@ -20,6 +20,7 @@ import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
 import { dialerSidebarOpenState } from '@/dialer/states/dialerSidebarOpenState';
 import { reconnectPromptState } from '@/dialer/states/reconnectPromptState';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { clearPersistedCallState } from '@/dialer/utils/callPersistence';
 import { PAGE_BAR_MIN_HEIGHT } from '@/ui/layout/page/constants/PageBarMinHeight';
 import { RootStackingContextZIndices } from '@/ui/layout/constants/RootStackingContextZIndices';
@@ -136,23 +137,23 @@ export const DialerSidebar = () => {
   const { status: configStatus } = useTwilioConfigStatus();
   const dialerSidebarOpen = useRecoilValue(dialerSidebarOpenState);
   const setDialerSidebarOpen = useSetRecoilState(dialerSidebarOpenState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const reconnectPrompt = useRecoilValue(reconnectPromptState);
   const { flowState } = useFirstCallFlow();
   const setReconnectPrompt = useSetRecoilState(reconnectPromptState);
   const isInCall = callState.status !== 'idle';
   const isConfigured = configStatus?.configured ?? false;
   const {
-    isLoading,
+    coachingLoading,
     talkingPoints,
-    error: coachingError,
+    coachingError,
     retry: retryCoaching,
   } = useCoaching();
-  const { transcript, isConnected } = useTranscript();
+  const { transcript, transcriptConnected } = useTranscript();
   const {
-    analysis,
+    postCallAnalysis,
     isAnalyzing,
-    error: analysisError,
+    analysisError,
     retry: retryAnalysis,
   } = usePostCallAnalysis();
   useResetCoachingState();
@@ -219,17 +220,17 @@ export const DialerSidebar = () => {
           {isInCall && <InCallControls />}
           {isInCall && <QuickActions />}
           <CoachingPanel
-            isLoading={isLoading}
+            isLoading={coachingLoading}
             talkingPoints={talkingPoints}
             callStatus={callState.status}
             error={coachingError}
             onRetry={retryCoaching}
           />
           {transcript.length > 0 && (
-            <LiveTranscript transcript={transcript} isConnected={isConnected} />
+            <LiveTranscript transcript={transcript} isConnected={transcriptConnected} />
           )}
           <PostCallSummary
-            analysis={analysis}
+            analysis={postCallAnalysis}
             isAnalyzing={isAnalyzing}
             error={analysisError}
             onRetry={retryAnalysis}

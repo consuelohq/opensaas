@@ -12,8 +12,8 @@ export const useCoachingScripts = () => {
     useRecoilState(selectedCoachingScriptIdState);
 
   const selectedScript = useMemo(
-    () => scripts.find((script) => script.id === selectedScriptId) ?? null,
-    [scripts, selectedScriptId],
+    () => coachingScripts.find((script) => script.id === selectedCoachingScriptId) ?? null,
+    [coachingScripts, selectedCoachingScriptId],
   );
 
   const createScript = useCallback(() => {
@@ -27,13 +27,13 @@ export const useCoachingScripts = () => {
       updatedAt: now,
     };
 
-    setScripts((currentScripts) => [newScript, ...currentScripts]);
-    setSelectedScriptId(newScript.id);
-  }, [setScripts, setSelectedScriptId]);
+    setCoachingScripts((currentScripts) => [newScript, ...currentScripts]);
+    setSelectedCoachingScriptId(newScript.id);
+  }, [setCoachingScripts, setSelectedCoachingScriptId]);
 
   const updateScript = useCallback(
     (scriptId: string, updates: { name?: string; content?: string }) => {
-      setScripts((currentScripts) =>
+      setCoachingScripts((currentScripts) =>
         currentScripts.map((script) =>
           script.id === scriptId
             ? {
@@ -45,24 +45,24 @@ export const useCoachingScripts = () => {
         ),
       );
     },
-    [setScripts],
+    [setCoachingScripts],
   );
 
   const deleteScript = useCallback(
     (scriptId: string) => {
-      setScripts((currentScripts) => {
+      setCoachingScripts((currentScripts) => {
         const remaining = currentScripts.filter(
           (script) => script.id !== scriptId,
         );
 
-        if (selectedScriptId === scriptId) {
-          setSelectedScriptId(remaining[0]?.id ?? null);
+        if (selectedCoachingScriptId === scriptId) {
+          setSelectedCoachingScriptId(remaining[0]?.id ?? null);
         }
 
         return remaining;
       });
     },
-    [selectedScriptId, setScripts, setSelectedScriptId],
+    [selectedCoachingScriptId, setCoachingScripts, setSelectedCoachingScriptId],
   );
 
   const selectedScriptSections = useMemo(
@@ -71,9 +71,9 @@ export const useCoachingScripts = () => {
   );
 
   return {
-    scripts,
-    selectedScriptId,
-    setSelectedScriptId,
+    coachingScripts,
+    selectedCoachingScriptId,
+    setSelectedCoachingScriptId,
     selectedScript,
     selectedScriptSections,
     createScript,

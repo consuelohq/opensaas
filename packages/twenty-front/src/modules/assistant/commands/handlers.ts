@@ -13,9 +13,7 @@ import type {
 
 const COMMAND_PREFIX = '/consuelo ';
 
-export const parseSlashCommand = (
-  input: string,
-): ParsedCommand | null => {
+export const parseSlashCommand = (input: string): ParsedCommand | null => {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed.startsWith(COMMAND_PREFIX)) return null;
 
@@ -92,8 +90,7 @@ const handlers: Record<
       return {
         command: 'contacts-search',
         data: null,
-        error:
-          err instanceof Error ? err.message : 'Failed to search contacts',
+        error: err instanceof Error ? err.message : 'Failed to search contacts',
       };
     }
   },

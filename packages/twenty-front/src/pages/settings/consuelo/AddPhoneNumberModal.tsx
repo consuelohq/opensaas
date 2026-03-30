@@ -166,8 +166,17 @@ export const AddPhoneNumberModal = ({
 }: AddPhoneNumberModalProps) => {
   const [areaCode, setAreaCode] = useState('');
   const [provisioningSid, setProvisioningSid] = useState<string | null>(null);
-  const { available, isSearching, error: searchError, search } = useSearchAvailableNumbers();
-  const { isProvisioning, error: provisionError, provision } = useProvisionNumber();
+  const {
+    available,
+    isSearching,
+    error: searchError,
+    search,
+  } = useSearchAvailableNumbers();
+  const {
+    isProvisioning,
+    error: provisionError,
+    provision,
+  } = useProvisionNumber();
 
   const canSearch = /^\d{3}$/.test(areaCode) && !isSearching;
 
@@ -240,13 +249,20 @@ export const AddPhoneNumberModal = ({
       {error && <StyledError>{error}</StyledError>}
 
       <StyledResultsList>
-        {available.length === 0 && !isSearching && areaCode.length === 3 && !error && (
-          <StyledEmpty>No numbers found for area code {areaCode}</StyledEmpty>
-        )}
+        {available.length === 0 &&
+          !isSearching &&
+          areaCode.length === 3 &&
+          !error && (
+            <StyledEmpty>No numbers found for area code {areaCode}</StyledEmpty>
+          )}
         {available.map((number) => {
-          const isThisProvisioning = isProvisioning && provisioningSid === number.phoneNumber;
+          const isThisProvisioning =
+            isProvisioning && provisioningSid === number.phoneNumber;
           return (
-            <StyledResultRow key={number.phoneNumber} onClick={() => handleProvision(number)}>
+            <StyledResultRow
+              key={number.phoneNumber}
+              onClick={() => handleProvision(number)}
+            >
               <IconPhone size={14} />
               <StyledResultInfo>
                 <StyledResultNumber>{number.phoneNumber}</StyledResultNumber>

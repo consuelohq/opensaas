@@ -100,7 +100,8 @@ export const AgentChatPanel = () => {
   const { t } = useLingui();
   const { messages, handleSendMessage, isLoading } =
     useAgentChatContextOrThrow();
-  const [input, setInput] = useRecoilState(agentChatInputState);
+  const [agentChatInput, setAgentChatInput] =
+    useRecoilState(agentChatInputState);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -137,10 +138,7 @@ export const AgentChatPanel = () => {
               if (!textPart?.text) return null;
 
               return (
-                <StyledMessageBubble
-                  key={msg.id}
-                  isUser={msg.role === 'user'}
-                >
+                <StyledMessageBubble key={msg.id} isUser={msg.role === 'user'}>
                   <StyledMessageText isUser={msg.role === 'user'}>
                     {textPart.text}
                   </StyledMessageText>
@@ -158,7 +156,10 @@ export const AgentChatPanel = () => {
           placeholder={t`Message the Agent...`}
           disabled={isLoading}
         />
-        <StyledSendButton onClick={onSubmit} disabled={isLoading || !input.trim()}>
+        <StyledSendButton
+          onClick={onSubmit}
+          disabled={isLoading || !input.trim()}
+        >
           ↑
         </StyledSendButton>
       </StyledComposer>

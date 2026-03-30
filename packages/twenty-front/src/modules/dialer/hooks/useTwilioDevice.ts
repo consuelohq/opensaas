@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Device, type Call } from '@twilio/voice-sdk';
 import { captureException } from '@sentry/react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { t } from '@lingui/core/macro';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
@@ -29,8 +30,8 @@ const DEVICE_RETRY_DELAY = 5_000;
 
 interface UseTwilioDeviceReturn {
   device: Device | null;
-  isReady: boolean;
-  error: string | null;
+  deviceReady: boolean;
+  deviceError: string | null;
   activeCall: Call | null;
   reconnecting: boolean;
   connect: (params: { To: string; From: string }) => Promise<Call>;
@@ -89,17 +90,17 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         extra: { context: 'requestMicPermission', errorName: name },
       });
       if (name === 'NotAllowedError') {
-        setError(
-          'Microphone permission denied. Enable it in browser settings.',
+        setDeviceError(
+          t`Microphone permission denied. Enable it in browser settings.`,
         );
       } else if (name === 'NotFoundError') {
-        setError('No microphone found. Connect a mic and try again.');
+        setDeviceError(t`No microphone found. Connect a mic and try again.`);
       } else {
-        setError('Microphone access failed.');
+        setDeviceError(t`Microphone access failed.`);
       }
       return false;
     }
-  }, [setError]);
+  }, [setDeviceError]);
 
   const updateCallStatus = useCallback(
     (status: CallStatus) => {
@@ -136,7 +137,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
             };
             setCallError({
               reason: reasonMap[data.status] ?? 'unknown',
-              message: `Call ${data.status === 'no-answer' ? 'was not answered' : data.status}`,
+              message: t`Call ${data.status === 'no-answer' ? 'was not answered' : data.status}`,
               occurredAt: new Date(),
             });
             if (statusPollRef.current) clearInterval(statusPollRef.current);
@@ -166,9 +167,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Token refresh failed';
       captureException(err, { extra: { context: 'refreshToken' } });
-      setError(msg);
+      setDeviceError(msg);
     }
-  }, [setError]);
+  }, [setDeviceError]);
 
   // wire call-level events
   const bindCallEvents = useCallback(
@@ -209,7 +210,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       call.on('cancel', handleEnd);
       call.on('reject', handleEnd);
 
-      call.on('error', () => {
+      call.on('deviceError', () => {
         setActiveCall(null);
         stopStatusPolling();
         updateCallStatus('failed');
@@ -240,7 +241,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   // create + register device
   const initDevice = useCallback(async () => {
     try {
-      setError(null);
+      setDeviceError(null);
 
       const token = await fetchVoiceToken();
 
@@ -250,19 +251,19 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       dev.on('registered', () => {
-        setIsReady(true);
-        setError(null);
+        setDeviceReady(true);
+        setDeviceError(null);
       });
 
       dev.on('unregistered', () => {
-        setIsReady(false);
+        setDeviceReady(false);
       });
 
       dev.on('error', (deviceError) => {
-        setError(deviceError.message ?? 'Device error');
-        setIsReady(false);
+        setDeviceError(deviceError.message ?? 'Device error');
+        setDeviceReady(false);
 
-        // null out cached device on failure (error recovery pattern)
+        // null out cached device on failure (deviceError recovery pattern)
         if (deviceRef.current) {
           deviceRef.current.destroy();
           deviceRef.current = null;
@@ -296,7 +297,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Device init failed';
       captureException(err, { extra: { context: 'initDevice' } });
-      setError(msg);
+      setDeviceError(msg);
 
       // null out on failure
       if (deviceRef.current) {
@@ -313,7 +314,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }, DEVICE_RETRY_DELAY);
       }
     }
-  }, [setError, setIsReady, bindCallEvents, updateCallStatus, refreshToken]);
+  }, [setDeviceError, setDeviceReady, bindCallEvents, updateCallStatus, refreshToken]);
 
   // connect outbound call
   const connect = useCallback(
@@ -329,7 +330,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       const micOk = await requestMicPermission();
       if (!micOk) {
         updateCallStatus('failed');
-        setError('Microphone permission required to make calls');
+        setDeviceError(t`Microphone permission required to make calls`);
         throw new Error('Microphone permission denied');
       }
 
@@ -359,7 +360,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       bindCallEvents,
       requestMicPermission,
       setCallState,
-      setError,
+      setDeviceError,
     ],
   );
 
@@ -372,7 +373,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
 
   // sync selected audio devices to twilio
   useEffect(() => {
-    if (!deviceRef.current || !isReady || !selectedMic) return;
+    if (!deviceRef.current || !deviceReady || !selectedMic) return;
     deviceRef.current.audio
       ?.setInputDevice(selectedMic)
       .catch((err: unknown) => {
@@ -380,10 +381,10 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
           extra: { context: 'setInputDevice', deviceId: selectedMic },
         });
       });
-  }, [selectedMic, isReady]);
+  }, [selectedMic, deviceReady]);
 
   useEffect(() => {
-    if (!deviceRef.current || !isReady || !selectedSpeaker) return;
+    if (!deviceRef.current || !deviceReady || !selectedSpeaker) return;
     deviceRef.current.audio?.speakerDevices
       .set(selectedSpeaker)
       .catch((err: unknown) => {
@@ -391,12 +392,12 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
           extra: { context: 'setSpeakerDevice', deviceId: selectedSpeaker },
         });
       });
-  }, [selectedSpeaker, isReady]);
+  }, [selectedSpeaker, deviceReady]);
 
   // init on mount, cleanup on unmount — only when configured
   useEffect(() => {
     // skip device init until config status is loaded and shows configured
-    if (!configStatus?.configured) return;
+    if (!twilioConfigStatus?.configured) return;
 
     initDevice();
 
@@ -408,15 +409,15 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         deviceRef.current.destroy();
         deviceRef.current = null;
       }
-      setIsReady(false);
+      setDeviceReady(false);
       setActiveCall(null);
     };
-  }, [configStatus?.configured, initDevice, setActiveCall, setIsReady]);
+  }, [twilioConfigStatus?.configured, initDevice, setActiveCall, setDeviceReady]);
 
   return {
     device: deviceRef.current,
-    isReady,
-    error,
+    deviceReady,
+    deviceError,
     activeCall,
     reconnecting,
     connect,
@@ -424,3 +425,5 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     refreshToken,
   };
 };
+
+export default useTwilioDevice;

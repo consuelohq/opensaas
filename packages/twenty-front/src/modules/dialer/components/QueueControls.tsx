@@ -1,5 +1,6 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
+import { msg } from '@lingui/core/macro';
 import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
@@ -16,7 +17,7 @@ import {
   IconThumbDown,
   IconMailbox,
   IconX,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 
 import { activeQueueState } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
@@ -45,9 +46,13 @@ const StyledButton = styled.button<{ danger?: boolean; accent?: boolean }>`
   font-weight: 500;
   cursor: pointer;
   background: ${({ danger, accent, theme }) =>
-    danger ? '#ef4444' : accent ? theme.color.blue : theme.background.tertiary};
+    danger
+      ? theme.color.red
+      : accent
+        ? theme.color.blue
+        : theme.background.tertiary};
   color: ${({ danger, accent, theme }) =>
-    danger || accent ? '#fff' : theme.font.color.primary};
+    danger || accent ? theme.font.color.inverted : theme.font.color.primary};
   &:hover {
     opacity: 0.85;
   }
@@ -98,7 +103,7 @@ const StyledReasonButton = styled.button<{ selected?: boolean }>`
   background: ${({ selected, theme }) =>
     selected ? theme.color.blue : theme.background.tertiary};
   color: ${({ selected, theme }) =>
-    selected ? '#fff' : theme.font.color.primary};
+    selected ? theme.font.color.inverted : theme.font.color.primary};
   &:hover {
     opacity: 0.85;
   }
@@ -132,7 +137,8 @@ const StyledModalButton = styled.button<{ accent?: boolean }>`
   cursor: pointer;
   background: ${({ accent, theme }) =>
     accent ? theme.color.blue : theme.background.tertiary};
-  color: ${({ accent, theme }) => (accent ? '#fff' : theme.font.color.primary)};
+  color: ${({ accent, theme }) =>
+    accent ? theme.font.color.inverted : theme.font.color.primary};
 `;
 
 const StyledHint = styled.span`
@@ -143,13 +149,13 @@ const StyledHint = styled.span`
 // endregion
 
 const SKIP_REASONS = [
-  { value: 'no-answer', label: 'No Answer', Icon: IconPhoneOff },
-  { value: 'voicemail', label: 'Voicemail', Icon: IconMailbox },
-  { value: 'wrong-number', label: 'Wrong Number', Icon: IconX },
-  { value: 'not-interested', label: 'Not Interested', Icon: IconThumbDown },
-  { value: 'callback-requested', label: 'Callback', Icon: IconCalendar },
-  { value: 'dnc', label: 'Do Not Call', Icon: IconBan },
-  { value: 'other', label: 'Other', Icon: IconDots },
+  { value: 'no-answer', label: msg`No Answer`, Icon: IconPhoneOff },
+  { value: 'voicemail', label: msg`Voicemail`, Icon: IconMailbox },
+  { value: 'wrong-number', label: msg`Wrong Number`, Icon: IconX },
+  { value: 'not-interested', label: msg`Not Interested`, Icon: IconThumbDown },
+  { value: 'callback-requested', label: msg`Callback`, Icon: IconCalendar },
+  { value: 'dnc', label: msg`Do Not Call`, Icon: IconBan },
+  { value: 'other', label: msg`Other`, Icon: IconDots },
 ] as const;
 
 // skip reason modal
@@ -182,12 +188,12 @@ const SkipReasonModal = ({
               onClick={() => setSelected(value)}
             >
               <Icon size={14} />
-              {label}
+              {t(label)}
             </StyledReasonButton>
           ))}
           {selected === 'other' && (
             <StyledCustomInput
-              placeholder="Enter reason..."
+              placeholder={t`Enter reason...`}
               value={customReason}
               onChange={(e) => setCustomReason(e.target.value)}
               autoFocus
@@ -197,7 +203,7 @@ const SkipReasonModal = ({
         <StyledModalActions>
           <StyledModalButton onClick={onClose}>{t`Cancel`}</StyledModalButton>
           <StyledModalButton accent onClick={handleSkip} disabled={!selected}>
-            Skip
+            {t`Skip`}
           </StyledModalButton>
         </StyledModalActions>
       </StyledModal>
@@ -255,15 +261,15 @@ export const QueueControls = () => {
     options: { enableOnFormTags: false, enableOnContentEditable: false },
   });
 
-  if (!queue) return null;
+  if (!activeQueue) return null;
 
   // idle — start button
-  if (queue.status === 'idle') {
+  if (activeQueue.status === 'idle') {
     return (
       <StyledControls>
         <StyledButton accent onClick={startQueue}>
           <IconPhone size={14} />
-          Start Queue
+          {t`Start Queue`}
         </StyledButton>
       </StyledControls>
     );
@@ -275,7 +281,7 @@ export const QueueControls = () => {
       <StyledControls>
         <StyledButton accent onClick={restartQueue}>
           <IconRefresh size={14} />
-          Restart Queue
+          {t`Restart Queue`}
           <StyledHint>(R)</StyledHint>
         </StyledButton>
       </StyledControls>
@@ -288,23 +294,23 @@ export const QueueControls = () => {
       <StyledControls>
         <StyledButton onClick={() => setShowSkipModal(true)}>
           <IconPlayerTrackNext size={14} />
-          Skip
+          {t`Skip`}
           <StyledHint>(S)</StyledHint>
         </StyledButton>
         {isActive ? (
           <StyledButton onClick={pauseQueue}>
             <IconPlayerPause size={14} />
-            Pause
+            {t`Pause`}
           </StyledButton>
         ) : (
           <StyledButton accent onClick={resumeQueue}>
             <IconPlayerPlay size={14} />
-            Resume
+            {t`Resume`}
           </StyledButton>
         )}
         <StyledButton danger onClick={endQueue}>
           <IconPlayerStop size={14} />
-          End
+          {t`End`}
         </StyledButton>
       </StyledControls>
 

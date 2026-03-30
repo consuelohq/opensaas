@@ -21,7 +21,8 @@ export const formatPhone = (raw: string): string => {
 /** Format as E.164: +15551234567 */
 export const toE164 = (raw: string): string => {
   const digits = stripNonDigits(raw);
-  const national = digits.length === 11 && digits[0] === '1' ? digits : `1${digits}`;
+  const national =
+    digits.length === 11 && digits[0] === '1' ? digits : `1${digits}`;
 
   return `+${national}`;
 };

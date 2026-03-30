@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FileRecord } from '@/files/types/FileUpload';
 
 const BASE_URL =
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  window._env_?.REACT_APP_SERVER_BASE_URL ?? process.env.REACT_APP_SERVER_BASE_URL!;
+  window._env_?.REACT_APP_SERVER_BASE_URL ??
+  process.env.REACT_APP_SERVER_BASE_URL!;
 
 export type EntityType = 'contact' | 'call' | 'company' | 'deal';
 
@@ -15,7 +15,10 @@ export type AttachedFile = FileRecord & {
   attachedAt: string;
 };
 
-export const useFileAttachments = (entityType: EntityType, entityId: string) => {
+export const useFileAttachments = (
+  entityType: EntityType,
+  entityId: string,
+) => {
   const { t } = useLingui();
   const { enqueueErrorSnackBar } = useSnackBar();
 

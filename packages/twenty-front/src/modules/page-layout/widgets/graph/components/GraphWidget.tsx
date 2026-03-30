@@ -12,11 +12,11 @@ import { isDefined } from 'twenty-shared/utils';
 import { WidgetConfigurationType } from '~/generated-metadata/graphql';
 
 const GraphWidgetGaugeChart = lazy(() =>
-  import(
-    '@/page-layout/widgets/graph/graphWidgetGaugeChart/components/GraphWidgetGaugeChart'
-  ).then((module) => ({
-    default: module.GraphWidgetGaugeChart,
-  })),
+  import('@/page-layout/widgets/graph/graphWidgetGaugeChart/components/GraphWidgetGaugeChart').then(
+    (module) => ({
+      default: module.GraphWidgetGaugeChart,
+    }),
+  ),
 );
 
 export type GraphWidgetProps = {

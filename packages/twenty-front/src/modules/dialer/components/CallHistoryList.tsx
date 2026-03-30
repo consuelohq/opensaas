@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useSetRecoilState } from 'recoil';
-// eslint-disable-next-line no-restricted-imports -- twenty-ui module resolution broken (DEV-788)
+
 import {
   IconFileText,
   IconHistory,
@@ -9,7 +9,7 @@ import {
   IconPhone,
   IconPlayerPlay,
   IconRefresh,
-} from '@tabler/icons-react';
+} from 'twenty-ui/display';
 
 import { useCallHistory } from '@/dialer/hooks/useCallHistory';
 import { callStateAtom } from '@/dialer/states/callStateAtom';

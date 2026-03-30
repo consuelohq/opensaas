@@ -1,7 +1,9 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
 import { useRecoilValue } from 'recoil';
-import { IconDownload } from '@tabler/icons-react';
+import { IconDownload } from 'twenty-ui/display';
+import { useLingui } from '@lingui/react/macro';
+import { msg } from '@lingui/core/macro';
 
 import { type QueueOutcome } from '@/dialer/types/queue';
 import { useQueueAnalytics } from '@/dialer/hooks/useQueueAnalytics';
@@ -65,8 +67,23 @@ const StyledOutcomeTrack = styled.div`
   overflow: hidden;
 `;
 
-const StyledOutcomeFill = styled.div<{ width: number; color: string }>`
-  background: ${({ color }) => color};
+const StyledOutcomeFill = styled.div<{ width: number; colorKey: string }>`
+  background: ${({ theme, colorKey }) => {
+    switch (colorKey) {
+      case 'green':
+        return theme.color.green;
+      case 'blue':
+        return theme.color.blue;
+      case 'yellow':
+        return theme.color.yellow;
+      case 'red':
+        return theme.color.red;
+      case 'darkred':
+        return theme.color.red;
+      default:
+        return theme.color.gray;
+    }
+  }};
   border-radius: 4px;
   height: 100%;
   transition: width 300ms ease;
@@ -119,33 +136,37 @@ const StyledExportButton = styled.button`
 
 // endregion
 
-const OUTCOME_COLORS: Record<QueueOutcome, string> = {
-  connected: '#16a34a',
-  qualified: '#22c55e',
-  'callback-requested': '#3b82f6',
-  voicemail: '#f59e0b',
-  busy: '#ef4444',
-  'no-answer': '#6b7280',
-  'not-interested': '#9ca3af',
-  'wrong-number': '#dc2626',
-  dnc: '#991b1b',
+const OUTCOME_COLOR_KEYS: Record<
+  QueueOutcome,
+  'green' | 'blue' | 'yellow' | 'red' | 'gray' | 'darkred'
+> = {
+  connected: 'green',
+  qualified: 'green',
+  'callback-requested': 'blue',
+  voicemail: 'yellow',
+  busy: 'red',
+  'no-answer': 'gray',
+  'not-interested': 'gray',
+  'wrong-number': 'red',
+  dnc: 'darkred',
 };
 
-const OUTCOME_LABELS: Record<QueueOutcome, string> = {
-  connected: 'Connected',
-  'no-answer': 'No Answer',
-  voicemail: 'Voicemail',
-  busy: 'Busy',
-  'wrong-number': 'Wrong #',
-  'callback-requested': 'Callback',
-  'not-interested': 'Not Int.',
-  qualified: 'Qualified',
-  dnc: 'DNC',
+const OUTCOME_LABELS: Record<QueueOutcome, ReturnType<typeof msg>> = {
+  connected: msg`Connected`,
+  'no-answer': msg`No Answer`,
+  voicemail: msg`Voicemail`,
+  busy: msg`Busy`,
+  'wrong-number': msg`Wrong #`,
+  'callback-requested': msg`Callback`,
+  'not-interested': msg`Not Int.`,
+  qualified: msg`Qualified`,
+  dnc: msg`DNC`,
 };
 
 // stat cards
 
 const StatCards = () => {
+  const { t } = useLingui();
   const { stats } = useQueueAnalytics();
   if (!stats) return null;
 
@@ -159,21 +180,21 @@ const StatCards = () => {
     <StyledGrid>
       <StyledCard>
         <StyledCardValue>{totalCalls}</StyledCardValue>
-        <StyledCardLabel>Calls Made</StyledCardLabel>
+        <StyledCardLabel>{t`Calls Made`}</StyledCardLabel>
       </StyledCard>
       <StyledCard>
         <StyledCardValue>{stats.answerRatePercentage}%</StyledCardValue>
-        <StyledCardLabel>Connect Rate</StyledCardLabel>
+        <StyledCardLabel>{t`Connect Rate`}</StyledCardLabel>
       </StyledCard>
       <StyledCard>
         <StyledCardValue>
           {formatDurationHuman(stats.avgCallDurationSeconds)}
         </StyledCardValue>
-        <StyledCardLabel>Avg Duration</StyledCardLabel>
+        <StyledCardLabel>{t`Avg Duration`}</StyledCardLabel>
       </StyledCard>
       <StyledCard>
         <StyledCardValue>{stats.callsPerHour}</StyledCardValue>
-        <StyledCardLabel>Calls/Hour</StyledCardLabel>
+        <StyledCardLabel>{t`Calls/Hour`}</StyledCardLabel>
       </StyledCard>
     </StyledGrid>
   );
@@ -182,6 +203,7 @@ const StatCards = () => {
 // outcome chart
 
 const OutcomeChart = () => {
+  const { t } = useLingui();
   const { outcomeBreakdown } = useQueueAnalytics();
 
   const entries = (
@@ -196,11 +218,11 @@ const OutcomeChart = () => {
     <StyledOutcomeSection>
       {entries.map(([outcome, count]) => (
         <StyledOutcomeRow key={outcome}>
-          <StyledOutcomeLabel>{OUTCOME_LABELS[outcome]}</StyledOutcomeLabel>
+          <StyledOutcomeLabel>{t(OUTCOME_LABELS[outcome])}</StyledOutcomeLabel>
           <StyledOutcomeTrack>
             <StyledOutcomeFill
               width={max > 0 ? (count / max) * 100 : 0}
-              color={OUTCOME_COLORS[outcome]}
+              colorKey={OUTCOME_COLOR_KEYS[outcome]}
             />
           </StyledOutcomeTrack>
           <StyledOutcomeCount>{count}</StyledOutcomeCount>
@@ -210,16 +232,17 @@ const OutcomeChart = () => {
   );
 };
 
-// session summary (shown when queue completed)
+// session summary (shown when activeQueue completed)
 
 const QueueSessionSummary = () => {
+  const { t } = useLingui();
   const activeQueue = useRecoilValue(activeQueueState);
   const queueItems = useRecoilValue(queueItemsState);
   const { stats } = useQueueAnalytics();
 
   const handleExport = useCallback(() => {
     const header = 'Name,Phone,Company,Outcome,Duration (s),Attempts,Notes\n';
-    const rows = items.map((item) =>
+    const rows = queueItems.map((item) =>
       [
         item.contact.name ?? '',
         item.contact.phone,
@@ -235,12 +258,12 @@ const QueueSessionSummary = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `queue-${queue?.id ?? 'export'}.csv`;
+    a.download = `activeQueue-${activeQueue?.id ?? 'export'}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [items, queue?.id]);
+  }, [queueItems, activeQueue?.id]);
 
-  if (queue?.status !== 'completed' || !stats) return null;
+  if (activeQueue?.status !== 'completed' || !stats) return null;
 
   const totalCalls =
     stats.answeredCount +
@@ -250,14 +273,14 @@ const QueueSessionSummary = () => {
 
   return (
     <StyledSummary>
-      <StyledSummaryTitle>Queue Complete</StyledSummaryTitle>
+      <StyledSummaryTitle>{t`Queue Complete`}</StyledSummaryTitle>
       <StyledSummaryDetail>
         {totalCalls} calls · {stats.answerRatePercentage}% connected ·{' '}
         {formatDurationHuman(stats.totalTimeSeconds)} total
       </StyledSummaryDetail>
       <StyledExportButton onClick={handleExport}>
         <IconDownload size={14} />
-        Export CSV
+        {t`Export CSV`}
       </StyledExportButton>
     </StyledSummary>
   );
@@ -267,13 +290,13 @@ const QueueSessionSummary = () => {
 
 export const QueueAnalytics = () => {
   const activeQueue = useRecoilValue(activeQueueState);
-  if (!queue || queue.status === 'idle') return null;
+  if (!activeQueue || activeQueue.status === 'idle') return null;
 
   return (
     <>
       <StatCards />
       <OutcomeChart />
-      {queue.status === 'completed' && <QueueSessionSummary />}
+      {activeQueue.status === 'completed' && <QueueSessionSummary />}
     </>
   );
 };

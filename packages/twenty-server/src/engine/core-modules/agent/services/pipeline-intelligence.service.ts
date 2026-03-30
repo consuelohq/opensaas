@@ -110,8 +110,7 @@ export class PipelineIntelligenceService {
       const recentChanges = await this.getRecentChanges(workspaceId);
 
       // use the pure functions from the agent package
-      const { buildPipelineContext } =
-        await import('@consuelo/agent');
+      const { buildPipelineContext } = await import('@consuelo/agent');
 
       const result = buildPipelineContext(
         deals,

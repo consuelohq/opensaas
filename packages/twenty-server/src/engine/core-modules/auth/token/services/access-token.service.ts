@@ -165,7 +165,7 @@ export class AccessTokenService {
 
   async validateTokenByRequest(request: Request): Promise<AuthContext> {
     // HACK: passport-jwt uses a different @types/express than our express — safe cast
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const token = this.jwtWrapperService.extractJwtFromRequest()(
       request as any,
     );

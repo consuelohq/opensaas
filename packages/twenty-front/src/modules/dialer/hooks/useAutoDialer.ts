@@ -9,6 +9,7 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
+import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { QueueItem, QueueSettings } from '@/dialer/types/queue';
 
 const shouldRetry = (item: QueueItem, settings: QueueSettings): boolean => {
@@ -33,7 +34,7 @@ const getRetryDelay = (attempts: number): number =>
 
 export const useAutoDialer = () => {
   const activeQueue = useRecoilValue(activeQueueState);
-  const callStateAtom = useRecoilValue(callStateAtom);
+  const callState = useRecoilValue(callStateAtom);
   const lastCallOutcome = useRecoilValue(lastCallOutcomeState);
   const queueItems = useRecoilValue(queueItemsState);
   const currentQueueIndex = useRecoilValue(currentQueueIndexState);
@@ -58,11 +59,11 @@ export const useAutoDialer = () => {
 
     if (callState.status !== 'ended') return;
     if (!wasActive) return;
-    if (queue?.status !== 'active') return;
-    if (!queue.settings.autoAdvance) return;
+    if (activeQueue?.status !== 'active') return;
+    if (!activeQueue.settings.autoAdvance) return;
 
     // auto-skip voicemail immediately if enabled
-    if (queue.settings.autoSkipVoicemail && callOutcome === 'voicemail') {
+    if (activeQueue.settings.autoSkipVoicemail && lastCallOutcome === 'voicemail') {
       try {
         skipContact('Voicemail - auto-skipped');
       } catch (err: unknown) {
@@ -74,8 +75,8 @@ export const useAutoDialer = () => {
     }
 
     // check retry logic
-    const currentItem = items[currentIndex];
-    if (currentItem && shouldRetry(currentItem, queue.settings)) {
+    const currentItem = queueItems[currentQueueIndex];
+    if (currentItem && shouldRetry(currentItem, activeQueue.settings)) {
       const retryDelay = getRetryDelay(currentItem.attempts);
       const delaySec = Math.ceil(retryDelay / 1000);
       setCountdown(delaySec);
@@ -100,9 +101,9 @@ export const useAutoDialer = () => {
     }
 
     // normal auto-advance with configured delay
-    let delay = queue.settings.autoAdvanceDelay;
-    if (callOutcome === 'voicemail') {
-      delay += queue.settings.voicemailSkipDelay;
+    let delay = activeQueue.settings.autoAdvanceDelay;
+    if (lastCallOutcome === 'voicemail') {
+      delay += activeQueue.settings.voicemailSkipDelay;
     }
 
     const delaySec = Math.max(1, Math.ceil(delay / 1000));

@@ -18,8 +18,8 @@ const StyledPhoneFieldWrapper = styled.div`
 `;
 
 const StyledPhoneDisplayWrapper = styled.div`
-  min-width: 0;
   flex: 1;
+  min-width: 0;
 `;
 
 export const PhonesFieldDisplay = () => {

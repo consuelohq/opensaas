@@ -35,9 +35,9 @@ import { type JsonbProperty } from 'src/engine/workspace-manager/workspace-migra
 )
 @Index('IDX_PAGE_LAYOUT_WIDGET_OBJECT_METADATA_ID', ['objectMetadataId'])
 export class PageLayoutWidgetEntity<
-    TWidgetConfigurationType extends
-      WidgetConfigurationType = WidgetConfigurationType,
-  >
+  TWidgetConfigurationType extends WidgetConfigurationType =
+    WidgetConfigurationType,
+>
   extends SyncableEntity
   implements Required<PageLayoutWidgetEntity>
 {

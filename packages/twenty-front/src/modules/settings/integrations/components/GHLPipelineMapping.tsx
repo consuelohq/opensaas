@@ -139,7 +139,7 @@ export const GHLPipelineMapping = ({
   title,
   description,
 }: GHLPipelineMappingProps) => {
-  const savedMappings = useRecoilValue(ghlPipelineMappingsState);
+  const ghlPipelineMappings = useRecoilValue(ghlPipelineMappingsState);
   const {
     ghlStages,
     twentyStages,

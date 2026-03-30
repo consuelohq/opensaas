@@ -21,9 +21,7 @@ import { workspaceMigrationRunnerExceptionFormatter } from 'src/engine/workspace
 import { WorkspaceMigrationRunnerException } from 'src/engine/workspace-manager/workspace-migration/workspace-migration-runner/exceptions/workspace-migration-runner.exception';
 
 @Injectable()
-export class WorkspaceMigrationGraphqlApiExceptionInterceptor
-  implements NestInterceptor
-{
+export class WorkspaceMigrationGraphqlApiExceptionInterceptor implements NestInterceptor {
   constructor(private readonly i18nService: I18nService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

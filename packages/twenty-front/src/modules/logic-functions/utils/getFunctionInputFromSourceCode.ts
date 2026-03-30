@@ -10,9 +10,8 @@ export const getFunctionInputFromSourceCode = async (
     throw new Error('Source code is not defined');
   }
 
-  const { getFunctionInputSchema } = await import(
-    '@/logic-functions/utils/getFunctionInputSchema'
-  );
+  const { getFunctionInputSchema } =
+    await import('@/logic-functions/utils/getFunctionInputSchema');
   const functionInputSchema = getFunctionInputSchema(sourceCode);
 
   const result = getDefaultFunctionInputFromInputSchema(functionInputSchema)[0];

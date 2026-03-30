@@ -25,10 +25,10 @@ export const useTwilioConfigStatus = () => {
         throw new Error(`Status fetch failed: ${res.status}`);
       }
       const data = (await res.json()) as TwilioConfigStatus;
-      setStatus(data);
+      setTwilioConfigStatus(data);
     } catch (err: unknown) {
       captureException(err, { extra: { context: 'fetchTwilioConfigStatus' } });
-      setStatus({
+      setTwilioConfigStatus({
         mode: 'byok',
         configured: false,
         twilioConnected: false,
@@ -37,7 +37,7 @@ export const useTwilioConfigStatus = () => {
         error: err instanceof Error ? err.message : 'Failed to fetch status',
       });
     }
-  }, [setStatus]);
+  }, [setTwilioConfigStatus]);
 
   // fetch on mount, then poll — faster when unconfigured, slower when configured
   useEffect(() => {

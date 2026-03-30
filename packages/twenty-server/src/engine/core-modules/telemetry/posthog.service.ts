@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as Sentry from '@sentry/node';
 
+import * as Sentry from '@sentry/node';
 import { isNonEmptyString } from '@sniptt/guards';
+
 import type { PostHog as PostHogClient } from 'posthog-node';
 
 import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';

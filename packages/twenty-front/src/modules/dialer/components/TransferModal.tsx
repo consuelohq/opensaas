@@ -1,7 +1,8 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
+import { msg } from '@lingui/core/macro';
 import { useCallback, useState } from 'react';
-import { IconPhone, IconX } from '@tabler/icons-react';
+import { IconPhone, IconX } from 'twenty-ui/display';
 
 import { type TransferType } from '@/dialer/types/dialer';
 import {
@@ -91,7 +92,7 @@ const StyledToggleOption = styled.button<{ active: boolean }>`
   background: ${({ active, theme }) =>
     active ? theme.color.blue : theme.background.secondary};
   color: ${({ active, theme }) =>
-    active ? '#fff' : theme.font.color.secondary};
+    active ? theme.font.color.inverted : theme.font.color.secondary};
 `;
 
 const StyledDescription = styled.span`
@@ -102,7 +103,7 @@ const StyledDescription = styled.span`
 
 const StyledError = styled.span`
   font-size: 12px;
-  color: #ef4444;
+  color: ${({ theme }) => theme.color.red};
   line-height: 1.4;
 `;
 
@@ -115,7 +116,7 @@ const StyledTransferButton = styled.button<{ isDisabled: boolean }>`
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
   background: ${({ theme }) => theme.color.blue};
-  color: #fff;
+  color: ${({ theme }) => theme.font.color.inverted};
   font-size: 14px;
   font-weight: 500;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
@@ -127,9 +128,9 @@ const StyledTransferButton = styled.button<{ isDisabled: boolean }>`
   }
 `;
 
-const DESCRIPTIONS: Record<TransferType, string> = {
-  cold: 'Immediately connects the customer to the new number. You will be disconnected.',
-  warm: 'Puts the customer on hold while you speak with the new party first.',
+const DESCRIPTIONS: Record<TransferType, ReturnType<typeof msg>> = {
+  cold: msg`Immediately connects the customer to the new number. You will be disconnected.`,
+  warm: msg`Puts the customer on hold while you speak with the new party first.`,
 };
 
 export const TransferModal = ({
@@ -174,14 +175,14 @@ export const TransferModal = ({
     <StyledOverlay>
       <StyledHeader>
         <StyledTitle>{t`Transfer Call`}</StyledTitle>
-        <StyledCloseButton onClick={onClose} aria-label="Close transfer">
+        <StyledCloseButton onClick={onClose} aria-label={t`Close transfer`}>
           <IconX size={18} />
         </StyledCloseButton>
       </StyledHeader>
 
       <StyledInput
         type="tel"
-        placeholder="Enter phone number"
+        placeholder={t`Enter phone number`}
         value={phoneNumber}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
@@ -195,25 +196,25 @@ export const TransferModal = ({
           active={transferType === 'warm'}
           onClick={() => setTransferType('warm')}
         >
-          Warm
+          {t`Warm`}
         </StyledToggleOption>
         <StyledToggleOption
           active={transferType === 'cold'}
           onClick={() => setTransferType('cold')}
         >
-          Cold
+          {t`Cold`}
         </StyledToggleOption>
       </StyledToggle>
 
-      <StyledDescription>{DESCRIPTIONS[transferType]}</StyledDescription>
+      <StyledDescription>{t(DESCRIPTIONS[transferType])}</StyledDescription>
 
       <StyledTransferButton
         isDisabled={!canTransfer}
         onClick={handleTransfer}
-        aria-label="Start transfer"
+        aria-label={t`Start transfer`}
       >
         <IconPhone size={16} />
-        {isTransferring ? 'Transferring...' : 'Transfer'}
+        {isTransferring ? t`Transferring...` : t`Transfer`}
       </StyledTransferButton>
     </StyledOverlay>
   );

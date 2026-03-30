@@ -1,12 +1,6 @@
 import styled from '@emotion/styled';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  IconCheck,
-  IconCopy,
-  IconLink,
-  IconRefresh,
-  IconX,
-} from '@tabler/icons-react';
+import { IconCheck, IconCopy, IconLink } from '@tabler/icons-react';
 import { H2Title } from 'twenty-ui/display';
 import { getDocumentationUrl } from '@/support/utils/getDocumentationUrl';
 import { Button } from 'twenty-ui/input';
@@ -337,7 +331,9 @@ export const DiscordSettings = () => {
             description="Configure your Discord bot credentials from the Discord Developer Portal"
           />
           <StyledDocLink
-            href={getDocumentationUrl({ path: '/user-guide/discord-bot/overview' })}
+            href={getDocumentationUrl({
+              path: '/user-guide/discord-bot/overview',
+            })}
             target="_blank"
             rel="noopener noreferrer"
           >

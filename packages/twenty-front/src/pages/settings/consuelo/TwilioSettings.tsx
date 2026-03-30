@@ -199,9 +199,7 @@ export const TwilioSettings = () => {
             {!isConfigured &&
               config?.hostedAvailable &&
               'Not configured — will auto-provision on first call'}
-            {!isConfigured &&
-              !config?.hostedAvailable &&
-              'Not configured'}
+            {!isConfigured && !config?.hostedAvailable && 'Not configured'}
           </StyledStatusText>
         </StyledStatusRow>
 
@@ -283,7 +281,9 @@ export const TwilioSettings = () => {
           {showByokForm && (
             <>
               <Button
-                title={saving ? 'Testing & Saving...' : 'Test Connection & Save'}
+                title={
+                  saving ? 'Testing & Saving...' : 'Test Connection & Save'
+                }
                 Icon={saving ? IconRefresh : IconCheck}
                 onClick={() => void handleSaveByok()}
                 disabled={saving || !accountSid || !authToken}
