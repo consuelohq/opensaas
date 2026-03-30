@@ -263,34 +263,39 @@ export const NavigationDrawerUpgradeModal = ({
       });
 
       if (!response.ok) {
-        const httpError = new Error(
-          `Upgrade request failed: ${response.status}`,
+        captureException(
+          new Error(`Upgrade request failed: ${response.status}`),
+          {
+            extra: {
+              context: 'NavigationDrawerUpgradeModal',
+              endpoint,
+              responseStatus: response.status,
+            },
+          },
         );
 
-        captureException(httpError, {
-          extra: {
-            context: 'NavigationDrawerUpgradeModal',
-            endpoint,
-            responseStatus: response.status,
-          },
+        enqueueErrorSnackBar({
+          message: t`Couldn't open billing right now`,
         });
 
-        throw httpError;
+        return;
       }
 
       const result = (await response.json()) as { url?: string };
 
       if (!result.url) {
-        const missingBillingUrlError = new Error('Missing billing url');
-
-        captureException(missingBillingUrlError, {
+        captureException(new Error('Missing billing url'), {
           extra: {
             context: 'NavigationDrawerUpgradeModal',
             endpoint,
           },
         });
 
-        throw missingBillingUrlError;
+        enqueueErrorSnackBar({
+          message: t`Couldn't open billing right now`,
+        });
+
+        return;
       }
 
       window.location.href = result.url;
