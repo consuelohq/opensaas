@@ -2,7 +2,7 @@ import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
-import { IconPhone, IconWorld } from 'twenty-ui/display';
+import { IconPhone } from 'twenty-ui/display';
 import { Checkbox } from 'twenty-ui/input';
 
 import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
@@ -77,7 +77,6 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
           checked={localPresenceEnabled}
           onCheckedChange={(checked) => setLocalPresenceEnabled(checked)}
         />
-        <IconWorld size={14} />
         <span title={t`When enabled, we match the outbound caller ID to the closest area code available for the person being called.`}>
           {t`Prefer local presence calling`}
         </span>

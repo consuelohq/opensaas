@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
-import { Button, Checkbox } from 'twenty-ui/input';
+import { Button } from 'twenty-ui/input';
 
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
@@ -20,7 +20,7 @@ import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { Select } from '@/ui/input/components/Select';
 import { TextInput } from '@/ui/input/components/TextInput';
 
-import { IconList, IconSettings } from 'twenty-ui/display';
+import { IconList, IconPlus, IconSettings } from 'twenty-ui/display';
 
 type OpportunityRecord = ObjectRecord & {
   id: string;
@@ -79,16 +79,14 @@ const StyledLabel = styled.span`
 
 const StyledToggleRow = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.spacing(3)};
+  gap: ${({ theme }) => theme.spacing(4)};
 `;
 
 const StyledToggleOption = styled.button<{ isActive: boolean }>`
   background: none;
   border: none;
-  border-bottom: 1px
-    ${({ isActive }) => (isActive ? 'solid' : 'dotted')}
-    ${({ isActive, theme }) =>
-      isActive ? theme.font.color.primary : theme.font.color.tertiary};
+  border-bottom: ${({ isActive, theme }) =>
+    isActive ? `1px solid ${theme.font.color.primary}` : 'none'};
   color: ${({ isActive, theme }) =>
     isActive ? theme.font.color.primary : theme.font.color.tertiary};
   cursor: pointer;
@@ -98,7 +96,6 @@ const StyledToggleOption = styled.button<{ isActive: boolean }>`
 
   &:hover {
     color: ${({ theme }) => theme.font.color.primary};
-    border-bottom-color: ${({ theme }) => theme.font.color.primary};
   }
 `;
 
@@ -106,6 +103,7 @@ const StyledFooterActions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing(2)};
+  justify-content: flex-end;
 `;
 
 // -- component --
@@ -156,6 +154,14 @@ export const DialerHomePrep = () => {
     }
   };
 
+  const handleCreateList = () => {
+    navigate(
+      getAppPath(AppPath.RecordIndexPage, {
+        objectNamePlural: 'opportunities',
+      }),
+    );
+  };
+
   return (
     <StyledPage onKeyDown={handleKeyDown}>
       <StyledHeading>
@@ -166,51 +172,7 @@ export const DialerHomePrep = () => {
       </StyledHeading>
 
       <StyledForm>
-        {/* source toggle + input */}
-        <StyledFieldGroup>
-          <StyledToggleRow>
-            <StyledToggleOption
-              isActive={sourceMode === 'list'}
-              onClick={() => setSourceMode('list')}
-              type="button"
-            >
-              {t`Choose list`}
-            </StyledToggleOption>
-            <StyledToggleOption
-              isActive={sourceMode === 'phone'}
-              onClick={() => setSourceMode('phone')}
-              type="button"
-            >
-              {t`Dial a number`}
-            </StyledToggleOption>
-          </StyledToggleRow>
-
-          {sourceMode === 'list' ? (
-            <Select
-              dropdownId="dialer-home-list-select"
-              fullWidth
-              value={selectedListId}
-              onChange={setSelectedListId}
-              options={[
-                { value: '', label: t`— Select —`, Icon: IconList },
-                ...listRecords.map((record) => ({
-                  value: record.id,
-                  label: record.name ?? t`Untitled list`,
-                  Icon: IconList,
-                })),
-              ]}
-            />
-          ) : (
-            <TextInput
-              value={phoneNumber}
-              onChange={setPhoneNumber}
-              placeholder={t`(555) 123-4567`}
-              fullWidth
-            />
-          )}
-        </StyledFieldGroup>
-
-        {/* call setup */}
+        {/* call setup first */}
         <StyledFieldGroup>
           <StyledLabel>{t`Call setup`}</StyledLabel>
 
@@ -257,13 +219,59 @@ export const DialerHomePrep = () => {
           )}
         </StyledFieldGroup>
 
-        {/* launch */}
+        {/* source toggle + input */}
+        <StyledFieldGroup>
+          <StyledToggleRow>
+            <StyledToggleOption
+              isActive={sourceMode === 'list'}
+              onClick={() => setSourceMode('list')}
+              type="button"
+            >
+              {t`Choose list`}
+            </StyledToggleOption>
+            <StyledToggleOption
+              isActive={sourceMode === 'phone'}
+              onClick={() => setSourceMode('phone')}
+              type="button"
+            >
+              {t`Dial number`}
+            </StyledToggleOption>
+          </StyledToggleRow>
+
+          {sourceMode === 'list' ? (
+            <Select
+              dropdownId="dialer-home-list-select"
+              fullWidth
+              value={selectedListId}
+              onChange={(value) => {
+                if (value === '__create__') {
+                  handleCreateList();
+                  return;
+                }
+                setSelectedListId(value);
+              }}
+              options={[
+                { value: '', label: t`— Select —`, Icon: IconList },
+                ...listRecords.map((record) => ({
+                  value: record.id,
+                  label: record.name ?? t`Untitled list`,
+                  Icon: IconList,
+                })),
+                { value: '__create__', label: t`Create list`, Icon: IconPlus },
+              ]}
+            />
+          ) : (
+            <TextInput
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              placeholder={t`(555) 123-4567`}
+              fullWidth
+            />
+          )}
+        </StyledFieldGroup>
+
+        {/* launch — right aligned */}
         <StyledFooterActions>
-          <Button
-            title={t`Start Dialer`}
-            onClick={() => void handleLaunch()}
-            disabled={!canStart}
-          />
           <Button
             title={t`Settings`}
             variant="secondary"
@@ -271,6 +279,11 @@ export const DialerHomePrep = () => {
             onClick={() =>
               navigate(getSettingsPath(SettingsPath.AccountsPhoneNumbers))
             }
+          />
+          <Button
+            title={t`Start Dialer`}
+            onClick={() => void handleLaunch()}
+            disabled={!canStart}
           />
         </StyledFooterActions>
       </StyledForm>
