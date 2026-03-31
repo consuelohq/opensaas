@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
 import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
-import { Button } from 'twenty-ui/input';
+import { Button, Checkbox } from 'twenty-ui/input';
 
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
 import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
@@ -26,6 +26,8 @@ type OpportunityRecord = ObjectRecord & {
   id: string;
   name?: string | null;
 };
+
+type SourceMode = 'list' | 'phone';
 
 // -- styled --
 
@@ -63,12 +65,10 @@ const StyledForm = styled.div`
   width: 100%;
 `;
 
-const StyledFieldGroup = styled.div<{ disabled?: boolean }>`
+const StyledFieldGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
-  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
-  pointer-events: ${({ disabled }) => (disabled ? 'none' : 'auto')};
 `;
 
 const StyledLabel = styled.span`
@@ -77,18 +77,28 @@ const StyledLabel = styled.span`
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
 `;
 
-const StyledDivider = styled.div`
-  align-items: center;
-  color: ${({ theme }) => theme.font.color.tertiary};
+const StyledToggleRow = styled.div`
   display: flex;
-  font-size: ${({ theme }) => theme.font.size.sm};
-  gap: ${({ theme }) => theme.spacing(2)};
+  gap: ${({ theme }) => theme.spacing(3)};
+`;
 
-  &::before,
-  &::after {
-    border-top: 1px solid ${({ theme }) => theme.border.color.medium};
-    content: '';
-    flex: 1;
+const StyledToggleOption = styled.button<{ isActive: boolean }>`
+  background: none;
+  border: none;
+  border-bottom: 1px
+    ${({ isActive }) => (isActive ? 'solid' : 'dotted')}
+    ${({ isActive, theme }) =>
+      isActive ? theme.font.color.primary : theme.font.color.tertiary};
+  color: ${({ isActive, theme }) =>
+    isActive ? theme.font.color.primary : theme.font.color.tertiary};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.font.size.md};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  padding: ${({ theme }) => `${theme.spacing(1)} 0`};
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.primary};
+    border-bottom-color: ${({ theme }) => theme.font.color.primary};
   }
 `;
 
@@ -108,6 +118,7 @@ export const DialerHomePrep = () => {
   const { selectedCoachingScriptId, setSelectedCoachingScriptId, coachingScripts } =
     useCoachingScripts();
   const { hasPermission } = useAudioDevices();
+  const [sourceMode, setSourceMode] = useState<SourceMode>('list');
   const [selectedListId, setSelectedListId] = useState<string>('');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
   const { startQueue } = useQueueOperations();
@@ -119,39 +130,34 @@ export const DialerHomePrep = () => {
 
   const hasPhone = phoneNumber.trim().length > 0;
   const hasList = selectedListId.length > 0;
-
-  const handleListChange = (value: string) => {
-    setSelectedListId(value);
-    if (value) {
-      setPhoneNumber('');
-    }
-  };
-
-  const handlePhoneChange = (value: string) => {
-    setPhoneNumber(value);
-    if (value.trim()) {
-      setSelectedListId('');
-    }
-  };
+  const canStart = hasList || hasPhone;
 
   const handleLaunch = async () => {
-    if (!hasList) return;
+    if (!canStart) return;
 
-    try {
-      await startQueue(selectedListId);
-      navigate(
-        getAppPath(AppPath.RecordShowPage, {
-          objectNameSingular: 'opportunity',
-          objectRecordId: selectedListId,
-        }),
-      );
-    } catch (error: unknown) {
-      captureException(error);
+    if (hasList) {
+      try {
+        await startQueue(selectedListId);
+        navigate(
+          getAppPath(AppPath.RecordShowPage, {
+            objectNameSingular: 'opportunity',
+            objectRecordId: selectedListId,
+          }),
+        );
+      } catch (error: unknown) {
+        captureException(error);
+      }
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && canStart) {
+      void handleLaunch();
     }
   };
 
   return (
-    <StyledPage>
+    <StyledPage onKeyDown={handleKeyDown}>
       <StyledHeading>
         <StyledTitle>{t`Who do you want to call?`}</StyledTitle>
         <StyledSubtitle>
@@ -160,51 +166,58 @@ export const DialerHomePrep = () => {
       </StyledHeading>
 
       <StyledForm>
-        {/* list selection — grayed out when phone number is entered */}
-        <StyledFieldGroup disabled={hasPhone}>
-          <StyledLabel>{t`Select a list`}</StyledLabel>
-          <Select
-            dropdownId="dialer-home-list-select"
-            fullWidth
-            value={selectedListId}
-            onChange={handleListChange}
-            disabled={hasPhone}
-            options={[
-              { value: '', label: t`— Select —`, Icon: IconList },
-              ...listRecords.map((record) => ({
-                value: record.id,
-                label: record.name ?? t`Untitled list`,
-                Icon: IconList,
-              })),
-            ]}
-          />
-        </StyledFieldGroup>
+        {/* source toggle + input */}
+        <StyledFieldGroup>
+          <StyledToggleRow>
+            <StyledToggleOption
+              isActive={sourceMode === 'list'}
+              onClick={() => setSourceMode('list')}
+              type="button"
+            >
+              {t`Choose list`}
+            </StyledToggleOption>
+            <StyledToggleOption
+              isActive={sourceMode === 'phone'}
+              onClick={() => setSourceMode('phone')}
+              type="button"
+            >
+              {t`Dial a number`}
+            </StyledToggleOption>
+          </StyledToggleRow>
 
-        <StyledDivider>{t`or`}</StyledDivider>
-
-        {/* single phone number — grayed out when list is selected */}
-        <StyledFieldGroup disabled={hasList}>
-          <StyledLabel>{t`Dial a number`}</StyledLabel>
-          <TextInput
-            value={phoneNumber}
-            onChange={handlePhoneChange}
-            placeholder={t`(555) 123-4567`}
-            disabled={hasList}
-            fullWidth
-          />
+          {sourceMode === 'list' ? (
+            <Select
+              dropdownId="dialer-home-list-select"
+              fullWidth
+              value={selectedListId}
+              onChange={setSelectedListId}
+              options={[
+                { value: '', label: t`— Select —`, Icon: IconList },
+                ...listRecords.map((record) => ({
+                  value: record.id,
+                  label: record.name ?? t`Untitled list`,
+                  Icon: IconList,
+                })),
+              ]}
+            />
+          ) : (
+            <TextInput
+              value={phoneNumber}
+              onChange={setPhoneNumber}
+              placeholder={t`(555) 123-4567`}
+              fullWidth
+            />
+          )}
         </StyledFieldGroup>
 
         {/* call setup */}
         <StyledFieldGroup>
           <StyledLabel>{t`Call setup`}</StyledLabel>
 
-          {/* 1. caller id + local presence */}
           <CallerIdSelectCard dropdownId="dialer-home-caller-id" />
 
-          {/* mic permission — only shown when not yet granted */}
           {!hasPermission && <AudioDeviceSelector />}
 
-          {/* 2. calling mode */}
           <Select
             dropdownId="dialer-home-dialing-mode"
             fullWidth
@@ -217,7 +230,6 @@ export const DialerHomePrep = () => {
             ]}
           />
 
-          {/* 3. assist mode */}
           <Select
             dropdownId="dialer-home-assist-mode"
             fullWidth
@@ -248,9 +260,9 @@ export const DialerHomePrep = () => {
         {/* launch */}
         <StyledFooterActions>
           <Button
-            title={t`Open fullscreen workspace`}
+            title={t`Start Dialer`}
             onClick={() => void handleLaunch()}
-            disabled={!hasList && !hasPhone}
+            disabled={!canStart}
           />
           <Button
             title={t`Settings`}
