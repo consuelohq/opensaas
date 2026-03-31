@@ -9,6 +9,7 @@ import type { AudioDeviceInfo } from '@/dialer/types/dialer';
 
 const MIC_KEY = 'dialer_mic';
 const SPEAKER_KEY = 'dialer_speaker';
+const MIC_PERMISSION_KEY = 'dialer_mic_permission_granted';
 
 interface UseAudioDevicesReturn {
   microphones: AudioDeviceInfo[];
@@ -46,7 +47,9 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
     .map(toDeviceInfo);
 
   // labels are empty strings until permission is granted
-  const hasPermission = audioDevices.some((d) => d.label.length > 0);
+  const hasPermission =
+    audioDevices.some((d) => d.label.length > 0) ||
+    localStorage.getItem(MIC_PERMISSION_KEY) === 'true';
 
   const refreshDevices = useCallback(async () => {
     try {
@@ -88,6 +91,7 @@ export const useAudioDevices = (): UseAudioDevicesReturn => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
+      localStorage.setItem(MIC_PERMISSION_KEY, 'true');
       await refreshDevices();
       return true;
     } catch (err: unknown) {

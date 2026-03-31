@@ -15,13 +15,12 @@ import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { dialingModeState } from '@/dialer/states/dialingModeState';
-import { useOpenObjectRecordsSpreadsheetImportDialog } from '@/object-record/spreadsheet-import/hooks/useOpenObjectRecordsSpreadsheetImportDialog';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { Select } from '@/ui/input/components/Select';
 import { TextInput } from '@/ui/input/components/TextInput';
 
-import { IconList, IconSettings, IconUpload } from 'twenty-ui/display';
+import { IconList, IconSettings } from 'twenty-ui/display';
 
 type OpportunityRecord = ObjectRecord & {
   id: string;
@@ -35,17 +34,6 @@ const StyledPage = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(6)};
   padding: ${({ theme }) => theme.spacing(4)};
-`;
-
-const StyledHeader = styled.div`
-  align-items: flex-start;
-  display: flex;
-  justify-content: space-between;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing(3)};
-  }
 `;
 
 const StyledHeading = styled.div`
@@ -66,12 +54,6 @@ const StyledSubtitle = styled.p`
   margin: 0;
 `;
 
-const StyledActions = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  flex-shrink: 0;
-`;
-
 const StyledForm = styled.div`
   display: flex;
   flex-direction: column;
@@ -81,10 +63,12 @@ const StyledForm = styled.div`
   width: 100%;
 `;
 
-const StyledFieldGroup = styled.div`
+const StyledFieldGroup = styled.div<{ disabled?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
+  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
+  pointer-events: ${({ disabled }) => (disabled ? 'none' : 'auto')};
 `;
 
 const StyledLabel = styled.span`
@@ -108,11 +92,6 @@ const StyledDivider = styled.div`
   }
 `;
 
-const StyledDisabledOverlay = styled.div`
-  opacity: 0.4;
-  pointer-events: none;
-`;
-
 const StyledFooterActions = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -131,8 +110,6 @@ export const DialerHomePrep = () => {
   const { hasPermission } = useAudioDevices();
   const [selectedListId, setSelectedListId] = useState<string>('');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
-  const { openObjectRecordsSpreadsheetImportDialog } =
-    useOpenObjectRecordsSpreadsheetImportDialog('person');
   const { startQueue } = useQueueOperations();
 
   const { records: listRecords } = useFindManyRecords<OpportunityRecord>({
@@ -175,82 +152,46 @@ export const DialerHomePrep = () => {
 
   return (
     <StyledPage>
-      <StyledHeader>
-        <StyledHeading>
-          <StyledTitle>{t`Who do you want to call?`}</StyledTitle>
-          <StyledSubtitle>
-            {t`Choose a list or dial a single number.`}
-          </StyledSubtitle>
-        </StyledHeading>
-        <StyledActions>
-          <Button
-            title={t`Import CSV`}
-            variant="secondary"
-            size="small"
-            Icon={IconUpload}
-            onClick={() => openObjectRecordsSpreadsheetImportDialog()}
-          />
-        </StyledActions>
-      </StyledHeader>
+      <StyledHeading>
+        <StyledTitle>{t`Who do you want to call?`}</StyledTitle>
+        <StyledSubtitle>
+          {t`Choose a list or dial a single number.`}
+        </StyledSubtitle>
+      </StyledHeading>
 
       <StyledForm>
-        {/* list selection */}
-        <StyledFieldGroup>
+        {/* list selection — grayed out when phone number is entered */}
+        <StyledFieldGroup disabled={hasPhone}>
           <StyledLabel>{t`Select a list`}</StyledLabel>
-          {hasPhone ? (
-            <StyledDisabledOverlay>
-              <Select
-                dropdownId="dialer-home-list-select"
-                fullWidth
-                label={t`List`}
-                value=""
-                onChange={() => {}}
-                options={[]}
-                disabled
-              />
-            </StyledDisabledOverlay>
-          ) : (
-            <Select
-              dropdownId="dialer-home-list-select"
-              fullWidth
-              label={t`List`}
-              value={selectedListId}
-              onChange={handleListChange}
-              options={[
-                { value: '', label: t`— Select —`, Icon: IconList },
-                ...listRecords.map((record) => ({
-                  value: record.id,
-                  label: record.name ?? t`Untitled list`,
-                  Icon: IconList,
-                })),
-              ]}
-            />
-          )}
+          <Select
+            dropdownId="dialer-home-list-select"
+            fullWidth
+            value={selectedListId}
+            onChange={handleListChange}
+            disabled={hasPhone}
+            options={[
+              { value: '', label: t`— Select —`, Icon: IconList },
+              ...listRecords.map((record) => ({
+                value: record.id,
+                label: record.name ?? t`Untitled list`,
+                Icon: IconList,
+              })),
+            ]}
+          />
         </StyledFieldGroup>
 
         <StyledDivider>{t`or`}</StyledDivider>
 
-        {/* single phone number */}
-        <StyledFieldGroup>
+        {/* single phone number — grayed out when list is selected */}
+        <StyledFieldGroup disabled={hasList}>
           <StyledLabel>{t`Dial a number`}</StyledLabel>
-          {hasList ? (
-            <StyledDisabledOverlay>
-              <TextInput
-                value=""
-                onChange={() => {}}
-                placeholder={t`(555) 123-4567`}
-                disabled
-                fullWidth
-              />
-            </StyledDisabledOverlay>
-          ) : (
-            <TextInput
-              value={phoneNumber}
-              onChange={handlePhoneChange}
-              placeholder={t`(555) 123-4567`}
-              fullWidth
-            />
-          )}
+          <TextInput
+            value={phoneNumber}
+            onChange={handlePhoneChange}
+            placeholder={t`(555) 123-4567`}
+            disabled={hasList}
+            fullWidth
+          />
         </StyledFieldGroup>
 
         {/* call setup */}
