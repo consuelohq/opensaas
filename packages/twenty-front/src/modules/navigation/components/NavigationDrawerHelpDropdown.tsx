@@ -44,7 +44,6 @@ import {
   IconCommand,
   IconDeviceLaptop,
   IconDownload,
-  IconExternalLink,
   IconHelpCircle,
   IconMessageCircle,
   IconSettings,
@@ -93,62 +92,6 @@ const StyledDropdownBody = styled(motion.div)`
   display: flex;
   flex: 1;
   flex-direction: column;
-`;
-
-const StyledUpdatesSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(0.75)};
-  padding: ${({ theme }) => theme.spacing(2.5, 2, 1.5)};
-`;
-
-const StyledUpdatesHeading = styled.div`
-  color: ${({ theme }) => theme.font.color.secondary};
-  font-size: ${({ theme }) => theme.font.size.sm};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  text-transform: uppercase;
-`;
-
-const StyledUpdateLink = styled.a`
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: ${({ theme }) => theme.font.color.primary};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(0.5)};
-  padding: ${({ theme }) => theme.spacing(1.25, 1.5)};
-  text-decoration: none;
-  transition:
-    background ${({ theme }) => theme.animation.duration.normal}s,
-    color ${({ theme }) => theme.animation.duration.normal}s;
-
-  &:hover {
-    background: ${({ theme }) => theme.background.transparent.light};
-    color: ${({ theme }) => theme.font.color.primary};
-  }
-`;
-
-const StyledUpdateTitle = styled.div`
-  color: inherit;
-  font-size: ${({ theme }) => theme.font.size.sm};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  line-height: 1.4;
-`;
-
-const StyledFullChangelogLink = styled.a`
-  align-items: center;
-  color: ${({ theme }) => theme.font.color.primary};
-  display: inline-flex;
-  font-size: ${({ theme }) => theme.font.size.sm};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  gap: ${({ theme }) => theme.spacing(1)};
-  margin-top: ${({ theme }) => theme.spacing(1)};
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 4px;
-  }
 `;
 
 const getDownloadItemLabel = (
@@ -427,29 +370,23 @@ export const NavigationDrawerHelpDropdown = () => {
 
                 <DropdownMenuSeparator />
 
-                <StyledUpdatesSection>
-                  <StyledUpdatesHeading>{t`What's new`}</StyledUpdatesHeading>
+                <DropdownMenuItemsContainer scrollable={false}>
                   {changelogPreviewItems.map((item) => (
-                    <StyledUpdateLink
-                      href={CONSUELO_CHANGELOG_URL}
+                    <MenuItem
                       key={item.title}
-                      onClick={closeHelpDropdown}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <StyledUpdateTitle>{item.title}</StyledUpdateTitle>
-                    </StyledUpdateLink>
+                      LeftIcon={null}
+                      onClick={() => {
+                        window.open(
+                          CONSUELO_CHANGELOG_URL,
+                          '_blank',
+                          'noopener,noreferrer',
+                        );
+                        closeHelpDropdown();
+                      }}
+                      text={item.title}
+                    />
                   ))}
-                  <StyledFullChangelogLink
-                    href={CONSUELO_CHANGELOG_URL}
-                    onClick={closeHelpDropdown}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t`Full changelog`}
-                    <IconExternalLink size={14} />
-                  </StyledFullChangelogLink>
-                </StyledUpdatesSection>
+                </DropdownMenuItemsContainer>
               </>
             ) : (
               <>

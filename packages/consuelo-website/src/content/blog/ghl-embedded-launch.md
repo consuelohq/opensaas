@@ -87,9 +87,32 @@ mercury includes:
 
 same team. same hours. **3x more conversations.**
 
-### call transfer (seamless handoffs)
+### call transfer that actually works (warm, cold, and everything in between)
 
-warm transfer. cold transfer. conference. mercury handles it without making customers repeat themselves or sit on hold.
+most dialers make transfers painful. the caller gets dropped. they have to repeat their story. agents fumble with buttons while the customer waits.
+
+mercury runs every call on a twilio conference. this means transfers are just adding and removing participants — no bridging, no reconnecting, no dropped audio.
+
+**warm transfer:** put the caller on hold, speak privately with the recipient, brief them on the situation, then connect them. the caller never hears the conversation, never gets dropped, never has to repeat themselves.
+
+**cold transfer:** add the recipient, drop yourself. the caller and recipient are connected instantly. no "please hold while i transfer you" followed by silence and confusion.
+
+**keyboard shortcuts:** `t` to open transfer, `enter` to confirm, `escape` to cancel. no mouse required. no fumbling during a live call.
+
+**bidirectional sync:** every transfer is logged to ghl automatically. who transferred, who received, when it happened, and the outcome — all in the contact timeline.
+
+### conference-based architecture (why transfers actually work)
+
+here's what most dialers won't tell you: they bridge calls between two separate legs. when you transfer, they tear down one connection and build another. that's why transfers fail. that's why customers get dropped.
+
+mercury runs every call as a twilio conference. you, the customer, and anyone you add are all participants in the same conference room.
+
+- **transfers just work** — add someone, remove someone, no reconnection
+- **conference calls** — bring in a manager or specialist mid-call
+- **no audio drops** — the caller's connection never breaks
+- **instant handoffs** — sub-second transfer completion
+
+this is the infrastructure big contact centers use. now it's in your ghl sidebar for $20/month.
 
 ### script uploading (consistent messaging)
 
