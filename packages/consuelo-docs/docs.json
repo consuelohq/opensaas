@@ -199,9 +199,9 @@
                     "root": "user-guide/graphql-api/overview"
                   },
                   {
-                    "group": "HighLevel",
+                    "group": "HighLevel Embedded",
+                    "root": "user-guide/highlevel/embedded/overview",
                     "pages": [
-                      "user-guide/highlevel/embedded/overview",
                       "user-guide/highlevel/embedded/getting-started",
                       "user-guide/highlevel/embedded/capabilities/click-to-dial",
                       "user-guide/highlevel/embedded/capabilities/dialer-controls",
@@ -209,8 +209,13 @@
                       "user-guide/highlevel/embedded/capabilities/sso-auth",
                       "user-guide/highlevel/embedded/how-tos/install-in-highlevel",
                       "user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                      "user-guide/highlevel/embedded/how-tos/troubleshoot-embed",
-                      "user-guide/highlevel/integration/overview",
+                      "user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
+                    ]
+                  },
+                  {
+                    "group": "HighLevel Integration",
+                    "root": "user-guide/highlevel/integration/overview",
+                    "pages": [
                       "user-guide/highlevel/integration/getting-started",
                       "user-guide/highlevel/integration/capabilities/bidirectional-sync",
                       "user-guide/highlevel/integration/capabilities/pipeline-mapping",
@@ -220,8 +225,7 @@
                       "user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
                       "user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
                       "user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                    ],
-                    "root": "user-guide/highlevel/overview"
+                    ]
                   },
                   {
                     "group": "CLI",
