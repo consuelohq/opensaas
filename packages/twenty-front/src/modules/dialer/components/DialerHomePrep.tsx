@@ -119,6 +119,7 @@ export const DialerHomePrep = () => {
   const [sourceMode, setSourceMode] = useState<SourceMode>('list');
   const [selectedListId, setSelectedListId] = useState<string>('');
   const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [numberOfLines, setNumberOfLines] = useState<string>('1');
   const { startQueue } = useQueueOperations();
 
   const { records: listRecords } = useFindManyRecords<OpportunityRecord>({
@@ -172,55 +173,10 @@ export const DialerHomePrep = () => {
       </StyledHeading>
 
       <StyledForm>
-        {/* call setup first */}
+        <StyledLabel>{t`Call setup`}</StyledLabel>
+
         <StyledFieldGroup>
-          <StyledLabel>{t`Call setup`}</StyledLabel>
-
-          <CallerIdSelectCard dropdownId="dialer-home-caller-id" />
-
-          {!hasPermission && <AudioDeviceSelector />}
-
-          <Select
-            dropdownId="dialer-home-dialing-mode"
-            fullWidth
-            label={t`Calling mode`}
-            value={dialingMode}
-            onChange={(value) => setDialingMode(value)}
-            options={[
-              { value: 'single', label: t`Single (one call at a time)` },
-              { value: 'parallel', label: t`Parallel / Power Dialer` },
-            ]}
-          />
-
-          <Select
-            dropdownId="dialer-home-assist-mode"
-            fullWidth
-            label={t`Assist mode`}
-            value={callAssistMode}
-            onChange={(value) => setCallAssistMode(value)}
-            options={[
-              { value: 'ai', label: t`AI coaching` },
-              { value: 'script', label: t`Script mode` },
-            ]}
-          />
-
-          {callAssistMode === 'script' && (
-            <Select
-              dropdownId="dialer-home-script-select"
-              fullWidth
-              label={t`Script`}
-              value={selectedCoachingScriptId ?? ''}
-              onChange={(value) => setSelectedCoachingScriptId(value)}
-              options={coachingScripts.map((script) => ({
-                value: script.id,
-                label: script.name,
-              }))}
-            />
-          )}
-        </StyledFieldGroup>
-
-        {/* source toggle + input */}
-        <StyledFieldGroup>
+          {/* 1. choose list / dial number toggle */}
           <StyledToggleRow>
             <StyledToggleOption
               isActive={sourceMode === 'list'}
@@ -268,9 +224,68 @@ export const DialerHomePrep = () => {
               fullWidth
             />
           )}
+
+          {/* 2. caller id + local presence */}
+          <CallerIdSelectCard dropdownId="dialer-home-caller-id" />
+
+          {!hasPermission && <AudioDeviceSelector />}
+
+          {/* 3. calling mode */}
+          <Select
+            dropdownId="dialer-home-dialing-mode"
+            fullWidth
+            label={t`Calling mode`}
+            value={dialingMode}
+            onChange={(value) => setDialingMode(value)}
+            options={[
+              { value: 'single', label: t`Single (one call at a time)` },
+              { value: 'parallel', label: t`Parallel / Power Dialer` },
+            ]}
+          />
+
+          {/* 4. number of lines */}
+          <Select
+            dropdownId="dialer-home-number-of-lines"
+            fullWidth
+            label={t`Number of lines`}
+            value={numberOfLines}
+            onChange={(value) => setNumberOfLines(value)}
+            options={[
+              { value: '1', label: t`One` },
+              { value: '2', label: t`Two` },
+              { value: '3', label: t`Three` },
+            ]}
+          />
+
+          {/* 5. assist mode */}
+          <Select
+            dropdownId="dialer-home-assist-mode"
+            fullWidth
+            label={t`Assist mode`}
+            value={callAssistMode}
+            onChange={(value) => setCallAssistMode(value)}
+            options={[
+              { value: 'ai', label: t`AI coaching` },
+              { value: 'script', label: t`Script mode` },
+            ]}
+          />
+
+          {callAssistMode === 'script' && (
+            <Select
+              dropdownId="dialer-home-script-select"
+              fullWidth
+              label={t`Script`}
+              value={selectedCoachingScriptId ?? ''}
+              onChange={(value) => setSelectedCoachingScriptId(value)}
+              options={coachingScripts.map((script) => ({
+                value: script.id,
+                label: script.name,
+              }))}
+            />
+          )}
         </StyledFieldGroup>
 
-        {/* launch — right aligned */}
+        {/* launch */}
         <StyledFooterActions>
           <Button
             title={t`Settings`}
