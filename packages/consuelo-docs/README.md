@@ -20,7 +20,7 @@ To run the documentation locally:
 
 ```bash
 # From the consuelo monorepo root
-npx nx run twenty-docs:dev
+npx nx run consuelo-docs:dev
 ```
 
 The documentation will be available at `http://localhost:3000`
@@ -36,7 +36,7 @@ The documentation will be available at `http://localhost:3000`
 
 2. Update `navigation/base-structure.json` if you need to change the tab/group hierarchy or add/remove pages. This file stays in the repo and is **not** uploaded to Crowdin.
 3. Keep the translation template (`navigation/navigation.template.json`) in sync by running `yarn docs:generate-navigation-template` after editing the base structure. This template is the only file that should be pushed to Crowdin.
-4. For each translated locale pulled from Crowdin, ensure a `packages/twenty-docs/l/<language>/navigation.json` file exists. These files contain **labels only**; page slugs always come from the base structure.
+4. For each translated locale pulled from Crowdin, ensure a `packages/consuelo-docs/l/<language>/navigation.json` file exists. These files contain **labels only**; page slugs always come from the base structure.
 5. Run `yarn docs:generate` to rebuild `docs.json` from the base structure + translated labels.
 
 ### MDX Format
@@ -78,7 +78,7 @@ Your content here...
 
 ```bash
 # Build the documentation
-npx nx run twenty-docs:build
+npx nx run consuelo-docs:build
 ```
 
 ## 🔗 Links
@@ -92,8 +92,8 @@ npx nx run twenty-docs:build
 To contribute to the documentation:
 
 1. Fork the repository
-2. Make your changes in the `packages/twenty-docs` directory
-3. Test locally with `npx nx run twenty-docs:dev`
+2. Make your changes in the `packages/consuelo-docs` directory
+3. Test locally with `npx nx run consuelo-docs:dev`
 4. Submit a pull request
 
 ## 📄 License

@@ -3,7 +3,7 @@
 ## What Was Migrated
 
 ### Documentation Files
-- **69 MDX files** copied from twenty-website to twenty-docs
+- **69 MDX files** copied from twenty-website to consuelo-docs
 - **45 User Guide articles**
 - **22 Developer documentation articles**
 - **2 Getting Started guides** (existing)
@@ -35,7 +35,7 @@ Some components may need additional conversion:
 ## Directory Structure
 
 ```
-packages/twenty-docs/
+packages/consuelo-docs/
 ├── mint.json                       # Main configuration
 ├── user-guide/
 │   ├── getting-started/           # 7 files
@@ -64,7 +64,7 @@ packages/twenty-docs/
 
 Start the local Mintlify dev server:
 ```bash
-npx nx run twenty-docs:dev
+npx nx run consuelo-docs:dev
 ```
 
 Open http://localhost:3000 to preview all migrated documentation.
@@ -74,7 +74,7 @@ Open http://localhost:3000 to preview all migrated documentation.
 To deploy to Mintlify:
 1. Push changes to GitHub
 2. Connect the repo in Mintlify dashboard
-3. Set subdirectory to `packages/twenty-docs`
+3. Set subdirectory to `packages/consuelo-docs`
 4. Mintlify will auto-deploy and generate search embeddings
 
 ## Next Steps

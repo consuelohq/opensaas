@@ -20,7 +20,7 @@ jobs:
     with:
       files: |
         package.json
-        packages/twenty-docs/**
+        packages/consuelo-docs/**
         eslint.config.mjs
 
   docs-lint:
@@ -43,5 +43,5 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Docs / Lint English MDX files
-        run: npx eslint "packages/twenty-docs/{developers,user-guide,twenty-ui,getting-started,snippets}/**/*.mdx" --max-warnings 0
+        run: npx eslint "packages/consuelo-docs/{developers,user-guide,twenty-ui,getting-started,snippets}/**/*.mdx" --max-warnings 0
 

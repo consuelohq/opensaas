@@ -371,7 +371,7 @@ consuelo is an open-source sales infrastructure platform (opensaas). multi-tenan
 | `twenty-server` | nestjs + typeorm + graphql | CRM backend API |
 | `twenty-shared` | typescript | shared types and utilities (must build first) |
 | `twenty-website` | next.js + keystatic + mdx | twenty's original marketing site (NOT our website) |
-| `twenty-docs` | docusaurus | twenty's documentation site |
+| `consuelo-docs` | docusaurus | twenty's documentation site |
 | `twenty-docker` | docker | dockerfiles for deployment |
 | `twenty-ui` | react | shared UI components |
 | `twenty-utils` | typescript | shared utilities |

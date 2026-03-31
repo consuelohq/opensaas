@@ -120,7 +120,7 @@ packages/
     src/
     package.json
   twenty-docker/                  # dockerfiles for deployment
-  twenty-docs/                    # twenty documentation (docusaurus)
+  consuelo-docs/                    # twenty documentation (docusaurus)
   twenty-website/                 # twenty's old marketing site (next.js + keystatic) — NOT our website
   twenty-ui/                      # shared UI components
   twenty-utils/                   # shared utilities

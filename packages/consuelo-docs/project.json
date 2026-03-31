@@ -1,7 +1,7 @@
 {
-  "name": "twenty-docs",
+  "name": "consuelo-docs",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/twenty-docs",
+  "sourceRoot": "packages/consuelo-docs",
   "projectType": "application",
   "tags": ["scope:docs"],
   "targets": {

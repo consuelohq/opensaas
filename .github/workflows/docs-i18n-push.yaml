@@ -9,9 +9,9 @@ on:
   push:
     branches: ['main']
     paths:
-      - 'packages/twenty-docs/**/*.mdx'
-      - '!packages/twenty-docs/l/**'
-      - 'packages/twenty-docs/navigation/navigation.template.json'
+      - 'packages/consuelo-docs/**/*.mdx'
+      - '!packages/consuelo-docs/l/**'
+      - 'packages/consuelo-docs/navigation/navigation.template.json'
       - '.github/crowdin-docs.yml'
 
 concurrency:
