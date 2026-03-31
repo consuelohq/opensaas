@@ -103,7 +103,6 @@ const StyledFooterActions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: ${({ theme }) => theme.spacing(2)};
-  justify-content: flex-end;
 `;
 
 // -- component --

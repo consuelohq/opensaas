@@ -8,9 +8,10 @@ import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState
 
 export const useAvailableCallerIds = () => {
   const setAvailableCallerIds = useSetRecoilState(availableCallerIdsState);
-  const [fetched, setFetched] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchPhoneNumbers = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/phone-numbers`,
@@ -26,18 +27,19 @@ export const useAvailableCallerIds = () => {
       captureException(err, {
         extra: { context: 'fetchAvailableCallerIds' },
       });
+    } finally {
+      setLoading(false);
     }
   }, [setAvailableCallerIds]);
 
   useEffect(() => {
-    if (fetched) return;
-    setFetched(true);
+    if (!loading) return;
     fetchPhoneNumbers();
-  }, [fetched, fetchPhoneNumbers]);
+  }, [loading, fetchPhoneNumbers]);
 
   const refetch = useCallback(() => {
     fetchPhoneNumbers();
   }, [fetchPhoneNumbers]);
 
-  return { refetch };
+  return { refetch, loading };
 };

@@ -2,7 +2,9 @@ import { t } from '@lingui/core/macro';
 import { IconSparkles, IconUpload } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 
+import { useCommandMenu } from '@/command-menu/hooks/useCommandMenu';
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
+import { isCommandMenuOpenedState } from '@/command-menu/states/isCommandMenuOpenedState';
 import { DialerHomePageContent } from '@/dialer/components/DialerHomePageContent';
 import { MainContainerLayoutWithCommandMenu } from '@/object-record/components/MainContainerLayoutWithCommandMenu';
 import { useOpenObjectRecordsSpreadsheetImportDialog } from '@/object-record/spreadsheet-import/hooks/useOpenObjectRecordsSpreadsheetImportDialog';
@@ -10,14 +12,25 @@ import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/compone
 import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { useRecoilValue } from 'recoil';
 
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 export const HomePage = () => {
   const { openAskAIPage } = useOpenAskAIPageInCommandMenu();
+  const { closeCommandMenu } = useCommandMenu();
+  const isCommandMenuOpened = useRecoilValue(isCommandMenuOpenedState);
   const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
   const { openObjectRecordsSpreadsheetImportDialog } =
     useOpenObjectRecordsSpreadsheetImportDialog('person');
+
+  const handleAskAI = () => {
+    if (isCommandMenuOpened) {
+      closeCommandMenu();
+    } else {
+      openAskAIPage({ resetNavigationStack: false });
+    }
+  };
 
   return (
     <PageContainer>
@@ -33,7 +46,7 @@ export const HomePage = () => {
             title={t`Ask AI`}
             variant="secondary"
             Icon={IconSparkles}
-            onClick={() => openAskAIPage({ resetNavigationStack: false })}
+            onClick={handleAskAI}
           />
         )}
       </PageHeader>
