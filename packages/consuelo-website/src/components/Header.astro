@@ -137,13 +137,13 @@ const isActive = (path: string) => {
 </header>
 
 <script>
-  function toggleNav() {
-    const menuBtn = document.querySelector("#menu-btn");
-    const menuItems = document.querySelector("#menu-items");
-    const menuIcon = document.querySelector("#menu-icon");
-    const closeIcon = document.querySelector("#close-icon");
+function toggleNav() {
+  const menuBtn = document.querySelector("#menu-btn") as HTMLElement | null;
+  const menuItems = document.querySelector("#menu-items") as HTMLElement | null;
+  const menuIcon = document.querySelector("#menu-icon") as HTMLElement | null;
+  const closeIcon = document.querySelector("#close-icon") as HTMLElement | null;
 
-    if (!menuBtn || !menuItems || !menuIcon || !closeIcon) return;
+  if (!menuBtn || !menuItems || !menuIcon || !closeIcon) return;
 
     function closeMenu() {
       menuBtn.setAttribute("aria-expanded", "false");

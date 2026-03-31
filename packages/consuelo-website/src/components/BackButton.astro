@@ -23,10 +23,10 @@ import { SITE } from "@/config";
 <script>
   function updateGoBackUrl() {
     const backButton = document.querySelector("#back-button");
-    const backUrl = sessionStorage.getItem("backUrl");
-    if (backUrl && backButton) {
-      backButton.href = backUrl;
-    }
+  const backUrl = sessionStorage.getItem("backUrl");
+  if (backUrl && backButton) {
+    (backButton as HTMLAnchorElement).href = backUrl;
+  }
   }
   document.addEventListener("astro:page-load", updateGoBackUrl);
   updateGoBackUrl();

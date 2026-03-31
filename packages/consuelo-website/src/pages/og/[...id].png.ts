@@ -61,10 +61,10 @@ export const GET: APIRoute = async ({ props }) => {
   <text x="1120" y="560" class="mono" font-size="20" fill="#333333" text-anchor="end">consuelohq.com</text>
 </svg>`;
 
-    const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
-    const png = resvg.render().asPng();
+const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
+const png = resvg.render().asPng();
 
-    return new Response(png, {
+return new Response(png as unknown as BodyInit, {
       headers: {
         'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=31536000, immutable',
