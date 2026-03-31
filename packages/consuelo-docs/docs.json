@@ -47,21 +47,6 @@
                 "group": "Getting Started",
                 "pages": [
                   "user-guide/introduction",
-                  {
-                    "group": "Data Model",
-                    "pages": [
-                      "user-guide/data-model/capabilities/objects",
-                      "user-guide/data-model/capabilities/fields",
-                      "user-guide/data-model/capabilities/relation-fields",
-                      "user-guide/data-model/how-tos/create-custom-objects",
-                      "user-guide/data-model/how-tos/create-custom-fields",
-                      "user-guide/data-model/how-tos/create-relation-fields",
-                      "user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "user-guide/data-model/how-tos/customize-your-data-model",
-                      "user-guide/data-model/how-tos/data-model-faq"
-                    ],
-                    "root": "user-guide/data-model/overview"
-                  },
                   "user-guide/getting-started/capabilities/implementation-services",
                   "user-guide/getting-started/capabilities/glossary",
                   "user-guide/getting-started/capabilities/keyboard-shortcuts",
@@ -95,6 +80,21 @@
                       "user-guide/dialer/how-tos/dialer-faq"
                     ],
                     "root": "user-guide/dialer/overview"
+                  },
+                  {
+                    "group": "Data Model",
+                    "pages": [
+                      "user-guide/data-model/capabilities/objects",
+                      "user-guide/data-model/capabilities/fields",
+                      "user-guide/data-model/capabilities/relation-fields",
+                      "user-guide/data-model/how-tos/create-custom-objects",
+                      "user-guide/data-model/how-tos/create-custom-fields",
+                      "user-guide/data-model/how-tos/create-relation-fields",
+                      "user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "user-guide/data-model/how-tos/customize-your-data-model",
+                      "user-guide/data-model/how-tos/data-model-faq"
+                    ],
+                    "root": "user-guide/data-model/overview"
                   },
                   {
                     "group": "Data Migration",
@@ -182,94 +182,44 @@
                     "group": "GraphQL API",
                     "pages": [
                       "user-guide/graphql-api/getting-started/setting-up-internal-workspace",
-                      {
-                        "group": "Analytics",
-                        "pages": [
-                          "user-guide/graphql-api/analytics/growth-metrics-dashboards",
-                          "user-guide/graphql-api/analytics/connecting-external-analytics",
-                          "user-guide/graphql-api/analytics/scheduled-reports"
-                        ]
-                      },
-                      {
-                        "group": "Automation",
-                        "pages": [
-                          "user-guide/graphql-api/automation/internal-workflows-overview",
-                          "user-guide/graphql-api/automation/data-cleanup-automation",
-                          "user-guide/graphql-api/automation/lead-scoring-setup",
-                          "user-guide/graphql-api/automation/slack-notifications"
-                        ]
-                      },
-                      {
-                        "group": "General",
-                        "pages": [
-                          "user-guide/graphql-api/general/internal-api-access",
-                          "user-guide/graphql-api/general/bulk-update-script",
-                          "user-guide/graphql-api/general/import-automation",
-                          "user-guide/graphql-api/general/export-analytics",
-                          "user-guide/graphql-api/general/rate-limits-and-best-practices"
-                        ]
-                      },
-                      {
-                        "group": "Troubleshooting",
-                        "pages": [
-                          "user-guide/graphql-api/troubleshooting/common-ops-issues"
-                        ]
-                      }
+                      "user-guide/graphql-api/analytics/growth-metrics-dashboards",
+                      "user-guide/graphql-api/analytics/connecting-external-analytics",
+                      "user-guide/graphql-api/analytics/scheduled-reports",
+                      "user-guide/graphql-api/automation/internal-workflows-overview",
+                      "user-guide/graphql-api/automation/data-cleanup-automation",
+                      "user-guide/graphql-api/automation/lead-scoring-setup",
+                      "user-guide/graphql-api/automation/slack-notifications",
+                      "user-guide/graphql-api/general/internal-api-access",
+                      "user-guide/graphql-api/general/bulk-update-script",
+                      "user-guide/graphql-api/general/import-automation",
+                      "user-guide/graphql-api/general/export-analytics",
+                      "user-guide/graphql-api/general/rate-limits-and-best-practices",
+                      "user-guide/graphql-api/troubleshooting/common-ops-issues"
                     ],
                     "root": "user-guide/graphql-api/overview"
                   },
                   {
                     "group": "HighLevel",
                     "pages": [
-                      {
-                        "group": "Embedded Dialer",
-                        "pages": [
-                          "user-guide/highlevel/embedded/overview",
-                          "user-guide/highlevel/embedded/getting-started",
-                          {
-                            "group": "Capabilities",
-                            "pages": [
-                              "user-guide/highlevel/embedded/capabilities/click-to-dial",
-                              "user-guide/highlevel/embedded/capabilities/dialer-controls",
-                              "user-guide/highlevel/embedded/capabilities/call-logging",
-                              "user-guide/highlevel/embedded/capabilities/sso-auth"
-                            ]
-                          },
-                          {
-                            "group": "How-Tos",
-                            "pages": [
-                              "user-guide/highlevel/embedded/how-tos/install-in-highlevel",
-                              "user-guide/highlevel/embedded/how-tos/configure-custom-menu",
-                              "user-guide/highlevel/embedded/how-tos/troubleshoot-embed"
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "group": "Integration",
-                        "pages": [
-                          "user-guide/highlevel/integration/overview",
-                          "user-guide/highlevel/integration/getting-started",
-                          {
-                            "group": "Capabilities",
-                            "pages": [
-                              "user-guide/highlevel/integration/capabilities/bidirectional-sync",
-                              "user-guide/highlevel/integration/capabilities/pipeline-mapping",
-                              "user-guide/highlevel/integration/capabilities/field-mapping",
-                              "user-guide/highlevel/integration/capabilities/call-logging"
-                            ]
-                          },
-                          {
-                            "group": "How-Tos",
-                            "pages": [
-                              "user-guide/highlevel/integration/how-tos/configure-field-mapping",
-                              "user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
-                              "user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
-                              "user-guide/highlevel/integration/how-tos/troubleshoot-sync"
-                            ]
-                          }
-                        ]
-                      }
+                      "user-guide/highlevel/embedded/overview",
+                      "user-guide/highlevel/embedded/getting-started",
+                      "user-guide/highlevel/embedded/capabilities/click-to-dial",
+                      "user-guide/highlevel/embedded/capabilities/dialer-controls",
+                      "user-guide/highlevel/embedded/capabilities/call-logging",
+                      "user-guide/highlevel/embedded/capabilities/sso-auth",
+                      "user-guide/highlevel/embedded/how-tos/install-in-highlevel",
+                      "user-guide/highlevel/embedded/how-tos/configure-custom-menu",
+                      "user-guide/highlevel/embedded/how-tos/troubleshoot-embed",
+                      "user-guide/highlevel/integration/overview",
+                      "user-guide/highlevel/integration/getting-started",
+                      "user-guide/highlevel/integration/capabilities/bidirectional-sync",
+                      "user-guide/highlevel/integration/capabilities/pipeline-mapping",
+                      "user-guide/highlevel/integration/capabilities/field-mapping",
+                      "user-guide/highlevel/integration/capabilities/call-logging",
+                      "user-guide/highlevel/integration/how-tos/configure-field-mapping",
+                      "user-guide/highlevel/integration/how-tos/import-contacts-from-highlevel",
+                      "user-guide/highlevel/integration/how-tos/set-up-pipeline-sync",
+                      "user-guide/highlevel/integration/how-tos/troubleshoot-sync"
                     ],
                     "root": "user-guide/highlevel/overview"
                   },
