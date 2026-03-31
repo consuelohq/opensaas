@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "name": "Consuelo Docs",
-  "theme": "almond",
+  "theme": "sequoia",
   "logo": {
     "light": "/logo-black.svg",
     "dark": "/logo.svg"
@@ -44,7 +44,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "user-guide/introduction",
                   {
@@ -683,7 +683,7 @@
             "tab": "Guide de l'utilisateur",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/fr/user-guide/introduction",
                   {
@@ -1251,7 +1251,7 @@
             "tab": "دليل المستخدم",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ar/user-guide/introduction",
                   {
@@ -1798,7 +1798,7 @@
             "tab": "Uživatelská příručka",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/cs/user-guide/introduction",
                   {
@@ -2345,7 +2345,7 @@
             "tab": "Benutzerhandbuch",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/de/user-guide/introduction",
                   {
@@ -2892,7 +2892,7 @@
             "tab": "Guía de usuario",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/es/user-guide/introduction",
                   {
@@ -3439,7 +3439,7 @@
             "tab": "Guida utente",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/it/user-guide/introduction",
                   {
@@ -3986,7 +3986,7 @@
             "tab": "ユーザーガイド",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ja/user-guide/introduction",
                   {
@@ -4533,7 +4533,7 @@
             "tab": "사용자 안내서",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ko/user-guide/introduction",
                   {
@@ -5080,7 +5080,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/pt/user-guide/introduction",
                   {
@@ -5627,7 +5627,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ro/user-guide/introduction",
                   {
@@ -6174,7 +6174,7 @@
             "tab": "Руководство пользователя",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ru/user-guide/introduction",
                   {
@@ -6721,7 +6721,7 @@
             "tab": "Kullanıcı Rehberi",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/tr/user-guide/introduction",
                   {
@@ -7268,7 +7268,7 @@
             "tab": "用户指南",
             "groups": [
               {
-                "group": "Get Started",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/zh/user-guide/introduction",
                   {
