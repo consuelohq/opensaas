@@ -337,7 +337,21 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
         }
 
+        // re-cache fresh data immediately
         await redisService.invalidatePhoneNumbersCache(workspaceId);
+        try {
+          const fresh = await dialer.listNumbers();
+          let freshPrimary: string | null = null;
+          try { freshPrimary = await redisService.getPrimaryNumber(workspaceId); } catch { /* */ }
+          const freshPhoneNumbers = fresh.map((num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => ({
+            phoneNumber: num.phoneNumber ?? '',
+            friendlyName: num.friendlyName ?? '',
+            areaCode: (num.phoneNumber ?? '').startsWith('+1') && (num.phoneNumber ?? '').length >= 5 ? (num.phoneNumber ?? '').slice(2, 5) : '',
+            sid: num.twilioSid ?? '',
+            isPrimary: freshPrimary !== null && num.twilioSid === freshPrimary,
+          }));
+          await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers: freshPhoneNumbers });
+        } catch { /* best effort re-cache */ }
         res.json(result);
       } catch (err: unknown) {
         Sentry.captureException(err);
