@@ -178,14 +178,21 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const workspaceId = req.auth!.workspaceId;
+
+        // check redis cache first
+        const cached = await redisService.getPhoneNumbersCache(workspaceId);
+        if (cached) {
+          res.json(JSON.parse(cached));
+          return;
+        }
+
+        const dialer = await getDialerForWorkspace(workspaceId);
         const numbers = await dialer.listNumbers();
 
         let primarySid: string | null = null;
         try {
-          primarySid = await redisService.getPrimaryNumber(
-            req.auth!.workspaceId,
-          );
+          primarySid = await redisService.getPrimaryNumber(workspaceId);
         } catch {
           // redis unavailable — continue without primary info
         }
@@ -212,7 +219,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
           },
         );
 
-        res.json({ phoneNumbers });
+        const response = { phoneNumbers };
+        await redisService.setPhoneNumbersCache(workspaceId, response);
+        res.json(response);
       } catch (err: unknown) {
         const { captureException } = await import('@sentry/node');
         captureException(err);
@@ -328,6 +337,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
         }
 
+        await redisService.invalidatePhoneNumbersCache(workspaceId);
         res.json(result);
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -360,6 +370,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         await redisService.setPrimaryNumber(workspaceId, sid);
+        await redisService.invalidatePhoneNumbersCache(workspaceId);
         res.json({ success: true, primarySid: sid });
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -417,6 +428,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
         }
 
+        await redisService.invalidatePhoneNumbersCache(workspaceId);
         res.json({ success: true });
       } catch (err: unknown) {
         Sentry.captureException(err);

@@ -34,7 +34,7 @@ type CallerIdSelectCardProps = {
 };
 
 export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
-  const { loading } = useAvailableCallerIds();
+  useAvailableCallerIds();
 
   const { availableCallerIds, selectedCallerId, setSelectedCallerId } =
     useCallerIdSelection();
@@ -47,10 +47,6 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
       setSelectedCallerId(availableCallerIds[0].phoneNumber);
     }
   }, [availableCallerIds, selectedCallerId, setSelectedCallerId]);
-
-  if (loading) {
-    return null;
-  }
 
   if (availableCallerIds.length === 0) {
     return (

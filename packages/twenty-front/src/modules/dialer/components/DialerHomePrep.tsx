@@ -123,6 +123,7 @@ export const DialerHomePrep = () => {
 
   const { records: listRecords } = useFindManyRecords<OpportunityRecord>({
     objectNameSingular: 'opportunity',
+    orderBy: [{ updatedAt: 'DescNullsLast' }],
     limit: 50,
   });
 
@@ -237,8 +238,8 @@ export const DialerHomePrep = () => {
             value={dialingMode}
             onChange={(value) => setDialingMode(value)}
             options={[
+              { value: 'parallel', label: t`Predictive Dialer (recommended)` },
               { value: 'single', label: t`Single (one call at a time)` },
-              { value: 'parallel', label: t`Parallel / Power Dialer` },
             ]}
           />
 

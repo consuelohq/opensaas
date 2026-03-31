@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
 const PKCE_TTL_SECONDS = 600; // 10 minutes
+const PHONE_NUMBERS_TTL_SECONDS = 300; // 5 minutes
 
 class RedisService {
   private client: IORedis | null = null;
@@ -294,6 +295,41 @@ class RedisService {
       throw err;
     }
   }
+
+  // -- phone numbers cache --
+
+  async getPhoneNumbersCache(workspaceId: string): Promise<string | null> {
+    try {
+      const client = await this.getClient();
+      return await client.get(`phone-numbers:${workspaceId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getPhoneNumbersCache', workspaceId } });
+      return null;
+    }
+  }
+
+  async setPhoneNumbersCache(workspaceId: string, data: unknown): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(
+        `phone-numbers:${workspaceId}`,
+        PHONE_NUMBERS_TTL_SECONDS,
+        JSON.stringify(data),
+      );
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setPhoneNumbersCache', workspaceId } });
+    }
+  }
+
+  async invalidatePhoneNumbersCache(workspaceId: string): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.del(`phone-numbers:${workspaceId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'invalidatePhoneNumbersCache', workspaceId } });
+    }
+  }
+
 }
 
 export const redisService = new RedisService();
