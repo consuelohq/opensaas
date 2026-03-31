@@ -162,6 +162,24 @@ const FAILURE_STATUSES = new Set(['failed', 'busy', 'no-answer', 'canceled']);
 const callerIdMap = new Map<string, string>(); // callSid → callerIdNumber
 
 /** /v1/voice routes — token, TwiML webhook, transfers, hold */
+
+const recachePhoneNumbers = async (workspaceId: string) => {
+  try {
+    const dialer = await getDialerForWorkspace(workspaceId);
+    const numbers = await dialer.listNumbers();
+    let primarySid: string | null = null;
+    try { primarySid = await redisService.getPrimaryNumber(workspaceId); } catch { /* */ }
+    const phoneNumbers = numbers.map((num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => ({
+      phoneNumber: num.phoneNumber ?? '',
+      friendlyName: num.friendlyName ?? '',
+      areaCode: (num.phoneNumber ?? '').startsWith('+1') && (num.phoneNumber ?? '').length >= 5 ? (num.phoneNumber ?? '').slice(2, 5) : '',
+      sid: num.twilioSid ?? '',
+      isPrimary: primarySid !== null && num.twilioSid === primarySid,
+    }));
+    await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers });
+  } catch { /* best effort */ }
+};
+
 export const voiceRoutes = (): RouteDefinition[] => [
   // --- literal routes first (ROUTE_ORDER) ---
 
@@ -337,21 +355,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
         }
 
-        // re-cache fresh data immediately
-        await redisService.invalidatePhoneNumbersCache(workspaceId);
-        try {
-          const fresh = await dialer.listNumbers();
-          let freshPrimary: string | null = null;
-          try { freshPrimary = await redisService.getPrimaryNumber(workspaceId); } catch { /* */ }
-          const freshPhoneNumbers = fresh.map((num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => ({
-            phoneNumber: num.phoneNumber ?? '',
-            friendlyName: num.friendlyName ?? '',
-            areaCode: (num.phoneNumber ?? '').startsWith('+1') && (num.phoneNumber ?? '').length >= 5 ? (num.phoneNumber ?? '').slice(2, 5) : '',
-            sid: num.twilioSid ?? '',
-            isPrimary: freshPrimary !== null && num.twilioSid === freshPrimary,
-          }));
-          await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers: freshPhoneNumbers });
-        } catch { /* best effort re-cache */ }
+        await recachePhoneNumbers(workspaceId);
         res.json(result);
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -384,7 +388,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         await redisService.setPrimaryNumber(workspaceId, sid);
-        await redisService.invalidatePhoneNumbersCache(workspaceId);
+        await recachePhoneNumbers(workspaceId);
         res.json({ success: true, primarySid: sid });
       } catch (err: unknown) {
         Sentry.captureException(err);
@@ -442,7 +446,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           });
         }
 
-        await redisService.invalidatePhoneNumbersCache(workspaceId);
+        await recachePhoneNumbers(workspaceId);
         res.json({ success: true });
       } catch (err: unknown) {
         Sentry.captureException(err);
