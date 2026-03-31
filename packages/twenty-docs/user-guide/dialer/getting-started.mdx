@@ -1,0 +1,122 @@
+---
+title: Getting Started
+description: Set up the dialer and make your first call in under five minutes.
+---
+
+Get the dialer running and place your first outbound call.
+
+## Prerequisites
+
+Before using the dialer, you need:
+
+- **Twilio account** — with at least one provisioned phone number ([setup guide](/user-guide/dialer/how-tos/set-up-twilio))
+- **Microphone access** — the browser needs permission to use your mic
+- **Supported browser** — Chrome, Edge, or any Chromium-based browser (Firefox and Safari have limited WebRTC support)
+
+<Warning>
+The dialer uses Twilio's browser SDK for voice over WebRTC. If your network blocks WebRTC traffic or UDP ports, calls will fail silently. Check with your IT team if you're on a corporate network.
+</Warning>
+
+## Step 1: Connect Twilio
+
+If your workspace admin hasn't configured Twilio yet:
+
+1. Go to **Settings → Dialer**
+2. Enter your Twilio Account SID and Auth Token
+3. Click **Save**
+4. Provision at least one phone number (or add an existing one)
+
+The dialer sidebar shows a status indicator. If Twilio isn't connected, you'll see a banner with a link to settings:
+
+| Status | What it means |
+|---|---|
+| No banner | Twilio is connected and ready |
+| "Connect your phone system" | Twilio credentials not configured |
+| "Pick a phone number" | Twilio connected but no numbers provisioned |
+| "Phone system error" | Credentials are invalid or Twilio returned an error |
+
+See [Set Up Twilio](/user-guide/dialer/how-tos/set-up-twilio) for the full walkthrough.
+
+## Step 2: Open the dialer
+
+Press `Cmd+D` (Mac) or `Ctrl+D` (Windows/Linux) from any page in the CRM. The dialer opens as a 380px sidebar on the right side of the screen.
+
+## Step 3: Grant microphone access
+
+The first time you open the dialer, your browser asks for microphone permission. Click **Allow**.
+
+The dialer requests mic permission again right before your first call as a safety check. If permission was denied:
+
+1. Click the lock icon in the browser address bar
+2. Find **Microphone** and change it to **Allow**
+3. Reload the page
+
+<Note>
+If no microphone is detected at all, the sidebar shows "No microphone found. Connect a mic and try again." Bluetooth headsets sometimes need to be connected before opening the browser.
+</Note>
+
+## Step 4: Select your audio devices
+
+The dialer lets you choose which microphone and speaker to use:
+
+1. Scroll to the bottom of the dialer sidebar
+2. Use the **Microphone** dropdown to select your input device
+3. Use the **Speaker** dropdown to select your output device
+
+These selections are synced to the Twilio voice SDK in real time — you can switch mid-call.
+
+## Step 5: Make your first call
+
+<Steps>
+  <Step title="Select a caller ID">
+    The **Call from** dropdown shows your provisioned phone numbers. Pick the one you want the recipient to see.
+  </Step>
+  <Step title="Enter a number">
+    Type a phone number using the dial pad or your keyboard. Or select a contact list from the **Select a list** dropdown to start a queue.
+  </Step>
+  <Step title="Choose your calling mode">
+    **Single** dials one contact at a time. **Parallel** dials multiple simultaneously. Start with Single for your first call.
+  </Step>
+  <Step title="Choose your assist mode">
+    **AI coaching** gives you real-time talking points. **Script mode** shows a guided script. You can also skip both.
+  </Step>
+  <Step title="Click Call or Open fullscreen workspace">
+    For a single number, click **Call**. For a list, click **Open fullscreen workspace** to launch the queue session.
+  </Step>
+</Steps>
+
+When your first call completes, you'll see a "First call complete!" confirmation that auto-dismisses after 4 seconds.
+
+## Verify your setup
+
+After your first call, confirm everything worked:
+
+- [ ] Dialer opened with `Cmd+D`
+- [ ] Caller ID dropdown shows at least one number
+- [ ] No error banner in the sidebar (Twilio connected)
+- [ ] Microphone was detected (no "No microphone found" message)
+- [ ] Call connected and you heard audio in both directions
+- [ ] Call appeared in your call history after hanging up
+- [ ] Post-call summary appeared with outcome buttons
+
+If something didn't work, see [Troubleshoot Calls](/user-guide/dialer/how-tos/troubleshoot-calls).
+
+## The fullscreen workspace
+
+When you start a queue or click **Open fullscreen workspace**, the dialer expands into a full-page calling workspace with tabs:
+
+| Tab | What it shows |
+|---|---|
+| **Coaching** | AI coaching panel or script panel (auto-selected when a call is active) |
+| **Analytics** | Call metrics and outcome charts (auto-selected when a call ends) |
+| **People** | Contact list for the current queue |
+| **Settings** | Caller ID selection, audio devices, assist mode configuration |
+
+The workspace auto-switches tabs based on call state — Coaching when you're on a call, Analytics when it ends.
+
+## Next steps
+
+- [Making Calls](/user-guide/dialer/capabilities/making-calls) — all the ways to initiate calls
+- [Queue Management](/user-guide/dialer/capabilities/queue-management) — set up your first calling campaign
+- [Configure Caller IDs](/user-guide/dialer/how-tos/configure-caller-ids) — add more phone numbers
+- [Keyboard Shortcuts](/user-guide/dialer/capabilities/keyboard-shortcuts) — control the dialer hands-free

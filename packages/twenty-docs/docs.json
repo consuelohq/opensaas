@@ -125,9 +125,33 @@
                 "icon": "phone",
                 "pages": [
                   "user-guide/dialer/overview",
-                  "user-guide/dialer/making-calls",
-                  "user-guide/dialer/transfers",
-                  "user-guide/dialer/hold-mute"
+                  "user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/dialer/capabilities/making-calls",
+                      "user-guide/dialer/capabilities/transfers",
+                      "user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "user-guide/dialer/capabilities/queue-management",
+                      "user-guide/dialer/capabilities/parallel-dialing",
+                      "user-guide/dialer/capabilities/local-presence",
+                      "user-guide/dialer/capabilities/ai-coaching",
+                      "user-guide/dialer/capabilities/caller-id",
+                      "user-guide/dialer/capabilities/call-history",
+                      "user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/dialer/how-tos/set-up-twilio",
+                      "user-guide/dialer/how-tos/configure-caller-ids",
+                      "user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "user-guide/dialer/how-tos/use-parallel-dialing",
+                      "user-guide/dialer/how-tos/troubleshoot-calls",
+                      "user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -760,9 +784,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/fr/user-guide/dialer/overview",
-                  "l/fr/user-guide/dialer/making-calls",
-                  "l/fr/user-guide/dialer/transfers",
-                  "l/fr/user-guide/dialer/hold-mute"
+                  "l/fr/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/fr/user-guide/dialer/capabilities/making-calls",
+                      "l/fr/user-guide/dialer/capabilities/transfers",
+                      "l/fr/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/fr/user-guide/dialer/capabilities/queue-management",
+                      "l/fr/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/fr/user-guide/dialer/capabilities/local-presence",
+                      "l/fr/user-guide/dialer/capabilities/ai-coaching",
+                      "l/fr/user-guide/dialer/capabilities/caller-id",
+                      "l/fr/user-guide/dialer/capabilities/call-history",
+                      "l/fr/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/fr/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/fr/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/fr/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/fr/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/fr/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/fr/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -1322,9 +1370,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/ar/user-guide/dialer/overview",
-                  "l/ar/user-guide/dialer/making-calls",
-                  "l/ar/user-guide/dialer/transfers",
-                  "l/ar/user-guide/dialer/hold-mute"
+                  "l/ar/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ar/user-guide/dialer/capabilities/making-calls",
+                      "l/ar/user-guide/dialer/capabilities/transfers",
+                      "l/ar/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/ar/user-guide/dialer/capabilities/queue-management",
+                      "l/ar/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/ar/user-guide/dialer/capabilities/local-presence",
+                      "l/ar/user-guide/dialer/capabilities/ai-coaching",
+                      "l/ar/user-guide/dialer/capabilities/caller-id",
+                      "l/ar/user-guide/dialer/capabilities/call-history",
+                      "l/ar/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ar/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/ar/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/ar/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/ar/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/ar/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/ar/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -1864,9 +1936,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/cs/user-guide/dialer/overview",
-                  "l/cs/user-guide/dialer/making-calls",
-                  "l/cs/user-guide/dialer/transfers",
-                  "l/cs/user-guide/dialer/hold-mute"
+                  "l/cs/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/cs/user-guide/dialer/capabilities/making-calls",
+                      "l/cs/user-guide/dialer/capabilities/transfers",
+                      "l/cs/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/cs/user-guide/dialer/capabilities/queue-management",
+                      "l/cs/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/cs/user-guide/dialer/capabilities/local-presence",
+                      "l/cs/user-guide/dialer/capabilities/ai-coaching",
+                      "l/cs/user-guide/dialer/capabilities/caller-id",
+                      "l/cs/user-guide/dialer/capabilities/call-history",
+                      "l/cs/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/cs/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/cs/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/cs/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/cs/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/cs/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/cs/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -2406,9 +2502,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/de/user-guide/dialer/overview",
-                  "l/de/user-guide/dialer/making-calls",
-                  "l/de/user-guide/dialer/transfers",
-                  "l/de/user-guide/dialer/hold-mute"
+                  "l/de/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/de/user-guide/dialer/capabilities/making-calls",
+                      "l/de/user-guide/dialer/capabilities/transfers",
+                      "l/de/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/de/user-guide/dialer/capabilities/queue-management",
+                      "l/de/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/de/user-guide/dialer/capabilities/local-presence",
+                      "l/de/user-guide/dialer/capabilities/ai-coaching",
+                      "l/de/user-guide/dialer/capabilities/caller-id",
+                      "l/de/user-guide/dialer/capabilities/call-history",
+                      "l/de/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/de/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/de/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/de/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/de/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/de/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/de/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -2948,9 +3068,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/es/user-guide/dialer/overview",
-                  "l/es/user-guide/dialer/making-calls",
-                  "l/es/user-guide/dialer/transfers",
-                  "l/es/user-guide/dialer/hold-mute"
+                  "l/es/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/es/user-guide/dialer/capabilities/making-calls",
+                      "l/es/user-guide/dialer/capabilities/transfers",
+                      "l/es/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/es/user-guide/dialer/capabilities/queue-management",
+                      "l/es/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/es/user-guide/dialer/capabilities/local-presence",
+                      "l/es/user-guide/dialer/capabilities/ai-coaching",
+                      "l/es/user-guide/dialer/capabilities/caller-id",
+                      "l/es/user-guide/dialer/capabilities/call-history",
+                      "l/es/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/es/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/es/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/es/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/es/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/es/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/es/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -3490,9 +3634,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/it/user-guide/dialer/overview",
-                  "l/it/user-guide/dialer/making-calls",
-                  "l/it/user-guide/dialer/transfers",
-                  "l/it/user-guide/dialer/hold-mute"
+                  "l/it/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/it/user-guide/dialer/capabilities/making-calls",
+                      "l/it/user-guide/dialer/capabilities/transfers",
+                      "l/it/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/it/user-guide/dialer/capabilities/queue-management",
+                      "l/it/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/it/user-guide/dialer/capabilities/local-presence",
+                      "l/it/user-guide/dialer/capabilities/ai-coaching",
+                      "l/it/user-guide/dialer/capabilities/caller-id",
+                      "l/it/user-guide/dialer/capabilities/call-history",
+                      "l/it/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/it/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/it/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/it/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/it/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/it/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/it/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -4032,9 +4200,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/ja/user-guide/dialer/overview",
-                  "l/ja/user-guide/dialer/making-calls",
-                  "l/ja/user-guide/dialer/transfers",
-                  "l/ja/user-guide/dialer/hold-mute"
+                  "l/ja/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ja/user-guide/dialer/capabilities/making-calls",
+                      "l/ja/user-guide/dialer/capabilities/transfers",
+                      "l/ja/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/ja/user-guide/dialer/capabilities/queue-management",
+                      "l/ja/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/ja/user-guide/dialer/capabilities/local-presence",
+                      "l/ja/user-guide/dialer/capabilities/ai-coaching",
+                      "l/ja/user-guide/dialer/capabilities/caller-id",
+                      "l/ja/user-guide/dialer/capabilities/call-history",
+                      "l/ja/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ja/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/ja/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/ja/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/ja/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/ja/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/ja/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -4574,9 +4766,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/ko/user-guide/dialer/overview",
-                  "l/ko/user-guide/dialer/making-calls",
-                  "l/ko/user-guide/dialer/transfers",
-                  "l/ko/user-guide/dialer/hold-mute"
+                  "l/ko/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ko/user-guide/dialer/capabilities/making-calls",
+                      "l/ko/user-guide/dialer/capabilities/transfers",
+                      "l/ko/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/ko/user-guide/dialer/capabilities/queue-management",
+                      "l/ko/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/ko/user-guide/dialer/capabilities/local-presence",
+                      "l/ko/user-guide/dialer/capabilities/ai-coaching",
+                      "l/ko/user-guide/dialer/capabilities/caller-id",
+                      "l/ko/user-guide/dialer/capabilities/call-history",
+                      "l/ko/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ko/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/ko/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/ko/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/ko/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/ko/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/ko/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -5116,9 +5332,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/pt/user-guide/dialer/overview",
-                  "l/pt/user-guide/dialer/making-calls",
-                  "l/pt/user-guide/dialer/transfers",
-                  "l/pt/user-guide/dialer/hold-mute"
+                  "l/pt/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/dialer/capabilities/making-calls",
+                      "l/pt/user-guide/dialer/capabilities/transfers",
+                      "l/pt/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/pt/user-guide/dialer/capabilities/queue-management",
+                      "l/pt/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/pt/user-guide/dialer/capabilities/local-presence",
+                      "l/pt/user-guide/dialer/capabilities/ai-coaching",
+                      "l/pt/user-guide/dialer/capabilities/caller-id",
+                      "l/pt/user-guide/dialer/capabilities/call-history",
+                      "l/pt/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/pt/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/pt/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/pt/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/pt/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/pt/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/pt/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -5658,9 +5898,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/ro/user-guide/dialer/overview",
-                  "l/ro/user-guide/dialer/making-calls",
-                  "l/ro/user-guide/dialer/transfers",
-                  "l/ro/user-guide/dialer/hold-mute"
+                  "l/ro/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/dialer/capabilities/making-calls",
+                      "l/ro/user-guide/dialer/capabilities/transfers",
+                      "l/ro/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/ro/user-guide/dialer/capabilities/queue-management",
+                      "l/ro/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/ro/user-guide/dialer/capabilities/local-presence",
+                      "l/ro/user-guide/dialer/capabilities/ai-coaching",
+                      "l/ro/user-guide/dialer/capabilities/caller-id",
+                      "l/ro/user-guide/dialer/capabilities/call-history",
+                      "l/ro/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ro/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/ro/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/ro/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/ro/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/ro/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/ro/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -6200,9 +6464,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/ru/user-guide/dialer/overview",
-                  "l/ru/user-guide/dialer/making-calls",
-                  "l/ru/user-guide/dialer/transfers",
-                  "l/ru/user-guide/dialer/hold-mute"
+                  "l/ru/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ru/user-guide/dialer/capabilities/making-calls",
+                      "l/ru/user-guide/dialer/capabilities/transfers",
+                      "l/ru/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/ru/user-guide/dialer/capabilities/queue-management",
+                      "l/ru/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/ru/user-guide/dialer/capabilities/local-presence",
+                      "l/ru/user-guide/dialer/capabilities/ai-coaching",
+                      "l/ru/user-guide/dialer/capabilities/caller-id",
+                      "l/ru/user-guide/dialer/capabilities/call-history",
+                      "l/ru/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ru/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/ru/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/ru/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/ru/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/ru/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/ru/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -6742,9 +7030,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/tr/user-guide/dialer/overview",
-                  "l/tr/user-guide/dialer/making-calls",
-                  "l/tr/user-guide/dialer/transfers",
-                  "l/tr/user-guide/dialer/hold-mute"
+                  "l/tr/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/tr/user-guide/dialer/capabilities/making-calls",
+                      "l/tr/user-guide/dialer/capabilities/transfers",
+                      "l/tr/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/tr/user-guide/dialer/capabilities/queue-management",
+                      "l/tr/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/tr/user-guide/dialer/capabilities/local-presence",
+                      "l/tr/user-guide/dialer/capabilities/ai-coaching",
+                      "l/tr/user-guide/dialer/capabilities/caller-id",
+                      "l/tr/user-guide/dialer/capabilities/call-history",
+                      "l/tr/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/tr/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/tr/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/tr/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/tr/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/tr/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/tr/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {
@@ -7284,9 +7596,33 @@
                 "icon": "phone",
                 "pages": [
                   "l/zh/user-guide/dialer/overview",
-                  "l/zh/user-guide/dialer/making-calls",
-                  "l/zh/user-guide/dialer/transfers",
-                  "l/zh/user-guide/dialer/hold-mute"
+                  "l/zh/user-guide/dialer/getting-started",
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/zh/user-guide/dialer/capabilities/making-calls",
+                      "l/zh/user-guide/dialer/capabilities/transfers",
+                      "l/zh/user-guide/dialer/capabilities/hold-mute-dtmf",
+                      "l/zh/user-guide/dialer/capabilities/queue-management",
+                      "l/zh/user-guide/dialer/capabilities/parallel-dialing",
+                      "l/zh/user-guide/dialer/capabilities/local-presence",
+                      "l/zh/user-guide/dialer/capabilities/ai-coaching",
+                      "l/zh/user-guide/dialer/capabilities/caller-id",
+                      "l/zh/user-guide/dialer/capabilities/call-history",
+                      "l/zh/user-guide/dialer/capabilities/keyboard-shortcuts"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/zh/user-guide/dialer/how-tos/set-up-twilio",
+                      "l/zh/user-guide/dialer/how-tos/configure-caller-ids",
+                      "l/zh/user-guide/dialer/how-tos/run-a-queue-campaign",
+                      "l/zh/user-guide/dialer/how-tos/use-parallel-dialing",
+                      "l/zh/user-guide/dialer/how-tos/troubleshoot-calls",
+                      "l/zh/user-guide/dialer/how-tos/dialer-faq"
+                    ]
+                  }
                 ]
               },
               {

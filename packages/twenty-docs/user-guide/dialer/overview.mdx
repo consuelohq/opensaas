@@ -1,113 +1,88 @@
 ---
-title: Dialer Overview
-description: Learn about the Consuelo dialer and Discord bot for making calls.
+title: Dialer
+description: Make calls, run queues, and coach reps — all inside the CRM.
 ---
 
-> Make calls directly from the CRM with the built-in dialer.
+> The Consuelo dialer is a full telephony surface built into the CRM. Open it from any page, dial a number or start a queue, and stay in context while you call.
 
-The Consuelo dialer is a sidebar that provides full telephony functionality directly within the CRM. Access it anytime using keyboard shortcuts or the navigation bar.
+The dialer handles single calls, parallel dialing, warm and cold transfers, AI coaching, script-guided conversations, and call queue campaigns. Every call runs through a Twilio conference, which means transfers, holds, and whisper coaching work without switching tools.
 
-## Opening the Dialer
-
-**Keyboard Shortcut:**
-
-- Mac: `Cmd+D`
-- Windows: `Ctrl+D`
-
-**Alternative:**
-
-- Click the phone icon in the top navigation bar
-
-## Dialer Layout
-
-The dialer sidebar consists of several key areas:
-
-### 1. Dial Pad
-
-The main area for entering phone numbers:
-
-- Numeric keypad (0-9)
-- Asterisk (\*) and pound (#) keys
-- Clear button
-- Call button
-
-### 2. Caller ID Selector
-
-Dropdown to select which phone number displays when calling:
-
-- Shows all configured caller IDs
-- Indicates local presence status
-- Quick access to add new numbers
-
-### 3. Contact Search
-
-Search for contacts while the dialer is open:
-
-- Type to search by name or phone number
-- Shows matching results in real-time
-- Click a result to auto-fill the number
-
-### 4. Active Call Controls
-
-When on a call, these controls appear:
-
-- **Mute** - Toggle microphone on/off
-- **Hold** - Place caller on hold
-- **Transfer** - Initiate a call transfer
-- **Keypad** - Access DTMF tones
-- **Hang Up** - End the call
-
-### 5. Call History
-
-Recent calls list showing:
-
-- Call direction (inbound/outbound)
-- Contact name and number
-- Duration and timestamp
-- Call status (completed, missed, no answer)
-
-## Keyboard Shortcuts
-
-| Shortcut           | Action                       |
-| ------------------ | ---------------------------- |
-| `Cmd+D` / `Ctrl+D` | Open/close dialer            |
-| `Enter`            | Initiate call                |
-| `M`                | Toggle mute                  |
-| `H`                | Toggle hold                  |
-| `T`                | Open transfer                |
-| `Escape`           | Close dialer / Cancel action |
-
-<Note>
-  Both methods use the same Consuelo infrastructure. Calls made via Discord
-  appear in the CRM call history, and vice versa.
-</Note>
-
-## What's in this section
+## What you can do
 
 <CardGroup cols={2}>
-  <Card
-    title="Making Calls"
-    icon="phone"
-    href="/user-guide/dialer/making-calls"
-  >
-    Learn about the different ways to make calls in Consuelo.
+  <Card title="Making Calls" icon="phone" href="/user-guide/dialer/capabilities/making-calls">
+    Dial from the keypad, click a contact's number, or search and call from anywhere in the CRM.
   </Card>
-
-  <Card
-    title="Transfers"
-    icon="arrow-right-arrow-left"
-    href="/user-guide/dialer/transfers"
-  >
-    Warm and cold transfers to other recipients.
+  <Card title="Transfers" icon="arrow-right-arrow-left" href="/user-guide/dialer/capabilities/transfers">
+    Cold and warm transfers to colleagues or external numbers, powered by Twilio conferences.
   </Card>
-
-  <Card title="Hold & Mute" icon="pause" href="/user-guide/dialer/hold-mute">
-    Managing active call controls.
+  <Card title="Hold, Mute & DTMF" icon="pause" href="/user-guide/dialer/capabilities/hold-mute-dtmf">
+    Place callers on hold, mute your mic, and send touch-tone digits mid-call.
+  </Card>
+  <Card title="Queue Management" icon="list-ol" href="/user-guide/dialer/capabilities/queue-management">
+    Build call lists, configure auto-advance, track dispositions, and review queue analytics.
+  </Card>
+  <Card title="Parallel Dialing" icon="phone-volume" href="/user-guide/dialer/capabilities/parallel-dialing">
+    Dial up to 5 contacts at once. First to answer wins — the rest hang up automatically.
+  </Card>
+  <Card title="Local Presence" icon="map-pin" href="/user-guide/dialer/capabilities/local-presence">
+    Auto-select a caller ID matching the recipient's area code to improve answer rates.
+  </Card>
+  <Card title="AI Coaching" icon="sparkles" href="/user-guide/dialer/capabilities/ai-coaching">
+    Get real-time talking points during calls, or follow a guided script step by step.
+  </Card>
+  <Card title="Caller ID" icon="id-card" href="/user-guide/dialer/capabilities/caller-id">
+    Provision, manage, and select outbound phone numbers. Set a primary and configure local presence.
+  </Card>
+  <Card title="Call History & Analytics" icon="clock-rotate-left" href="/user-guide/dialer/capabilities/call-history">
+    Review past calls, filter by outcome or date, play recordings, and track performance metrics.
+  </Card>
+  <Card title="Keyboard Shortcuts" icon="keyboard" href="/user-guide/dialer/capabilities/keyboard-shortcuts">
+    Control the dialer, queue, and call actions without touching the mouse.
   </Card>
 </CardGroup>
 
+## Key features
+
+| Feature | Description |
+|---|---|
+| **Conference-based architecture** | Every call uses a Twilio conference — transfers, holds, and coaching work by adding/removing participants, never by bridging calls |
+| **Single and parallel modes** | Dial one contact at a time or up to 5 simultaneously with configurable strategy profiles |
+| **Local presence** | Auto-select a caller ID matching the recipient's area code from your provisioned numbers |
+| **AI coaching** | Real-time talking points, objection handling, and suggested questions refreshed every 30 seconds based on live transcript |
+| **Script mode** | Follow a guided script with sections that auto-advance as the conversation progresses |
+| **Live transcription** | WebSocket-powered real-time transcript displayed alongside call controls |
+| **Queue campaigns** | Work through contact lists with auto-advance, skip reasons, retry logic, and outcome tracking |
+| **Priority scoring** | Queue engine scores contacts by lead value, attempt history, campaign priority, and optimal call hour |
+| **Cadence suppression** | Per-contact rate limiting prevents over-calling with configurable daily/weekly caps and minimum retry spacing |
+| **DNC compliance** | Contacts on the Do Not Call list are automatically filtered out of queues |
+| **Post-call analysis** | AI-generated call summary with sentiment, key moments, and suggested next steps |
+| **Quick actions** | Add notes and schedule follow-ups during or after calls without leaving the dialer |
+| **Recording playback** | Listen to call recordings directly in the browser with seek and progress controls |
+| **Audio device selection** | Choose your microphone and speaker from the dialer settings |
+
+## Quick reference — keyboard shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Cmd+D` / `Ctrl+D` | Open or close the dialer sidebar |
+| `Enter` | Start the call |
+| `M` | Toggle mute |
+| `H` | Toggle hold |
+| `T` | Open transfer dialog |
+| `Escape` | Close dialer or cancel current action |
+| `Cmd+Shift+M` / `Ctrl+Shift+M` | Toggle calling mode (single ↔ parallel) |
+| `Cmd+Shift+C` / `Ctrl+Shift+C` | Toggle coaching panel |
+| `Space` | Pause / resume queue |
+| `S` | Skip current contact in queue |
+| `E` | End queue |
+
+## Quick start
+
+1. **[Set up Twilio](/user-guide/dialer/how-tos/set-up-twilio)** — connect your Twilio account and provision at least one phone number
+2. **[Open the dialer](/user-guide/dialer/getting-started)** — press `Cmd+D` and grant microphone access
+3. **[Make your first call](/user-guide/dialer/capabilities/making-calls)** — enter a number and press Call
+
 <Note>
-  Looking for the Discord Bot? It now has its own section in the sidebar. The
-  Discord Bot allows you to manage calls and queues directly from Discord with
-  slash commands.
+The dialer requires a Twilio account with at least one provisioned phone number. The status indicator in the sidebar shows your connection state — if it's not green, see [Troubleshoot Calls](/user-guide/dialer/how-tos/troubleshoot-calls).
 </Note>
