@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Consuelo | Docs",
+  "name": "Consuelo Docs",
   "theme": "almond",
   "logo": {
     "light": "/logo-black.svg",
@@ -26,8 +26,13 @@
     "eyebrows": "breadcrumbs"
   },
   "seo": {
+    "indexing": "navigable",
     "metatags": {
-      "canonical": "https://docs.consuelohq.com"
+      "og:site_name": "Consuelo Docs",
+      "og:type": "website",
+      "twitter:card": "summary_large_image",
+      "twitter:site": "@consuelohq",
+      "robots": "index, follow"
     }
   },
   "navigation": {
@@ -39,7 +44,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "",
                 "pages": [
                   "user-guide/introduction",
                   {
@@ -58,8 +63,7 @@
                       "user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -1265,8 +1269,7 @@
                       "l/ar/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/ar/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -1813,8 +1816,7 @@
                       "l/cs/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/cs/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -2361,8 +2363,7 @@
                       "l/de/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/de/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -2909,8 +2910,7 @@
                       "l/es/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/es/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -3457,8 +3457,7 @@
                       "l/it/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/it/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -4005,8 +4004,7 @@
                       "l/ja/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/ja/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -4553,8 +4551,7 @@
                       "l/ko/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/ko/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -5101,8 +5098,7 @@
                       "l/pt/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/pt/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -5649,8 +5645,7 @@
                       "l/ro/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/ro/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -6197,8 +6192,7 @@
                       "l/ru/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/ru/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -6745,8 +6739,7 @@
                       "l/tr/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/tr/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -7293,8 +7286,7 @@
                       "l/zh/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ],
-                "root": "l/zh/user-guide/getting-started/capabilities/what-is-consuelo"
+                ]
               },
               {
                 "group": "Dialer",
@@ -8306,5 +8298,9 @@
       "source": "/user-guide/billing/capabilities/billing-and-pricing-faq",
       "destination": "/user-guide/billing/how-tos/billing-faq"
     }
-  ]
+  ],
+  "description": "Documentation for Consuelo — open-source sales infrastructure with power dialer, AI coaching, CRM, and automation. Everything your sales team needs in one platform.",
+  "search": {
+    "prompt": "Search docs..."
+  }
 }
