@@ -44,9 +44,34 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "user-guide/introduction",
+                  {
+                    "group": "Data Model",
+                    "pages": [
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "user-guide/data-model/capabilities/objects",
+                          "user-guide/data-model/capabilities/fields",
+                          "user-guide/data-model/capabilities/relation-fields"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "user-guide/data-model/how-tos/create-custom-objects",
+                          "user-guide/data-model/how-tos/create-custom-fields",
+                          "user-guide/data-model/how-tos/create-relation-fields",
+                          "user-guide/data-model/how-tos/create-many-to-many-relations",
+                          "user-guide/data-model/how-tos/customize-your-data-model",
+                          "user-guide/data-model/how-tos/data-model-faq"
+                        ]
+                      }
+                    ],
+                    "root": "user-guide/data-model/overview"
+                  },
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -102,31 +127,6 @@
                     "root": "user-guide/dialer/overview"
                   },
                   {
-                    "group": "Data Model",
-                    "pages": [
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/data-model/capabilities/objects",
-                          "user-guide/data-model/capabilities/fields",
-                          "user-guide/data-model/capabilities/relation-fields"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/data-model/how-tos/create-custom-objects",
-                          "user-guide/data-model/how-tos/create-custom-fields",
-                          "user-guide/data-model/how-tos/create-relation-fields",
-                          "user-guide/data-model/how-tos/create-many-to-many-relations",
-                          "user-guide/data-model/how-tos/customize-your-data-model",
-                          "user-guide/data-model/how-tos/data-model-faq"
-                        ]
-                      }
-                    ],
-                    "root": "user-guide/data-model/overview"
-                  },
-                  {
                     "group": "Data Migration",
                     "pages": [
                       {
@@ -156,6 +156,87 @@
                       }
                     ],
                     "root": "user-guide/data-migration/overview"
+                  },
+                  {
+                    "group": "AI",
+                    "pages": [
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "user-guide/ai/capabilities/ai-chatbot",
+                          "user-guide/ai/capabilities/ai-agents",
+                          "user-guide/ai/capabilities/permissions-access-control"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          "user-guide/ai/how-tos/ai-faq"
+                        ]
+                      }
+                    ],
+                    "root": "user-guide/ai/overview"
+                  },
+                  {
+                    "group": "Workflows",
+                    "pages": [
+                      {
+                        "group": "Capabilities",
+                        "pages": [
+                          "user-guide/workflows/capabilities/workflow-triggers",
+                          "user-guide/workflows/capabilities/workflow-actions",
+                          "user-guide/workflows/capabilities/workflow-branches",
+                          "user-guide/workflows/capabilities/workflow-runs",
+                          "user-guide/workflows/capabilities/workflow-versions",
+                          "user-guide/workflows/capabilities/workflow-credits",
+                          "user-guide/workflows/capabilities/use-branches-in-workflows",
+                          "user-guide/workflows/capabilities/use-iterator",
+                          "user-guide/workflows/capabilities/send-emails-from-workflows"
+                        ]
+                      },
+                      {
+                        "group": "How-Tos",
+                        "pages": [
+                          {
+                            "group": "CRM Automations",
+                            "pages": [
+                              "user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
+                              "user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
+                              "user-guide/workflows/how-tos/crm-automations/display-number-of-emails-received",
+                              "user-guide/workflows/how-tos/crm-automations/formula-fields",
+                              "user-guide/workflows/how-tos/crm-automations/display-related-record-data",
+                              "user-guide/workflows/how-tos/crm-automations/closed-won-automations",
+                              "user-guide/workflows/how-tos/crm-automations/detect-stale-opportunities"
+                            ]
+                          },
+                          {
+                            "group": "Connect to Other Tools",
+                            "pages": [
+                              "user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
+                              "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
+                              "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
+                              "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
+                              "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
+                            ]
+                          },
+                          {
+                            "group": "Advanced Configurations",
+                            "pages": [
+                              "user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
+                            ]
+                          },
+                          {
+                            "group": "Need More Help",
+                            "pages": [
+                              "user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
+                              "user-guide/workflows/how-tos/need-more-help/workflows-faq",
+                              "user-guide/workflows/how-tos/need-more-help/professional-services"
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "root": "user-guide/workflows/overview"
                   },
                   {
                     "group": "GraphQL API",
@@ -355,87 +436,6 @@
                       }
                     ],
                     "root": "user-guide/calendar-emails/overview"
-                  },
-                  {
-                    "group": "Workflows",
-                    "pages": [
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/workflows/capabilities/workflow-triggers",
-                          "user-guide/workflows/capabilities/workflow-actions",
-                          "user-guide/workflows/capabilities/workflow-branches",
-                          "user-guide/workflows/capabilities/workflow-runs",
-                          "user-guide/workflows/capabilities/workflow-versions",
-                          "user-guide/workflows/capabilities/workflow-credits",
-                          "user-guide/workflows/capabilities/use-branches-in-workflows",
-                          "user-guide/workflows/capabilities/use-iterator",
-                          "user-guide/workflows/capabilities/send-emails-from-workflows"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          {
-                            "group": "CRM Automations",
-                            "pages": [
-                              "user-guide/workflows/how-tos/crm-automations/send-email-alerts-with-tasks-due",
-                              "user-guide/workflows/how-tos/crm-automations/notify-teammates-of-note-to-review",
-                              "user-guide/workflows/how-tos/crm-automations/display-number-of-emails-received",
-                              "user-guide/workflows/how-tos/crm-automations/formula-fields",
-                              "user-guide/workflows/how-tos/crm-automations/display-related-record-data",
-                              "user-guide/workflows/how-tos/crm-automations/closed-won-automations",
-                              "user-guide/workflows/how-tos/crm-automations/detect-stale-opportunities"
-                            ]
-                          },
-                          {
-                            "group": "Connect to Other Tools",
-                            "pages": [
-                              "user-guide/workflows/how-tos/connect-to-other-tools/set-up-a-webhook-trigger",
-                              "user-guide/workflows/how-tos/connect-to-other-tools/bring-typeform-submissions-in-consuelo",
-                              "user-guide/workflows/how-tos/connect-to-other-tools/bring-product-data-in-consuelo",
-                              "user-guide/workflows/how-tos/connect-to-other-tools/generate-quote-or-invoice-from-consuelo",
-                              "user-guide/workflows/how-tos/connect-to-other-tools/generate-pdf-from-consuelo"
-                            ]
-                          },
-                          {
-                            "group": "Advanced Configurations",
-                            "pages": [
-                              "user-guide/workflows/how-tos/advanced-configurations/handle-arrays-in-code-actions"
-                            ]
-                          },
-                          {
-                            "group": "Need More Help",
-                            "pages": [
-                              "user-guide/workflows/how-tos/need-more-help/workflow-troubleshooting",
-                              "user-guide/workflows/how-tos/need-more-help/workflows-faq",
-                              "user-guide/workflows/how-tos/need-more-help/professional-services"
-                            ]
-                          }
-                        ]
-                      }
-                    ],
-                    "root": "user-guide/workflows/overview"
-                  },
-                  {
-                    "group": "AI",
-                    "pages": [
-                      {
-                        "group": "Capabilities",
-                        "pages": [
-                          "user-guide/ai/capabilities/ai-chatbot",
-                          "user-guide/ai/capabilities/ai-agents",
-                          "user-guide/ai/capabilities/permissions-access-control"
-                        ]
-                      },
-                      {
-                        "group": "How-Tos",
-                        "pages": [
-                          "user-guide/ai/how-tos/ai-faq"
-                        ]
-                      }
-                    ],
-                    "root": "user-guide/ai/overview"
                   },
                   {
                     "group": "Views & Pipelines",
@@ -688,7 +688,7 @@
             "tab": "Guide de l'utilisateur",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/fr/user-guide/introduction",
                   {
@@ -1261,7 +1261,7 @@
             "tab": "دليل المستخدم",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/ar/user-guide/introduction",
                   {
@@ -1813,7 +1813,7 @@
             "tab": "Uživatelská příručka",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/cs/user-guide/introduction",
                   {
@@ -2365,7 +2365,7 @@
             "tab": "Benutzerhandbuch",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/de/user-guide/introduction",
                   {
@@ -2917,7 +2917,7 @@
             "tab": "Guía de usuario",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/es/user-guide/introduction",
                   {
@@ -3469,7 +3469,7 @@
             "tab": "Guida utente",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/it/user-guide/introduction",
                   {
@@ -4021,7 +4021,7 @@
             "tab": "ユーザーガイド",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/ja/user-guide/introduction",
                   {
@@ -4573,7 +4573,7 @@
             "tab": "사용자 안내서",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/ko/user-guide/introduction",
                   {
@@ -5125,7 +5125,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/pt/user-guide/introduction",
                   {
@@ -5677,7 +5677,7 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/ro/user-guide/introduction",
                   {
@@ -6229,7 +6229,7 @@
             "tab": "Руководство пользователя",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/ru/user-guide/introduction",
                   {
@@ -6781,7 +6781,7 @@
             "tab": "Kullanıcı Rehberi",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/tr/user-guide/introduction",
                   {
@@ -7333,7 +7333,7 @@
             "tab": "用户指南",
             "groups": [
               {
-                "group": "What is Consuelo",
+                "group": "Getting Started",
                 "pages": [
                   "l/zh/user-guide/introduction",
                   {
