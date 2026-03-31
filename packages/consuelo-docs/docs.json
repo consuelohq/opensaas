@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Consuelo Documentation",
+  "name": "Consuelo | Docs",
   "theme": "almond",
   "logo": {
     "light": "/logo-black.svg",
@@ -13,7 +13,7 @@
     "dark": "#141414"
   },
   "interaction": {
-    "drilldown": false
+    "drilldown": true
   },
   "navbar": {
     "primary": {
@@ -39,14 +39,12 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "user-guide/getting-started/capabilities/what-is-consuelo",
                       "user-guide/getting-started/capabilities/implementation-services",
                       "user-guide/getting-started/capabilities/glossary",
                       "user-guide/getting-started/capabilities/keyboard-shortcuts"
@@ -60,71 +58,12 @@
                       "user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Data Model",
-                "icon": "database",
-                "pages": [
-                  "user-guide/data-model/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/data-model/capabilities/objects",
-                      "user-guide/data-model/capabilities/fields",
-                      "user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/data-model/how-tos/create-custom-objects",
-                      "user-guide/data-model/how-tos/create-custom-fields",
-                      "user-guide/data-model/how-tos/create-relation-fields",
-                      "user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "user-guide/data-model/how-tos/customize-your-data-model",
-                      "user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Data Migration",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "user-guide/data-migration/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "user-guide/data-migration/capabilities/file-formats",
-                      "user-guide/data-migration/capabilities/field-mapping",
-                      "user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "user-guide/data-migration/capabilities/import-relations",
-                      "user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "user-guide/data-migration/how-tos/fix-import-errors",
-                      "user-guide/data-migration/how-tos/export-your-data",
-                      "user-guide/data-migration/how-tos/import-data-via-api",
-                      "user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "user-guide/dialer/overview",
                   "user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -152,13 +91,68 @@
                       "user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/dialer/overview"
+              },
+              {
+                "group": "Data Model",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/data-model/capabilities/objects",
+                      "user-guide/data-model/capabilities/fields",
+                      "user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/data-model/how-tos/create-custom-objects",
+                      "user-guide/data-model/how-tos/create-custom-fields",
+                      "user-guide/data-model/how-tos/create-relation-fields",
+                      "user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "user-guide/data-model/how-tos/customize-your-data-model",
+                      "user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "user-guide/data-model/overview"
+              },
+              {
+                "group": "Data Migration",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "user-guide/data-migration/capabilities/file-formats",
+                      "user-guide/data-migration/capabilities/field-mapping",
+                      "user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "user-guide/data-migration/capabilities/import-relations",
+                      "user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "user-guide/data-migration/how-tos/fix-import-errors",
+                      "user-guide/data-migration/how-tos/export-your-data",
+                      "user-guide/data-migration/how-tos/import-data-via-api",
+                      "user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "user-guide/data-migration/overview"
               },
               {
                 "group": "GraphQL API",
-                "icon": "code",
                 "pages": [
-                  "user-guide/graphql-api/overview",
                   "user-guide/graphql-api/getting-started/setting-up-internal-workspace",
                   {
                     "group": "Analytics",
@@ -193,13 +187,12 @@
                       "user-guide/graphql-api/troubleshooting/common-ops-issues"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/graphql-api/overview"
               },
               {
                 "group": "HighLevel",
-                "icon": "plug",
                 "pages": [
-                  "user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -249,13 +242,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/highlevel/overview"
               },
               {
                 "group": "CLI",
-                "icon": "terminal",
                 "pages": [
-                  "user-guide/cli/overview",
                   "user-guide/cli/getting-started",
                   {
                     "group": "Capabilities",
@@ -281,13 +273,12 @@
                       "user-guide/cli/how-tos/cli-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/cli/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "user-guide/discord-bot/overview",
                   "user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -304,13 +295,12 @@
                       "user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "user-guide/chrome-extension/overview",
                   "user-guide/chrome-extension/getting-started",
                   {
                     "group": "Capabilities",
@@ -332,13 +322,12 @@
                       "user-guide/chrome-extension/how-tos/troubleshoot-extension"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendar & Emails",
-                "icon": "envelope",
                 "pages": [
-                  "user-guide/calendar-emails/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -357,13 +346,12 @@
                       "user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/calendar-emails/overview"
               },
               {
                 "group": "Workflows",
-                "icon": "bolt",
                 "pages": [
-                  "user-guide/workflows/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -419,13 +407,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "user-guide/ai/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -440,13 +427,12 @@
                       "user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/ai/overview"
               },
               {
                 "group": "Views & Pipelines",
-                "icon": "table",
                 "pages": [
-                  "user-guide/views-pipelines/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -470,13 +456,12 @@
                       "user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/views-pipelines/overview"
               },
               {
                 "group": "Dashboards",
-                "icon": "chart-bar",
                 "pages": [
-                  "user-guide/dashboards/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -492,13 +477,12 @@
                       "user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/dashboards/overview"
               },
               {
                 "group": "Permissions & Access",
-                "icon": "lock",
                 "pages": [
-                  "user-guide/permissions-access/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -512,13 +496,12 @@
                       "user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/permissions-access/overview"
               },
               {
                 "group": "Billing",
-                "icon": "credit-card",
                 "pages": [
-                  "user-guide/billing/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -532,13 +515,12 @@
                       "user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/billing/overview"
               },
               {
                 "group": "Settings",
-                "icon": "gear",
                 "pages": [
-                  "user-guide/settings/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -556,7 +538,8 @@
                       "user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "user-guide/settings/overview"
               }
             ]
           },
@@ -571,7 +554,6 @@
               },
               {
                 "group": "Extend",
-                "icon": "plug",
                 "pages": [
                   "developers/extend/extend",
                   {
@@ -586,7 +568,6 @@
               },
               {
                 "group": "Self-Host",
-                "icon": "desktop",
                 "pages": [
                   "developers/self-host/self-host",
                   {
@@ -603,7 +584,6 @@
               },
               {
                 "group": "Contribute",
-                "icon": "github",
                 "pages": [
                   "developers/contribute/contribute",
                   {
@@ -699,8 +679,7 @@
             "tab": "Guide de l'utilisateur",
             "groups": [
               {
-                "group": "Découvrez Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/fr/user-guide/introduction",
                   {
@@ -722,68 +701,8 @@
                 ]
               },
               {
-                "group": "Modèle de données",
-                "icon": "database",
-                "pages": [
-                  "l/fr/user-guide/data-model/overview",
-                  {
-                    "group": "Capacités",
-                    "pages": [
-                      "l/fr/user-guide/data-model/capabilities/objects",
-                      "l/fr/user-guide/data-model/capabilities/fields",
-                      "l/fr/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/fr/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/fr/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/fr/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/fr/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/fr/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Migration de données",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/fr/user-guide/data-migration/overview",
-                  {
-                    "group": "Capacités",
-                    "pages": [
-                      "l/fr/user-guide/data-migration/capabilities/file-formats",
-                      "l/fr/user-guide/data-migration/capabilities/field-mapping",
-                      "l/fr/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/fr/user-guide/data-migration/capabilities/import-relations",
-                      "l/fr/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Guides pratiques",
-                    "pages": [
-                      "l/fr/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/fr/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/fr/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/fr/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/fr/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/fr/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/fr/user-guide/data-migration/how-tos/export-your-data",
-                      "l/fr/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/fr/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/fr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
-              },
-              {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/fr/user-guide/dialer/overview",
                   "l/fr/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -811,13 +730,68 @@
                       "l/fr/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/dialer/overview"
+              },
+              {
+                "group": "Modèle de données",
+                "pages": [
+                  {
+                    "group": "Capacités",
+                    "pages": [
+                      "l/fr/user-guide/data-model/capabilities/objects",
+                      "l/fr/user-guide/data-model/capabilities/fields",
+                      "l/fr/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Guides pratiques",
+                    "pages": [
+                      "l/fr/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/fr/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/fr/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/fr/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/fr/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/fr/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/fr/user-guide/data-model/overview"
+              },
+              {
+                "group": "Migration de données",
+                "pages": [
+                  {
+                    "group": "Capacités",
+                    "pages": [
+                      "l/fr/user-guide/data-migration/capabilities/file-formats",
+                      "l/fr/user-guide/data-migration/capabilities/field-mapping",
+                      "l/fr/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/fr/user-guide/data-migration/capabilities/import-relations",
+                      "l/fr/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Guides pratiques",
+                    "pages": [
+                      "l/fr/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/fr/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/fr/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/fr/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/fr/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/fr/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/fr/user-guide/data-migration/how-tos/export-your-data",
+                      "l/fr/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/fr/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/fr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/fr/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/fr/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -867,13 +841,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/fr/user-guide/discord-bot/overview",
                   "l/fr/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -890,13 +863,12 @@
                       "l/fr/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/fr/user-guide/chrome-extension/overview",
                   "l/fr/user-guide/chrome-extension/getting-started",
                   {
                     "group": "Capacités",
@@ -918,13 +890,12 @@
                       "l/fr/user-guide/chrome-extension/how-tos/troubleshoot-extension"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendrier et e-mails",
-                "icon": "envelope",
                 "pages": [
-                  "l/fr/user-guide/calendar-emails/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -943,13 +914,12 @@
                       "l/fr/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Flux de travail",
-                "icon": "bolt",
                 "pages": [
-                  "l/fr/user-guide/workflows/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1005,13 +975,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/workflows/overview"
               },
               {
                 "group": "IA",
-                "icon": "robot",
                 "pages": [
-                  "l/fr/user-guide/ai/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1026,11 +995,11 @@
                       "l/fr/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/ai/overview"
               },
               {
                 "group": "Vues et pipelines",
-                "icon": "table",
                 "pages": [
                   "l/fr/user-guide/views-pipelines/overview",
                   {
@@ -1060,9 +1029,7 @@
               },
               {
                 "group": "Tableaux de bord",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/fr/user-guide/dashboards/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1078,13 +1045,12 @@
                       "l/fr/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/dashboards/overview"
               },
               {
                 "group": "Autorisations et accès",
-                "icon": "lock",
                 "pages": [
-                  "l/fr/user-guide/permissions-access/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1098,13 +1064,12 @@
                       "l/fr/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/permissions-access/overview"
               },
               {
                 "group": "Facturation",
-                "icon": "credit-card",
                 "pages": [
-                  "l/fr/user-guide/billing/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1118,13 +1083,12 @@
                       "l/fr/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/billing/overview"
               },
               {
                 "group": "Paramètres",
-                "icon": "gear",
                 "pages": [
-                  "l/fr/user-guide/settings/overview",
                   {
                     "group": "Capacités",
                     "pages": [
@@ -1142,7 +1106,8 @@
                       "l/fr/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/fr/user-guide/settings/overview"
               }
             ]
           },
@@ -1157,7 +1122,6 @@
               },
               {
                 "group": "Étendre",
-                "icon": "plug",
                 "pages": [
                   "l/fr/developers/extend/extend",
                   {
@@ -1172,7 +1136,6 @@
               },
               {
                 "group": "Auto-hébergement",
-                "icon": "desktop",
                 "pages": [
                   "l/fr/developers/self-host/self-host",
                   {
@@ -1189,7 +1152,6 @@
               },
               {
                 "group": "Contribuer",
-                "icon": "github",
                 "pages": [
                   "l/fr/developers/contribute/contribute",
                   {
@@ -1285,14 +1247,12 @@
             "tab": "دليل المستخدم",
             "groups": [
               {
-                "group": "اكتشف Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ar/user-guide/introduction",
                   {
                     "group": "القدرات",
                     "pages": [
-                      "l/ar/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ar/user-guide/getting-started/capabilities/implementation-services",
                       "l/ar/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -1305,71 +1265,12 @@
                       "l/ar/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "نموذج البيانات",
-                "icon": "database",
-                "pages": [
-                  "l/ar/user-guide/data-model/overview",
-                  {
-                    "group": "القدرات",
-                    "pages": [
-                      "l/ar/user-guide/data-model/capabilities/objects",
-                      "l/ar/user-guide/data-model/capabilities/fields",
-                      "l/ar/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "الإرشادات",
-                    "pages": [
-                      "l/ar/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/ar/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/ar/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/ar/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/ar/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/ar/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "ترحيل البيانات",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/ar/user-guide/data-migration/overview",
-                  {
-                    "group": "القدرات",
-                    "pages": [
-                      "l/ar/user-guide/data-migration/capabilities/file-formats",
-                      "l/ar/user-guide/data-migration/capabilities/field-mapping",
-                      "l/ar/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/ar/user-guide/data-migration/capabilities/import-relations",
-                      "l/ar/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "الإرشادات",
-                    "pages": [
-                      "l/ar/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/ar/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/ar/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/ar/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/ar/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/ar/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/ar/user-guide/data-migration/how-tos/export-your-data",
-                      "l/ar/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/ar/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/ar/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/ar/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/ar/user-guide/dialer/overview",
                   "l/ar/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -1397,13 +1298,68 @@
                       "l/ar/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/dialer/overview"
+              },
+              {
+                "group": "نموذج البيانات",
+                "pages": [
+                  {
+                    "group": "القدرات",
+                    "pages": [
+                      "l/ar/user-guide/data-model/capabilities/objects",
+                      "l/ar/user-guide/data-model/capabilities/fields",
+                      "l/ar/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "الإرشادات",
+                    "pages": [
+                      "l/ar/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/ar/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/ar/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/ar/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/ar/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/ar/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/ar/user-guide/data-model/overview"
+              },
+              {
+                "group": "ترحيل البيانات",
+                "pages": [
+                  {
+                    "group": "القدرات",
+                    "pages": [
+                      "l/ar/user-guide/data-migration/capabilities/file-formats",
+                      "l/ar/user-guide/data-migration/capabilities/field-mapping",
+                      "l/ar/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/ar/user-guide/data-migration/capabilities/import-relations",
+                      "l/ar/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "الإرشادات",
+                    "pages": [
+                      "l/ar/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/ar/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/ar/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/ar/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/ar/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/ar/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/ar/user-guide/data-migration/how-tos/export-your-data",
+                      "l/ar/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ar/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/ar/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/ar/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/ar/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -1453,13 +1409,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/ar/user-guide/discord-bot/overview",
                   "l/ar/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -1476,21 +1431,19 @@
                       "l/ar/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/ar/user-guide/chrome-extension/overview",
                   "l/ar/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/ar/user-guide/chrome-extension/overview"
               },
               {
                 "group": "التقويم والبريد الإلكتروني",
-                "icon": "envelope",
                 "pages": [
-                  "l/ar/user-guide/calendar-emails/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1509,13 +1462,12 @@
                       "l/ar/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/calendar-emails/overview"
               },
               {
                 "group": "سير العمل",
-                "icon": "bolt",
                 "pages": [
-                  "l/ar/user-guide/workflows/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1571,13 +1523,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/workflows/overview"
               },
               {
                 "group": "الذكاء الاصطناعي",
-                "icon": "robot",
                 "pages": [
-                  "l/ar/user-guide/ai/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1592,13 +1543,12 @@
                       "l/ar/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/ai/overview"
               },
               {
                 "group": "طرق العرض والمسارات",
-                "icon": "table",
                 "pages": [
-                  "l/ar/user-guide/views-pipelines/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1622,13 +1572,12 @@
                       "l/ar/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/views-pipelines/overview"
               },
               {
                 "group": "لوحات القيادة",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/ar/user-guide/dashboards/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1644,13 +1593,12 @@
                       "l/ar/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/dashboards/overview"
               },
               {
                 "group": "الصلاحيات والوصول",
-                "icon": "lock",
                 "pages": [
-                  "l/ar/user-guide/permissions-access/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1664,13 +1612,12 @@
                       "l/ar/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/permissions-access/overview"
               },
               {
                 "group": "الفوترة",
-                "icon": "credit-card",
                 "pages": [
-                  "l/ar/user-guide/billing/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1684,13 +1631,12 @@
                       "l/ar/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/billing/overview"
               },
               {
                 "group": "\\ا\\ل\\إ\\ع\\د\\ا\\د\\ا\\ت",
-                "icon": "gear",
                 "pages": [
-                  "l/ar/user-guide/settings/overview",
                   {
                     "group": "القدرات",
                     "pages": [
@@ -1708,7 +1654,8 @@
                       "l/ar/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ar/user-guide/settings/overview"
               }
             ]
           },
@@ -1723,7 +1670,6 @@
               },
               {
                 "group": "التوسيع",
-                "icon": "plug",
                 "pages": [
                   "l/ar/developers/extend/extend",
                   {
@@ -1738,7 +1684,6 @@
               },
               {
                 "group": "الاستضافة الذاتية",
-                "icon": "desktop",
                 "pages": [
                   "l/ar/developers/self-host/self-host",
                   {
@@ -1755,7 +1700,6 @@
               },
               {
                 "group": "المساهمة",
-                "icon": "github",
                 "pages": [
                   "l/ar/developers/contribute/contribute",
                   {
@@ -1851,14 +1795,12 @@
             "tab": "Uživatelská příručka",
             "groups": [
               {
-                "group": "Objevte Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/cs/user-guide/introduction",
                   {
                     "group": "Možnosti",
                     "pages": [
-                      "l/cs/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/cs/user-guide/getting-started/capabilities/implementation-services",
                       "l/cs/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -1871,71 +1813,12 @@
                       "l/cs/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Datový model",
-                "icon": "database",
-                "pages": [
-                  "l/cs/user-guide/data-model/overview",
-                  {
-                    "group": "Možnosti",
-                    "pages": [
-                      "l/cs/user-guide/data-model/capabilities/objects",
-                      "l/cs/user-guide/data-model/capabilities/fields",
-                      "l/cs/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Návody",
-                    "pages": [
-                      "l/cs/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/cs/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/cs/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/cs/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/cs/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/cs/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Migrace dat",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/cs/user-guide/data-migration/overview",
-                  {
-                    "group": "Možnosti",
-                    "pages": [
-                      "l/cs/user-guide/data-migration/capabilities/file-formats",
-                      "l/cs/user-guide/data-migration/capabilities/field-mapping",
-                      "l/cs/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/cs/user-guide/data-migration/capabilities/import-relations",
-                      "l/cs/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Návody",
-                    "pages": [
-                      "l/cs/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/cs/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/cs/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/cs/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/cs/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/cs/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/cs/user-guide/data-migration/how-tos/export-your-data",
-                      "l/cs/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/cs/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/cs/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/cs/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/cs/user-guide/dialer/overview",
                   "l/cs/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -1963,13 +1846,68 @@
                       "l/cs/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/dialer/overview"
+              },
+              {
+                "group": "Datový model",
+                "pages": [
+                  {
+                    "group": "Možnosti",
+                    "pages": [
+                      "l/cs/user-guide/data-model/capabilities/objects",
+                      "l/cs/user-guide/data-model/capabilities/fields",
+                      "l/cs/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Návody",
+                    "pages": [
+                      "l/cs/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/cs/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/cs/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/cs/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/cs/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/cs/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/cs/user-guide/data-model/overview"
+              },
+              {
+                "group": "Migrace dat",
+                "pages": [
+                  {
+                    "group": "Možnosti",
+                    "pages": [
+                      "l/cs/user-guide/data-migration/capabilities/file-formats",
+                      "l/cs/user-guide/data-migration/capabilities/field-mapping",
+                      "l/cs/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/cs/user-guide/data-migration/capabilities/import-relations",
+                      "l/cs/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Návody",
+                    "pages": [
+                      "l/cs/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/cs/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/cs/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/cs/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/cs/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/cs/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/cs/user-guide/data-migration/how-tos/export-your-data",
+                      "l/cs/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/cs/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/cs/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/cs/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/cs/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -2019,13 +1957,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/cs/user-guide/discord-bot/overview",
                   "l/cs/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -2042,21 +1979,19 @@
                       "l/cs/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/cs/user-guide/chrome-extension/overview",
                   "l/cs/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/cs/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Kalendář a e-maily",
-                "icon": "envelope",
                 "pages": [
-                  "l/cs/user-guide/calendar-emails/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2075,13 +2010,12 @@
                       "l/cs/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Pracovní postupy",
-                "icon": "bolt",
                 "pages": [
-                  "l/cs/user-guide/workflows/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2137,13 +2071,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/cs/user-guide/ai/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2158,13 +2091,12 @@
                       "l/cs/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/ai/overview"
               },
               {
                 "group": "Zobrazení a pipeline",
-                "icon": "table",
                 "pages": [
-                  "l/cs/user-guide/views-pipelines/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2188,13 +2120,12 @@
                       "l/cs/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Panely",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/cs/user-guide/dashboards/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2210,13 +2141,12 @@
                       "l/cs/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/dashboards/overview"
               },
               {
                 "group": "Oprávnění a přístup",
-                "icon": "lock",
                 "pages": [
-                  "l/cs/user-guide/permissions-access/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2230,13 +2160,12 @@
                       "l/cs/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/permissions-access/overview"
               },
               {
                 "group": "Fakturace",
-                "icon": "credit-card",
                 "pages": [
-                  "l/cs/user-guide/billing/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2250,13 +2179,12 @@
                       "l/cs/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/billing/overview"
               },
               {
                 "group": "Nastavení",
-                "icon": "gear",
                 "pages": [
-                  "l/cs/user-guide/settings/overview",
                   {
                     "group": "Možnosti",
                     "pages": [
@@ -2274,7 +2202,8 @@
                       "l/cs/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/cs/user-guide/settings/overview"
               }
             ]
           },
@@ -2289,7 +2218,6 @@
               },
               {
                 "group": "Rozšíření",
-                "icon": "plug",
                 "pages": [
                   "l/cs/developers/extend/extend",
                   {
@@ -2304,7 +2232,6 @@
               },
               {
                 "group": "Vlastní hosting",
-                "icon": "desktop",
                 "pages": [
                   "l/cs/developers/self-host/self-host",
                   {
@@ -2321,7 +2248,6 @@
               },
               {
                 "group": "Přispět",
-                "icon": "github",
                 "pages": [
                   "l/cs/developers/contribute/contribute",
                   {
@@ -2417,14 +2343,12 @@
             "tab": "Benutzerhandbuch",
             "groups": [
               {
-                "group": "Entdecken Sie Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/de/user-guide/introduction",
                   {
                     "group": "Funktionen",
                     "pages": [
-                      "l/de/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/de/user-guide/getting-started/capabilities/implementation-services",
                       "l/de/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -2437,71 +2361,12 @@
                       "l/de/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Datenmodell",
-                "icon": "database",
-                "pages": [
-                  "l/de/user-guide/data-model/overview",
-                  {
-                    "group": "Funktionen",
-                    "pages": [
-                      "l/de/user-guide/data-model/capabilities/objects",
-                      "l/de/user-guide/data-model/capabilities/fields",
-                      "l/de/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Anleitungen",
-                    "pages": [
-                      "l/de/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/de/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/de/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/de/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/de/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/de/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Datenmigration",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/de/user-guide/data-migration/overview",
-                  {
-                    "group": "Funktionen",
-                    "pages": [
-                      "l/de/user-guide/data-migration/capabilities/file-formats",
-                      "l/de/user-guide/data-migration/capabilities/field-mapping",
-                      "l/de/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/de/user-guide/data-migration/capabilities/import-relations",
-                      "l/de/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Anleitungen",
-                    "pages": [
-                      "l/de/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/de/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/de/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/de/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/de/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/de/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/de/user-guide/data-migration/how-tos/export-your-data",
-                      "l/de/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/de/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/de/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/de/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/de/user-guide/dialer/overview",
                   "l/de/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -2529,13 +2394,68 @@
                       "l/de/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/dialer/overview"
+              },
+              {
+                "group": "Datenmodell",
+                "pages": [
+                  {
+                    "group": "Funktionen",
+                    "pages": [
+                      "l/de/user-guide/data-model/capabilities/objects",
+                      "l/de/user-guide/data-model/capabilities/fields",
+                      "l/de/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Anleitungen",
+                    "pages": [
+                      "l/de/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/de/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/de/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/de/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/de/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/de/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/de/user-guide/data-model/overview"
+              },
+              {
+                "group": "Datenmigration",
+                "pages": [
+                  {
+                    "group": "Funktionen",
+                    "pages": [
+                      "l/de/user-guide/data-migration/capabilities/file-formats",
+                      "l/de/user-guide/data-migration/capabilities/field-mapping",
+                      "l/de/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/de/user-guide/data-migration/capabilities/import-relations",
+                      "l/de/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Anleitungen",
+                    "pages": [
+                      "l/de/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/de/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/de/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/de/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/de/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/de/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/de/user-guide/data-migration/how-tos/export-your-data",
+                      "l/de/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/de/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/de/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/de/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/de/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -2585,13 +2505,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/de/user-guide/discord-bot/overview",
                   "l/de/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -2608,21 +2527,19 @@
                       "l/de/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/de/user-guide/chrome-extension/overview",
                   "l/de/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/de/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Kalender & E-Mails",
-                "icon": "envelope",
                 "pages": [
-                  "l/de/user-guide/calendar-emails/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2641,13 +2558,12 @@
                       "l/de/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Workflows",
-                "icon": "bolt",
                 "pages": [
-                  "l/de/user-guide/workflows/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2703,13 +2619,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/workflows/overview"
               },
               {
                 "group": "KI",
-                "icon": "robot",
                 "pages": [
-                  "l/de/user-guide/ai/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2724,13 +2639,12 @@
                       "l/de/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/ai/overview"
               },
               {
                 "group": "Ansichten & Pipelines",
-                "icon": "table",
                 "pages": [
-                  "l/de/user-guide/views-pipelines/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2754,13 +2668,12 @@
                       "l/de/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Dashboards",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/de/user-guide/dashboards/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2776,13 +2689,12 @@
                       "l/de/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/dashboards/overview"
               },
               {
                 "group": "Berechtigungen & Zugriff",
-                "icon": "lock",
                 "pages": [
-                  "l/de/user-guide/permissions-access/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2796,13 +2708,12 @@
                       "l/de/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/permissions-access/overview"
               },
               {
                 "group": "Abrechnung",
-                "icon": "credit-card",
                 "pages": [
-                  "l/de/user-guide/billing/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2816,13 +2727,12 @@
                       "l/de/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/billing/overview"
               },
               {
                 "group": "Einstellungen",
-                "icon": "gear",
                 "pages": [
-                  "l/de/user-guide/settings/overview",
                   {
                     "group": "Funktionen",
                     "pages": [
@@ -2840,7 +2750,8 @@
                       "l/de/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/de/user-guide/settings/overview"
               }
             ]
           },
@@ -2855,7 +2766,6 @@
               },
               {
                 "group": "Erweitern",
-                "icon": "plug",
                 "pages": [
                   "l/de/developers/extend/extend",
                   {
@@ -2870,7 +2780,6 @@
               },
               {
                 "group": "Selbsthosting",
-                "icon": "desktop",
                 "pages": [
                   "l/de/developers/self-host/self-host",
                   {
@@ -2887,7 +2796,6 @@
               },
               {
                 "group": "Mitwirken",
-                "icon": "github",
                 "pages": [
                   "l/de/developers/contribute/contribute",
                   {
@@ -2983,14 +2891,12 @@
             "tab": "Guía de usuario",
             "groups": [
               {
-                "group": "Descubre Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/es/user-guide/introduction",
                   {
                     "group": "Capacidades",
                     "pages": [
-                      "l/es/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/es/user-guide/getting-started/capabilities/implementation-services",
                       "l/es/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -3003,71 +2909,12 @@
                       "l/es/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Modelo de datos",
-                "icon": "database",
-                "pages": [
-                  "l/es/user-guide/data-model/overview",
-                  {
-                    "group": "Capacidades",
-                    "pages": [
-                      "l/es/user-guide/data-model/capabilities/objects",
-                      "l/es/user-guide/data-model/capabilities/fields",
-                      "l/es/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Guías prácticas",
-                    "pages": [
-                      "l/es/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/es/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/es/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/es/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/es/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/es/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Migración de datos",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/es/user-guide/data-migration/overview",
-                  {
-                    "group": "Capacidades",
-                    "pages": [
-                      "l/es/user-guide/data-migration/capabilities/file-formats",
-                      "l/es/user-guide/data-migration/capabilities/field-mapping",
-                      "l/es/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/es/user-guide/data-migration/capabilities/import-relations",
-                      "l/es/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Guías prácticas",
-                    "pages": [
-                      "l/es/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/es/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/es/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/es/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/es/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/es/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/es/user-guide/data-migration/how-tos/export-your-data",
-                      "l/es/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/es/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/es/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/es/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/es/user-guide/dialer/overview",
                   "l/es/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -3095,13 +2942,68 @@
                       "l/es/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/dialer/overview"
+              },
+              {
+                "group": "Modelo de datos",
+                "pages": [
+                  {
+                    "group": "Capacidades",
+                    "pages": [
+                      "l/es/user-guide/data-model/capabilities/objects",
+                      "l/es/user-guide/data-model/capabilities/fields",
+                      "l/es/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Guías prácticas",
+                    "pages": [
+                      "l/es/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/es/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/es/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/es/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/es/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/es/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/es/user-guide/data-model/overview"
+              },
+              {
+                "group": "Migración de datos",
+                "pages": [
+                  {
+                    "group": "Capacidades",
+                    "pages": [
+                      "l/es/user-guide/data-migration/capabilities/file-formats",
+                      "l/es/user-guide/data-migration/capabilities/field-mapping",
+                      "l/es/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/es/user-guide/data-migration/capabilities/import-relations",
+                      "l/es/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Guías prácticas",
+                    "pages": [
+                      "l/es/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/es/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/es/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/es/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/es/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/es/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/es/user-guide/data-migration/how-tos/export-your-data",
+                      "l/es/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/es/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/es/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/es/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/es/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -3151,13 +3053,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/es/user-guide/discord-bot/overview",
                   "l/es/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -3174,21 +3075,19 @@
                       "l/es/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/es/user-guide/chrome-extension/overview",
                   "l/es/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/es/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendario y correos electrónicos",
-                "icon": "envelope",
                 "pages": [
-                  "l/es/user-guide/calendar-emails/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3207,13 +3106,12 @@
                       "l/es/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Flujos de trabajo",
-                "icon": "bolt",
                 "pages": [
-                  "l/es/user-guide/workflows/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3269,13 +3167,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/workflows/overview"
               },
               {
                 "group": "IA",
-                "icon": "robot",
                 "pages": [
-                  "l/es/user-guide/ai/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3290,13 +3187,12 @@
                       "l/es/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/ai/overview"
               },
               {
                 "group": "Vistas y canalizaciones",
-                "icon": "table",
                 "pages": [
-                  "l/es/user-guide/views-pipelines/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3320,13 +3216,12 @@
                       "l/es/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Tableros",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/es/user-guide/dashboards/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3342,13 +3237,12 @@
                       "l/es/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/dashboards/overview"
               },
               {
                 "group": "Permisos y acceso",
-                "icon": "lock",
                 "pages": [
-                  "l/es/user-guide/permissions-access/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3362,13 +3256,12 @@
                       "l/es/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/permissions-access/overview"
               },
               {
                 "group": "Facturación",
-                "icon": "credit-card",
                 "pages": [
-                  "l/es/user-guide/billing/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3382,13 +3275,12 @@
                       "l/es/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/billing/overview"
               },
               {
                 "group": "Configuración",
-                "icon": "gear",
                 "pages": [
-                  "l/es/user-guide/settings/overview",
                   {
                     "group": "Capacidades",
                     "pages": [
@@ -3406,7 +3298,8 @@
                       "l/es/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/es/user-guide/settings/overview"
               }
             ]
           },
@@ -3421,7 +3314,6 @@
               },
               {
                 "group": "Ampliar",
-                "icon": "plug",
                 "pages": [
                   "l/es/developers/extend/extend",
                   {
@@ -3436,7 +3328,6 @@
               },
               {
                 "group": "Autoalojamiento",
-                "icon": "desktop",
                 "pages": [
                   "l/es/developers/self-host/self-host",
                   {
@@ -3453,7 +3344,6 @@
               },
               {
                 "group": "Contribuir",
-                "icon": "github",
                 "pages": [
                   "l/es/developers/contribute/contribute",
                   {
@@ -3549,14 +3439,12 @@
             "tab": "Guida utente",
             "groups": [
               {
-                "group": "Scopri Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/it/user-guide/introduction",
                   {
                     "group": "Funzionalità",
                     "pages": [
-                      "l/it/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/it/user-guide/getting-started/capabilities/implementation-services",
                       "l/it/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -3569,71 +3457,12 @@
                       "l/it/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Modello dati",
-                "icon": "database",
-                "pages": [
-                  "l/it/user-guide/data-model/overview",
-                  {
-                    "group": "Funzionalità",
-                    "pages": [
-                      "l/it/user-guide/data-model/capabilities/objects",
-                      "l/it/user-guide/data-model/capabilities/fields",
-                      "l/it/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Guide pratiche",
-                    "pages": [
-                      "l/it/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/it/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/it/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/it/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/it/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/it/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Migrazione dei dati",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/it/user-guide/data-migration/overview",
-                  {
-                    "group": "Funzionalità",
-                    "pages": [
-                      "l/it/user-guide/data-migration/capabilities/file-formats",
-                      "l/it/user-guide/data-migration/capabilities/field-mapping",
-                      "l/it/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/it/user-guide/data-migration/capabilities/import-relations",
-                      "l/it/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Guide pratiche",
-                    "pages": [
-                      "l/it/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/it/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/it/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/it/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/it/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/it/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/it/user-guide/data-migration/how-tos/export-your-data",
-                      "l/it/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/it/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/it/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/it/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/it/user-guide/dialer/overview",
                   "l/it/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -3661,13 +3490,68 @@
                       "l/it/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/dialer/overview"
+              },
+              {
+                "group": "Modello dati",
+                "pages": [
+                  {
+                    "group": "Funzionalità",
+                    "pages": [
+                      "l/it/user-guide/data-model/capabilities/objects",
+                      "l/it/user-guide/data-model/capabilities/fields",
+                      "l/it/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Guide pratiche",
+                    "pages": [
+                      "l/it/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/it/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/it/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/it/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/it/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/it/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/it/user-guide/data-model/overview"
+              },
+              {
+                "group": "Migrazione dei dati",
+                "pages": [
+                  {
+                    "group": "Funzionalità",
+                    "pages": [
+                      "l/it/user-guide/data-migration/capabilities/file-formats",
+                      "l/it/user-guide/data-migration/capabilities/field-mapping",
+                      "l/it/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/it/user-guide/data-migration/capabilities/import-relations",
+                      "l/it/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Guide pratiche",
+                    "pages": [
+                      "l/it/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/it/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/it/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/it/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/it/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/it/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/it/user-guide/data-migration/how-tos/export-your-data",
+                      "l/it/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/it/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/it/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/it/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/it/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -3717,13 +3601,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/it/user-guide/discord-bot/overview",
                   "l/it/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -3740,21 +3623,19 @@
                       "l/it/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/it/user-guide/chrome-extension/overview",
                   "l/it/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/it/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendario & Email",
-                "icon": "envelope",
                 "pages": [
-                  "l/it/user-guide/calendar-emails/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3773,13 +3654,12 @@
                       "l/it/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Flussi di Lavoro",
-                "icon": "bolt",
                 "pages": [
-                  "l/it/user-guide/workflows/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3835,13 +3715,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/it/user-guide/ai/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3856,13 +3735,12 @@
                       "l/it/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/ai/overview"
               },
               {
                 "group": "Viste & Pipeline",
-                "icon": "table",
                 "pages": [
-                  "l/it/user-guide/views-pipelines/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3886,13 +3764,12 @@
                       "l/it/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Cruscotti",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/it/user-guide/dashboards/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3908,13 +3785,12 @@
                       "l/it/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/dashboards/overview"
               },
               {
                 "group": "Autorizzazioni & Accesso",
-                "icon": "lock",
                 "pages": [
-                  "l/it/user-guide/permissions-access/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3928,13 +3804,12 @@
                       "l/it/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/permissions-access/overview"
               },
               {
                 "group": "Fatturazione",
-                "icon": "credit-card",
                 "pages": [
-                  "l/it/user-guide/billing/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3948,13 +3823,12 @@
                       "l/it/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/billing/overview"
               },
               {
                 "group": "Impostazioni",
-                "icon": "gear",
                 "pages": [
-                  "l/it/user-guide/settings/overview",
                   {
                     "group": "Funzionalità",
                     "pages": [
@@ -3972,7 +3846,8 @@
                       "l/it/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/it/user-guide/settings/overview"
               }
             ]
           },
@@ -3987,7 +3862,6 @@
               },
               {
                 "group": "Estendi",
-                "icon": "plug",
                 "pages": [
                   "l/it/developers/extend/extend",
                   {
@@ -4002,7 +3876,6 @@
               },
               {
                 "group": "Auto-ospitazione",
-                "icon": "desktop",
                 "pages": [
                   "l/it/developers/self-host/self-host",
                   {
@@ -4019,7 +3892,6 @@
               },
               {
                 "group": "Contribuire",
-                "icon": "github",
                 "pages": [
                   "l/it/developers/contribute/contribute",
                   {
@@ -4115,14 +3987,12 @@
             "tab": "ユーザーガイド",
             "groups": [
               {
-                "group": "Consuelo を知る",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ja/user-guide/introduction",
                   {
                     "group": "機能",
                     "pages": [
-                      "l/ja/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ja/user-guide/getting-started/capabilities/implementation-services",
                       "l/ja/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -4135,71 +4005,12 @@
                       "l/ja/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "データモデル",
-                "icon": "database",
-                "pages": [
-                  "l/ja/user-guide/data-model/overview",
-                  {
-                    "group": "機能",
-                    "pages": [
-                      "l/ja/user-guide/data-model/capabilities/objects",
-                      "l/ja/user-guide/data-model/capabilities/fields",
-                      "l/ja/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "ハウツー",
-                    "pages": [
-                      "l/ja/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/ja/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/ja/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/ja/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/ja/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/ja/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "データ移行",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/ja/user-guide/data-migration/overview",
-                  {
-                    "group": "機能",
-                    "pages": [
-                      "l/ja/user-guide/data-migration/capabilities/file-formats",
-                      "l/ja/user-guide/data-migration/capabilities/field-mapping",
-                      "l/ja/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/ja/user-guide/data-migration/capabilities/import-relations",
-                      "l/ja/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "ハウツー",
-                    "pages": [
-                      "l/ja/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/ja/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/ja/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/ja/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/ja/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/ja/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/ja/user-guide/data-migration/how-tos/export-your-data",
-                      "l/ja/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/ja/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/ja/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/ja/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/ja/user-guide/dialer/overview",
                   "l/ja/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -4227,13 +4038,68 @@
                       "l/ja/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/dialer/overview"
+              },
+              {
+                "group": "データモデル",
+                "pages": [
+                  {
+                    "group": "機能",
+                    "pages": [
+                      "l/ja/user-guide/data-model/capabilities/objects",
+                      "l/ja/user-guide/data-model/capabilities/fields",
+                      "l/ja/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "ハウツー",
+                    "pages": [
+                      "l/ja/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/ja/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/ja/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/ja/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/ja/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/ja/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/ja/user-guide/data-model/overview"
+              },
+              {
+                "group": "データ移行",
+                "pages": [
+                  {
+                    "group": "機能",
+                    "pages": [
+                      "l/ja/user-guide/data-migration/capabilities/file-formats",
+                      "l/ja/user-guide/data-migration/capabilities/field-mapping",
+                      "l/ja/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/ja/user-guide/data-migration/capabilities/import-relations",
+                      "l/ja/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "ハウツー",
+                    "pages": [
+                      "l/ja/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/ja/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/ja/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/ja/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/ja/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/ja/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/ja/user-guide/data-migration/how-tos/export-your-data",
+                      "l/ja/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ja/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/ja/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/ja/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/ja/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -4283,13 +4149,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/ja/user-guide/discord-bot/overview",
                   "l/ja/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -4306,21 +4171,19 @@
                       "l/ja/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/ja/user-guide/chrome-extension/overview",
                   "l/ja/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/ja/user-guide/chrome-extension/overview"
               },
               {
                 "group": "カレンダーとメール",
-                "icon": "envelope",
                 "pages": [
-                  "l/ja/user-guide/calendar-emails/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4339,13 +4202,12 @@
                       "l/ja/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/calendar-emails/overview"
               },
               {
                 "group": "ワークフロー",
-                "icon": "bolt",
                 "pages": [
-                  "l/ja/user-guide/workflows/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4401,13 +4263,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/ja/user-guide/ai/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4422,13 +4283,12 @@
                       "l/ja/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/ai/overview"
               },
               {
                 "group": "ビューとパイプライン",
-                "icon": "table",
                 "pages": [
-                  "l/ja/user-guide/views-pipelines/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4452,13 +4312,12 @@
                       "l/ja/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/views-pipelines/overview"
               },
               {
                 "group": "ダッシュボード",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/ja/user-guide/dashboards/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4474,13 +4333,12 @@
                       "l/ja/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/dashboards/overview"
               },
               {
                 "group": "権限とアクセス",
-                "icon": "lock",
                 "pages": [
-                  "l/ja/user-guide/permissions-access/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4494,13 +4352,12 @@
                       "l/ja/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/permissions-access/overview"
               },
               {
                 "group": "請求",
-                "icon": "credit-card",
                 "pages": [
-                  "l/ja/user-guide/billing/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4514,13 +4371,12 @@
                       "l/ja/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/billing/overview"
               },
               {
                 "group": "設定",
-                "icon": "gear",
                 "pages": [
-                  "l/ja/user-guide/settings/overview",
                   {
                     "group": "機能",
                     "pages": [
@@ -4538,7 +4394,8 @@
                       "l/ja/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ja/user-guide/settings/overview"
               }
             ]
           },
@@ -4553,7 +4410,6 @@
               },
               {
                 "group": "拡張",
-                "icon": "plug",
                 "pages": [
                   "l/ja/developers/extend/extend",
                   {
@@ -4568,7 +4424,6 @@
               },
               {
                 "group": "セルフホスト",
-                "icon": "desktop",
                 "pages": [
                   "l/ja/developers/self-host/self-host",
                   {
@@ -4585,7 +4440,6 @@
               },
               {
                 "group": "貢献",
-                "icon": "github",
                 "pages": [
                   "l/ja/developers/contribute/contribute",
                   {
@@ -4681,14 +4535,12 @@
             "tab": "사용자 안내서",
             "groups": [
               {
-                "group": "Consuelo 알아보기",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ko/user-guide/introduction",
                   {
                     "group": "기능",
                     "pages": [
-                      "l/ko/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ko/user-guide/getting-started/capabilities/implementation-services",
                       "l/ko/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -4701,71 +4553,12 @@
                       "l/ko/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "데이터 모델",
-                "icon": "database",
-                "pages": [
-                  "l/ko/user-guide/data-model/overview",
-                  {
-                    "group": "기능",
-                    "pages": [
-                      "l/ko/user-guide/data-model/capabilities/objects",
-                      "l/ko/user-guide/data-model/capabilities/fields",
-                      "l/ko/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "사용 방법",
-                    "pages": [
-                      "l/ko/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/ko/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/ko/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/ko/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/ko/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/ko/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "데이터 마이그레이션",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/ko/user-guide/data-migration/overview",
-                  {
-                    "group": "기능",
-                    "pages": [
-                      "l/ko/user-guide/data-migration/capabilities/file-formats",
-                      "l/ko/user-guide/data-migration/capabilities/field-mapping",
-                      "l/ko/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/ko/user-guide/data-migration/capabilities/import-relations",
-                      "l/ko/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "사용 방법",
-                    "pages": [
-                      "l/ko/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/ko/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/ko/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/ko/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/ko/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/ko/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/ko/user-guide/data-migration/how-tos/export-your-data",
-                      "l/ko/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/ko/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/ko/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/ko/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/ko/user-guide/dialer/overview",
                   "l/ko/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -4793,13 +4586,68 @@
                       "l/ko/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/dialer/overview"
+              },
+              {
+                "group": "데이터 모델",
+                "pages": [
+                  {
+                    "group": "기능",
+                    "pages": [
+                      "l/ko/user-guide/data-model/capabilities/objects",
+                      "l/ko/user-guide/data-model/capabilities/fields",
+                      "l/ko/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "사용 방법",
+                    "pages": [
+                      "l/ko/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/ko/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/ko/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/ko/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/ko/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/ko/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/ko/user-guide/data-model/overview"
+              },
+              {
+                "group": "데이터 마이그레이션",
+                "pages": [
+                  {
+                    "group": "기능",
+                    "pages": [
+                      "l/ko/user-guide/data-migration/capabilities/file-formats",
+                      "l/ko/user-guide/data-migration/capabilities/field-mapping",
+                      "l/ko/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/ko/user-guide/data-migration/capabilities/import-relations",
+                      "l/ko/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "사용 방법",
+                    "pages": [
+                      "l/ko/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/ko/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/ko/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/ko/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/ko/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/ko/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/ko/user-guide/data-migration/how-tos/export-your-data",
+                      "l/ko/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ko/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/ko/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/ko/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/ko/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -4849,13 +4697,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/ko/user-guide/discord-bot/overview",
                   "l/ko/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -4872,21 +4719,19 @@
                       "l/ko/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/ko/user-guide/chrome-extension/overview",
                   "l/ko/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/ko/user-guide/chrome-extension/overview"
               },
               {
                 "group": "캘린더 및 이메일",
-                "icon": "envelope",
                 "pages": [
-                  "l/ko/user-guide/calendar-emails/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -4905,13 +4750,12 @@
                       "l/ko/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/calendar-emails/overview"
               },
               {
                 "group": "워크플로우",
-                "icon": "bolt",
                 "pages": [
-                  "l/ko/user-guide/workflows/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -4967,13 +4811,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/ko/user-guide/ai/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -4988,13 +4831,12 @@
                       "l/ko/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/ai/overview"
               },
               {
                 "group": "뷰 및 파이프라인",
-                "icon": "table",
                 "pages": [
-                  "l/ko/user-guide/views-pipelines/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -5018,13 +4860,12 @@
                       "l/ko/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/views-pipelines/overview"
               },
               {
                 "group": "대시보드",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/ko/user-guide/dashboards/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -5040,13 +4881,12 @@
                       "l/ko/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/dashboards/overview"
               },
               {
                 "group": "권한 및 접근",
-                "icon": "lock",
                 "pages": [
-                  "l/ko/user-guide/permissions-access/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -5060,13 +4900,12 @@
                       "l/ko/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/permissions-access/overview"
               },
               {
                 "group": "청구",
-                "icon": "credit-card",
                 "pages": [
-                  "l/ko/user-guide/billing/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -5080,13 +4919,12 @@
                       "l/ko/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/billing/overview"
               },
               {
                 "group": "설정",
-                "icon": "gear",
                 "pages": [
-                  "l/ko/user-guide/settings/overview",
                   {
                     "group": "기능",
                     "pages": [
@@ -5104,7 +4942,8 @@
                       "l/ko/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ko/user-guide/settings/overview"
               }
             ]
           },
@@ -5119,7 +4958,6 @@
               },
               {
                 "group": "확장",
-                "icon": "plug",
                 "pages": [
                   "l/ko/developers/extend/extend",
                   {
@@ -5134,7 +4972,6 @@
               },
               {
                 "group": "셀프 호스팅",
-                "icon": "desktop",
                 "pages": [
                   "l/ko/developers/self-host/self-host",
                   {
@@ -5151,7 +4988,6 @@
               },
               {
                 "group": "기여",
-                "icon": "github",
                 "pages": [
                   "l/ko/developers/contribute/contribute",
                   {
@@ -5247,14 +5083,12 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/pt/user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/pt/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/pt/user-guide/getting-started/capabilities/implementation-services",
                       "l/pt/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -5267,71 +5101,12 @@
                       "l/pt/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Modelo de dados",
-                "icon": "database",
-                "pages": [
-                  "l/pt/user-guide/data-model/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/pt/user-guide/data-model/capabilities/objects",
-                      "l/pt/user-guide/data-model/capabilities/fields",
-                      "l/pt/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/pt/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/pt/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/pt/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/pt/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/pt/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Data Migration",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/pt/user-guide/data-migration/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/pt/user-guide/data-migration/capabilities/file-formats",
-                      "l/pt/user-guide/data-migration/capabilities/field-mapping",
-                      "l/pt/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/pt/user-guide/data-migration/capabilities/import-relations",
-                      "l/pt/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/pt/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/pt/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/pt/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/pt/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/pt/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/pt/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/pt/user-guide/data-migration/how-tos/export-your-data",
-                      "l/pt/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/pt/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/pt/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/pt/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/pt/user-guide/dialer/overview",
                   "l/pt/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -5359,13 +5134,68 @@
                       "l/pt/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/dialer/overview"
+              },
+              {
+                "group": "Modelo de dados",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/data-model/capabilities/objects",
+                      "l/pt/user-guide/data-model/capabilities/fields",
+                      "l/pt/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/pt/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/pt/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/pt/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/pt/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/pt/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/pt/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/pt/user-guide/data-model/overview"
+              },
+              {
+                "group": "Data Migration",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/pt/user-guide/data-migration/capabilities/file-formats",
+                      "l/pt/user-guide/data-migration/capabilities/field-mapping",
+                      "l/pt/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/pt/user-guide/data-migration/capabilities/import-relations",
+                      "l/pt/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/pt/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/pt/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/pt/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/pt/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/pt/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/pt/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/pt/user-guide/data-migration/how-tos/export-your-data",
+                      "l/pt/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/pt/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/pt/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/pt/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/pt/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -5415,13 +5245,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/pt/user-guide/discord-bot/overview",
                   "l/pt/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -5438,21 +5267,19 @@
                       "l/pt/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/pt/user-guide/chrome-extension/overview",
                   "l/pt/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/pt/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendar & Emails",
-                "icon": "envelope",
                 "pages": [
-                  "l/pt/user-guide/calendar-emails/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5471,13 +5298,12 @@
                       "l/pt/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Fluxos de trabalho",
-                "icon": "bolt",
                 "pages": [
-                  "l/pt/user-guide/workflows/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5533,13 +5359,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/workflows/overview"
               },
               {
                 "group": "IA",
-                "icon": "robot",
                 "pages": [
-                  "l/pt/user-guide/ai/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5554,13 +5379,12 @@
                       "l/pt/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/ai/overview"
               },
               {
                 "group": "Visualizações e pipelines",
-                "icon": "table",
                 "pages": [
-                  "l/pt/user-guide/views-pipelines/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5584,13 +5408,12 @@
                       "l/pt/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Painéis",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/pt/user-guide/dashboards/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5606,13 +5429,12 @@
                       "l/pt/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/dashboards/overview"
               },
               {
                 "group": "Permissions & Access",
-                "icon": "lock",
                 "pages": [
-                  "l/pt/user-guide/permissions-access/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5626,13 +5448,12 @@
                       "l/pt/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/permissions-access/overview"
               },
               {
                 "group": "Faturação",
-                "icon": "credit-card",
                 "pages": [
-                  "l/pt/user-guide/billing/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5646,13 +5467,12 @@
                       "l/pt/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/billing/overview"
               },
               {
                 "group": "Configurações",
-                "icon": "gear",
                 "pages": [
-                  "l/pt/user-guide/settings/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -5670,7 +5490,8 @@
                       "l/pt/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/pt/user-guide/settings/overview"
               }
             ]
           },
@@ -5685,7 +5506,6 @@
               },
               {
                 "group": "Extend",
-                "icon": "plug",
                 "pages": [
                   "l/pt/developers/extend/extend",
                   {
@@ -5700,7 +5520,6 @@
               },
               {
                 "group": "Self-Host",
-                "icon": "desktop",
                 "pages": [
                   "l/pt/developers/self-host/self-host",
                   {
@@ -5717,7 +5536,6 @@
               },
               {
                 "group": "Contribute",
-                "icon": "github",
                 "pages": [
                   "l/pt/developers/contribute/contribute",
                   {
@@ -5813,14 +5631,12 @@
             "tab": "User Guide",
             "groups": [
               {
-                "group": "Discover Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ro/user-guide/introduction",
                   {
                     "group": "Capabilities",
                     "pages": [
-                      "l/ro/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ro/user-guide/getting-started/capabilities/implementation-services",
                       "l/ro/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -5833,71 +5649,12 @@
                       "l/ro/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Model de date",
-                "icon": "database",
-                "pages": [
-                  "l/ro/user-guide/data-model/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ro/user-guide/data-model/capabilities/objects",
-                      "l/ro/user-guide/data-model/capabilities/fields",
-                      "l/ro/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/ro/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/ro/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/ro/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/ro/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/ro/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Data Migration",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/ro/user-guide/data-migration/overview",
-                  {
-                    "group": "Capabilities",
-                    "pages": [
-                      "l/ro/user-guide/data-migration/capabilities/file-formats",
-                      "l/ro/user-guide/data-migration/capabilities/field-mapping",
-                      "l/ro/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/ro/user-guide/data-migration/capabilities/import-relations",
-                      "l/ro/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "How-Tos",
-                    "pages": [
-                      "l/ro/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/ro/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/ro/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/ro/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/ro/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/ro/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/ro/user-guide/data-migration/how-tos/export-your-data",
-                      "l/ro/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/ro/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/ro/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/ro/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/ro/user-guide/dialer/overview",
                   "l/ro/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -5925,13 +5682,68 @@
                       "l/ro/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/dialer/overview"
+              },
+              {
+                "group": "Model de date",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/data-model/capabilities/objects",
+                      "l/ro/user-guide/data-model/capabilities/fields",
+                      "l/ro/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ro/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/ro/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/ro/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/ro/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/ro/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/ro/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/ro/user-guide/data-model/overview"
+              },
+              {
+                "group": "Data Migration",
+                "pages": [
+                  {
+                    "group": "Capabilities",
+                    "pages": [
+                      "l/ro/user-guide/data-migration/capabilities/file-formats",
+                      "l/ro/user-guide/data-migration/capabilities/field-mapping",
+                      "l/ro/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/ro/user-guide/data-migration/capabilities/import-relations",
+                      "l/ro/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "How-Tos",
+                    "pages": [
+                      "l/ro/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/ro/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/ro/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/ro/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/ro/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/ro/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/ro/user-guide/data-migration/how-tos/export-your-data",
+                      "l/ro/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ro/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/ro/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/ro/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/ro/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -5981,13 +5793,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/ro/user-guide/discord-bot/overview",
                   "l/ro/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -6004,21 +5815,19 @@
                       "l/ro/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/ro/user-guide/chrome-extension/overview",
                   "l/ro/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/ro/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Calendar & Emails",
-                "icon": "envelope",
                 "pages": [
-                  "l/ro/user-guide/calendar-emails/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6037,13 +5846,12 @@
                       "l/ro/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Fluxuri de lucru",
-                "icon": "bolt",
                 "pages": [
-                  "l/ro/user-guide/workflows/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6099,13 +5907,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/ro/user-guide/ai/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6120,13 +5927,12 @@
                       "l/ro/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/ai/overview"
               },
               {
                 "group": "Vizualizări și fluxuri",
-                "icon": "table",
                 "pages": [
-                  "l/ro/user-guide/views-pipelines/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6150,13 +5956,12 @@
                       "l/ro/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Tablouri de Bord",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/ro/user-guide/dashboards/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6172,13 +5977,12 @@
                       "l/ro/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/dashboards/overview"
               },
               {
                 "group": "Permissions & Access",
-                "icon": "lock",
                 "pages": [
-                  "l/ro/user-guide/permissions-access/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6192,13 +5996,12 @@
                       "l/ro/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/permissions-access/overview"
               },
               {
                 "group": "Facturare",
-                "icon": "credit-card",
                 "pages": [
-                  "l/ro/user-guide/billing/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6212,13 +6015,12 @@
                       "l/ro/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/billing/overview"
               },
               {
                 "group": "Setări",
-                "icon": "gear",
                 "pages": [
-                  "l/ro/user-guide/settings/overview",
                   {
                     "group": "Capabilities",
                     "pages": [
@@ -6236,7 +6038,8 @@
                       "l/ro/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ro/user-guide/settings/overview"
               }
             ]
           },
@@ -6251,7 +6054,6 @@
               },
               {
                 "group": "Extend",
-                "icon": "plug",
                 "pages": [
                   "l/ro/developers/extend/extend",
                   {
@@ -6266,7 +6068,6 @@
               },
               {
                 "group": "Self-Host",
-                "icon": "desktop",
                 "pages": [
                   "l/ro/developers/self-host/self-host",
                   {
@@ -6283,7 +6084,6 @@
               },
               {
                 "group": "Contribute",
-                "icon": "github",
                 "pages": [
                   "l/ro/developers/contribute/contribute",
                   {
@@ -6379,14 +6179,12 @@
             "tab": "Руководство пользователя",
             "groups": [
               {
-                "group": "Откройте Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/ru/user-guide/introduction",
                   {
                     "group": "Возможности",
                     "pages": [
-                      "l/ru/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/ru/user-guide/getting-started/capabilities/implementation-services",
                       "l/ru/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -6399,71 +6197,12 @@
                       "l/ru/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Модель данных",
-                "icon": "database",
-                "pages": [
-                  "l/ru/user-guide/data-model/overview",
-                  {
-                    "group": "Возможности",
-                    "pages": [
-                      "l/ru/user-guide/data-model/capabilities/objects",
-                      "l/ru/user-guide/data-model/capabilities/fields",
-                      "l/ru/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Инструкции",
-                    "pages": [
-                      "l/ru/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/ru/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/ru/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/ru/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/ru/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/ru/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Миграция данных",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/ru/user-guide/data-migration/overview",
-                  {
-                    "group": "Возможности",
-                    "pages": [
-                      "l/ru/user-guide/data-migration/capabilities/file-formats",
-                      "l/ru/user-guide/data-migration/capabilities/field-mapping",
-                      "l/ru/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/ru/user-guide/data-migration/capabilities/import-relations",
-                      "l/ru/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Инструкции",
-                    "pages": [
-                      "l/ru/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/ru/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/ru/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/ru/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/ru/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/ru/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/ru/user-guide/data-migration/how-tos/export-your-data",
-                      "l/ru/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/ru/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/ru/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/ru/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/ru/user-guide/dialer/overview",
                   "l/ru/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -6491,13 +6230,68 @@
                       "l/ru/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/dialer/overview"
+              },
+              {
+                "group": "Модель данных",
+                "pages": [
+                  {
+                    "group": "Возможности",
+                    "pages": [
+                      "l/ru/user-guide/data-model/capabilities/objects",
+                      "l/ru/user-guide/data-model/capabilities/fields",
+                      "l/ru/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Инструкции",
+                    "pages": [
+                      "l/ru/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/ru/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/ru/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/ru/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/ru/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/ru/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/ru/user-guide/data-model/overview"
+              },
+              {
+                "group": "Миграция данных",
+                "pages": [
+                  {
+                    "group": "Возможности",
+                    "pages": [
+                      "l/ru/user-guide/data-migration/capabilities/file-formats",
+                      "l/ru/user-guide/data-migration/capabilities/field-mapping",
+                      "l/ru/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/ru/user-guide/data-migration/capabilities/import-relations",
+                      "l/ru/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Инструкции",
+                    "pages": [
+                      "l/ru/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/ru/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/ru/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/ru/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/ru/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/ru/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/ru/user-guide/data-migration/how-tos/export-your-data",
+                      "l/ru/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ru/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/ru/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/ru/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/ru/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -6547,13 +6341,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/ru/user-guide/discord-bot/overview",
                   "l/ru/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -6570,21 +6363,19 @@
                       "l/ru/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/ru/user-guide/chrome-extension/overview",
                   "l/ru/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/ru/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Календарь и электронная почта",
-                "icon": "envelope",
                 "pages": [
-                  "l/ru/user-guide/calendar-emails/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6603,13 +6394,12 @@
                       "l/ru/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/calendar-emails/overview"
               },
               {
                 "group": "Рабочие процессы",
-                "icon": "bolt",
                 "pages": [
-                  "l/ru/user-guide/workflows/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6665,13 +6455,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/workflows/overview"
               },
               {
                 "group": "ИИ",
-                "icon": "robot",
                 "pages": [
-                  "l/ru/user-guide/ai/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6686,13 +6475,12 @@
                       "l/ru/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/ai/overview"
               },
               {
                 "group": "Представления и воронки",
-                "icon": "table",
                 "pages": [
-                  "l/ru/user-guide/views-pipelines/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6716,13 +6504,12 @@
                       "l/ru/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Панели управления",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/ru/user-guide/dashboards/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6738,13 +6525,12 @@
                       "l/ru/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/dashboards/overview"
               },
               {
                 "group": "Разрешения и доступ",
-                "icon": "lock",
                 "pages": [
-                  "l/ru/user-guide/permissions-access/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6758,13 +6544,12 @@
                       "l/ru/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/permissions-access/overview"
               },
               {
                 "group": "Биллинг",
-                "icon": "credit-card",
                 "pages": [
-                  "l/ru/user-guide/billing/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6778,13 +6563,12 @@
                       "l/ru/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/billing/overview"
               },
               {
                 "group": "Настройки",
-                "icon": "gear",
                 "pages": [
-                  "l/ru/user-guide/settings/overview",
                   {
                     "group": "Возможности",
                     "pages": [
@@ -6802,7 +6586,8 @@
                       "l/ru/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/ru/user-guide/settings/overview"
               }
             ]
           },
@@ -6817,7 +6602,6 @@
               },
               {
                 "group": "Расширяйте",
-                "icon": "plug",
                 "pages": [
                   "l/ru/developers/extend/extend",
                   {
@@ -6832,7 +6616,6 @@
               },
               {
                 "group": "Самостоятельный хостинг",
-                "icon": "desktop",
                 "pages": [
                   "l/ru/developers/self-host/self-host",
                   {
@@ -6849,7 +6632,6 @@
               },
               {
                 "group": "Внести вклад",
-                "icon": "github",
                 "pages": [
                   "l/ru/developers/contribute/contribute",
                   {
@@ -6945,14 +6727,12 @@
             "tab": "Kullanıcı Rehberi",
             "groups": [
               {
-                "group": "Consuelo'yi Keşfedin",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/tr/user-guide/introduction",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
-                      "l/tr/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/tr/user-guide/getting-started/capabilities/implementation-services",
                       "l/tr/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -6965,71 +6745,12 @@
                       "l/tr/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Veri modeli",
-                "icon": "database",
-                "pages": [
-                  "l/tr/user-guide/data-model/overview",
-                  {
-                    "group": "Yetkinlikler",
-                    "pages": [
-                      "l/tr/user-guide/data-model/capabilities/objects",
-                      "l/tr/user-guide/data-model/capabilities/fields",
-                      "l/tr/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "Nasıl Yapılırlar",
-                    "pages": [
-                      "l/tr/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/tr/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/tr/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/tr/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/tr/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/tr/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Veri Geçişi",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/tr/user-guide/data-migration/overview",
-                  {
-                    "group": "Yetkinlikler",
-                    "pages": [
-                      "l/tr/user-guide/data-migration/capabilities/file-formats",
-                      "l/tr/user-guide/data-migration/capabilities/field-mapping",
-                      "l/tr/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/tr/user-guide/data-migration/capabilities/import-relations",
-                      "l/tr/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "Nasıl Yapılırlar",
-                    "pages": [
-                      "l/tr/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/tr/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/tr/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/tr/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/tr/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/tr/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/tr/user-guide/data-migration/how-tos/export-your-data",
-                      "l/tr/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/tr/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/tr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/tr/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/tr/user-guide/dialer/overview",
                   "l/tr/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -7057,13 +6778,68 @@
                       "l/tr/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/dialer/overview"
+              },
+              {
+                "group": "Veri modeli",
+                "pages": [
+                  {
+                    "group": "Yetkinlikler",
+                    "pages": [
+                      "l/tr/user-guide/data-model/capabilities/objects",
+                      "l/tr/user-guide/data-model/capabilities/fields",
+                      "l/tr/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "Nasıl Yapılırlar",
+                    "pages": [
+                      "l/tr/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/tr/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/tr/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/tr/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/tr/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/tr/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/tr/user-guide/data-model/overview"
+              },
+              {
+                "group": "Veri Geçişi",
+                "pages": [
+                  {
+                    "group": "Yetkinlikler",
+                    "pages": [
+                      "l/tr/user-guide/data-migration/capabilities/file-formats",
+                      "l/tr/user-guide/data-migration/capabilities/field-mapping",
+                      "l/tr/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/tr/user-guide/data-migration/capabilities/import-relations",
+                      "l/tr/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "Nasıl Yapılırlar",
+                    "pages": [
+                      "l/tr/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/tr/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/tr/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/tr/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/tr/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/tr/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/tr/user-guide/data-migration/how-tos/export-your-data",
+                      "l/tr/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/tr/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/tr/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/tr/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/tr/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -7113,13 +6889,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/tr/user-guide/discord-bot/overview",
                   "l/tr/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -7136,21 +6911,19 @@
                       "l/tr/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/tr/user-guide/chrome-extension/overview",
                   "l/tr/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/tr/user-guide/chrome-extension/overview"
               },
               {
                 "group": "Takvim ve E-postalar",
-                "icon": "envelope",
                 "pages": [
-                  "l/tr/user-guide/calendar-emails/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7169,13 +6942,12 @@
                       "l/tr/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/calendar-emails/overview"
               },
               {
                 "group": "İş Akışları",
-                "icon": "bolt",
                 "pages": [
-                  "l/tr/user-guide/workflows/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7231,13 +7003,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/tr/user-guide/ai/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7252,13 +7023,12 @@
                       "l/tr/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/ai/overview"
               },
               {
                 "group": "Görünümler ve Boru Hatları",
-                "icon": "table",
                 "pages": [
-                  "l/tr/user-guide/views-pipelines/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7282,13 +7052,12 @@
                       "l/tr/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/views-pipelines/overview"
               },
               {
                 "group": "Gösterge Panelleri",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/tr/user-guide/dashboards/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7304,13 +7073,12 @@
                       "l/tr/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/dashboards/overview"
               },
               {
                 "group": "İzinler ve Erişim",
-                "icon": "lock",
                 "pages": [
-                  "l/tr/user-guide/permissions-access/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7324,13 +7092,12 @@
                       "l/tr/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/permissions-access/overview"
               },
               {
                 "group": "Faturalandırma",
-                "icon": "credit-card",
                 "pages": [
-                  "l/tr/user-guide/billing/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7344,13 +7111,12 @@
                       "l/tr/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/billing/overview"
               },
               {
                 "group": "Ayarlar",
-                "icon": "gear",
                 "pages": [
-                  "l/tr/user-guide/settings/overview",
                   {
                     "group": "Yetkinlikler",
                     "pages": [
@@ -7368,7 +7134,8 @@
                       "l/tr/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/tr/user-guide/settings/overview"
               }
             ]
           },
@@ -7383,7 +7150,6 @@
               },
               {
                 "group": "Genişlet",
-                "icon": "plug",
                 "pages": [
                   "l/tr/developers/extend/extend",
                   {
@@ -7398,7 +7164,6 @@
               },
               {
                 "group": "Kendi Kendine Barındırma",
-                "icon": "desktop",
                 "pages": [
                   "l/tr/developers/self-host/self-host",
                   {
@@ -7415,7 +7180,6 @@
               },
               {
                 "group": "Katkıda Bulunun",
-                "icon": "github",
                 "pages": [
                   "l/tr/developers/contribute/contribute",
                   {
@@ -7511,14 +7275,12 @@
             "tab": "用户指南",
             "groups": [
               {
-                "group": "发现 Consuelo",
-                "icon": "rocket",
+                "group": "What is Consuelo",
                 "pages": [
                   "l/zh/user-guide/introduction",
                   {
                     "group": "功能",
                     "pages": [
-                      "l/zh/user-guide/getting-started/capabilities/what-is-consuelo",
                       "l/zh/user-guide/getting-started/capabilities/implementation-services",
                       "l/zh/user-guide/getting-started/capabilities/glossary"
                     ]
@@ -7531,71 +7293,12 @@
                       "l/zh/user-guide/getting-started/how-tos/configure-your-workspace"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "数据模型",
-                "icon": "database",
-                "pages": [
-                  "l/zh/user-guide/data-model/overview",
-                  {
-                    "group": "功能",
-                    "pages": [
-                      "l/zh/user-guide/data-model/capabilities/objects",
-                      "l/zh/user-guide/data-model/capabilities/fields",
-                      "l/zh/user-guide/data-model/capabilities/relation-fields"
-                    ]
-                  },
-                  {
-                    "group": "操作指南",
-                    "pages": [
-                      "l/zh/user-guide/data-model/how-tos/create-custom-objects",
-                      "l/zh/user-guide/data-model/how-tos/create-custom-fields",
-                      "l/zh/user-guide/data-model/how-tos/create-relation-fields",
-                      "l/zh/user-guide/data-model/how-tos/create-many-to-many-relations",
-                      "l/zh/user-guide/data-model/how-tos/customize-your-data-model",
-                      "l/zh/user-guide/data-model/how-tos/data-model-faq"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "数据迁移",
-                "icon": "cloud-arrow-up",
-                "pages": [
-                  "l/zh/user-guide/data-migration/overview",
-                  {
-                    "group": "功能",
-                    "pages": [
-                      "l/zh/user-guide/data-migration/capabilities/file-formats",
-                      "l/zh/user-guide/data-migration/capabilities/field-mapping",
-                      "l/zh/user-guide/data-migration/capabilities/uniqueness-constraints",
-                      "l/zh/user-guide/data-migration/capabilities/import-relations",
-                      "l/zh/user-guide/data-migration/capabilities/error-handling"
-                    ]
-                  },
-                  {
-                    "group": "操作指南",
-                    "pages": [
-                      "l/zh/user-guide/data-migration/how-tos/prepare-your-csv-files",
-                      "l/zh/user-guide/data-migration/how-tos/import-companies-via-csv",
-                      "l/zh/user-guide/data-migration/how-tos/import-contacts-via-csv",
-                      "l/zh/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                      "l/zh/user-guide/data-migration/how-tos/update-existing-records-via-import",
-                      "l/zh/user-guide/data-migration/how-tos/fix-import-errors",
-                      "l/zh/user-guide/data-migration/how-tos/export-your-data",
-                      "l/zh/user-guide/data-migration/how-tos/import-data-via-api",
-                      "l/zh/user-guide/data-migration/how-tos/migrating-from-other-crms",
-                      "l/zh/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
-                    ]
-                  }
-                ]
+                ],
+                "root": "l/zh/user-guide/getting-started/capabilities/what-is-consuelo"
               },
               {
                 "group": "Dialer",
-                "icon": "phone",
                 "pages": [
-                  "l/zh/user-guide/dialer/overview",
                   "l/zh/user-guide/dialer/getting-started",
                   {
                     "group": "Capabilities",
@@ -7623,13 +7326,68 @@
                       "l/zh/user-guide/dialer/how-tos/dialer-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/dialer/overview"
+              },
+              {
+                "group": "数据模型",
+                "pages": [
+                  {
+                    "group": "功能",
+                    "pages": [
+                      "l/zh/user-guide/data-model/capabilities/objects",
+                      "l/zh/user-guide/data-model/capabilities/fields",
+                      "l/zh/user-guide/data-model/capabilities/relation-fields"
+                    ]
+                  },
+                  {
+                    "group": "操作指南",
+                    "pages": [
+                      "l/zh/user-guide/data-model/how-tos/create-custom-objects",
+                      "l/zh/user-guide/data-model/how-tos/create-custom-fields",
+                      "l/zh/user-guide/data-model/how-tos/create-relation-fields",
+                      "l/zh/user-guide/data-model/how-tos/create-many-to-many-relations",
+                      "l/zh/user-guide/data-model/how-tos/customize-your-data-model",
+                      "l/zh/user-guide/data-model/how-tos/data-model-faq"
+                    ]
+                  }
+                ],
+                "root": "l/zh/user-guide/data-model/overview"
+              },
+              {
+                "group": "数据迁移",
+                "pages": [
+                  {
+                    "group": "功能",
+                    "pages": [
+                      "l/zh/user-guide/data-migration/capabilities/file-formats",
+                      "l/zh/user-guide/data-migration/capabilities/field-mapping",
+                      "l/zh/user-guide/data-migration/capabilities/uniqueness-constraints",
+                      "l/zh/user-guide/data-migration/capabilities/import-relations",
+                      "l/zh/user-guide/data-migration/capabilities/error-handling"
+                    ]
+                  },
+                  {
+                    "group": "操作指南",
+                    "pages": [
+                      "l/zh/user-guide/data-migration/how-tos/prepare-your-csv-files",
+                      "l/zh/user-guide/data-migration/how-tos/import-companies-via-csv",
+                      "l/zh/user-guide/data-migration/how-tos/import-contacts-via-csv",
+                      "l/zh/user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                      "l/zh/user-guide/data-migration/how-tos/update-existing-records-via-import",
+                      "l/zh/user-guide/data-migration/how-tos/fix-import-errors",
+                      "l/zh/user-guide/data-migration/how-tos/export-your-data",
+                      "l/zh/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/zh/user-guide/data-migration/how-tos/migrating-from-other-crms",
+                      "l/zh/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+                    ]
+                  }
+                ],
+                "root": "l/zh/user-guide/data-migration/overview"
               },
               {
                 "group": "Overview",
-                "icon": "plug",
                 "pages": [
-                  "l/zh/user-guide/highlevel/overview",
                   {
                     "group": "Embedded Dialer",
                     "pages": [
@@ -7679,13 +7437,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/highlevel/overview"
               },
               {
                 "group": "Discord",
-                "icon": "discord",
                 "pages": [
-                  "l/zh/user-guide/discord-bot/overview",
                   "l/zh/user-guide/discord-bot/getting-started",
                   {
                     "group": "Capabilities",
@@ -7702,21 +7459,19 @@
                       "l/zh/user-guide/dialer/how-tos/discord-setup"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/discord-bot/overview"
               },
               {
                 "group": "Chrome Extension",
-                "icon": "puzzle-piece",
                 "pages": [
-                  "l/zh/user-guide/chrome-extension/overview",
                   "l/zh/user-guide/chrome-extension/getting-started"
-                ]
+                ],
+                "root": "l/zh/user-guide/chrome-extension/overview"
               },
               {
                 "group": "日历与电子邮件",
-                "icon": "envelope",
                 "pages": [
-                  "l/zh/user-guide/calendar-emails/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7735,13 +7490,12 @@
                       "l/zh/user-guide/calendar-emails/how-tos/i-dont-see-emails-on-records"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/calendar-emails/overview"
               },
               {
                 "group": "工作流",
-                "icon": "bolt",
                 "pages": [
-                  "l/zh/user-guide/workflows/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7797,13 +7551,12 @@
                       }
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/workflows/overview"
               },
               {
                 "group": "AI",
-                "icon": "robot",
                 "pages": [
-                  "l/zh/user-guide/ai/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7818,13 +7571,12 @@
                       "l/zh/user-guide/ai/how-tos/ai-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/ai/overview"
               },
               {
                 "group": "视图与管道",
-                "icon": "table",
                 "pages": [
-                  "l/zh/user-guide/views-pipelines/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7848,13 +7600,12 @@
                       "l/zh/user-guide/views-pipelines/how-tos/track-time-in-stage"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/views-pipelines/overview"
               },
               {
                 "group": "仪表板",
-                "icon": "chart-bar",
                 "pages": [
-                  "l/zh/user-guide/dashboards/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7870,13 +7621,12 @@
                       "l/zh/user-guide/dashboards/how-tos/widget-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/dashboards/overview"
               },
               {
                 "group": "权限与访问",
-                "icon": "lock",
                 "pages": [
-                  "l/zh/user-guide/permissions-access/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7890,13 +7640,12 @@
                       "l/zh/user-guide/permissions-access/how-tos/permissions-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/permissions-access/overview"
               },
               {
                 "group": "账单",
-                "icon": "credit-card",
                 "pages": [
-                  "l/zh/user-guide/billing/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7910,13 +7659,12 @@
                       "l/zh/user-guide/billing/how-tos/billing-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/billing/overview"
               },
               {
                 "group": "设置",
-                "icon": "gear",
                 "pages": [
-                  "l/zh/user-guide/settings/overview",
                   {
                     "group": "功能",
                     "pages": [
@@ -7934,7 +7682,8 @@
                       "l/zh/user-guide/settings/how-tos/settings-faq"
                     ]
                   }
-                ]
+                ],
+                "root": "l/zh/user-guide/settings/overview"
               }
             ]
           },
@@ -7949,7 +7698,6 @@
               },
               {
                 "group": "扩展",
-                "icon": "plug",
                 "pages": [
                   "l/zh/developers/extend/extend",
                   {
@@ -7964,7 +7712,6 @@
               },
               {
                 "group": "自托管",
-                "icon": "desktop",
                 "pages": [
                   "l/zh/developers/self-host/self-host",
                   {
@@ -7981,7 +7728,6 @@
               },
               {
                 "group": "贡献",
-                "icon": "github",
                 "pages": [
                   "l/zh/developers/contribute/contribute",
                   {
