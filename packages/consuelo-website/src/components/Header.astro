@@ -145,27 +145,27 @@ function toggleNav() {
 
   if (!menuBtn || !menuItems || !menuIcon || !closeIcon) return;
 
-    function closeMenu() {
-      menuBtn.setAttribute("aria-expanded", "false");
-      menuBtn.setAttribute("aria-label", "Open Menu");
-      menuItems.classList.add("hidden");
-      menuIcon.classList.remove("hidden");
-      closeIcon.classList.add("hidden");
-    }
+  function closeMenu() {
+    menuBtn!.setAttribute("aria-expanded", "false");
+    menuBtn!.setAttribute("aria-label", "Open Menu");
+    menuItems!.classList.add("hidden");
+    menuIcon!.classList.remove("hidden");
+    closeIcon!.classList.add("hidden");
+  }
 
-    menuBtn.addEventListener("click", () => {
-      const openMenu = menuBtn.getAttribute("aria-expanded") === "true";
+menuBtn!.addEventListener("click", () => {
+    const openMenu = menuBtn!.getAttribute("aria-expanded") === "true";
 
-      menuBtn.setAttribute("aria-expanded", openMenu ? "false" : "true");
-      menuBtn.setAttribute("aria-label", openMenu ? "Open Menu" : "Close Menu");
+    menuBtn!.setAttribute("aria-expanded", openMenu ? "false" : "true");
+    menuBtn!.setAttribute("aria-label", openMenu ? "Open Menu" : "Close Menu");
 
-      menuItems.classList.toggle("hidden");
-      menuIcon.classList.toggle("hidden");
-      closeIcon.classList.toggle("hidden");
-    });
+    menuItems!.classList.toggle("hidden");
+    menuIcon!.classList.toggle("hidden");
+    closeIcon!.classList.toggle("hidden");
+  });
 
-    // close menu when a nav link is clicked
-    menuItems.querySelectorAll("a").forEach(link => {
+  // close menu when a nav link is clicked
+  menuItems!.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", closeMenu);
     });
   }
