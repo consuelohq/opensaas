@@ -5,6 +5,6 @@ export type DialingMode = 'single' | 'parallel';
 
 export const dialingModeState = createState<DialingMode>({
   key: 'dialerDialingModeState',
-  defaultValue: 'single',
+  defaultValue: 'parallel',
   effects: [localStorageEffect()],
 });
