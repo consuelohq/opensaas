@@ -712,6 +712,52 @@ Search results can flood context. Use `context-mode_ctx_execute(language: "shell
 | `ctx doctor`  | Call the `doctor` MCP tool, run the returned shell command, display as checklist  |
 | `ctx upgrade` | Call the `upgrade` MCP tool, run the returned shell command, display as checklist |
 
+## API routes — NOT MOUNTED IN PRODUCTION (2026-04-05)
+
+the opensaas API routes in `packages/api/src/routes/` (queues, calls, parallel) are express-style `RouteDefinition[]` arrays. they are **NOT registered in the twenty-server NestJS app**. hitting `/api/v1/queues` returns the frontend HTML (SPA catch-all), not JSON.
+
+**DEV-1459** is the task to rewrite these as native NestJS controllers in `packages/twenty-server/src/engine/core-modules/consuelo-api/`. the controllers are thin wrappers — auth + request parsing + calling into `@consuelo/dialer` services. the business logic stays in the private packages.
+
+**do NOT try to mount the express routes as middleware.** the decision is to go native NestJS.
+
+## production auth flow for API testing
+
+```bash
+# sign in (on /metadata endpoint, NOT /graphql)
+TOKEN=$(curl -s https://consuelo.consuelohq.com/metadata \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"mutation { signIn(email: \"ryancaves22@gmail.com\", password: \"Consuelo2026!\") { tokens { accessOrWorkspaceAgnosticToken { token } } } }"}' \
+  | jq -r '.data.signIn.tokens.accessOrWorkspaceAgnosticToken.token')
+```
+
+this returns a workspace-agnostic token. the auth mutations live on `/metadata`, not `/graphql`.
+
+## licensing — AGPL-3.0 + proprietary
+
+- twenty-forked code (`twenty-front`, `twenty-server`, `twenty-shared`) → AGPL-3.0, must be public
+- opensaas packages (`dialer`, `coaching`, `api`, `contacts`, `analytics`, `metering`) → proprietary, consuelo's IP
+- the dialer is the enterprise product — CRM is free, calling is paid
+- controllers in twenty-server are thin wrappers (AGPL), business logic in private packages
+- need a source code link somewhere in the app (AGPL section 13) — future task
+
+## upstream remote removed (2026-04-05)
+
+the `upstream` remote (twentyhq/twenty, 482 branches) has been removed. consuelo is fully independent. security and feature PRs from twenty worth backporting are cataloged in linear DEV-1451 through DEV-1458 with links to twenty's open-source PRs.
+
+**do NOT re-add the upstream remote.** if you need to reference twenty's code, use their github web UI.
+
+## test infrastructure (2026-04-05)
+
+97 unit tests across 4 suites:
+- `packages/api/src/services/retry-policy.spec.ts` — 17 tests
+- `packages/api/src/routes/__tests__/queues.spec.ts` — 24 tests
+- `packages/dialer/src/services/parallel-dialer.spec.ts` — 35 tests
+- `packages/dialer/src/services/parallel-strategy-resolver.spec.ts` — 21 tests
+
+run with: `npx jest <file> --config=packages/<pkg>/jest.config.mjs --no-coverage`
+
+these are layer 1 (logic with mocks). layer 2 (integration with real twilio) and layer 3 (agent-browser) are next.
+
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

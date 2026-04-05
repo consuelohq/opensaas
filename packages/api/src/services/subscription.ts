@@ -191,6 +191,9 @@ export const createCheckoutSession = async (
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { workspaceId },
+      subscription_data: {
+        metadata: { workspaceId },
+      },
     });
 
     if (!session.url) throw new Error('stripe checkout session missing url');
@@ -284,7 +287,7 @@ export const handleWebhookEvent = async (
         );
         const addOns = extractAddOns(subscription);
         const periodEnd = getSubscriptionPeriodEnd(
-          subscription.billing_cycle_anchor,
+          (subscription as unknown as Record<string, unknown>).current_period_end as number | null,
         );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
@@ -309,7 +312,7 @@ export const handleWebhookEvent = async (
 
         const addOns = extractAddOns(subscription);
         const periodEnd = getSubscriptionPeriodEnd(
-          subscription.billing_cycle_anchor,
+          (subscription as unknown as Record<string, unknown>).current_period_end as number | null,
         );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
@@ -375,7 +378,7 @@ export const handleWebhookEvent = async (
         if (!workspaceId) break;
 
         const periodEnd = getSubscriptionPeriodEnd(
-          subscription.billing_cycle_anchor,
+          (subscription as unknown as Record<string, unknown>).current_period_end as number | null,
         );
 
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
@@ -431,12 +434,13 @@ export const hasAddOn = async (
     return status.addOns.includes(addOn);
   } catch (err: unknown) {
     Sentry.captureException(err);
-    return false;
+    throw err;
   }
 };
 
-const getSubscriptionPeriodEnd = (billingCycleAnchor: number): string => {
-  return new Date(billingCycleAnchor * 1000).toISOString();
+const getSubscriptionPeriodEnd = (currentPeriodEnd: number | null): string | null => {
+  if (currentPeriodEnd === null) return null;
+  return new Date(currentPeriodEnd * 1000).toISOString();
 };
 
 const extractAddOns = (subscription: {

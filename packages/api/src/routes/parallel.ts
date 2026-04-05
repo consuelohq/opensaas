@@ -46,7 +46,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
     path: '/v1/calls/parallel',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
@@ -78,7 +79,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const dialer = await getDialerForWorkspace(workspaceId);
         const strategy = strategyResolver.resolve({
           queueId: body.queueId,
           campaignSegment: body.campaignSegment,
@@ -177,7 +178,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
     path: '/v1/calls/parallel/validate',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
@@ -185,7 +187,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const dialer = await getDialerForWorkspace(workspaceId);
         const query = req.query ?? {};
         const profileId =
           typeof query.profileId === 'string' ? query.profileId : undefined;
@@ -356,7 +358,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
     path: '/v1/calls/parallel/:groupId',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
@@ -372,7 +375,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const dialer = await getDialerForWorkspace(workspaceId);
         const group: ParallelGroup | null =
           await dialer.parallel.getGroup(groupId);
         if (!group) {
@@ -428,7 +431,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
     path: '/v1/calls/parallel/:groupId/terminate',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
-      if (!userId) {
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
         res.status(401).json({
           error: { code: 'UNAUTHORIZED', message: 'Auth required' },
         });
@@ -444,7 +448,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const dialer = await getDialerForWorkspace(workspaceId);
         const group = await dialer.parallel.getGroup(groupId);
         if (!group) {
           res.status(404).json({

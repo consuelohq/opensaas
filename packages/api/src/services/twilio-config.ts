@@ -153,9 +153,7 @@ export const provisionSubAccount = async (
     const subClient = createClient(subAccount.sid, subAccount.authToken);
     const baseUrl = process.env.API_BASE_URL;
     if (!baseUrl) {
-      throw new Error(
-        'API_BASE_URL environment variable is required for TwiML App creation',
-      );
+      throw new Error('API_BASE_URL environment variable is required for TwiML App creation');
     }
     const twimlApp = await subClient.applications.create({
       voiceUrl: `${baseUrl}/v1/voice/twiml`,
@@ -275,9 +273,7 @@ export const ensureOrCreateTwimlApp = async (
     // create new app
     const baseUrl = process.env.API_BASE_URL;
     if (!baseUrl) {
-      throw new Error(
-        'API_BASE_URL environment variable is required for TwiML App creation',
-      );
+      throw new Error('API_BASE_URL environment variable is required for TwiML App creation');
     }
     const app = await client.applications.create({
       voiceUrl: `${baseUrl}/v1/voice/twiml`,
