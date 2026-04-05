@@ -26,6 +26,13 @@ describe('ParallelDialerService', () => {
     userId: 'user-1',
     statusCallbackUrl: 'https://example.com/status',
     customerTwimlUrl: 'https://example.com/twiml',
+    profile: {
+      id: 'balanced',
+      fanout: 3,
+      staggerMs: 1,
+      amdPolicy: 'human-or-unknown' as const,
+      terminationPolicy: 'winner-take-all' as const,
+    },
   };
 
   beforeEach(() => {
@@ -49,6 +56,7 @@ describe('ParallelDialerService', () => {
       expect(result.calls).toHaveLength(3);
       expect(result.groupId).toMatch(/^pg_/);
       expect(result.conferenceName).toContain(result.groupId);
+      expect(result.profileId).toBe('balanced');
       expect(mockCallsCreate).toHaveBeenCalledTimes(3);
     });
 
@@ -159,13 +167,27 @@ describe('ParallelDialerService', () => {
   describe('validateRequirements', () => {
     it('should pass with 3+ numbers', () => {
       expect(service.validateRequirements(3).valid).toBe(true);
-      expect(service.validateRequirements(5).valid).toBe(true);
+      expect(service.validateRequirements(5, 4).valid).toBe(true);
     });
 
     it('should fail with fewer than 3 numbers', () => {
-      const result = service.validateRequirements(2);
+      const result = service.validateRequirements(2, 4);
       expect(result.valid).toBe(false);
-      expect(result.message).toContain('at least 3');
+      expect(result.message).toContain('at least 4');
+    });
+  });
+
+
+  describe('computeTelemetry', () => {
+    it('should compute winner rate, wasted legs, and latency', async () => {
+      const result = await service.initiateGroup(baseOpts);
+      await service.handleStatusCallback(result.calls[0].callSid, 'in-progress', 'human');
+      const group = await service.getGroup(result.groupId);
+
+      const telemetry = service.computeTelemetry(group!);
+      expect(telemetry.winnerRate).toBe(1);
+      expect(telemetry.wastedLegs).toBe(2);
+      expect(telemetry.connectLatencyMs).not.toBeNull();
     });
   });
 

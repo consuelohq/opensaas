@@ -33,6 +33,7 @@ const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
 import { getSharedPool } from '../shared/db.js';
 import { redisService } from '../services/redis.js';
+import { evaluateRetryPolicy } from '../services/retry-policy.js';
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -78,6 +79,10 @@ interface DispositionBody {
   outcome: Disposition;
   notes?: string;
   contactId?: string;
+  queueId?: string;
+  isHighPriority?: boolean;
+  localTimezone?: string;
+  attemptCap?: number;
 }
 
 interface InitiatePhoneCallBody {
@@ -801,12 +806,45 @@ export const callRoutes = (): RouteDefinition[] => {
 
         try {
           const db = await getPool();
-          const { rows } = await db.query(SQL_SET_DISPOSITION, [
-            body.outcome ?? null,
-            body.notes ?? null,
-            callId,
-            auth.workspaceId,
-          ]);
+          // build dynamic update
+          const setClauses: string[] = ['updated_at = NOW()'];
+          const params: unknown[] = [];
+          let idx = 1;
+          const attemptCap =
+            typeof body.attemptCap === 'number' && body.attemptCap > 0
+              ? body.attemptCap
+              : 2;
+
+          const retryDecision = evaluateRetryPolicy({
+            outcome: body.outcome ?? null,
+            isHighPriority: body.isHighPriority === true,
+            attemptsUsed: 1,
+            attemptCap,
+            localTimezone: body.localTimezone ?? 'America/New_York',
+          });
+
+          if (body.outcome) {
+            setClauses.push(`outcome = $${idx}`);
+            params.push(body.outcome);
+            idx++;
+          }
+          if (body.notes !== undefined) {
+            setClauses.push(`notes = $${idx}`);
+            params.push(body.notes);
+            idx++;
+          }
+          setClauses.push(`retry_strategy = $${idx}`);
+          params.push(retryDecision.retryStrategy);
+          idx++;
+          setClauses.push(`retry_scheduled_at = $${idx}`);
+          params.push(retryDecision.retryScheduledAt);
+          idx++;
+          setClauses.push(`retry_reason = $${idx}`);
+          params.push(retryDecision.retryReason);
+          idx++;
+          params.push(callId, auth.workspaceId);
+          const sql = `UPDATE calls SET ${setClauses.join(', ')} WHERE id = $${idx} AND workspace_id = $${idx + 1} RETURNING id, outcome, notes, retry_strategy, retry_scheduled_at, retry_reason`;
+          const { rows } = await db.query(sql, params);
           if (rows.length === 0) {
             res.status(404).json({
               error: { code: 'NOT_FOUND', message: 'Call not found' },
@@ -818,6 +856,9 @@ export const callRoutes = (): RouteDefinition[] => {
             callId,
             outcome: rows[0].outcome,
             notes: rows[0].notes,
+            retryStrategy: rows[0].retry_strategy,
+            retryScheduledAt: rows[0].retry_scheduled_at,
+            retryReason: rows[0].retry_reason,
           });
           (await getCallsLogger()).info('call.disposition', {
             action: 'call.disposition',
