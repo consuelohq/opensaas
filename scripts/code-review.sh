@@ -60,6 +60,8 @@ FAIL=0
 # 2. SENTRY — HTTP errors should have sentry tracking
 echo -n "  SENTRY ........... "
 while IFS= read -r file; do
+  # skip test files — assertions like expect(statusCode).toBe(400) are not real errors
+  echo "$file" | grep -qE '(__tests__|.spec.|.test.)' && continue
   # only check files that have HTTP error patterns
   while IFS=: read -r lineno line; do
     # look ahead ~10 lines for Sentry reference
