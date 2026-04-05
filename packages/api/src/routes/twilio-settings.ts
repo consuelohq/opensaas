@@ -166,7 +166,8 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
       }
 
       const body = req.body as ByokBody | undefined;
-      if (!body?.accountSid || !body?.authToken) {
+      if (typeof body?.accountSid !== 'string' || !body.accountSid ||
+          typeof body?.authToken !== 'string' || !body.authToken) {
         res.status(400).json({
           error: {
             code: 'INVALID_REQUEST',
@@ -186,18 +187,15 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         res.status(200).json({ valid: true });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Connection test failed';
-        const isAuthError =
-          err instanceof Error &&
-          (err.message.includes('authenticate') ||
-            err.message.includes('401') ||
-            err.message.includes('20003'));
+        const twilioErr = err as { status?: number; code?: number };
+        const isAuthError = twilioErr.status === 401 || twilioErr.code === 20003;
+        const message = isAuthError
+          ? 'Invalid Twilio credentials'
+          : err instanceof Error ? err.message : 'Connection test failed';
         res.status(isAuthError ? 400 : 500).json({
-          valid: false,
           error: {
             code: isAuthError ? 'INVALID_CREDENTIALS' : 'CONNECTION_ERROR',
-            message: isAuthError ? 'Invalid Twilio credentials' : message,
+            message,
           },
         });
       }
@@ -217,7 +215,8 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
       }
 
       const body = req.body as ByokBody | undefined;
-      if (!body?.accountSid || !body?.authToken) {
+      if (typeof body?.accountSid !== 'string' || !body.accountSid ||
+          typeof body?.authToken !== 'string' || !body.authToken) {
         res.status(400).json({
           error: {
             code: 'INVALID_REQUEST',
@@ -272,11 +271,8 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const isValidationError =
-          err instanceof Error &&
-          (err.message.includes('authenticate') ||
-            err.message.includes('401') ||
-            err.message.includes('20003'));
+        const twilioErr = err as { status?: number; code?: number };
+        const isValidationError = twilioErr.status === 401 || twilioErr.code === 20003;
         res.status(isValidationError ? 400 : 500).json({
           error: {
             code: isValidationError ? 'INVALID_CREDENTIALS' : 'CONFIG_ERROR',
