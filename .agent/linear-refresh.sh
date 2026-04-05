@@ -5,15 +5,18 @@ set -euo pipefail
 
 AGENT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# source real secrets from config
+source "$AGENT_DIR/config.sh"
+
 if [ "${1:-}" = "--opencode" ]; then
   TOKEN_FILE="$AGENT_DIR/.opencode-token.json"
   CLIENT_ID="9b2b83a4ca6cebc0ce9df6a2ad4ed834"
-  CLIENT_SECRET="REDACTED_OPENCODE_CLIENT_SECRET"
+  CLIENT_SECRET="$OPENCODE_OAUTH_CLIENT_SECRET"
   LABEL="opencode"
 else
   TOKEN_FILE="$AGENT_DIR/.oauth-token.json"
   CLIENT_ID="83e3d4cd417ac427494d5a811438c4cb"
-  CLIENT_SECRET="REDACTED_KIRO_CLIENT_SECRET"
+  CLIENT_SECRET="$LINEAR_OAUTH_CLIENT_SECRET"
   LABEL="kiro"
 fi
 
