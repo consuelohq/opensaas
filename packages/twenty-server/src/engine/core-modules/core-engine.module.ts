@@ -20,6 +20,7 @@ import { CaptchaModule } from 'src/engine/core-modules/captcha/captcha.module';
 import { captchaModuleFactory } from 'src/engine/core-modules/captcha/captcha.module-factory';
 import { CloudflareModule } from 'src/engine/core-modules/cloudflare/cloudflare.module';
 import { codeInterpreterModuleFactory } from 'src/engine/core-modules/code-interpreter/code-interpreter-module.factory';
+import { ConsueloApiModule } from 'src/engine/core-modules/consuelo-api/consuelo-api.module';
 import { CodeInterpreterModule } from 'src/engine/core-modules/code-interpreter/code-interpreter.module';
 import { DnsManagerModule } from 'src/engine/core-modules/dns-manager/dns-manager.module';
 import { EmailModule } from 'src/engine/core-modules/email/email.module';
@@ -86,6 +87,7 @@ import { FileModule } from './file/file.module';
     BillingModule,
     BillingWebhookModule,
     ClientConfigModule,
+    ConsueloApiModule,
     FeatureFlagModule,
     FileModule,
     RowLevelPermissionModule,
