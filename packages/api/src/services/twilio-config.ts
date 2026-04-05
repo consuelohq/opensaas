@@ -1,17 +1,23 @@
 import * as Sentry from '@sentry/node';
-import {
-  encryptCredential,
-  decryptCredential,
-} from './twilio-encryption.js';
+import { encryptCredential, decryptCredential } from './twilio-encryption.js';
 import { getSharedPool } from '../shared/db.js';
 // lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
-let _logger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void; error: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
+let _logger: {
+  info: (message: string, attributes?: Record<string, unknown>) => void;
+  warn: (message: string, attributes?: Record<string, unknown>) => void;
+  error: (message: string, attributes?: Record<string, unknown>) => void;
+} | null = null;
 const getLogger = async () => {
-  if (!_logger) {
-    const { createLogger } = await import('@consuelo/logger');
-    _logger = createLogger('twilio-config');
+  try {
+    if (!_logger) {
+      const { createLogger } = await import('@consuelo/logger');
+      _logger = createLogger('twilio-config');
+    }
+    return _logger;
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
   }
-  return _logger;
 };
 
 export type TwilioMode = 'hosted' | 'byok';
@@ -62,11 +68,9 @@ export const getWorkspaceTwilioConfig = async (
         (row.sub_account_token_encrypted as string) ?? null,
       byokAccountSidEncrypted:
         (row.byok_account_sid_encrypted as string) ?? null,
-      byokAuthTokenEncrypted:
-        (row.byok_auth_token_encrypted as string) ?? null,
+      byokAuthTokenEncrypted: (row.byok_auth_token_encrypted as string) ?? null,
       byokApiKeyEncrypted: (row.byok_api_key_encrypted as string) ?? null,
-      byokApiSecretEncrypted:
-        (row.byok_api_secret_encrypted as string) ?? null,
+      byokApiSecretEncrypted: (row.byok_api_secret_encrypted as string) ?? null,
       twimlAppSid: (row.twiml_app_sid as string) ?? null,
     };
   } catch (err: unknown) {
@@ -112,13 +116,19 @@ export const provisionSubAccount = async (
   const masterSid = process.env.TWILIO_MASTER_ACCOUNT_SID;
   const masterToken = process.env.TWILIO_MASTER_AUTH_TOKEN;
   if (!masterSid || !masterToken) {
-    throw new Error('TWILIO_MASTER_ACCOUNT_SID and TWILIO_MASTER_AUTH_TOKEN required for hosted mode');
+    throw new Error(
+      'TWILIO_MASTER_ACCOUNT_SID and TWILIO_MASTER_AUTH_TOKEN required for hosted mode',
+    );
   }
+
+  const pool = await getSharedPool();
+  const client = await pool.connect();
 
   try {
     const twilio = await import('twilio');
     const createClient =
-      twilio.default ?? (twilio as unknown as { default: typeof twilio.default }).default;
+      twilio.default ??
+      (twilio as unknown as { default: typeof twilio.default }).default;
     const masterClient = createClient(masterSid, masterToken);
 
     // create sub-account
@@ -126,10 +136,10 @@ export const provisionSubAccount = async (
       friendlyName: `consuelo-${workspaceId}`,
     });
 
-    const pool = await getSharedPool();
+    await client.query('BEGIN');
 
     // store encrypted credentials
-    await pool.query(
+    await client.query(
       'INSERT INTO workspace_twilio_config (workspace_id, mode, sub_account_sid, sub_account_token_encrypted) VALUES ($1, $2, $3, $4) ON CONFLICT (workspace_id) DO UPDATE SET mode = $2, sub_account_sid = $3, sub_account_token_encrypted = $4, updated_at = NOW()',
       [
         workspaceId,
@@ -142,16 +152,23 @@ export const provisionSubAccount = async (
     // create TwiML app on the sub-account
     const subClient = createClient(subAccount.sid, subAccount.authToken);
     const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error(
+        'API_BASE_URL environment variable is required for TwiML App creation',
+      );
+    }
     const twimlApp = await subClient.applications.create({
-      voiceUrl: baseUrl ? `${baseUrl}/v1/voice/twiml` : '',
+      voiceUrl: `${baseUrl}/v1/voice/twiml`,
       voiceMethod: 'POST',
       friendlyName: 'Consuelo Dialer',
     });
 
-    await pool.query(
+    await client.query(
       'UPDATE workspace_twilio_config SET twiml_app_sid = $1, updated_at = NOW() WHERE workspace_id = $2',
       [twimlApp.sid, workspaceId],
     );
+
+    await client.query('COMMIT');
 
     (await getLogger()).info('sub-account provisioned', {
       workspaceId,
@@ -165,8 +182,11 @@ export const provisionSubAccount = async (
       twimlAppSid: twimlApp.sid,
     };
   } catch (err: unknown) {
+    await client.query('ROLLBACK');
     Sentry.captureException(err);
     throw err;
+  } finally {
+    client.release();
   }
 };
 
@@ -227,11 +247,15 @@ export const ensureOrCreateTwimlApp = async (
   try {
     const twilio = await import('twilio');
     const createClient =
-      twilio.default ?? (twilio as unknown as { default: typeof twilio.default }).default;
+      twilio.default ??
+      (twilio as unknown as { default: typeof twilio.default }).default;
     const client = createClient(accountSid, authToken);
 
     // check if app already exists
-    const apps = await client.applications.list({ friendlyName: TWIML_APP_NAME, limit: 1 });
+    const apps = await client.applications.list({
+      friendlyName: TWIML_APP_NAME,
+      limit: 1,
+    });
     if (apps.length > 0) {
       const sid = apps[0].sid;
       if (workspaceId) {
@@ -241,14 +265,22 @@ export const ensureOrCreateTwimlApp = async (
           [sid, workspaceId],
         );
       }
-      (await getLogger()).info('existing TwiML App found', { twimlAppSid: sid, workspaceId });
+      (await getLogger()).info('existing TwiML App found', {
+        twimlAppSid: sid,
+        workspaceId,
+      });
       return sid;
     }
 
     // create new app
     const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error(
+        'API_BASE_URL environment variable is required for TwiML App creation',
+      );
+    }
     const app = await client.applications.create({
-      voiceUrl: baseUrl ? `${baseUrl}/v1/voice/twiml` : '',
+      voiceUrl: `${baseUrl}/v1/voice/twiml`,
       voiceMethod: 'POST',
       friendlyName: TWIML_APP_NAME,
     });
@@ -261,7 +293,10 @@ export const ensureOrCreateTwimlApp = async (
       );
     }
 
-    (await getLogger()).info('TwiML App created', { twimlAppSid: app.sid, workspaceId });
+    (await getLogger()).info('TwiML App created', {
+      twimlAppSid: app.sid,
+      workspaceId,
+    });
     return app.sid;
   } catch (err: unknown) {
     Sentry.captureException(err);
@@ -281,7 +316,8 @@ export const syncTwimlAppUrl = async (
   try {
     const twilio = await import('twilio');
     const createClient =
-      twilio.default ?? (twilio as unknown as { default: typeof twilio.default }).default;
+      twilio.default ??
+      (twilio as unknown as { default: typeof twilio.default }).default;
     const client = createClient(accountSid, authToken);
 
     const app = await client.applications(twimlAppSid).fetch();

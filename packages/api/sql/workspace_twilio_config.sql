@@ -14,5 +14,10 @@ CREATE TABLE IF NOT EXISTS workspace_twilio_config (
   -- shared
   twiml_app_sid VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  -- enforce credential completeness based on mode
+  CONSTRAINT twilio_credentials_mode_check CHECK (
+    (mode = 'hosted' AND sub_account_sid IS NOT NULL AND sub_account_token_encrypted IS NOT NULL) OR
+    (mode = 'byok' AND byok_account_sid_encrypted IS NOT NULL AND byok_auth_token_encrypted IS NOT NULL AND byok_api_key_encrypted IS NOT NULL AND byok_api_secret_encrypted IS NOT NULL)
+  )
 );
