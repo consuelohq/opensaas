@@ -3,8 +3,22 @@ import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
 import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
-import { createLogger } from '@consuelo/logger';
-const logger = createLogger('api:audit');
+// lazy-loaded logger (matches other route files)
+let _logger: {
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+} | null = null;
+const getLogger = async () => {
+  try {
+    if (!_logger) {
+      const { createLogger } = await import('@consuelo/logger');
+      _logger = createLogger('api:audit');
+    }
+    return _logger;
+  } catch {
+    return null;
+  }
+};
 import { validateTwilioSignature } from './voice.js';
 
 const getLegacyDialer = sharedDialer;
@@ -135,7 +149,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         });
 
         res.status(201).json(result);
-        logger.info('parallel.dial', {
+        (await getLogger())?.info('parallel.dial', {
           action: 'parallel.dial',
           userId,
           outcome: 'success',
@@ -172,17 +186,18 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(req.auth!.workspaceId);
+        const query = req.query ?? {};
         const profileId =
-          typeof req.query.profileId === 'string' ? req.query.profileId : undefined;
+          typeof query.profileId === 'string' ? query.profileId : undefined;
         const queueId =
-          typeof req.query.queueId === 'string' ? req.query.queueId : 'default';
+          typeof query.queueId === 'string' ? query.queueId : 'default';
         const campaignSegment =
-          typeof req.query.campaignSegment === 'string'
-            ? req.query.campaignSegment
+          typeof query.campaignSegment === 'string'
+            ? query.campaignSegment
             : undefined;
         const recentAnswerRate =
-          typeof req.query.recentAnswerRate === 'string'
-            ? Number(req.query.recentAnswerRate)
+          typeof query.recentAnswerRate === 'string'
+            ? Number(query.recentAnswerRate)
             : undefined;
 
         const strategy = strategyResolver.resolve({
@@ -260,7 +275,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
             if (!group.telemetryEmittedAt) {
               const telemetry = getLegacyDialer().parallel.computeTelemetry(group);
-              logger.info('parallel.telemetry', {
+              (await getLogger())?.info('parallel.telemetry', {
                 action: 'parallel.telemetry',
                 groupId,
                 queueId: group.queueId,
@@ -449,7 +464,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         await dialer.parallel.terminateGroup(groupId);
         res.status(200).json({ groupId, status: 'completed' });
-        logger.info('parallel.terminated', {
+        (await getLogger())?.info('parallel.terminated', {
           action: 'parallel.terminated',
           userId,
           outcome: 'success',

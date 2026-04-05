@@ -1,0 +1,24 @@
+{
+  "name": "@consuelo/dialer",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": ["scope:backend"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/dialer",
+        "commands": ["tsc"]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/dialer",
+        "commands": ["tsc --noEmit"]
+      }
+    }
+  }
+}
