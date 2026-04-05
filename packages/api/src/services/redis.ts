@@ -1,5 +1,5 @@
-import IORedis from 'ioredis';
-import * as Sentry from '@sentry/node';
+import IORedis from "ioredis";
+import * as Sentry from "@sentry/node";
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
 const PKCE_TTL_SECONDS = 600; // 10 minutes
@@ -12,7 +12,7 @@ class RedisService {
       if (!this.client) {
         const redisUrl = process.env.REDIS_URL;
         if (!redisUrl) {
-          throw new Error('REDIS_URL not configured');
+          throw new Error("REDIS_URL not configured");
         }
         this.client = new IORedis(redisUrl, {
           retryStrategy: (times) => Math.min(times * 50, 2000),
@@ -22,7 +22,9 @@ class RedisService {
       return this.client;
     } catch (err: unknown) {
       this.client = null;
-      Sentry.captureException(err, { extra: { context: 'RedisService.getClient' } });
+      Sentry.captureException(err, {
+        extra: { context: "RedisService.getClient" },
+      });
       throw err;
     }
   }
@@ -32,7 +34,9 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`conference:${callSid}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getConferenceName', callSid } });
+      Sentry.captureException(err, {
+        extra: { context: "getConferenceName", callSid },
+      });
       throw err;
     }
   }
@@ -42,7 +46,9 @@ class RedisService {
       const client = await this.getClient();
       await client.setex(`conference:${callSid}`, CONFERENCE_TTL_SECONDS, name);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setConferenceName', callSid } });
+      Sentry.captureException(err, {
+        extra: { context: "setConferenceName", callSid },
+      });
       throw err;
     }
   }
@@ -52,27 +58,42 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`conference:${callSid}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deleteConferenceName', callSid } });
+      Sentry.captureException(err, {
+        extra: { context: "deleteConferenceName", callSid },
+      });
       throw err;
     }
   }
 
-  async getCustomerConferenceName(customerCallSid: string): Promise<string | null> {
+  async getCustomerConferenceName(
+    customerCallSid: string,
+  ): Promise<string | null> {
     try {
       const client = await this.getClient();
       return await client.get(`customer:${customerCallSid}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getCustomerConferenceName', customerCallSid } });
+      Sentry.captureException(err, {
+        extra: { context: "getCustomerConferenceName", customerCallSid },
+      });
       throw err;
     }
   }
 
-  async setCustomerConferenceName(customerCallSid: string, name: string): Promise<void> {
+  async setCustomerConferenceName(
+    customerCallSid: string,
+    name: string,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`customer:${customerCallSid}`, CONFERENCE_TTL_SECONDS, name);
+      await client.setex(
+        `customer:${customerCallSid}`,
+        CONFERENCE_TTL_SECONDS,
+        name,
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setCustomerConferenceName', customerCallSid } });
+      Sentry.captureException(err, {
+        extra: { context: "setCustomerConferenceName", customerCallSid },
+      });
       throw err;
     }
   }
@@ -82,7 +103,9 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`customer:${customerCallSid}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deleteCustomerConferenceName', customerCallSid } });
+      Sentry.captureException(err, {
+        extra: { context: "deleteCustomerConferenceName", customerCallSid },
+      });
       throw err;
     }
   }
@@ -92,7 +115,9 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`status:${conferenceName}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getCallStatus', conferenceName } });
+      Sentry.captureException(err, {
+        extra: { context: "getCallStatus", conferenceName },
+      });
       throw err;
     }
   }
@@ -100,9 +125,15 @@ class RedisService {
   async setCallStatus(conferenceName: string, status: string): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`status:${conferenceName}`, CONFERENCE_TTL_SECONDS, status);
+      await client.setex(
+        `status:${conferenceName}`,
+        CONFERENCE_TTL_SECONDS,
+        status,
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setCallStatus', conferenceName } });
+      Sentry.captureException(err, {
+        extra: { context: "setCallStatus", conferenceName },
+      });
       throw err;
     }
   }
@@ -112,29 +143,44 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`status:${conferenceName}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deleteCallStatus', conferenceName } });
+      Sentry.captureException(err, {
+        extra: { context: "deleteCallStatus", conferenceName },
+      });
       throw err;
     }
   }
 
-  async getTransfer(transferId: string): Promise<Record<string, unknown> | null> {
+  async getTransfer(
+    transferId: string,
+  ): Promise<Record<string, unknown> | null> {
     try {
       const client = await this.getClient();
       const result = await client.get(`transfer:${transferId}`);
       if (!result) return null;
       return JSON.parse(result) as Record<string, unknown>;
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getTransfer', transferId } });
+      Sentry.captureException(err, {
+        extra: { context: "getTransfer", transferId },
+      });
       throw err;
     }
   }
 
-  async setTransfer(transferId: string, data: Record<string, unknown>): Promise<void> {
+  async setTransfer(
+    transferId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`transfer:${transferId}`, CONFERENCE_TTL_SECONDS, JSON.stringify(data));
+      await client.setex(
+        `transfer:${transferId}`,
+        CONFERENCE_TTL_SECONDS,
+        JSON.stringify(data),
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setTransfer', transferId } });
+      Sentry.captureException(err, {
+        extra: { context: "setTransfer", transferId },
+      });
       throw err;
     }
   }
@@ -144,29 +190,47 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`transfer:${transferId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deleteTransfer', transferId } });
+      Sentry.captureException(err, {
+        extra: { context: "deleteTransfer", transferId },
+      });
       throw err;
     }
   }
 
-  async setPkceVerifier(state: string, data: { codeVerifier: string; workspaceId: string }): Promise<void> {
+  async setPkceVerifier(
+    state: string,
+    data: { codeVerifier: string; workspaceId: string },
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`ghl:pkce:${state}`, PKCE_TTL_SECONDS, JSON.stringify(data));
+      await client.setex(
+        `ghl:pkce:${state}`,
+        PKCE_TTL_SECONDS,
+        JSON.stringify(data),
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setPkceVerifier', state } });
+      Sentry.captureException(err, {
+        extra: { context: "setPkceVerifier", state },
+      });
       throw err;
     }
   }
 
-  async getPkceVerifier(state: string): Promise<{ codeVerifier: string; workspaceId: string } | null> {
+  async getPkceVerifier(
+    state: string,
+  ): Promise<{ codeVerifier: string; workspaceId: string } | null> {
     try {
       const client = await this.getClient();
       const result = await client.get(`ghl:pkce:${state}`);
       if (!result) return null;
-      return JSON.parse(result) as { codeVerifier: string; workspaceId: string };
+      return JSON.parse(result) as {
+        codeVerifier: string;
+        workspaceId: string;
+      };
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getPkceVerifier', state } });
+      Sentry.captureException(err, {
+        extra: { context: "getPkceVerifier", state },
+      });
       throw err;
     }
   }
@@ -176,7 +240,9 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`ghl:pkce:${state}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deletePkceVerifier', state } });
+      Sentry.captureException(err, {
+        extra: { context: "deletePkceVerifier", state },
+      });
       throw err;
     }
   }
@@ -186,17 +252,24 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`primary-number:${workspaceId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getPrimaryNumber', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "getPrimaryNumber", workspaceId },
+      });
       throw err;
     }
   }
 
-  async setPrimaryNumber(workspaceId: string, phoneNumberSid: string): Promise<void> {
+  async setPrimaryNumber(
+    workspaceId: string,
+    phoneNumberSid: string,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       await client.set(`primary-number:${workspaceId}`, phoneNumberSid);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setPrimaryNumber', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "setPrimaryNumber", workspaceId },
+      });
       throw err;
     }
   }
@@ -206,7 +279,9 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`primary-number:${workspaceId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deletePrimaryNumber', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "deletePrimaryNumber", workspaceId },
+      });
       throw err;
     }
   }
@@ -218,7 +293,9 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`consuelo:user:${userId}:phone`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getRepPhone', userId } });
+      Sentry.captureException(err, {
+        extra: { context: "getRepPhone", userId },
+      });
       throw err;
     }
   }
@@ -228,29 +305,44 @@ class RedisService {
       const client = await this.getClient();
       await client.set(`consuelo:user:${userId}:phone`, phone);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setRepPhone', userId } });
+      Sentry.captureException(err, {
+        extra: { context: "setRepPhone", userId },
+      });
       throw err;
     }
   }
 
-  async setPhoneCallState(callId: string, state: Record<string, unknown>): Promise<void> {
+  async setPhoneCallState(
+    callId: string,
+    state: Record<string, unknown>,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`phone-call:${callId}`, CONFERENCE_TTL_SECONDS, JSON.stringify(state));
+      await client.setex(
+        `phone-call:${callId}`,
+        CONFERENCE_TTL_SECONDS,
+        JSON.stringify(state),
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setPhoneCallState', callId } });
+      Sentry.captureException(err, {
+        extra: { context: "setPhoneCallState", callId },
+      });
       throw err;
     }
   }
 
-  async getPhoneCallState(callId: string): Promise<Record<string, unknown> | null> {
+  async getPhoneCallState(
+    callId: string,
+  ): Promise<Record<string, unknown> | null> {
     try {
       const client = await this.getClient();
       const result = await client.get(`phone-call:${callId}`);
       if (!result) return null;
       return JSON.parse(result) as Record<string, unknown>;
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getPhoneCallState', callId } });
+      Sentry.captureException(err, {
+        extra: { context: "getPhoneCallState", callId },
+      });
       throw err;
     }
   }
@@ -260,7 +352,9 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`phone-call:${callId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'deletePhoneCallState', callId } });
+      Sentry.captureException(err, {
+        extra: { context: "deletePhoneCallState", callId },
+      });
       throw err;
     }
   }
@@ -268,9 +362,15 @@ class RedisService {
   async mapCallSidToCallId(callSid: string, callId: string): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`phone-call-sid:${callSid}`, CONFERENCE_TTL_SECONDS, callId);
+      await client.setex(
+        `phone-call-sid:${callSid}`,
+        CONFERENCE_TTL_SECONDS,
+        callId,
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'mapCallSidToCallId', callSid } });
+      Sentry.captureException(err, {
+        extra: { context: "mapCallSidToCallId", callSid },
+      });
       throw err;
     }
   }
@@ -280,7 +380,9 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`phone-call-sid:${callSid}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getCallIdByCallSid', callSid } });
+      Sentry.captureException(err, {
+        extra: { context: "getCallIdByCallSid", callSid },
+      });
       throw err;
     }
   }
@@ -288,9 +390,9 @@ class RedisService {
   async publishCallEvent(event: Record<string, unknown>): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.publish('consuelo:call-events', JSON.stringify(event));
+      await client.publish("consuelo:call-events", JSON.stringify(event));
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'publishCallEvent' } });
+      Sentry.captureException(err, { extra: { context: "publishCallEvent" } });
       throw err;
     }
   }
@@ -302,17 +404,24 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`phone-numbers:${workspaceId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getPhoneNumbersCache', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "getPhoneNumbersCache", workspaceId },
+      });
       return null;
     }
   }
 
-  async setPhoneNumbersCache(workspaceId: string, data: unknown): Promise<void> {
+  async setPhoneNumbersCache(
+    workspaceId: string,
+    data: unknown,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
       await client.set(`phone-numbers:${workspaceId}`, JSON.stringify(data));
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setPhoneNumbersCache', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "setPhoneNumbersCache", workspaceId },
+      });
     }
   }
 
@@ -321,7 +430,9 @@ class RedisService {
       const client = await this.getClient();
       await client.del(`phone-numbers:${workspaceId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'invalidatePhoneNumbersCache', workspaceId } });
+      Sentry.captureException(err, {
+        extra: { context: "invalidatePhoneNumbersCache", workspaceId },
+      });
     }
   }
 
@@ -332,20 +443,33 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`voice-status:${workspaceId}`);
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'getVoiceStatusCache', workspaceId } });
+      this.client = null;
+      Sentry.captureException(err, {
+        extra: { context: "getVoiceStatusCache", workspaceId },
+      });
       return null;
     }
   }
 
-  async setVoiceStatusCache(workspaceId: string, data: unknown, ttlSeconds = 30): Promise<void> {
+  async setVoiceStatusCache(
+    workspaceId: string,
+    data: unknown,
+    ttlSeconds = 30,
+  ): Promise<void> {
     try {
       const client = await this.getClient();
-      await client.setex(`voice-status:${workspaceId}`, ttlSeconds, JSON.stringify(data));
+      await client.setex(
+        `voice-status:${workspaceId}`,
+        ttlSeconds,
+        JSON.stringify(data),
+      );
     } catch (err: unknown) {
-      Sentry.captureException(err, { extra: { context: 'setVoiceStatusCache', workspaceId } });
+      this.client = null;
+      Sentry.captureException(err, {
+        extra: { context: "setVoiceStatusCache", workspaceId },
+      });
     }
   }
-
 }
 
 export const redisService = new RedisService();

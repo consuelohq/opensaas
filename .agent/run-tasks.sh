@@ -1268,7 +1268,7 @@ create_run_branch() {
 PR_URL=""
 # Reuse existing staging→main PR or create one
 create_draft_pr() {
-  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || true
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_count="$1"
   local issue_list="$2"
 
@@ -1321,7 +1321,7 @@ $issue_list" \
 
 # Push commits after each task completes
 push_task_commits() {
-  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || true
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_number="$1"
 
   log_info "Pushing commits for issue #$issue_number..."
@@ -1490,7 +1490,7 @@ $ai_prompt
 # Process a single issue using fresh subprocess (commits to the shared run branch)
 process_issue() {
   # Ensure we're in the worktree (cwd can go stale if dir was recreated)
-  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || true
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_json="$1"
   local issue_number=$(parse_issue_number "$issue_json")
   local issue_title=$(parse_issue_title "$issue_json")
