@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { useLingui } from '@lingui/react/macro';
 
 import type {
   CommandResult,
@@ -103,25 +104,31 @@ const formatRate = (rate: number): string => `${Math.round(rate * 100)}%`;
 
 // -- renderers --
 
-const MeCard = ({ data }: { data: MetricsData }) => (
+const MeCard = ({
+  data,
+  t,
+}: {
+  data: MetricsData;
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
-    <StyledCardHeader>Your Stats</StyledCardHeader>
+    <StyledCardHeader>{t`Your Stats`}</StyledCardHeader>
     <StyledCardBody>
       <StyledFields>
         <StyledField>
-          <StyledFieldLabel>Calls Today</StyledFieldLabel>
+          <StyledFieldLabel>{t`Calls Today`}</StyledFieldLabel>
           <StyledFieldValue>{data.callsToday}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>Calls This Week</StyledFieldLabel>
+          <StyledFieldLabel>{t`Calls This Week`}</StyledFieldLabel>
           <StyledFieldValue>{data.callsThisWeek}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>Connect Rate</StyledFieldLabel>
+          <StyledFieldLabel>{t`Connect Rate`}</StyledFieldLabel>
           <StyledFieldValue>{formatRate(data.answerRate)}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>Avg Duration</StyledFieldLabel>
+          <StyledFieldLabel>{t`Avg Duration`}</StyledFieldLabel>
           <StyledFieldValue>
             {formatDuration(data.avgDuration)}
           </StyledFieldValue>
@@ -131,20 +138,26 @@ const MeCard = ({ data }: { data: MetricsData }) => (
   </StyledCard>
 );
 
-const StatusCard = ({ data }: { data: HealthData }) => {
+const StatusCard = ({
+  data,
+  t,
+}: {
+  data: HealthData;
+  t: ReturnType<typeof useLingui>['t'];
+}) => {
   const isHealthy = data.status === 'ok';
 
   return (
     <StyledCard>
-      <StyledCardHeader>Service Status</StyledCardHeader>
+      <StyledCardHeader>{t`Service Status`}</StyledCardHeader>
       <StyledCardBody>
         <StyledRow>
           <StyledRowPrimary>
             <StyledStatusDot healthy={isHealthy} />
-            API
+            {t`API`}
           </StyledRowPrimary>
           <StyledRowSecondary>
-            {isHealthy ? 'Healthy' : 'Unhealthy'}
+            {isHealthy ? t`Healthy` : t`Unhealthy`}
           </StyledRowSecondary>
         </StyledRow>
       </StyledCardBody>
@@ -152,14 +165,20 @@ const StatusCard = ({ data }: { data: HealthData }) => {
   );
 };
 
-const ContactsCard = ({ data }: { data: ContactResult[] }) => (
+const ContactsCard = ({
+  data,
+  t,
+}: {
+  data: ContactResult[];
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
     <StyledCardHeader>
-      {data.length} Contact{data.length !== 1 ? 's' : ''} Found
+      {t`${data.length} Contact${data.length !== 1 ? 's' : ''} Found`}
     </StyledCardHeader>
     <StyledCardBody>
       {data.length === 0 ? (
-        <StyledRowSecondary>No matching contacts</StyledRowSecondary>
+        <StyledRowSecondary>{t`No matching contacts`}</StyledRowSecondary>
       ) : (
         data.map((c) => (
           <StyledRow key={c.id}>
@@ -178,12 +197,18 @@ const ContactsCard = ({ data }: { data: ContactResult[] }) => (
   </StyledCard>
 );
 
-const HistoryCard = ({ data }: { data: HistoryEntry[] }) => (
+const HistoryCard = ({
+  data,
+  t,
+}: {
+  data: HistoryEntry[];
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
-    <StyledCardHeader>Recent Calls</StyledCardHeader>
+    <StyledCardHeader>{t`Recent Calls`}</StyledCardHeader>
     <StyledCardBody>
       {data.length === 0 ? (
-        <StyledRowSecondary>No call history</StyledRowSecondary>
+        <StyledRowSecondary>{t`No call history`}</StyledRowSecondary>
       ) : (
         data.map((entry) => (
           <StyledRow key={entry.id}>
@@ -213,10 +238,12 @@ type CommandCardProps = {
 };
 
 export const CommandCard = ({ result }: CommandCardProps) => {
+  const { t } = useLingui();
+
   if (result.error) {
     return (
       <StyledCard>
-        <StyledCardHeader>Error</StyledCardHeader>
+        <StyledCardHeader>{t`Error`}</StyledCardHeader>
         <StyledError>{result.error}</StyledError>
       </StyledCard>
     );
@@ -224,13 +251,13 @@ export const CommandCard = ({ result }: CommandCardProps) => {
 
   switch (result.command) {
     case 'me':
-      return <MeCard data={result.data as MetricsData} />;
+      return <MeCard data={result.data as MetricsData} t={t} />;
     case 'status':
-      return <StatusCard data={result.data as HealthData} />;
+      return <StatusCard data={result.data as HealthData} t={t} />;
     case 'contacts-search':
-      return <ContactsCard data={result.data as ContactResult[]} />;
+      return <ContactsCard data={result.data as ContactResult[]} t={t} />;
     case 'history':
-      return <HistoryCard data={result.data as HistoryEntry[]} />;
+      return <HistoryCard data={result.data as HistoryEntry[]} t={t} />;
     default:
       return null;
   }
