@@ -325,6 +325,27 @@ class RedisService {
     }
   }
 
+  // -- voice status cache (short TTL for polling) --
+
+  async getVoiceStatusCache(workspaceId: string): Promise<string | null> {
+    try {
+      const client = await this.getClient();
+      return await client.get(`voice-status:${workspaceId}`);
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'getVoiceStatusCache', workspaceId } });
+      return null;
+    }
+  }
+
+  async setVoiceStatusCache(workspaceId: string, data: unknown, ttlSeconds = 30): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(`voice-status:${workspaceId}`, ttlSeconds, JSON.stringify(data));
+    } catch (err: unknown) {
+      Sentry.captureException(err, { extra: { context: 'setVoiceStatusCache', workspaceId } });
+    }
+  }
+
 }
 
 export const redisService = new RedisService();

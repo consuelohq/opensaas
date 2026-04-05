@@ -387,6 +387,18 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const dialer = await getDialerForWorkspace(workspaceId);
+        const numbers = await dialer.listNumbers();
+        const numberExists = numbers.some(
+          (num: { twilioSid?: string }) => num.twilioSid === sid,
+        );
+        if (!numberExists) {
+          res.status(404).json({
+            error: { code: 'NUMBER_NOT_FOUND', message: 'Number not found in workspace' },
+          });
+          return;
+        }
+
         await redisService.setPrimaryNumber(workspaceId, sid);
         await recachePhoneNumbers(workspaceId);
         res.json({ success: true, primarySid: sid });
@@ -753,6 +765,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const cachedStatus = await redisService.getVoiceStatusCache(workspaceId);
+        if (cachedStatus) {
+          res.json(JSON.parse(cachedStatus));
+          return;
+        }
+
         const config = await getWorkspaceTwilioConfig(workspaceId);
         const hosted = isHostedInstance();
 
@@ -786,14 +804,16 @@ export const voiceRoutes = (): RouteDefinition[] => [
                   // twiml app creation/lookup failed
                 }
               }
-              res.json({
+              const response = {
                 mode: 'byok',
                 configured: numbers.length > 0 && hasTwiml,
                 twilioConnected: true,
                 hasPhoneNumbers: numbers.length > 0,
                 twimlAppConfigured: hasTwiml,
                 error: null,
-              });
+              };
+              await redisService.setVoiceStatusCache(workspaceId, response);
+              res.json(response);
             } catch (err: unknown) {
               const message =
                 err instanceof Error ? err.message : 'Connection failed';
@@ -866,14 +886,16 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
         const twimlAppConfigured = !!creds.twimlAppSid;
 
-        res.json({
+        const response = {
           mode: config.mode,
           configured: twilioConnected && twimlAppConfigured,
           twilioConnected,
           hasPhoneNumbers,
           twimlAppConfigured,
           error: null,
-        });
+        };
+        await redisService.setVoiceStatusCache(workspaceId, response);
+        res.json(response);
       } catch (err: unknown) {
         Sentry.captureException(err);
         const message =
