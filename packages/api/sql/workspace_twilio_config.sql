@@ -1,3 +1,7 @@
+-- NOTE: This CHECK constraint only applies to new databases.
+-- For existing databases, a migration is required to add the constraint.
+-- See: packages/api/src/migrations/ for migration files.
+
 -- workspace_twilio_config: per-workspace twilio credentials
 -- supports hosted (sub-account) and BYOK (user's own creds) modes
 CREATE TABLE IF NOT EXISTS workspace_twilio_config (

@@ -308,13 +308,21 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
 
       // only retry on transient errors, not permission/auth failures
       const errorMessage = err instanceof Error ? err.message : '';
+      const normalizedErrorMessage = errorMessage.toLowerCase();
+      
+      // parse HTTP status from "Token fetch failed: <status>" pattern
+      const statusMatch = errorMessage.match(/Token fetch failed:\s*(\d+)/);
+      const parsedStatus = statusMatch ? parseInt(statusMatch[1], 10) : null;
+      
       const isNonTransient =
         (err instanceof Error && err.name === 'NotAllowedError') ||
-        errorMessage.includes('401') ||
-        errorMessage.includes('403') ||
-        errorMessage.toLowerCase().includes('token') ||
-        errorMessage.toLowerCase().includes('unauthorized') ||
-        errorMessage.toLowerCase().includes('expired');
+        parsedStatus === 401 ||
+        parsedStatus === 403 ||
+        normalizedErrorMessage.includes('401') ||
+        normalizedErrorMessage.includes('403') ||
+        normalizedErrorMessage.includes('token expired') ||
+        normalizedErrorMessage.includes('expired token') ||
+        normalizedErrorMessage.includes('unauthorized');
       if (!isNonTransient) {
         if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => {
