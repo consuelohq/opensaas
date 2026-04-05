@@ -624,8 +624,13 @@ export const callRoutes = (): RouteDefinition[] => {
           return;
         }
 
+        const workspaceId = req.auth?.workspaceId;
+        const dialer = workspaceId
+          ? await getDialerForWorkspace(workspaceId)
+          : getLegacyDialer();
+
         try {
-          const result = await getLegacyDialer().hangup(callSid);
+          const result = await dialer.hangup(callSid);
           if (!result.success) {
             res.status(500).json({
               error: {
@@ -723,11 +728,14 @@ export const callRoutes = (): RouteDefinition[] => {
         const recordingSid = rows[0].recording_sid as string | null;
         const conferenceName = rows[0].conference_name as string | null;
 
+        const dialer = auth.workspaceId
+          ? await getDialerForWorkspace(auth.workspaceId)
+          : getLegacyDialer();
+
         // STUB: return proxy URL instead of direct Twilio URL
         if (recordingSid) {
           try {
-            const recording =
-              await getLegacyDialer().getRecording(recordingSid);
+            const recording = await dialer.getRecording(recordingSid);
             res
               .status(200)
               .json({ url: recording.url, duration: recording.duration });
@@ -745,7 +753,7 @@ export const callRoutes = (): RouteDefinition[] => {
         if (conferenceName) {
           try {
             const recordings =
-              await getLegacyDialer().conference.listRecordings(conferenceName);
+              await dialer.conference.listRecordings(conferenceName);
             if (recordings.length > 0) {
               res.status(200).json({
                 url: recordings[0].url,
