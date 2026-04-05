@@ -22,7 +22,7 @@ fi
 if [ -z "$CHANGED_FILES" ]; then
   CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR --staged -- 'packages/*/src/**/*.ts' 'packages/*/src/**/*.tsx' 2>/dev/null || echo "")
 fi
-CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^$' | sort -u)
+CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^$' | sort -u || true)
 
 if [ -z "$CHANGED_FILES" ]; then
   echo -e "${GREEN}no changed .ts/.tsx files to review${NC}"
