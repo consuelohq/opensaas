@@ -273,6 +273,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         const isTransient =
           deviceError.code !== 31401 && deviceError.code !== 31000;
         if (isTransient) {
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
           retryTimerRef.current = setTimeout(() => {
             initDevice();
           }, DEVICE_RETRY_DELAY);
@@ -306,15 +307,36 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       }
 
       // only retry on transient errors, not permission/auth failures
-      const isPermissionError =
-        err instanceof Error && err.name === 'NotAllowedError';
-      if (!isPermissionError) {
+      const errorMessage = err instanceof Error ? err.message : '';
+      const normalizedErrorMessage = errorMessage.toLowerCase();
+      
+      // parse HTTP status from "Token fetch failed: <status>" pattern
+      const statusMatch = errorMessage.match(/Token fetch failed:\s*(\d+)/);
+      const parsedStatus = statusMatch ? parseInt(statusMatch[1], 10) : null;
+      
+      const isNonTransient =
+        (err instanceof Error && err.name === 'NotAllowedError') ||
+        parsedStatus === 401 ||
+        parsedStatus === 403 ||
+        normalizedErrorMessage.includes('401') ||
+        normalizedErrorMessage.includes('403') ||
+        normalizedErrorMessage.includes('token expired') ||
+        normalizedErrorMessage.includes('expired token') ||
+        normalizedErrorMessage.includes('unauthorized');
+      if (!isNonTransient) {
+        if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
         retryTimerRef.current = setTimeout(() => {
           initDevice();
         }, DEVICE_RETRY_DELAY);
       }
     }
-  }, [setDeviceError, setDeviceReady, bindCallEvents, updateCallStatus, refreshToken]);
+  }, [
+    setDeviceError,
+    setDeviceReady,
+    bindCallEvents,
+    updateCallStatus,
+    refreshToken,
+  ]);
 
   // connect outbound call
   const connect = useCallback(
@@ -412,7 +434,12 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       setDeviceReady(false);
       setActiveCall(null);
     };
-  }, [twilioConfigStatus?.configured, initDevice, setActiveCall, setDeviceReady]);
+  }, [
+    twilioConfigStatus?.configured,
+    initDevice,
+    setActiveCall,
+    setDeviceReady,
+  ]);
 
   return {
     device: deviceRef.current,

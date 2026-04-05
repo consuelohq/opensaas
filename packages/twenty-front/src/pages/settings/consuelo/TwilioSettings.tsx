@@ -7,6 +7,7 @@ import {
   IconRefresh,
   IconX,
 } from '@tabler/icons-react';
+import { useLingui } from '@lingui/react/macro';
 import { H2Title } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
 import { TextInput } from '@/ui/input/components/TextInput';
@@ -31,6 +32,11 @@ const fetchJson = async <TData,>(
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
+
+  if (res.status === 204) {
+    return {} as TData;
+  }
+
   const data = (await res.json()) as TData;
   if (!res.ok) {
     const err = data as { error?: { message?: string } };
@@ -90,6 +96,7 @@ const StyledSuccess = styled.div`
 `;
 
 export const TwilioSettings = () => {
+  const { t } = useLingui();
   const [config, setConfig] = useState<TwilioConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -111,11 +118,11 @@ export const TwilioSettings = () => {
       setConfig(data);
       setShowByokForm(false);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load config');
+      setError(err instanceof Error ? err.message : t`Failed to load config`);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadConfig();
@@ -123,7 +130,7 @@ export const TwilioSettings = () => {
 
   const handleSaveByok = useCallback(async () => {
     if (!accountSid || !authToken) {
-      setError('Account SID and Auth Token are required');
+      setError(t`Account SID and Auth Token are required`);
       return;
     }
     try {
@@ -139,18 +146,18 @@ export const TwilioSettings = () => {
           ...(apiSecret ? { apiSecret } : {}),
         }),
       });
-      setSuccess('Twilio credentials saved and verified');
+      setSuccess(t`Twilio credentials saved and verified`);
       setAccountSid('');
       setAuthToken('');
       setApiKey('');
       setApiSecret('');
       await loadConfig();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : t`Failed to save`);
     } finally {
       setSaving(false);
     }
-  }, [accountSid, authToken, apiKey, apiSecret, loadConfig]);
+  }, [accountSid, authToken, apiKey, apiSecret, loadConfig, t]);
 
   const handleDelete = useCallback(async () => {
     try {
@@ -158,22 +165,25 @@ export const TwilioSettings = () => {
       setError(null);
       setSuccess(null);
       await fetchJson('/v1/settings/twilio', { method: 'DELETE' });
-      setSuccess('Twilio configuration reset');
+      setSuccess(t`Twilio configuration reset`);
       await loadConfig();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to reset');
+      setError(err instanceof Error ? err.message : t`Failed to reset`);
     } finally {
       setSaving(false);
     }
-  }, [loadConfig]);
+  }, [loadConfig, t]);
 
   if (loading) {
     return (
       <Section>
-        <H2Title title="Twilio" description="Phone system configuration" />
+        <H2Title
+          title={t`Twilio`}
+          description={t`Phone system configuration`}
+        />
         <Card>
           <StyledStatusRow>
-            <StyledSubText>Loading...</StyledSubText>
+            <StyledSubText>{t`Loading...`}</StyledSubText>
           </StyledStatusRow>
         </Card>
       </Section>
@@ -187,27 +197,28 @@ export const TwilioSettings = () => {
   return (
     <Section>
       <H2Title
-        title="Twilio"
-        description="Phone system configuration for calling"
+        title={t`Twilio`}
+        description={t`Phone system configuration for calling`}
       />
       <Card>
         <StyledStatusRow>
           <StyledStatusDot active={isConfigured} />
           <StyledStatusText>
-            {isHosted && 'Hosted by Consuelo'}
-            {isByok && 'Your Own Twilio Account'}
+            {isHosted && t`Hosted by Consuelo`}
+            {isByok && t`Your Own Twilio Account`}
             {!isConfigured &&
               config?.hostedAvailable &&
-              'Not configured — will auto-provision on first call'}
-            {!isConfigured && !config?.hostedAvailable && 'Not configured'}
+              t`Not configured — will auto-provision on first call`}
+            {!isConfigured && !config?.hostedAvailable && t`Not configured`}
           </StyledStatusText>
         </StyledStatusRow>
 
         {isConfigured && (
           <StyledStatusRow>
             <StyledSubText>
-              Account: {config?.accountSid ?? '—'}
-              {config?.twimlAppSid && ` · TwiML App: ${config.twimlAppSid}`}
+              {t`Account`}: {config?.accountSid ?? '—'}
+              {config?.twimlAppSid &&
+                ` · ${t`TwiML App`}: ${config.twimlAppSid}`}
             </StyledSubText>
           </StyledStatusRow>
         )}
@@ -216,7 +227,7 @@ export const TwilioSettings = () => {
           <StyledStatusRow>
             <IconCloud size={16} />
             <StyledSubText>
-              Your phone system is managed by Consuelo. No configuration needed.
+              {t`Your phone system is managed by Consuelo. No configuration needed.`}
             </StyledSubText>
           </StyledStatusRow>
         )}
@@ -228,7 +239,7 @@ export const TwilioSettings = () => {
           <>
             <StyledFormRow>
               <TextInput
-                label="Account SID"
+                label={t`Account SID`}
                 value={accountSid}
                 onChange={setAccountSid}
                 placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -237,16 +248,18 @@ export const TwilioSettings = () => {
             </StyledFormRow>
             <StyledFormRow>
               <TextInput
-                label="Auth Token"
+                label={t`Auth Token`}
                 value={authToken}
                 onChange={setAuthToken}
-                placeholder="Your Twilio auth token"
+                placeholder={t`Your Twilio auth token`}
+                type="password"
+                autoComplete="new-password"
                 fullWidth
               />
             </StyledFormRow>
             <StyledFormRow>
               <TextInput
-                label="API Key (optional)"
+                label={t`API Key (optional)`}
                 value={apiKey}
                 onChange={setApiKey}
                 placeholder="SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -255,10 +268,12 @@ export const TwilioSettings = () => {
             </StyledFormRow>
             <StyledFormRow>
               <TextInput
-                label="API Secret (optional)"
+                label={t`API Secret (optional)`}
                 value={apiSecret}
                 onChange={setApiSecret}
-                placeholder="Your API secret"
+                placeholder={t`Your API secret`}
+                type="password"
+                autoComplete="new-password"
                 fullWidth
               />
             </StyledFormRow>
@@ -268,7 +283,7 @@ export const TwilioSettings = () => {
         <StyledButtonRow>
           {!showByokForm && (
             <Button
-              title="Use Own Twilio Account"
+              title={t`Use Own Twilio Account`}
               Icon={IconKey}
               variant="secondary"
               onClick={() => {
@@ -282,14 +297,14 @@ export const TwilioSettings = () => {
             <>
               <Button
                 title={
-                  saving ? 'Testing & Saving...' : 'Test Connection & Save'
+                  saving ? t`Testing & Saving...` : t`Test Connection & Save`
                 }
                 Icon={saving ? IconRefresh : IconCheck}
                 onClick={() => void handleSaveByok()}
                 disabled={saving || !accountSid || !authToken}
               />
               <Button
-                title="Cancel"
+                title={t`Cancel`}
                 Icon={IconX}
                 variant="secondary"
                 onClick={() => {
@@ -301,7 +316,7 @@ export const TwilioSettings = () => {
           )}
           {isConfigured && !showByokForm && (
             <Button
-              title={saving ? 'Resetting...' : 'Reset Configuration'}
+              title={saving ? t`Resetting...` : t`Reset Configuration`}
               Icon={IconX}
               variant="secondary"
               onClick={() => void handleDelete()}
@@ -310,7 +325,7 @@ export const TwilioSettings = () => {
           )}
           {!showByokForm && (
             <Button
-              title="Refresh"
+              title={t`Refresh`}
               Icon={IconRefresh}
               variant="tertiary"
               onClick={() => void loadConfig()}

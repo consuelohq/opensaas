@@ -32757,6 +32757,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"consuelo-docs@workspace:packages/consuelo-docs":
+  version: 0.0.0-use.local
+  resolution: "consuelo-docs@workspace:packages/consuelo-docs"
+  dependencies:
+    mintlify: "npm:latest"
+    twenty-shared: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "consuelo@workspace:.":
   version: 0.0.0-use.local
   resolution: "consuelo@workspace:."
@@ -59124,15 +59133,6 @@ __metadata:
 "twenty-cli@workspace:packages/twenty-cli":
   version: 0.0.0-use.local
   resolution: "twenty-cli@workspace:packages/twenty-cli"
-  languageName: unknown
-  linkType: soft
-
-"twenty-docs@workspace:packages/twenty-docs":
-  version: 0.0.0-use.local
-  resolution: "twenty-docs@workspace:packages/twenty-docs"
-  dependencies:
-    mintlify: "npm:latest"
-    twenty-shared: "workspace:*"
   languageName: unknown
   linkType: soft
 

@@ -1,3 +1,5 @@
+import { captureException } from '@sentry/react';
+
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 
@@ -60,6 +62,7 @@ const handlers: Record<
       );
       return { command: 'me', data: metrics };
     } catch (err: unknown) {
+      captureException(err, { extra: { context: 'slash-command:me' } });
       return {
         command: 'me',
         data: null,
@@ -73,6 +76,7 @@ const handlers: Record<
       const health = await apiFetch<HealthData>('/health');
       return { command: 'status', data: health };
     } catch (err: unknown) {
+      captureException(err, { extra: { context: 'slash-command:status' } });
       return {
         command: 'status',
         data: null,
@@ -89,6 +93,9 @@ const handlers: Record<
       );
       return { command: 'contacts-search', data: contacts };
     } catch (err: unknown) {
+      captureException(err, {
+        extra: { context: 'slash-command:contacts-search' },
+      });
       return {
         command: 'contacts-search',
         data: null,
@@ -104,6 +111,7 @@ const handlers: Record<
       );
       return { command: 'history', data: calls };
     } catch (err: unknown) {
+      captureException(err, { extra: { context: 'slash-command:history' } });
       return {
         command: 'history',
         data: null,
