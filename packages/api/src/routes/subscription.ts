@@ -8,9 +8,42 @@ import {
   createPortalSession,
   PRICE_IDS,
 } from '../services/subscription.js';
-import { createLogger } from '@consuelo/logger';
 
-const logger = createLogger('api:subscription');
+let _logger: { info: (message: string, meta?: Record<string, unknown>) => void } | null = null;
+const getLogger = async () => {
+  if (!_logger) {
+    const { createLogger } = await import('@consuelo/logger');
+    _logger = createLogger('api:subscription');
+  }
+  return _logger;
+};
+
+const ALLOWED_ORIGINS = (process.env.ALLOWED_URL_ORIGINS ?? 'consuelohq.com,localhost')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
+const validateAbsoluteUrl = (url: string): { valid: true; origin: string } | { valid: false; error: string } => {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.protocol.startsWith('http')) {
+      return { valid: false, error: 'URL must use http or https protocol' };
+    }
+    const hostname = parsed.hostname.toLowerCase();
+    const isAllowed = ALLOWED_ORIGINS.some((allowed) => {
+      if (allowed.startsWith('.')) {
+        return hostname.endsWith(allowed) || hostname === allowed.slice(1);
+      }
+      return hostname === allowed || hostname.endsWith('.' + allowed);
+    });
+    if (!isAllowed) {
+      return { valid: false, error: 'URL origin not allowed' };
+    }
+    return { valid: true, origin: parsed.origin };
+  } catch {
+    return { valid: false, error: 'Invalid URL format' };
+  }
+};
 
 interface CheckoutBody {
   priceIds?: string[];
@@ -53,6 +86,30 @@ export const subscriptionRoutes = (): RouteDefinition[] => [
           error: {
             code: 'BAD_REQUEST',
             message: 'successUrl and cancelUrl required',
+          },
+        });
+        return;
+      }
+
+      const successUrlValidation = validateAbsoluteUrl(body.successUrl);
+      if (!successUrlValidation.valid) {
+        Sentry.captureMessage(`Invalid successUrl: ${successUrlValidation.error}`, 'warning');
+        res.status(400).json({
+          error: {
+            code: 'BAD_REQUEST',
+            message: `Invalid successUrl: ${successUrlValidation.error}`,
+          },
+        });
+        return;
+      }
+
+      const cancelUrlValidation = validateAbsoluteUrl(body.cancelUrl);
+      if (!cancelUrlValidation.valid) {
+        Sentry.captureMessage(`Invalid cancelUrl: ${cancelUrlValidation.error}`, 'warning');
+        res.status(400).json({
+          error: {
+            code: 'BAD_REQUEST',
+            message: `Invalid cancelUrl: ${cancelUrlValidation.error}`,
           },
         });
         return;
@@ -104,7 +161,7 @@ export const subscriptionRoutes = (): RouteDefinition[] => [
         body.cancelUrl,
       );
 
-      logger.info('checkout.initiated', {
+      (await getLogger())?.info('checkout.initiated', {
         userId: auth.userId,
         workspaceId: auth.workspaceId,
       });
@@ -130,12 +187,24 @@ export const subscriptionRoutes = (): RouteDefinition[] => [
         return;
       }
 
+      const returnUrlValidation = validateAbsoluteUrl(body.returnUrl);
+      if (!returnUrlValidation.valid) {
+        Sentry.captureMessage(`Invalid returnUrl: ${returnUrlValidation.error}`, 'warning');
+        res.status(400).json({
+          error: {
+            code: 'BAD_REQUEST',
+            message: `Invalid returnUrl: ${returnUrlValidation.error}`,
+          },
+        });
+        return;
+      }
+
       const result = await createPortalSession(
         auth.workspaceId,
         body.returnUrl,
       );
 
-      logger.info('portal.opened', {
+      (await getLogger())?.info('portal.opened', {
         userId: auth.userId,
         workspaceId: auth.workspaceId,
       });

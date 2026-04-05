@@ -101,11 +101,9 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Health check failed';
-        res
-          .status(500)
-          .json({ error: { code: 'HEALTH_CHECK_ERROR', message } });
+        res.status(500).json({
+          error: { code: 'HEALTH_CHECK_ERROR', message: 'Health check failed' },
+        });
       }
     }),
   },
@@ -148,11 +146,9 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to get twilio config';
-        res
-          .status(500)
-          .json({ error: { code: 'CONFIG_ERROR', message } });
+        res.status(500).json({
+          error: { code: 'CONFIG_ERROR', message: 'Unable to retrieve Twilio configuration' },
+        });
       }
     }),
   },
@@ -276,9 +272,6 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to save twilio config';
-        // distinguish validation errors from save errors
         const isValidationError =
           err instanceof Error &&
           (err.message.includes('authenticate') ||
@@ -289,7 +282,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
             code: isValidationError ? 'INVALID_CREDENTIALS' : 'CONFIG_ERROR',
             message: isValidationError
               ? 'Invalid Twilio credentials'
-              : message,
+              : 'Failed to save Twilio configuration',
           },
         });
       }
@@ -316,11 +309,9 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         res.status(200).json({ deleted: true });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to delete twilio config';
-        res
-          .status(500)
-          .json({ error: { code: 'CONFIG_ERROR', message } });
+        res.status(500).json({
+          error: { code: 'CONFIG_ERROR', message: 'Failed to delete Twilio configuration' },
+        });
       }
     }),
   },
