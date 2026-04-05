@@ -7,11 +7,16 @@ import { getSharedPool } from '../shared/db.js';
 // lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
 let _logger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void; error: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
 const getLogger = async () => {
-  if (!_logger) {
-    const { createLogger } = await import('@consuelo/logger');
-    _logger = createLogger('twilio-config');
+  try {
+    if (!_logger) {
+      const { createLogger } = await import('@consuelo/logger');
+      _logger = createLogger('twilio-config');
+    }
+    return _logger;
+  } catch (err: unknown) {
+    Sentry.captureException(err);
+    throw err;
   }
-  return _logger;
 };
 
 export type TwilioMode = 'hosted' | 'byok';
@@ -142,8 +147,11 @@ export const provisionSubAccount = async (
     // create TwiML app on the sub-account
     const subClient = createClient(subAccount.sid, subAccount.authToken);
     const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('API_BASE_URL environment variable is required for TwiML App creation');
+    }
     const twimlApp = await subClient.applications.create({
-      voiceUrl: baseUrl ? `${baseUrl}/v1/voice/twiml` : '',
+      voiceUrl: `${baseUrl}/v1/voice/twiml`,
       voiceMethod: 'POST',
       friendlyName: 'Consuelo Dialer',
     });
@@ -247,8 +255,11 @@ export const ensureOrCreateTwimlApp = async (
 
     // create new app
     const baseUrl = process.env.API_BASE_URL;
+    if (!baseUrl) {
+      throw new Error('API_BASE_URL environment variable is required for TwiML App creation');
+    }
     const app = await client.applications.create({
-      voiceUrl: baseUrl ? `${baseUrl}/v1/voice/twiml` : '',
+      voiceUrl: `${baseUrl}/v1/voice/twiml`,
       voiceMethod: 'POST',
       friendlyName: TWIML_APP_NAME,
     });

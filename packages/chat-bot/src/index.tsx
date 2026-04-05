@@ -1,6 +1,6 @@
 /** @jsxImportSource chat */
 import { createLogger } from '@consuelo/logger';
-import { getAuth, removeAuth } from './auth.js';
+import { getAuth, removeAuth, type DiscordAuth } from './auth.js';
 import { createApiClient } from './api-client.js';
 import { QueueDialer, formatProgressText, formatSummaryText } from './queue-dialer.js';
 import type { CallEvent } from './queue-dialer.js';
@@ -8,7 +8,6 @@ import { buildPostCallCard, buildDispositionConfirmCard } from './post-call-card
 import { ChannelNotifier } from './channel-notifications.js';
 import { TransferManager } from './transfer-manager.js';
 import type { Disposition } from './post-call-card.js';
-import type { DiscordAuth } from './auth.js';
 
 const logger = createLogger('chat-bot');
 

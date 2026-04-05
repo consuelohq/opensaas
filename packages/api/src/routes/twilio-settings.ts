@@ -1,6 +1,6 @@
-import { errorHandler } from '../middleware/error-handler.js';
-import type { RouteDefinition } from './index.js';
-import * as Sentry from '@sentry/node';
+import { errorHandler } from "../middleware/error-handler.js";
+import type { RouteDefinition } from "./index.js";
+import * as Sentry from "@sentry/node";
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
@@ -10,15 +10,18 @@ import {
   maskCredential,
   ensureOrCreateTwimlApp,
   syncTwimlAppUrl,
-} from '../services/twilio-config.js';
-import { invalidateDialerCache } from '../shared/dialer.js';
+} from "../services/twilio-config.js";
+import { invalidateDialerCache } from "../shared/dialer.js";
 
-// lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
-let _settingsLogger: { info: (message: string, attributes?: Record<string, unknown>) => void; warn: (message: string, attributes?: Record<string, unknown>) => void; error: (message: string, attributes?: Record<string, unknown>) => void } | null = null;
+let _settingsLogger: {
+  info: (message: string, attributes?: Record<string, unknown>) => void;
+  warn: (message: string, attributes?: Record<string, unknown>) => void;
+  error: (message: string, attributes?: Record<string, unknown>) => void;
+} | null = null;
 const getLogger = async () => {
   if (!_settingsLogger) {
-    const { createLogger } = await import('@consuelo/logger');
-    _settingsLogger = createLogger('api:twilio-settings');
+    const { createLogger } = await import("@consuelo/logger");
+    _settingsLogger = createLogger("api:twilio-settings");
   }
   return _settingsLogger;
 };
@@ -30,16 +33,35 @@ interface ByokBody {
   apiSecret?: string;
 }
 
+const isTwilioAuthError = (err: unknown): boolean => {
+  if (err instanceof Error) {
+    if (
+      /\b20003\b/.test(err.message) ||
+      /authenticate/i.test(err.message) ||
+      /\b401\b/.test(err.message)
+    ) {
+      return true;
+    }
+  }
+  if (err && typeof err === "object") {
+    const e = err as { status?: number; code?: number; statusCode?: number };
+    const status = e.status ?? e.statusCode;
+    if (status === 401 || e.code === 20003) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const twilioSettingsRoutes = (): RouteDefinition[] => [
-  // health check — literal route before any param routes (ROUTE_ORDER)
   {
-    method: 'GET',
-    path: '/v1/settings/twilio/health',
+    method: "GET",
+    path: "/v1/settings/twilio/health",
     handler: errorHandler(async (req, res) => {
       const workspaceId = req.auth?.workspaceId;
       if (!workspaceId) {
         res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          error: { code: "UNAUTHORIZED", message: "Auth required" },
         });
         return;
       }
@@ -49,7 +71,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         if (!config || !config.twimlAppSid) {
           res.status(200).json({
             healthy: false,
-            issues: ['No TwiML App configured for this workspace'],
+            issues: ["No TwiML App configured for this workspace"],
           });
           return;
         }
@@ -57,7 +79,6 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         const creds = getDecryptedCredentials(config);
         const issues: string[] = [];
 
-        // try to sync URL (also verifies app exists)
         try {
           const syncResult = await syncTwimlAppUrl(
             creds.accountSid,
@@ -65,12 +86,17 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
             config.twimlAppSid,
           );
           if (syncResult.updated) {
-            issues.push('TwiML App voice URL was outdated and has been updated');
+            issues.push(
+              "TwiML App voice URL was outdated and has been updated",
+            );
           }
         } catch (fetchErr: unknown) {
-          const fetchMessage = fetchErr instanceof Error ? fetchErr.message : 'unknown error';
-          // app might be deleted — try to re-create
-          if (fetchMessage.includes('20404') || fetchMessage.includes('not found')) {
+          const fetchMessage =
+            fetchErr instanceof Error ? fetchErr.message : "unknown error";
+          if (
+            fetchMessage.includes("20404") ||
+            fetchMessage.includes("not found")
+          ) {
             try {
               const newSid = await ensureOrCreateTwimlApp(
                 creds.accountSid,
@@ -78,13 +104,20 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
                 workspaceId,
               );
               invalidateDialerCache(workspaceId);
-              issues.push(`TwiML App was missing and has been re-created (${newSid})`);
+              issues.push(
+                `TwiML App was missing and has been re-created (${newSid})`,
+              );
             } catch (createErr: unknown) {
-              const createMessage = createErr instanceof Error ? createErr.message : 'unknown error';
+              const createMessage =
+                createErr instanceof Error
+                  ? createErr.message
+                  : "unknown error";
               res.status(200).json({
                 healthy: false,
                 twimlAppSid: config.twimlAppSid,
-                issues: [`TwiML App deleted and re-creation failed: ${createMessage}`],
+                issues: [
+                  `TwiML App deleted and re-creation failed: ${createMessage}`,
+                ],
               });
               return;
             }
@@ -95,29 +128,28 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
 
         const updatedConfig = await getWorkspaceTwilioConfig(workspaceId);
         res.status(200).json({
-          healthy: issues.length === 0 || issues.every((i) => i.includes('has been')),
+          healthy:
+            issues.length === 0 || issues.every((i) => i.includes("has been")),
           twimlAppSid: updatedConfig?.twimlAppSid ?? config.twimlAppSid,
           issues,
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Health check failed';
-        res
-          .status(500)
-          .json({ error: { code: 'HEALTH_CHECK_ERROR', message } });
+        res.status(500).json({
+          error: { code: "HEALTH_CHECK_ERROR", message: "Health check failed" },
+        });
       }
     }),
   },
 
   {
-    method: 'GET',
-    path: '/v1/settings/twilio',
+    method: "GET",
+    path: "/v1/settings/twilio",
     handler: errorHandler(async (req, res) => {
       const workspaceId = req.auth?.workspaceId;
       if (!workspaceId) {
         res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          error: { code: "UNAUTHORIZED", message: "Auth required" },
         });
         return;
       }
@@ -129,7 +161,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         if (!config) {
           res.status(200).json({
             configured: false,
-            mode: hosted ? 'hosted' : null,
+            mode: hosted ? "hosted" : null,
             hostedAvailable: hosted,
           });
           return;
@@ -142,46 +174,52 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
           hostedAvailable: hosted,
           accountSid: maskCredential(creds.accountSid),
           twimlAppSid: config.twimlAppSid ?? null,
-          ...(config.mode === 'byok' && creds.apiKey
+          ...(config.mode === "byok" && creds.apiKey
             ? { apiKey: maskCredential(creds.apiKey) }
             : {}),
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to get twilio config';
-        res
-          .status(500)
-          .json({ error: { code: 'CONFIG_ERROR', message } });
+        res.status(500).json({
+          error: {
+            code: "CONFIG_ERROR",
+            message: "Unable to retrieve Twilio configuration",
+          },
+        });
       }
     }),
   },
 
   {
-    method: 'POST',
-    path: '/v1/settings/twilio/test',
+    method: "POST",
+    path: "/v1/settings/twilio/test",
     handler: errorHandler(async (req, res) => {
       const workspaceId = req.auth?.workspaceId;
       if (!workspaceId) {
         res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          error: { code: "UNAUTHORIZED", message: "Auth required" },
         });
         return;
       }
 
       const body = req.body as ByokBody | undefined;
-      if (!body?.accountSid || !body?.authToken) {
+      if (
+        typeof body?.accountSid !== "string" ||
+        !body.accountSid ||
+        typeof body?.authToken !== "string" ||
+        !body.authToken
+      ) {
         res.status(400).json({
           error: {
-            code: 'INVALID_REQUEST',
-            message: 'Missing accountSid or authToken',
+            code: "INVALID_REQUEST",
+            message: "Missing accountSid or authToken",
           },
         });
         return;
       }
 
       try {
-        const twilio = await import('twilio');
+        const twilio = await import("twilio");
         const createClient =
           twilio.default ??
           (twilio as unknown as { default: typeof twilio.default }).default;
@@ -190,18 +228,14 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         res.status(200).json({ valid: true });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Connection test failed';
-        const isAuthError =
-          err instanceof Error &&
-          (err.message.includes('authenticate') ||
-            err.message.includes('401') ||
-            err.message.includes('20003'));
+        const isAuthError = isTwilioAuthError(err);
         res.status(isAuthError ? 400 : 500).json({
           valid: false,
           error: {
-            code: isAuthError ? 'INVALID_CREDENTIALS' : 'CONNECTION_ERROR',
-            message: isAuthError ? 'Invalid Twilio credentials' : message,
+            code: isAuthError ? "INVALID_CREDENTIALS" : "CONNECTION_ERROR",
+            message: isAuthError
+              ? "Invalid Twilio credentials"
+              : "Connection test failed",
           },
         });
       }
@@ -209,31 +243,35 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
   },
 
   {
-    method: 'PUT',
-    path: '/v1/settings/twilio',
+    method: "PUT",
+    path: "/v1/settings/twilio",
     handler: errorHandler(async (req, res) => {
       const workspaceId = req.auth?.workspaceId;
       if (!workspaceId) {
         res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          error: { code: "UNAUTHORIZED", message: "Auth required" },
         });
         return;
       }
 
       const body = req.body as ByokBody | undefined;
-      if (!body?.accountSid || !body?.authToken) {
+      if (
+        typeof body?.accountSid !== "string" ||
+        !body.accountSid ||
+        typeof body?.authToken !== "string" ||
+        !body.authToken
+      ) {
         res.status(400).json({
           error: {
-            code: 'INVALID_REQUEST',
-            message: 'Missing accountSid or authToken',
+            code: "INVALID_REQUEST",
+            message: "Missing accountSid or authToken",
           },
         });
         return;
       }
 
       try {
-        // validate credentials against twilio API
-        const twilio = await import('twilio');
+        const twilio = await import("twilio");
         const createClient =
           twilio.default ??
           (twilio as unknown as { default: typeof twilio.default }).default;
@@ -247,7 +285,6 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
           apiSecret: body.apiSecret,
         });
 
-        // auto-create TwiML App (best-effort — creds are saved regardless)
         let twimlAppSid: string | undefined;
         let twimlWarning: string | undefined;
         try {
@@ -257,9 +294,10 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
             workspaceId,
           );
         } catch (twimlErr: unknown) {
-          const twimlMessage = twimlErr instanceof Error ? twimlErr.message : 'unknown error';
+          const twimlMessage =
+            twimlErr instanceof Error ? twimlErr.message : "unknown error";
           twimlWarning = `TwiML App auto-creation failed: ${twimlMessage}`;
-          (await getLogger()).warn('TwiML App auto-creation failed for BYOK', {
+          (await getLogger()).warn("TwiML App auto-creation failed for BYOK", {
             workspaceId,
             error: twimlMessage,
           });
@@ -267,29 +305,25 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
 
         invalidateDialerCache(workspaceId);
 
-        (await getLogger()).info('twilio BYOK config saved', { workspaceId, twimlAppSid });
+        (await getLogger()).info("twilio BYOK config saved", {
+          workspaceId,
+          twimlAppSid,
+        });
         res.status(200).json({
-          mode: 'byok',
+          mode: "byok",
           accountSid: maskCredential(body.accountSid),
           twimlAppSid: twimlAppSid ?? null,
           ...(twimlWarning ? { warning: twimlWarning } : {}),
         });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to save twilio config';
-        // distinguish validation errors from save errors
-        const isValidationError =
-          err instanceof Error &&
-          (err.message.includes('authenticate') ||
-            err.message.includes('401') ||
-            err.message.includes('20003'));
+        const isValidationError = isTwilioAuthError(err);
         res.status(isValidationError ? 400 : 500).json({
           error: {
-            code: isValidationError ? 'INVALID_CREDENTIALS' : 'CONFIG_ERROR',
+            code: isValidationError ? "INVALID_CREDENTIALS" : "CONFIG_ERROR",
             message: isValidationError
-              ? 'Invalid Twilio credentials'
-              : message,
+              ? "Invalid Twilio credentials"
+              : "Failed to save Twilio configuration",
           },
         });
       }
@@ -297,13 +331,13 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
   },
 
   {
-    method: 'DELETE',
-    path: '/v1/settings/twilio',
+    method: "DELETE",
+    path: "/v1/settings/twilio",
     handler: errorHandler(async (req, res) => {
       const workspaceId = req.auth?.workspaceId;
       if (!workspaceId) {
         res.status(401).json({
-          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+          error: { code: "UNAUTHORIZED", message: "Auth required" },
         });
         return;
       }
@@ -312,15 +346,16 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         await deleteWorkspaceTwilioConfig(workspaceId);
         invalidateDialerCache(workspaceId);
 
-        (await getLogger()).info('twilio config deleted', { workspaceId });
+        (await getLogger()).info("twilio config deleted", { workspaceId });
         res.status(200).json({ deleted: true });
       } catch (err: unknown) {
         Sentry.captureException(err);
-        const message =
-          err instanceof Error ? err.message : 'Failed to delete twilio config';
-        res
-          .status(500)
-          .json({ error: { code: 'CONFIG_ERROR', message } });
+        res.status(500).json({
+          error: {
+            code: "CONFIG_ERROR",
+            message: "Failed to delete Twilio configuration",
+          },
+        });
       }
     }),
   },

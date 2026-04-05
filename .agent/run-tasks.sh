@@ -238,7 +238,7 @@ fi
 get_agent_cmd() {
   local agent_type="${1:-kiro}"
   if [ "$agent_type" = "opencode" ]; then
-    echo "/opt/homebrew/bin/opencode run --attach http://localhost:4096 -m opencode-go/glm-5 --dir ${AGENT_WORKTREE:-$PROJECT_ROOT}"
+    echo "/opt/homebrew/bin/opencode run --attach http://localhost:8080 --dir ${AGENT_WORKTREE:-$PROJECT_ROOT}"
   else
     echo "$KIRO_CMD"
   fi
@@ -324,8 +324,7 @@ PROMPT_EOF
 
   if [ "$agent_type" = "opencode" ]; then
     /opt/homebrew/bin/opencode run \
-      --attach http://localhost:4096 \
-      -m opencode-go/glm-5 \
+      --attach http://localhost:8080 \
       --dir "${AGENT_WORKTREE:-$PROJECT_ROOT}" \
       "$prompt_text" 2>&1 | tee "$task_log"
   else
@@ -1259,6 +1258,8 @@ create_run_branch() {
 
   # Work directly in main repo on staging (kiro-cli resolves project root from .kiro)
   setup_workspace
+  # Re-anchor shell cwd — setup_workspace recreates the worktree dir (new inode)
+  cd "$AGENT_WORKTREE" || { log_error "Cannot cd to worktree after setup"; exit 1; }
 
   log_success "Staging branch ready (run $RUN_ID)"
 }
@@ -1267,6 +1268,7 @@ create_run_branch() {
 PR_URL=""
 # Reuse existing staging→main PR or create one
 create_draft_pr() {
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_count="$1"
   local issue_list="$2"
 
@@ -1319,6 +1321,7 @@ $issue_list" \
 
 # Push commits after each task completes
 push_task_commits() {
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_number="$1"
 
   log_info "Pushing commits for issue #$issue_number..."
@@ -1486,6 +1489,8 @@ $ai_prompt
 
 # Process a single issue using fresh subprocess (commits to the shared run branch)
 process_issue() {
+  # Ensure we're in the worktree (cwd can go stale if dir was recreated)
+  cd "$AGENT_WORKTREE" || cd "$PROJECT_ROOT" || { log_error "Cannot cd to worktree or project root"; return 1; }
   local issue_json="$1"
   local issue_number=$(parse_issue_number "$issue_json")
   local issue_title=$(parse_issue_title "$issue_json")

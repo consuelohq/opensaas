@@ -305,16 +305,15 @@ if [ -f "$PROMPT_FILE" ] && [ -n "$CHANGED_FILES" ]; then
   else
     echo -e "${RED}FAIL${NC}"
     echo ""
-    echo -e "  ${BOLD}original prompt:${NC}"
-    cat "$PROMPT_FILE"
-    echo ""
-    echo -e "  ${RED}→ re-read the prompt above. verify your changes match.${NC}"
-    echo -e "  ${RED}→ then run: echo 'confirmed' > /tmp/kiro-spec-confirmed${NC}"
-    echo -e "  ${RED}→ then re-run this script.${NC}"
+    echo -e "  ${BOLD}CHANGED_FILES is set but no saved prompt found.${NC}"
+    echo -e "  ${RED}→ Missing: /tmp/kiro-last-prompt.txt${NC}"
+    echo -e "  ${RED}→ Either restore the prompt file, or confirm the changes are correct:${NC}"
+    echo -e "  ${RED}→   echo 'confirmed' > /tmp/kiro-spec-confirmed${NC}"
+    echo -e "  ${RED}→ Then re-run this script.${NC}"
     FAIL=1
   fi
 else
-  echo -e "${GREEN}PASS${NC} (no saved prompt)"
+  echo -e "${GREEN}PASS${NC} (no changed files to verify)"
 fi
 SPEC_FAIL=$FAIL
 

@@ -14,17 +14,19 @@ import type {
 const COMMAND_PREFIX = '/consuelo ';
 
 export const parseSlashCommand = (input: string): ParsedCommand | null => {
-  const trimmed = input.trim().toLowerCase();
-  if (!trimmed.startsWith(COMMAND_PREFIX)) return null;
+  const trimmedOriginal = input.trim();
+  const trimmedLower = trimmedOriginal.toLowerCase();
+  if (!trimmedLower.startsWith(COMMAND_PREFIX)) return null;
 
-  const rest = trimmed.slice(COMMAND_PREFIX.length).trim();
+  const restLower = trimmedLower.slice(COMMAND_PREFIX.length).trim();
 
-  if (rest === 'me') return { command: 'me', args: {} };
-  if (rest === 'status') return { command: 'status', args: {} };
-  if (rest === 'history') return { command: 'history', args: {} };
+  if (restLower === 'me') return { command: 'me', args: {} };
+  if (restLower === 'status') return { command: 'status', args: {} };
+  if (restLower === 'history') return { command: 'history', args: {} };
 
-  if (rest.startsWith('contacts search ')) {
-    const query = rest.slice('contacts search '.length).trim();
+  if (restLower.startsWith('contacts search ')) {
+    const restOriginal = trimmedOriginal.slice(COMMAND_PREFIX.length).trim();
+    const query = restOriginal.slice('contacts search '.length).trim();
     if (query) return { command: 'contacts-search', args: { query } };
   }
 
