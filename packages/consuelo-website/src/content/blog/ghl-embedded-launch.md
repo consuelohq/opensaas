@@ -114,6 +114,26 @@ mercury runs every call as a twilio conference. you, the customer, and anyone yo
 
 this is the infrastructure big contact centers use. now it's in your ghl sidebar for $20/month.
 
+### full in-call control (mute, hold, dtmf, transfer)
+
+once you're on a call, mercury gives you everything you need:
+
+| control | what it does | hotkey |
+|---------|--------------|--------|
+| **mute** | silence your mic | `m` |
+| **hold** | caller hears hold music | `h` |
+| **keypad** | send dtmf tones for ivrs | click or type digits |
+| **transfer** | warm or cold transfer | `t` |
+| **hang up** | end the call | `q` or click |
+
+**status always visible:** call duration, hold state, mute state, and transfer status appear in a clean status bar. your rep always knows what's happening.
+
+**dtmf for ivrs:** navigating phone trees? click the keypad icon and press digits, or just type them. mercury sends the tones automatically.
+
+**hold that works:** put a caller on hold, they hear professional hold music. take them off hold, audio resumes instantly. no awkward "are you still there?" moments.
+
+all controls have keyboard shortcuts. no mouse hunting while talking.
+
 ### script uploading (consistent messaging)
 
 upload your sales scripts. mercury trains the ai on your talking points, objection handlers, and compliance requirements. every rep says the right thing every time.
@@ -150,10 +170,13 @@ mercury's automation + real-time coaching + complete call logging attacks all of
 
 **during the call:**
 - one-click dial from ghl contacts
-- local presence for higher answer rates  
+- local presence for higher answer rates
 - real-time ai coaching whispers
 - script guidance and objection handling
 - spam shield protection
+- warm & cold transfers (keyboard: `t`)
+- mute, hold, and dtmf controls
+- conference calls with multiple parties
 
 **after the call:**
 - automatic logging to ghl conversations
