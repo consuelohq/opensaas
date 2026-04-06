@@ -203,8 +203,14 @@ export class CallsService {
         return null;
       }
 
+      const updatedRow = rows[0] as {
+        id: string;
+        outcome: string | null;
+      };
+
       return {
-        ...rows[0],
+        id: updatedRow.id,
+        outcome: updatedRow.outcome,
         notes: notes ?? null,
       };
     } finally {

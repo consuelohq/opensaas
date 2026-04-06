@@ -80,9 +80,15 @@ const OpportunityCallingWorkspaceContent = ({
   const callAssistMode = useRecoilValue(callAssistModeState);
   const callState = useRecoilValue(callStateAtom);
   const { selectedScript } = useCoachingScripts();
-  const { wrapUpState, continueList, endList } = useOpportunityQueueWorkspace({
-    listId,
-  });
+  const {
+    wrapUpState,
+    continueList,
+    endList,
+    pauseList,
+    resumeList,
+    skipCurrentListMember,
+    restartList,
+  } = useOpportunityQueueWorkspace({ listId });
   const { getIcon } = useIcons();
   const navigate = useNavigate();
   const [selectedTabId, setSelectedTabId] = useState('coaching');
@@ -127,7 +133,12 @@ const OpportunityCallingWorkspaceContent = ({
   return (
     <StyledContainer>
       <StyledSidebar>
-        <QueuePanel />
+        <QueuePanel
+          onPauseQueue={pauseList}
+          onResumeQueue={resumeList}
+          onSkipQueueItem={skipCurrentListMember}
+          onRestartQueue={restartList}
+        />
       </StyledSidebar>
 
       <StyledMain>

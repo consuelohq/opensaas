@@ -26,6 +26,7 @@ import {
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 
 type ListMemberWorkspaceRecord = ObjectRecord & {
@@ -41,12 +42,44 @@ type ListMemberWorkspaceRecord = ObjectRecord & {
     company?: string | null;
     email?: string | null;
     avatarUrl?: string | null;
+    phone?: string | null;
+    phones?: unknown;
   } | null;
   personId?: string | null;
   phoneNumber?: unknown;
 };
 
 type WrapUpOutcome = 'answered' | 'no-answer';
+
+type BackendQueueItem = {
+  id: string;
+  contact_id: string;
+  position: number;
+  status: string;
+  attempts?: number | null;
+  last_attempt_at?: string | null;
+  call_outcome?: string | null;
+  skip_reason?: string | null;
+  call_duration_seconds?: number | null;
+};
+
+type BackendQueue = {
+  id: string;
+  name: string;
+  source_type?: string;
+  source_id?: string | null;
+  category?: string;
+  status: string;
+  total_contacts?: number;
+  completed_contacts?: number;
+  skipped_contacts?: number;
+  settings?: Record<string, unknown> | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  items?: BackendQueueItem[];
+};
 
 export type OpportunityWrapUpState = {
   listMemberId: string;
@@ -138,6 +171,51 @@ const mapWrapUpDispositionToQueueOutcome = (
   }
 };
 
+const mapBackendOutcomeToQueueOutcome = (
+  outcome: string | null | undefined,
+): QueueOutcome | null => {
+  switch (outcome) {
+    case 'connected':
+      return 'connected';
+    case 'no-answer':
+      return 'no-answer';
+    case 'voicemail':
+      return 'voicemail';
+    case 'busy':
+      return 'busy';
+    case 'wrong-number':
+      return 'wrong-number';
+    case 'callback-requested':
+    case 'follow-up':
+      return 'callback-requested';
+    case 'not-interested':
+      return 'not-interested';
+    case 'qualified':
+      return 'qualified';
+    case 'dnc':
+      return 'dnc';
+    default:
+      return null;
+  }
+};
+
+const mapBackendStatusToQueueItemStatus = (
+  status: string | null | undefined,
+): QueueItem['status'] => {
+  switch (status) {
+    case 'calling':
+      return 'calling';
+    case 'completed':
+      return 'completed';
+    case 'skipped':
+      return 'skipped';
+    case 'failed':
+      return 'failed';
+    default:
+      return 'pending';
+  }
+};
+
 const mapRecordToDialerContact = (
   record: ListMemberWorkspaceRecord,
   fallbackPhoneNumber: string,
@@ -151,6 +229,15 @@ const mapRecordToDialerContact = (
   email: record.person?.email ?? null,
   avatarUrl: record.person?.avatarUrl ?? null,
 });
+
+const getListMemberPhoneNumber = (record: ListMemberWorkspaceRecord) => {
+  return (
+    extractPhoneNumber(record.phoneNumber) ??
+    extractPhoneNumber(record.person?.phones) ??
+    extractPhoneNumber(record.person?.phone) ??
+    null
+  );
+};
 
 export const useOpportunityQueueWorkspace = ({
   listId,
@@ -176,6 +263,7 @@ export const useOpportunityQueueWorkspace = ({
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const callState = useRecoilValue(callStateAtom);
+  const { updateOneRecord } = useUpdateOneRecord();
 
   const setActiveQueue = useSetRecoilState(activeQueueState);
   const setQueueItems = useSetRecoilState(queueItemsState);
@@ -186,16 +274,47 @@ export const useOpportunityQueueWorkspace = ({
   const setPhoneNumber = useSetRecoilState(phoneNumberState);
   const setCallState = useSetRecoilState(callStateAtom);
 
-  const { connect } = useTwilioDevice();
-  const { advanceQueue, completeQueue, recordResult } = useQueueOperations();
+  const { connect, disconnect } = useTwilioDevice();
+  const { recordResult } = useQueueOperations();
 
   const [wrapUpState, setWrapUpState] = useState<OpportunityWrapUpState | null>(
     null,
   );
+  const [backendQueue, setBackendQueue] = useState<BackendQueue | null>(null);
 
   const { records } = useFindManyRecords<ListMemberWorkspaceRecord>({
     objectNameSingular: 'listMember',
     filter: { listId: { eq: listId } },
+    recordGqlFields: {
+      id: true,
+      position: true,
+      status: true,
+      disposition: true,
+      personId: true,
+      phoneNumber: {
+        primaryPhoneNumber: true,
+        additionalPhones: {
+          number: true,
+          label: true,
+        },
+      },
+      person: {
+        id: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        avatarUrl: true,
+        phone: true,
+        phones: {
+          primaryPhoneNumber: true,
+          additionalPhones: {
+            number: true,
+            label: true,
+          },
+        },
+      },
+    },
   });
 
   const orderedRecords = useMemo(() => {
@@ -204,37 +323,167 @@ export const useOpportunityQueueWorkspace = ({
     );
   }, [records]);
 
+  const callableRecords = useMemo(() => {
+    return orderedRecords.filter(
+      (record) => getListMemberPhoneNumber(record) !== null,
+    );
+  }, [orderedRecords]);
+
+  const backendQueueItemsByContactId = useMemo(() => {
+    return new Map(
+      (backendQueue?.items ?? []).map((item) => [item.contact_id, item]),
+    );
+  }, [backendQueue?.items]);
+
+  const updateListRecord = useCallback(
+    async (updateOneRecordInput: Record<string, unknown>) => {
+      await updateOneRecord({
+        objectNameSingular: 'opportunity',
+        idToUpdate: listId,
+        updateOneRecordInput,
+      });
+    },
+    [listId, updateOneRecord],
+  );
+
+  const syncCurrentIndexFromContactId = useCallback(
+    async (contactId: string | null | undefined) => {
+      if (!contactId) {
+        return;
+      }
+
+      const nextIndex = callableRecords.findIndex(
+        (record) => record.id === contactId,
+      );
+
+      if (nextIndex < 0 || nextIndex === persistedCurrentIndex) {
+        return;
+      }
+
+      await updateListRecord({ currentIndex: nextIndex });
+    },
+    [callableRecords, persistedCurrentIndex, updateListRecord],
+  );
+
+  const loadBackendQueue = useCallback(async () => {
+    try {
+      const response = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues?sourceType=list&sourceId=${encodeURIComponent(listId)}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Queue lookup failed with status ${response.status}`);
+      }
+
+      const queues = (await response.json()) as BackendQueue[];
+      const nextQueue = queues[0] ?? null;
+
+      if (!nextQueue) {
+        setBackendQueue(null);
+
+        return null;
+      }
+
+      const detailResponse = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${nextQueue.id}`,
+      );
+
+      if (!detailResponse.ok) {
+        throw new Error(
+          `Queue detail lookup failed with status ${detailResponse.status}`,
+        );
+      }
+
+      const queue = (await detailResponse.json()) as BackendQueue;
+
+      setBackendQueue(queue);
+
+      return queue;
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'loadBackendQueue', listId },
+      });
+
+      return null;
+    }
+  }, [listId]);
+
+  const ensureBackendQueue = useCallback(async () => {
+    const existingQueue = await loadBackendQueue();
+
+    if (existingQueue) {
+      return existingQueue;
+    }
+
+    if (callableRecords.length === 0) {
+      return null;
+    }
+
+    const response = await authenticatedFetch(
+      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: listName ?? 'Calling list',
+          sourceType: 'list',
+          sourceId: listId,
+          category: 'custom',
+          settings: {
+            retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
+          },
+          contactIds: callableRecords.map((record) => record.id),
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Queue creation failed with status ${response.status}`);
+    }
+
+    return await loadBackendQueue();
+  }, [callableRecords, listId, listName, loadBackendQueue]);
+
   const hydratedQueueItems = useMemo<QueueItem[]>(() => {
     return orderedRecords.reduce<QueueItem[]>((queueItems, record, index) => {
-      const phoneNumber = extractPhoneNumber(record.phoneNumber);
+      const phoneNumber = getListMemberPhoneNumber(record);
 
       if (!phoneNumber) {
         return queueItems;
       }
 
+      const backendQueueItem = backendQueueItemsByContactId.get(record.id);
+
       queueItems.push({
         id: record.id,
-        queueId: listId,
+        queueId: backendQueue?.id ?? listId,
         contactId: record.personId ?? record.id,
         contact: mapRecordToDialerContact(record, phoneNumber),
         position: record.position ?? index,
-        status:
-          record.status === 'COMPLETED'
+        status: backendQueueItem
+          ? mapBackendStatusToQueueItemStatus(backendQueueItem.status)
+          : record.status === 'COMPLETED'
             ? 'completed'
             : record.status === 'SKIPPED'
               ? 'skipped'
               : 'pending',
-        attempts: record.status === 'PENDING' ? 0 : 1,
-        lastAttemptAt: null,
-        callOutcome: mapDispositionToOutcome(record.disposition),
-        notes: null,
-        skipReason: null,
-        callDurationSeconds: null,
+        attempts: backendQueueItem
+          ? Number(backendQueueItem.attempts ?? 0)
+          : record.status === 'PENDING'
+            ? 0
+            : 1,
+        lastAttemptAt: backendQueueItem?.last_attempt_at ?? null,
+        callOutcome: backendQueueItem
+          ? mapBackendOutcomeToQueueOutcome(backendQueueItem.call_outcome)
+          : mapDispositionToOutcome(record.disposition),
+        notes: backendQueueItem?.skip_reason ?? null,
+        skipReason: backendQueueItem?.skip_reason ?? null,
+        callDurationSeconds: backendQueueItem?.call_duration_seconds ?? null,
       } satisfies QueueItem);
 
       return queueItems;
     }, []);
-  }, [listId, orderedRecords]);
+  }, [backendQueue?.id, backendQueueItemsByContactId, listId, orderedRecords]);
 
   const currentQueueItem = useMemo(() => {
     const index = persistedCurrentIndex ?? 0;
@@ -259,40 +508,127 @@ export const useOpportunityQueueWorkspace = ({
     }
   }, []);
 
-  const markQueueItemCompleted = useCallback(
-    (queueItemId: string, outcome: QueueOutcome) => {
-      setQueueItems((previousQueueItems) =>
-        previousQueueItems.map((queueItem) =>
-          queueItem.id === queueItemId
-            ? {
-                ...queueItem,
-                status: 'completed',
-                callOutcome: outcome,
-                callDurationSeconds: callState.duration,
-              }
-            : queueItem,
-        ),
+  const startBackendQueueSession = useCallback(async () => {
+    if (listStatus !== 'ACTIVE') {
+      return null;
+    }
+
+    const queue = await ensureBackendQueue();
+
+    if (!queue) {
+      return null;
+    }
+
+    const endpoint = queue.status === 'paused' ? 'resume' : 'start';
+    const response = await authenticatedFetch(
+      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${queue.id}/${endpoint}`,
+      {
+        method: 'POST',
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Queue ${endpoint} failed with status ${response.status}`,
       );
+    }
+
+    const payload = (await response.json()) as {
+      currentItem?: { contact_id?: string | null } | null;
+      suppression?: { contactId?: string | null } | null;
+    };
+    const refreshedQueue = await loadBackendQueue();
+
+    await syncCurrentIndexFromContactId(
+      payload.currentItem?.contact_id ?? payload.suppression?.contactId,
+    );
+
+    return refreshedQueue;
+  }, [
+    ensureBackendQueue,
+    listStatus,
+    loadBackendQueue,
+    syncCurrentIndexFromContactId,
+  ]);
+
+  const advanceBackendQueueSession = useCallback(
+    async (outcome: string) => {
+      if (!backendQueue?.id) {
+        return null;
+      }
+
+      const response = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/next`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            outcome,
+            isHighPriority: false,
+            localTimezone: 'America/New_York',
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Queue next failed with status ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        nextItem?: { contact_id?: string | null } | null;
+        suppression?: { contactId?: string | null } | null;
+        queueCompleted?: boolean;
+      };
+
+      await loadBackendQueue();
+
+      if (payload.queueCompleted) {
+        await updateListRecord({ listStatus: 'COMPLETED' });
+
+        return payload;
+      }
+
+      await syncCurrentIndexFromContactId(
+        payload.nextItem?.contact_id ?? payload.suppression?.contactId,
+      );
+
+      return payload;
     },
-    [callState.duration, setQueueItems],
+    [
+      backendQueue?.id,
+      loadBackendQueue,
+      syncCurrentIndexFromContactId,
+      updateListRecord,
+    ],
   );
 
   useEffect(() => {
+    const callingQueueItemIndex = hydratedQueueItems.findIndex(
+      (item) => item.status === 'calling',
+    );
+
     setActiveQueue({
-      id: listId,
-      name: listName ?? 'Calling list',
+      id: backendQueue?.id ?? listId,
+      name: backendQueue?.name ?? listName ?? 'Calling list',
       description: null,
       sourceType: 'list',
       sourceId: listId,
-      totalContacts: hydratedQueueItems.length,
-      completedContacts: hydratedQueueItems.filter(
-        (item) => item.status === 'completed',
-      ).length,
-      skippedContacts: hydratedQueueItems.filter(
-        (item) => item.status === 'skipped',
-      ).length,
-      status:
-        listStatus === 'ACTIVE'
+      totalContacts: backendQueue?.total_contacts ?? hydratedQueueItems.length,
+      completedContacts:
+        backendQueue?.completed_contacts ??
+        hydratedQueueItems.filter((item) => item.status === 'completed').length,
+      skippedContacts:
+        backendQueue?.skipped_contacts ??
+        hydratedQueueItems.filter((item) => item.status === 'skipped').length,
+      status: backendQueue
+        ? backendQueue.status === 'active'
+          ? 'active'
+          : backendQueue.status === 'paused'
+            ? 'paused'
+            : backendQueue.status === 'completed'
+              ? 'completed'
+              : 'idle'
+        : listStatus === 'ACTIVE'
           ? 'active'
           : listStatus === 'PAUSED'
             ? 'paused'
@@ -303,11 +639,11 @@ export const useOpportunityQueueWorkspace = ({
         ...DEFAULT_QUEUE_SETTINGS,
         autoAdvance: false,
       },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      startedAt: sessionStartedAt,
-      completedAt: null,
-      category: 'custom',
+      createdAt: backendQueue?.created_at ?? new Date().toISOString(),
+      updatedAt: backendQueue?.updated_at ?? new Date().toISOString(),
+      startedAt: backendQueue?.started_at ?? sessionStartedAt,
+      completedAt: backendQueue?.completed_at ?? null,
+      category: backendQueue?.category === 'all' ? 'all' : 'custom',
       callingMode: 'browser',
       dncFilteredCount: 0,
       parallelDialingEnabled: false,
@@ -319,7 +655,11 @@ export const useOpportunityQueueWorkspace = ({
       aggregatedStats: null,
     });
     setQueueItems(hydratedQueueItems);
-    setCurrentQueueIndex(persistedCurrentIndex ?? 0);
+    setCurrentQueueIndex(
+      callingQueueItemIndex >= 0
+        ? callingQueueItemIndex
+        : (persistedCurrentIndex ?? 0),
+    );
     setQueueSession(
       sessionStartedAt
         ? {
@@ -351,6 +691,7 @@ export const useOpportunityQueueWorkspace = ({
     );
   }, [
     hydratedQueueItems,
+    backendQueue,
     listId,
     listName,
     listStatus,
@@ -361,6 +702,18 @@ export const useOpportunityQueueWorkspace = ({
     setQueueItems,
     setQueueSession,
   ]);
+
+  useEffect(() => {
+    if (listStatus !== 'ACTIVE' || callableRecords.length === 0) {
+      return;
+    }
+
+    void startBackendQueueSession().catch((error: unknown) => {
+      Sentry.captureException(error, {
+        extra: { context: 'startBackendQueueSession', listId },
+      });
+    });
+  }, [callableRecords.length, listId, listStatus, startBackendQueueSession]);
 
   const startCurrentQueueItem = useCallback(async () => {
     const fromNumber =
@@ -415,6 +768,7 @@ export const useOpportunityQueueWorkspace = ({
       listStatus !== 'ACTIVE' ||
       !['idle', 'ended', 'failed'].includes(callState.status) ||
       !currentQueueItem ||
+      currentQueueItem.status !== 'calling' ||
       autoStartedItemIdRef.current === currentQueueItem.id
     ) {
       return;
@@ -450,16 +804,10 @@ export const useOpportunityQueueWorkspace = ({
         disposition: 'NO_ANSWER',
         callSid: callState.callSid ?? '',
         duration: callState.duration,
-      }).then(() => {
-        markQueueItemCompleted(currentQueueItem.id, 'no-answer');
       });
 
       autoAdvanceTimerRef.current = setTimeout(() => {
-        if (hasNextQueueItem) {
-          void advanceQueue(listId);
-        } else {
-          void completeQueue(listId);
-        }
+        void advanceBackendQueueSession('no-answer');
         setWrapUpState(null);
         autoStartedItemIdRef.current = null;
       }, 1200);
@@ -468,16 +816,12 @@ export const useOpportunityQueueWorkspace = ({
 
     setLastCallOutcome('connected');
   }, [
-    advanceQueue,
+    advanceBackendQueueSession,
     callState.callSid,
     callState.duration,
     callState.status,
     clearAutoAdvanceTimer,
-    completeQueue,
     currentQueueItem,
-    hasNextQueueItem,
-    listId,
-    markQueueItemCompleted,
     recordResult,
     setLastCallOutcome,
   ]);
@@ -527,16 +871,10 @@ export const useOpportunityQueueWorkspace = ({
           duration: wrapUpState.duration,
         });
         const queueOutcome = mapWrapUpDispositionToQueueOutcome(disposition);
-        markQueueItemCompleted(wrapUpState.listMemberId, queueOutcome);
         setLastCallOutcome(queueOutcome);
         setWrapUpState(null);
         autoStartedItemIdRef.current = null;
-
-        if (hasNextQueueItem) {
-          await advanceQueue(listId);
-        } else {
-          await completeQueue(listId);
-        }
+        await advanceBackendQueueSession(disposition);
       } catch (error: unknown) {
         Sentry.captureException(error, {
           extra: { context: 'continueList', disposition, listId },
@@ -544,11 +882,8 @@ export const useOpportunityQueueWorkspace = ({
       }
     },
     [
-      advanceQueue,
-      completeQueue,
-      hasNextQueueItem,
+      advanceBackendQueueSession,
       listId,
-      markQueueItemCompleted,
       recordResult,
       saveDisposition,
       setLastCallOutcome,
@@ -570,11 +905,10 @@ export const useOpportunityQueueWorkspace = ({
           duration: wrapUpState.duration,
         });
         const queueOutcome = mapWrapUpDispositionToQueueOutcome(disposition);
-        markQueueItemCompleted(wrapUpState.listMemberId, queueOutcome);
         setLastCallOutcome(queueOutcome);
         setWrapUpState(null);
         autoStartedItemIdRef.current = null;
-        await completeQueue(listId);
+        await updateListRecord({ listStatus: 'COMPLETED' });
       } catch (error: unknown) {
         Sentry.captureException(error, {
           extra: { context: 'endList', disposition, listId },
@@ -582,12 +916,11 @@ export const useOpportunityQueueWorkspace = ({
       }
     },
     [
-      completeQueue,
       listId,
-      markQueueItemCompleted,
       recordResult,
       saveDisposition,
       setLastCallOutcome,
+      updateListRecord,
       wrapUpState,
     ],
   );
@@ -598,10 +931,128 @@ export const useOpportunityQueueWorkspace = ({
     };
   }, [clearAutoAdvanceTimer]);
 
+  const pauseList = useCallback(async () => {
+    if (!backendQueue?.id) {
+      await updateListRecord({ listStatus: 'PAUSED' });
+
+      return;
+    }
+
+    await authenticatedFetch(
+      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/pause`,
+      { method: 'POST' },
+    );
+    await loadBackendQueue();
+    await updateListRecord({ listStatus: 'PAUSED' });
+    autoStartedItemIdRef.current = null;
+  }, [backendQueue?.id, loadBackendQueue, updateListRecord]);
+
+  const resumeList = useCallback(async () => {
+    await updateListRecord({ listStatus: 'ACTIVE' });
+    await startBackendQueueSession();
+    autoStartedItemIdRef.current = null;
+  }, [startBackendQueueSession, updateListRecord]);
+
+  const skipCurrentListMember = useCallback(
+    async (reason: string) => {
+      if (!backendQueue?.id || !currentQueueItem) {
+        return;
+      }
+
+      disconnect();
+
+      const response = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/skip`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Queue skip failed with status ${response.status}`);
+      }
+
+      const payload = (await response.json()) as {
+        nextItem?: { contact_id?: string | null } | null;
+        suppression?: { contactId?: string | null } | null;
+      };
+
+      await updateOneRecord({
+        objectNameSingular: 'listMember',
+        idToUpdate: currentQueueItem.id,
+        updateOneRecordInput: {
+          status: 'SKIPPED',
+          callSid: callState.callSid ?? '',
+          duration: callState.duration,
+          attemptedAt: new Date().toISOString(),
+        },
+      });
+      await loadBackendQueue();
+      await syncCurrentIndexFromContactId(
+        payload.nextItem?.contact_id ?? payload.suppression?.contactId,
+      );
+      autoStartedItemIdRef.current = null;
+    },
+    [
+      backendQueue?.id,
+      callState.callSid,
+      callState.duration,
+      currentQueueItem,
+      disconnect,
+      loadBackendQueue,
+      syncCurrentIndexFromContactId,
+      updateOneRecord,
+    ],
+  );
+
+  const restartList = useCallback(async () => {
+    if (backendQueue?.id) {
+      const response = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/restart`,
+        { method: 'POST' },
+      );
+
+      if (!response.ok) {
+        throw new Error(`Queue restart failed with status ${response.status}`);
+      }
+    }
+
+    await Promise.all(
+      callableRecords.map((record) =>
+        updateOneRecord({
+          objectNameSingular: 'listMember',
+          idToUpdate: record.id,
+          updateOneRecordInput: {
+            status: 'PENDING',
+            disposition: null,
+            duration: null,
+            callSid: null,
+            attemptedAt: null,
+          },
+        }),
+      ),
+    );
+    await updateListRecord({ listStatus: 'IDLE', currentIndex: 0 });
+    await loadBackendQueue();
+    autoStartedItemIdRef.current = null;
+  }, [
+    backendQueue?.id,
+    callableRecords,
+    loadBackendQueue,
+    updateListRecord,
+    updateOneRecord,
+  ]);
+
   return {
     wrapUpState,
     currentQueueItem,
     continueList,
     endList,
+    pauseList,
+    resumeList,
+    skipCurrentListMember,
+    restartList,
   };
 };

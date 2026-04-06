@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -70,7 +71,11 @@ export class QueuesController {
   }
 
   @Get('queues')
-  async listQueues(@Req() request: AuthRequest) {
+  async listQueues(
+    @Req() request: AuthRequest,
+    @Query('sourceType') sourceType?: string,
+    @Query('sourceId') sourceId?: string,
+  ) {
     try {
       const workspaceId = request.workspace?.id;
 
@@ -78,7 +83,10 @@ export class QueuesController {
         throw new UnauthorizedException('Authentication required');
       }
 
-      return this.queuesService.listQueues(workspaceId);
+      return this.queuesService.listQueues(workspaceId, {
+        sourceType,
+        sourceId,
+      });
     } finally {
       // noop
     }
@@ -151,6 +159,11 @@ export class QueuesController {
     }
   }
 
+  @Post('queues/:id/resume')
+  async resumeQueue(@Req() request: AuthRequest, @Param('id') id: string) {
+    return this.startQueue(request, id);
+  }
+
   @Post('queues/:id/skip')
   async skipQueueItem(@Req() request: AuthRequest, @Param('id') id: string) {
     try {
@@ -173,7 +186,12 @@ export class QueuesController {
   async nextQueueItem(
     @Req() request: AuthRequest,
     @Param('id') id: string,
-    @Body() body: { outcome?: string },
+    @Body()
+    body: {
+      outcome?: string;
+      isHighPriority?: boolean;
+      localTimezone?: string;
+    },
   ) {
     try {
       const workspaceId = request.workspace?.id;
@@ -186,6 +204,8 @@ export class QueuesController {
         queueId: id,
         workspaceId,
         outcome: body.outcome,
+        isHighPriority: body.isHighPriority,
+        localTimezone: body.localTimezone,
       });
     } finally {
       // noop

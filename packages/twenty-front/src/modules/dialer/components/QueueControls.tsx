@@ -13,7 +13,13 @@ import {
   IconRefresh,
   IconX,
 } from 'twenty-ui/display';
-import { IconBan, IconDots, IconPlayerTrackNext, IconThumbDown, IconMailbox } from '@tabler/icons-react';
+import {
+  IconBan,
+  IconDots,
+  IconPlayerTrackNext,
+  IconThumbDown,
+  IconMailbox,
+} from '@tabler/icons-react';
 
 import { activeQueueState } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
@@ -209,7 +215,19 @@ const SkipReasonModal = ({
 
 // main component
 
-export const QueueControls = () => {
+type QueueControlsProps = {
+  onPauseQueue?: () => Promise<void> | void;
+  onResumeQueue?: () => Promise<void> | void;
+  onSkipQueueItem?: (reason: string) => Promise<void> | void;
+  onRestartQueue?: () => Promise<void> | void;
+};
+
+export const QueueControls = ({
+  onPauseQueue,
+  onResumeQueue,
+  onSkipQueueItem,
+  onRestartQueue,
+}: QueueControlsProps) => {
   const { t } = useLingui();
   const activeQueue = useRecoilValue(activeQueueState);
   const {
@@ -275,7 +293,17 @@ export const QueueControls = () => {
   if (canRestart) {
     return (
       <StyledControls>
-        <StyledButton accent onClick={restartQueue}>
+        <StyledButton
+          accent
+          onClick={() => {
+            if (onRestartQueue) {
+              void onRestartQueue();
+              return;
+            }
+
+            restartQueue();
+          }}
+        >
           <IconRefresh size={14} />
           {t`Restart Queue`}
           <StyledHint>(R)</StyledHint>
@@ -294,12 +322,31 @@ export const QueueControls = () => {
           <StyledHint>(S)</StyledHint>
         </StyledButton>
         {isActive ? (
-          <StyledButton onClick={pauseQueue}>
+          <StyledButton
+            onClick={() => {
+              if (onPauseQueue) {
+                void onPauseQueue();
+                return;
+              }
+
+              pauseQueue();
+            }}
+          >
             <IconPlayerPause size={14} />
             {t`Pause`}
           </StyledButton>
         ) : (
-          <StyledButton accent onClick={resumeQueue}>
+          <StyledButton
+            accent
+            onClick={() => {
+              if (onResumeQueue) {
+                void onResumeQueue();
+                return;
+              }
+
+              resumeQueue();
+            }}
+          >
             <IconPlayerPlay size={14} />
             {t`Resume`}
           </StyledButton>
@@ -313,7 +360,11 @@ export const QueueControls = () => {
       {showSkipModal && (
         <SkipReasonModal
           onSkip={(reason) => {
-            skipContact(reason);
+            if (onSkipQueueItem) {
+              void onSkipQueueItem(reason);
+            } else {
+              skipContact(reason);
+            }
             setShowSkipModal(false);
           }}
           onClose={() => setShowSkipModal(false)}

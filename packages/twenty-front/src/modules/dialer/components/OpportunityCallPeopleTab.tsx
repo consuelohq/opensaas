@@ -8,8 +8,31 @@ type ListMemberRecord = ObjectRecord & {
   position?: number | null;
   status?: string | null;
   disposition?: string | null;
-  person?: { name?: string | null } | null;
-  phoneNumber?: { primaryPhoneNumber?: string | null } | null;
+  person?: {
+    name?: string | null;
+    phone?: string | null;
+    phones?: {
+      primaryPhoneNumber?: string | null;
+      additionalPhones?: Array<{ number?: string | null }> | null;
+    } | null;
+  } | null;
+  phoneNumber?: {
+    primaryPhoneNumber?: string | null;
+    additionalPhones?: Array<{ number?: string | null }> | null;
+  } | null;
+};
+
+const getListMemberPhone = (record: ListMemberRecord) => {
+  return (
+    record.phoneNumber?.primaryPhoneNumber ??
+    record.phoneNumber?.additionalPhones?.find((entry) => entry.number)
+      ?.number ??
+    record.person?.phones?.primaryPhoneNumber ??
+    record.person?.phones?.additionalPhones?.find((entry) => entry.number)
+      ?.number ??
+    record.person?.phone ??
+    null
+  );
 };
 
 const StyledContainer = styled.div`
@@ -74,6 +97,28 @@ export const OpportunityCallPeopleTab = ({
     objectNameSingular: 'listMember',
     filter: { listId: { eq: listId } },
     limit: 100,
+    recordGqlFields: {
+      id: true,
+      position: true,
+      status: true,
+      disposition: true,
+      phoneNumber: {
+        primaryPhoneNumber: true,
+        additionalPhones: {
+          number: true,
+        },
+      },
+      person: {
+        name: true,
+        phone: true,
+        phones: {
+          primaryPhoneNumber: true,
+          additionalPhones: {
+            number: true,
+          },
+        },
+      },
+    },
   });
 
   if (loading) {
@@ -99,7 +144,7 @@ export const OpportunityCallPeopleTab = ({
             <StyledInfo>
               <StyledName>{personName}</StyledName>
               <StyledMeta>
-                {record.phoneNumber?.primaryPhoneNumber ?? t`Phone unavailable`}
+                {getListMemberPhone(record) ?? t`Phone unavailable`}
               </StyledMeta>
               <StyledMeta>
                 {record.disposition ?? record.status ?? t`Pending`}

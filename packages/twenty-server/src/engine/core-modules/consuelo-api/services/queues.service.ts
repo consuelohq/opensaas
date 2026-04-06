@@ -3,10 +3,23 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
+import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
+
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
   maxAttemptsPerDay?: number;
   maxAttemptsPerWeek?: number;
+  retryAttemptCap?: number;
+};
+
+type QueueListFilters = {
+  sourceType?: string;
+  sourceId?: string;
+};
+
+type QueueSelectionResult = {
+  nextItem: Record<string, unknown> | null;
+  suppression: { contactId: string; reason: string } | null;
 };
 
 @Injectable()
@@ -64,11 +77,24 @@ export class QueuesService {
     }
   }
 
-  async listQueues(workspaceId: string) {
+  async listQueues(workspaceId: string, filters: QueueListFilters = {}) {
     try {
+      const whereClauses = ['workspace_id = $1'];
+      const params: Array<string> = [workspaceId];
+
+      if (filters.sourceType) {
+        whereClauses.push(`source_type = $${params.length + 1}`);
+        params.push(filters.sourceType);
+      }
+
+      if (filters.sourceId) {
+        whereClauses.push(`source_id = $${params.length + 1}`);
+        params.push(filters.sourceId);
+      }
+
       return this.dataSource.query(
-        'SELECT * FROM call_queues WHERE workspace_id = $1 ORDER BY created_at DESC',
-        [workspaceId],
+        `SELECT * FROM call_queues WHERE ${whereClauses.join(' AND ')} ORDER BY created_at DESC`,
+        params,
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -136,9 +162,28 @@ export class QueuesService {
         return null;
       }
 
-      const item = await this.selectNextCallableItem(id, workspaceId);
+      const existingRows = await this.dataSource.query(
+        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 LIMIT 1',
+        [id, 'calling'],
+      );
 
-      return { queue, currentItem: item, nextItem: item };
+      if (existingRows[0]) {
+        return {
+          queue,
+          currentItem: existingRows[0],
+          nextItem: existingRows[0],
+          suppression: null,
+        };
+      }
+
+      const selection = await this.selectNextCallableItem(id, workspaceId);
+
+      return {
+        queue,
+        currentItem: selection.nextItem,
+        nextItem: selection.nextItem,
+        suppression: selection.suppression,
+      };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
 
@@ -165,12 +210,16 @@ export class QueuesService {
       const current = currentRows[0];
 
       if (!current) {
+        const selection = await this.selectNextCallableItem(
+          params.queueId,
+          params.workspaceId,
+        );
+
         return {
+          skipped: false,
           current: null,
-          nextItem: await this.selectNextCallableItem(
-            params.queueId,
-            params.workspaceId,
-          ),
+          nextItem: selection.nextItem,
+          suppression: selection.suppression,
         };
       }
 
@@ -179,12 +228,21 @@ export class QueuesService {
         ['skipped', 'user_skip', current.id],
       );
 
+      await this.dataSource.query(
+        'UPDATE call_queues SET skipped_contacts = skipped_contacts + 1, updated_at = NOW() WHERE id = $1',
+        [params.queueId],
+      );
+
+      const selection = await this.selectNextCallableItem(
+        params.queueId,
+        params.workspaceId,
+      );
+
       return {
+        skipped: true,
         current: updatedRows[0],
-        nextItem: await this.selectNextCallableItem(
-          params.queueId,
-          params.workspaceId,
-        ),
+        nextItem: selection.nextItem,
+        suppression: selection.suppression,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -201,10 +259,12 @@ export class QueuesService {
     queueId: string;
     workspaceId: string;
     outcome?: string;
+    isHighPriority?: boolean;
+    localTimezone?: string;
   }) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        'SELECT id, settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [params.queueId, params.workspaceId],
       );
 
@@ -219,26 +279,99 @@ export class QueuesService {
       const current = currentRows[0];
 
       if (!current) {
+        const selection = await this.selectNextCallableItem(
+          params.queueId,
+          params.workspaceId,
+        );
+
         return {
           current: null,
-          nextItem: await this.selectNextCallableItem(
-            params.queueId,
-            params.workspaceId,
-          ),
+          nextItem: selection.nextItem,
+          suppression: selection.suppression,
+        };
+      }
+
+      const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
+      const retryDecision = evaluateRetryPolicy({
+        outcome: params.outcome ?? null,
+        isHighPriority: params.isHighPriority === true,
+        attemptsUsed: Number(current.attempts ?? 0),
+        attemptCap:
+          typeof queueSettings.retryAttemptCap === 'number' &&
+          queueSettings.retryAttemptCap > 0
+            ? queueSettings.retryAttemptCap
+            : 2,
+        localTimezone: params.localTimezone ?? 'America/New_York',
+      });
+
+      if (retryDecision.shouldRetry) {
+        const updatedRows = await this.dataSource.query(
+          'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
+          [
+            'pending',
+            params.outcome ?? null,
+            retryDecision.retryStrategy,
+            retryDecision.retryScheduledAt,
+            retryDecision.retryReason,
+            current.id,
+          ],
+        );
+
+        return {
+          retryScheduled: true,
+          retryStrategy: retryDecision.retryStrategy,
+          retryScheduledAt: retryDecision.retryScheduledAt,
+          retryReason: retryDecision.retryReason,
+          currentItem: updatedRows[0] ?? null,
         };
       }
 
       const updatedRows = await this.dataSource.query(
-        'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
-        ['completed', params.outcome ?? null, current.id],
+        'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
+        [
+          'completed',
+          params.outcome ?? null,
+          retryDecision.retryStrategy,
+          retryDecision.retryScheduledAt,
+          retryDecision.retryReason,
+          current.id,
+        ],
+      );
+
+      await this.dataSource.query(
+        'UPDATE call_queues SET completed_contacts = completed_contacts + 1, updated_at = NOW() WHERE id = $1',
+        [params.queueId],
+      );
+
+      const selection = await this.selectNextCallableItem(
+        params.queueId,
+        params.workspaceId,
+      );
+
+      if (selection.nextItem) {
+        return {
+          current: updatedRows[0],
+          nextItem: selection.nextItem,
+        };
+      }
+
+      if (selection.suppression) {
+        return {
+          current: updatedRows[0],
+          nextItem: null,
+          suppression: selection.suppression,
+        };
+      }
+
+      await this.dataSource.query(
+        'UPDATE call_queues SET status = $1, completed_at = NOW(), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
+        ['completed', params.queueId, params.workspaceId],
       );
 
       return {
         current: updatedRows[0],
-        nextItem: await this.selectNextCallableItem(
-          params.queueId,
-          params.workspaceId,
-        ),
+        nextItem: null,
+        queueCompleted: true,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -265,6 +398,11 @@ export class QueuesService {
       await this.dataSource.query(
         'UPDATE queue_items SET status = $1, attempts = 0, call_outcome = NULL, skip_reason = NULL WHERE queue_id = $2',
         ['pending', id],
+      );
+
+      await this.dataSource.query(
+        'UPDATE call_queues SET status = $1, completed_contacts = 0, skipped_contacts = 0, started_at = NULL, completed_at = NULL, updated_at = NOW() WHERE id = $2',
+        ['idle', id],
       );
 
       return { success: true };
@@ -374,24 +512,26 @@ export class QueuesService {
       }
 
       const rows = await this.dataSource.query(
-        `SELECT qi.id, qi.position, qi.status, qi.call_outcome, qi.attempts, c.name, c.phone
+        `SELECT qi.id, qi.position, qi.contact_id, qi.status, qi.call_outcome, qi.call_duration_seconds,
+                qi.skip_reason, qi.last_attempt_at
          FROM queue_items qi
-         LEFT JOIN contacts c ON c.id = qi.contact_id
          WHERE qi.queue_id = $1
          ORDER BY qi.position ASC`,
         [queueId],
       );
 
-      const header = 'id,position,status,call_outcome,attempts,name,phone';
+      const header =
+        'id,position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
       const lines = rows.map((row: Record<string, unknown>) => {
         const values = [
           row.id,
           row.position,
+          row.contact_id,
           row.status,
           row.call_outcome ?? '',
-          row.attempts,
-          this.sanitizeCsvValue(String(row.name ?? '')),
-          this.sanitizeCsvValue(String(row.phone ?? '')),
+          row.call_duration_seconds ?? '',
+          this.sanitizeCsvValue(String(row.skip_reason ?? '')),
+          row.last_attempt_at ?? '',
         ];
 
         return values.map((value) => `"${value}"`).join(',');
@@ -446,7 +586,10 @@ export class QueuesService {
     }
   }
 
-  private async selectNextCallableItem(queueId: string, workspaceId: string) {
+  private async selectNextCallableItem(
+    queueId: string,
+    workspaceId: string,
+  ): Promise<QueueSelectionResult> {
     try {
       const queueRows = await this.dataSource.query(
         'SELECT settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
@@ -498,7 +641,26 @@ export class QueuesService {
         return true;
       });
 
-      return await this.claimQueueItem(workspaceId, item);
+      if (!item) {
+        return { nextItem: null, suppression: null };
+      }
+
+      const suppressionReason = this.getSuppressionReason(settings, item);
+
+      if (suppressionReason) {
+        return {
+          nextItem: null,
+          suppression: {
+            contactId: String(item.contact_id ?? ''),
+            reason: suppressionReason,
+          },
+        };
+      }
+
+      return {
+        nextItem: await this.claimQueueItem(workspaceId, item),
+        suppression: null,
+      };
     } catch (err: unknown) {
       if (this.isMissingRelationError(err, 'contact_attempt_ledger')) {
         return await this.selectNextCallableItemWithoutLedger(queueId);
@@ -512,6 +674,42 @@ export class QueuesService {
       });
       throw err;
     }
+  }
+
+  private getSuppressionReason(
+    settings: QueueSettings,
+    row: Record<string, unknown>,
+  ) {
+    const lastAttemptAt = row.last_attempt_at
+      ? new Date(String(row.last_attempt_at))
+      : null;
+    const attemptsToday = Number(row.attempts_today ?? 0);
+    const attemptsThisWeek = Number(row.attempts_this_week ?? 0);
+
+    if (
+      settings.minRetrySpacingMinutes &&
+      lastAttemptAt &&
+      Date.now() - lastAttemptAt.getTime() <
+        settings.minRetrySpacingMinutes * 60_000
+    ) {
+      return 'MIN_RETRY_SPACING';
+    }
+
+    if (
+      settings.maxAttemptsPerDay &&
+      attemptsToday >= settings.maxAttemptsPerDay
+    ) {
+      return 'MAX_ATTEMPTS_PER_DAY';
+    }
+
+    if (
+      settings.maxAttemptsPerWeek &&
+      attemptsThisWeek >= settings.maxAttemptsPerWeek
+    ) {
+      return 'MAX_ATTEMPTS_PER_WEEK';
+    }
+
+    return null;
   }
 
   private async claimQueueItem(
@@ -564,7 +762,9 @@ export class QueuesService {
     }
   }
 
-  private async selectNextCallableItemWithoutLedger(queueId: string) {
+  private async selectNextCallableItemWithoutLedger(
+    queueId: string,
+  ): Promise<QueueSelectionResult> {
     try {
       const rows = await this.dataSource.query(
         "SELECT * FROM queue_items WHERE queue_id = $1 AND status = 'pending' ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
@@ -573,7 +773,7 @@ export class QueuesService {
       const item = rows[0];
 
       if (!item) {
-        return null;
+        return { nextItem: null, suppression: null };
       }
 
       const updatedRows = await this.dataSource.query(
@@ -581,7 +781,10 @@ export class QueuesService {
         ['calling', item.id],
       );
 
-      return updatedRows[0] ?? null;
+      return {
+        nextItem: updatedRows[0] ?? null,
+        suppression: null,
+      };
     } finally {
       // noop
     }
