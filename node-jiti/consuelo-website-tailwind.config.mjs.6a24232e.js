@@ -34,7 +34,14 @@ exports. default = {
   theme: {
     extend: {
       colors: {
+        
         transparent: "transparent",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        accent: "var(--accent)",
+        muted: "var(--muted)",
+        border: "var(--border)",
+
         primary: {
           50: "#fdf2f8",
           100: "#fce7f3",
@@ -66,8 +73,8 @@ exports. default = {
         fancy: "url(https://www.svgrepo.com/show/269/color-picker.svg)",
       },
       fontFamily: {
-        sans: ["Inter Variable", ..._defaultTheme2.default.fontFamily.sans],
-        headings: ["Outfit Variable", ..._defaultTheme2.default.fontFamily.sans],
+        sans: ["Geist Mono", ..._defaultTheme2.default.fontFamily.mono],
+        headings: ["Geist Mono", ..._defaultTheme2.default.fontFamily.mono],
       },
       keyframes: {
         dropdown: {
@@ -109,4 +116,4 @@ exports. default = {
     }),
   ],
 };
- /* v7-6b98162e239ca0c3 */
+ /* v7-c4c6cae0adb54606 */
