@@ -10,9 +10,9 @@ export type FaqItem = {
 export const siteMetadata = {
   siteUrl: 'https://consuelohq.com',
   siteName: 'Consuelo',
-  defaultTitle: 'Consuelo | Open-Source Sales Infrastructure for Insurance Sales Teams',
+  defaultTitle: 'Consuelo | Sales Infrastructure for Insurance Sales Teams',
   defaultDescription:
-    'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Open source, composable, and built to integrate everywhere your team works.',
+    'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Composable and built to integrate everywhere your team works.',
   blogTitle: 'Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',

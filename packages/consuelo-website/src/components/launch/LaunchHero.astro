@@ -41,32 +41,36 @@ const { sectionId } = Astro.props as Props;
       </div>
 
       <div class="launch-hero__snippet-panels">
-        {launchTabs.map((tab, index) => (
-          <div class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]} data-tab-panel={tab.id}>
-            {tab.kind === 'link' && tab.href ? (
-              <a class="launch-hero__snippet-value launch-mono is-link" href={tab.href}>{tab.value}</a>
-            ) : (
-              <code class="launch-hero__snippet-value launch-mono">{tab.value}</code>
-            )}
-
-            {tab.kind === 'link' && tab.href ? (
-              <a class="launch-hero__snippet-action" href={tab.href} aria-label={'open ' + tab.label}>
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3 8H13" />
-                  <path d="M8.5 3.5L13 8L8.5 12.5" />
-                </svg>
-              </a>
-            ) : (
-              <button class="launch-hero__snippet-action" type="button" data-copy-button={tab.id} aria-label={'copy ' + tab.label + ' command'}>
-                <svg class="launch-hero__copy-icon" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M6 3.5H12.5V10" />
-                  <path d="M3.5 6H10V12.5H3.5Z" />
-                </svg>
-                <svg class="launch-hero__check-icon" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
-                </svg>
-              </button>
-            )}
+        {launchTabs.map((tab, index) => tab.kind === 'link' && tab.href ? (
+          <a
+            href={tab.href}
+            class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]}
+            data-tab-panel={tab.id}
+          >
+            <span class="launch-hero__snippet-value launch-mono">{tab.value}</span>
+            <span class="launch-hero__snippet-action" aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 17L17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </span>
+          </a>
+        ) : (
+          <div 
+            class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]} 
+            data-tab-panel={tab.id}
+            data-copy-button={tab.id}
+          >
+            <code class="launch-hero__snippet-value launch-mono">{tab.value}</code>
+            <span class="launch-hero__snippet-action" aria-hidden="true">
+              <svg class="launch-hero__copy-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+              </svg>
+              <svg class="launch-hero__check-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </span>
           </div>
         ))}
       </div>
@@ -95,7 +99,6 @@ const { sectionId } = Astro.props as Props;
     const mediaPanels = Array.from(mediaRoot.querySelectorAll('[data-media-panel]'));
     const copyButtons = Array.from(root.querySelectorAll('[data-copy-button]'));
     let activeIndex = 0;
-    let rotationHandle;
 
     const sync = (nextIndex) => {
       activeIndex = nextIndex;
@@ -108,17 +111,9 @@ const { sectionId } = Astro.props as Props;
       mediaPanels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
     };
 
-    const restartRotation = () => {
-      window.clearInterval(rotationHandle);
-      rotationHandle = window.setInterval(() => {
-        sync((activeIndex + 1) % launchTabs.length);
-      }, 6500);
-    };
-
     buttons.forEach((button, index) => {
       button.addEventListener('click', () => {
         sync(index);
-        restartRotation();
       });
     });
 
@@ -140,7 +135,6 @@ const { sectionId } = Astro.props as Props;
     });
 
     sync(0);
-    restartRotation();
   }
 </script>
 
@@ -209,6 +203,17 @@ const { sectionId } = Astro.props as Props;
     padding: 0.45rem 0.78rem;
     white-space: nowrap;
     font-size: 0.88rem;
+    outline: none;
+  }
+  
+  .launch-hero__tab:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  .launch-hero__tab:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .launch-hero__tab.is-active {
@@ -224,14 +229,26 @@ const { sectionId } = Astro.props as Props;
 
   .launch-hero__snippet-panel {
     display: none;
-    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
+    justify-content: flex-start;
     gap: 0.75rem;
     padding: 0.6rem 0.85rem;
+    cursor: pointer;
+    transition: background 160ms ease;
+    text-decoration: none;
   }
 
   .launch-hero__snippet-panel.is-active {
-    display: grid;
+    display: flex;
+  }
+
+  .launch-hero__snippet-panel:hover {
+    background: color-mix(in srgb, var(--launch-fg) 3%, transparent);
+  }
+
+  .launch-hero__snippet-panel:hover .launch-hero__snippet-action {
+    color: var(--launch-fg);
+    background: color-mix(in srgb, var(--launch-fg) 8%, transparent);
   }
 
   .launch-hero__snippet-value {
@@ -244,84 +261,64 @@ const { sectionId } = Astro.props as Props;
     overflow-wrap: anywhere;
   }
 
-  .launch-hero__snippet-value.is-link:hover {
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 4px;
-  }
-
   .launch-hero__snippet-action {
     width: 1.6rem;
     height: 1.6rem;
-    border: 1px solid color-mix(in srgb, var(--launch-line) 40%, transparent);
+    border: none;
+    border-radius: 0.35rem;
     background: transparent;
     color: var(--launch-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
-  }
-
-  .launch-hero__snippet-action:hover {
-    color: var(--launch-fg);
-    background: var(--launch-bg);
-    border-color: var(--launch-line);
+    transition: color 160ms ease, background 160ms ease;
   }
 
   .launch-hero__snippet-action svg {
-    width: 0.88rem;
-    height: 0.88rem;
+    width: 0.96rem;
+    height: 0.96rem;
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.3;
-    stroke-linecap: square;
-    stroke-linejoin: miter;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .launch-hero__check-icon {
     display: none;
   }
 
-  .launch-hero__snippet-action.is-copied {
+  .launch-hero__snippet-panel.is-copied .launch-hero__snippet-action {
     color: var(--launch-success);
-    border-color: color-mix(in srgb, var(--launch-success) 60%, var(--launch-line));
   }
 
-  .launch-hero__snippet-action.is-copied .launch-hero__copy-icon {
+  .launch-hero__snippet-panel.is-copied .launch-hero__copy-icon {
     display: none;
   }
 
-  .launch-hero__snippet-action.is-copied .launch-hero__check-icon {
+  .launch-hero__snippet-panel.is-copied .launch-hero__check-icon {
     display: block;
   }
 
   .launch-hero__media {
     position: relative;
     overflow: hidden;
-    min-height: clamp(20rem, 48vw, 48rem);
     background: var(--launch-panel);
   }
 
   .launch-hero__media-panel {
-    position: absolute;
-    inset: 0;
+    display: none;
     margin: 0;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 280ms ease, transform 280ms ease;
-    pointer-events: none;
   }
 
   .launch-hero__media-panel.is-active {
-    opacity: 1;
-    transform: translateY(0);
+    display: block;
   }
 
   .launch-hero__media-panel img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: top center;
+    height: auto;
+    display: block;
   }
 
   .launch-hero__media-panel picture {
@@ -341,12 +338,10 @@ const { sectionId } = Astro.props as Props;
     }
 
     .launch-hero__snippet-panel {
-      grid-template-columns: minmax(0, 1fr) auto;
       padding: 0.82rem 0.9rem;
     }
 
     .launch-hero__media {
-      min-height: 16.5rem;
     }
   }
 </style>
