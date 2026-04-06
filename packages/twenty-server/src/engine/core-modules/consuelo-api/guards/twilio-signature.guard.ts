@@ -37,16 +37,11 @@ export class TwilioSignatureGuard implements CanActivate {
       const rawBody = (request as Request & { rawBody?: Buffer }).rawBody;
       const bodyString = rawBody ? rawBody.toString('utf8') : '';
       const bodyParams =
-        (request.body as Record<string, string> | undefined) ?? {};
+        (request.body as Record<string, unknown> | undefined) ?? {};
 
       const isValid = rawBody
-        ? twilio.default.validateRequestWithBody(
-            authToken,
-            signature,
-            url,
-            bodyString,
-          )
-        : twilio.default.validateRequest(authToken, signature, url, bodyParams);
+        ? twilio.validateRequestWithBody(authToken, signature, url, bodyString)
+        : twilio.validateRequest(authToken, signature, url, bodyParams);
 
       if (!isValid) {
         throw new UnauthorizedException('Invalid Twilio signature');
