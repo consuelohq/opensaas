@@ -1,6 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { InjectDataSource } from "@nestjs/typeorm";
-import { DataSource } from "typeorm";
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+
+import { DataSource } from 'typeorm';
 
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
@@ -26,24 +27,26 @@ export class QueuesService {
   }) {
     try {
       const queueRows = await this.dataSource.query(
-        "INSERT INTO call_queues (workspace_id, user_id, name, source_type, source_id, category, settings, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+        'INSERT INTO call_queues (workspace_id, user_id, name, source_type, source_id, category, settings, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
         [
           params.workspaceId,
           params.userId,
           params.name,
-          params.sourceType ?? null,
+          params.sourceType ?? 'manual',
           params.sourceId ?? null,
-          params.category ?? null,
+          params.category ?? 'all',
           JSON.stringify(params.settings ?? {}),
           params.contactIds.length,
         ],
       );
 
       const queue = queueRows[0];
+
       if (params.contactIds.length > 0) {
         const valuesClause = params.contactIds
           .map((_, index) => `($1, $${index + 2}, ${index + 1})`)
-          .join(",");
+          .join(',');
+
         await this.dataSource.query(
           `INSERT INTO queue_items (queue_id, contact_id, position) VALUES ${valuesClause}`,
           [queue.id, ...params.contactIds],
@@ -52,7 +55,8 @@ export class QueuesService {
 
       return queue;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`createQueue failed: ${message}`, {
         workspaceId: params.workspaceId,
       });
@@ -63,11 +67,12 @@ export class QueuesService {
   async listQueues(workspaceId: string) {
     try {
       return this.dataSource.query(
-        "SELECT * FROM call_queues WHERE workspace_id = $1 ORDER BY created_at DESC",
+        'SELECT * FROM call_queues WHERE workspace_id = $1 ORDER BY created_at DESC',
         [workspaceId],
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`listQueues failed: ${message}`, { workspaceId });
       throw err;
     }
@@ -76,22 +81,24 @@ export class QueuesService {
   async getQueue(workspaceId: string, id: string) {
     try {
       const queueRows = await this.dataSource.query(
-        "SELECT * FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT * FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [id, workspaceId],
       );
       const queue = queueRows[0];
+
       if (!queue) {
         return null;
       }
 
       const items = await this.dataSource.query(
-        "SELECT * FROM queue_items WHERE queue_id = $1 ORDER BY position ASC",
+        'SELECT * FROM queue_items WHERE queue_id = $1 ORDER BY position ASC',
         [id],
       );
 
       return { ...queue, items };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`getQueue failed: ${message}`, { workspaceId, id });
       throw err;
     }
@@ -100,13 +107,14 @@ export class QueuesService {
   async updateQueueStatus(workspaceId: string, id: string, status: string) {
     try {
       const rows = await this.dataSource.query(
-        "UPDATE call_queues SET status = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
+        'UPDATE call_queues SET status = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
         [status, id, workspaceId],
       );
 
       return rows[0] ?? null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`updateQueueStatus failed: ${message}`, {
         workspaceId,
         id,
@@ -118,20 +126,22 @@ export class QueuesService {
   async startQueue(workspaceId: string, id: string) {
     try {
       const queueRows = await this.dataSource.query(
-        "UPDATE call_queues SET status = $1, started_at = COALESCE(started_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
-        ["active", id, workspaceId],
+        'UPDATE call_queues SET status = $1, started_at = COALESCE(started_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
+        ['active', id, workspaceId],
       );
 
       const queue = queueRows[0];
+
       if (!queue) {
         return null;
       }
 
       const item = await this.selectNextCallableItem(id, workspaceId);
 
-      return { queue, nextItem: item };
+      return { queue, currentItem: item, nextItem: item };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`startQueue failed: ${message}`, { workspaceId, id });
       throw err;
     }
@@ -140,16 +150,17 @@ export class QueuesService {
   async skipCurrentItem(params: { queueId: string; workspaceId: string }) {
     try {
       const queueCheck = await this.dataSource.query(
-        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [params.queueId, params.workspaceId],
       );
+
       if (!queueCheck[0]) {
         return null;
       }
 
       const currentRows = await this.dataSource.query(
-        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
-        [params.queueId, "calling"],
+        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
+        [params.queueId, 'calling'],
       );
       const current = currentRows[0];
 
@@ -164,8 +175,8 @@ export class QueuesService {
       }
 
       const updatedRows = await this.dataSource.query(
-        "UPDATE queue_items SET status = $1, skip_reason = $2 WHERE id = $3 RETURNING *",
-        ["skipped", "user_skip", current.id],
+        'UPDATE queue_items SET status = $1, skip_reason = $2 WHERE id = $3 RETURNING *',
+        ['skipped', 'user_skip', current.id],
       );
 
       return {
@@ -176,7 +187,8 @@ export class QueuesService {
         ),
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`skipCurrentItem failed: ${message}`, {
         queueId: params.queueId,
         workspaceId: params.workspaceId,
@@ -192,16 +204,17 @@ export class QueuesService {
   }) {
     try {
       const queueCheck = await this.dataSource.query(
-        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [params.queueId, params.workspaceId],
       );
+
       if (!queueCheck[0]) {
         return null;
       }
 
       const currentRows = await this.dataSource.query(
-        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
-        [params.queueId, "calling"],
+        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
+        [params.queueId, 'calling'],
       );
       const current = currentRows[0];
 
@@ -216,8 +229,8 @@ export class QueuesService {
       }
 
       const updatedRows = await this.dataSource.query(
-        "UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *",
-        ["completed", params.outcome ?? null, current.id],
+        'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
+        ['completed', params.outcome ?? null, current.id],
       );
 
       return {
@@ -228,7 +241,8 @@ export class QueuesService {
         ),
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`completeCurrentAndAdvance failed: ${message}`, {
         queueId: params.queueId,
         workspaceId: params.workspaceId,
@@ -240,21 +254,23 @@ export class QueuesService {
   async restartQueue(workspaceId: string, id: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [id, workspaceId],
       );
+
       if (!queueCheck[0]) {
         return null;
       }
 
       await this.dataSource.query(
-        "UPDATE queue_items SET status = $1, attempts = 0, call_outcome = NULL, skip_reason = NULL WHERE queue_id = $2",
-        ["pending", id],
+        'UPDATE queue_items SET status = $1, attempts = 0, call_outcome = NULL, skip_reason = NULL WHERE queue_id = $2',
+        ['pending', id],
       );
 
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`restartQueue failed: ${message}`, { workspaceId, id });
       throw err;
     }
@@ -263,13 +279,14 @@ export class QueuesService {
   async assignQueue(workspaceId: string, id: string, userId: string) {
     try {
       const rows = await this.dataSource.query(
-        "UPDATE call_queues SET user_id = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
+        'UPDATE call_queues SET user_id = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
         [userId, id, workspaceId],
       );
 
       return rows[0] ?? null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`assignQueue failed: ${message}`, { workspaceId, id });
       throw err;
     }
@@ -278,9 +295,10 @@ export class QueuesService {
   async queueAnalytics(workspaceId: string, queueId: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [queueId, workspaceId],
       );
+
       if (!queueCheck[0]) {
         return null;
       }
@@ -290,15 +308,15 @@ export class QueuesService {
         call_outcome: string | null;
         call_duration_seconds: number | null;
       }> = await this.dataSource.query(
-        "SELECT status, call_outcome, call_duration_seconds FROM queue_items WHERE queue_id = $1",
+        'SELECT status, call_outcome, call_duration_seconds FROM queue_items WHERE queue_id = $1',
         [queueId],
       );
 
       const total = rows.length;
-      const completed = rows.filter((row) => row.status === "completed").length;
-      const skipped = rows.filter((row) => row.status === "skipped").length;
+      const completed = rows.filter((row) => row.status === 'completed').length;
+      const skipped = rows.filter((row) => row.status === 'skipped').length;
       const rowsWithDuration = rows.filter(
-        (row) => typeof row.call_duration_seconds === "number",
+        (row) => typeof row.call_duration_seconds === 'number',
       );
       const totalDurationSeconds = rowsWithDuration.reduce(
         (acc, row) => acc + (row.call_duration_seconds ?? 0),
@@ -315,14 +333,16 @@ export class QueuesService {
             ? 0
             : Math.round(totalDurationSeconds / rowsWithDuration.length),
         outcomes: rows.reduce<Record<string, number>>((acc, row) => {
-          const key = row.call_outcome ?? "unknown";
+          const key = row.call_outcome ?? 'unknown';
+
           acc[key] = (acc[key] ?? 0) + 1;
 
           return acc;
         }, {}),
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`queueAnalytics failed: ${message}`, {
         workspaceId,
         queueId,
@@ -332,20 +352,23 @@ export class QueuesService {
   }
 
   private sanitizeCsvValue(value: string): string {
-    const formulaChars = ["=", "+", "-", "@", "\t", "\r"];
+    const formulaChars = ['=', '+', '-', '@', '\t', '\r'];
     let sanitized = value;
+
     if (formulaChars.some((char) => sanitized.startsWith(char))) {
       sanitized = `'${sanitized}`;
     }
-    return sanitized.replaceAll('"', '""');
+
+    return sanitized.split('"').join('""');
   }
 
   async exportQueueCsv(workspaceId: string, queueId: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [queueId, workspaceId],
       );
+
       if (!queueCheck[0]) {
         return null;
       }
@@ -359,24 +382,25 @@ export class QueuesService {
         [queueId],
       );
 
-      const header = "id,position,status,call_outcome,attempts,name,phone";
+      const header = 'id,position,status,call_outcome,attempts,name,phone';
       const lines = rows.map((row: Record<string, unknown>) => {
         const values = [
           row.id,
           row.position,
           row.status,
-          row.call_outcome ?? "",
+          row.call_outcome ?? '',
           row.attempts,
-          this.sanitizeCsvValue(String(row.name ?? "")),
-          this.sanitizeCsvValue(String(row.phone ?? "")),
+          this.sanitizeCsvValue(String(row.name ?? '')),
+          this.sanitizeCsvValue(String(row.phone ?? '')),
         ];
 
-        return values.map((value) => `"${value}"`).join(",");
+        return values.map((value) => `"${value}"`).join(',');
       });
 
-      return [header, ...lines].join("\n");
+      return [header, ...lines].join('\n');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`exportQueueCsv failed: ${message}`, {
         workspaceId,
         queueId,
@@ -388,11 +412,12 @@ export class QueuesService {
   async getContactDialerInfo(workspaceId: string, contactId: string) {
     try {
       const contactRows = await this.dataSource.query(
-        "SELECT id, name, phone FROM contacts WHERE id = $1 AND workspace_id = $2",
+        'SELECT id, name, phone FROM contacts WHERE id = $1 AND workspace_id = $2',
         [contactId, workspaceId],
       );
 
       const contact = contactRows[0];
+
       if (!contact) {
         return null;
       }
@@ -411,7 +436,8 @@ export class QueuesService {
         attempts,
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
       this.logger.error(`getContactDialerInfo failed: ${message}`, {
         workspaceId,
         contactId,
@@ -423,7 +449,7 @@ export class QueuesService {
   private async selectNextCallableItem(queueId: string, workspaceId: string) {
     try {
       const queueRows = await this.dataSource.query(
-        "SELECT settings FROM call_queues WHERE id = $1 AND workspace_id = $2",
+        'SELECT settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [queueId, workspaceId],
       );
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
@@ -472,13 +498,34 @@ export class QueuesService {
         return true;
       });
 
-      if (!item) {
+      return await this.claimQueueItem(workspaceId, item);
+    } catch (err: unknown) {
+      if (this.isMissingRelationError(err, 'contact_attempt_ledger')) {
+        return await this.selectNextCallableItemWithoutLedger(queueId);
+      }
+
+      const message = err instanceof Error ? err.message : 'Unknown error';
+
+      this.logger.error(`selectNextCallableItem failed: ${message}`, {
+        queueId,
+        workspaceId,
+      });
+      throw err;
+    }
+  }
+
+  private async claimQueueItem(
+    workspaceId: string,
+    item: Record<string, unknown> | undefined,
+  ) {
+    try {
+      if (!item?.id || !item.contact_id) {
         return null;
       }
 
       const updatedRows = await this.dataSource.query(
         "UPDATE queue_items SET status = $1, attempts = attempts + 1, last_attempt_at = NOW() WHERE id = $2 AND status = 'pending' RETURNING *",
-        ["calling", item.id],
+        ['calling', item.id],
       );
 
       if (!updatedRows[0]) {
@@ -492,7 +539,7 @@ export class QueuesService {
          DO UPDATE SET
            last_attempt_at = NOW(),
            attempts_total = contact_attempt_ledger.attempts_total + 1,
-           attempts_today = CASE 
+           attempts_today = CASE
              WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN 1
              ELSE contact_attempt_ledger.attempts_today + 1
            END,
@@ -512,13 +559,38 @@ export class QueuesService {
       );
 
       return updatedRows[0];
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      this.logger.error(`selectNextCallableItem failed: ${message}`, {
-        queueId,
-        workspaceId,
-      });
-      throw err;
+    } finally {
+      // noop
     }
+  }
+
+  private async selectNextCallableItemWithoutLedger(queueId: string) {
+    try {
+      const rows = await this.dataSource.query(
+        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = 'pending' ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
+        [queueId],
+      );
+      const item = rows[0];
+
+      if (!item) {
+        return null;
+      }
+
+      const updatedRows = await this.dataSource.query(
+        "UPDATE queue_items SET status = $1, attempts = attempts + 1, last_attempt_at = NOW() WHERE id = $2 AND status = 'pending' RETURNING *",
+        ['calling', item.id],
+      );
+
+      return updatedRows[0] ?? null;
+    } finally {
+      // noop
+    }
+  }
+
+  private isMissingRelationError(err: unknown, relationName: string) {
+    return (
+      err instanceof Error &&
+      err.message.includes(`relation "${relationName}" does not exist`)
+    );
   }
 }

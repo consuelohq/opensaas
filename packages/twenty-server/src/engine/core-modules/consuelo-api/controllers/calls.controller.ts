@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -76,8 +77,21 @@ export class CallsController {
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
   @Post('calls/initiate-phone')
-  async initiatePhone() {
-    return this.callsService.initiatePhoneCall();
+  async initiatePhone(
+    @Req() request: AuthRequest,
+    @Body() body: Record<string, unknown>,
+  ) {
+    try {
+      const workspaceId = request.workspace?.id;
+
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      return this.callsService.initiatePhoneCall(workspaceId, body);
+    } finally {
+      // noop
+    }
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
@@ -87,45 +101,96 @@ export class CallsController {
     @Query('limit') limitParam?: string,
     @Query('offset') offsetParam?: string,
   ) {
-    const workspaceId = request.workspace?.id;
+    try {
+      const workspaceId = request.workspace?.id;
 
-    if (!workspaceId) {
-      throw new UnauthorizedException('Authentication required');
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      const { limit, offset } = clampPagination(limitParam, offsetParam);
+
+      return this.callsService.getCallHistory(workspaceId, limit, offset);
+    } finally {
+      // noop
     }
-
-    const { limit, offset } = clampPagination(limitParam, offsetParam);
-
-    return this.callsService.getCallHistory(workspaceId, limit, offset);
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
   @Get('recordings/:sid/stream')
   async streamRecording(@Param('sid') sid: string) {
-    return this.callsService.streamRecording() ?? sid;
+    try {
+      return this.callsService.streamRecording() ?? sid;
+    } finally {
+      // noop
+    }
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
   @Get('calls/:id')
   async getCall(@Req() request: AuthRequest, @Param('id') id: string) {
-    const workspaceId = request.workspace?.id;
+    try {
+      const workspaceId = request.workspace?.id;
 
-    if (!workspaceId) {
-      throw new UnauthorizedException('Authentication required');
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      const call = await this.callsService.getCall(workspaceId, id);
+
+      if (!call) {
+        throw new NotFoundException('Call not found');
+      }
+
+      return call;
+    } finally {
+      // noop
     }
-
-    const call = await this.callsService.getCall(workspaceId, id);
-
-    if (!call) {
-      throw new NotFoundException('Call not found');
-    }
-
-    return call;
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
   @Post('calls/:id/hangup')
   async hangupCall(@Param('id') id: string) {
-    return this.callsService.hangupCall() ?? { id };
+    try {
+      return this.callsService.hangupCall() ?? { id };
+    } finally {
+      // noop
+    }
+  }
+
+  @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
+  @Post('calls/:id/disposition')
+  async setDisposition(
+    @Req() request: AuthRequest,
+    @Param('id') id: string,
+    @Body() body: { outcome?: string; notes?: string },
+  ) {
+    try {
+      const workspaceId = request.workspace?.id;
+
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      if (!body.outcome && !body.notes) {
+        throw new BadRequestException('Provide outcome and/or notes');
+      }
+
+      const updated = await this.callsService.setDisposition(
+        workspaceId,
+        id,
+        body.outcome ?? null,
+        body.notes,
+      );
+
+      if (!updated) {
+        throw new NotFoundException('Call not found');
+      }
+
+      return updated;
+    } finally {
+      // noop
+    }
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
@@ -135,40 +200,48 @@ export class CallsController {
     @Param('id') id: string,
     @Body() body: Record<string, unknown>,
   ) {
-    const workspaceId = request.workspace?.id;
+    try {
+      const workspaceId = request.workspace?.id;
 
-    if (!workspaceId) {
-      throw new UnauthorizedException('Authentication required');
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      const updated = await this.callsService.persistAnalysis(
+        workspaceId,
+        id,
+        body,
+      );
+
+      if (!updated) {
+        throw new NotFoundException('Call not found');
+      }
+
+      return updated;
+    } finally {
+      // noop
     }
-
-    const updated = await this.callsService.persistAnalysis(
-      workspaceId,
-      id,
-      body,
-    );
-
-    if (!updated) {
-      throw new NotFoundException('Call not found');
-    }
-
-    return updated;
   }
 
   @UseGuards(JwtAuthGuard, WorkspaceAuthGuard, NoPermissionGuard)
   @Get('calls/:id/transcript')
   async transcript(@Req() request: AuthRequest, @Param('id') id: string) {
-    const workspaceId = request.workspace?.id;
+    try {
+      const workspaceId = request.workspace?.id;
 
-    if (!workspaceId) {
-      throw new UnauthorizedException('Authentication required');
+      if (!workspaceId) {
+        throw new UnauthorizedException('Authentication required');
+      }
+
+      const transcript = await this.callsService.getTranscript(workspaceId, id);
+
+      if (!transcript) {
+        throw new NotFoundException('Call not found');
+      }
+
+      return transcript;
+    } finally {
+      // noop
     }
-
-    const transcript = await this.callsService.getTranscript(workspaceId, id);
-
-    if (!transcript) {
-      throw new NotFoundException('Call not found');
-    }
-
-    return transcript;
   }
 }

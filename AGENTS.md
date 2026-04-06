@@ -643,6 +643,68 @@ gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.sha'
 
 ALl text must be localized with Lingui
 
+# MCP tools — USE THEM
+
+you have MCP servers available. learn them, use them, stop doing things the hard way.
+
+## codemode (`execute_code`) — batch file operations
+
+**this is your most important token-saving tool.** every time you're about to make 2+ sequential tool calls that touch files, search, or bash — stop and use codemode instead. one round-trip instead of many.
+
+```javascript
+// available async functions (all paths relative to workingDirectory):
+await readFile('src/foo.ts')                    // full file
+await readFile('src/foo.ts', 10, 30)            // lines 10-30
+await writeFile('src/foo.ts', content)           // create/overwrite
+await editFile('src/foo.ts', 'old text', 'new') // str_replace
+await appendFile('src/foo.ts', '\nnew line')
+await insertLine('src/foo.ts', 15, 'new code')  // insert after line 15
+await readDir('src/', 2)                         // list with depth
+await grep('pattern', 'src/', { include: '*.ts' })
+await glob('*.test.ts', 'src/')
+await bash('npm run build')                      // shell commands
+```
+
+**when to use codemode:**
+- reading 2+ files → `Promise.all([readFile(a), readFile(b), readFile(c)])`
+- grep → read → edit chains (the whole flow in one call)
+- batch edits across multiple files
+- any sequence where one result feeds into the next
+- investigating a codebase (readDir + readFile several files)
+
+**the token math:** 5 file reads = 5 tool calls = 5 round-trips. with codemode: 1 call = 1 round-trip. each saved round-trip saves the full context window being re-sent.
+
+**return only what matters** — don't return a 500-line file when you need 20 lines:
+```javascript
+const content = await readFile('src/big-service.ts');
+const relevant = content.split('\n').filter(l => l.includes('transferCall')).join('\n');
+return { matchingLines: relevant, totalLines: content.split('\n').length };
+```
+
+## context7 — up-to-date library docs
+
+when writing code that uses any library/framework, look up the latest docs instead of relying on training data. prevents hallucinated APIs.
+
+```
+// 1. resolve the library ID
+resolve-library-id({ libraryName: "nestjs" })
+
+// 2. fetch docs for a specific topic
+get-library-docs({ context7CompatibleLibraryID: "/nestjs/nest", topic: "guards" })
+```
+
+use for: code generation, setup/config, API docs, version-specific behavior. especially important for fast-moving libraries (react, nestjs, twilio, stripe, typeorm).
+
+## qmd — memory and knowledge search
+
+qmd is a local hybrid search engine (BM25 + vector + LLM reranking) that indexes all markdown files across opensaas, kiro sessions, opencode sessions, and docs. **search before you say "i don't know."**
+
+if available as an MCP tool, use `qmd_query` for best results. otherwise via shell:
+```bash
+~/.bun/bin/qmd query "conference transfer architecture"  # hybrid search (best)
+~/.bun/bin/qmd search "twilio conference"                # keyword only (fast)
+```
+
 # context-mode — MANDATORY routing rules
 
 You have context-mode MCP tools available. These rules are NOT optional — they protect your context window from flooding. A single unrouted command can dump 56 KB into context and waste the entire session.
