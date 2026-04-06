@@ -1,78 +1,46 @@
 ---
+import SeoHead from '../components/SeoHead.astro';
+import { siteMetadata } from '../lib/site-seo';
+
 type Props = {
   title?: string;
   description?: string;
   canonicalPath?: string;
   image?: string;
-  type?: string;
+  type?: 'website' | 'article';
   publishDate?: Date;
+  modifiedDate?: Date | null;
   author?: string;
+  schemaEntries?: Array<Record<string, unknown>>;
 };
 
 const {
-  title = 'Consuelo',
-  description = 'Sales infrastructure that integrates everywhere.',
+  title = siteMetadata.defaultTitle,
+  description = siteMetadata.defaultDescription,
   canonicalPath = Astro.url.pathname,
-  image = '/og.jpg',
+  image = siteMetadata.defaultOgImage,
   type = 'website',
   publishDate,
+  modifiedDate,
   author,
+  schemaEntries = [],
 } = Astro.props;
-
-const siteUrl = 'https://www.consuelohq.com';
-const canonicalUrl = new URL(canonicalPath, siteUrl).toString();
-const fullTitle = title.includes('Consuelo') ? title : title + ' | Consuelo';
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': siteUrl + '/#organization',
-      name: 'Consuelo',
-      url: siteUrl,
-      logo: siteUrl + '/logo.svg',
-      sameAs: ['https://github.com/consuelohq/opensaas', 'https://docs.consuelohq.com'],
-      description,
-    },
-    {
-      '@type': 'WebSite',
-      '@id': siteUrl + '/#website',
-      url: siteUrl,
-      name: 'Consuelo',
-      publisher: { '@id': siteUrl + '/#organization' },
-    },
-  ],
-};
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>{fullTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalUrl} />
-    <meta name="robots" content="index,follow" />
-    <meta name="application-name" content="Consuelo" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000" />
-    <meta property="og:type" content={type} />
-    <meta property="og:site_name" content="Consuelo" />
-    <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={image.startsWith('http') ? image : siteUrl + image} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={fullTitle} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image.startsWith('http') ? image : siteUrl + image} />
-    {publishDate && <meta property="article:published_time" content={publishDate.toISOString()} />}
-    {author && <meta property="article:author" content={author} />}
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <SeoHead
+      {title}
+      {description}
+      canonicalPath={canonicalPath}
+      image={image}
+      type={type}
+      publishDate={publishDate}
+      modifiedDate={modifiedDate}
+      author={author}
+      schemaEntries={schemaEntries}
+    />
   </head>
   <body>
     <div class="launch-shell">
@@ -97,7 +65,7 @@ const structuredData = {
     --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
     --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
     --launch-success: #6fdd92;
-    --launch-mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --launch-mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 
   @media (prefers-color-scheme: dark) {
