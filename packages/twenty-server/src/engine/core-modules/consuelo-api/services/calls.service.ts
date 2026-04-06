@@ -74,9 +74,12 @@ export class CallsService {
         process.env.TWILIO_ACCOUNT_SID ?? '',
         process.env.TWILIO_AUTH_TOKEN ?? '',
       );
+      const twiml =
+        '<Response><Say>Consuelo test call</Say><Hangup/></Response>';
       const call = await client.calls.create({
         to: leadPhone,
         from: callerId,
+        twiml,
       });
 
       const rows = await this.dataSource.query(
@@ -86,7 +89,7 @@ export class CallsService {
           call.sid,
           contactId,
           'outbound',
-          'initiated',
+          call.status,
           callerId,
           leadPhone,
         ],
@@ -95,7 +98,7 @@ export class CallsService {
       return {
         callId: rows[0]?.id ?? null,
         callSid: call.sid,
-        status: rows[0]?.status ?? 'initiated',
+        status: rows[0]?.status ?? call.status,
       };
     } finally {
       // noop
