@@ -14,11 +14,12 @@ const { sectionId } = Astro.props as Props;
 
 <section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-hero">
-    <div class="launch-hero__announcement launch-mono">
+    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono">
       <span class="launch-hero__badge">{launchAnnouncement.badge}</span>
-      <span>{launchAnnouncement.text}</span>
-      <a class="launch-inline-link" href={launchAnnouncement.linkHref}>{launchAnnouncement.linkLabel}</a>
-    </div>
+      <span class="launch-hero__announcement-text">
+        {launchAnnouncement.text} <span class="launch-inline-link">{launchAnnouncement.linkLabel}</span>
+      </span>
+    </a>
 
     <div class="launch-hero__copy">
       <h1 class="launch-title">{launchHero.title}</h1>
@@ -148,6 +149,7 @@ const { sectionId } = Astro.props as Props;
 
   .launch-hero__announcement {
     display: inline-flex;
+    text-decoration: none;
     width: fit-content;
     align-items: center;
     gap: 0.4rem;
@@ -327,10 +329,8 @@ const { sectionId } = Astro.props as Props;
 
   @media (max-width: 720px) {
     .launch-hero__announcement {
-      gap: 0.28rem;
-      flex-wrap: wrap;
+      gap: 0.4rem;
       font-size: 0.63rem;
-      white-space: normal;
     }
 
     .launch-hero__badge {
