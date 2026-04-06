@@ -195,11 +195,18 @@ export class CallsService {
   ) {
     try {
       const rows = await this.dataSource.query(
-        'UPDATE calls SET outcome = COALESCE($1, outcome), notes = COALESCE($2, notes), updated_at = NOW() WHERE (id::text = $3 OR call_sid = $3) AND workspace_id = $4 RETURNING id, outcome, notes',
-        [outcome, notes ?? null, id, workspaceId],
+        'UPDATE calls SET outcome = COALESCE($1, outcome), updated_at = NOW() WHERE (id::text = $2 OR call_sid = $2) AND workspace_id = $3 RETURNING id, outcome',
+        [outcome, id, workspaceId],
       );
 
-      return rows[0] ?? null;
+      if (!rows[0]) {
+        return null;
+      }
+
+      return {
+        ...rows[0],
+        notes: notes ?? null,
+      };
     } finally {
       // noop
     }
