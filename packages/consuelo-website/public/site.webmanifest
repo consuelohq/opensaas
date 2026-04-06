@@ -1,11 +1,16 @@
 {
   "name": "Consuelo",
   "short_name": "Consuelo",
-  "description": "Open-source sales infrastructure for insurance teams — power dialer, AI CRM, real-time coaching, and analytics.",
+  "description": "Open-source sales infrastructure for insurance sales teams — crm, dialer, real-time ai coaching, and analytics.",
   "icons": [
     {
-      "src": "/apple-touch-icon-800x800.png",
-      "sizes": "800x800",
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     },
     {

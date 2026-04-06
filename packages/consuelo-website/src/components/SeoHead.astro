@@ -1,0 +1,81 @@
+---
+import {
+  formatTitle,
+  getOrganizationSchema,
+  getWebsiteSchema,
+  resolveCanonicalUrl,
+  resolveImageUrl,
+  siteMetadata,
+  type StructuredData,
+} from '../lib/site-seo';
+
+type Props = {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  canonicalUrl?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  robots?: string;
+  author?: string;
+  publishDate?: Date;
+  modifiedDate?: Date | null;
+  schemaEntries?: StructuredData[];
+};
+
+const {
+  title,
+  description = siteMetadata.defaultDescription,
+  canonicalPath = Astro.url.pathname,
+  canonicalUrl: canonicalUrlProp,
+  image = siteMetadata.defaultOgImage,
+  type = 'website',
+  robots = siteMetadata.robots,
+  author,
+  publishDate,
+  modifiedDate,
+  schemaEntries = [],
+} = Astro.props;
+
+const fullTitle = formatTitle(title, siteMetadata.defaultTitle);
+const canonicalUrl = canonicalUrlProp ?? resolveCanonicalUrl(canonicalPath);
+const imageUrl = resolveImageUrl(image);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [getOrganizationSchema(), getWebsiteSchema(), ...schemaEntries],
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="/favicon.ico" sizes="48x48" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="application-name" content={siteMetadata.siteName} />
+<meta name="author" content={author ?? siteMetadata.siteName} />
+<meta name="robots" content={robots} />
+<meta name="color-scheme" content="light dark" />
+<link rel="canonical" href={canonicalUrl} />
+<meta property="og:type" content={type} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:site_name" content={siteMetadata.siteName} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={imageUrl} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content={siteMetadata.twitterHandle} />
+<meta name="twitter:creator" content={siteMetadata.twitterHandle} />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content={siteMetadata.themeColorLight} />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content={siteMetadata.themeColorDark} />
+{type === 'article' && publishDate && <meta property="article:published_time" content={publishDate.toISOString()} />}
+{type === 'article' && modifiedDate && <meta property="article:modified_time" content={modifiedDate.toISOString()} />}
+{type === 'article' && author && <meta property="article:author" content={author} />}
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
