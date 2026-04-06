@@ -190,7 +190,7 @@ export const launchTabs: LaunchTab[] = [
     id: 'embed',
     label: 'embed',
     kind: 'link',
-    value: 'https://www.consuelohq.com/ghl',
+    value: 'https://consuelohq.com/ghl',
     href: '/ghl',
     imageSrc: '/previews/power-dialer.webp',
     darkImageSrc: '/previews/dark-preview.webp',
