@@ -1,10 +1,32 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useLingui } from '@lingui/react/macro';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { useLingui } from '@lingui/react/macro';
+import {
+  IconArrowLeft,
+  IconBook2,
+  IconBrandChrome,
+  IconBrandDiscord,
+  IconBrandOpenai,
+  IconBrandSlack,
+  IconBrandTabler,
+  IconBrandWindows,
+  IconCommand,
+  IconComment,
+  IconDeviceLaptop,
+  IconDownload,
+  IconHelpCircle,
+  IconSettings,
+  IconStatusChange,
+  IconTerminal2,
+} from 'twenty-ui/display';
+import { MenuItem } from 'twenty-ui/navigation';
+import { getOsControlSymbol } from 'twenty-ui/utilities';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
@@ -29,35 +51,13 @@ import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
 import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMemorizedUrlState';
-import { getOsControlSymbol } from 'twenty-ui/utilities';
-import { AppPath, SettingsPath } from 'twenty-shared/types';
-import { getSettingsPath } from 'twenty-shared/utils';
-import {
-  IconArrowLeft,
-  IconBook2,
-  IconBrandChrome,
-  IconBrandDiscord,
-  IconBrandOpenai,
-  IconBrandSlack,
-  IconBrandTabler,
-  IconBrandWindows,
-  IconCommand,
-  IconDeviceLaptop,
-  IconDownload,
-  IconHelpCircle,
-  IconMessageCircle,
-  IconSettings,
-  IconStatusChange,
-  IconTerminal2,
-} from '@tabler/icons-react';
-import { MenuItem } from 'twenty-ui/navigation';
 
 const SUPPORT_EMAIL = 'support@consuelohq.com';
 
 const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.primary};
+  border: 1px solid ${({ theme }) => theme.border.color.strong};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
@@ -73,7 +73,7 @@ const StyledHelpButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
-    border-color: ${({ theme }) => theme.border.color.primary};
+    border-color: ${({ theme }) => theme.border.color.strong};
     color: ${({ theme }) => theme.font.color.primary};
   }
 
@@ -171,7 +171,9 @@ export const NavigationDrawerHelpDropdown = () => {
 
   const [view, setView] = useState<HelpDropdownView>('main');
   const [direction, setDirection] = useState(1);
-  const openAppsTimeoutRef = useRef<number | null>(null);
+  const [openAppsTimeoutId, setOpenAppsTimeoutId] = useState<number | null>(
+    null,
+  );
 
   const commandSymbol = getOsControlSymbol();
 
@@ -186,16 +188,16 @@ export const NavigationDrawerHelpDropdown = () => {
 
   useEffect(() => {
     return () => {
-      if (openAppsTimeoutRef.current !== null) {
-        window.clearTimeout(openAppsTimeoutRef.current);
+      if (openAppsTimeoutId !== null) {
+        window.clearTimeout(openAppsTimeoutId);
       }
     };
-  }, []);
+  }, [openAppsTimeoutId]);
 
   const clearOpenAppsTimeout = () => {
-    if (openAppsTimeoutRef.current !== null) {
-      window.clearTimeout(openAppsTimeoutRef.current);
-      openAppsTimeoutRef.current = null;
+    if (openAppsTimeoutId !== null) {
+      window.clearTimeout(openAppsTimeoutId);
+      setOpenAppsTimeoutId(null);
     }
   };
 
@@ -218,9 +220,10 @@ export const NavigationDrawerHelpDropdown = () => {
   const handleDownloadAppsHoverStart = () => {
     clearOpenAppsTimeout();
 
-    openAppsTimeoutRef.current = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       openAppsView();
     }, DOWNLOAD_APPS_HOVER_DELAY_IN_MS);
+    setOpenAppsTimeoutId(timeoutId);
   };
 
   const handleOpenSettings = () => {
@@ -333,7 +336,7 @@ export const NavigationDrawerHelpDropdown = () => {
                     text={t`Docs`}
                   />
                   <MenuItem
-                    LeftIcon={IconMessageCircle}
+                    LeftIcon={IconComment}
                     onClick={() => {
                       void handleOpenFeedback();
                     }}

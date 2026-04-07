@@ -44,7 +44,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # Standard
   Jede Variable ist mit Beschreibungen in Ihrem Admin-Panel dokumentiert unter **Einstellungen → Admin-Panel → Konfigurationsvariablen**.
   Einige Infrastruktureinstellungen wie Datenbankverbindungen (`PG_DATABASE_URL`), Server-URLs (`SERVER_URL`) und Anwendungsgeheimnisse (`APP_SECRET`) können nur über die `.env`-Datei konfiguriert werden.
 
-  [Vollständige technische Referenz →](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
+  [Vollständige technische Referenz →](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
 </Warning>
 
 ## 2. Nur-Umgebungs-Konfiguration
@@ -153,7 +153,7 @@ Wenn aktiviert, können nur Benutzer mit `canAccessFullAdminPanel` zusätzliche 
 </Warning>
 
 **Erforderliche Scopes** (automatisch konfiguriert):
-[Siehe relevanten Quellcode](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
+[Siehe relevanten Quellcode](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
 
 * `https://www.googleapis.com/auth/calendar.events`
 * `https://www.googleapis.com/auth/gmail.readonly`
@@ -216,7 +216,7 @@ Sie müssen die folgenden Weiterleitungs-URIs zu Ihrem Projekt hinzufügen:
 
 ### Scopes konfigurieren
 
-[Siehe relevanten Quellcode](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
+[Siehe relevanten Quellcode](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
 
 * 'openid'
 * 'e-Mail'

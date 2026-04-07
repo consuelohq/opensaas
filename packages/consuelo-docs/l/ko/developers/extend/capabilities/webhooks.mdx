@@ -73,15 +73,15 @@ Consuelo는 보안을 위해 각 웹훅 요청에 서명합니다. 요청의 진
 
 | 헤더                           | 설명             |
 | ---------------------------- | -------------- |
-| `X-Twenty-Webhook-Signature` | HMAC SHA256 서명 |
-| `X-Twenty-Webhook-Timestamp` | 요청 타임스탬프       |
+| `X-Consuelo-Webhook-Signature` | HMAC SHA256 서명 |
+| `X-Consuelo-Webhook-Timestamp` | 요청 타임스탬프       |
 
 ### 검증 단계
 
-1. `X-Twenty-Webhook-Timestamp`에서 타임스탬프를 가져옵니다
+1. `X-Consuelo-Webhook-Timestamp`에서 타임스탬프를 가져옵니다
 2. 다음 문자열을 생성합니다: `{timestamp}:{JSON payload}`
 3. 웹훅 비밀을 사용하여 HMAC SHA256을 계산합니다
-4. `X-Twenty-Webhook-Signature`와 비교합니다
+4. `X-Consuelo-Webhook-Signature`와 비교합니다
 
 ### 예시(Node.js)
 

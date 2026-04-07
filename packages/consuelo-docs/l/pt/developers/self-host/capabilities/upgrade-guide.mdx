@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Mutação docker-compose.yml
 
 Esta versão inclui uma mutação `docker-compose.yml` para dar ao serviço `worker` acesso ao volume `server-local-data`.
-Por favor, atualize seu `docker-compose.yml` local com [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Por favor, atualize seu `docker-compose.yml` local com [v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 para v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Certifique-se de que seu arquivo de dump não está vazio.
 
-2. Atualize seu docker-compose.yml para usar a imagem postgres:16 como no arquivo [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml).
+2. Atualize seu docker-compose.yml para usar a imagem postgres:16 como no arquivo [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml).
 
 3. Restaure o banco de dados para o novo contêiner postgres:16
 
@@ -262,7 +262,7 @@ O comando `yarn database:migrate:prod` aplicará as migrações à estrutura do 
 O `yarn command:prod upgrade-0.33` cuida da migração de dados de todos os espaços de trabalho.
 
 A partir desta versão, a imagem twenty-postgres para DB tornou-se obsoleta e o twenty-postgres-spilo é usado em vez disso.
-Se você quiser continuar usando a imagem twenty-postgres, basta substituir `twentycrm/twenty-postgres:${TAG}` por `twentycrm/twenty-postgres` em docker-compose.yml.
+Se você quiser continuar usando a imagem twenty-postgres, basta substituir `Consuelo/twenty-postgres:${TAG}` por `Consuelo/twenty-postgres` em docker-compose.yml.
 
 ### v0.31.0 para v0.32.0
 
@@ -317,7 +317,7 @@ O `yarn command:prod upgrade-0.31` cuida da migração de dados de todos os espa
 Atualize sua instância do Consuelo para usar a imagem v0.30.0
 
 **Mudança radical**:
-Para melhorar o desempenho, o Consuelo agora requer que o cache redis seja configurado. Atualizamos nosso [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) para refletir isso.
+Para melhorar o desempenho, o Consuelo agora requer que o cache redis seja configurado. Atualizamos nosso [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) para refletir isso.
 Certifique-se de atualizar sua configuração e suas variáveis de ambiente adequadamente:
 
 ```

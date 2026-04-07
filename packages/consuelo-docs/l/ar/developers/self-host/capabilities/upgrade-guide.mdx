@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### تغيير ملف docker-compose.yml
 
 يتضمن هذا الإصدار تغييرًا في `docker-compose.yml` لمنح خدمة `worker` إمكانية الوصول إلى وحدة التخزين `server-local-data`.
-يرجى تحديث `docker-compose.yml` المحلي الخاص بك بـ [docker-compose.yml v0.50.0](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+يرجى تحديث `docker-compose.yml` المحلي الخاص بك بـ [docker-compose.yml v0.50.0](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### من v0.43.0 إلى v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 تأكد من أن ملف النسخ الاحتياطي ليس فارغًا.
 
-2. قم بترقية docker-compose.yml الخاص بك لاستخدام صورة postgres:16 كما هو في الملف [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml).
+2. قم بترقية docker-compose.yml الخاص بك لاستخدام صورة postgres:16 كما هو في الملف [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml).
 
 3. استعادة قاعدة البيانات إلى الحاوية الجديدة postgres:16
 
@@ -317,7 +317,7 @@ yarn command:prod upgrade-0.31
 قم بترقية مثيل Consuelo الخاص بك لاستخدام صورة v0.30.0
 
 **تغيير كبير**:
-لتحسين الأداء، يتطلب Consuelo الآن تكوين Redis للتخزين المؤقت. قمنا بتحديث [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) لتعكس ذلك.
+لتحسين الأداء، يتطلب Consuelo الآن تكوين Redis للتخزين المؤقت. قمنا بتحديث [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) لتعكس ذلك.
 تأكد من تحديث إعدادات التكوين الخاصة بك وتحديث المتغيرات البيئية الخاصة بك وفقًا لذلك:
 
 ```

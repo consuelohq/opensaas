@@ -24,13 +24,13 @@ Bu kılavuz, Docker Compose kullanarak Consuelo uygulamasını kurmak ve yapıla
 Tek bir komutla en son kararlı Consuelo sürümünü yükleyin:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 Belirli bir sürüm veya dal yüklemek için:
 
 ```bash
-VERSION=vx.y.z BRANCH=dal-adı bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=dal-adı bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * x.y.z'yi istediğiniz sürüm numarasıyla değiştirin.
@@ -47,7 +47,7 @@ Manuel kurulum için bu adımları uygulayın.
    Örnek çevre dosyasını, çalışma dizininizde yeni bir .env dosyasına kopyalayın:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **Gizli Jetonlar Oluşturun**
@@ -81,7 +81,7 @@ Manuel kurulum için bu adımları uygulayın.
 `docker-compose.yml` dosyasını çalışma dizininize indirin:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### Adım 3: Uygulamayı Başlatın
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### Adım 4: Uygulamaya Erişin
 
-Eğer twentyCRM'i kendi bilgisayarınızda barındırıyorsanız, tarayıcınızı açın ve [http://localhost:3000](http://localhost:3000) adresine gidin.
+Eğer Consuelo'i kendi bilgisayarınızda barındırıyorsanız, tarayıcınızı açın ve [http://localhost:3000](http://localhost:3000) adresine gidin.
 
 Bir sunucuda barındırıyorsanız, sunucunun çalıştığını ve her şeyin yolunda olduğunu kontrol edin
 
@@ -210,7 +210,7 @@ Düzenli yedeklemeler CRM verilerinizi kayıptan korur.
 ### Veritabanı Yedeği Oluşturun
 
 ```bash
-docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).sql
+docker exec twenty-postgres pg_dump -U postgres consuelo > backup_$(date +%Y%m%d).sql
 ```
 
 ### Günlük Yedeklemeleri Otomatikleştirin
@@ -218,7 +218,7 @@ docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).
 crontab'ınıza ekleyin (`crontab -e`):
 
 ```bash
-0 2 * * * docker exec twenty-postgres pg_dump -U postgres twenty > /backups/twenty_$(date +\%Y\%m\%d).sql
+0 2 * * * docker exec twenty-postgres pg_dump -U postgres consuelo > /backups/twenty_$(date +\%Y\%m\%d).sql
 ```
 
 ### Yedekten Geri Yükleyin
@@ -232,7 +232,7 @@ docker compose stop twenty-server twenty-front
 2. Veritabanını geri yükleyin:
 
 ```bash
-docker exec -i twenty-postgres psql -U postgres twenty < backup_20240115.sql
+docker exec -i twenty-postgres psql -U postgres consuelo < backup_20240115.sql
 ```
 
 3. Servisleri yeniden başlatın:

@@ -24,13 +24,13 @@ Consultați documentația [Setup Environment Variables](/l/ro/developers/self-ho
 Instalați cea mai recentă versiune stabilă a Consuelo cu o singură comandă:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 Pentru a instala o versiune sau ramură specifică:
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * Înlocuiți x.y.z cu numărul versiunii dorite.
@@ -47,7 +47,7 @@ Urmați acești pași pentru o configurare manuală.
    Copiați exemplul de fișier de mediu într-un fișier .env nou în directorul de lucru:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **Generați Tokenuri Secrete**
@@ -81,7 +81,7 @@ Urmați acești pași pentru o configurare manuală.
 Descărcați fișierul `docker-compose.yml` în directorul de lucru:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### Pasul 3: Lansați Aplicația
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### Pasul 4: Accesați Aplicația
 
-Dacă găzduiți twentyCRM pe propriul computer, deschideți browserul și navigați la [http://localhost:3000](http://localhost:3000).
+Dacă găzduiți Consuelo pe propriul computer, deschideți browserul și navigați la [http://localhost:3000](http://localhost:3000).
 
 Dacă îl găzduiți pe un server, verificați că serverul rulează și că totul este în regulă cu
 
@@ -210,7 +210,7 @@ Copiile de rezervă regulate vă protejează datele CRM împotriva pierderii.
 ### Creați o copie de rezervă a bazei de date
 
 ```bash
-docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).sql
+docker exec twenty-postgres pg_dump -U postgres consuelo > backup_$(date +%Y%m%d).sql
 ```
 
 ### Automatizați copiile de rezervă zilnice
@@ -218,7 +218,7 @@ docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).
 Adăugați în crontab-ul dvs. (`crontab -e`):
 
 ```bash
-0 2 * * * docker exec twenty-postgres pg_dump -U postgres twenty > /backups/twenty_$(date +\%Y\%m\%d).sql
+0 2 * * * docker exec twenty-postgres pg_dump -U postgres consuelo > /backups/twenty_$(date +\%Y\%m\%d).sql
 ```
 
 ### Restaurare din copie de rezervă
@@ -232,7 +232,7 @@ docker compose stop twenty-server twenty-front
 2. Restaurați baza de date:
 
 ```bash
-docker exec -i twenty-postgres psql -U postgres twenty < backup_20240115.sql
+docker exec -i twenty-postgres psql -U postgres consuelo < backup_20240115.sql
 ```
 
 3. Reporniți serviciile:

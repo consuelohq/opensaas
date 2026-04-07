@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Модификация в docker-compose.yml
 
 Эта версия включает модификацию `docker-compose.yml`, чтобы предоставить сервису `worker` доступ к тому `server-local-data`.
-Обновите ваш локальный `docker-compose.yml` с [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Обновите ваш локальный `docker-compose.yml` с [v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 до v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Убедитесь, что ваш файл дампа не пустой.
 
-2. Обновите ваш файл docker-compose.yml с использованием изображения postgres:16, как в файле [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml).
+2. Обновите ваш файл docker-compose.yml с использованием изображения postgres:16, как в файле [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml).
 
 3. Восстановите базу данных в новый контейнер postgres:16.
 
@@ -262,7 +262,7 @@ yarn command:prod upgrade-0.33
 Команда `yarn command:prod upgrade-0.33` заботится о миграции данных всех рабочих пространств.
 
 Начиная с этой версии, образ twenty-postgres для DB становится устаревшим, и вместо него используется twenty-postgres-spilo.
-Если вы хотите продолжать использовать изображение twenty-postgres, просто замените `twentycrm/twenty-postgres:${TAG}` на `twentycrm/twenty-postgres` в файле docker-compose.yml.
+Если вы хотите продолжать использовать изображение twenty-postgres, просто замените `Consuelo/twenty-postgres:${TAG}` на `Consuelo/twenty-postgres` в файле docker-compose.yml.
 
 ### v0.31.0 до v0.32.0
 
@@ -317,7 +317,7 @@ yarn command:prod upgrade-0.31
 Обновите вашу инстанцию Consuelo для использования изображения v0.30.0
 
 **Критически важное изменение**:
-Чтобы повысить производительность, Consuelo теперь требует настроить кэш Redis. Мы обновили [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) для этого.
+Чтобы повысить производительность, Consuelo теперь требует настроить кэш Redis. Мы обновили [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) для этого.
 Убедитесь, что вы обновили свою конфигурацию и обновили переменные окружения соответственно:
 
 ```

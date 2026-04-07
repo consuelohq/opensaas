@@ -44,7 +44,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true # predefinito
   Ogni variabile è documentata con descrizioni nel tuo pannello di amministrazione in **Impostazioni → Pannello di Amministrazione → Variabili di Configurazione**.
   Alcune impostazioni infrastrutturali come connessioni al database (`PG_DATABASE_URL`), URL del server (`SERVER_URL`) e segreti dell'app (`APP_SECRET`) possono essere configurati solo tramite file `.env`.
 
-  [Riferimento tecnico completo →](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
+  [Riferimento tecnico completo →](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
 </Warning>
 
 ## 2. Configurazione Solo-Ambiente
@@ -152,7 +152,7 @@ Quando è abilitata, solo gli utenti con `canAccessFullAdminPanel` possono crear
   **Modalità solo ambiente:** Se imposti `IS_CONFIG_VARIABLES_IN_DB_ENABLED=false`, aggiungi queste variabili al tuo file `.env` invece.
 </Warning>
 
-**Scope richiesti** (configurati automaticamente): [Vedi il codice sorgente pertinente](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
+**Scope richiesti** (configurati automaticamente): [Vedi il codice sorgente pertinente](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
 
 * `https://www.googleapis.com/auth/calendar.events`
 * `https://www.googleapis.com/auth/gmail.readonly`
@@ -215,7 +215,7 @@ Devi aggiungere i seguenti URI di reindirizzamento al tuo progetto:
 
 ### Configura scope
 
-[Vedi il codice sorgente pertinente](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
+[Vedi il codice sorgente pertinente](https://github.com/consuelohq/opensaas/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
 
 * 'openid'
 * 'email'

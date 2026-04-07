@@ -44,7 +44,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # implicit
   Fiecare variabilă este documentată cu descrieri în panoul dvs. de administrare la **Setări → Panou Admin → Variabile de Configurare**.
   Unele setări de infrastructură, cum ar fi conexiunile la baze de date (`PG_DATABASE_URL`), URL-urile serverului (`SERVER_URL`), și secretele aplicației (`APP_SECRET`) pot fi configurate doar prin fișierul `.env`.
 
-  [Referință tehnică completă →](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
+  [Referință tehnică completă →](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
 </Warning>
 
 ## 2. Configurare Doar Mediu
@@ -153,7 +153,7 @@ Când este activată, doar utilizatorii cu `canAccessFullAdminPanel` pot crea sp
 </Warning>
 
 **Domenii necesare** (configurate automat):
-[Consultați codul sursă relevant](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
+[Consultați codul sursă relevant](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
 
 * `https://www.googleapis.com/auth/calendar.events`
 * `https://www.googleapis.com/auth/gmail.readonly`
@@ -216,7 +216,7 @@ Trebuie să adăugați următoarele URI-uri de redirecționare în proiectul dvs
 
 ### Configurați scopurile
 
-[Consultați codul sursă relevant](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
+[Consultați codul sursă relevant](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
 
 * 'openid'
 * 'email'

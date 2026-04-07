@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Mutación del docker-compose.yml
 
 Esta versión incluye una mutación del `docker-compose.yml` para dar acceso al servicio `worker` al volumen `server-local-data`.
-Actualice su `docker-compose.yml` local con el [docker-compose.yml de v0.50.0](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Actualice su `docker-compose.yml` local con el [docker-compose.yml de v0.50.0](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 a v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Asegúrese de que su archivo de respaldo no esté vacío.
 
-2. Actualice su docker-compose.yml para usar la imagen de postgres:16 como en el archivo [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml).
+2. Actualice su docker-compose.yml para usar la imagen de postgres:16 como en el archivo [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml).
 
 3. Restaure la base de datos al nuevo contenedor postgres:16
 
@@ -317,7 +317,7 @@ El `yarn command:prod upgrade-0.31` se encarga de la migración de datos de todo
 Actualice su instancia de Consuelo para usar la imagen v0.30.0
 
 **Cambio importante**:
-Para mejorar el rendimiento, Consuelo ahora requiere que la caché redis esté configurada. Hemos actualizado nuestro [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) para reflejar esto.
+Para mejorar el rendimiento, Consuelo ahora requiere que la caché redis esté configurada. Hemos actualizado nuestro [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) para reflejar esto.
 Asegúrese de actualizar su configuración y sus variables de entorno en consecuencia:
 
 ```

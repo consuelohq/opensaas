@@ -73,15 +73,15 @@ O Consuelo assina cada solicitação de webhook por segurança. Valide as assina
 
 | Cabeçalho                    | Descrição                |
 | ---------------------------- | ------------------------ |
-| `X-Twenty-Webhook-Signature` | Assinatura HMAC SHA256   |
-| `X-Twenty-Webhook-Timestamp` | Timestamp da solicitação |
+| `X-Consuelo-Webhook-Signature` | Assinatura HMAC SHA256   |
+| `X-Consuelo-Webhook-Timestamp` | Timestamp da solicitação |
 
 ### Etapas de validação
 
-1. Obtenha o timestamp de `X-Twenty-Webhook-Timestamp`
+1. Obtenha o timestamp de `X-Consuelo-Webhook-Timestamp`
 2. Crie a string: `{timestamp}:{JSON payload}`
 3. Calcule o HMAC SHA256 usando o segredo do seu webhook
-4. Compare com `X-Twenty-Webhook-Signature`
+4. Compare com `X-Consuelo-Webhook-Signature`
 
 ### Exemplo (Node.js)
 

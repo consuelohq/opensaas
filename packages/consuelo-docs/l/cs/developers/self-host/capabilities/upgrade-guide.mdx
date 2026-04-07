@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Mutace Docker-compose.yml
 
 Tato verze obsahuje mutaci `docker-compose.yml`, která zajišťuje, že služba `worker` má přístup k objemu `server-local-data`.
-Aktualizujte svůj místní `docker-compose.yml` pomocí [docker-compose.yml v0.50.0](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Aktualizujte svůj místní `docker-compose.yml` pomocí [docker-compose.yml v0.50.0](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 až v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Ujistěte se, že váš záložní soubor není prázdný.
 
-2. Upgradujte svůj `docker-compose.yml` na použití obrazu postgres:16 podle [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) soubor.
+2. Upgradujte svůj `docker-compose.yml` na použití obrazu postgres:16 podle [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) soubor.
 
 3. Obnovte databázi do nového kontejneru postgres:16
 
@@ -317,7 +317,7 @@ Příkaz `yarn command:prod upgrade-0.31` se postará o datovou migraci všech p
 Upgradujte svou instanci Consuelo pro použití v0.30.0 image
 
 **Změna, která způsobí nekompatibilitu**:
-Pro zvýšení výkonu nyní vyžaduje Consuelo konfiguraci cache Redis. Aktualizovali jsme náš [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml), aby to odrážel.
+Pro zvýšení výkonu nyní vyžaduje Consuelo konfiguraci cache Redis. Aktualizovali jsme náš [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml), aby to odrážel.
 Ujistěte se, že jste aktualizovali svou konfiguraci a své proměnné prostředí odpovídajícím způsobem:
 
 ```

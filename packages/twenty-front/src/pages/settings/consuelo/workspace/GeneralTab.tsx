@@ -38,7 +38,7 @@ const StyledDangerText = styled.div`
   font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
-type Props = {
+type GeneralTabProps = {
   workspace: WorkspaceConfig;
   onSave: (patch: { name?: string; slug?: string }) => Promise<void>;
 };

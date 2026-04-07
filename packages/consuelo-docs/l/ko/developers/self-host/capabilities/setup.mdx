@@ -44,7 +44,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # default
   각 변수는 **설정 → 관리자 패널 → 구성 변수**의 관리자 패널에 설명과 함께 문서화되어 있습니다.
   데이터베이스 연결 (`PG_DATABASE_URL`), 서버 URL (`SERVER_URL`), 앱 비밀 (`APP_SECRET`)과 같은 일부 인프라 설정은 `.env` 파일을 통해서만 구성할 수 있습니다.
 
-  [완전한 기술적 참조 →](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
+  [완전한 기술적 참조 →](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
 </Warning>
 
 ## 2. 환경 전용 구성
@@ -153,7 +153,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
 </Warning>
 
 **필요한 범위** (자동 구성됨):
-[관련 소스 코드 보기](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
+[관련 소스 코드 보기](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
 
 * `https://www.googleapis.com/auth/calendar.events`
 * `https://www.googleapis.com/auth/gmail.readonly`
@@ -216,7 +216,7 @@ Microsoft Azure 콘솔에서 "권한"에서 다음 API를 활성화하세요:
 
 ### 범위 구성
 
-[관련 소스 코드 보기](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
+[관련 소스 코드 보기](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
 
 * 'openid'
 * '이메일'
