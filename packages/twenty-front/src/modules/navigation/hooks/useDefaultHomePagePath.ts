@@ -1,6 +1,6 @@
 import { currentUserState } from '@/auth/states/currentUserState';
 import { lastVisitedObjectMetadataItemIdState } from '@/navigation/states/lastVisitedObjectMetadataItemIdState';
-import { type ObjectPathInfo } from '@/navigation/types/ObjectPathInfo';
+
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
 import { useObjectPermissions } from '@/object-record/hooks/useObjectPermissions';
 import { getObjectPermissionsFromMapByObjectMetadataId } from '@/settings/roles/role-permissions/objects-permissions/utils/getObjectPermissionsFromMapByObjectMetadataId';
@@ -54,19 +54,6 @@ export const useDefaultHomePagePath = () => {
     };
   }, []);
 
-  const firstObjectPathInfo = useMemo<ObjectPathInfo | null>(() => {
-    const [firstObjectMetadataItem] =
-      readableAlphaSortedActiveNonSystemObjectMetadataItems;
-
-    if (!isDefined(firstObjectMetadataItem)) {
-      return null;
-    }
-
-    const view = getFirstView(firstObjectMetadataItem?.id);
-
-    return { objectMetadataItem: firstObjectMetadataItem, view };
-  }, [getFirstView, readableAlphaSortedActiveNonSystemObjectMetadataItems]);
-
   const getDefaultObjectPathInfo = useRecoilCallback(
     ({ snapshot }) => {
       return () => {
@@ -92,7 +79,7 @@ export const useDefaultHomePagePath = () => {
         return null;
       };
     },
-    [firstObjectPathInfo, getActiveObjectMetadataItemMatchingId, getFirstView],
+    [getActiveObjectMetadataItemMatchingId, getFirstView],
   );
 
   const defaultHomePagePath = useMemo(() => {

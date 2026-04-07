@@ -64,7 +64,7 @@ export const MobileNavigationBar = () => {
         );
         setCurrentMobileNavigationDrawer('main');
 
-        if (location.pathname === AppPath.Home) {
+        if (location.pathname === AppPath.Home && defaultHomePagePath !== AppPath.Home) {
           navigate(defaultHomePagePath);
         }
       },
