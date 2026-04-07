@@ -305,16 +305,11 @@ export class QueuesService {
       });
 
       if (retryDecision.shouldRetry) {
-        const updatedRows = await this.dataSource.query(
-          'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
-          [
-            'pending',
-            params.outcome ?? null,
-            retryDecision.retryStrategy,
-            retryDecision.retryScheduledAt,
-            retryDecision.retryReason,
-            current.id,
-          ],
+        const updatedRows = await this.updateQueueItemWithRetryFallback(
+          current.id,
+          'pending',
+          params.outcome ?? null,
+          retryDecision,
         );
 
         return {
@@ -326,16 +321,11 @@ export class QueuesService {
         };
       }
 
-      const updatedRows = await this.dataSource.query(
-        'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
-        [
-          'completed',
-          params.outcome ?? null,
-          retryDecision.retryStrategy,
-          retryDecision.retryScheduledAt,
-          retryDecision.retryReason,
-          current.id,
-        ],
+      const updatedRows = await this.updateQueueItemWithRetryFallback(
+        current.id,
+        'completed',
+        params.outcome ?? null,
+        retryDecision,
       );
 
       await this.dataSource.query(
@@ -795,5 +785,44 @@ export class QueuesService {
       err instanceof Error &&
       err.message.includes(`relation "${relationName}" does not exist`)
     );
+  }
+
+  private async updateQueueItemWithRetryFallback(
+    queueItemId: string,
+    status: 'pending' | 'completed',
+    outcome: string | null,
+    retryDecision: {
+      retryStrategy: string;
+      retryScheduledAt: string | null;
+      retryReason: string | null;
+    },
+  ) {
+    try {
+      return await this.dataSource.query(
+        'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
+        [
+          status,
+          outcome,
+          retryDecision.retryStrategy,
+          retryDecision.retryScheduledAt,
+          retryDecision.retryReason,
+          queueItemId,
+        ],
+      );
+    } catch (err: unknown) {
+      if (
+        err instanceof Error &&
+        err.message.includes(
+          'column "retry_strategy" of relation "queue_items" does not exist',
+        )
+      ) {
+        return await this.dataSource.query(
+          'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
+          [status, outcome, queueItemId],
+        );
+      }
+
+      throw err;
+    }
   }
 }
