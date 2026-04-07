@@ -1,6 +1,7 @@
 import { type ReactNode, useContext } from 'react';
 
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
+import { useOpenListMemberImportDialog } from '@/dialer/hooks/useOpenListMemberImportDialog';
 import { useIsRecordReadOnly } from '@/object-record/read-only/hooks/useIsRecordReadOnly';
 import { RecordDetailRelationSectionDropdownToMany } from '@/object-record/record-field-list/record-detail-section/relation/components/RecordDetailRelationSectionDropdownToMany';
 import { RecordDetailRelationSectionDropdownToOne } from '@/object-record/record-field-list/record-detail-section/relation/components/RecordDetailRelationSectionDropdownToOne';
@@ -20,6 +21,7 @@ export const RecordDetailRelationSectionDropdown = ({
   const { fieldDefinition, isRecordFieldReadOnly, recordId } =
     useContext(FieldContext);
   const {
+    fieldName,
     relationType,
     objectMetadataNameSingular,
     relationObjectMetadataNameSingular,
@@ -34,7 +36,7 @@ export const RecordDetailRelationSectionDropdown = ({
     useObjectMetadataItem({
       objectNameSingular: relationObjectMetadataNameSingular,
     });
-  // TODO: use new relation type
+  // TODO(DEV-1459): use new relation type
   const isToOneObject = relationType === RelationType.MANY_TO_ONE;
   const isToManyObjects = relationType === RelationType.ONE_TO_MANY;
 
@@ -44,6 +46,13 @@ export const RecordDetailRelationSectionDropdown = ({
       ? recordObjectMetadataItem.id
       : relationObjectMetadataItem.id,
   });
+
+  // Wire up CSV import for the members relation on opportunity (list) objects
+  const isMembersRelation =
+    objectMetadataNameSingular === 'opportunity' && fieldName === 'members';
+
+  const { openListMemberImportDialog } =
+    useOpenListMemberImportDialog(recordId);
 
   if (
     loading ||
@@ -63,6 +72,7 @@ export const RecordDetailRelationSectionDropdown = ({
     return (
       <RecordDetailRelationSectionDropdownToMany
         dropdownTriggerClickableComponent={dropdownTriggerClickableComponent}
+        onImport={isMembersRelation ? openListMemberImportDialog : undefined}
       />
     );
   } else {

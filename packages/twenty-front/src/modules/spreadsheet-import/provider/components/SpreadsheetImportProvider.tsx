@@ -7,6 +7,7 @@ import { SKELETON_LOADER_HEIGHT_SIZES } from '@/activities/components/SkeletonLo
 import { SPREADSHEET_IMPORT_MODAL_ID } from '@/spreadsheet-import/constants/SpreadsheetImportModalId';
 import { spreadsheetImportDialogState } from '@/spreadsheet-import/states/spreadsheetImportDialogState';
 import { matchColumnsState } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/initialComputedColumnsState';
+import { DialogComponentInstanceContext } from '@/ui/feedback/dialog-manager/contexts/DialogComponentInstanceContext';
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
 
 const SpreadsheetImport = React.lazy(() =>
@@ -60,11 +61,15 @@ export const SpreadsheetImportProvider = (
       {props.children}
       {spreadsheetImportDialog.isOpen && spreadsheetImportDialog.options && (
         <React.Suspense fallback={<LoadingSkeleton />}>
-          <SpreadsheetImport
-            onClose={handleClose}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...spreadsheetImportDialog.options}
-          />
+          <DialogComponentInstanceContext.Provider
+            value={{ instanceId: 'dialog-manager' }}
+          >
+            <SpreadsheetImport
+              onClose={handleClose}
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...spreadsheetImportDialog.options}
+            />
+          </DialogComponentInstanceContext.Provider>
         </React.Suspense>
       )}
     </>

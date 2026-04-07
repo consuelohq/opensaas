@@ -20,6 +20,7 @@ import { t } from '@lingui/core/macro';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 import { IconSparkles } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
+import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/components/SpreadsheetImportProvider';
 import { RecordShowPageHeader } from '~/pages/object-record/RecordShowPageHeader';
 import { RecordShowPageTitle } from '~/pages/object-record/RecordShowPageTitle';
 
@@ -73,23 +74,25 @@ export const RecordShowPage = () => {
               <PageHeaderToggleCommandMenuButton />
             </RecordShowPageHeader>
             <MainContainerLayoutWithCommandMenu>
-              <TimelineActivityContext.Provider
-                value={{
-                  recordId: objectRecordId,
-                }}
-              >
-                <PageLayoutRecordPageRenderer
-                  targetRecordIdentifier={{
-                    id: objectRecordId,
-                    targetObjectNameSingular: objectNameSingular,
+              <SpreadsheetImportProvider>
+                <TimelineActivityContext.Provider
+                  value={{
+                    recordId: objectRecordId,
                   }}
-                  isInRightDrawer={false}
-                />
-                <RecordShowPageSSESubscribeEffect
-                  objectNameSingular={objectNameSingular}
-                  recordId={objectRecordId}
-                />
-              </TimelineActivityContext.Provider>
+                >
+                  <PageLayoutRecordPageRenderer
+                    targetRecordIdentifier={{
+                      id: objectRecordId,
+                      targetObjectNameSingular: objectNameSingular,
+                    }}
+                    isInRightDrawer={false}
+                  />
+                  <RecordShowPageSSESubscribeEffect
+                    objectNameSingular={objectNameSingular}
+                    recordId={objectRecordId}
+                  />
+                </TimelineActivityContext.Provider>
+              </SpreadsheetImportProvider>
             </MainContainerLayoutWithCommandMenu>
           </PageContainer>
         </ActionMenuComponentInstanceContext.Provider>
