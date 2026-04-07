@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { type ReactNode, useCallback, useContext } from 'react';
 import { useRecoilValue } from 'recoil';
 
@@ -24,15 +25,18 @@ import { dropdownPlacementComponentState } from '@/ui/layout/dropdown/states/dro
 import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
 import { CustomError, isDefined } from 'twenty-shared/utils';
-import { IconPlus } from 'twenty-ui/display';
+import { IconPlus, IconUpload } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
+import { MenuItem } from 'twenty-ui/navigation';
 
 type RecordDetailRelationSectionDropdownToManyProps = {
   dropdownTriggerClickableComponent?: ReactNode;
+  onImport?: () => void;
 };
 
 export const RecordDetailRelationSectionDropdownToMany = ({
   dropdownTriggerClickableComponent,
+  onImport,
 }: RecordDetailRelationSectionDropdownToManyProps) => {
   const { scopeInstanceId } = useRecordFieldsScopeContextOrThrow();
   const { recordId, fieldDefinition } = useContext(FieldContext);
@@ -162,6 +166,11 @@ export const RecordDetailRelationSectionDropdownToMany = ({
     createNewRecordAndOpenRightDrawer?.(searchString);
   };
 
+  const handleImport = () => {
+    closeDropdown(dropdownId);
+    onImport?.();
+  };
+
   return (
     <Dropdown
       dropdownId={dropdownId}
@@ -178,28 +187,37 @@ export const RecordDetailRelationSectionDropdownToMany = ({
         )
       }
       dropdownComponents={
-        <MultipleRecordPicker
-          focusId={dropdownId}
-          componentInstanceId={dropdownId}
-          onCreate={
-            isDefined(createNewRecordAndOpenRightDrawer)
-              ? handleCreateNew
-              : undefined
-          }
-          objectMetadataItemIdForCreate={relationObjectMetadataItem.id}
-          onChange={updateRelation}
-          onSubmit={() => {
-            closeDropdown(dropdownId);
-          }}
-          onClickOutside={() => {
-            closeDropdown(dropdownId);
-          }}
-          layoutDirection={
-            dropdownPlacement?.includes('end')
-              ? 'search-bar-on-bottom'
-              : 'search-bar-on-top'
-          }
-        />
+        <>
+          <MultipleRecordPicker
+            focusId={dropdownId}
+            componentInstanceId={dropdownId}
+            onCreate={
+              isDefined(createNewRecordAndOpenRightDrawer)
+                ? handleCreateNew
+                : undefined
+            }
+            objectMetadataItemIdForCreate={relationObjectMetadataItem.id}
+            onChange={updateRelation}
+            onSubmit={() => {
+              closeDropdown(dropdownId);
+            }}
+            onClickOutside={() => {
+              closeDropdown(dropdownId);
+            }}
+            layoutDirection={
+              dropdownPlacement?.includes('end')
+                ? 'search-bar-on-bottom'
+                : 'search-bar-on-top'
+            }
+          />
+          {isDefined(onImport) && (
+            <MenuItem
+              LeftIcon={IconUpload}
+              onClick={handleImport}
+              text={t`Import CSV`}
+            />
+          )}
+        </>
       }
     />
   );

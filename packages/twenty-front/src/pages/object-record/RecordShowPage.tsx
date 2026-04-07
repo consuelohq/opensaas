@@ -11,6 +11,7 @@ import { MainContainerLayoutWithCommandMenu } from '@/object-record/components/M
 import { RecordComponentInstanceContextsWrapper } from '@/object-record/components/RecordComponentInstanceContextsWrapper';
 import { PageLayoutRecordPageRenderer } from '@/object-record/record-show/components/PageLayoutRecordPageRenderer';
 import { RecordShowPageSSESubscribeEffect } from '@/object-record/record-show/components/RecordShowPageSSESubscribeEffect';
+import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/components/SpreadsheetImportProvider';
 import { useRecordShowPage } from '@/object-record/record-show/hooks/useRecordShowPage';
 import { computeRecordShowComponentInstanceId } from '@/object-record/record-show/utils/computeRecordShowComponentInstanceId';
 import { PageHeaderToggleCommandMenuButton } from '@/ui/layout/page-header/components/PageHeaderToggleCommandMenuButton';
@@ -73,23 +74,25 @@ export const RecordShowPage = () => {
               <PageHeaderToggleCommandMenuButton />
             </RecordShowPageHeader>
             <MainContainerLayoutWithCommandMenu>
-              <TimelineActivityContext.Provider
-                value={{
-                  recordId: objectRecordId,
-                }}
-              >
-                <PageLayoutRecordPageRenderer
-                  targetRecordIdentifier={{
-                    id: objectRecordId,
-                    targetObjectNameSingular: objectNameSingular,
+              <SpreadsheetImportProvider>
+                <TimelineActivityContext.Provider
+                  value={{
+                    recordId: objectRecordId,
                   }}
-                  isInRightDrawer={false}
-                />
-                <RecordShowPageSSESubscribeEffect
-                  objectNameSingular={objectNameSingular}
-                  recordId={objectRecordId}
-                />
-              </TimelineActivityContext.Provider>
+                >
+                  <PageLayoutRecordPageRenderer
+                    targetRecordIdentifier={{
+                      id: objectRecordId,
+                      targetObjectNameSingular: objectNameSingular,
+                    }}
+                    isInRightDrawer={false}
+                  />
+                  <RecordShowPageSSESubscribeEffect
+                    objectNameSingular={objectNameSingular}
+                    recordId={objectRecordId}
+                  />
+                </TimelineActivityContext.Provider>
+              </SpreadsheetImportProvider>
             </MainContainerLayoutWithCommandMenu>
           </PageContainer>
         </ActionMenuComponentInstanceContext.Provider>
