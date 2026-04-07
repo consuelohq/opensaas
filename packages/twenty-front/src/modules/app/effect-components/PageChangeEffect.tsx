@@ -5,7 +5,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import {
   setSessionId,
@@ -38,6 +38,7 @@ import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/ho
 import { AppBasePath, AppPath } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { AnalyticsType } from '~/generated-metadata/graphql';
+import { lastVisitedPagePathState } from '@/navigation/states/lastVisitedPagePathState';
 import { usePageChangeEffectNavigateLocation } from '~/hooks/usePageChangeEffectNavigateLocation';
 import { useInitializeQueryParamState } from '~/modules/app/hooks/useInitializeQueryParamState';
 import { isMatchingLocation } from '~/utils/isMatchingLocation';
@@ -101,6 +102,8 @@ export const PageChangeEffect = () => {
 
   const { resetFocusStackToRecordIndex } = useResetFocusStackToRecordIndex();
 
+  const setLastVisitedPagePath = useSetRecoilState(lastVisitedPagePathState);
+
   const { openNewRecordTitleCell } = useOpenNewRecordTitleCell();
 
   useEffect(() => {
@@ -111,10 +114,15 @@ export const PageChangeEffect = () => {
     if (!previousLocation || previousLocation !== location.pathname) {
       setPreviousLocation(location.pathname);
       executeTasksOnAnyLocationChange();
+
+      if (isMatchingLocation(location, AppPath.Home) ||
+          isMatchingLocation(location, AppPath.RecordIndexPage)) {
+        setLastVisitedPagePath(location.pathname);
+      }
     } else {
       return;
     }
-  }, [location, previousLocation, executeTasksOnAnyLocationChange]);
+  }, [location, previousLocation, executeTasksOnAnyLocationChange, setLastVisitedPagePath]);
 
   useEffect(() => {
     initializeQueryParamState();

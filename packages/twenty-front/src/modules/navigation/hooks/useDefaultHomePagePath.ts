@@ -1,5 +1,6 @@
 import { currentUserState } from '@/auth/states/currentUserState';
 import { lastVisitedObjectMetadataItemIdState } from '@/navigation/states/lastVisitedObjectMetadataItemIdState';
+import { lastVisitedPagePathState } from '@/navigation/states/lastVisitedPagePathState';
 
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
 import { useObjectPermissions } from '@/object-record/hooks/useObjectPermissions';
@@ -54,6 +55,13 @@ export const useDefaultHomePagePath = () => {
     };
   }, []);
 
+  const getLastVisitedPagePath = useRecoilCallback(
+    ({ snapshot }) => {
+      return () => snapshot.getLoadable(lastVisitedPagePathState).getValue();
+    },
+    [],
+  );
+
   const getDefaultObjectPathInfo = useRecoilCallback(
     ({ snapshot }) => {
       return () => {
@@ -91,6 +99,14 @@ export const useDefaultHomePagePath = () => {
       return getSettingsPath(SettingsPath.ProfilePage);
     }
 
+    const lastVisitedPagePath = getLastVisitedPagePath();
+
+    if (isDefined(lastVisitedPagePath)) {
+      if (lastVisitedPagePath === AppPath.Home) {
+        return AppPath.Home;
+      }
+    }
+
     const defaultObjectPathInfo = getDefaultObjectPathInfo();
 
     if (!isDefined(defaultObjectPathInfo)) {
@@ -107,6 +123,7 @@ export const useDefaultHomePagePath = () => {
     );
   }, [
     currentUser,
+    getLastVisitedPagePath,
     getDefaultObjectPathInfo,
     readableAlphaSortedActiveNonSystemObjectMetadataItems,
   ]);
