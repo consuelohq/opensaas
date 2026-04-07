@@ -89,7 +89,7 @@ export const useDefaultHomePagePath = () => {
           };
         }
 
-        return firstObjectPathInfo;
+        return null;
       };
     },
     [firstObjectPathInfo, getActiveObjectMetadataItemMatchingId, getFirstView],
@@ -107,7 +107,7 @@ export const useDefaultHomePagePath = () => {
     const defaultObjectPathInfo = getDefaultObjectPathInfo();
 
     if (!isDefined(defaultObjectPathInfo)) {
-      return AppPath.NotFound;
+      return AppPath.Home;
     }
 
     const namePlural = defaultObjectPathInfo.objectMetadataItem?.namePlural;
