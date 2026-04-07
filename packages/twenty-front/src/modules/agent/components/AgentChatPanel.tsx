@@ -111,7 +111,7 @@ export const AgentChatPanel = () => {
   }, [messages]);
 
   const onSubmit = () => {
-    if (input.trim() && !isLoading) {
+    if (agentChatInput.trim() && !isLoading) {
       handleSendMessage();
     }
   };
@@ -150,15 +150,15 @@ export const AgentChatPanel = () => {
       </StyledViewport>
       <StyledComposer>
         <StyledInput
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={agentChatInput}
+          onChange={(e) => setAgentChatInput(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder={t`Message the Agent...`}
           disabled={isLoading}
         />
         <StyledSendButton
           onClick={onSubmit}
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading || !agentChatInput.trim()}
         >
           ↑
         </StyledSendButton>

@@ -41,7 +41,7 @@ const StyledSendButton = styled.button<{ disabled: boolean }>`
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: ${({ theme, disabled }) =>
-    disabled ? theme.font.color.tertiary : theme.grayScale.gray0};
+    disabled ? theme.font.color.tertiary : theme.grayScale.gray1};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
   display: flex;
   flex-shrink: 0;
