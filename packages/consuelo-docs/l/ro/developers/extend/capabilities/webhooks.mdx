@@ -73,15 +73,15 @@ Consuelo semnează fiecare cerere webhook din motive de securitate. Validați se
 
 | Antet                        | Descriere                  |
 | ---------------------------- | -------------------------- |
-| `X-Twenty-Webhook-Signature` | Semnătură HMAC SHA256      |
-| `X-Twenty-Webhook-Timestamp` | Marcaj temporal al cererii |
+| `X-Consuelo-Webhook-Signature` | Semnătură HMAC SHA256      |
+| `X-Consuelo-Webhook-Timestamp` | Marcaj temporal al cererii |
 
 ### Pași de validare
 
-1. Obțineți marcajul temporal din `X-Twenty-Webhook-Timestamp`
+1. Obțineți marcajul temporal din `X-Consuelo-Webhook-Timestamp`
 2. Creați șirul: `{timestamp}:{JSON payload}`
 3. Calculați HMAC SHA256 folosind secretul webhook-ului dvs.
-4. Comparați cu `X-Twenty-Webhook-Signature`
+4. Comparați cu `X-Consuelo-Webhook-Signature`
 
 ### Exemplu (Node.js)
 

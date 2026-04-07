@@ -52,7 +52,7 @@ yarn app:dev
 # アプリケーションに新しいエンティティを追加（ガイド付き）
 yarn entity:add
 
-# 型付きの Twenty クライアントとワークスペースのエンティティ型を生成
+# 型付きの Consuelo クライアントとワークスペースのエンティティ型を生成
 yarn app:generate
 
 # アプリケーションの関数のログを監視
@@ -76,7 +76,7 @@ yarn help},{
 
 * 最小限のベースアプリケーションを `my-twenty-app/` にコピーします
 * ローカルの `twenty-sdk` 依存関係と Yarn 4 の設定を追加します
-* `twenty` CLI と連携する設定ファイルとスクリプトを作成します
+* `consuelo` CLI と連携する設定ファイルとスクリプトを作成します
 * デフォルトのアプリケーション設定とデフォルトの関数ロールを生成します
 
 スキャフォルド直後のアプリは次のようになります：
@@ -156,7 +156,7 @@ src/
 
 概要：
 
-* **package.json**: Declares the app name, version, engines (Node 24+, Yarn 4), and adds `twenty-sdk` plus scripts like `app:dev`, `app:generate`, `entity:add`, `function:logs`, `function:execute`, `app:uninstall`, and `auth:login` that delegate to the local `twenty` CLI.
+* **package.json**: Declares the app name, version, engines (Node 24+, Yarn 4), and adds `twenty-sdk` plus scripts like `app:dev`, `app:generate`, `entity:add`, `function:logs`, `function:execute`, `app:uninstall`, and `auth:login` that delegate to the local `consuelo` CLI.
 * **.gitignore**: `node_modules`、`.yarn`、`generated/`（型付きクライアント）、`dist/`、`build/`、カバレッジ用フォルダー、ログファイル、`.env*` ファイルなどの一般的な生成物を無視します。
 * **yarn.lock**、**.yarnrc.yml**、**.yarn/**: プロジェクトで使用する Yarn 4 ツールチェーンをロックおよび構成します。
 * **.nvmrc**: プロジェクトで想定する Node.js バージョンを固定します。
@@ -326,8 +326,8 @@ import { DEFAULT_ROLE_UNIVERSAL_IDENTIFIER } from './default-function.role';
 
 export default defineApplication({
   universalIdentifier: '4ec0391d-18d5-411c-b2f3-266ddc1c3ef7',
-  displayName: 'My Twenty App',
-  description: 'My first Twenty app',
+  displayName: 'My Consuelo App',
+  description: 'My first Consuelo app',
   icon: 'IconWorld',
   applicationVariables: {
     DEFAULT_RECIPIENT_NAME: {
@@ -369,7 +369,7 @@ export const DEFAULT_ROLE_UNIVERSAL_IDENTIFIER =
 export default defineRole({
   universalIdentifier: DEFAULT_ROLE_UNIVERSAL_IDENTIFIER,
   label: 'Default function role',
-  description: 'Default role for function Twenty client',
+  description: 'Default role for function Consuelo client',
   canReadAllObjectRecords: false,
   canUpdateAllObjectRecords: false,
   canSoftDeleteAllObjectRecords: false,
@@ -409,7 +409,7 @@ export default defineRole({
 * スキャフォルドされたロールから開始し、最小権限の原則に従って段階的に制限してください。
 * `objectPermissions` と `fieldPermissions` を、関数に必要なオブジェクト／フィールドに置き換えてください。
 * `permissionFlags` はプラットフォームレベルの機能へのアクセスを制御します。 最小限に保ち、必要なものだけを追加してください。
-* 動作例は Hello World アプリにあります: [packages/twenty-apps/hello-world/src/roles/function-role.ts](https://github.com/twentyhq/twenty/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts)。
+* 動作例は Hello World アプリにあります: [packages/twenty-apps/hello-world/src/roles/function-role.ts](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts)。
 
 ### Logic function config and entrypoint
 
@@ -419,10 +419,10 @@ export default defineRole({
 // src/app/createPostCard.function.ts
 import { defineFunction } from 'twenty-sdk';
 import type { DatabaseEventPayload, ObjectRecordCreateEvent, CronPayload, RoutePayload } from 'twenty-sdk';
-import Twenty, { type Person } from '~/generated';
+import Consuelo, { type Person } from '~/generated';
 
 const handler = async (params: RoutePayload) => {
-  const client = new Twenty(); // generated typed client
+  const client = new Consuelo(); // generated typed client
   const name = 'name' in params.queryStringParameters
     ? params.queryStringParameters.name ?? process.env.DEFAULT_RECIPIENT_NAME ?? 'Hello world'
     : 'Hello world';
@@ -586,9 +586,9 @@ const handler = async (event: RoutePayload) => {
 ワークスペースのスキーマに基づき、generated/ にローカルの型付きクライアントを作成するには yarn app:generate を実行します。 関数内で使用します：
 
 ```typescript
-import Twenty from '~/generated';
+import Consuelo from '~/generated';
 
-const client = new Twenty();
+const client = new Consuelo();
 const { me } = await client.query({ me: { id: true, displayName: true } });
 ```
 
@@ -609,7 +609,7 @@ const { me } = await client.query({ me: { id: true, displayName: true } });
 
 ### Hello World の例
 
-オブジェクト、関数、複数のトリガーを示す最小のエンドツーエンド例は[こちら](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world)をご覧ください。
+オブジェクト、関数、複数のトリガーを示す最小のエンドツーエンド例は[こちら](https://github.com/twentyhq/consuelo/tree/main/packages/twenty-apps/hello-world)をご覧ください。
 
 ## 手動セットアップ（スキャフォルダーなし）
 
@@ -624,18 +624,18 @@ yarn add -D twenty-sdk
 ```json filename="package.json"
 {
   "scripts": {
-    "auth:login": "twenty auth:login",
-    "auth:logout": "twenty auth:logout",
-    "auth:status": "twenty auth:status",
-    "auth:switch": "twenty auth:switch",
-    "auth:list": "twenty auth:list",
-    "app:dev": "twenty app:dev",
-    "app:generate": "twenty app:generate",
-    "app:uninstall": "twenty app:uninstall",
-    "entity:add": "twenty entity:add",
-    "function:logs": "twenty function:logs",
-    "function:execute": "twenty function:execute",
-    "help": "twenty help"
+    "auth:login": "consuelo auth:login",
+    "auth:logout": "consuelo auth:logout",
+    "auth:status": "consuelo auth:status",
+    "auth:switch": "consuelo auth:switch",
+    "auth:list": "consuelo auth:list",
+    "app:dev": "consuelo app:dev",
+    "app:generate": "consuelo app:generate",
+    "app:uninstall": "consuelo app:uninstall",
+    "entity:add": "consuelo entity:add",
+    "function:logs": "consuelo function:logs",
+    "function:execute": "consuelo function:execute",
+    "help": "consuelo help"
   }
 }
 ```

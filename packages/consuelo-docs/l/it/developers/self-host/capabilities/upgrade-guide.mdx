@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Mutazione di docker-compose.yml
 
 Questa versione include una mutazione di `docker-compose.yml` per dare al servizio `worker` accesso al volume `server-local-data`.
-Aggiorna il tuo `docker-compose.yml` locale con [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Aggiorna il tuo `docker-compose.yml` locale con [v0.50.0 docker-compose.yml](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 a v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Assicurati che il tuo file di dump non sia vuoto.
 
-2. Aggiorna il tuo docker-compose.yml per utilizzare l'immagine postgres:16 come nel file [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)
+2. Aggiorna il tuo docker-compose.yml per utilizzare l'immagine postgres:16 come nel file [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml)
 
 3. Ripristinare il database nel nuovo contenitore postgres:16.
 
@@ -317,7 +317,7 @@ Il comando `yarn command:prod upgrade-0.31` si occupa della migrazione dei dati 
 Aggiorna la tua istanza di Consuelo per utilizzare l'immagine v0.30.0.
 
 **Modifica importante**:
-Per migliorare le prestazioni, Consuelo ora richiede che la cache Redis sia configurata. Abbiamo aggiornato il nostro [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) per riflettere questa modifica.
+Per migliorare le prestazioni, Consuelo ora richiede che la cache Redis sia configurata. Abbiamo aggiornato il nostro [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) per riflettere questa modifica.
 Assicurati di aggiornare la tua configurazione e le tue variabili di ambiente di conseguenza:
 
 ```

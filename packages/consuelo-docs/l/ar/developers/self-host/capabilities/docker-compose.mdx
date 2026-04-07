@@ -24,13 +24,13 @@ title: بنقرة واحدة مع Docker Compose
 قم بتثبيت أحدث إصدار مستقر من Consuelo باستخدام أمر واحد:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 لتثبيت إصدار محدد أو فرع:
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * استبدل x.y.z برقم الإصدار المطلوب.
@@ -47,7 +47,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
    انسخ ملف البيئة النموذجي إلى ملف .env جديد في دليل العمل لديك:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **إنشاء رموز سرية**
@@ -81,7 +81,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
 قم بتنزيل ملف `docker-compose.yml` إلى دليل العمل الخاص بك:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### الخطوة 3: إطلاق التطبيق
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### الخطوة 4: الوصول إلى التطبيق
 
-إذا كنت تستضيف twentyCRM على جهازك، فافتح المتصفح وانتقل إلى [http://localhost:3000](http://localhost:3000).
+إذا كنت تستضيف Consuelo على جهازك، فافتح المتصفح وانتقل إلى [http://localhost:3000](http://localhost:3000).
 
 إذا كنت تستضيفه على خادم، فتحقق من أن الخادم يعمل وأن كل شيء على ما يرام باستخدام
 
@@ -167,7 +167,7 @@ SSL (HTTPS) مطلوب لعمل ميزات معينة في المتصفح بشك
      ```
    * الوصول عبر النطاق باستخدام SSL:
      ```ini
-     SERVER_URL=https://mytwentyapp.com
+     SERVER_URL=https://myconsueloapp.com
      ```
 
 3. **إعادة تشغيل التطبيق**

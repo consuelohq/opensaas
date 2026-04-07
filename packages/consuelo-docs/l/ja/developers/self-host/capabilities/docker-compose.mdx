@@ -24,13 +24,13 @@ title: 1-クリック w/ Docker Compose
 単一のコマンドで最新版のConsueloをインストールします:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 特定のバージョンまたはブランチをインストールするには:
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * x.y.zを希望するバージョン番号に置き換えます。
@@ -47,7 +47,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
    例の環境ファイルを作業ディレクトリに新しい.envファイルとしてコピーします:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **シークレットトークンを生成**
@@ -81,7 +81,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
 作業ディレクトリに`docker-compose.yml`ファイルをダウンロードします:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### ステップ 3: アプリケーションを起動
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### ステップ 4: アプリケーションにアクセス
 
-自分のコンピュータでtwentyCRMをホストしている場合は、ブラウザを開いて[http://localhost:3000](http://localhost:3000)にアクセスします。
+自分のコンピュータでConsueloをホストしている場合は、ブラウザを開いて[http://localhost:3000](http://localhost:3000)にアクセスします。
 
 サーバーでホストしている場合、サーバーが稼働していてすべてが正常であるかを確認してください
 
@@ -210,7 +210,7 @@ SSL（HTTPS）は、特定のブラウザ機能が正しく動作するために
 ### データベースのバックアップを作成
 
 ```bash
-docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).sql
+docker exec twenty-postgres pg_dump -U postgres consuelo > backup_$(date +%Y%m%d).sql
 ```
 
 ### 日次バックアップを自動化
@@ -218,7 +218,7 @@ docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).
 crontab に追加 (`crontab -e`):
 
 ```bash
-0 2 * * * docker exec twenty-postgres pg_dump -U postgres twenty > /backups/twenty_$(date +\%Y\%m\%d).sql
+0 2 * * * docker exec twenty-postgres pg_dump -U postgres consuelo > /backups/twenty_$(date +\%Y\%m\%d).sql
 ```
 
 ### バックアップから復元
@@ -232,7 +232,7 @@ docker compose stop twenty-server twenty-front
 2. データベースを復元します:
 
 ```bash
-docker exec -i twenty-postgres psql -U postgres twenty < backup_20240115.sql
+docker exec -i twenty-postgres psql -U postgres consuelo < backup_20240115.sql
 ```
 
 3. サービスの再起動:

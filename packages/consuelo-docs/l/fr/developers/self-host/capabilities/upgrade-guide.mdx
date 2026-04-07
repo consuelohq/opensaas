@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Mutation docker-compose.yml
 
 Cette version inclut une mutation `docker-compose.yml` pour donner au service `worker` accès au volume `server-local-data`.
-Veuillez mettre à jour votre `docker-compose.yml` local avec [docker-compose.yml v0.50.0](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Veuillez mettre à jour votre `docker-compose.yml` local avec [docker-compose.yml v0.50.0](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 à v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Assurez-vous que votre fichier de sauvegarde n'est pas vide.
 
-2. Mettez à jour votre docker-compose.yml pour utiliser l'image postgres:16 comme dans le fichier [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml).
+2. Mettez à jour votre docker-compose.yml pour utiliser l'image postgres:16 comme dans le fichier [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml).
 
 3. Restaurez la base de données vers le nouveau conteneur postgres:16
 
@@ -317,7 +317,7 @@ La commande `yarn command:prod upgrade-0.31` s'occupe de la migration des donné
 Mettez à jour votre instance Consuelo pour utiliser l'image v0.30.0
 
 **Changement significatif**:
-Pour améliorer les performances, Consuelo nécessite désormais la configuration de cache redis. Nous avons mis à jour notre [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) pour refléter cela.
+Pour améliorer les performances, Consuelo nécessite désormais la configuration de cache redis. Nous avons mis à jour notre [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) pour refléter cela.
 Assurez-vous de mettre à jour votre configuration et vos variables d'environnement en conséquence :
 
 ```

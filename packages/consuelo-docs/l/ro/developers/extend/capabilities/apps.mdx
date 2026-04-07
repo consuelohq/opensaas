@@ -36,32 +36,32 @@ corepack enable
 yarn install
 
 # Autentifică-te folosind cheia ta API (ți se va solicita)
-yarn twenty auth:login
+yarn consuelo auth:login
 
 # Pornește modul de dezvoltare: sincronizează automat modificările locale cu spațiul tău de lucru
-yarn twenty app:dev},{
+yarn consuelo app:dev},{
 ```
 
 De aici puteți:
 
 ```bash filename="Terminal"
 # Add a new entity to your application (guided)
-yarn twenty entity:add
+yarn consuelo entity:add
 
-# Generate a typed Twenty client and workspace entity types
-yarn twenty app:generate
+# Generate a typed Consuelo client and workspace entity types
+yarn consuelo app:generate
 
 # Watch your application's function logs
-yarn twenty function:logs
+yarn consuelo function:logs
 
 # Execute a function by name
-yarn twenty function:execute -n my-function -p '{"name": "test"}'
+yarn consuelo function:execute -n my-function -p '{"name": "test"}'
 
 # Uninstall the application from the current workspace
-yarn twenty app:uninstall
+yarn consuelo app:uninstall
 
 # Display commands' help
-yarn twenty help)
+yarn consuelo help)
 ```
 
 Consultați și: paginile de referință CLI pentru [create-twenty-app](https://www.npmjs.com/package/create-twenty-app) și [twenty-sdk CLI](https://www.npmjs.com/package/twenty-sdk).
@@ -72,7 +72,7 @@ Când rulați `npx create-twenty-app@latest my-twenty-app`, generatorul:
 
 * Copiază o aplicație de bază minimală în `my-twenty-app/`
 * Adaugă o dependență locală `twenty-sdk` și configurația Yarn 4
-* Creează fișiere de configurare și scripturi conectate la CLI-ul `twenty`
+* Creează fișiere de configurare și scripturi conectate la CLI-ul `consuelo`
 * Generează o configurație implicită a aplicației și un rol implicit pentru funcții
 
 O aplicație nou generată arată astfel:
@@ -102,7 +102,7 @@ my-twenty-app/
 
 Pe scurt:
 
-* **package.json**: Declară numele aplicației, versiunea, motoarele (Node 24+, Yarn 4) și adaugă `twenty-sdk` plus un script `twenty` care deleagă către CLI-ul local `twenty`. Rulează `yarn twenty help` pentru a lista toate comenzile disponibile.
+* **package.json**: Declară numele aplicației, versiunea, motoarele (Node 24+, Yarn 4) și adaugă `twenty-sdk` plus un script `consuelo` care deleagă către CLI-ul local `consuelo`. Rulează `yarn consuelo help` pentru a lista toate comenzile disponibile.
 * **.gitignore**: Ignoră artefacte comune precum `node_modules`, `.yarn`, `generated/` (client tipizat), `dist/`, `build/`, foldere de coverage, fișiere jurnal și fișiere `.env*`.
 * **yarn.lock**, **.yarnrc.yml**, **.yarn/**: Blochează și configurează lanțul de instrumente Yarn 4 folosit de proiect.
 * **.nvmrc**: Fixează versiunea Node.js așteptată de proiect.
@@ -142,12 +142,12 @@ export default defineObject({
 
 Comenzile ulterioare vor adăuga mai multe fișiere și foldere:
 
-* `yarn twenty app:generate` va crea un folder `generated/` (client Consuelo tipizat + tipuri pentru spațiul de lucru).
-* `yarn twenty entity:add` va adăuga fișiere de definire a entităților în `src/` pentru obiectele, funcțiile, componentele front-end sau rolurile personalizate.
+* `yarn consuelo app:generate` va crea un folder `generated/` (client Consuelo tipizat + tipuri pentru spațiul de lucru).
+* `yarn consuelo entity:add` va adăuga fișiere de definire a entităților în `src/` pentru obiectele, funcțiile, componentele front-end sau rolurile personalizate.
 
 ## Autentificare
 
-The first time you run `yarn twenty auth:login`, you'll be prompted for:
+The first time you run `yarn consuelo auth:login`, you'll be prompted for:
 
 * URL-ul API (implicit http://localhost:3000 sau profilul spațiului de lucru curent)
 * Cheie API
@@ -158,25 +158,25 @@ Acreditările dvs. sunt stocate per utilizator în `~/.twenty/config.json`. Pute
 
 ```bash filename="Terminal"
 # Login interactively (recommended)
-yarn twenty auth:login
+yarn consuelo auth:login
 
 # Login to a specific workspace profile
-yarn twenty auth:login --workspace my-custom-workspace
+yarn consuelo auth:login --workspace my-custom-workspace
 
 # List all configured workspaces
-yarn twenty auth:list
+yarn consuelo auth:list
 
 # Switch the default workspace (interactive)
-yarn twenty auth:switch
+yarn consuelo auth:switch
 
 # Switch to a specific workspace
-yarn twenty auth:switch production
+yarn consuelo auth:switch production
 
 # Check current authentication status
-yarn twenty auth:status
+yarn consuelo auth:status
 ```
 
-Once you've switched workspaces with `yarn twenty auth:switch`, all subsequent commands will use that workspace by default. Îl puteți totuși suprascrie temporar cu `--workspace <name>`.
+Once you've switched workspaces with `yarn consuelo auth:switch`, all subsequent commands will use that workspace by default. Îl puteți totuși suprascrie temporar cu `--workspace <name>`.
 
 ## Utilizați resursele SDK (tipuri și configurare)
 
@@ -276,7 +276,7 @@ Puncte cheie:
 * `universalIdentifier` trebuie să fie unic și stabil între implementări.
 * Fiecare câmp necesită un `name`, un `type`, un `label` și propriul `universalIdentifier` stabil.
 * Matricea `fields` este opțională — puteți defini obiecte fără câmpuri personalizate.
-* You can scaffold new objects using `yarn twenty entity:add`, which guides you through naming, fields, and relationships.
+* You can scaffold new objects using `yarn consuelo entity:add`, which guides you through naming, fields, and relationships.
 
 <Note>
   **Câmpurile de bază sunt create automat.** Când definiți un obiect personalizat, Consuelo adaugă automat câmpuri standard precum `name`, `createdAt`, `updatedAt`, `createdBy`, `position` și `deletedAt`. Nu trebuie să le definiți în tabloul `fields` — adăugați doar câmpurile personalizate proprii.
@@ -299,8 +299,8 @@ import { DEFAULT_ROLE_UNIVERSAL_IDENTIFIER } from 'src/roles/default-role';
 
 export default defineApplication({
   universalIdentifier: '4ec0391d-18d5-411c-b2f3-266ddc1c3ef7',
-  displayName: 'My Twenty App',
-  description: 'My first Twenty app',
+  displayName: 'My Consuelo App',
+  description: 'My first Consuelo app',
   icon: 'IconWorld',
   applicationVariables: {
     DEFAULT_RECIPIENT_NAME: {
@@ -342,7 +342,7 @@ export const DEFAULT_ROLE_UNIVERSAL_IDENTIFIER =
 export default defineRole({
   universalIdentifier: DEFAULT_ROLE_UNIVERSAL_IDENTIFIER,
   label: 'Default function role',
-  description: 'Default role for function Twenty client',
+  description: 'Default role for function Consuelo client',
   canReadAllObjectRecords: false,
   canUpdateAllObjectRecords: false,
   canSoftDeleteAllObjectRecords: false,
@@ -382,7 +382,7 @@ Notițe:
 * Porniți de la rolul generat, apoi restrângeți-l progresiv urmând principiul celui mai mic privilegiu.
 * Înlocuiți `objectPermissions` și `fieldPermissions` cu obiectele/câmpurile de care au nevoie funcțiile.
 * `permissionFlags` controlează accesul la capabilități la nivelul platformei. Mențineți-le la minimum; adăugați doar ceea ce aveți nevoie.
-* Vedeți un exemplu funcțional în aplicația Hello World: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/twenty/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
+* Vedeți un exemplu funcțional în aplicația Hello World: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
 
 ### Configurația funcției de logică și punctul de intrare
 
@@ -392,10 +392,10 @@ Fiecare fișier de funcție folosește `defineLogicFunction()` pentru a exporta 
 // src/app/createPostCard.logic-function.ts
 import { defineLogicFunction } from 'twenty-sdk';
 import type { DatabaseEventPayload, ObjectRecordCreateEvent, CronPayload, RoutePayload } from 'twenty-sdk';
-import Twenty, { type Person } from '~/generated';
+import Consuelo, { type Person } from '~/generated';
 
 const handler = async (params: RoutePayload) => {
-  const client = new Twenty(); // generated typed client
+  const client = new Consuelo(); // generated typed client
   const name = 'name' in params.queryStringParameters
     ? params.queryStringParameters.name ?? process.env.DEFAULT_RECIPIENT_NAME ?? 'Hello world'
     : 'Hello world';
@@ -551,7 +551,7 @@ const handler = async (event: RoutePayload) => {
 
 Puteți crea funcții noi în două moduri:
 
-* **Scaffolded**: Run `yarn twenty entity:add` and choose the option to add a new logic function. Aceasta generează un fișier inițial cu un handler și o configurație.
+* **Scaffolded**: Run `yarn consuelo entity:add` and choose the option to add a new logic function. Aceasta generează un fișier inițial cu un handler și o configurație.
 * **Manual**: Creați un fișier nou `*.logic-function.ts` și folosiți `defineLogicFunction()`, urmând același model.
 
 ### Componente Front
@@ -566,7 +566,7 @@ const MyWidget = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>My Custom Widget</h1>
-      <p>This is a custom front component for Twenty.</p>
+      <p>This is a custom front component for Consuelo.</p>
     </div>
   );
 };
@@ -584,25 +584,25 @@ Puncte cheie:
 * Componentele Front sunt componente React care sunt randate în contexte izolate în cadrul Consuelo.
 * Folosiți sufixul de fișier `*.front-component.tsx` pentru detectare automată.
 * Câmpul `component` face referire la componenta React.
-* Components are built and synced automatically during `yarn twenty app:dev`.
+* Components are built and synced automatically during `yarn consuelo app:dev`.
 
 Puteți crea componente Front noi în două moduri:
 
-* **Scaffolded**: Run `yarn twenty entity:add` and choose the option to add a new front component.
+* **Scaffolded**: Run `yarn consuelo entity:add` and choose the option to add a new front component.
 * **Manual**: Creați un fișier nou `*.front-component.tsx` și folosiți `defineFrontComponent()`.
 
 ### Client tipizat generat
 
-Run `yarn twenty app:generate` to create a local typed client in `generated/` based on your workspace schema. Folosiți-l în funcțiile dvs.:
+Run `yarn consuelo app:generate` to create a local typed client in `generated/` based on your workspace schema. Folosiți-l în funcțiile dvs.:
 
 ```typescript
-import Twenty from '~/generated';
+import Consuelo from '~/generated';
 
-const client = new Twenty();
+const client = new Consuelo();
 const { me } = await client.query({ me: { id: true, displayName: true } });
 ```
 
-The client is re-generated by `yarn twenty app:generate`. Rulați din nou după ce vă modificați obiectele sau când vă integrați într-un spațiu de lucru nou.
+The client is re-generated by `yarn consuelo app:generate`. Rulați din nou după ce vă modificați obiectele sau când vă integrați într-un spațiu de lucru nou.
 
 #### Acreditări la runtime în funcțiile de logică
 
@@ -619,7 +619,7 @@ Notițe:
 
 ### Exemplu Hello World
 
-Explorați un exemplu minim, cap la cap, care demonstrează obiecte, funcții de logică, componente Front și declanșatoare multiple [aici](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world):
+Explorați un exemplu minim, cap la cap, care demonstrează obiecte, funcții de logică, componente Front și declanșatoare multiple [aici](https://github.com/twentyhq/consuelo/tree/main/packages/twenty-apps/hello-world):
 
 ## Configurare manuală (fără generator)
 
@@ -629,23 +629,23 @@ Deși recomandăm utilizarea `create-twenty-app` pentru cea mai bună experienț
 yarn add -D twenty-sdk
 ```
 
-Then add a `twenty` script:
+Then add a `consuelo` script:
 
 ```json filename="package.json"
 {
   "scripts": {
-    "twenty": "twenty"
+    "consuelo": "consuelo"
   }
 }
 ```
 
-Now you can run all commands via `yarn twenty <command>`, e.g. `yarn twenty app:dev`, `yarn twenty app:generate`, `yarn twenty help`, etc.
+Now you can run all commands via `yarn consuelo <command>`, e.g. `yarn consuelo app:dev`, `yarn consuelo app:generate`, `yarn consuelo help`, etc.
 
 ## Depanare
 
-* Authentication errors: run `yarn twenty auth:login` and ensure your API key has the required permissions.
+* Authentication errors: run `yarn consuelo auth:login` and ensure your API key has the required permissions.
 * Nu se poate conecta la server: verificați URL-ul API și că serverul Consuelo este accesibil.
-* Types or client missing/outdated: run `yarn twenty app:generate`.
-* Dev mode not syncing: ensure `yarn twenty app:dev` is running and that changes are not ignored by your environment.
+* Types or client missing/outdated: run `yarn consuelo app:generate`.
+* Dev mode not syncing: ensure `yarn consuelo app:dev` is running and that changes are not ignored by your environment.
 
 Canal de ajutor pe Discord: https://discord.com/channels/1130383047699738754/1130386664812982322

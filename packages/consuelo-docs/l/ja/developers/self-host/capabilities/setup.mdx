@@ -46,7 +46,7 @@ IS_CONFIG_VARIABLES_IN_DB_ENABLED=true  # default
   各変数は、**設定 → 管理パネル → 構成変数** で説明付きでドキュメント化されています。
   データベース接続 (`PG_DATABASE_URL`)、サーバーURL (`SERVER_URL`)、アプリの秘密キー (`APP_SECRET`) など、一部のインフラ設定は `.env` ファイルを介してのみ構成可能です。
 
-  [ 完全な技術リファレンス →](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
+  [ 完全な技術リファレンス →](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/twenty-config/config-variables.ts)
 </Warning>
 
 ## 2. 環境のみの構成
@@ -155,7 +155,7 @@ IS_WORKSPACE_CREATION_LIMITED_TO_SERVER_ADMINS=true
 </Warning>
 
 **必要なスコープ** (自動的に構成される):
-[関連ソースコードを見る](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
+[関連ソースコードを見る](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-google-apis-oauth-scopes.ts#L4-L10)
 
 * `https://www.googleapis.com/auth/calendar.events`
 * `https://www.googleapis.com/auth/gmail.readonly`
@@ -218,7 +218,7 @@ Microsoft Azureコンソールで"権限"の欄で以下のAPIを有効にしま
 
 ### スコープを構成
 
-[関連ソースコードを見る](https://github.com/twentyhq/twenty/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
+[関連ソースコードを見る](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-server/src/engine/core-modules/auth/utils/get-microsoft-apis-oauth-scopes.ts#L2-L9)
 
 * 'openid'
 * 'メール'

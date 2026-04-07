@@ -3,7 +3,7 @@
     "userGuide": {
       "label": "Guida utente",
       "groups": {
-        "discoverTwenty": {
+        "discoverConsuelo": {
           "label": "Scopri Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
@@ -171,7 +171,7 @@
                 "frontendDevelopment": {
                   "label": "Sviluppo Frontend",
                   "groups": {
-                    "twentyUi": {
+                    "consueloUi": {
                       "label": "Consuelo UI",
                       "groups": {
                         "display": {

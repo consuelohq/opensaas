@@ -36,32 +36,32 @@ corepack enable
 yarn install
 
 # Authenticate using your API key (you'll be prompted)
-yarn twenty auth:login
+yarn consuelo auth:login
 
 # Start dev mode: automatically syncs local changes to your workspace
-yarn twenty app:dev
+yarn consuelo app:dev
 ```
 
 A partir daqui você pode:
 
 ```bash filename="Terminal"
 # Add a new entity to your application (guided)
-yarn twenty entity:add
+yarn consuelo entity:add
 
-# Generate a typed Twenty client and workspace entity types
-yarn twenty app:generate
+# Generate a typed Consuelo client and workspace entity types
+yarn consuelo app:generate
 
 # Watch your application's function logs
-yarn twenty function:logs
+yarn consuelo function:logs
 
 # Execute a function by name
-yarn twenty function:execute -n my-function -p '{"name": "test"}'
+yarn consuelo function:execute -n my-function -p '{"name": "test"}'
 
 # Uninstall the application from the current workspace
-yarn twenty app:uninstall
+yarn consuelo app:uninstall
 
 # Display commands' help
-yarn twenty help
+yarn consuelo help
 ```
 
 Veja também: as páginas de referência da CLI para [create-twenty-app](https://www.npmjs.com/package/create-twenty-app) e [twenty-sdk CLI](https://www.npmjs.com/package/twenty-sdk).
@@ -72,7 +72,7 @@ Ao executar `npx create-twenty-app@latest my-twenty-app`, o gerador:
 
 * Copia um aplicativo base mínimo para `my-twenty-app/`
 * Adiciona uma dependência local `twenty-sdk` e a configuração do Yarn 4
-* Cria arquivos de configuração e scripts conectados à CLI `twenty`
+* Cria arquivos de configuração e scripts conectados à CLI `consuelo`
 * Gera uma configuração de aplicativo padrão e um papel padrão para as funções
 
 Um aplicativo recém-criado pelo scaffold fica assim:
@@ -102,7 +102,7 @@ my-twenty-app/
 
 Em alto nível:
 
-* **package.json**: Declares the app name, version, engines (Node 24+, Yarn 4), and adds `twenty-sdk` plus a `twenty` script that delegates to the local `twenty` CLI. Run `yarn twenty help` to list all available commands.
+* **package.json**: Declares the app name, version, engines (Node 24+, Yarn 4), and adds `twenty-sdk` plus a `consuelo` script that delegates to the local `consuelo` CLI. Run `yarn consuelo help` to list all available commands.
 * **.gitignore**: Ignora artefatos comuns como `node_modules`, `.yarn`, `generated/` (cliente tipado), `dist/`, `build/`, pastas de cobertura, arquivos de log e arquivos `.env*`.
 * **yarn.lock**, **.yarnrc.yml**, **.yarn/**: Bloqueiam e configuram a ferramenta Yarn 4 usada pelo projeto.
 * **.nvmrc**: Fixa a versão do Node.js esperada pelo projeto.
@@ -142,12 +142,12 @@ export default defineObject({
 
 Comandos posteriores adicionarão mais arquivos e pastas:
 
-* `yarn twenty app:generate` will create a `generated/` folder (typed Consuelo client + workspace types).
-* `yarn twenty entity:add` will add entity definition files under `src/` for your custom objects, functions, front components, or roles.
+* `yarn consuelo app:generate` will create a `generated/` folder (typed Consuelo client + workspace types).
+* `yarn consuelo entity:add` will add entity definition files under `src/` for your custom objects, functions, front components, or roles.
 
 ## Autenticação
 
-The first time you run `yarn twenty auth:login`, you'll be prompted for:
+The first time you run `yarn consuelo auth:login`, you'll be prompted for:
 
 * URL da API (padrão: http://localhost:3000 ou o perfil do seu espaço de trabalho atual)
 * Chave de API
@@ -158,25 +158,25 @@ Suas credenciais são armazenadas por usuário em `~/.twenty/config.json`. Você
 
 ```bash filename="Terminal"
 # Login interactively (recommended)
-yarn twenty auth:login
+yarn consuelo auth:login
 
 # Login to a specific workspace profile
-yarn twenty auth:login --workspace my-custom-workspace
+yarn consuelo auth:login --workspace my-custom-workspace
 
 # List all configured workspaces
-yarn twenty auth:list
+yarn consuelo auth:list
 
 # Switch the default workspace (interactive)
-yarn twenty auth:switch
+yarn consuelo auth:switch
 
 # Switch to a specific workspace
-yarn twenty auth:switch production
+yarn consuelo auth:switch production
 
 # Check current authentication status
-yarn twenty auth:status
+yarn consuelo auth:status
 ```
 
-Once you've switched workspaces with `yarn twenty auth:switch`, all subsequent commands will use that workspace by default. Você ainda pode substituí-lo temporariamente com `--workspace <name>`.
+Once you've switched workspaces with `yarn consuelo auth:switch`, all subsequent commands will use that workspace by default. Você ainda pode substituí-lo temporariamente com `--workspace <name>`.
 
 ## Use os recursos do SDK (tipos e configuração)
 
@@ -276,7 +276,7 @@ Pontos-chave:
 * O `universalIdentifier` deve ser exclusivo e estável entre implantações.
 * Cada campo requer `name`, `type`, `label` e seu próprio `universalIdentifier` estável.
 * O array `fields` é opcional — você pode definir objetos sem campos personalizados.
-* You can scaffold new objects using `yarn twenty entity:add`, which guides you through naming, fields, and relationships.
+* You can scaffold new objects using `yarn consuelo entity:add`, which guides you through naming, fields, and relationships.
 
 <Note>
   **Os campos base são criados automaticamente.** Quando você define um objeto personalizado, o Consuelo adiciona automaticamente campos padrão como `name`, `createdAt`, `updatedAt`, `createdBy`, `position` e `deletedAt`. Você não precisa definir esses no seu array `fields` — adicione apenas seus campos personalizados.
@@ -299,8 +299,8 @@ import { DEFAULT_ROLE_UNIVERSAL_IDENTIFIER } from 'src/roles/default-role';
 
 export default defineApplication({
   universalIdentifier: '4ec0391d-18d5-411c-b2f3-266ddc1c3ef7',
-  displayName: 'My Twenty App',
-  description: 'My first Twenty app',
+  displayName: 'My Consuelo App',
+  description: 'My first Consuelo app',
   icon: 'IconWorld',
   applicationVariables: {
     DEFAULT_RECIPIENT_NAME: {
@@ -342,7 +342,7 @@ export const DEFAULT_ROLE_UNIVERSAL_IDENTIFIER =
 export default defineRole({
   universalIdentifier: DEFAULT_ROLE_UNIVERSAL_IDENTIFIER,
   label: 'Default function role',
-  description: 'Default role for function Twenty client',
+  description: 'Default role for function Consuelo client',
   canReadAllObjectRecords: false,
   canUpdateAllObjectRecords: false,
   canSoftDeleteAllObjectRecords: false,
@@ -382,7 +382,7 @@ Notas:
 * Comece pelo papel gerado pelo scaffold e depois restrinja-o progressivamente seguindo o princípio do menor privilégio.
 * Substitua `objectPermissions` e `fieldPermissions` pelos objetos/campos de que suas funções precisam.
 * `permissionFlags` controlam o acesso a recursos em nível de plataforma. Mantenha-os mínimos; adicione apenas o que for necessário.
-* Veja um exemplo funcional no app Hello World: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/twenty/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
+* Veja um exemplo funcional no app Hello World: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
 
 ### Configuração de função de lógica e ponto de entrada
 
@@ -392,10 +392,10 @@ Cada arquivo de função usa `defineLogicFunction()` para exportar uma configura
 // src/app/createPostCard.logic-function.ts
 import { defineLogicFunction } from 'twenty-sdk';
 import type { DatabaseEventPayload, ObjectRecordCreateEvent, CronPayload, RoutePayload } from 'twenty-sdk';
-import Twenty, { type Person } from '~/generated';
+import Consuelo, { type Person } from '~/generated';
 
 const handler = async (params: RoutePayload) => {
-  const client = new Twenty(); // generated typed client
+  const client = new Consuelo(); // generated typed client
   const name = 'name' in params.queryStringParameters
     ? params.queryStringParameters.name ?? process.env.DEFAULT_RECIPIENT_NAME ?? 'Hello world'
     : 'Hello world';
@@ -551,7 +551,7 @@ const handler = async (event: RoutePayload) => {
 
 Você pode criar novas funções de duas formas:
 
-* **Scaffolded**: Run `yarn twenty entity:add` and choose the option to add a new logic function. Isso gera um arquivo inicial com um handler e configuração.
+* **Scaffolded**: Run `yarn consuelo entity:add` and choose the option to add a new logic function. Isso gera um arquivo inicial com um handler e configuração.
 * **Manual**: Crie um novo arquivo `*.logic-function.ts` e use `defineLogicFunction()`, seguindo o mesmo padrão.
 
 ### Componentes de front-end
@@ -566,7 +566,7 @@ const MyWidget = () => {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>My Custom Widget</h1>
-      <p>This is a custom front component for Twenty.</p>
+      <p>This is a custom front component for Consuelo.</p>
     </div>
   );
 };
@@ -584,25 +584,25 @@ Pontos-chave:
 * Componentes de front-end são componentes React que renderizam em contextos isolados dentro do Consuelo.
 * Use o sufixo de arquivo `*.front-component.tsx` para detecção automática.
 * O campo `component` faz referência ao seu componente React.
-* Components are built and synced automatically during `yarn twenty app:dev`.
+* Components are built and synced automatically during `yarn consuelo app:dev`.
 
 Você pode criar novos componentes de front-end de duas formas:
 
-* **Scaffolded**: Run `yarn twenty entity:add` and choose the option to add a new front component.
+* **Scaffolded**: Run `yarn consuelo entity:add` and choose the option to add a new front component.
 * **Manual**: Crie um novo arquivo `*.front-component.tsx` e use `defineFrontComponent()`.
 
 ### Cliente tipado gerado
 
-Run `yarn twenty app:generate` to create a local typed client in `generated/` based on your workspace schema. Use-o em suas funções:
+Run `yarn consuelo app:generate` to create a local typed client in `generated/` based on your workspace schema. Use-o em suas funções:
 
 ```typescript
-import Twenty from '~/generated';
+import Consuelo from '~/generated';
 
-const client = new Twenty();
+const client = new Consuelo();
 const { me } = await client.query({ me: { id: true, displayName: true } });
 ```
 
-The client is re-generated by `yarn twenty app:generate`. Execute novamente após alterar seus objetos ou ao ingressar em um novo workspace.
+The client is re-generated by `yarn consuelo app:generate`. Execute novamente após alterar seus objetos ou ao ingressar em um novo workspace.
 
 #### Credenciais em tempo de execução em funções de lógica
 
@@ -619,7 +619,7 @@ Notas:
 
 ### Exemplo Hello World
 
-Explore um exemplo mínimo de ponta a ponta que demonstra objetos, funções de lógica, componentes de front-end e vários gatilhos [aqui](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world):
+Explore um exemplo mínimo de ponta a ponta que demonstra objetos, funções de lógica, componentes de front-end e vários gatilhos [aqui](https://github.com/twentyhq/consuelo/tree/main/packages/twenty-apps/hello-world):
 
 ## Configuração manual (sem o gerador)
 
@@ -629,23 +629,23 @@ Embora recomendemos usar `create-twenty-app` para a melhor experiência inicial,
 yarn add -D twenty-sdk
 ```
 
-Then add a `twenty` script:
+Then add a `consuelo` script:
 
 ```json filename="package.json"
 {
   "scripts": {
-    "twenty": "twenty"
+    "consuelo": "consuelo"
   }
 }
 ```
 
-Now you can run all commands via `yarn twenty <command>`, e.g. `yarn twenty app:dev`, `yarn twenty app:generate`, `yarn twenty help`, etc.
+Now you can run all commands via `yarn consuelo <command>`, e.g. `yarn consuelo app:dev`, `yarn consuelo app:generate`, `yarn consuelo help`, etc.
 
 ## Resolução de Problemas
 
-* Authentication errors: run `yarn twenty auth:login` and ensure your API key has the required permissions.
+* Authentication errors: run `yarn consuelo auth:login` and ensure your API key has the required permissions.
 * Não é possível conectar ao servidor: verifique a URL da API e se o servidor do Consuelo está acessível.
-* Types or client missing/outdated: run `yarn twenty app:generate`.
-* Dev mode not syncing: ensure `yarn twenty app:dev` is running and that changes are not ignored by your environment.
+* Types or client missing/outdated: run `yarn consuelo app:generate`.
+* Dev mode not syncing: ensure `yarn consuelo app:dev` is running and that changes are not ignored by your environment.
 
 Canal de ajuda no Discord: https://discord.com/channels/1130383047699738754/1130386664812982322

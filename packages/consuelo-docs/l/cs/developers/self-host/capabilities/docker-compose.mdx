@@ -24,13 +24,13 @@ Podívejte se na dokumentaci [Nastavení Proměnných Prostředí](/l/cs/develop
 Nainstalujte nejnovější stabilní verzi Consuelo jedním příkazem:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 Pro instalaci konkrétní verze nebo větve vypište:
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * Nahraďte x.y.z požadovaným číslem verze.
@@ -47,7 +47,7 @@ Postupujte podle těchto kroků pro ruční nastavení.
    Zkopírujte příklad souboru prostředí do nového souboru .env ve vašem pracovním adresáři:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **Vygenerujte tajné tokeny**
@@ -81,7 +81,7 @@ Postupujte podle těchto kroků pro ruční nastavení.
 Stáhněte soubor `docker-compose.yml` do svého pracovního adresáře:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### Krok 3: Spuštění aplikace
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### Krok 4: Přístup k aplikaci
 
-Pokud hostujete twentyCRM na svém vlastním počítači, otevřete svůj prohlížeč a přejděte na stránku [http://localhost:3000](http://localhost:3000).
+Pokud hostujete Consuelo na svém vlastním počítači, otevřete svůj prohlížeč a přejděte na stránku [http://localhost:3000](http://localhost:3000).
 
 Pokud to hostujete na serveru, zkontrolujte, že server běží a že je vše v pořádku s
 

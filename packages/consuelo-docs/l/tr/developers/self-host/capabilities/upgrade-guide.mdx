@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Docker-compose.yml mutasyonu
 
 Bu sürüm, `worker` hizmetine `server-local-data` hacmine erişim vermek için bir `docker-compose.yml` mutasyonu içerir.
-Yerel `docker-compose.yml` dosyanızı [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml) ile güncelleyin
+Yerel `docker-compose.yml` dosyanızı [v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml) ile güncelleyin
 
 ### v0.43.0'dan v0.44.0'a
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Yedekleme dosyanızın boş olmadığından emin olun.
 
-2. docker-compose.yml dosyanızı postgres:16 görüntüsü ile kullanacak şekilde yükseltin [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) dosyasında belirtildiği gibi güncelleyin.
+2. docker-compose.yml dosyanızı postgres:16 görüntüsü ile kullanacak şekilde yükseltin [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) dosyasında belirtildiği gibi güncelleyin.
 
 3. Veri tabanını yeni postgres:16 konteynerine geri yükleyin
 
@@ -259,7 +259,7 @@ yarn command:prod upgrade-0.33
 `yarn database:migrate:prod` komutu veritabanı yapısına (çıkış ve meta veri şemaları) migrasyonları uygulayacaktır. `yarn command:prod upgrade-0.33` tüm çalışma alanlarının veri migrasyonunu sağlar.
 
 Bu sürümden itibaren, DB için twenty-postgres görüntüsü kullanımdan kalktı ve yerine twenty-postgres-spilo kullanılıyor.
-Twenty-postgres görüntüsünü kullanmaya devam etmek istiyorsanız, docker-compose.yml dosyasında `twentycrm/twenty-postgres:${TAG}`i `twentycrm/twenty-postgres` ile değiştirin.
+Consuelo-postgres görüntüsünü kullanmaya devam etmek istiyorsanız, docker-compose.yml dosyasında `Consuelo/twenty-postgres:${TAG}`i `Consuelo/twenty-postgres` ile değiştirin.
 
 ### v0.31.0'dan v0.32.0'ya
 
@@ -312,7 +312,7 @@ yarn command:prod upgrade-0.31
 Consuelo sürümünüzü v0.30.0 görüntüsünü kullanacak şekilde yükseltin
 
 **Yıkıcı değişiklik**:
-Performansı artırmak için Consuelo artık redis önbelleğinin yapılandırılmasını gerektirir. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) dosyamızı bu durumu yansıtacak şekilde güncelledik.
+Performansı artırmak için Consuelo artık redis önbelleğinin yapılandırılmasını gerektirir. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) dosyamızı bu durumu yansıtacak şekilde güncelledik.
 Yapılandırmanızı güncellediğinizden ve ortam değişkenlerinizi uygun şekilde güncellediğinizden emin olun:
 
 ```
