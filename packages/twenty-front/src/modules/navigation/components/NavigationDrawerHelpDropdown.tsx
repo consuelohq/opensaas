@@ -57,13 +57,14 @@ const SUPPORT_EMAIL = 'support@consuelohq.com';
 const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.strong};
+  border: 1px solid ${({ theme }) => theme.border.color.primary};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
   height: ${({ theme }) => theme.spacing(7)};
   justify-content: center;
+  padding: ${({ theme }) => theme.spacing(1.5)};
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
     border-color ${({ theme }) => theme.animation.duration.normal}s,
@@ -72,8 +73,13 @@ const StyledHelpButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
-    border-color: ${({ theme }) => theme.border.color.strong};
+    border-color: ${({ theme }) => theme.border.color.primary};
     color: ${({ theme }) => theme.font.color.primary};
+  }
+
+  & > svg {
+    width: 100%;
+    height: 100%;
   }
 `;
 
@@ -433,7 +439,7 @@ export const NavigationDrawerHelpDropdown = () => {
       dropdownOffset={{ x: 0, y: -10 }}
       clickableComponent={
         <StyledHelpButton type="button" title={t`Help`}>
-          <IconHelpCircle size={theme.icon.size.md} stroke={1.8} />
+          <IconHelpCircle stroke={1.8} />
         </StyledHelpButton>
       }
       dropdownComponents={dropdownContent}
