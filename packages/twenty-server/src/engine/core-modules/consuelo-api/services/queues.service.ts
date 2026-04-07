@@ -25,6 +25,7 @@ type QueueSelectionResult = {
 @Injectable()
 export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
+  private queueRetryColumnsAvailable: boolean | null = null;
 
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
@@ -797,7 +798,7 @@ export class QueuesService {
       retryReason: string | null;
     },
   ) {
-    try {
+    if (await this.hasQueueRetryColumns()) {
       return await this.dataSource.query(
         'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
         [
@@ -809,20 +810,28 @@ export class QueuesService {
           queueItemId,
         ],
       );
-    } catch (err: unknown) {
-      if (
-        err instanceof Error &&
-        err.message.includes(
-          'column "retry_strategy" of relation "queue_items" does not exist',
-        )
-      ) {
-        return await this.dataSource.query(
-          'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
-          [status, outcome, queueItemId],
-        );
-      }
-
-      throw err;
     }
+
+    return await this.dataSource.query(
+      'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
+      [status, outcome, queueItemId],
+    );
+  }
+
+  private async hasQueueRetryColumns() {
+    if (this.queueRetryColumnsAvailable !== null) {
+      return this.queueRetryColumnsAvailable;
+    }
+
+    const rows: Array<{ column_name: string }> = await this.dataSource.query(
+      `SELECT column_name
+       FROM information_schema.columns
+       WHERE table_name = 'queue_items'
+         AND column_name IN ('retry_strategy', 'retry_scheduled_at', 'retry_reason')`,
+    );
+
+    this.queueRetryColumnsAvailable = rows.length === 3;
+
+    return this.queueRetryColumnsAvailable;
   }
 }
