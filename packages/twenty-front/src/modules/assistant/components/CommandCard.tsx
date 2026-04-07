@@ -226,7 +226,7 @@ const HistoryCard = ({
             </StyledRowSecondary>
           </StyledRow>
         ))
-      }
+      )}
     </StyledCardBody>
   </StyledCard>
 );

@@ -1,10 +1,32 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLingui } from '@lingui/react/macro';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { useLingui } from '@lingui/react/macro';
+import {
+  IconArrowLeft,
+  IconBook2,
+  IconBrandChrome,
+  IconBrandDiscord,
+  IconBrandOpenai,
+  IconBrandSlack,
+  IconBrandTabler,
+  IconBrandWindows,
+  IconCommand,
+  IconComment,
+  IconDeviceLaptop,
+  IconDownload,
+  IconHelpCircle,
+  IconSettings,
+  IconStatusChange,
+  IconTerminal2,
+} from 'twenty-ui/display';
+import { MenuItem } from 'twenty-ui/navigation';
+import { getOsControlSymbol } from 'twenty-ui/utilities';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
@@ -29,28 +51,6 @@ import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
 import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMemorizedUrlState';
-import { getOsControlSymbol } from 'twenty-ui/utilities';
-import { AppPath, SettingsPath } from 'twenty-shared/types';
-import { getSettingsPath } from 'twenty-shared/utils';
-import {
-  IconArrowLeft,
-  IconBook2,
-  IconBrandChrome,
-  IconBrandDiscord,
-  IconBrandOpenai,
-  IconBrandSlack,
-  IconBrandTabler,
-  IconBrandWindows,
-  IconCommand,
-  IconComment,
-  IconDeviceLaptop,
-  IconDownload,
-  IconHelpCircle,
-  IconSettings,
-  IconStatusChange,
-  IconTerminal2,
-} from 'twenty-ui/display';
-import { MenuItem } from 'twenty-ui/navigation';
 
 const SUPPORT_EMAIL = 'support@consuelohq.com';
 
