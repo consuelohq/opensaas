@@ -20,7 +20,7 @@ const StyledBubble = styled.div<{ isUser: boolean }>`
   color: ${({ theme }) => theme.font.color.primary};
   background: ${({ theme, isUser }) =>
     isUser ? theme.accent.primary : theme.background.secondary};
-  ${({ theme, isUser }) => (isUser ? `color: ${theme.grayScale.gray0};` : '')}
+  ${({ theme, isUser }) => (isUser ? `color: ${theme.grayScale.gray1};` : '')}
 `;
 
 const StyledCommands = styled.div`

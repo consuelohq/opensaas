@@ -16,7 +16,7 @@ export const useAgentConversations = () => {
 
   const [createThread] = useCreateChatThreadMutation({
     onCompleted: (result) => {
-      setCurrentThreadId(result.createChatThread.id);
+      setCurrentAIChatThread(result.createChatThread.id);
       void refetch();
     },
   });
@@ -30,9 +30,9 @@ export const useAgentConversations = () => {
 
   const selectConversation = useCallback(
     (id: string | null) => {
-      setCurrentThreadId(id);
+      setCurrentAIChatThread(id);
     },
-    [setCurrentThreadId],
+    [setCurrentAIChatThread],
   );
 
   const createNewConversation = useCallback(() => {
@@ -41,7 +41,7 @@ export const useAgentConversations = () => {
 
   return {
     conversations,
-    selectedConversationId: currentThreadId,
+    selectedConversationId: currentAIChatThread,
     selectConversation,
     createNewConversation,
     isLoading: loading,

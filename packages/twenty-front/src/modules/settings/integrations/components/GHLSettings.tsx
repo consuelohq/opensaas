@@ -17,7 +17,7 @@ import {
   IconPlugConnected,
   IconPlugX,
   IconRefresh,
-  IconSync,
+
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
@@ -36,7 +36,7 @@ import { ghlLoadingState } from '@/settings/integrations/states/ghlLoadingState'
 import { ghlErrorState } from '@/settings/integrations/states/ghlErrorState';
 import { GHLFieldMapping } from '@/settings/integrations/components/GHLFieldMapping';
 import { GHLPipelineMapping } from '@/settings/integrations/components/GHLPipelineMapping';
-import { ClickToCallHandler } from '@/settings/integrations/components/ClickToCallHandler';
+import { ClickToCallHandlerEffect } from '@/settings/integrations/components/ClickToCallHandler';
 import { useGHLSettings } from '@/settings/integrations/hooks/useGHLSettings';
 import type {
   GHLSyncDirection,
@@ -439,9 +439,9 @@ export const GHLSettings = () => {
   );
 
   const handlePushSettingToggle = useCallback(
-    async (setting: keyof typeof pushSettings, checked: boolean) => {
+    async (setting: keyof typeof ghlPushSettings, checked: boolean) => {
       try {
-        const newSettings = { ...pushSettings, [setting]: checked };
+        const newSettings = { ...ghlPushSettings, [setting]: checked };
         await savePushSettings(newSettings);
       } catch (err: unknown) {
         Sentry.captureException(err, {
@@ -452,29 +452,29 @@ export const GHLSettings = () => {
         });
       }
     },
-    [pushSettings, savePushSettings],
+    [ghlPushSettings, savePushSettings],
   );
 
   const handleDismissError = useCallback(() => {
     clearError();
   }, [clearError]);
 
-  const isLoading = loading !== 'idle';
-  const isSyncing = loading === 'syncing' || syncProgress.status === 'running';
+  const isLoading = ghlLoading !== 'idle';
+  const isSyncing = ghlLoading === 'syncing' || ghlManualSyncProgress.status === 'running';
   const isImporting =
-    loading === 'importing' || importProgress.status === 'running';
+    ghlLoading === 'importing' || ghlImportProgress.status === 'running';
 
   return (
     <SettingsPageContainer>
-      <ClickToCallHandler />
+      <ClickToCallHandlerEffect />
       <SettingsHeaderContainer>
         <H1Title title="GoHighLevel Integration" />
       </SettingsHeaderContainer>
 
-      {error && (
+      {ghlError && (
         <StyledErrorContainer>
           <IconAlertCircle size={20} />
-          <span>{error}</span>
+          <span>{ghlError}</span>
           <Button
             Icon={IconX}
             size="small"
@@ -489,29 +489,29 @@ export const GHLSettings = () => {
         <StyledCard rounded>
           <StyledCardContent>
             <StyledStatusContainer>
-              <StyledStatusIndicator connected={connection.connected}>
-                {connection.connected ? (
+              <StyledStatusIndicator connected={ghlConnection.connected}>
+                {ghlConnection.connected ? (
                   <IconPlugConnected size={20} />
                 ) : (
                   <IconPlugX size={20} />
                 )}
                 <StyledStatusText>
-                  {connection.connected ? 'Connected' : 'Disconnected'}
+                  {ghlConnection.connected ? 'Connected' : 'Disconnected'}
                 </StyledStatusText>
               </StyledStatusIndicator>
 
-              {connection.connected && connection.locationName && (
+              {ghlConnection.connected && ghlConnection.locationName && (
                 <StyledLocationInfo>
-                  Location: {connection.locationName}
-                  {connection.connectedAt && (
-                    <span> (since {formatDate(connection.connectedAt)})</span>
+                  Location: {ghlConnection.locationName}
+                  {ghlConnection.connectedAt && (
+                    <span> (since {formatDate(ghlConnection.connectedAt)})</span>
                   )}
                 </StyledLocationInfo>
               )}
             </StyledStatusContainer>
 
             <StyledButtonGroup>
-              {!connection.connected ? (
+              {!ghlConnection.connected ? (
                 <Button
                   title="Connect GHL"
                   Icon={IconExternalLink}
@@ -546,7 +546,7 @@ export const GHLSettings = () => {
         </StyledCard>
       </StyledSection>
 
-      {connection.connected && (
+      {ghlConnection.connected && (
         <>
           {/* Sync Configuration */}
           <StyledSection>
@@ -642,32 +642,32 @@ export const GHLSettings = () => {
                   />
                   <Button
                     title={isSyncing ? 'Syncing...' : 'Sync Now'}
-                    Icon={isSyncing ? IconRefresh : IconSync}
+                    Icon={IconRefresh}
                     variant="secondary"
                     onClick={handleSyncNow}
                     disabled={isSyncing || isImporting || isLoading}
                   />
                 </StyledButtonGroup>
 
-                {(isImporting || importProgress.status !== 'idle') && (
+                {(isImporting || ghlImportProgress.status !== 'idle') && (
                   <>
                     <StyledProgressBar>
-                      <StyledProgressFill progress={importProgress.progress} />
+                      <StyledProgressFill progress={ghlImportProgress.progress} />
                     </StyledProgressBar>
                     <StyledProgressText>
-                      {importProgress.message}
+                      {ghlImportProgress.message}
                     </StyledProgressText>
                   </>
                 )}
 
-                {(isSyncing || syncProgress.status !== 'idle') &&
+                {(isSyncing || ghlManualSyncProgress.status !== 'idle') &&
                   !isImporting && (
                     <>
                       <StyledProgressBar>
-                        <StyledProgressFill progress={syncProgress.progress} />
+                        <StyledProgressFill progress={ghlManualSyncProgress.progress} />
                       </StyledProgressBar>
                       <StyledProgressText>
-                        {syncProgress.message}
+                        {ghlManualSyncProgress.message}
                       </StyledProgressText>
                     </>
                   )}
@@ -683,7 +683,7 @@ export const GHLSettings = () => {
                 <StyledPushSettingsGrid>
                   <StyledPushSettingItem>
                     <Checkbox
-                      checked={pushSettings.callOutcomes}
+                      checked={ghlPushSettings.callOutcomes}
                       onChange={(checked) =>
                         handlePushSettingToggle('callOutcomes', checked)
                       }
@@ -694,7 +694,7 @@ export const GHLSettings = () => {
 
                   <StyledPushSettingItem>
                     <Checkbox
-                      checked={pushSettings.contactUpdates}
+                      checked={ghlPushSettings.contactUpdates}
                       onChange={(checked) =>
                         handlePushSettingToggle('contactUpdates', checked)
                       }
@@ -705,7 +705,7 @@ export const GHLSettings = () => {
 
                   <StyledPushSettingItem>
                     <Checkbox
-                      checked={pushSettings.tags}
+                      checked={ghlPushSettings.tags}
                       onChange={(checked) =>
                         handlePushSettingToggle('tags', checked)
                       }
@@ -716,7 +716,7 @@ export const GHLSettings = () => {
 
                   <StyledPushSettingItem>
                     <Checkbox
-                      checked={pushSettings.notes}
+                      checked={ghlPushSettings.notes}
                       onChange={(checked) =>
                         handlePushSettingToggle('notes', checked)
                       }
