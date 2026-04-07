@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { type ReactNode, useCallback, useContext } from 'react';
 import { useRecoilValue } from 'recoil';
 
@@ -23,7 +24,6 @@ import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
 import { dropdownPlacementComponentState } from '@/ui/layout/dropdown/states/dropdownPlacementComponentState';
 import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/hooks/useRecoilComponentValue';
 import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
-import { t } from '@lingui/core/macro';
 import { CustomError, isDefined } from 'twenty-shared/utils';
 import { IconPlus, IconUpload } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';

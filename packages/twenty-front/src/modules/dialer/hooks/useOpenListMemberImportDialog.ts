@@ -1,3 +1,7 @@
+import { t } from '@lingui/core/macro';
+import { useRef } from 'react';
+import { useSetRecoilState } from 'recoil';
+
 import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { useGenerateDepthRecordGqlFieldsFromObject } from '@/object-record/graphql/record-gql-fields/hooks/useGenerateDepthRecordGqlFieldsFromObject';
@@ -10,12 +14,9 @@ import { SPREADSHEET_IMPORT_CREATE_RECORDS_BATCH_SIZE } from '@/spreadsheet-impo
 import { useOpenSpreadsheetImportDialog } from '@/spreadsheet-import/hooks/useOpenSpreadsheetImportDialog';
 import { spreadsheetImportCreatedRecordsProgressState } from '@/spreadsheet-import/states/spreadsheetImportCreatedRecordsProgressState';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
-import { t } from '@lingui/core/macro';
-import { useSetRecoilState } from 'recoil';
 
-// Opens the spreadsheet import dialog configured for person fields.
-// On submit: upserts person records, then creates listMember records
-// linking each person to the given list, copying phone numbers to both.
+// Reuses twenty's spreadsheet import infrastructure but targets person fields,
+// then creates listMember join records to populate a specific list.
 export const useOpenListMemberImportDialog = (listId: string) => {
   const apolloCoreClient = useApolloCoreClient();
   const { openSpreadsheetImportDialog } = useOpenSpreadsheetImportDialog();
@@ -30,7 +31,7 @@ export const useOpenListMemberImportDialog = (listId: string) => {
     spreadsheetImportCreatedRecordsProgressState,
   );
 
-  const personAbortController = new AbortController();
+  const abortControllerRef = useRef(new AbortController());
 
   const { recordGqlFields: personGqlFields } =
     useGenerateDepthRecordGqlFieldsFromObject({
@@ -44,7 +45,7 @@ export const useOpenListMemberImportDialog = (listId: string) => {
       recordGqlFields: personGqlFields,
       mutationBatchSize: SPREADSHEET_IMPORT_CREATE_RECORDS_BATCH_SIZE,
       setBatchedRecordsCount: setCreatedRecordsProgress,
-      abortController: personAbortController,
+      abortController: abortControllerRef.current,
     });
 
   const { recordGqlFields: listMemberGqlFields } =
@@ -61,6 +62,9 @@ export const useOpenListMemberImportDialog = (listId: string) => {
     });
 
   const openListMemberImportDialog = () => {
+    // Reset so prior abort doesn't poison this invocation
+    abortControllerRef.current = new AbortController();
+
     const availableFieldMetadataItems =
       spreadsheetImportFilterAvailableFieldMetadataItems(
         personMetadata.updatableFields,
@@ -81,13 +85,17 @@ export const useOpenListMemberImportDialog = (listId: string) => {
         );
 
         try {
-          // Step 1: upsert person records
           const createdPersons = await batchCreatePersons({
             recordsToCreate: personInputs,
             upsert: true,
           });
 
-          // Step 2: create listMember records linking each person to this list
+          // Guard: if person creation was aborted, don't create orphan memberships
+          if (abortControllerRef.current.signal.aborted) {
+            return;
+          }
+
+          // phoneNumber is the structured PHONES composite type — same format on both entities
           const listMemberInputs = createdPersons.map(
             (person: { id: string; phones?: unknown }) => ({
               listId,
@@ -99,25 +107,25 @@ export const useOpenListMemberImportDialog = (listId: string) => {
 
           await batchCreateListMembers({
             recordsToCreate: listMemberInputs,
+            upsert: true,
           });
 
-          // Step 3: evict caches so the UI refreshes
           await apolloCoreClient.refetchQueries({
             updateCache: (cache) => {
               cache.evict({ fieldName: 'people' });
               cache.evict({ fieldName: 'listMembers' });
             },
           });
-        } catch (error: unknown) {
+        } catch (err: unknown) {
           const message =
-            error instanceof Error ? error.message : t`Import failed`;
+            err instanceof Error ? err.message : t`Import failed`;
           enqueueErrorSnackBar({ message });
         }
       },
       spreadsheetImportFields,
       availableFieldMetadataItems,
       onAbortSubmit: () => {
-        personAbortController.abort();
+        abortControllerRef.current.abort();
       },
       tableHook: spreadsheetImportGetUnicityTableHook(personMetadata),
     });
