@@ -171,8 +171,8 @@ export class QueuesService {
       if (existingRows[0]) {
         return {
           queue,
-          currentItem: existingRows[0],
-          nextItem: existingRows[0],
+          currentItem: this.unwrapRow(existingRows[0]),
+          nextItem: this.unwrapRow(existingRows[0]),
           suppression: null,
         };
       }
@@ -181,8 +181,8 @@ export class QueuesService {
 
       return {
         queue,
-        currentItem: selection.nextItem,
-        nextItem: selection.nextItem,
+        currentItem: this.unwrapRow(selection.nextItem),
+        nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
       };
     } catch (err: unknown) {
@@ -219,7 +219,7 @@ export class QueuesService {
         return {
           skipped: false,
           current: null,
-          nextItem: selection.nextItem,
+          nextItem: this.unwrapRow(selection.nextItem),
           suppression: selection.suppression,
         };
       }
@@ -241,8 +241,8 @@ export class QueuesService {
 
       return {
         skipped: true,
-        current: updatedRows[0],
-        nextItem: selection.nextItem,
+        current: this.unwrapRow(updatedRows[0]),
+        nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
       };
     } catch (err: unknown) {
@@ -287,7 +287,7 @@ export class QueuesService {
 
         return {
           current: null,
-          nextItem: selection.nextItem,
+          nextItem: this.unwrapRow(selection.nextItem),
           suppression: selection.suppression,
         };
       }
@@ -318,7 +318,7 @@ export class QueuesService {
           retryStrategy: retryDecision.retryStrategy,
           retryScheduledAt: retryDecision.retryScheduledAt,
           retryReason: retryDecision.retryReason,
-          currentItem: updatedRows[0] ?? null,
+          currentItem: this.unwrapRow(updatedRows[0]),
         };
       }
 
@@ -341,14 +341,14 @@ export class QueuesService {
 
       if (selection.nextItem) {
         return {
-          current: updatedRows[0],
-          nextItem: selection.nextItem,
+          current: this.unwrapRow(updatedRows[0]),
+          nextItem: this.unwrapRow(selection.nextItem),
         };
       }
 
       if (selection.suppression) {
         return {
-          current: updatedRows[0],
+          current: this.unwrapRow(updatedRows[0]),
           nextItem: null,
           suppression: selection.suppression,
         };
@@ -360,7 +360,7 @@ export class QueuesService {
       );
 
       return {
-        current: updatedRows[0],
+        current: this.unwrapRow(updatedRows[0]),
         nextItem: null,
         queueCompleted: true,
       };
@@ -747,7 +747,7 @@ export class QueuesService {
         [workspaceId, item.contact_id],
       );
 
-      return updatedRows[0];
+      return this.unwrapRow(updatedRows[0]);
     } finally {
       // noop
     }
@@ -773,7 +773,7 @@ export class QueuesService {
       );
 
       return {
-        nextItem: updatedRows[0] ?? null,
+        nextItem: this.unwrapRow(updatedRows[0]),
         suppression: null,
       };
     } finally {
@@ -833,5 +833,13 @@ export class QueuesService {
     this.queueRetryColumnsAvailable = rows.length === 3;
 
     return this.queueRetryColumnsAvailable;
+  }
+
+  private unwrapRow<TRecord>(row: TRecord | TRecord[] | null | undefined) {
+    if (Array.isArray(row)) {
+      return row[0] ?? null;
+    }
+
+    return row ?? null;
   }
 }
