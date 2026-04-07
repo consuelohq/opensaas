@@ -433,7 +433,7 @@ export class QueuesService {
   async queueAnalytics(workspaceId: string, queueId: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id::text = $2',
+        'SELECT id FROM call_queues WHERE id::text = $1 AND workspace_id::text = $2',
         [queueId, workspaceId],
       );
 
