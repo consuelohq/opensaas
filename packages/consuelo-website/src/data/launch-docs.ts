@@ -51,14 +51,12 @@ const englishNavigation = docsConfig.navigation.languages.find(
 );
 
 const groupLabelOverrides: Record<string, string> = {
-  'Discover Twenty': 'discover consuelo',
-  'Discover Consuelo': 'discover consuelo',
-  'Getting Started': 'getting started',
+  'Discover Twenty': 'Discover Consuelo',
 };
 
 const docLabelOverrides: Record<string, string> = {
-  'developers/introduction': 'introduction',
-  'user-guide/introduction': 'introduction',
+  'developers/introduction': 'Introduction',
+  'user-guide/introduction': 'Introduction',
 };
 
 const flattenPages = (pages: DocsPage[]): string[] => {
@@ -83,7 +81,16 @@ const formatDocLabel = (slug: string) => {
   const labelSource =
     lastSegment === 'overview' ? segments.at(-2) ?? lastSegment : lastSegment;
 
-  return labelSource.replace(/-/g, ' ');
+  const acronyms: Record<string, string> = {
+    ai: 'AI', api: 'API', apis: 'APIs', sso: 'SSO', faq: 'FAQ',
+    csv: 'CSV', cli: 'CLI', crm: 'CRM', sdk: 'SDK', pdf: 'PDF',
+    http: 'HTTP', smtp: 'SMTP', imap: 'IMAP',
+  };
+
+  return labelSource
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\b\w+\b/g, (word) => acronyms[word.toLowerCase()] ?? word);
 };
 
 const expandGroups = (groups: DocsGroup[]): DocsGroup[] => {
@@ -102,12 +109,12 @@ const expandGroups = (groups: DocsGroup[]): DocsGroup[] => {
 
 export const launchDocsMenuTabs: LaunchDocMenuTab[] =
   englishNavigation?.tabs.map((tab) => ({
-    label: tab.tab.toLowerCase(),
+    label: tab.tab,
     groups: expandGroups(tab.groups).map((group) => {
       const slugs = [...new Set(flattenPages(group.pages))];
 
       return {
-        label: groupLabelOverrides[group.group] ?? group.group.toLowerCase(),
+        label: groupLabelOverrides[group.group] ?? group.group,
         links: slugs.map((slug) => ({
           label: formatDocLabel(slug),
           href: docsBaseUrl + '/' + slug,
