@@ -53,6 +53,7 @@ const englishNavigation = docsConfig.navigation.languages.find(
 const groupLabelOverrides: Record<string, string> = {
   'Discover Twenty': 'discover consuelo',
   'Discover Consuelo': 'discover consuelo',
+  'Getting Started': 'getting started',
 };
 
 const docLabelOverrides: Record<string, string> = {
@@ -85,10 +86,24 @@ const formatDocLabel = (slug: string) => {
   return labelSource.replace(/-/g, ' ');
 };
 
+const expandGroups = (groups: DocsGroup[]): DocsGroup[] => {
+  return groups.flatMap((group) => {
+    const subGroups = group.pages.filter(
+      (p): p is { group: string; pages: DocsPage[] } => typeof p !== 'string',
+    );
+
+    if (subGroups.length > 0 && group.pages.every((p) => typeof p !== 'string')) {
+      return subGroups;
+    }
+
+    return [group];
+  });
+};
+
 export const launchDocsMenuTabs: LaunchDocMenuTab[] =
   englishNavigation?.tabs.map((tab) => ({
     label: tab.tab.toLowerCase(),
-    groups: tab.groups.map((group) => {
+    groups: expandGroups(tab.groups).map((group) => {
       const slugs = [...new Set(flattenPages(group.pages))];
 
       return {
