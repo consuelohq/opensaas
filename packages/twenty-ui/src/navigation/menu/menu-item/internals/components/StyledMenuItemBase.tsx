@@ -90,9 +90,8 @@ export const StyledMenuItemLabel = styled.div`
   flex-direction: row;
   font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.regular};
-
+  color: ${({ theme }) => theme.font.color.primary};
   overflow: hidden;
-
   white-space: nowrap;
 `;
 
