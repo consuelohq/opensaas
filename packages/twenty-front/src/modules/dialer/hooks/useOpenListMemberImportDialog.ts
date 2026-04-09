@@ -6,6 +6,7 @@ import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { useGenerateDepthRecordGqlFieldsFromObject } from '@/object-record/graphql/record-gql-fields/hooks/useGenerateDepthRecordGqlFieldsFromObject';
 import { useBatchCreateManyRecords } from '@/object-record/hooks/useBatchCreateManyRecords';
+import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { useBuildSpreadsheetImportFields } from '@/object-record/spreadsheet-import/hooks/useBuildSpreadSheetImportFields';
 import { buildRecordFromImportedStructuredRow } from '@/object-record/spreadsheet-import/utils/buildRecordFromImportedStructuredRow';
 import { spreadsheetImportFilterAvailableFieldMetadataItems } from '@/object-record/spreadsheet-import/utils/spreadsheetImportFilterAvailableFieldMetadataItems';
@@ -26,6 +27,8 @@ export const useOpenListMemberImportDialog = (listId: string) => {
   const { objectMetadataItem: personMetadata } = useObjectMetadataItem({
     objectNameSingular: 'person',
   });
+
+  const { updateOneRecord } = useUpdateOneRecord();
 
   const setCreatedRecordsProgress = useSetRecoilState(
     spreadsheetImportCreatedRecordsProgressState,
@@ -111,10 +114,20 @@ export const useOpenListMemberImportDialog = (listId: string) => {
             upsert: true,
           });
 
+          // Update contactCount on the list
+          await updateOneRecord({
+            objectNameSingular: 'opportunity',
+            idToUpdate: listId,
+            updateOneRecordInput: {
+              contactCount: listMemberInputs.length,
+            },
+          });
+
           await apolloCoreClient.refetchQueries({
             updateCache: (cache) => {
               cache.evict({ fieldName: 'people' });
               cache.evict({ fieldName: 'listMembers' });
+              cache.evict({ fieldName: 'opportunities' });
             },
           });
         } catch (err: unknown) {

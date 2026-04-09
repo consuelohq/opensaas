@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/react';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
@@ -15,6 +15,7 @@ import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { dialingModeState } from '@/dialer/states/dialingModeState';
+import { importedListIdState } from '@/dialer/states/importedListIdState';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { Select } from '@/ui/input/components/Select';
@@ -117,7 +118,16 @@ export const DialerHomePrep = () => {
   const { hasPermission } = useAudioDevices();
   const [sourceMode, setSourceMode] = useState<SourceMode>('list');
   const [selectedListId, setSelectedListId] = useState<string>('');
+  const [importedListId, setImportedListId] = useRecoilState(importedListIdState);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
+
+  // Auto-select a list that was just imported from the home page CSV flow
+  useEffect(() => {
+    if (importedListId) {
+      setSelectedListId(importedListId);
+      setImportedListId('');
+    }
+  }, [importedListId, setImportedListId]);
   const [numberOfLines, setNumberOfLines] = useState<string>('1');
   const { startQueue } = useQueueOperations();
 
