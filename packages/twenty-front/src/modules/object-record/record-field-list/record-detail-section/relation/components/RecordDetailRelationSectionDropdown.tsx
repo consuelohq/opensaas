@@ -52,7 +52,11 @@ export const RecordDetailRelationSectionDropdown = ({
     objectMetadataNameSingular === 'opportunity' && fieldName === 'members';
 
   const { openListMemberImportDialog } =
-    useOpenListMemberImportDialog(recordId);
+    useOpenListMemberImportDialog();
+
+  const handleImportMembers = isMembersRelation
+    ? () => openListMemberImportDialog(recordId)
+    : undefined;
 
   if (
     loading ||
@@ -72,7 +76,7 @@ export const RecordDetailRelationSectionDropdown = ({
     return (
       <RecordDetailRelationSectionDropdownToMany
         dropdownTriggerClickableComponent={dropdownTriggerClickableComponent}
-        onImport={isMembersRelation ? openListMemberImportDialog : undefined}
+        onImport={handleImportMembers}
       />
     );
   } else {

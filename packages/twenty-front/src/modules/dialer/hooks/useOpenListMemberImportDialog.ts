@@ -18,11 +18,13 @@ import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 
 // Reuses twenty's spreadsheet import infrastructure but targets person fields,
 // then creates listMember join records to populate a specific list.
-export const useOpenListMemberImportDialog = (listId: string) => {
+// listId is passed to the open function (not the hook) to avoid closure issues.
+export const useOpenListMemberImportDialog = () => {
   const apolloCoreClient = useApolloCoreClient();
   const { openSpreadsheetImportDialog } = useOpenSpreadsheetImportDialog();
   const { buildSpreadsheetImportFields } = useBuildSpreadsheetImportFields();
-  const { enqueueErrorSnackBar } = useSnackBar();
+  const { enqueueErrorSnackBar, enqueueSuccessSnackBar, enqueueInfoSnackBar } =
+    useSnackBar();
 
   const { objectMetadataItem: personMetadata } = useObjectMetadataItem({
     objectNameSingular: 'person',
@@ -64,8 +66,7 @@ export const useOpenListMemberImportDialog = (listId: string) => {
       mutationBatchSize: SPREADSHEET_IMPORT_CREATE_RECORDS_BATCH_SIZE,
     });
 
-  const openListMemberImportDialog = () => {
-    // Reset so prior abort doesn't poison this invocation
+  const openListMemberImportDialog = (listId: string) => {
     abortControllerRef.current = new AbortController();
 
     const availableFieldMetadataItems =
@@ -87,23 +88,42 @@ export const useOpenListMemberImportDialog = (listId: string) => {
           }),
         );
 
+        if (personInputs.length === 0) {
+          enqueueInfoSnackBar({
+            message: t`No valid rows to import`,
+          });
+          return;
+        }
+
         try {
           const createdPersons = await batchCreatePersons({
             recordsToCreate: personInputs,
             upsert: true,
           });
 
-          // Guard: if person creation was aborted, don't create orphan memberships
           if (abortControllerRef.current.signal.aborted) {
             return;
           }
 
-          // phoneNumber is the structured PHONES composite type — same format on both entities
+          if (!createdPersons || createdPersons.length === 0) {
+            enqueueErrorSnackBar({
+              message: t`Failed to create contacts`,
+            });
+            return;
+          }
+
           const listMemberInputs = createdPersons.map(
-            (person: { id: string; phones?: unknown; name?: { firstName?: string; lastName?: string } }) => ({
+            (person: {
+              id: string;
+              phones?: unknown;
+              name?: { firstName?: string; lastName?: string };
+            }) => ({
               listId,
               personId: person.id,
-              name: [person.name?.firstName, person.name?.lastName].filter(Boolean).join(' ') || null,
+              name:
+                [person.name?.firstName, person.name?.lastName]
+                  .filter(Boolean)
+                  .join(' ') || null,
               phoneNumber: person.phones ?? null,
               status: 'PENDING',
             }),
@@ -114,7 +134,6 @@ export const useOpenListMemberImportDialog = (listId: string) => {
             upsert: true,
           });
 
-          // Update contactCount on the list
           await updateOneRecord({
             objectNameSingular: 'opportunity',
             idToUpdate: listId,
@@ -129,6 +148,10 @@ export const useOpenListMemberImportDialog = (listId: string) => {
               cache.evict({ fieldName: 'listMembers' });
               cache.evict({ fieldName: 'opportunities' });
             },
+          });
+
+          enqueueSuccessSnackBar({
+            message: t`Imported ${createdPersons.length} contacts`,
           });
         } catch (err: unknown) {
           const message =
