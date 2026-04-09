@@ -107,6 +107,22 @@ export const buildListMemberStandardFlatFieldMetadatas = ({
   }),
 
   // ListMember-specific fields
+  name: createStandardFieldFlatMetadata({
+    objectName,
+    workspaceId,
+    context: {
+      fieldName: 'name',
+      type: FieldMetadataType.TEXT,
+      label: 'Name',
+      description: 'Display name for this list member',
+      icon: 'IconUser',
+      isNullable: true,
+    },
+    standardObjectMetadataRelatedEntityIds,
+    dependencyFlatEntityMaps,
+    twentyStandardApplicationId,
+    now,
+  }),
   position: createStandardFieldFlatMetadata({
     objectName,
     workspaceId,
@@ -182,6 +198,7 @@ export const buildListMemberStandardFlatFieldMetadatas = ({
       description: 'Call disposition result',
       icon: 'IconPhoneCall',
       isNullable: true,
+      isSystem: true,
       options: [
         { value: 'ANSWERED', label: 'Answered', position: 0, color: 'green' },
         {
@@ -215,6 +232,7 @@ export const buildListMemberStandardFlatFieldMetadatas = ({
       description: 'Twilio call SID',
       icon: 'IconId',
       isNullable: true,
+      isSystem: true,
     },
     standardObjectMetadataRelatedEntityIds,
     dependencyFlatEntityMaps,
@@ -231,6 +249,7 @@ export const buildListMemberStandardFlatFieldMetadatas = ({
       description: 'Call duration in seconds',
       icon: 'IconClock',
       isNullable: true,
+      isSystem: true,
     },
     standardObjectMetadataRelatedEntityIds,
     dependencyFlatEntityMaps,
@@ -247,6 +266,7 @@ export const buildListMemberStandardFlatFieldMetadatas = ({
       description: 'When the call was attempted',
       icon: 'IconCalendarEvent',
       isNullable: true,
+      isSystem: true,
     },
     standardObjectMetadataRelatedEntityIds,
     dependencyFlatEntityMaps,

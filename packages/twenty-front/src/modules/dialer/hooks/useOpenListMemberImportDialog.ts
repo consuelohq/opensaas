@@ -97,9 +97,10 @@ export const useOpenListMemberImportDialog = (listId: string) => {
 
           // phoneNumber is the structured PHONES composite type — same format on both entities
           const listMemberInputs = createdPersons.map(
-            (person: { id: string; phones?: unknown }) => ({
+            (person: { id: string; phones?: unknown; name?: { firstName?: string; lastName?: string } }) => ({
               listId,
               personId: person.id,
+              name: [person.name?.firstName, person.name?.lastName].filter(Boolean).join(' ') || null,
               phoneNumber: person.phones ?? null,
               status: 'PENDING',
             }),

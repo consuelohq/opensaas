@@ -723,6 +723,9 @@ export const STANDARD_OBJECTS = {
       position: {
         universalIdentifier: 'ce0cb82d-7570-4286-a63e-d5008cbbe501',
       },
+      name: {
+        universalIdentifier: '09a02d86-8406-4dce-969f-ad832af28726',
+      },
       phoneNumber: {
         universalIdentifier: '475dd001-b04d-45b2-bcfb-dcf6f78c7764',
       },

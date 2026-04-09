@@ -343,7 +343,7 @@ export const STANDARD_FLAT_OBJECT_METADATA_BUILDERS_BY_OBJECT_NAME = {
         description: 'A member of a list',
         icon: 'IconUserPlus',
         isSystem: true,
-        labelIdentifierFieldMetadataName: 'id',
+        labelIdentifierFieldMetadataName: 'name',
       },
       workspaceId,
       standardObjectMetadataRelatedEntityIds,
