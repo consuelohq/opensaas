@@ -109,8 +109,8 @@ const MeCard = ({
   t,
 }: {
   data: MetricsData;
-  t: ReturnType<typeof useLingui>["t"];
-}>) => (
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
     <StyledCardHeader>{t('Your Stats')}</StyledCardHeader>
     <StyledCardBody>
@@ -170,8 +170,8 @@ const ContactsCard = ({
   t,
 }: {
   data: ContactResult[];
-  t: ReturnType<typeof useLingui>["t"];
-}>) => (
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
     <StyledCardHeader>
       {t(`${data.length} Contact${data.length !== 1 ? 's' : ''} Found`)}
@@ -202,8 +202,8 @@ const HistoryCard = ({
   t,
 }: {
   data: HistoryEntry[];
-  t: ReturnType<typeof useLingui>["t"];
-}>) => (
+  t: ReturnType<typeof useLingui>['t'];
+}) => (
   <StyledCard>
     <StyledCardHeader>{t('Recent Calls')}</StyledCardHeader>
     <StyledCardBody>
