@@ -10,7 +10,8 @@ import {
 import { useRecoilValue } from 'recoil';
 
 const StyledAnimatedContainer = styled(motion.span)`
-  display: block;
+  display: flex;
+  flex: 1;
 `;
 
 export const NavigationDrawerAnimatedCollapseWrapper = ({

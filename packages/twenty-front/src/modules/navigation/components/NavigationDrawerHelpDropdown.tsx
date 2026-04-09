@@ -90,7 +90,6 @@ const StyledDropdownFrame = styled(motion.div)`
   box-shadow: ${({ theme }) => theme.boxShadow.strong};
   display: flex;
   flex-direction: column;
-  min-height: 400px;
   padding: ${({ theme }) => theme.spacing(1.5)};
 `;
 
