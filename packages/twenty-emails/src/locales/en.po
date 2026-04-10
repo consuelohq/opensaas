@@ -14,11 +14,6 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/emails/test.email.tsx
-msgid "Test email"
-msgstr "Test email"
-
-#. js-lingui-explicit-id
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Suspended Workspace"
 msgstr "Suspended Workspace"
@@ -56,6 +51,11 @@ msgstr "If you wish to continue using Consuelo, please update your subscription 
 #: src/emails/warn-suspended-workspace.email.tsx
 msgid "Update your subscription"
 msgstr "Update your subscription"
+
+#. js-lingui-explicit-id
+#: src/emails/test.email.tsx
+msgid "Test email"
+msgstr "Test email"
 
 #. js-lingui-explicit-id
 #: src/emails/validate-approved-access-domain.email.tsx
@@ -149,16 +149,6 @@ msgid "Connect to Consuelo"
 msgstr "Connect to Consuelo"
 
 #. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr "What is Consuelo?"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-
-#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "Deleted Workspace"
@@ -182,6 +172,16 @@ msgstr "If you wish to use Consuelo again, you can create a new workspace."
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "Create a new workspace"
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr "What is Consuelo?"
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
