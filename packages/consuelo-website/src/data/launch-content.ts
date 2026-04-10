@@ -171,8 +171,9 @@ export const launchAnnouncement: LaunchAnnouncement = {
 };
 
 export const launchHero: LaunchHeroContent = {
-  title: 'Sales infrastructure that integrates everywhere.',
-  description: 'Software that shows up in the browser, inside your CRM, in work channels, and in agent workflows.',
+  title: 'The shared revenue system for reps and AI agents.',
+  description:
+    'Keep your internal brain, sales context, workflow state, calling activity, and GTM data in one place so humans and agents can do work from the same system.',
 };
 
 export const launchTabs: LaunchTab[] = [
@@ -257,43 +258,54 @@ export const launchTabs: LaunchTab[] = [
 
 export const launchOverview: LaunchOverviewContent = {
   eyebrow: 'What is Consuelo?',
-  title: '',
-  intro: 'The unified sales platform where reps work alongside AI agents to run outbound, automate workflows, and scale pipeline.',
+  title: 'One place for your GTM data, workflows, and agent execution.',
+  intro:
+    'Consuelo is the shared operating layer for revenue teams. Your CRM, dialer, workflows, and AI agents all work against the same context, so execution compounds instead of breaking across tools.',
   ctaLabel: 'Read docs',
   ctaHref: siteLinks.docs,
 };
 
 export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   {
+    title: 'Shared system of context',
+    text: 'Keep contacts, queue state, calling activity, notes, and workflow state in one place that both reps and agents can use.',
+  },
+  {
     title: 'Power dialer',
     text: 'Parallel dial with spam protection, local presence, and zero latency.',
   },
   {
     title: 'Signals & intelligence',
-    text: 'Prioritize leads based on real-time intent signals.',
+    text: 'Prioritize leads based on real-time intent signals and live sales context.',
   },
   {
     title: 'CRM',
-    text: 'Manage contacts, queue states, and call controls together in one workspace.',
+    text: 'Manage contacts, pipeline, queue states, and call controls together in one workspace.',
   },
   {
     title: 'Automations',
-    text: 'Let agents handle the manual busywork.',
-  },
-  {
-    title: 'AI whisper',
-    text: 'Surfaces live context and tells you what to say.',
+    text: 'Let agents handle the manual busywork while your team stays on the highest-leverage work.',
   },
   {
     title: 'Secure integrations',
-    text: 'Enterprise-grade sync with your existing stack.',
+    text: 'Enterprise-grade sync with your existing stack so the revenue system stays connected.',
+  },
+  {
+    title: 'AI whisper',
+    text: 'Surface live context, coaching, and what to say next while calls are happening.',
+  },
+  {
+    title: 'Agent-native workflows',
+    text: 'Give AI agents the same revenue system your team uses, so they can act on real data instead of disconnected prompts.',
   },
 ];
 
 export const launchStats: LaunchStatsContent = {
   eyebrow: 'The open sales infrastructure layer',
-  title: 'Built for teams that need throughput, traceability, and one system across every surface.',
-  intro: '',
+  title:
+    'Built for teams that need one revenue system across browser work, CRM, dialing, coaching, automations, and AI agents.',
+  intro:
+    '',
 };
 
 export const launchMetrics: LaunchMetric[] = [
@@ -337,11 +349,11 @@ export const launchFaq: LaunchFaqContent = {
 export const launchFaqItems: LaunchFaqItem[] = [
   {
     question: 'What is Consuelo?',
-    answer: 'Consuelo is open-source sales infrastructure for teams that need their CRM, dialer, coaching, and workflow surfaces to behave like one product.',
+    answer: 'Consuelo is open-source sales infrastructure that gives your team and your AI agents one shared system for CRM data, calling, workflow execution, and go-to-market context.',
   },
   {
     question: 'Who is it for?',
-    answer: 'It is built for operators and revenue teams that need browser work, embedded CRM surfaces, work channels, and assistant-led workflows to connect cleanly.',
+    answer: 'It is built for revenue teams, operators, and AI-native companies that need reps and agents working from the same system instead of spreading execution across disconnected tools.',
   },
   {
     question: 'Is the CRM free?',
@@ -353,7 +365,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'Do I need to buy the whole system at once?',
-    answer: 'No. Consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. You can buy CRM, calling, AI coaching, or hosted infrastructure one step at a time, while everything still compounds because the system is designed to work together.',
+    answer: 'No. Consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. You can adopt CRM, calling, AI coaching, workflow automation, or hosted infrastructure in stages while all of the context keeps compounding in the same place.',
   },
   {
     question: 'Can I self-host?',
@@ -365,7 +377,11 @@ export const launchFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'How do CLI and assistant workflows fit in?',
-    answer: 'The CLI gives you a single install path for terminal and assistant-driven workflows, so the same platform can power browser work, embeds, bots, and agent tooling.',
+    answer: 'The CLI gives assistants and terminal workflows access to the same platform your team uses, so browser work, embeds, bots, and agent tooling can all operate on shared revenue context instead of separate stacks.',
+  },
+  {
+    question: 'Why does one shared system matter for AI agents?',
+    answer: 'Agents are only useful when they can work from real context. Consuelo gives them one place to read customer data, workflow state, calling activity, and operational history, so they can do useful GTM work instead of guessing from fragments.',
   },
   {
     question: 'What about privacy and control?',
@@ -376,7 +392,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'Mercury',
   title: 'Hosted calling and AI, ready to go.',
-  intro: 'Mercury gives you Twilio calling, AI models from OpenAI and Groq, and hosting on Railway — tested and configured for sales teams. Skip provider setup and API key management, use validated infrastructure that works.',
+  intro: 'Mercury is the hosted layer for teams that want Consuelo live quickly. It gives you Twilio calling, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.',
   primaryLabel: 'Learn about Mercury',
   primaryHref: siteLinks.mercury,
   secondaryLabel: '',
