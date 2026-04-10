@@ -99,6 +99,84 @@ const StyledDropdownBody = styled(motion.div)`
   flex-direction: column;
 `;
 
+const StyledBoldMenuItems = styled.div`
+  & div {
+    font-weight: ${({ theme }) => theme.font.weight.medium};
+  }
+`;
+
+const StyledWhatsNewSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(0.5)};
+  padding: ${({ theme }) => theme.spacing(2, 2, 1, 2)};
+`;
+
+const StyledWhatsNewHeader = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  padding-bottom: ${({ theme }) => theme.spacing(1)};
+`;
+
+const StyledTimelineList = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: ${({ theme }) => theme.spacing(1)};
+  position: relative;
+
+  &::before {
+    background: ${({ theme }) => theme.border.color.medium};
+    bottom: ${({ theme }) => theme.spacing(1.5)};
+    content: '';
+    left: ${({ theme }) => theme.spacing(1.75)};
+    position: absolute;
+    top: ${({ theme }) => theme.spacing(1.5)};
+    width: 1px;
+  }
+`;
+
+const StyledTimelineItem = styled.button`
+  align-items: center;
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.font.color.primary};
+  cursor: pointer;
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1, 0.5)};
+  position: relative;
+  text-align: left;
+
+  &::before {
+    background: ${({ theme }) => theme.font.color.tertiary};
+    border-radius: 50%;
+    content: '';
+    flex-shrink: 0;
+    height: 5px;
+    width: 5px;
+  }
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.secondary};
+  }
+`;
+
+const StyledChangelogLink = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => theme.spacing(1, 0.5, 0, 3.5)};
+  text-align: left;
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.primary};
+  }
+`;
+
 const useDownloadItemLabels = (): Record<DownloadAppItemId, string> => {
   const { t } = useLingui();
 
@@ -320,6 +398,7 @@ export const NavigationDrawerHelpDropdown = () => {
           >
             {view === 'main' ? (
               <>
+                <StyledBoldMenuItems>
                 <DropdownMenuItemsContainer scrollable={false}>
                   <MenuItem
                     LeftIcon={IconBook2}
@@ -367,26 +446,44 @@ export const NavigationDrawerHelpDropdown = () => {
                     text={t`Discord community`}
                   />
                 </DropdownMenuItemsContainer>
+                </StyledBoldMenuItems>
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItemsContainer scrollable={false}>
-                  {changelogPreviewItems.map((item) => (
-                    <MenuItem
-                      key={item.title}
-                      LeftIcon={null}
-                      onClick={() => {
-                        window.open(
-                          CONSUELO_CHANGELOG_URL,
-                          '_blank',
-                          'noopener,noreferrer',
-                        );
-                        closeHelpDropdown();
-                      }}
-                      text={item.title}
-                    />
-                  ))}
-                </DropdownMenuItemsContainer>
+                <StyledWhatsNewSection>
+                  <StyledWhatsNewHeader>{t`What's new`}</StyledWhatsNewHeader>
+                  <StyledTimelineList>
+                    {changelogPreviewItems.map((item) => (
+                      <StyledTimelineItem
+                        key={item.title}
+                        type="button"
+                        onClick={() => {
+                          window.open(
+                            CONSUELO_CHANGELOG_URL,
+                            '_blank',
+                            'noopener,noreferrer',
+                          );
+                          closeHelpDropdown();
+                        }}
+                      >
+                        {item.title}
+                      </StyledTimelineItem>
+                    ))}
+                  </StyledTimelineList>
+                  <StyledChangelogLink
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        CONSUELO_CHANGELOG_URL,
+                        '_blank',
+                        'noopener,noreferrer',
+                      );
+                      closeHelpDropdown();
+                    }}
+                  >
+                    {t`Full changelog`}
+                  </StyledChangelogLink>
+                </StyledWhatsNewSection>
               </>
             ) : (
               <>
@@ -430,7 +527,7 @@ export const NavigationDrawerHelpDropdown = () => {
     <Dropdown
       dropdownId={NAVIGATION_DRAWER_SUPPORT_DROPDOWN_ID}
       dropdownPlacement="top-start"
-      dropdownOffset={{ x: 0, y: -10 }}
+      dropdownOffset={{ x: 0, y: -16 }}
       clickableComponent={
         <StyledHelpButton type="button" title={t`Help`}>
           <IconHelpCircle stroke={1.8} />
