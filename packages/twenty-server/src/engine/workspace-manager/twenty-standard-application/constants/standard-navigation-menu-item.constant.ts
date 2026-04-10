@@ -13,10 +13,10 @@ export const STANDARD_NAVIGATION_MENU_ITEMS = {
       STANDARD_OBJECTS.dashboard.views.allDashboards.universalIdentifier,
     position: 5,
   },
-  allNotes: {
-    universalIdentifier: '20202020-b003-4b03-8b03-c0aba11c0003',
+  allFiles: {
+    universalIdentifier: '20202020-b003-4b03-8b03-c0aba11c0010',
     viewUniversalIdentifier:
-      STANDARD_OBJECTS.note.views.allNotes.universalIdentifier,
+      STANDARD_OBJECTS.attachment.views.allAttachments.universalIdentifier,
     position: 4,
   },
   allOpportunities: {

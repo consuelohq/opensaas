@@ -1,5 +1,6 @@
 export { STANDARD_COMPANY_PAGE_LAYOUT_CONFIG } from './standard-company-page-layout.config';
 export { STANDARD_DASHBOARD_PAGE_LAYOUT_CONFIG } from './standard-dashboard-page-layout.config';
+export { STANDARD_ATTACHMENT_PAGE_LAYOUT_CONFIG } from './standard-attachment-page-layout.config';
 export { STANDARD_NOTE_PAGE_LAYOUT_CONFIG } from './standard-note-page-layout.config';
 export { STANDARD_OPPORTUNITY_PAGE_LAYOUT_CONFIG } from './standard-opportunity-page-layout.config';
 export { STANDARD_PERSON_PAGE_LAYOUT_CONFIG } from './standard-person-page-layout.config';
