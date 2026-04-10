@@ -37,6 +37,15 @@ export class SyncStandardCommand extends CommandRunner {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'unknown error';
         console.error('Failed workspace ' + workspace.id + ': ' + message);
+        if (err instanceof Error && err.stack) {
+          console.error(err.stack);
+        }
+        if ((err as Record<string, unknown>).validationErrors) {
+          console.error(JSON.stringify((err as Record<string, unknown>).validationErrors, null, 2));
+        }
+        if ((err as Record<string, unknown>).errors) {
+          console.error(JSON.stringify((err as Record<string, unknown>).errors, null, 2));
+        }
       }
     }
 
