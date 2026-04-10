@@ -2,7 +2,7 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLingui } from '@lingui/react/macro';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import {
@@ -57,7 +57,7 @@ const SUPPORT_EMAIL = 'support@consuelohq.com';
 const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.strong};
+  border: 1px solid ${({ theme }) => theme.border.color.inverted};
   border-radius: ${({ theme }) => theme.border.radius.rounded};
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
@@ -73,7 +73,7 @@ const StyledHelpButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
-    border-color: ${({ theme }) => theme.border.color.strong};
+    border-color: ${({ theme }) => theme.border.color.inverted};
     color: ${({ theme }) => theme.font.color.primary};
   }
 
@@ -99,28 +99,22 @@ const StyledDropdownBody = styled(motion.div)`
   flex-direction: column;
 `;
 
-const getDownloadItemLabel = (
-  itemId: DownloadAppItemId,
-  t: ReturnType<typeof useLingui>['t'],
-) => {
-  switch (itemId) {
-    case 'web':
-      return t`Web`;
-    case 'gohighlevel':
-      return t`GoHighLevel`;
-    case 'chatgpt':
-      return t`ChatGPT`;
-    case 'claude':
-      return t`Claude`;
-    case 'discord':
-      return t`Discord`;
-    case 'slack':
-      return t`Slack`;
-    case 'chrome':
-      return t`Chrome`;
-    case 'cli':
-      return t`CLI`;
-  }
+const useDownloadItemLabels = (): Record<DownloadAppItemId, string> => {
+  const { t } = useLingui();
+
+  return useMemo(
+    () => ({
+      web: t`Web`,
+      gohighlevel: t`GoHighLevel`,
+      chatgpt: t`ChatGPT`,
+      claude: t`Claude`,
+      discord: t`Discord`,
+      slack: t`Slack`,
+      chrome: t`Chrome`,
+      cli: t`CLI`,
+    }),
+    [t],
+  );
 };
 
 const getDownloadItemIcon = (itemId: DownloadAppItemId) => {
@@ -174,6 +168,7 @@ export const NavigationDrawerHelpDropdown = () => {
     null,
   );
 
+  const downloadItemLabels = useDownloadItemLabels();
   const commandSymbol = getOsControlSymbol();
 
   const changelogPreviewItems = [
@@ -299,7 +294,7 @@ export const NavigationDrawerHelpDropdown = () => {
         return;
       }
 
-      const downloadItemLabel = getDownloadItemLabel(item.id, t);
+      const downloadItemLabel = downloadItemLabels[item.id];
       const copiedCommandMessage = t`${downloadItemLabel} command copied`;
 
       await copyToClipboard(item.value, copiedCommandMessage);
@@ -417,7 +412,7 @@ export const NavigationDrawerHelpDropdown = () => {
                         onClick={() => {
                           void handleDownloadAppClick(item.id);
                         }}
-                        text={getDownloadItemLabel(item.id, t)}
+                        text={downloadItemLabels[item.id]}
                         contextualText={
                           item.type === 'command' ? t`Copy command` : undefined
                         }

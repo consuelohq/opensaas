@@ -47,33 +47,27 @@ const StyledPlanLabel = styled.span`
   white-space: nowrap;
 `;
 
-const getPlanLabel = (
-  rawPlanName: string | undefined,
-  t: ReturnType<typeof useLingui>['t'],
-) => {
-  const normalizedPlanName = rawPlanName?.trim().toLowerCase();
-
-  if (
-    normalizedPlanName === undefined ||
-    normalizedPlanName === '' ||
-    normalizedPlanName === 'no plan' ||
-    normalizedPlanName === 'starter'
-  ) {
-    return t`Free plan`;
-  }
-
-  return t`Paid plan`;
-};
-
 export const MainNavigationDrawerFooter = () => {
   const { t } = useLingui();
   const { openModal } = useModal();
   const { subscriptionStatus } = useWorkspaceSubscriptionStatus();
 
-  const planLabel = useMemo(
-    () => getPlanLabel(subscriptionStatus?.plan.name, t),
-    [subscriptionStatus?.plan.name, t],
-  );
+  const planLabel = useMemo(() => {
+    const normalizedPlanName = subscriptionStatus?.plan.name
+      ?.trim()
+      .toLowerCase();
+
+    if (
+      normalizedPlanName === undefined ||
+      normalizedPlanName === '' ||
+      normalizedPlanName === 'no plan' ||
+      normalizedPlanName === 'starter'
+    ) {
+      return t`Free plan`;
+    }
+
+    return t`Paid plan`;
+  }, [subscriptionStatus?.plan.name, t]);
 
   return (
     <>
