@@ -197,6 +197,54 @@ const FILE_NAME_VARIATIONS = [
     fileCategory: 'ARCHIVE',
     pathIndex: 4,
   },
+  // Recordings
+  {
+    name: 'Welcome to Consuelo — Getting Started.pdf',
+    fileCategory: 'RECORDING',
+    pathIndex: 0,
+  },
+  {
+    name: 'Discovery Call — Acme Corp.pdf',
+    fileCategory: 'RECORDING',
+    pathIndex: 0,
+  },
+  {
+    name: 'Demo Recording — Product Walkthrough.pdf',
+    fileCategory: 'RECORDING',
+    pathIndex: 0,
+  },
+  // Scripts
+  {
+    name: 'Cold Call Opening Script.pdf',
+    fileCategory: 'SCRIPT',
+    pathIndex: 0,
+  },
+  {
+    name: 'Objection Handling — Pricing.pdf',
+    fileCategory: 'SCRIPT',
+    pathIndex: 0,
+  },
+  {
+    name: 'Follow-Up Email Template.pdf',
+    fileCategory: 'SCRIPT',
+    pathIndex: 0,
+  },
+  // Agent Files
+  {
+    name: 'AI Coach — Qualification Checklist.pdf',
+    fileCategory: 'AGENT_FILE',
+    pathIndex: 0,
+  },
+  {
+    name: 'Agent Steering — Discovery Questions.pdf',
+    fileCategory: 'AGENT_FILE',
+    pathIndex: 0,
+  },
+  {
+    name: 'Team Methodology — MEDDIC Framework.pdf',
+    fileCategory: 'AGENT_FILE',
+    pathIndex: 0,
+  },
 ];
 
 const GENERATE_ATTACHMENT_SEEDS = (): AttachmentDataSeed[] => {

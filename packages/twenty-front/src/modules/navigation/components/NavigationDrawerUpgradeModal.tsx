@@ -3,17 +3,17 @@ import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
+import { IconCheck, IconSparkles } from '@tabler/icons-react';
 
+import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
-import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
+import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { Modal } from '@/ui/layout/modal/components/Modal';
 import { IconX } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
-
 const CONSUELO_PRICING_URL = 'https://www.consuelohq.com/mercury';
 
 // -- layout --
