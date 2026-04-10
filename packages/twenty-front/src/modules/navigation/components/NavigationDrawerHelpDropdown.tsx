@@ -56,7 +56,7 @@ const SUPPORT_EMAIL = 'support@consuelohq.com';
 const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.inverted};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
   border-radius: 50%;
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
@@ -73,7 +73,7 @@ const StyledHelpButton = styled.button`
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
-    border-color: ${({ theme }) => theme.border.color.inverted};
+    border-color: ${({ theme }) => theme.border.color.medium};
     color: ${({ theme }) => theme.font.color.primary};
   }
 
