@@ -3,6 +3,8 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
+import { FileStorageDriverFactory } from 'src/engine/core-modules/file-storage/file-storage-driver.factory';
+
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 const EMBEDDING_DIMENSIONS = 1536;
 const DEFAULT_MAX_TOKENS = 500;
@@ -34,7 +36,10 @@ export class KnowledgeBaseService {
   private readonly logger = new Logger(KnowledgeBaseService.name);
   private openaiClient: EmbeddingClient | null = null;
 
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly fileStorageDriverFactory: FileStorageDriverFactory,
+  ) {}
 
   async createCollection(workspaceId: string, name: string, description?: string) {
     try {
@@ -189,6 +194,35 @@ export class KnowledgeBaseService {
       throw err;
     } finally {
       await qr.release();
+    }
+  }
+
+  async indexFileFromStorage(fileId: string, collectionId: string, workspaceId: string, content?: string): Promise<{ chunkCount: number }> {
+    if (content) {
+      return this.indexFile(fileId, collectionId, content, undefined, workspaceId);
+    }
+    // read file from storage
+    const filePath = 'workspace-' + workspaceId + '/attachment/' + fileId;
+    try {
+      const driver = this.fileStorageDriverFactory.getCurrentDriver();
+      const stream = await driver.readFile({ filePath });
+      const buffers: Buffer[] = [];
+      for await (const chunk of stream) {
+        buffers.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      const buffer = Buffer.concat(buffers);
+      const ext = fileId.split('.').pop()?.toLowerCase() ?? '';
+      const mimeMap: Record<string, string> = {
+        pdf: 'application/pdf', doc: 'application/msword',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        txt: 'text/plain', md: 'text/plain', csv: 'text/plain', html: 'text/html',
+      };
+      const text = await this.extractText(buffer, mimeMap[ext] ?? 'text/plain');
+      return this.indexFile(fileId, collectionId, text, undefined, workspaceId);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'File read failed';
+      this.logger.error('indexFileFromStorage failed: ' + message);
+      throw new Error(message);
     }
   }
 
