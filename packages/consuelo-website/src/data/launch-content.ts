@@ -173,7 +173,7 @@ export const launchAnnouncement: LaunchAnnouncement = {
 export const launchHero: LaunchHeroContent = {
   title: 'The shared revenue system for reps and AI agents.',
   description:
-    'Keep your internal brain, sales context, workflow state, calling activity, and GTM data in one place so humans and agents can do work from the same system.',
+        'Keep your sales context, calling activity, GTM data, and internal brain in one place so humans and agents can do work from the same system.',
 };
 
 export const launchTabs: LaunchTab[] = [
@@ -260,7 +260,7 @@ export const launchOverview: LaunchOverviewContent = {
   eyebrow: 'What is Consuelo?',
   title: 'One place for your GTM data, workflows, and agent execution.',
   intro:
-    'Consuelo is the shared operating layer for revenue teams. Your CRM, dialer, workflows, and AI agents all work against the same context, so execution compounds instead of breaking across tools.',
+        'Consuelo is the operating tool for revenue teams. Your CRM, dialer, workflows, and AI agents all work against the same context, so execution compounds instead of breaking across tools.',
   ctaLabel: 'Read docs',
   ctaHref: siteLinks.docs,
 };
@@ -268,11 +268,11 @@ export const launchOverview: LaunchOverviewContent = {
 export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   {
     title: 'Shared system of context',
-    text: 'Keep contacts, queue state, calling activity, notes, and workflow state in one place that both reps and agents can use.',
+    text: 'Keep contacts, sales activity, shared files, and workflows in one place that both reps and agents can use.',
   },
   {
-    title: 'Power dialer',
-    text: 'Parallel dial with spam protection, local presence, and zero latency.',
+       title: 'Predictive dialer',
+    text: 'Multi-line dial with spam protection, local presence, and zero latency.',
   },
   {
     title: 'Signals & intelligence',
@@ -280,7 +280,7 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   },
   {
     title: 'CRM',
-    text: 'Manage contacts, pipeline, queue states, and call controls together in one workspace.',
+    text: 'Manage contacts, pipeline, and call controls.',
   },
   {
     title: 'Automations',
@@ -288,7 +288,7 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   },
   {
     title: 'Secure integrations',
-    text: 'Enterprise-grade sync with your existing stack so the revenue system stays connected.',
+        text: 'Enterprise-grade sync with your existing stack.',
   },
   {
     title: 'AI whisper',
@@ -296,7 +296,7 @@ export const launchOverviewFeatures: LaunchOverviewFeature[] = [
   },
   {
     title: 'Agent-native workflows',
-    text: 'Give AI agents the same revenue system your team uses, so they can act on real data instead of disconnected prompts.',
+    text: 'Give AI agents the same revenue system your team uses.',
   },
 ];
 
@@ -361,7 +361,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
   },
   {
     question: 'What is Mercury?',
-    answer: 'Mercury is the hosted layer for teams that do not want to manage infrastructure, Twilio provisioning, or provider keys on day one.',
+    answer: 'Mercury is the hosted plan for teams that do not want to manage dialing infrastructure, legal and compliance overhead, spam risk, or AI agent setup on day one.',
   },
   {
     question: 'Do I need to buy the whole system at once?',
@@ -392,7 +392,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'Mercury',
   title: 'Hosted calling and AI, ready to go.',
-  intro: 'Mercury is the hosted layer for teams that want Consuelo live quickly. It gives you Twilio calling, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.',
+  intro: 'Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.',
   primaryLabel: 'Learn about Mercury',
   primaryHref: siteLinks.mercury,
   secondaryLabel: '',
@@ -404,15 +404,19 @@ export const launchMercuryHighlights: LaunchMercuryHighlight[] = [];
 export const mercuryProblems: MercuryProblem[] = [
   {
     title: 'Too many moving parts',
-    text: 'Most teams do not want to provision calling, wire up providers, and maintain infrastructure before they can even place a call.',
+    text: 'Most teams do not want to set up dialing, wire providers, and manage infrastructure before they can even start calling.',
   },
   {
-    title: 'Billing friction everywhere',
-    text: 'Usage gets messy fast when calling, AI, and app access all live in different dashboards.',
+    title: 'Spam and compliance drag',
+    text: 'Teams waste weeks dealing with spam risk, legal overhead, and telecom setup instead of getting reps live.',
+  },
+  {
+    title: 'Insurance chargebacks',
+    text: 'For insurance teams, bad contact flow and weak process create downstream chargeback risk that cuts into revenue.',
   },
   {
     title: 'Speed matters more than infra',
-    text: 'Some teams want to get live quickly and only think about self-hosting later if they really need it.',
+    text: 'Some teams just want to launch quickly and think about self-hosting later if it becomes worth it.',
   },
 ];
 
@@ -420,17 +424,17 @@ export const mercurySteps: MercuryStep[] = [
   {
     step: '01',
     title: 'Start with the hosted workspace',
-    text: 'Sign in, connect your workspace, and skip the part where you stand up the whole stack yourself first.',
+    text: 'Sign in, connect your workspace, and skip standing up the whole stack yourself first.',
   },
   {
     step: '02',
-    title: 'Use hosted calling and AI usage',
-    text: 'Mercury is built for teams that want hosted Twilio calling and AI usage instead of rotating provider keys on day one.',
+    title: 'Use hosted dialing and AI',
+    text: 'Mercury is built for teams that want hosted dialing and AI usage instead of managing providers on day one.',
   },
   {
     step: '03',
     title: 'Scale or self-host later',
-    text: 'Move from hosted convenience to self-managed infrastructure when it actually becomes worth it.',
+    text: 'Move from hosted convenience to self-managed infrastructure when it actually makes sense.',
   },
 ];
 
