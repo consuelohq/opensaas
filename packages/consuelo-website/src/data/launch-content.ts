@@ -1,467 +1,499 @@
 import { launchDocsMenuTabs } from './launch-docs';
+import {
+  type LaunchAnnouncement,
+  type LaunchFaqContent,
+  type LaunchFaqItem,
+  type LaunchFooterSignup,
+  type LaunchHeroContent,
+  type LaunchLink,
+  type LaunchMercuryContent,
+  type LaunchMercuryHighlight,
+  type LaunchMetric,
+  type LaunchNavLink,
+  type LaunchOverviewContent,
+  type LaunchOverviewFeature,
+  type LaunchPageSection,
+  type LaunchPrivacyContent,
+  type LaunchStatsContent,
+  type LaunchTab,
+  type MercuryProblem,
+  type MercuryStep,
+  footerLinks as fallbackFooterLinks,
+  ghlMarketplaceUrl as fallbackGhlMarketplaceUrl,
+  launchAnnouncement as fallbackLaunchAnnouncement,
+  launchFaq as fallbackLaunchFaq,
+  launchFaqItems as fallbackLaunchFaqItems,
+  launchFooterSignup as fallbackLaunchFooterSignup,
+  launchHeaderLinks as fallbackLaunchHeaderLinks,
+  launchHero as fallbackLaunchHero,
+  launchMercury as fallbackLaunchMercury,
+  launchMercuryHighlights as fallbackLaunchMercuryHighlights,
+  launchMetrics as fallbackLaunchMetrics,
+  launchMobileMenuLinks as fallbackLaunchMobileMenuLinks,
+  launchOverview as fallbackLaunchOverview,
+  launchOverviewFeatures as fallbackLaunchOverviewFeatures,
+  launchPageSections as fallbackLaunchPageSections,
+  launchPrivacy as fallbackLaunchPrivacy,
+  launchStats as fallbackLaunchStats,
+  launchTabs as fallbackLaunchTabs,
+  mercuryFaqItems as fallbackMercuryFaqItems,
+  mercuryProblems as fallbackMercuryProblems,
+  mercurySteps as fallbackMercurySteps,
+  siteLinks,
+} from './launch-content.local';
+import { fetchSanityQuery } from '../lib/sanity';
 
-export type LaunchLink = {
-  label: string;
-  href: string;
+export type {
+  LaunchAnnouncement,
+  LaunchFaqContent,
+  LaunchFaqItem,
+  LaunchFooterSignup,
+  LaunchHeroContent,
+  LaunchLink,
+  LaunchMercuryContent,
+  LaunchMercuryHighlight,
+  LaunchMetric,
+  LaunchNavLink,
+  LaunchOverviewContent,
+  LaunchOverviewFeature,
+  LaunchPageSection,
+  LaunchPrivacyContent,
+  LaunchStatsContent,
+  LaunchTab,
+  MercuryProblem,
+  MercuryStep,
+} from './launch-content.local';
+
+type SanityLaunchDocument = {
+  announcement?: Partial<LaunchAnnouncement> | null;
+  announcementBadge?: string | null;
+  announcementText?: string | null;
+  announcementLinkLabel?: string | null;
+  announcementLinkHref?: string | null;
+  hero?: Partial<LaunchHeroContent> | null;
+  heroTitle?: string | null;
+  heroDescription?: string | null;
+  tabs?: LaunchTab[] | null;
+  headerLinks?: LaunchNavLink[] | null;
+  mobileMenuLinks?: LaunchNavLink[] | null;
+  pageSections?: LaunchPageSection[] | null;
+  overview?: Partial<LaunchOverviewContent> | null;
+  overviewEyebrow?: string | null;
+  overviewTitle?: string | null;
+  overviewIntro?: string | null;
+  overviewCtaLabel?: string | null;
+  overviewCtaHref?: string | null;
+  overviewFeatures?: LaunchOverviewFeature[] | null;
+  stats?: Partial<LaunchStatsContent> | null;
+  statsEyebrow?: string | null;
+  statsTitle?: string | null;
+  statsIntro?: string | null;
+  metrics?: LaunchMetric[] | null;
+  privacy?: Partial<LaunchPrivacyContent> | null;
+  privacyEyebrow?: string | null;
+  privacyTitle?: string | null;
+  privacyDescription?: string | null;
+  privacyLinkLabel?: string | null;
+  privacyLinkHref?: string | null;
+  faq?: Partial<LaunchFaqContent> | null;
+  faqEyebrow?: string | null;
+  faqTitle?: string | null;
+  faqIntro?: string | null;
+  faqItems?: LaunchFaqItem[] | null;
+  mercury?: Partial<LaunchMercuryContent> | null;
+  mercuryEyebrow?: string | null;
+  mercuryTitle?: string | null;
+  mercuryIntro?: string | null;
+  mercuryPrimaryLabel?: string | null;
+  mercuryPrimaryHref?: string | null;
+  mercurySecondaryLabel?: string | null;
+  mercurySecondaryHref?: string | null;
+  mercuryHighlights?: LaunchMercuryHighlight[] | null;
+  mercuryProblems?: MercuryProblem[] | null;
+  mercurySteps?: MercuryStep[] | null;
+  mercuryFaqItems?: LaunchFaqItem[] | null;
+  footerSignup?: Partial<LaunchFooterSignup> | null;
+  footerSignupEyebrow?: string | null;
+  footerSignupTitle?: string | null;
+  footerSignupIntro?: string | null;
+  footerSignupButtonLabel?: string | null;
+  footerLinks?: LaunchLink[] | null;
 };
 
-export type LaunchNavLink = {
-  label: string;
-  href: string;
-};
+const LAUNCH_PAGE_QUERY = `
+*[_type in ["landingPage", "launchPage"]] | order(_updatedAt desc)[0]{
+  announcement{
+    badge,
+    text,
+    linkLabel,
+    linkHref
+  },
+  announcementBadge,
+  announcementText,
+  announcementLinkLabel,
+  announcementLinkHref,
+  hero{
+    title,
+    description
+  },
+  heroTitle,
+  heroDescription,
+  tabs[]{
+    id,
+    label,
+    kind,
+    value,
+    href,
+    imageSrc,
+    darkImageSrc,
+    imageAlt
+  },
+  headerLinks[]{
+    label,
+    href
+  },
+  mobileMenuLinks[]{
+    label,
+    href
+  },
+  pageSections[]{
+    id,
+    label
+  },
+  overview{
+    eyebrow,
+    title,
+    intro,
+    ctaLabel,
+    ctaHref
+  },
+  overviewEyebrow,
+  overviewTitle,
+  overviewIntro,
+  overviewCtaLabel,
+  overviewCtaHref,
+  overviewFeatures[]{
+    title,
+    text
+  },
+  stats{
+    eyebrow,
+    title,
+    intro
+  },
+  statsEyebrow,
+  statsTitle,
+  statsIntro,
+  metrics[]{
+    value,
+    label,
+    caption,
+    chart,
+    points,
+    filledDots,
+    bars
+  },
+  privacy{
+    eyebrow,
+    title,
+    description,
+    linkLabel,
+    linkHref
+  },
+  privacyEyebrow,
+  privacyTitle,
+  privacyDescription,
+  privacyLinkLabel,
+  privacyLinkHref,
+  faq{
+    eyebrow,
+    title,
+    intro
+  },
+  faqEyebrow,
+  faqTitle,
+  faqIntro,
+  faqItems[]{
+    question,
+    answer
+  },
+  mercury{
+    eyebrow,
+    title,
+    intro,
+    primaryLabel,
+    primaryHref,
+    secondaryLabel,
+    secondaryHref
+  },
+  mercuryEyebrow,
+  mercuryTitle,
+  mercuryIntro,
+  mercuryPrimaryLabel,
+  mercuryPrimaryHref,
+  mercurySecondaryLabel,
+  mercurySecondaryHref,
+  mercuryHighlights[]{
+    title,
+    text
+  },
+  mercuryProblems[]{
+    title,
+    text
+  },
+  mercurySteps[]{
+    step,
+    title,
+    text
+  },
+  mercuryFaqItems[]{
+    question,
+    answer
+  },
+  footerSignup{
+    eyebrow,
+    title,
+    intro,
+    buttonLabel
+  },
+  footerSignupEyebrow,
+  footerSignupTitle,
+  footerSignupIntro,
+  footerSignupButtonLabel,
+  footerLinks[]{
+    label,
+    href
+  }
+}
+`;
 
-export type LaunchPageSection = {
-  id: string;
-  label: string;
-};
+const isNonEmptyString = (value: string | null | undefined): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
 
-export type LaunchAnnouncement = {
-  badge: string;
-  text: string;
-  linkLabel: string;
-  linkHref: string;
-};
+const mergeString = (value: string | null | undefined, fallback: string): string =>
+  isNonEmptyString(value) ? value : fallback;
 
-export type LaunchHeroContent = {
-  title: string;
-  description: string;
-};
+const mergeArray = <T>(value: T[] | null | undefined, fallback: T[]): T[] =>
+  Array.isArray(value) && value.length > 0 ? value : fallback;
 
-export type LaunchTab = {
-  id: string;
-  label: string;
-  kind: 'link' | 'command';
-  value: string;
-  href?: string;
-  imageSrc: string;
-  darkImageSrc?: string;
-  imageAlt: string;
-};
+const remoteLaunchDocument = await fetchSanityQuery<SanityLaunchDocument>(
+  LAUNCH_PAGE_QUERY,
+).catch(() => null);
 
-export type LaunchOverviewContent = {
-  eyebrow: string;
-  title: string;
-  intro: string;
-  ctaLabel: string;
-  ctaHref: string;
-};
+export const ghlMarketplaceUrl = fallbackGhlMarketplaceUrl;
 
-export type LaunchOverviewFeature = {
-  title: string;
-  text: string;
-};
+export const launchHeaderLinks: LaunchNavLink[] = mergeArray(
+  remoteLaunchDocument?.headerLinks,
+  fallbackLaunchHeaderLinks,
+);
 
-export type LaunchStatsContent = {
-  eyebrow: string;
-  title: string;
-  intro: string;
-};
+export const launchMobileMenuLinks: LaunchNavLink[] = mergeArray(
+  remoteLaunchDocument?.mobileMenuLinks,
+  fallbackLaunchMobileMenuLinks,
+);
 
-export type LaunchMetric = {
-  value: string;
-  label: string;
-  caption: string;
-  chart: 'line' | 'dots' | 'bars';
-  points?: number[];
-  filledDots?: number;
-  bars?: number[];
-};
-
-export type LaunchPrivacyContent = {
-  eyebrow: string;
-  title: string;
-  description: string;
-  linkLabel: string;
-  linkHref: string;
-};
-
-export type LaunchFaqContent = {
-  eyebrow: string;
-  title: string;
-  intro: string;
-};
-
-export type LaunchFaqItem = {
-  question: string;
-  answer: string;
-};
-
-export type MercuryProblem = {
-  title: string;
-  text: string;
-};
-
-export type MercuryStep = {
-  step: string;
-  title: string;
-  text: string;
-};
-
-export type LaunchMercuryContent = {
-  eyebrow: string;
-  title: string;
-  intro: string;
-  primaryLabel: string;
-  primaryHref: string;
-  secondaryLabel: string;
-  secondaryHref: string;
-};
-
-export type LaunchMercuryHighlight = {
-  title: string;
-  text: string;
-};
-
-export type LaunchFooterSignup = {
-  eyebrow: string;
-  title: string;
-  intro: string;
-  buttonLabel: string;
-};
-
-export const siteLinks = {
-  app: 'https://app.consuelohq.com',
-  docs: 'https://docs.consuelohq.com',
-  github: 'https://github.com/consuelohq/opensaas',
-  changelog: '/changelog',
-  mercury: '/mercury',
-  pricing: '/mercury',
-  enterprise: '/contact',
-  login: 'https://app.consuelohq.com',
-  free: 'https://app.consuelohq.com',
-  newsletter: 'mailto:support@consuelohq.com?subject=Consuelo%20newsletter',
-  discordDocs: 'https://docs.consuelohq.com/user-guide/discord-bot/overview',
-  slackDocs: 'https://docs.consuelohq.com',
-  privacy: '/privacy',
-  terms: '/terms',
-  discord: 'https://discord.gg/87YtkVUBvc',
-  x: 'https://x.com/consuelohq_?s=21',
-};
-
-export const ghlMarketplaceUrl =
-  'https://marketplace.gohighlevel.com/oauth/chooselocation?response_type=code&redirect_uri=https%3A%2F%2Ffluffy-space-spork-w4j6vvvvwpxh6rw-3000.app.github.dev%2Fapi%2Foauth%2Fcallback&client_id=690cbca9af44827eb89887b1-mhpq9v7i&scope=contacts.readonly+contacts.write+opportunities.readonly+opportunities.write+calendars.readonly+users.readonly+conversations.readonly+conversations.write+conversations%2Fmessage.readonly+conversations%2Fmessage.write+locations.readonly&version_id=690cbca9af44827eb89887b1';
-
-export const launchHeaderLinks: LaunchNavLink[] = [
-  { label: 'Docs', href: siteLinks.docs },
-  { label: 'Mercury', href: siteLinks.mercury },
-  { label: 'Enterprise', href: siteLinks.enterprise },
-];
-
-export const launchMobileMenuLinks: LaunchNavLink[] = [
-  ...launchHeaderLinks.filter((link) => link.label !== 'docs'),
-  { label: 'Login', href: siteLinks.login },
-  { label: 'Free', href: siteLinks.free },
-];
-
-export const launchPageSections: LaunchPageSection[] = [
-  { id: 'intro', label: 'Intro' },
-  { id: 'overview', label: 'What is Consuelo?' },
-  { id: 'proof', label: 'Proof' },
-  { id: 'privacy', label: 'Privacy' },
-  { id: 'faq', label: 'FAQ' },
-  { id: 'mercury', label: 'Mercury' },
-  { id: 'waitlist', label: 'Waitlist' },
-];
+export const launchPageSections: LaunchPageSection[] = mergeArray(
+  remoteLaunchDocument?.pageSections,
+  fallbackLaunchPageSections,
+);
 
 export const launchAnnouncement: LaunchAnnouncement = {
-  badge: 'New',
-  text: 'App in beta for Chrome and Safari.',
-  linkLabel: 'Sign up now',
-  linkHref: siteLinks.app,
+  badge: mergeString(
+    remoteLaunchDocument?.announcement?.badge ?? remoteLaunchDocument?.announcementBadge,
+    fallbackLaunchAnnouncement.badge,
+  ),
+  text: mergeString(
+    remoteLaunchDocument?.announcement?.text ?? remoteLaunchDocument?.announcementText,
+    fallbackLaunchAnnouncement.text,
+  ),
+  linkLabel: mergeString(
+    remoteLaunchDocument?.announcement?.linkLabel ?? remoteLaunchDocument?.announcementLinkLabel,
+    fallbackLaunchAnnouncement.linkLabel,
+  ),
+  linkHref: mergeString(
+    remoteLaunchDocument?.announcement?.linkHref ?? remoteLaunchDocument?.announcementLinkHref,
+    fallbackLaunchAnnouncement.linkHref,
+  ),
 };
 
 export const launchHero: LaunchHeroContent = {
-  title: 'Sales infrastructure that integrates everywhere.',
-  description: 'Software that shows up in the browser, inside your CRM, in work channels, and in agent workflows.',
+  title: mergeString(
+    remoteLaunchDocument?.hero?.title ?? remoteLaunchDocument?.heroTitle,
+    fallbackLaunchHero.title,
+  ),
+  description: mergeString(
+    remoteLaunchDocument?.hero?.description ?? remoteLaunchDocument?.heroDescription,
+    fallbackLaunchHero.description,
+  ),
 };
 
-export const launchTabs: LaunchTab[] = [
-  {
-    id: 'web',
-    label: 'Web',
-    kind: 'link',
-    value: siteLinks.app,
-    href: siteLinks.app,
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo browser workspace preview',
-  },
-  {
-    id: 'embed',
-    label: 'Embed',
-    kind: 'link',
-    value: 'https://consuelohq.com/ghl',
-    href: '/ghl',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo embedded dialer preview',
-  },
-  {
-    id: 'chatgpt',
-    label: 'ChatGPT',
-    kind: 'command',
-    value: 'npm install -g @consuelo/cli',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo assistant preview',
-  },
-  {
-    id: 'claude',
-    label: 'Claude',
-    kind: 'command',
-    value: 'npm install -g @consuelo/cli',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo agent workflow preview',
-  },
-  {
-    id: 'discord',
-    label: 'Discord',
-    kind: 'link',
-    value: siteLinks.discordDocs,
-    href: siteLinks.discordDocs,
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo discord workflow preview',
-  },
-  {
-    id: 'slack',
-    label: 'Slack',
-    kind: 'link',
-    value: siteLinks.slackDocs,
-    href: siteLinks.slackDocs,
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo work channel preview',
-  },
-  {
-    id: 'chrome',
-    label: 'Chrome',
-    kind: 'link',
-    value: 'https://chromewebstore.google.com/detail/consuelo-dialer',
-    href: 'https://chromewebstore.google.com/detail/consuelo-dialer',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo chrome extension preview',
-  },
-  {
-    id: 'cli',
-    label: 'CLI',
-    kind: 'command',
-    value: 'npm install -g @consuelo/cli',
-    imageSrc: '/images/gifs/demo-light.gif',
-    darkImageSrc: '/images/gifs/demo-dark.gif',
-    imageAlt: 'Consuelo cli preview',
-  },
-];
+export const launchTabs: LaunchTab[] = mergeArray(remoteLaunchDocument?.tabs, fallbackLaunchTabs);
 
 export const launchOverview: LaunchOverviewContent = {
-  eyebrow: 'What is Consuelo?',
-  title: '',
-  intro: 'The unified sales platform where reps work alongside AI agents to run outbound, automate workflows, and scale pipeline.',
-  ctaLabel: 'Read docs',
-  ctaHref: siteLinks.docs,
+  eyebrow: mergeString(
+    remoteLaunchDocument?.overview?.eyebrow ?? remoteLaunchDocument?.overviewEyebrow,
+    fallbackLaunchOverview.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.overview?.title ?? remoteLaunchDocument?.overviewTitle,
+    fallbackLaunchOverview.title,
+  ),
+  intro: mergeString(
+    remoteLaunchDocument?.overview?.intro ?? remoteLaunchDocument?.overviewIntro,
+    fallbackLaunchOverview.intro,
+  ),
+  ctaLabel: mergeString(
+    remoteLaunchDocument?.overview?.ctaLabel ?? remoteLaunchDocument?.overviewCtaLabel,
+    fallbackLaunchOverview.ctaLabel,
+  ),
+  ctaHref: mergeString(
+    remoteLaunchDocument?.overview?.ctaHref ?? remoteLaunchDocument?.overviewCtaHref,
+    fallbackLaunchOverview.ctaHref,
+  ),
 };
 
-export const launchOverviewFeatures: LaunchOverviewFeature[] = [
-  {
-    title: 'Power dialer',
-    text: 'Parallel dial with spam protection, local presence, and zero latency.',
-  },
-  {
-    title: 'Signals & intelligence',
-    text: 'Prioritize leads based on real-time intent signals.',
-  },
-  {
-    title: 'CRM',
-    text: 'Manage contacts, queue states, and call controls together in one workspace.',
-  },
-  {
-    title: 'Automations',
-    text: 'Let agents handle the manual busywork.',
-  },
-  {
-    title: 'AI whisper',
-    text: 'Surfaces live context and tells you what to say.',
-  },
-  {
-    title: 'Secure integrations',
-    text: 'Enterprise-grade sync with your existing stack.',
-  },
-];
+export const launchOverviewFeatures: LaunchOverviewFeature[] = mergeArray(
+  remoteLaunchDocument?.overviewFeatures,
+  fallbackLaunchOverviewFeatures,
+);
 
 export const launchStats: LaunchStatsContent = {
-  eyebrow: 'The open sales infrastructure layer',
-  title: 'Built for teams that need throughput, traceability, and one system across every surface.',
-  intro: '',
+  eyebrow: mergeString(
+    remoteLaunchDocument?.stats?.eyebrow ?? remoteLaunchDocument?.statsEyebrow,
+    fallbackLaunchStats.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.stats?.title ?? remoteLaunchDocument?.statsTitle,
+    fallbackLaunchStats.title,
+  ),
+  intro: mergeString(
+    remoteLaunchDocument?.stats?.intro ?? remoteLaunchDocument?.statsIntro,
+    fallbackLaunchStats.intro,
+  ),
 };
 
-export const launchMetrics: LaunchMetric[] = [
-  {
-    value: '18.4K',
-    label: 'Weekly dials routed',
-    caption: 'Seven day outbound volume',
-    chart: 'line',
-    points: [12, 16, 19, 26, 34, 46, 54, 67, 72, 86],
-  },
-  {
-    value: '41',
-    label: 'Teams operating live',
-    caption: 'Active workspaces on the stack',
-    chart: 'dots',
-    filledDots: 41,
-  },
-  {
-    value: '2.7M',
-    label: 'Call minutes tracked',
-    caption: 'Rolling 30 day minutes',
-    chart: 'bars',
-    bars: [18, 26, 21, 33, 28, 41, 37, 49, 43, 56, 47, 61],
-  },
-];
+export const launchMetrics: LaunchMetric[] = mergeArray(
+  remoteLaunchDocument?.metrics,
+  fallbackLaunchMetrics,
+);
 
 export const launchPrivacy: LaunchPrivacyContent = {
-  eyebrow: 'Built for privacy first',
-  title: 'Consuelo does not store provider keys or call recordings on shared infrastructure,',
-  description: 'so that it can operate in privacy-sensitive environments. Learn more about',
-  linkLabel: 'privacy.',
-  linkHref: siteLinks.docs,
+  eyebrow: mergeString(
+    remoteLaunchDocument?.privacy?.eyebrow ?? remoteLaunchDocument?.privacyEyebrow,
+    fallbackLaunchPrivacy.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.privacy?.title ?? remoteLaunchDocument?.privacyTitle,
+    fallbackLaunchPrivacy.title,
+  ),
+  description: mergeString(
+    remoteLaunchDocument?.privacy?.description ?? remoteLaunchDocument?.privacyDescription,
+    fallbackLaunchPrivacy.description,
+  ),
+  linkLabel: mergeString(
+    remoteLaunchDocument?.privacy?.linkLabel ?? remoteLaunchDocument?.privacyLinkLabel,
+    fallbackLaunchPrivacy.linkLabel,
+  ),
+  linkHref: mergeString(
+    remoteLaunchDocument?.privacy?.linkHref ?? remoteLaunchDocument?.privacyLinkHref,
+    fallbackLaunchPrivacy.linkHref,
+  ),
 };
 
 export const launchFaq: LaunchFaqContent = {
-  eyebrow: 'FAQ',
-  title: 'Answers people usually need before they trust the stack.',
-  intro: '',
+  eyebrow: mergeString(
+    remoteLaunchDocument?.faq?.eyebrow ?? remoteLaunchDocument?.faqEyebrow,
+    fallbackLaunchFaq.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.faq?.title ?? remoteLaunchDocument?.faqTitle,
+    fallbackLaunchFaq.title,
+  ),
+  intro: mergeString(
+    remoteLaunchDocument?.faq?.intro ?? remoteLaunchDocument?.faqIntro,
+    fallbackLaunchFaq.intro,
+  ),
 };
 
-export const launchFaqItems: LaunchFaqItem[] = [
-  {
-    question: 'What is Consuelo?',
-    answer: 'Consuelo is open-source sales infrastructure for teams that need their CRM, dialer, coaching, and workflow surfaces to behave like one product.',
-  },
-  {
-    question: 'Who is it for?',
-    answer: 'It is built for operators and revenue teams that need browser work, embedded CRM surfaces, work channels, and assistant-led workflows to connect cleanly.',
-  },
-  {
-    question: 'Is the CRM free?',
-    answer: 'Yes. The CRM can stay free while teams decide whether they want to self-host everything or move onto Mercury for hosted calling and AI usage.',
-  },
-  {
-    question: 'What is Mercury?',
-    answer: 'Mercury is the hosted layer for teams that do not want to manage infrastructure, Twilio provisioning, or provider keys on day one.',
-  },
-  {
-    question: 'Do I need to buy the whole system at once?',
-    answer: 'No. Consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. You can buy CRM, calling, AI coaching, or hosted infrastructure one step at a time, while everything still compounds because the system is designed to work together.',
-  },
-  {
-    question: 'Can I self-host?',
-    answer: 'Yes. Self-hosting stays first-class. You can run the open platform yourself, bring your own providers, and keep full control over the stack.',
-  },
-  {
-    question: 'Does it work with GoHighLevel?',
-    answer: 'Yes. Consuelo supports an embedded GoHighLevel experience, and native sync. <a href="https://marketplace.gohighlevel.com" class="launch-inline-link">View our marketplace listing here</a>.',
-  },
-  {
-    question: 'How do CLI and assistant workflows fit in?',
-    answer: 'The CLI gives you a single install path for terminal and assistant-driven workflows, so the same platform can power browser work, embeds, bots, and agent tooling.',
-  },
-  {
-    question: 'What about privacy and control?',
-    answer: 'The core platform stays open-source and deployment stays flexible. Use Mercury when convenience matters more, or self-host when ownership matters more.',
-  },
-];
+export const launchFaqItems: LaunchFaqItem[] = mergeArray(
+  remoteLaunchDocument?.faqItems,
+  fallbackLaunchFaqItems,
+);
 
 export const launchMercury: LaunchMercuryContent = {
-  eyebrow: 'Mercury',
-  title: 'Hosted calling and AI, ready to go.',
-  intro: 'Mercury gives you Twilio calling, AI models from OpenAI and Groq, and hosting on Railway — tested and configured for sales teams. Skip provider setup and API key management, use validated infrastructure that works.',
-  primaryLabel: 'Learn about Mercury',
-  primaryHref: siteLinks.mercury,
-  secondaryLabel: '',
-  secondaryHref: '',
+  eyebrow: mergeString(
+    remoteLaunchDocument?.mercury?.eyebrow ?? remoteLaunchDocument?.mercuryEyebrow,
+    fallbackLaunchMercury.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.mercury?.title ?? remoteLaunchDocument?.mercuryTitle,
+    fallbackLaunchMercury.title,
+  ),
+  intro: mergeString(
+    remoteLaunchDocument?.mercury?.intro ?? remoteLaunchDocument?.mercuryIntro,
+    fallbackLaunchMercury.intro,
+  ),
+  primaryLabel: mergeString(
+    remoteLaunchDocument?.mercury?.primaryLabel ?? remoteLaunchDocument?.mercuryPrimaryLabel,
+    fallbackLaunchMercury.primaryLabel,
+  ),
+  primaryHref: mergeString(
+    remoteLaunchDocument?.mercury?.primaryHref ?? remoteLaunchDocument?.mercuryPrimaryHref,
+    fallbackLaunchMercury.primaryHref,
+  ),
+  secondaryLabel: mergeString(
+    remoteLaunchDocument?.mercury?.secondaryLabel ?? remoteLaunchDocument?.mercurySecondaryLabel,
+    fallbackLaunchMercury.secondaryLabel,
+  ),
+  secondaryHref: mergeString(
+    remoteLaunchDocument?.mercury?.secondaryHref ?? remoteLaunchDocument?.mercurySecondaryHref,
+    fallbackLaunchMercury.secondaryHref,
+  ),
 };
 
-export const launchMercuryHighlights: LaunchMercuryHighlight[] = [];
+export const launchMercuryHighlights: LaunchMercuryHighlight[] = mergeArray(
+  remoteLaunchDocument?.mercuryHighlights,
+  fallbackLaunchMercuryHighlights,
+);
 
-export const mercuryProblems: MercuryProblem[] = [
-  {
-    title: 'Too many moving parts',
-    text: 'Most teams do not want to provision calling, wire up providers, and maintain infrastructure before they can even place a call.',
-  },
-  {
-    title: 'Billing friction everywhere',
-    text: 'Usage gets messy fast when calling, AI, and app access all live in different dashboards.',
-  },
-  {
-    title: 'Speed matters more than infra',
-    text: 'Some teams want to get live quickly and only think about self-hosting later if they really need it.',
-  },
-];
+export const mercuryProblems: MercuryProblem[] = mergeArray(
+  remoteLaunchDocument?.mercuryProblems,
+  fallbackMercuryProblems,
+);
 
-export const mercurySteps: MercuryStep[] = [
-  {
-    step: '01',
-    title: 'Start with the hosted workspace',
-    text: 'Sign in, connect your workspace, and skip the part where you stand up the whole stack yourself first.',
-  },
-  {
-    step: '02',
-    title: 'Use hosted calling and AI usage',
-    text: 'Mercury is built for teams that want hosted Twilio calling and AI usage instead of rotating provider keys on day one.',
-  },
-  {
-    step: '03',
-    title: 'Scale or self-host later',
-    text: 'Move from hosted convenience to self-managed infrastructure when it actually becomes worth it.',
-  },
-];
+export const mercurySteps: MercuryStep[] = mergeArray(
+  remoteLaunchDocument?.mercurySteps,
+  fallbackMercurySteps,
+);
 
-export const mercuryFaqItems: LaunchFaqItem[] = [
-  {
-    question: 'What is Mercury?',
-    answer: "Mercury is Consuelo's hosted plan. It is meant for teams that want the product without taking on infrastructure work up front.",
-  },
-  {
-    question: 'Do I need to buy the whole system at once?',
-    answer: 'No. Consuelo is built as one connected system, but teams can start with the part that solves the problem in front of them right now. You can buy CRM, calling, AI coaching, or hosted infrastructure one step at a time, while everything still compounds because the system is designed to work together.',
-  },
-  {
-    question: 'How is Mercury priced?',
-    answer: 'mercury starts at $20 pay as you go. usage is tracked per request — call minutes, coaching requests, and transcription. auto-top-up adds $20 when your balance hits $5.',
-  },
-  {
-    question: 'When should I pick Mercury instead of self-hosted?',
-    answer: 'Pick Mercury when speed, convenience, and fewer moving pieces matter more than owning every provider integration yourself on day one.',
-  },
-  {
-    question: 'Do I still need my own Twilio or AI keys?',
-    answer: 'Not for the hosted Mercury path. Self-hosted teams can still bring their own keys when they want full provider control.',
-  },
-  {
-    question: 'Can I move from Mercury to self-hosted later?',
-    answer: 'Yes. The platform is built so hosted and self-managed deployment models can coexist instead of locking you into one forever choice.',
-  },
-  {
-    question: 'Is the CRM still free if I do not want Mercury yet?',
-    answer: 'Yes. The CRM can stand on its own while teams decide whether they want hosted usage, self-hosting, or a staged rollout between the two.',
-  },
-];
+export const mercuryFaqItems: LaunchFaqItem[] = mergeArray(
+  remoteLaunchDocument?.mercuryFaqItems,
+  fallbackMercuryFaqItems,
+);
 
 export const launchFooterSignup: LaunchFooterSignup = {
-  eyebrow: 'Be the first to know when we release new products',
-  title: 'Join the waitlist for early access.',
-  intro: 'We will send the important launches, not a pile of filler.',
-  buttonLabel: 'Subscribe',
+  eyebrow: mergeString(
+    remoteLaunchDocument?.footerSignup?.eyebrow ?? remoteLaunchDocument?.footerSignupEyebrow,
+    fallbackLaunchFooterSignup.eyebrow,
+  ),
+  title: mergeString(
+    remoteLaunchDocument?.footerSignup?.title ?? remoteLaunchDocument?.footerSignupTitle,
+    fallbackLaunchFooterSignup.title,
+  ),
+  intro: mergeString(
+    remoteLaunchDocument?.footerSignup?.intro ?? remoteLaunchDocument?.footerSignupIntro,
+    fallbackLaunchFooterSignup.intro,
+  ),
+  buttonLabel: mergeString(
+    remoteLaunchDocument?.footerSignup?.buttonLabel ??
+      remoteLaunchDocument?.footerSignupButtonLabel,
+    fallbackLaunchFooterSignup.buttonLabel,
+  ),
 };
 
-export const footerLinks: LaunchLink[] = [
-  { label: 'Mercury', href: '/mercury' },
-  { label: 'Docs', href: siteLinks.docs },
-  { label: 'Changelog', href: siteLinks.changelog },
-  { label: 'Discord', href: siteLinks.discord },
-  { label: 'X', href: siteLinks.x },
-];
+export const footerLinks: LaunchLink[] = mergeArray(
+  remoteLaunchDocument?.footerLinks,
+  fallbackFooterLinks,
+);
 
-export { launchDocsMenuTabs };
+export { launchDocsMenuTabs, siteLinks };
