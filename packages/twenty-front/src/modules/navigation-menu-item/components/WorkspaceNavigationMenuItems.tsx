@@ -68,6 +68,9 @@ export const WorkspaceNavigationMenuItems = () => {
   const isNavigationMenuItemEditingEnabled = useIsFeatureEnabled(
     FeatureFlagKey.IS_NAVIGATION_MENU_ITEM_EDITING_ENABLED,
   );
+  const isComputerSidebarEnabled = useIsFeatureEnabled(
+    FeatureFlagKey.IS_COMPUTER_SIDEBAR_ENABLED,
+  );
   const isNavigationMenuInEditMode = useRecoilValue(
     isNavigationMenuInEditModeState,
   );
@@ -154,13 +157,15 @@ export const WorkspaceNavigationMenuItems = () => {
       sectionTitle={t`Workspace`}
       items={items}
       footerContent={
-        <NavigationDrawerItem
-          label={t`Computer`}
-          Icon={IconComment}
-          to={AppPath.Agent}
-          active={location.pathname === AppPath.Agent}
-          keyboard={['G', 'A']}
-        />
+        isComputerSidebarEnabled ? (
+          <NavigationDrawerItem
+            label={t`Computer`}
+            Icon={IconComment}
+            to={AppPath.Agent}
+            active={location.pathname === AppPath.Agent}
+            keyboard={['G', 'A']}
+          />
+        ) : undefined
       }
       rightIcon={
         isNavigationMenuItemEditingEnabled ? (

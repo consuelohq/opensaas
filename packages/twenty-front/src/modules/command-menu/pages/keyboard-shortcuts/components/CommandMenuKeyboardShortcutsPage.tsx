@@ -3,7 +3,9 @@ import {
   ShortcutType,
 } from '@/keyboard-shortcut-menu/types/Shortcut';
 import { ScrollWrapper } from '@/ui/utilities/scroll/components/ScrollWrapper';
+import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 import styled from '@emotion/styled';
+import { FeatureFlagKey } from '~/generated-metadata/graphql';
 import { getOsControlSymbol } from 'twenty-ui/utilities';
 
 const cmd = getOsControlSymbol();
@@ -330,17 +332,27 @@ const ShortcutGroup = ({
   </>
 );
 
-export const CommandMenuKeyboardShortcutsPage = () => (
-  <ScrollWrapper componentInstanceId="scroll-wrapper-keyboard-shortcuts">
-    <StyledContainer>
-      <ShortcutGroup heading="General" shortcuts={SHORTCUTS_GENERAL} />
-      <ShortcutGroup heading="Navigation" shortcuts={SHORTCUTS_NAVIGATION} />
-      <ShortcutGroup heading="Record Table" shortcuts={SHORTCUTS_TABLE} />
-      <ShortcutGroup
-        heading="Record Actions"
-        shortcuts={SHORTCUTS_RECORD_ACTIONS}
-      />
-      <ShortcutGroup heading="Dialer" shortcuts={SHORTCUTS_DIALER} />
-    </StyledContainer>
-  </ScrollWrapper>
-);
+export const CommandMenuKeyboardShortcutsPage = () => {
+  const isComputerSidebarEnabled = useIsFeatureEnabled(
+    FeatureFlagKey.IS_COMPUTER_SIDEBAR_ENABLED,
+  );
+
+  const navigationShortcuts = isComputerSidebarEnabled
+    ? SHORTCUTS_NAVIGATION
+    : SHORTCUTS_NAVIGATION.filter((s) => s.label !== 'Go to Computer');
+
+  return (
+    <ScrollWrapper componentInstanceId="scroll-wrapper-keyboard-shortcuts">
+      <StyledContainer>
+        <ShortcutGroup heading="General" shortcuts={SHORTCUTS_GENERAL} />
+        <ShortcutGroup heading="Navigation" shortcuts={navigationShortcuts} />
+        <ShortcutGroup heading="Record Table" shortcuts={SHORTCUTS_TABLE} />
+        <ShortcutGroup
+          heading="Record Actions"
+          shortcuts={SHORTCUTS_RECORD_ACTIONS}
+        />
+        <ShortcutGroup heading="Dialer" shortcuts={SHORTCUTS_DIALER} />
+      </StyledContainer>
+    </ScrollWrapper>
+  );
+};
