@@ -15,7 +15,6 @@ export const CONSUELO_DISCORD_DOCS_URL =
   'https://docs.consuelohq.com/user-guide/discord-bot/overview';
 
 export type DownloadAppItemId =
-  | 'web'
   | 'gohighlevel'
   | 'chatgpt'
   | 'claude'
@@ -37,11 +36,6 @@ export type DownloadAppItem =
     };
 
 export const DOWNLOAD_APP_ITEMS: DownloadAppItem[] = [
-  {
-    id: 'web',
-    type: 'link',
-    href: '/',
-  },
   {
     id: 'gohighlevel',
     type: 'link',

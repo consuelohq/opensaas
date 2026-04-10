@@ -7,7 +7,6 @@ import { NavigationDrawerUpgradeModal } from '@/navigation/components/Navigation
 import { NavigationDrawerHelpDropdown } from '@/navigation/components/NavigationDrawerHelpDropdown';
 import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
 import { useModal } from '@/ui/layout/modal/hooks/useModal';
-import { NavigationDrawerAnimatedCollapseWrapper } from '@/ui/navigation/navigation-drawer/components/NavigationDrawerAnimatedCollapseWrapper';
 
 const StyledFooterRow = styled.div`
   align-items: center;
@@ -20,31 +19,32 @@ const StyledFooterRow = styled.div`
 
 const StyledPlanButton = styled.button`
   align-items: center;
-  background: ${({ theme }) => theme.background.transparent.light};
-  border: none;
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
+  background: ${({ theme }) => theme.background.primary};
+  border: 1px solid ${({ theme }) => theme.border.color.inverted};
+  border-radius: 50%;
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
-  height: ${({ theme }) => theme.spacing(7)};
-  max-width: 100%;
-  min-width: ${({ theme }) => theme.spacing(8)};
-  padding: ${({ theme }) => theme.spacing(0, 2.5)};
+  flex-shrink: 0;
+  height: ${({ theme }) => theme.spacing(8)};
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing(1)};
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
-    transform ${({ theme }) => theme.animation.duration.normal}s;
+    border-color ${({ theme }) => theme.animation.duration.normal}s;
+  width: ${({ theme }) => theme.spacing(8)};
 
   &:hover {
-    background: ${({ theme }) => theme.background.transparent.lighter};
-    transform: translateY(-1px);
+    background: ${({ theme }) => theme.background.transparent.light};
+    border-color: ${({ theme }) => theme.border.color.inverted};
   }
 `;
 
 const StyledPlanLabel = styled.span`
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: ${({ theme }) => theme.font.size.xxs};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  line-height: 1;
+  text-align: center;
 `;
 
 export const MainNavigationDrawerFooter = () => {
@@ -63,10 +63,10 @@ export const MainNavigationDrawerFooter = () => {
       normalizedPlanName === 'no plan' ||
       normalizedPlanName === 'starter'
     ) {
-      return t`Free plan`;
+      return t`Free`;
     }
 
-    return t`Paid plan`;
+    return t`Pro`;
   }, [subscriptionStatus?.plan.name, t]);
 
   return (
@@ -80,9 +80,7 @@ export const MainNavigationDrawerFooter = () => {
           type="button"
           onClick={() => openModal(NAVIGATION_DRAWER_UPGRADE_MODAL_ID)}
         >
-          <NavigationDrawerAnimatedCollapseWrapper>
-            <StyledPlanLabel>{planLabel}</StyledPlanLabel>
-          </NavigationDrawerAnimatedCollapseWrapper>
+          <StyledPlanLabel>{planLabel}</StyledPlanLabel>
         </StyledPlanButton>
       </StyledFooterRow>
     </>

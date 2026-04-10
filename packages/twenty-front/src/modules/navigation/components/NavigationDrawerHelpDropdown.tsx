@@ -16,7 +16,6 @@ import {
   IconBrandWindows,
   IconCommand,
   IconComment,
-  IconDeviceLaptop,
   IconDownload,
   IconHelpCircle,
   IconSettings,
@@ -58,18 +57,19 @@ const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
   border: 1px solid ${({ theme }) => theme.border.color.inverted};
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
+  border-radius: 50%;
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
-  height: ${({ theme }) => theme.spacing(7)};
+  flex-shrink: 0;
+  height: ${({ theme }) => theme.spacing(8)};
   justify-content: center;
-  padding: ${({ theme }) => theme.spacing(1.5)};
+  padding: ${({ theme }) => theme.spacing(1)};
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
     border-color ${({ theme }) => theme.animation.duration.normal}s,
     color ${({ theme }) => theme.animation.duration.normal}s;
-  width: ${({ theme }) => theme.spacing(7)};
+  width: ${({ theme }) => theme.spacing(8)};
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
@@ -78,8 +78,8 @@ const StyledHelpButton = styled.button`
   }
 
   & > svg {
-    width: 100%;
-    height: 100%;
+    height: ${({ theme }) => theme.spacing(5)};
+    width: ${({ theme }) => theme.spacing(5)};
   }
 `;
 
@@ -104,7 +104,6 @@ const useDownloadItemLabels = (): Record<DownloadAppItemId, string> => {
 
   return useMemo(
     () => ({
-      web: t`Web`,
       gohighlevel: t`GoHighLevel`,
       chatgpt: t`ChatGPT`,
       claude: t`Claude`,
@@ -119,8 +118,6 @@ const useDownloadItemLabels = (): Record<DownloadAppItemId, string> => {
 
 const getDownloadItemIcon = (itemId: DownloadAppItemId) => {
   switch (itemId) {
-    case 'web':
-      return IconDeviceLaptop;
     case 'gohighlevel':
       return IconBrandWindows;
     case 'chatgpt':
