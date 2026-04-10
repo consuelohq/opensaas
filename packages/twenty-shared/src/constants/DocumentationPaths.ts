@@ -224,6 +224,15 @@ export const DOCUMENTATION_PATHS = {
   USER_GUIDE_DISCORD_BOT_GETTING_STARTED:
     '/user-guide/discord-bot/getting-started',
   USER_GUIDE_DISCORD_BOT_OVERVIEW: '/user-guide/discord-bot/overview',
+  USER_GUIDE_FILE_SYSTEM_CAPABILITIES_AUTO_INDEXING:
+    '/user-guide/file-system/capabilities/auto-indexing',
+  USER_GUIDE_FILE_SYSTEM_CAPABILITIES_FILE_CATEGORIES:
+    '/user-guide/file-system/capabilities/file-categories',
+  USER_GUIDE_FILE_SYSTEM_CAPABILITIES_KNOWLEDGE_BASE:
+    '/user-guide/file-system/capabilities/knowledge-base',
+  USER_GUIDE_FILE_SYSTEM_HOW_TOS_FILE_SYSTEM_FAQ:
+    '/user-guide/file-system/how-tos/file-system-faq',
+  USER_GUIDE_FILE_SYSTEM_OVERVIEW: '/user-guide/file-system/overview',
   USER_GUIDE_GETTING_STARTED_CAPABILITIES_GLOSSARY:
     '/user-guide/getting-started/capabilities/glossary',
   USER_GUIDE_GETTING_STARTED_CAPABILITIES_IMPLEMENTATION_SERVICES:

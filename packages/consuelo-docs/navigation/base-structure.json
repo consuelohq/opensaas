@@ -77,6 +77,30 @@
                 "user-guide/data-migration/capabilities/error-handling"
               ]
             },
+        {
+          "key": "fileSystem",
+          "label": "File System",
+          "icon": "files",
+          "pages": [
+            "user-guide/file-system/overview",
+            {
+              "key": "fileSystemCapabilities",
+              "label": "Capabilities",
+              "pages": [
+                "user-guide/file-system/capabilities/file-categories",
+                "user-guide/file-system/capabilities/knowledge-base",
+                "user-guide/file-system/capabilities/auto-indexing"
+              ]
+            },
+            {
+              "key": "fileSystemHowTos",
+              "label": "How-Tos",
+              "pages": [
+                "user-guide/file-system/how-tos/file-system-faq"
+              ]
+            }
+          ]
+        },
             {
               "key": "dataMigrationHowTos",
               "label": "How-Tos",
