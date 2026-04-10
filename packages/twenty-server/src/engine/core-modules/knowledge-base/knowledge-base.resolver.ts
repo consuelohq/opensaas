@@ -5,6 +5,7 @@ import { JwtAuthGuard } from 'src/engine/guards/jwt-auth.guard';
 import { WorkspaceAuthGuard } from 'src/engine/guards/workspace-auth.guard';
 import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
+import { FileStorageDriverFactory } from 'src/engine/core-modules/file-storage/file-storage-driver.factory';
 import { KnowledgeBaseService } from 'src/engine/core-modules/knowledge-base/knowledge-base.service';
 
 @ObjectType()
@@ -53,7 +54,10 @@ export class KnowledgeIndexFileInput {
 @Resolver()
 @UseGuards(JwtAuthGuard, WorkspaceAuthGuard)
 export class KnowledgeBaseResolver {
-  constructor(private readonly knowledgeBaseService: KnowledgeBaseService) {}
+  constructor(
+    private readonly knowledgeBaseService: KnowledgeBaseService,
+    private readonly fileStorageDriverFactory: FileStorageDriverFactory,
+  ) {}
 
   @Query(() => [KnowledgeSearchResultDto])
   async knowledgeSearch(
@@ -97,11 +101,25 @@ export class KnowledgeBaseResolver {
     @AuthWorkspace() workspace: WorkspaceEntity,
     @Args('input') input: KnowledgeIndexFileInput,
   ): Promise<KnowledgeIndexResultDto> {
-    // if content provided directly, use it; otherwise the job/service handles extraction
     if (input.content) {
-      return this.knowledgeBaseService.indexFile(input.fileId, input.collectionId, input.content);
+      return this.knowledgeBaseService.indexFile(input.fileId, input.collectionId, input.content, undefined, workspace.id);
     }
-    // for file-based indexing, the auto-index listener handles it
-    return this.knowledgeBaseService.indexFile(input.fileId, input.collectionId, '');
+    // read file from storage when no content provided
+    const filePath = 'workspace-' + workspace.id + '/attachment/' + input.fileId;
+    const driver = this.fileStorageDriverFactory.getCurrentDriver();
+    const stream = await driver.readFile({ filePath });
+    const buffers: Buffer[] = [];
+    for await (const chunk of stream) {
+      buffers.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const buffer = Buffer.concat(buffers);
+    const ext = input.fileId.split('.').pop()?.toLowerCase() ?? '';
+    const mimeMap: Record<string, string> = {
+      pdf: 'application/pdf', doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      txt: 'text/plain', md: 'text/plain', csv: 'text/plain', html: 'text/html',
+    };
+    const text = await this.knowledgeBaseService.extractText(buffer, mimeMap[ext] ?? 'text/plain');
+    return this.knowledgeBaseService.indexFile(input.fileId, input.collectionId, text, undefined, workspace.id);
   }
 }

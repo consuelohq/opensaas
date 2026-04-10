@@ -6,7 +6,7 @@ import { KnowledgeBaseResolver } from 'src/engine/core-modules/knowledge-base/kn
 import { KnowledgeBaseAttachmentListener } from 'src/engine/core-modules/knowledge-base/knowledge-base-attachment.listener';
 
 @Module({
-  imports: [FileStorageModule],
+  imports: [FileStorageModule.forRoot()],
   providers: [
     KnowledgeBaseService,
     KnowledgeBaseResolver,

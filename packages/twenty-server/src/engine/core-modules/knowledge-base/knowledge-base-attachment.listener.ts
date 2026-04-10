@@ -4,6 +4,7 @@ import { type ObjectRecordCreateEvent } from 'twenty-shared/database-events';
 
 import { OnDatabaseBatchEvent } from 'src/engine/api/graphql/graphql-query-runner/decorators/on-database-batch-event.decorator';
 import { DatabaseEventAction } from 'src/engine/api/graphql/graphql-query-runner/enums/database-event-action';
+import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
 import { FileStorageDriverFactory } from 'src/engine/core-modules/file-storage/file-storage-driver.factory';
 import { KnowledgeBaseService } from 'src/engine/core-modules/knowledge-base/knowledge-base.service';
 import { WorkspaceEventBatch } from 'src/engine/workspace-event-emitter/types/workspace-event-batch.type';
@@ -29,6 +30,7 @@ export class KnowledgeBaseAttachmentListener {
   constructor(
     private readonly knowledgeBaseService: KnowledgeBaseService,
     private readonly fileStorageDriverFactory: FileStorageDriverFactory,
+    private readonly exceptionHandlerService: ExceptionHandlerService,
   ) {}
 
   @OnDatabaseBatchEvent('attachment', DatabaseEventAction.CREATED)
@@ -41,6 +43,9 @@ export class KnowledgeBaseAttachmentListener {
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'unknown error';
         this.logger.error('Auto-index failed for attachment: ' + message);
+        this.exceptionHandlerService.captureExceptions([err instanceof Error ? err : new Error(message)], {
+          workspace: { id: payload.workspaceId },
+        });
       }
     }
   }
@@ -136,6 +141,7 @@ export class KnowledgeBaseAttachmentListener {
       collection.id,
       text,
       fileInfo.label ?? attachment.name ?? 'unnamed',
+      workspaceId,
     );
 
     this.logger.log(

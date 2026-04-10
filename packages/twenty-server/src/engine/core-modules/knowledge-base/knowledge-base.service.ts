@@ -9,7 +9,7 @@ const DEFAULT_MAX_TOKENS = 500;
 const DEFAULT_OVERLAP = 50;
 const SENTENCE_SPLIT_RE = /(?<=[.!?])\s+(?=[A-Z])/;
 
-export interface KnowledgeSearchResult {
+export type KnowledgeSearchResult = {
   chunkId: string;
   content: string;
   similarity: number;
@@ -17,9 +17,9 @@ export interface KnowledgeSearchResult {
   collectionId: string;
   collectionName: string;
   fileId: string;
-}
+};
 
-interface EmbeddingClient {
+type EmbeddingClient = {
   embeddings: {
     create: (p: {
       model: string;
@@ -27,7 +27,7 @@ interface EmbeddingClient {
       dimensions: number;
     }) => Promise<{ data: Array<{ embedding: number[] }> }>;
   };
-}
+};
 
 @Injectable()
 export class KnowledgeBaseService {
@@ -39,7 +39,7 @@ export class KnowledgeBaseService {
   async createCollection(workspaceId: string, name: string, description?: string) {
     try {
       const result = await this.dataSource.query(
-        'INSERT INTO knowledge_collections (workspace_id, name, description) VALUES ($1, $2, $3) RETURNING id, workspace_id, name, chunk_count',
+        'INSERT INTO core.knowledge_collections (workspace_id, name, description) VALUES ($1, $2, $3) RETURNING id, workspace_id, name, chunk_count',
         [workspaceId, name, description ?? null],
       );
 
@@ -54,7 +54,7 @@ export class KnowledgeBaseService {
 
   async listCollections(workspaceId: string) {
     const rows = await this.dataSource.query(
-      'SELECT id, name, chunk_count FROM knowledge_collections WHERE workspace_id = $1 ORDER BY name',
+      'SELECT id, name, chunk_count FROM core.knowledge_collections WHERE workspace_id = $1 ORDER BY name',
       [workspaceId],
     );
 
@@ -68,8 +68,14 @@ export class KnowledgeBaseService {
     await qr.connect();
     await qr.startTransaction();
     try {
-      await qr.query('UPDATE files SET collection_id = NULL, indexed_at = NULL WHERE collection_id = $1', [collectionId]);
-      await qr.query('DELETE FROM knowledge_collections WHERE id = $1 AND workspace_id = $2', [collectionId, workspaceId]);
+      // verify collection belongs to this workspace before deleting
+      const colCheck = await qr.query('SELECT id FROM core.knowledge_collections WHERE id = $1 AND workspace_id = $2', [collectionId, workspaceId]);
+      if (!colCheck || colCheck.length === 0) {
+        await qr.rollbackTransaction();
+        throw new Error('Collection not found or does not belong to this workspace');
+      }
+      await qr.query('UPDATE core.file SET collection_id = NULL, indexed_at = NULL WHERE collection_id = $1', [collectionId]);
+      await qr.query('DELETE FROM core.knowledge_collections WHERE id = $1 AND workspace_id = $2', [collectionId, workspaceId]);
       await qr.commitTransaction();
     } catch (err: unknown) {
       await qr.rollbackTransaction();
@@ -150,24 +156,32 @@ export class KnowledgeBaseService {
     return embeddings;
   }
 
-  async indexFile(fileId: string, collectionId: string, content: string, sourceName?: string): Promise<{ chunkCount: number }> {
+  async indexFile(fileId: string, collectionId: string, content: string, sourceName?: string, workspaceId?: string): Promise<{ chunkCount: number }> {
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
     try {
+      // verify collection belongs to the workspace if workspaceId provided
+      if (workspaceId) {
+        const colCheck = await qr.query('SELECT id FROM core.knowledge_collections WHERE id = $1 AND workspace_id = $2', [collectionId, workspaceId]);
+        if (!colCheck || colCheck.length === 0) {
+          await qr.rollbackTransaction();
+          throw new Error('Collection not found or does not belong to this workspace');
+        }
+      }
       const chunks = this.chunkText(content);
       if (chunks.length === 0) { await qr.commitTransaction(); return { chunkCount: 0 }; }
-      await qr.query('DELETE FROM knowledge_chunks WHERE file_id = $1 AND collection_id = $2', [fileId, collectionId]);
+      await qr.query('DELETE FROM core.knowledge_chunks WHERE file_id = $1 AND collection_id = $2', [fileId, collectionId]);
       const embeddings = await this.generateEmbeddings(chunks.map(c => c.content));
       for (let i = 0; i < chunks.length; i++) {
         const vecStr = '[' + embeddings[i].join(',') + ']';
         await qr.query(
-          'INSERT INTO knowledge_chunks (collection_id, file_id, chunk_index, content, embedding, metadata) VALUES ($1, $2, $3, $4, $5::vector, $6)',
+          'INSERT INTO core.knowledge_chunks (collection_id, file_id, chunk_index, content, embedding, metadata) VALUES ($1, $2, $3, $4, $5::vector, $6)',
           [collectionId, fileId, i, chunks[i].content, vecStr, JSON.stringify({ source: sourceName ?? 'unknown', tokenCount: Math.ceil(chunks[i].content.split(/\s+/).length * 1.3) })],
         );
       }
-      await qr.query('UPDATE knowledge_collections SET chunk_count = (SELECT COUNT(*) FROM knowledge_chunks WHERE collection_id = $1), updated_at = NOW() WHERE id = $1', [collectionId]);
-      await qr.query('UPDATE files SET indexed_at = NOW(), collection_id = $1 WHERE id = $2', [collectionId, fileId]);
+      await qr.query('UPDATE core.knowledge_collections SET chunk_count = (SELECT COUNT(*) FROM core.knowledge_chunks WHERE collection_id = $1), updated_at = NOW() WHERE id = $1', [collectionId]);
+      await qr.query('UPDATE core.file SET indexed_at = NOW(), collection_id = $1 WHERE id = $2', [collectionId, fileId]);
       await qr.commitTransaction();
       return { chunkCount: chunks.length };
     } catch (err: unknown) {
@@ -191,7 +205,7 @@ export class KnowledgeBaseService {
       const sql =
         'SELECT kch.id AS chunk_id, kch.content, 1 - (kch.embedding <=> $' + String(idx) + '::vector) AS similarity, ' +
         'kch.metadata, kch.collection_id, kc.name AS collection_name, kch.file_id ' +
-        'FROM knowledge_chunks kch JOIN knowledge_collections kc ON kc.id = kch.collection_id ' +
+        'FROM core.knowledge_chunks kch JOIN core.knowledge_collections kc ON kc.id = kch.collection_id ' +
         'WHERE ' + conds.join(' AND ') + ' AND 1 - (kch.embedding <=> $' + String(idx) + '::vector) >= $' + String(idx + 1) + ' ' +
         'ORDER BY kch.embedding <=> $' + String(idx) + '::vector LIMIT $' + String(idx + 2);
       const rows = await this.dataSource.query(sql, [...params, vecStr, minSim, limit]);
