@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { useRef } from 'react';
+
 import { useSetRecoilState } from 'recoil';
 
 import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
@@ -36,8 +36,6 @@ export const useOpenListMemberImportDialog = () => {
     spreadsheetImportCreatedRecordsProgressState,
   );
 
-  const abortControllerRef = useRef(new AbortController());
-
   const { recordGqlFields: personGqlFields } =
     useGenerateDepthRecordGqlFieldsFromObject({
       objectNameSingular: 'person',
@@ -50,7 +48,6 @@ export const useOpenListMemberImportDialog = () => {
       recordGqlFields: personGqlFields,
       mutationBatchSize: SPREADSHEET_IMPORT_CREATE_RECORDS_BATCH_SIZE,
       setBatchedRecordsCount: setCreatedRecordsProgress,
-      abortController: abortControllerRef.current,
     });
 
   const { recordGqlFields: listMemberGqlFields } =
@@ -67,8 +64,6 @@ export const useOpenListMemberImportDialog = () => {
     });
 
   const openListMemberImportDialog = (listId: string) => {
-    abortControllerRef.current = new AbortController();
-
     const availableFieldMetadataItems =
       spreadsheetImportFilterAvailableFieldMetadataItems(
         personMetadata.updatableFields,
@@ -100,10 +95,6 @@ export const useOpenListMemberImportDialog = () => {
             recordsToCreate: personInputs,
             upsert: true,
           });
-
-          if (abortControllerRef.current.signal.aborted) {
-            return;
-          }
 
           if (!createdPersons || createdPersons.length === 0) {
             enqueueErrorSnackBar({
@@ -161,9 +152,7 @@ export const useOpenListMemberImportDialog = () => {
       },
       spreadsheetImportFields,
       availableFieldMetadataItems,
-      onAbortSubmit: () => {
-        abortControllerRef.current.abort();
-      },
+
       tableHook: spreadsheetImportGetUnicityTableHook(personMetadata),
     });
   };
