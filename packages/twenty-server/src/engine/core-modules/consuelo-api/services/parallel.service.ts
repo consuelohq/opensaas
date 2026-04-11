@@ -19,6 +19,7 @@ const TERMINAL_STATUSES = new Set([
   'no-answer',
   'canceled',
 ]);
+const COMPLETION_STATUSES = new Set(['connected', 'completed']);
 
 @Injectable()
 export class ParallelService {
@@ -62,51 +63,42 @@ export class ParallelService {
       return { received: true };
     }
 
-    // only update posteriors on the winner leg's terminal callback
-    // bug fix: previously updated on 'connected' (in-progress callback)
-    // which is too early — isSuccessfulCompletion can't evaluate yet
-    const isWinnerTerminal =
-      callSid === group.winnerSid &&
-      TERMINAL_STATUSES.has(callStatus);
+    const isTerminalCallback = TERMINAL_STATUSES.has(callStatus);
+    const isCompletionState = COMPLETION_STATUSES.has(group.status);
 
-    if (isWinnerTerminal && !group.telemetryEmittedAt) {
-      // mark telemetry emitted FIRST to win the race
-      // if two concurrent callbacks both reach here, only the first
-      // markTelemetryEmitted succeeds (returns true), the second is a no-op
-      const claimed = await dialer.parallel.markTelemetryEmitted(groupId);
+    if (isTerminalCallback && isCompletionState && !group.telemetryEmittedAt) {
+      const telemetry = dialer.parallel.computeTelemetry(group);
 
-      if (claimed) {
-        const telemetry = dialer.parallel.computeTelemetry(group);
+      this.logger.log('parallel telemetry emitted', {
+        groupId,
+        queueId: group.queueId,
+        profileId: group.profile.id,
+        winnerRate: telemetry.winnerRate,
+        wastedLegs: telemetry.wastedLegs,
+        connectLatencyMs: telemetry.connectLatencyMs,
+      });
 
-        this.logger.log('parallel telemetry emitted', {
+      const success = this.isSuccessfulCompletion(group, body, new Date());
+
+      try {
+        await this.parallelPosteriorStore.updatePosterior(group.profile.id, success);
+      } catch (err: unknown) {
+        this.logger.error('parallel posterior update failed', {
           groupId,
-          queueId: group.queueId,
           profileId: group.profile.id,
-          winnerRate: telemetry.winnerRate,
-          wastedLegs: telemetry.wastedLegs,
-          connectLatencyMs: telemetry.connectLatencyMs,
+          success,
         });
-
-        const success = this.isSuccessfulCompletion(group, body, new Date());
-
-        try {
-          await this.parallelPosteriorStore.updatePosterior(group.profile.id, success);
-        } catch (err: unknown) {
-          this.logger.error('parallel posterior update failed', {
+        Sentry.captureException(err, {
+          extra: {
+            context: 'parallel_status_callback.posterior_update',
             groupId,
             profileId: group.profile.id,
             success,
-          });
-          Sentry.captureException(err, {
-            extra: {
-              context: 'parallel_status_callback.posterior_update',
-              groupId,
-              profileId: group.profile.id,
-              success,
-            },
-          });
-        }
+          },
+        });
       }
+
+      await dialer.parallel.markTelemetryEmitted(groupId);
     }
 
     return { received: true };
@@ -139,12 +131,7 @@ export class ParallelService {
       return false;
     }
 
-    // accept both 'human' and 'unknown' amd results
-    // the dialer selects winners under 'human-or-unknown' policy,
-    // so 'unknown' is a legitimate win — not a failure
-    const acceptableAmd = winnerCall.amdResult === 'human' || winnerCall.amdResult === 'unknown';
-
-    if (!acceptableAmd) {
+    if (winnerCall.amdResult !== 'human') {
       return false;
     }
 
