@@ -3,103 +3,82 @@ title: Making Calls
 description: Dial from the keypad, click a contact's number, or start a queue from the home screen.
 ---
 
-Consuelo gives you three ways to start a call, plus a home screen that lets you configure everything before you dial.
+Consuelo gives you several ways to start a call. Pick whichever fits the moment.
 
-## The home screen
+## Ways to Call
 
-When you open the dialer, the home screen shows a setup form with these fields:
+| Method | When to Use |
+|--------|------------|
+| **Keypad** | You have a phone number and want to dial it directly |
+| **Click-to-call** | You're looking at a contact record and want to call them |
+| **Search** | You know who you want to call but need to find them first |
+| **Queue** | You have a list of people to call in order |
 
-| Field | What it does |
-|---|---|
-| **Select a list** | Pick a contact list (from opportunity records) to call through as a queue |
-| **Dial a number** | Enter a single phone number manually using the dial pad |
-| **Call from** | Choose which caller ID to display to the recipient |
-| **Prefer local presence** | Auto-select a number matching the recipient's area code |
-| **Calling mode** | Single (one at a time) or Parallel (up to 5 simultaneous) |
-| **Assist mode** | AI coaching (real-time suggestions) or Script mode (guided script) |
-| **Script** | Which script to follow (only visible when assist mode is Script) |
+## The Home Screen
 
-Selecting a list disables the manual number field, and vice versa.
+When you open the dialer, the home screen lets you configure your session before you start calling:
 
-## Methods for making calls
+- **Call from** — which of your phone numbers to use as caller ID
+- **Calling mode** — single call, parallel dialing, or queue mode
+- **Number of lines** — how many simultaneous calls (for parallel dialing)
+- **Assist mode** — AI coaching, script mode, or none
+- **Local presence** — auto-match caller ID to the recipient's area code
 
-### 1. Dial pad
+Set these once and they apply to every call in your session. You can change them anytime between calls.
 
-1. Open the dialer (`Cmd+D` / `Ctrl+D`)
-2. Enter the number using the on-screen keypad or your keyboard
-3. Select your caller ID from the **Call from** dropdown
-4. Click **Call** or press `Enter`
+## Dialing a Number
 
-The dial pad supports all standard keys (`0-9`, `*`, `#`). Long-press `0` to enter `+` for international numbers.
+1. Open the dialer
+2. Type the phone number using the keypad or your keyboard
+3. Click the **call button** or press **Enter**
 
-### 2. Click-to-call
+The dialer formats the number automatically and adds the country code if needed.
 
-Click the phone icon next to any contact's phone number in the CRM. The dialer opens with the number pre-filled and the contact's record loaded.
+## Click-to-Call
 
-### 3. Quick search
+From any contact record in the CRM:
 
-1. Press `Cmd+K` / `Ctrl+K` to open quick search
-2. Type a contact name or phone number
-3. Select the contact from results
-4. Click the phone icon to call
+1. Find the contact's phone number field
+2. Click the **phone icon** next to the number
+3. The dialer opens and starts the call
 
-## What happens when you call
+This is the fastest way to call someone you're already looking at.
 
-1. The dialer sets your status to **connecting** and requests mic permission if not already granted
-2. The Twilio SDK creates an outbound call via the `/v1/voice/token` endpoint
-3. Status changes to **ringing** when the recipient's phone starts ringing
-4. If they answer, status changes to **active** and the call timer starts
-5. The system polls `/v1/calls/status/{callSid}` to detect failures (busy, no-answer, canceled)
-6. When the call ends, status changes to **ended** and the post-call summary appears
+## Searching for a Contact
 
-## Caller ID selection
+1. Open the dialer
+2. Start typing a name in the search field
+3. Select the contact from the results
+4. Click **Call**
 
-### Manual selection
+The search checks names, phone numbers, and email addresses.
 
-Click the **Call from** dropdown on the home screen. All phone numbers provisioned in your workspace appear here. Each entry shows the phone number and its area code.
+## During a Call
 
-### Local presence (automatic)
+Once connected, you'll see the **in-call control bar** with these options:
 
-Check **Prefer local presence calling** on the home screen. The system:
+| Control | What It Does | Shortcut |
+|---------|-------------|----------|
+| **Mute** | Silences your microphone | `M` |
+| **Hold** | Places the caller on hold with music | `H` |
+| **Keypad** | Opens the DTMF pad for touch-tone input | `K` |
+| **Transfer** | Opens the transfer dialog | `T` |
+| **End Call** | Hangs up | `E` |
 
-1. Reads the area code of the number you're calling (extracted from E.164 format)
-2. Searches your provisioned numbers for a matching area code
-3. Uses the match as the caller ID
-4. Falls back to your selected number if no match exists
+<Note>
+**Keyboard shortcuts only work when you're not typing in a text field.** Click somewhere outside any input to activate them.
+</Note>
 
-See [Local Presence](/user-guide/dialer/capabilities/local-presence) for details.
+## After a Call
 
-## During the call
+When a call ends:
+- The call is logged automatically in the contact's record
+- If you're in a queue, you'll see a **disposition** prompt (connected, voicemail, no answer, etc.)
+- The dialer either auto-advances to the next contact or waits for you, depending on your queue settings
 
-While on a call, the sidebar shows:
+## Related
 
-- **Contact header** — name, company, phone number, timezone, and a status dot (green = active, yellow = on hold, pulsing = connecting)
-- **In-call controls** — mute, hold, transfer, DTMF keypad, end call
-- **Coaching panel** — AI talking points or script (depending on assist mode)
-- **Live transcript** — real-time conversation transcript via WebSocket
-- **Quick actions** — add a note or schedule a follow-up without leaving the dialer
-
-## After the call
-
-When the call ends:
-
-1. **Post-call summary** appears with AI-generated analysis (sentiment score, key moments, suggested next steps)
-2. **Outcome buttons** let you log a disposition (Connected, No Answer, Voicemail, Busy, etc.)
-3. The call is saved to your **call history** with duration, outcome, and recording (if enabled)
-
-## Call status values
-
-| Status | Description |
-|---|---|
-| `idle` | No active call |
-| `connecting` | Initiating the call via Twilio |
-| `ringing` | Recipient's phone is ringing |
-| `active` | Call is connected, audio flowing |
-| `ended` | Call ended normally |
-| `failed` | Call failed to connect (network error, invalid number, etc.) |
-
-## Next steps
-
-- [Hold, Mute & DTMF](/user-guide/dialer/capabilities/hold-mute-dtmf) — control the call while you're on it
-- [Transfers](/user-guide/dialer/capabilities/transfers) — hand off calls to colleagues
-- [Queue Management](/user-guide/dialer/capabilities/queue-management) — work through a list of contacts
+- [Transfers](/user-guide/dialer/capabilities/transfers) — hand calls to colleagues
+- [Hold, Mute & DTMF](/user-guide/dialer/capabilities/hold-mute-dtmf) — in-call controls
+- [Queue Management](/user-guide/dialer/capabilities/queue-management) — work through contact lists
+- [Keyboard Shortcuts](/user-guide/dialer/capabilities/keyboard-shortcuts) — full shortcut reference

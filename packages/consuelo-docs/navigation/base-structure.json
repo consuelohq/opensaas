@@ -77,6 +77,25 @@
                 "user-guide/data-migration/capabilities/error-handling"
               ]
             },
+            {
+              "key": "dataMigrationHowTos",
+              "label": "How-Tos",
+              "pages": [
+                "user-guide/data-migration/how-tos/prepare-your-csv-files",
+                "user-guide/data-migration/how-tos/import-companies-via-csv",
+                "user-guide/data-migration/how-tos/import-contacts-via-csv",
+                "user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
+                "user-guide/data-migration/how-tos/update-existing-records-via-import",
+                "user-guide/data-migration/how-tos/fix-import-errors",
+                "user-guide/data-migration/how-tos/export-your-data",
+                "user-guide/data-migration/how-tos/import-data-via-api",
+                "user-guide/data-migration/how-tos/upload-csv-programmatically",
+                "user-guide/data-migration/how-tos/migrating-from-other-crms",
+                "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
+              ]
+            }
+          ]
+        },
         {
           "key": "fileSystem",
           "label": "File System",
@@ -97,24 +116,6 @@
               "label": "How-Tos",
               "pages": [
                 "user-guide/file-system/how-tos/file-system-faq"
-              ]
-            }
-          ]
-        },
-            {
-              "key": "dataMigrationHowTos",
-              "label": "How-Tos",
-              "pages": [
-                "user-guide/data-migration/how-tos/prepare-your-csv-files",
-                "user-guide/data-migration/how-tos/import-companies-via-csv",
-                "user-guide/data-migration/how-tos/import-contacts-via-csv",
-                "user-guide/data-migration/how-tos/import-relations-between-objects-via-csv",
-                "user-guide/data-migration/how-tos/update-existing-records-via-import",
-                "user-guide/data-migration/how-tos/fix-import-errors",
-                "user-guide/data-migration/how-tos/export-your-data",
-                "user-guide/data-migration/how-tos/import-data-via-api",
-                "user-guide/data-migration/how-tos/migrating-from-other-crms",
-                "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
               ]
             }
           ]
@@ -234,7 +235,9 @@
             {
               "key": "aiHowTos",
               "label": "How-Tos",
-              "pages": ["user-guide/ai/how-tos/ai-faq"]
+              "pages": [
+                "user-guide/ai/how-tos/ai-faq"
+              ]
             }
           ]
         },
@@ -313,7 +316,9 @@
             {
               "key": "permissionsAccessHowTos",
               "label": "How-Tos",
-              "pages": ["user-guide/permissions-access/how-tos/permissions-faq"]
+              "pages": [
+                "user-guide/permissions-access/how-tos/permissions-faq"
+              ]
             }
           ]
         },
@@ -334,7 +339,9 @@
             {
               "key": "billingHowTos",
               "label": "How-Tos",
-              "pages": ["user-guide/billing/how-tos/billing-faq"]
+              "pages": [
+                "user-guide/billing/how-tos/billing-faq"
+              ]
             }
           ]
         },
@@ -369,7 +376,9 @@
             {
               "key": "dialerHowTos",
               "label": "How-Tos",
-              "pages": ["user-guide/dialer/how-tos/discord-setup"]
+              "pages": [
+                "user-guide/dialer/how-tos/discord-setup"
+              ]
             }
           ]
         },
@@ -394,7 +403,9 @@
             {
               "key": "settingsHowTos",
               "label": "How-Tos",
-              "pages": ["user-guide/settings/how-tos/settings-faq"]
+              "pages": [
+                "user-guide/settings/how-tos/settings-faq"
+              ]
             }
           ]
         }
@@ -407,7 +418,9 @@
         {
           "key": "developersGroup",
           "label": "Developers",
-          "pages": ["developers/introduction"]
+          "pages": [
+            "developers/introduction"
+          ]
         },
         {
           "key": "extend",
@@ -482,7 +495,9 @@
                         {
                           "key": "feedback",
                           "label": "Feedback",
-                          "pages": ["consuelo-ui/progress-bar"]
+                          "pages": [
+                            "consuelo-ui/progress-bar"
+                          ]
                         },
                         {
                           "key": "input",
