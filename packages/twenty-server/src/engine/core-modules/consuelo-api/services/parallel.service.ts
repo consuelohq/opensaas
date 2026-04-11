@@ -3,21 +3,21 @@ import {
   Injectable,
   Logger,
   NotImplementedException,
-} from '@nestjs/common';
+} from "@nestjs/common";
+import * as Sentry from "@sentry/node";
 
-import * as Sentry from '@sentry/node';
-
-import type { ParallelGroup } from '@consuelo/dialer';
-import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
-import { ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
+import type { ParallelGroup } from "@consuelo/dialer";
+import { LegacyDialerService } from "src/engine/core-modules/consuelo-api/services/legacy-dialer.service";
+import { ParallelPosteriorStore } from "src/engine/core-modules/consuelo-api/services/parallel-posterior.store";
 
 const MIN_SUCCESS_DURATION_SECONDS = 30;
+
 const TERMINAL_STATUSES = new Set([
-  'completed',
-  'failed',
-  'busy',
-  'no-answer',
-  'canceled',
+  "completed",
+  "failed",
+  "busy",
+  "no-answer",
+  "canceled",
 ]);
 
 @Injectable()
@@ -30,11 +30,15 @@ export class ParallelService {
   ) {}
 
   async initiateParallelDial() {
-    throw new NotImplementedException('DEV-1459: parallel dial migration in progress');
+    throw new NotImplementedException(
+      "DEV-1459: parallel dial migration in progress",
+    );
   }
 
   async validateParallelDial() {
-    throw new NotImplementedException('DEV-1459: parallel validation migration in progress');
+    throw new NotImplementedException(
+      "DEV-1459: parallel validation migration in progress",
+    );
   }
 
   async statusCallback(body: Record<string, string | undefined>) {
@@ -43,42 +47,34 @@ export class ParallelService {
     const answeredBy = body.AnsweredBy;
 
     if (!callSid || !callStatus) {
-      throw new BadRequestException('Missing CallSid or CallStatus');
+      throw new BadRequestException("Missing CallSid or CallStatus");
     }
 
     const dialer = this.legacyDialerService.getDialer();
-
     await dialer.parallel.handleStatusCallback(callSid, callStatus, answeredBy);
 
     const groupId = await dialer.parallel.getGroupIdForCall(callSid);
-
     if (!groupId) {
       return { received: true };
     }
 
     const group = await dialer.parallel.getGroup(groupId);
-
     if (!group) {
       return { received: true };
     }
 
-    // only update posteriors on the winner leg's terminal callback
-    // bug fix: previously updated on 'connected' (in-progress callback)
-    // which is too early — isSuccessfulCompletion can't evaluate yet
-    const isWinnerTerminal =
-      callSid === group.winnerSid &&
-      TERMINAL_STATUSES.has(callStatus);
+    const isTerminalCallback = TERMINAL_STATUSES.has(callStatus);
+    const isWinnerCallback = callSid === group.winnerSid;
+    const groupHasWinner = group.winnerSid !== null;
 
-    if (isWinnerTerminal && !group.telemetryEmittedAt) {
-      // mark telemetry emitted FIRST to win the race
-      // if two concurrent callbacks both reach here, only the first
-      // markTelemetryEmitted succeeds (returns true), the second is a no-op
-      const claimed = await dialer.parallel.markTelemetryEmitted(groupId);
+    if (isTerminalCallback && isWinnerCallback && groupHasWinner) {
+      const claimed =
+        await dialer.parallel.markTelemetryEmittedIfAbsent(groupId);
 
       if (claimed) {
         const telemetry = dialer.parallel.computeTelemetry(group);
 
-        this.logger.log('parallel telemetry emitted', {
+        this.logger.log("parallel telemetry emitted", {
           groupId,
           queueId: group.queueId,
           profileId: group.profile.id,
@@ -90,16 +86,19 @@ export class ParallelService {
         const success = this.isSuccessfulCompletion(group, body, new Date());
 
         try {
-          await this.parallelPosteriorStore.updatePosterior(group.profile.id, success);
+          await this.parallelPosteriorStore.updatePosterior(
+            group.profile.id,
+            success,
+          );
         } catch (err: unknown) {
-          this.logger.error('parallel posterior update failed', {
+          this.logger.error("parallel posterior update failed", {
             groupId,
             profileId: group.profile.id,
             success,
           });
           Sentry.captureException(err, {
             extra: {
-              context: 'parallel_status_callback.posterior_update',
+              context: "parallel_status_callback.posterior_update",
               groupId,
               profileId: group.profile.id,
               success,
@@ -113,15 +112,21 @@ export class ParallelService {
   }
 
   async customerTwiml() {
-    throw new NotImplementedException('DEV-1459: customer TwiML migration in progress');
+    throw new NotImplementedException(
+      "DEV-1459: customer TwiML migration in progress",
+    );
   }
 
   async getGroupStatus() {
-    throw new NotImplementedException('DEV-1459: group status migration in progress');
+    throw new NotImplementedException(
+      "DEV-1459: group status migration in progress",
+    );
   }
 
   async terminateGroup() {
-    throw new NotImplementedException('DEV-1459: terminate group migration in progress');
+    throw new NotImplementedException(
+      "DEV-1459: terminate group migration in progress",
+    );
   }
 
   private isSuccessfulCompletion(
@@ -133,23 +138,23 @@ export class ParallelService {
       return false;
     }
 
-    const winnerCall = group.calls.find((call) => call.callSid === group.winnerSid);
-
+    const winnerCall = group.calls.find(
+      (call) => call.callSid === group.winnerSid,
+    );
     if (!winnerCall) {
       return false;
     }
 
-    // accept both 'human' and 'unknown' amd results
-    // the dialer selects winners under 'human-or-unknown' policy,
-    // so 'unknown' is a legitimate win — not a failure
-    const acceptableAmd = winnerCall.amdResult === 'human' || winnerCall.amdResult === 'unknown';
+    const isHumanOrUnknown =
+      winnerCall.amdResult === "human" ||
+      (group.profile.amdPolicy === "human-or-unknown" &&
+        winnerCall.amdResult === "unknown");
 
-    if (!acceptableAmd) {
+    if (!isHumanOrUnknown) {
       return false;
     }
 
     const callbackDurationSeconds = this.parseDurationSeconds(callbackBody);
-
     if (callbackDurationSeconds !== null) {
       return callbackDurationSeconds >= MIN_SUCCESS_DURATION_SECONDS;
     }
@@ -159,7 +164,6 @@ export class ParallelService {
     }
 
     const connectedAtMs = new Date(group.connectedAt).getTime();
-
     if (Number.isNaN(connectedAtMs)) {
       return false;
     }
@@ -169,22 +173,24 @@ export class ParallelService {
       Math.floor((callbackReceivedAt.getTime() - connectedAtMs) / 1000),
     );
 
-    const isTerminalState = TERMINAL_STATUSES.has(callbackBody.CallStatus ?? '');
-
-    return isTerminalState && proxyDurationSeconds >= MIN_SUCCESS_DURATION_SECONDS;
+    const isTerminalState = TERMINAL_STATUSES.has(
+      callbackBody.CallStatus ?? "",
+    );
+    return (
+      isTerminalState && proxyDurationSeconds >= MIN_SUCCESS_DURATION_SECONDS
+    );
   }
 
   private parseDurationSeconds(
     callbackBody: Record<string, string | undefined>,
   ): number | null {
-    const rawDuration = callbackBody.CallDuration ?? callbackBody.DialCallDuration;
-
+    const rawDuration =
+      callbackBody.CallDuration ?? callbackBody.DialCallDuration;
     if (!rawDuration) {
       return null;
     }
 
     const parsed = Number(rawDuration);
-
     if (!Number.isFinite(parsed) || parsed < 0) {
       return null;
     }
