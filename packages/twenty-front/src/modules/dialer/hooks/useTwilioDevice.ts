@@ -186,6 +186,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       call.on('accept', async () => {
         try {
           stopRingbackTone();
+          call.mute(false);
           playCallConnectedSound();
           setActiveCall(call);
           const callSid = call.parameters?.CallSid ?? null;
@@ -384,11 +385,14 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }));
         updateCallStatus('connecting');
         playDialingStartedSound();
-        startRingbackTone();
 
         const call = await deviceRef.current.connect({
           params: { To: params.To, From: params.From },
         });
+
+        // mute carrier ringback and play our bell tone instead
+        call.mute(true);
+        startRingbackTone();
 
         bindCallEvents(call);
         return call;
