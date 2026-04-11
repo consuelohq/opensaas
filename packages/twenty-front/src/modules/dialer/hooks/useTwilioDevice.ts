@@ -24,6 +24,8 @@ import {
   playDialingStartedSound,
   playErrorSound,
   playIncomingCallSound,
+  startRingbackTone,
+  stopRingbackTone,
 } from '@/dialer/utils/notificationSounds';
 
 const EDGES: string[] = [
@@ -183,6 +185,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     (call: Call) => {
       call.on('accept', async () => {
         try {
+          stopRingbackTone();
           playCallConnectedSound();
           setActiveCall(call);
           const callSid = call.parameters?.CallSid ?? null;
@@ -207,6 +210,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       const handleEnd = () => {
+        stopRingbackTone();
         playCallEndSound();
         setActiveCall(null);
         stopStatusPolling();
@@ -220,6 +224,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       call.on('reject', handleEnd);
 
       call.on('deviceError', () => {
+        stopRingbackTone();
         playErrorSound();
         setActiveCall(null);
         stopStatusPolling();
@@ -379,6 +384,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }));
         updateCallStatus('connecting');
         playDialingStartedSound();
+        startRingbackTone();
 
         const call = await deviceRef.current.connect({
           params: { To: params.To, From: params.From },
@@ -390,6 +396,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         captureException(err, {
           extra: { context: 'connect', to: params.To, from: params.From },
         });
+        stopRingbackTone();
         updateCallStatus('failed');
         throw err;
       }

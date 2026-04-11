@@ -168,6 +168,50 @@ export const playNotificationSound = (): void => {
   playTone(880, 0.15, 0.25, 'sine');
 };
 
+// ringback tone — bell-like with harmonics, loops until stopped
+let ringbackTimer: ReturnType<typeof setTimeout> | null = null;
+
+const playRingbackPhrase = (): void => {
+  const ctx = getAudioContext();
+  if (ctx === null) return;
+
+  const bell = (freq: number, start: number, dur: number): void => {
+    [1, 2.02, 3.01].forEach((harmonic, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq * harmonic;
+      const vol = (0.12 * masterVolume) / (i + 1);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(vol, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + dur);
+    });
+  };
+
+  const t = ctx.currentTime;
+  bell(523.25, t, 0.25);
+  bell(659.25, t + 0.2, 0.25);
+  bell(783.99, t + 0.4, 0.35);
+  bell(880, t + 0.75, 0.5);
+};
+
+export const startRingbackTone = (): void => {
+  stopRingbackTone();
+  playRingbackPhrase();
+  ringbackTimer = setInterval(playRingbackPhrase, 2000);
+};
+
+export const stopRingbackTone = (): void => {
+  if (ringbackTimer !== null) {
+    clearInterval(ringbackTimer);
+    ringbackTimer = null;
+  }
+};
+
 export const setNotificationSoundsEnabled = (enabled: boolean): void => {
   soundsEnabled = enabled;
 
