@@ -11,6 +11,9 @@ import { TwilioSignatureGuard } from 'src/engine/core-modules/consuelo-api/guard
 import { CallsService } from 'src/engine/core-modules/consuelo-api/services/calls.service';
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
+import { ParallelBetaSamplerService } from 'src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service';
+import { ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
+import { ParallelStrategyResolverService } from 'src/engine/core-modules/consuelo-api/services/parallel-strategy-resolver.service';
 import { QueuesService } from 'src/engine/core-modules/consuelo-api/services/queues.service';
 import { VoiceService } from 'src/engine/core-modules/consuelo-api/services/voice.service';
 import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services/voice-state.service';
@@ -29,6 +32,9 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     CallsService,
     LegacyDialerService,
     ParallelService,
+    ParallelPosteriorStore,
+    ParallelBetaSamplerService,
+    ParallelStrategyResolverService,
     TwilioSignatureGuard,
     VoiceService,
     VoiceStateService,

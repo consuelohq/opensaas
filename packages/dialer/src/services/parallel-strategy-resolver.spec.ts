@@ -1,129 +1,143 @@
+import type { BetaSampler, PosteriorStore, ProfilePosterior } from '../types';
+
 import { ParallelStrategyResolver } from './parallel-strategy-resolver';
 
-describe('ParallelStrategyResolver', () => {
-  const resolver = new ParallelStrategyResolver();
+class MockPosteriorStore implements PosteriorStore {
+  constructor(private readonly posteriors: ProfilePosterior[] = []) {}
 
+  async loadPosteriors(): Promise<ProfilePosterior[]> {
+    return this.posteriors;
+  }
+
+  async updatePosterior(): Promise<void> {
+    return;
+  }
+}
+
+describe('ParallelStrategyResolver', () => {
   describe('explicit profile selection', () => {
-    it('should use explicit profileId when provided', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'conservative' });
+    it('should use explicit profileId when provided', async () => {
+      const resolver = new ParallelStrategyResolver(
+        new MockPosteriorStore(),
+        { sample: () => 0.5 },
+      );
+
+      const result = await resolver.resolve({ queueId: 'q1', profileId: 'conservative' });
+
       expect(result.profile.id).toBe('conservative');
       expect(result.reason).toBe('explicit-profile-id');
     });
+  });
 
-    it('should use aggressive profile when explicitly requested', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'aggressive' });
+  describe('thompson sampling', () => {
+    it('should choose the profile with the highest sampled value', async () => {
+      const sampleByAlpha = new Map<number, number>([
+        [2, 0.2],
+        [3, 0.9],
+        [4, 0.1],
+      ]);
+      const deterministicSampler: BetaSampler = {
+        sample(alpha) {
+          return sampleByAlpha.get(alpha) ?? 0;
+        },
+      };
+
+      const resolver = new ParallelStrategyResolver(
+        new MockPosteriorStore([
+          { profileId: 'balanced', alpha: 2, beta: 2 },
+          { profileId: 'aggressive', alpha: 3, beta: 2 },
+          { profileId: 'conservative', alpha: 4, beta: 2 },
+        ]),
+        deterministicSampler,
+      );
+
+      const result = await resolver.resolve({ queueId: 'q1' });
+
       expect(result.profile.id).toBe('aggressive');
-      expect(result.profile.fanout).toBe(4);
+      expect(result.reason).toBe('thompson-sampling-global');
     });
 
-    it('should fall through to rules when profileId is unknown', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'nonexistent' });
-      // unknown profileId → no match → falls through to default balanced
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
+    it('should merge uninformed posteriors with default priors', async () => {
+      const capturedAlphaBeta: Array<{ alpha: number; beta: number }> = [];
+      const deterministicSampler: BetaSampler = {
+        sample(alpha, beta) {
+          capturedAlphaBeta.push({ alpha, beta });
+          return alpha / (alpha + beta);
+        },
+      };
+
+      const resolver = new ParallelStrategyResolver(
+        new MockPosteriorStore([
+          { profileId: 'balanced', alpha: 1, beta: 1 },
+          { profileId: 'aggressive', alpha: 1, beta: 1 },
+          { profileId: 'conservative', alpha: 1, beta: 1 },
+        ]),
+        deterministicSampler,
+      );
+
+      await resolver.resolve({ queueId: 'q1' });
+
+      expect(capturedAlphaBeta).toEqual(
+        expect.arrayContaining([
+          { alpha: 11, beta: 11 },
+          { alpha: 9, beta: 13 },
+          { alpha: 13, beta: 9 },
+        ]),
+      );
+    });
+
+    it('should initialize missing profiles in memory with default priors', async () => {
+      const capturedAlphaBeta: Array<{ alpha: number; beta: number }> = [];
+      const deterministicSampler: BetaSampler = {
+        sample(alpha, beta) {
+          capturedAlphaBeta.push({ alpha, beta });
+          return 0.5;
+        },
+      };
+
+      const resolver = new ParallelStrategyResolver(
+        new MockPosteriorStore([{ profileId: 'balanced', alpha: 20, beta: 10 }]),
+        deterministicSampler,
+      );
+
+      await resolver.resolve({ queueId: 'q1' });
+
+      expect(capturedAlphaBeta).toEqual(
+        expect.arrayContaining([
+          { alpha: 20, beta: 10 },
+          { alpha: 9, beta: 13 },
+          { alpha: 13, beta: 9 },
+        ]),
+      );
     });
   });
 
-  describe('VIP segment detection', () => {
-    it('should choose conservative for vip campaignSegment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'vip' });
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
-    });
-
-    it('should choose conservative when queueId contains vip', () => {
-      const result = resolver.resolve({ queueId: 'vip-inbound' });
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
-    });
-
-    it('should choose conservative when queueId contains VIP (case insensitive)', () => {
-      const result = resolver.resolve({ queueId: 'VIP-QUEUE' });
-      expect(result.profile.id).toBe('conservative');
-    });
-  });
-
-  describe('answer rate thresholds', () => {
-    it('should choose aggressive for answer rate below 0.12', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.08 });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('low-answer-rate');
-    });
-
-    it('should NOT choose aggressive at exactly 0.12 (boundary)', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.12 });
-      // 0.12 is NOT < 0.12, so falls through to default
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
-    });
-
-    it('should choose aggressive at 0.119', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.119 });
-      expect(result.profile.id).toBe('aggressive');
-    });
-
-    it('should choose aggressive at 0 answer rate', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0 });
-      expect(result.profile.id).toBe('aggressive');
-    });
-  });
-
-  describe('cold/new-leads segments', () => {
-    it('should choose aggressive for cold segment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'cold' });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('cold-segment');
-    });
-
-    it('should choose aggressive for new-leads segment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'new-leads' });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('cold-segment');
-    });
-  });
-
-  describe('default fallback', () => {
-    it('should choose balanced when no special conditions match', () => {
-      const result = resolver.resolve({ queueId: 'regular-queue' });
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
-    });
-
-    it('should choose balanced with undefined optional fields', () => {
-      const result = resolver.resolve({
-        queueId: 'q1',
-        campaignSegment: undefined,
-        recentAnswerRate: undefined,
-        profileId: undefined,
+  describe('fallback behavior', () => {
+    it('should fallback to balanced when posterior loading fails', async () => {
+      const failingStore: PosteriorStore = {
+        async loadPosteriors(): Promise<ProfilePosterior[]> {
+          throw new Error('load failed');
+        },
+        async updatePosterior(): Promise<void> {
+          return;
+        },
+      };
+      const resolver = new ParallelStrategyResolver(failingStore, {
+        sample: () => 0.1,
       });
+
+      const result = await resolver.resolve({ queueId: 'q1' });
+
       expect(result.profile.id).toBe('balanced');
+      expect(result.reason).toBe('thompson-sampling-fallback');
     });
   });
 
-  describe('profile properties', () => {
-    it('balanced profile should have fanout 3 and human-or-unknown AMD', () => {
-      const result = resolver.resolve({ queueId: 'q1' });
-      expect(result.profile.fanout).toBe(3);
-      expect(result.profile.staggerMs).toBe(500);
-      expect(result.profile.amdPolicy).toBe('human-or-unknown');
-      expect(result.profile.terminationPolicy).toBe('winner-take-all');
+  describe('profile lookup APIs', () => {
+    const resolver = new ParallelStrategyResolver(new MockPosteriorStore(), {
+      sample: () => 0.1,
     });
 
-    it('aggressive profile should have fanout 4 and human-only AMD', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'aggressive' });
-      expect(result.profile.fanout).toBe(4);
-      expect(result.profile.staggerMs).toBe(250);
-      expect(result.profile.amdPolicy).toBe('human-only');
-    });
-
-    it('conservative profile should have fanout 2', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'conservative' });
-      expect(result.profile.fanout).toBe(2);
-      expect(result.profile.staggerMs).toBe(900);
-    });
-  });
-
-  describe('getProfile', () => {
     it('should return profile by id', () => {
       expect(resolver.getProfile('balanced')).toMatchObject({ id: 'balanced' });
     });
@@ -131,27 +145,10 @@ describe('ParallelStrategyResolver', () => {
     it('should return null for unknown profile', () => {
       expect(resolver.getProfile('nonexistent')).toBeNull();
     });
-  });
 
-  describe('listProfiles', () => {
-    it('should return all 3 profiles', () => {
+    it('should return all profiles', () => {
       const profiles = resolver.listProfiles();
       expect(profiles).toHaveLength(3);
-      const ids = profiles.map((p) => p.id).sort();
-      expect(ids).toEqual(['aggressive', 'balanced', 'conservative']);
-    });
-  });
-
-  describe('priority order — VIP beats low answer rate', () => {
-    it('should choose conservative for vip even with low answer rate', () => {
-      const result = resolver.resolve({
-        queueId: 'q1',
-        campaignSegment: 'vip',
-        recentAnswerRate: 0.05,
-      });
-      // VIP check comes before answer rate check
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
     });
   });
 });

@@ -1,4 +1,10 @@
-import { ParallelStrategyResolver, type ParallelGroup, type NumberPool } from '@consuelo/dialer';
+import {
+  ParallelStrategyResolver,
+  type ParallelGroup,
+  type NumberPool,
+  type PosteriorStore,
+  type ProfileKey,
+} from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
@@ -26,16 +32,29 @@ const getLockService = sharedCallerIdLockService;
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
-const strategyResolver = new ParallelStrategyResolver();
+const inMemoryPosteriorStore: PosteriorStore = {
+  async loadPosteriors() {
+    return [];
+  },
+  async updatePosterior() {
+    return;
+  },
+};
+const strategyResolver = new ParallelStrategyResolver(inMemoryPosteriorStore, {
+  sample: (alpha, beta) => alpha / (alpha + beta),
+});
 
 interface ParallelDialBody {
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];
-  profileId?: string;
+  profileId?: ProfileKey;
   campaignSegment?: string;
   recentAnswerRate?: number;
 }
+
+const isProfileKey = (value: unknown): value is ProfileKey =>
+  value === 'balanced' || value === 'aggressive' || value === 'conservative';
 
 /** /v1/calls/parallel routes — parallel dialing (power dialer) */
 export const parallelRoutes = (): RouteDefinition[] => [
@@ -80,8 +99,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
       try {
         const dialer = await getDialerForWorkspace(workspaceId);
-        const strategy = strategyResolver.resolve({
+        const strategy = await strategyResolver.resolve({
           queueId: body.queueId,
+          workspaceId,
           campaignSegment: body.campaignSegment,
           recentAnswerRate: body.recentAnswerRate,
           profileId: body.profileId,
@@ -189,8 +209,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
       try {
         const dialer = await getDialerForWorkspace(workspaceId);
         const query = req.query ?? {};
-        const profileId =
-          typeof query.profileId === 'string' ? query.profileId : undefined;
+        const profileId = isProfileKey(query.profileId)
+          ? query.profileId
+          : undefined;
         const queueId =
           typeof query.queueId === 'string' ? query.queueId : 'default';
         const campaignSegment =
@@ -202,8 +223,9 @@ export const parallelRoutes = (): RouteDefinition[] => [
             ? Number(query.recentAnswerRate)
             : undefined;
 
-        const strategy = strategyResolver.resolve({
+        const strategy = await strategyResolver.resolve({
           queueId,
+          workspaceId,
           campaignSegment,
           recentAnswerRate:
             recentAnswerRate !== undefined && Number.isFinite(recentAnswerRate)

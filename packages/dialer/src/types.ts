@@ -238,11 +238,33 @@ export type ParallelDialProfile = {
   terminationPolicy: ParallelTerminationPolicy;
 }
 
+export type ProfileKey = 'balanced' | 'aggressive' | 'conservative';
+
+export type ProfilePosterior = {
+  profileId: ProfileKey;
+  alpha: number;
+  beta: number;
+}
+
+export type BetaSampler = {
+  sample(alpha: number, beta: number): number;
+}
+
+export type PosteriorStore = {
+  loadPosteriors(workspaceId?: string): Promise<ProfilePosterior[]>;
+  updatePosterior(
+    profileId: ProfileKey,
+    success: boolean,
+    workspaceId?: string,
+  ): Promise<void>;
+}
+
 export type ParallelStrategyContext = {
   queueId: string;
+  workspaceId?: string;
   campaignSegment?: string;
   recentAnswerRate?: number;
-  profileId?: string;
+  profileId?: ProfileKey;
 }
 
 export type ParallelStrategyResolution = {
