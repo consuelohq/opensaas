@@ -260,6 +260,11 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         closeProtection: true,
       });
 
+      // disable Twilio's default sounds — we play our own via notificationSounds.ts
+      dev.audio?.incoming(false);
+      dev.audio?.outgoing(false);
+      dev.audio?.disconnect(false);
+
       dev.on('registered', () => {
         setDeviceReady(true);
         setDeviceError(null);
