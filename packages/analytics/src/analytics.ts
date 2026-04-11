@@ -71,7 +71,7 @@ export class Analytics {
 
     const client = await this.getClient();
     const isOpenAI = this.config.provider === 'openai';
-    const model = this.config.model ?? (isOpenAI ? 'gpt-4o-mini' : 'llama-3.1-8b-instant');
+    const model = this.config.model ?? (isOpenAI ? 'gpt-4o-mini' : 'gpt-oss-120b-128k');
 
     const resp = await client.chat.completions.create({
       model,

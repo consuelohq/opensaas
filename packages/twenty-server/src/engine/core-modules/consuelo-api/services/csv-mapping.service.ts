@@ -51,7 +51,7 @@ export class CsvMappingService {
     };
 
     const { text } = await generateText({
-      model: groq('llama-3.3-70b-versatile'),
+      model: groq('gpt-oss-120b-128k'),
       prompt: `${CSV_FIELD_MAPPING_PROMPT}\n\n## Input\n\n${JSON.stringify(skillInput, null, 2)}`,
       temperature: 0.1,
     });

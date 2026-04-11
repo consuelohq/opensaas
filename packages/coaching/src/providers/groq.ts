@@ -15,7 +15,7 @@ export class GroqProvider implements CoachingProvider {
 
   constructor(config: CoachingConfig = {}) {
     this.config = {
-      model: 'llama-3.3-70b-versatile',
+      model: 'gpt-oss-120b-128k',
       temperature: 0.4,
       maxTokens: 1000,
       ...config,
