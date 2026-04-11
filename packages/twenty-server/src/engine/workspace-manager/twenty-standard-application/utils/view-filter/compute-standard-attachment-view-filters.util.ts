@@ -18,7 +18,7 @@ export const computeStandardAttachmentViewFilters = (
         viewFilterName: 'fileCategoryIsAudio',
         fieldName: 'fileCategory',
         operand: ViewFilterOperand.IS,
-        value: JSON.stringify(['AUDIO']),
+        value: JSON.stringify(['RECORDING']),
       },
     }),
     agentFilesFileCategoryIsAgentFile: createStandardViewFilterFlatMetadata({
