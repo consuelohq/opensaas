@@ -1,7 +1,11 @@
 import { STANDARD_OBJECTS } from 'twenty-shared/metadata';
+import { PageLayoutTabLayoutMode } from 'twenty-shared/types';
 
 import { PageLayoutType } from 'src/engine/metadata-modules/page-layout/enums/page-layout-type.enum';
+import { WidgetType } from 'src/engine/metadata-modules/page-layout-widget/enums/widget-type.enum';
 import {
+  CONDITIONAL_DISPLAY_DEVICE_DESKTOP,
+  CONDITIONAL_DISPLAY_DEVICE_MOBILE,
   TAB_PROPS,
   WIDGET_PROPS,
 } from 'src/engine/workspace-manager/twenty-standard-application/constants/standard-page-layout-tabs.template';
@@ -18,6 +22,31 @@ const ATTACHMENT_PAGE_TABS = {
       fields: {
         universalIdentifier: '20202020-ac10-4010-8010-f11e5a11a411',
         ...WIDGET_PROPS.fields,
+      },
+      filePreviewMobile: {
+        universalIdentifier: '20202020-ac10-4010-8010-f11e5a11a412',
+        title: 'File Preview',
+        type: WidgetType.FILE_PREVIEW,
+        gridPosition: WIDGET_PROPS.noteRichText.gridPosition,
+        position: { layoutMode: TAB_PROPS.home.layoutMode, index: 1 },
+        conditionalDisplay: CONDITIONAL_DISPLAY_DEVICE_MOBILE,
+      },
+    },
+  },
+  filePreview: {
+    universalIdentifier: '20202020-ab10-4010-8010-f11e5a11a402',
+    title: 'File Preview',
+    position: 15,
+    icon: 'IconFileDescription',
+    layoutMode: PageLayoutTabLayoutMode.CANVAS,
+    widgets: {
+      filePreview: {
+        universalIdentifier: '20202020-ac10-4010-8010-f11e5a11a421',
+        title: 'File Preview',
+        type: WidgetType.FILE_PREVIEW,
+        gridPosition: WIDGET_PROPS.timeline.gridPosition,
+        position: WIDGET_PROPS.timeline.position,
+        conditionalDisplay: CONDITIONAL_DISPLAY_DEVICE_DESKTOP,
       },
     },
   },

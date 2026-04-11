@@ -51,6 +51,80 @@ export const DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT: PageLayout = {
           updatedAt: new Date().toISOString(),
           deletedAt: null,
         },
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-file-preview-mobile',
+          pageLayoutTabId: 'attachment-tab-fields',
+          title: 'File Preview',
+          type: WidgetType.FILE_PREVIEW,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 12,
+            column: 0,
+            rowSpan: 6,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+          conditionalDisplay: {
+            and: [
+              {
+                '===': [{ var: 'device' }, 'MOBILE'],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      __typename: 'PageLayoutTab',
+      id: 'attachment-tab-file-preview',
+      title: 'File Preview',
+      icon: 'IconFileDescription',
+      position: 150,
+      layoutMode: PageLayoutTabLayoutMode.CANVAS,
+      pageLayoutId: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      widgets: [
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-file-preview-desktop',
+          pageLayoutTabId: 'attachment-tab-file-preview',
+          title: 'File Preview',
+          type: WidgetType.FILE_PREVIEW,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 0,
+            column: 0,
+            rowSpan: 6,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+          conditionalDisplay: {
+            and: [
+              {
+                '===': [{ var: 'device' }, 'DESKTOP'],
+              },
+            ],
+          },
+        },
       ],
     },
     {
