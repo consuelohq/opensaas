@@ -724,6 +724,7 @@ export const useOpportunityQueueWorkspace = ({
     }
 
     autoStartedItemIdRef.current = currentQueueItem.id;
+    processedCallSidRef.current = null;
     setQueueItems((previousQueueItems) =>
       previousQueueItems.map((queueItem) =>
         queueItem.id === currentQueueItem.id
@@ -777,6 +778,8 @@ export const useOpportunityQueueWorkspace = ({
     void startCurrentQueueItem();
   }, [callState.status, currentQueueItem, listStatus, startCurrentQueueItem]);
 
+  const processedCallSidRef = useRef<string | null>(null);
+
   useEffect(() => {
     const previousCallStatus = previousCallStatusRef.current;
     previousCallStatusRef.current = callState.status;
@@ -784,6 +787,13 @@ export const useOpportunityQueueWorkspace = ({
     if (callState.status !== 'ended' || !currentQueueItem) {
       return;
     }
+
+    // Guard: only process each call end once
+    const callSid = callState.callSid ?? currentQueueItem.id;
+    if (processedCallSidRef.current === callSid) {
+      return;
+    }
+    processedCallSidRef.current = callSid;
 
     clearAutoAdvanceTimer();
 
