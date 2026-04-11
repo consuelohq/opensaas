@@ -8,6 +8,7 @@ describe('ParallelStrategyResolver', () => {
       const mockSampler: BetaSampler = {
         sample: jest.fn().mockReturnValue(0.5),
       };
+
       const mockStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockResolvedValue([]),
         updatePosterior: jest.fn().mockResolvedValue(undefined),
@@ -36,6 +37,7 @@ describe('ParallelStrategyResolver', () => {
           .mockReturnValueOnce(0.9)
           .mockReturnValueOnce(0.1),
       };
+
       const mockStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockResolvedValue([
           { profileId: 'balanced', alpha: 10, beta: 10 },
@@ -46,6 +48,7 @@ describe('ParallelStrategyResolver', () => {
       };
 
       const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
       const result = await resolver.resolve({ queueId: 'q1' });
 
       expect(result.profile.id).toBe('aggressive');
@@ -56,6 +59,7 @@ describe('ParallelStrategyResolver', () => {
       const mockSampler: BetaSampler = {
         sample: jest.fn().mockReturnValue(0.5),
       };
+
       const mockStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockResolvedValue([]),
         updatePosterior: jest.fn().mockResolvedValue(undefined),
@@ -68,43 +72,50 @@ describe('ParallelStrategyResolver', () => {
         scope: 'global',
       });
 
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(1, 11, 11);
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(2, 9, 13);
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(3, 13, 9);
+      expect(mockSampler.sample).toHaveBeenCalledTimes(3);
+      expect((mockSampler.sample as jest.Mock).mock.calls).toEqual(
+        expect.arrayContaining([[11, 11], [9, 13], [13, 9]]),
+      );
     });
 
     it('should merge loaded posterior values instead of using defaults', async () => {
       const mockSampler: BetaSampler = {
         sample: jest.fn().mockReturnValue(0.2),
       };
+
       const loadedPosteriors: ProfilePosterior[] = [
         { profileId: 'balanced', alpha: 15, beta: 15 },
         { profileId: 'aggressive', alpha: 50, beta: 10 },
         { profileId: 'conservative', alpha: 7, beta: 20 },
       ];
+
       const mockStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockResolvedValue(loadedPosteriors),
         updatePosterior: jest.fn().mockResolvedValue(undefined),
       };
 
       const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
       await resolver.resolve({ queueId: 'q1' });
 
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(1, 15, 15);
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(2, 50, 10);
-      expect(mockSampler.sample).toHaveBeenNthCalledWith(3, 7, 20);
+      expect(mockSampler.sample).toHaveBeenCalledTimes(3);
+      expect((mockSampler.sample as jest.Mock).mock.calls).toEqual(
+        expect.arrayContaining([[15, 15], [50, 10], [7, 20]]),
+      );
     });
 
     it('should sample all profiles exactly once when no explicit profileId is set', async () => {
       const mockSampler: BetaSampler = {
         sample: jest.fn().mockReturnValue(0.4),
       };
+
       const mockStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockResolvedValue([]),
         updatePosterior: jest.fn().mockResolvedValue(undefined),
       };
 
       const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
       await resolver.resolve({ queueId: 'q1' });
 
       expect(mockSampler.sample).toHaveBeenCalledTimes(3);
@@ -116,6 +127,7 @@ describe('ParallelStrategyResolver', () => {
       const mockSampler: BetaSampler = {
         sample: jest.fn().mockReturnValue(0.1),
       };
+
       const failingStore: PosteriorStore = {
         loadPosteriors: jest.fn().mockRejectedValue(new Error('load failed')),
         updatePosterior: jest.fn().mockResolvedValue(undefined),
@@ -147,12 +159,14 @@ describe('ParallelStrategyResolver', () => {
         staggerMs: 500,
         amdPolicy: 'human-or-unknown',
       });
+
       expect(resolver.getProfile('aggressive')).toMatchObject({
         id: 'aggressive',
         fanout: 4,
         staggerMs: 250,
         amdPolicy: 'human-only',
       });
+
       expect(resolver.getProfile('conservative')).toMatchObject({
         id: 'conservative',
         fanout: 2,

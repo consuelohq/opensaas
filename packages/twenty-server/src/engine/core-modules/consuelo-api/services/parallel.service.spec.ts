@@ -1,6 +1,9 @@
 import type { ParallelGroup } from '@consuelo/dialer';
 
 jest.mock('@consuelo/dialer', () => ({}), { virtual: true });
+jest.mock('@sentry/node', () => ({
+  captureException: jest.fn(),
+}));
 
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
 
@@ -65,12 +68,7 @@ describe('ParallelService posterior updates', () => {
       mockParallelPosteriorStore as never,
     );
 
-    return {
-      service,
-      group,
-      mockDialer,
-      mockParallelPosteriorStore,
-    };
+    return { service, group, mockDialer, mockParallelPosteriorStore };
   };
 
   it('should increment alpha when success=true', async () => {
