@@ -18,6 +18,13 @@ import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
 import { selectedMicState } from '@/dialer/states/selectedMicState';
 import { selectedSpeakerState } from '@/dialer/states/selectedSpeakerState';
 import type { CallStatus } from '@/dialer/types/dialer';
+import {
+  playCallConnectedSound,
+  playCallEndSound,
+  playDialingStartedSound,
+  playErrorSound,
+  playIncomingCallSound,
+} from '@/dialer/utils/notificationSounds';
 
 const EDGES: string[] = [
   'ashburn',
@@ -176,6 +183,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     (call: Call) => {
       call.on('accept', async () => {
         try {
+          playCallConnectedSound();
           setActiveCall(call);
           const callSid = call.parameters?.CallSid ?? null;
           setCallState((prev) => ({
@@ -199,6 +207,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       const handleEnd = () => {
+        playCallEndSound();
         setActiveCall(null);
         stopStatusPolling();
         setCallError(null);
@@ -211,6 +220,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       call.on('reject', handleEnd);
 
       call.on('deviceError', () => {
+        playErrorSound();
         setActiveCall(null);
         stopStatusPolling();
         updateCallStatus('failed');
@@ -281,6 +291,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       dev.on('incoming', (call: Call) => {
+        playIncomingCallSound();
         bindCallEvents(call);
         updateCallStatus('ringing');
       });
@@ -362,6 +373,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
           fromNumber: params.From,
         }));
         updateCallStatus('connecting');
+        playDialingStartedSound();
 
         const call = await deviceRef.current.connect({
           params: { To: params.To, From: params.From },
