@@ -1,4 +1,4 @@
-# CLAUDE.md — opensaas agent instructions
+# Agents.md — opensaas agent instructions
 
 ## first things first
 
@@ -245,7 +245,7 @@ dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules
 
 ## deployment — railway
 
-production is deployed on railway at `app.consuelohq.com`. four services:
+production is deployed on railway at `app.consuelohq.com`. four services: we are selling this to insurance agents
 
 | service         | what it does                          | Dockerfile                                 |
 | --------------- | ------------------------------------- | ------------------------------------------ |
@@ -340,7 +340,7 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 - `resolverSchemaScope: 'metadata'` — for the metadata graphql config
 - workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
 
-## consuelo internal instance — direct API access
+## consuelo internal instance — direct API access this is NOT the same as app.consuelohq.com this is our workspace for us to dev and work on and app.consuelohq.com is what we sell.
 
 the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API you can hit directly.
 
@@ -843,3 +843,38 @@ these are layer 1 (logic with mocks). layer 2 (integration with real twilio) and
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+lesson 1: `railway ssh` output can swallow simple echo commands. don't use railway ssh
+  -- sh -c 'echo VAR=$VAR' to check env vars — the output gets eaten. use railway ssh --
+  env | grep VAR_NAME instead. the env vars ARE injected on deploy, they just don't show
+  up with echo in some cases.
+
+  lesson 2: APP_VERSION must match a version in the upgrade command's `allCommands`
+  record. setting it to an arbitrary version will pass
+  semver validation but fail with "No command found for version X."
+
+  lesson 3: workspace `version` column must be set to the previous minor version. the
+  upgrade command checks core.workspace.version and requires it to be at least one minor
+  version behind APP_VERSION. if it's null (never upgraded), set it to the previous
+  version (e.g. 1.17.0 for upgrading to 1.18.0).
+
+  lesson 4: the standard application sync is the ONLY correct way to apply metadata
+  changes to existing workspaces. manually inserting views/nav items into the DB creates
+  broken shells with no view fields, filters, or field groups. never do it.
+
+  lesson 5: custom-app view fields on standard-app views break the sync validator. fix:
+  reassign those view fields to the standard app's applicationId before running sync.
+
+  lesson 6: orphaned view fields (referencing deleted/moved field metadata) also crash
+  the sync. check for them before running sync.
+
+  lesson 7: "position" means different things. core.navigationMenuItem.position must be
+  >= 0 per the sync validator. workspace record position (listMember rows) can be
+  negative — that's twenty's prepend behavior.
+qmd query "APP_VERSION upgrade command allCommands version 1.16 1.17 1.18"
+  qmd query "workspace version column null upgrade previous minor version"
+  qmd query "standard application sync existing workspace metadata views fields"
+  qmd query "custom view fields standard views applicationId sync ENTITY_NOT_FOUND"
+  qmd query "orphaned view fields fieldMetadataId sync crash"
+  qmd query "railway ssh echo env var output swallowed grep"
+  qmd query "navigationMenuItem position non-negative vs record position negative"
