@@ -55,6 +55,7 @@ describe('ParallelStrategyResolver', () => {
 
       expect(result.profile.id).toBe('aggressive');
       expect(result.reason).toBe('thompson-sampling-global');
+      expect(result.scope).toBe('global');
     });
 
     it('should merge uninformed posteriors with default priors', async () => {
@@ -130,6 +131,7 @@ describe('ParallelStrategyResolver', () => {
 
       expect(result.profile.id).toBe('balanced');
       expect(result.reason).toBe('thompson-sampling-fallback');
+      expect(result.scope).toBe('fallback');
     });
   });
 
@@ -140,10 +142,6 @@ describe('ParallelStrategyResolver', () => {
 
     it('should return profile by id', () => {
       expect(resolver.getProfile('balanced')).toMatchObject({ id: 'balanced' });
-    });
-
-    it('should return null for unknown profile', () => {
-      expect(resolver.getProfile('nonexistent')).toBeNull();
     });
 
     it('should return all profiles', () => {

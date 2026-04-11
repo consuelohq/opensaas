@@ -231,7 +231,7 @@ export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
 export type ParallelTerminationPolicy = 'winner-take-all';
 
 export type ParallelDialProfile = {
-  id: string;
+  id: ProfileKey;
   fanout: number;
   staggerMs: number;
   amdPolicy: ParallelAmdPolicy;
@@ -261,7 +261,6 @@ export type PosteriorStore = {
 
 export type ParallelStrategyContext = {
   queueId: string;
-  workspaceId?: string;
   campaignSegment?: string;
   recentAnswerRate?: number;
   profileId?: ProfileKey;
@@ -270,6 +269,7 @@ export type ParallelStrategyContext = {
 export type ParallelStrategyResolution = {
   profile: ParallelDialProfile;
   reason: string;
+  scope?: 'global' | 'workspace' | 'fallback';
 }
 
 export type ParallelTelemetry = {
