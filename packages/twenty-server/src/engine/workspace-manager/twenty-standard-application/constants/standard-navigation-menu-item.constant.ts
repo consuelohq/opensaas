@@ -29,7 +29,7 @@ export const STANDARD_NAVIGATION_MENU_ITEMS = {
     universalIdentifier: '20202020-b00b-4b0b-8b0b-c0aba11c000b',
     viewUniversalIdentifier:
       STANDARD_OBJECTS.listMember.views.allListMembers.universalIdentifier,
-    position: -1,
+    position: 10,
   },
   allPeople: {
     universalIdentifier: '20202020-b005-4b05-8b05-c0aba11c0005',
