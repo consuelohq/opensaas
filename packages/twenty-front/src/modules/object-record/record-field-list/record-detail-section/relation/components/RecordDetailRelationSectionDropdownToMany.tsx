@@ -168,7 +168,10 @@ export const RecordDetailRelationSectionDropdownToMany = ({
 
   const handleImport = () => {
     closeDropdown(dropdownId);
-    onImport?.();
+    // Delay to let the dropdown fully close before opening the modal
+    setTimeout(() => {
+      onImport?.();
+    }, 100);
   };
 
   return (
