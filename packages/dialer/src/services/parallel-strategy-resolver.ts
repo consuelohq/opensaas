@@ -63,7 +63,7 @@ export class ParallelStrategyResolver {
     }
 
     try {
-      const loadedPosteriors = await this.posteriorStore.loadPosteriors(context.workspaceId);
+      const loadedPosteriors = await this.posteriorStore.loadPosteriors();
       const posteriorMap = this.buildPosteriorMap(loadedPosteriors);
 
       let winningProfile: ProfileKey = 'balanced';
@@ -82,6 +82,7 @@ export class ParallelStrategyResolver {
       return {
         profile: PROFILE_REGISTRY[winningProfile],
         reason: 'thompson-sampling-global',
+        scope: 'global',
       };
     } catch (error: unknown) {
       await this.logPosteriorLoadError(error, context);
@@ -89,12 +90,13 @@ export class ParallelStrategyResolver {
       return {
         profile: PROFILE_REGISTRY.balanced,
         reason: 'thompson-sampling-fallback',
+        scope: 'fallback',
       };
     }
   }
 
-  getProfile(profileId: string): ParallelDialProfile | null {
-    return PROFILE_REGISTRY[profileId as ProfileKey] ?? null;
+  getProfile(profileId: ProfileKey): ParallelDialProfile {
+    return PROFILE_REGISTRY[profileId];
   }
 
   listProfiles(): ParallelDialProfile[] {
@@ -141,14 +143,15 @@ export class ParallelStrategyResolver {
         logger = createLogger('dialer:ParallelStrategyResolver');
       }
 
-      logger.error(
-        '[ParallelStrategyResolver] posterior load failed, using fallback',
-        {
-          workspaceId: context.workspaceId,
-          queueId: context.queueId,
-          error: error instanceof Error ? error.message : String(error),
-        },
-      );
+      if (logger) {
+        logger.error(
+          '[ParallelStrategyResolver] posterior load failed, using fallback',
+          {
+            queueId: context.queueId,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
     } catch {
       // logger package is optional in some consumers
     }
