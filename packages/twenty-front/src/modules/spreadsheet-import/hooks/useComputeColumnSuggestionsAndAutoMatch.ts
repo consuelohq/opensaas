@@ -2,7 +2,7 @@ import { useSpreadsheetImportInternal } from '@/spreadsheet-import/hooks/useSpre
 import { initialComputedColumnsSelector, matchColumnsState,
 } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/initialComputedColumnsState';
 import { suggestedFieldsByColumnHeaderState } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/suggestedFieldsByColumnHeaderState';
-import { SpreadsheetColumnType } from '@/spreadsheet-import/types';
+import { SpreadsheetColumnType } from '@/spreadsheet-import/types/SpreadsheetColumnType';
 import type { SpreadsheetColumns, ImportedRow } from '@/spreadsheet-import/types';
 import { getMatchedColumnsWithFuse } from '@/spreadsheet-import/utils/getMatchedColumnsWithFuse';
 import { setColumn } from '@/spreadsheet-import/utils/setColumn';
