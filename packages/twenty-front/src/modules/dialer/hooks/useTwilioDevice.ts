@@ -24,8 +24,6 @@ import {
   playDialingStartedSound,
   playErrorSound,
   playIncomingCallSound,
-  startRingbackTone,
-  stopRingbackTone,
 } from '@/dialer/utils/notificationSounds';
 
 const EDGES: string[] = [
@@ -185,8 +183,6 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
     (call: Call) => {
       call.on('accept', async () => {
         try {
-          stopRingbackTone();
-          call.mute(false);
           playCallConnectedSound();
           setActiveCall(call);
           const callSid = call.parameters?.CallSid ?? null;
@@ -211,7 +207,6 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       const handleEnd = () => {
-        stopRingbackTone();
         playCallEndSound();
         setActiveCall(null);
         stopStatusPolling();
@@ -225,7 +220,6 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       call.on('reject', handleEnd);
 
       call.on('deviceError', () => {
-        stopRingbackTone();
         playErrorSound();
         setActiveCall(null);
         stopStatusPolling();
@@ -266,9 +260,8 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         closeProtection: true,
       });
 
-      // disable Twilio's default sounds — we play our own via notificationSounds.ts
+      // disable Twilio's default sounds for events we handle ourselves
       dev.audio?.incoming(false);
-      dev.audio?.outgoing(false);
       dev.audio?.disconnect(false);
 
       dev.on('registered', () => {
@@ -390,17 +383,12 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
           params: { To: params.To, From: params.From },
         });
 
-        // mute carrier ringback and play our bell tone instead
-        call.mute(true);
-        startRingbackTone();
-
         bindCallEvents(call);
         return call;
       } catch (err: unknown) {
         captureException(err, {
           extra: { context: 'connect', to: params.To, from: params.From },
         });
-        stopRingbackTone();
         updateCallStatus('failed');
         throw err;
       }
