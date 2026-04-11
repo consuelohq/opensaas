@@ -188,6 +188,10 @@ export type {
 } from './schemas/coaching.js';
 export { createCoachingSchemas } from './schemas/coaching.js';
 
+// skill executor (non-interactive skill invocation)
+export { executeSkill } from './skill-executor.js';
+export type { SkillExecutorOptions, SkillInput, SkillResult } from './skill-executor.js';
+
 // types
 export type {
   AgentMessage,
