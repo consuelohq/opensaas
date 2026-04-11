@@ -7,11 +7,6 @@ import { useRecoilValue } from 'recoil';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { isDefined } from 'twenty-shared/utils';
 
-const REACT_APP_SERVER_BASE_URL =
-  window._env_?.REACT_APP_SERVER_BASE_URL ??
-  process.env.REACT_APP_SERVER_BASE_URL ??
-  '';
-
 const StyledContainer = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -64,11 +59,24 @@ export const FilePreviewWidget = ({
     );
   }
 
+  // The server adds a signed `url` to each file in FILES fields via
+  // FilesFieldQueryResultGetterHandler — use it directly
+  const documentUrl = firstFile.url;
+
+  if (!isDefined(documentUrl)) {
+    return (
+      <StyledContainer>
+        <StyledEmptyState>
+          <Trans>No file uploaded yet</Trans>
+        </StyledEmptyState>
+      </StyledContainer>
+    );
+  }
+
   const documentName =
     (typeof nameField === 'string' ? nameField : '') ||
-    firstFile.fileName ||
+    firstFile.label ||
     'Untitled';
-  const documentUrl = `${REACT_APP_SERVER_BASE_URL}/v1/files/${firstFile.fileId}`;
   const documentExtension = firstFile.extension ?? undefined;
 
   return (
