@@ -4,16 +4,22 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { PosteriorStore, ProfileKey, ProfilePosterior } from '@consuelo/dialer';
 import { DataSource } from 'typeorm';
 
+const GLOBAL_SCOPE = 'global';
+const WORKSPACE_SCOPE = 'workspace';
+
 @Injectable()
 export class ParallelPosteriorStore implements PosteriorStore {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   async loadPosteriors(workspaceId?: string): Promise<ProfilePosterior[]> {
+    const scope = workspaceId ? WORKSPACE_SCOPE : GLOBAL_SCOPE;
+
     const rows = await this.dataSource.query(
-      workspaceId
-        ? 'SELECT profile_id, alpha, beta FROM parallel_profile_posteriors WHERE workspace_id = $1'
-        : 'SELECT profile_id, alpha, beta FROM parallel_profile_posteriors WHERE workspace_id IS NULL',
-      workspaceId ? [workspaceId] : [],
+      `SELECT profile_id, alpha, beta
+       FROM profile_posteriors
+       WHERE scope = $1
+         AND (($2::uuid IS NULL AND workspace_id IS NULL) OR workspace_id = $2::uuid)`,
+      [scope, workspaceId ?? null],
     );
 
     return rows
@@ -32,15 +38,21 @@ export class ParallelPosteriorStore implements PosteriorStore {
     success: boolean,
     workspaceId?: string,
   ): Promise<void> {
+    const scope = workspaceId ? WORKSPACE_SCOPE : GLOBAL_SCOPE;
+
     await this.dataSource.query(
-      `INSERT INTO parallel_profile_posteriors (workspace_id, profile_id, alpha, beta)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (workspace_id, profile_id)
+      `INSERT INTO profile_posteriors (scope, workspace_id, profile_id, alpha, beta)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (
+         scope,
+         COALESCE(workspace_id, '00000000-0000-0000-0000-000000000000'::uuid),
+         profile_id
+       )
        DO UPDATE SET
-         alpha = parallel_profile_posteriors.alpha + EXCLUDED.alpha,
-         beta = parallel_profile_posteriors.beta + EXCLUDED.beta,
+         alpha = profile_posteriors.alpha + EXCLUDED.alpha,
+         beta = profile_posteriors.beta + EXCLUDED.beta,
          updated_at = NOW()`,
-      [workspaceId ?? null, profileId, success ? 1 : 0, success ? 0 : 1],
+      [scope, workspaceId ?? null, profileId, success ? 1 : 0, success ? 0 : 1],
     );
   }
 
