@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
-
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 
-const CSV_FIELD_MAPPING_PROMPT = `You are a CSV field mapping expert. Analyze the CSV headers and sample data below, then map each header to the most appropriate target field.
+const CSV_FIELD_MAPPING_PROMPT = `You are a CSV field mapping expert. Analyze the CSV columns and sample data below, then map each column index to the most appropriate target field key.
 
 ## Rules
 
-1. Map each CSV header to the single best-matching target field key.
-2. If a header clearly does not match any target field, set its mapping to "skip".
+1. Map each CSV column INDEX (not header) to the single best-matching target field key.
+2. If a column clearly does not match any target field, set its mapping to "skip".
 3. Prioritize exact matches, then semantic matches (e.g. "First" → first name, "Ph" → phone).
 4. For name fields: look for first name, last name, or full name patterns.
 5. For phone fields: any column containing phone, cell, mobile, tel, or number patterns.
@@ -16,11 +15,10 @@ const CSV_FIELD_MAPPING_PROMPT = `You are a CSV field mapping expert. Analyze th
 8. Use the sample data rows to disambiguate ambiguous headers.
 
 Return ONLY a JSON object — no explanation, no markdown fences:
-
-{"mappings": {"<csv_header>": "<target_field_key_or_skip>"}, "confidence": "high|medium|low"}`;
+{"mappings": {"<column_index_as_string>": "<target_field_key_or_skip>"}, "confidence": "high|medium|low"}`;
 
 export type CsvMappingInput = {
-  headers: string[];
+  columns: { index: number; header: string }[];
   sampleRows: string[][];
   targetFields: { key: string; label: string }[];
 };
@@ -40,7 +38,6 @@ export class CsvMappingService {
     const { createGroq } = await import('@ai-sdk/groq');
 
     const apiKey = this.twentyConfigService.get('GROQ_API_KEY');
-
     if (!apiKey) {
       throw new Error('GROQ_API_KEY is not configured');
     }
@@ -48,7 +45,7 @@ export class CsvMappingService {
     const groq = createGroq({ apiKey });
 
     const skillInput = {
-      headers: input.headers,
+      columns: input.columns,
       sampleRows: input.sampleRows.slice(0, 5),
       targetFields: input.targetFields,
     };
