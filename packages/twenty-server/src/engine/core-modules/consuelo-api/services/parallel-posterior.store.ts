@@ -16,7 +16,7 @@ export class ParallelPosteriorStore implements PosteriorStore {
 
     const rows = await this.dataSource.query(
       `SELECT profile_id, alpha, beta
-       FROM profile_posteriors
+       FROM core.profile_posteriors
        WHERE scope = $1
          AND (($2::uuid IS NULL AND workspace_id IS NULL) OR workspace_id = $2::uuid)`,
       [scope, workspaceId ?? null],
@@ -41,7 +41,7 @@ export class ParallelPosteriorStore implements PosteriorStore {
     const scope = workspaceId ? WORKSPACE_SCOPE : GLOBAL_SCOPE;
 
     await this.dataSource.query(
-      `INSERT INTO profile_posteriors (scope, workspace_id, profile_id, alpha, beta)
+      `INSERT INTO core.profile_posteriors (scope, workspace_id, profile_id, alpha, beta)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (
          scope,
@@ -49,8 +49,8 @@ export class ParallelPosteriorStore implements PosteriorStore {
          profile_id
        )
        DO UPDATE SET
-         alpha = profile_posteriors.alpha + EXCLUDED.alpha,
-         beta = profile_posteriors.beta + EXCLUDED.beta,
+         alpha = core.profile_posteriors.alpha + EXCLUDED.alpha,
+         beta = core.profile_posteriors.beta + EXCLUDED.beta,
          updated_at = NOW()`,
       [scope, workspaceId ?? null, profileId, success ? 1 : 0, success ? 0 : 1],
     );

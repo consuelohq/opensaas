@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotImplementedException,
+} from '@nestjs/common';
 
 import * as Sentry from '@sentry/node';
 
@@ -38,7 +43,7 @@ export class ParallelService {
     const answeredBy = body.AnsweredBy;
 
     if (!callSid || !callStatus) {
-      throw new Error('Missing CallSid or CallStatus');
+      throw new BadRequestException('Missing CallSid or CallStatus');
     }
 
     const dialer = this.legacyDialerService.getDialer();
@@ -53,49 +58,55 @@ export class ParallelService {
 
     const group = await dialer.parallel.getGroup(groupId);
 
-    if (!group || (group.status !== 'connected' && group.status !== 'completed')) {
+    if (!group) {
       return { received: true };
     }
 
-    const releasableNumbers = dialer.parallel.getReleasableNumbers(group);
+    // only update posteriors on the winner leg's terminal callback
+    // bug fix: previously updated on 'connected' (in-progress callback)
+    // which is too early — isSuccessfulCompletion can't evaluate yet
+    const isWinnerTerminal =
+      callSid === group.winnerSid &&
+      TERMINAL_STATUSES.has(callStatus);
 
-    for (const number of releasableNumbers) {
-      await this.legacyDialerService.getCallerIdLockService().releaseLockByNumber(number);
-    }
+    if (isWinnerTerminal && !group.telemetryEmittedAt) {
+      // mark telemetry emitted FIRST to win the race
+      // if two concurrent callbacks both reach here, only the first
+      // markTelemetryEmitted succeeds (returns true), the second is a no-op
+      const claimed = await dialer.parallel.markTelemetryEmitted(groupId);
 
-    if (!group.telemetryEmittedAt) {
-      const telemetry = dialer.parallel.computeTelemetry(group);
+      if (claimed) {
+        const telemetry = dialer.parallel.computeTelemetry(group);
 
-      this.logger.log('parallel telemetry emitted', {
-        groupId,
-        queueId: group.queueId,
-        profileId: group.profile.id,
-        winnerRate: telemetry.winnerRate,
-        wastedLegs: telemetry.wastedLegs,
-        connectLatencyMs: telemetry.connectLatencyMs,
-      });
-
-      const success = this.isSuccessfulCompletion(group, body, new Date());
-
-      try {
-        await this.parallelPosteriorStore.updatePosterior(group.profile.id, success);
-      } catch (err: unknown) {
-        this.logger.error('parallel posterior update failed', {
+        this.logger.log('parallel telemetry emitted', {
           groupId,
+          queueId: group.queueId,
           profileId: group.profile.id,
-          success,
+          winnerRate: telemetry.winnerRate,
+          wastedLegs: telemetry.wastedLegs,
+          connectLatencyMs: telemetry.connectLatencyMs,
         });
-        Sentry.captureException(err, {
-          extra: {
-            context: 'parallel_status_callback.posterior_update',
+
+        const success = this.isSuccessfulCompletion(group, body, new Date());
+
+        try {
+          await this.parallelPosteriorStore.updatePosterior(group.profile.id, success);
+        } catch (err: unknown) {
+          this.logger.error('parallel posterior update failed', {
             groupId,
             profileId: group.profile.id,
             success,
-          },
-        });
+          });
+          Sentry.captureException(err, {
+            extra: {
+              context: 'parallel_status_callback.posterior_update',
+              groupId,
+              profileId: group.profile.id,
+              success,
+            },
+          });
+        }
       }
-
-      await dialer.parallel.markTelemetryEmitted(groupId);
     }
 
     return { received: true };
@@ -124,7 +135,16 @@ export class ParallelService {
 
     const winnerCall = group.calls.find((call) => call.callSid === group.winnerSid);
 
-    if (!winnerCall || winnerCall.amdResult !== 'human') {
+    if (!winnerCall) {
+      return false;
+    }
+
+    // accept both 'human' and 'unknown' amd results
+    // the dialer selects winners under 'human-or-unknown' policy,
+    // so 'unknown' is a legitimate win — not a failure
+    const acceptableAmd = winnerCall.amdResult === 'human' || winnerCall.amdResult === 'unknown';
+
+    if (!acceptableAmd) {
       return false;
     }
 
