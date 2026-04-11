@@ -15,7 +15,6 @@ import { setColumn } from '@/spreadsheet-import/utils/setColumn';
 import { useRecoilCallback } from 'recoil';
 
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import { REACT_APP_SERVER_BASE_URL } from '~/config';
 
 const fetchAiMappings = async (
   headers: string[],
@@ -24,11 +23,15 @@ const fetchAiMappings = async (
 ): Promise<Record<string, string> | null> => {
   try {
     const response = await authenticatedFetch(
-      `${REACT_APP_SERVER_BASE_URL}/api/v1/csv-mapping/analyze`,
+      `/api/v1/csv-mapping/analyze`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ headers, sampleRows, targetFields }),
+        body: JSON.stringify({
+          columns: headers.map((h, i) => ({ index: i, header: h })),
+          sampleRows,
+          targetFields,
+        }),
       },
     );
 
@@ -100,8 +103,7 @@ export const useComputeColumnSuggestionsAndAutoMatch = () => {
             const usedKeys = new Set<string>();
 
             for (let i = 0; i < matchedColumns.length; i++) {
-              const header = matchedColumns[i].header;
-              const targetKey = aiMappings[header];
+              const targetKey = aiMappings[String(i)];
 
               if (
                 !targetKey ||
