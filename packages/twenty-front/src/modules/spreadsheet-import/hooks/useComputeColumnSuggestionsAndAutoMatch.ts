@@ -1,9 +1,15 @@
 import { useSpreadsheetImportInternal } from '@/spreadsheet-import/hooks/useSpreadsheetImportInternal';
-import { initialComputedColumnsSelector, matchColumnsState,
+import {
+  initialComputedColumnsSelector,
+  matchColumnsState,
 } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/initialComputedColumnsState';
 import { suggestedFieldsByColumnHeaderState } from '@/spreadsheet-import/steps/components/MatchColumnsStep/components/states/suggestedFieldsByColumnHeaderState';
+import {
+  type ImportedRow,
+  type SpreadsheetImportField,
+} from '@/spreadsheet-import/types';
+import { type SpreadsheetColumns } from '@/spreadsheet-import/types/SpreadsheetColumns';
 import { SpreadsheetColumnType } from '@/spreadsheet-import/types/SpreadsheetColumnType';
-import type { SpreadsheetColumns, ImportedRow } from '@/spreadsheet-import/types';
 import { getMatchedColumnsWithFuse } from '@/spreadsheet-import/utils/getMatchedColumnsWithFuse';
 import { setColumn } from '@/spreadsheet-import/utils/setColumn';
 import { useRecoilCallback } from 'recoil';
@@ -11,66 +17,31 @@ import { useRecoilCallback } from 'recoil';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 
-// call the AI endpoint to map unmatched CSV columns to target fields
-// returns index-based mappings: { [columnIndex]: targetFieldKey | 'skip' }
 const fetchAiMappings = async (
-  unmatchedColumns: { index: number; header: string }[],
-  sampleRows: ImportedRow[],
-  fields: { key: string; label: string }[],
-): Promise<Record<number, string> | null> => {
+  headers: string[],
+  sampleRows: string[][],
+  targetFields: { key: string; label: string }[],
+): Promise<Record<string, string> | null> => {
   try {
     const response = await authenticatedFetch(
       `${REACT_APP_SERVER_BASE_URL}/api/v1/csv-mapping/analyze`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          columns: unmatchedColumns.map((c) => ({
-            index: c.index,
-            header: c.header,
-          })),
-          sampleRows: sampleRows.slice(0, 5).map((row) =>
-            unmatchedColumns.map((c) => {
-              const originalIndex = row[c.index];
-              return typeof originalIndex === 'string'
-                ? originalIndex.slice(0, 100)
-                : String(originalIndex ?? '');
-            }),
-          ),
-          targetFields: fields,
-        }),
+        body: JSON.stringify({ headers, sampleRows, targetFields }),
       },
     );
 
-    if (!response.ok) return null;
+    const isSuccess = response.status < 300;
 
-    // wait for response body with timeout
-    const timeoutPromise = new Promise<null>((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), 3000),
-    );
-    const isSuccess = await Promise.race([
-      response.ok,
-      timeoutPromise.catch(() => false),
-    ]);
     if (!isSuccess) return null;
 
     const data = (await response.json()) as {
       mappings?: Record<string, string>;
     };
-    // convert string keys to numeric keys
-    if (data.mappings) {
-      const numericMappings: Record<number, string> = {};
-      for (const [key, value] of Object.entries(data.mappings)) {
-        const idx = parseInt(key, 10);
-        if (!isNaN(idx)) {
-          numericMappings[idx] = value;
-        }
-      }
-      return numericMappings;
-    }
-    return null;
+
+    return data.mappings ?? null;
   } catch (_err: unknown) {
-    // graceful fallback — AI failure should not block import
     return null;
   }
 };
@@ -81,99 +52,114 @@ export const useComputeColumnSuggestionsAndAutoMatch = () => {
 
   const computeColumnSuggestionsAndAutoMatch = useRecoilCallback(
     ({ set, snapshot }) =>
-      async ({ headerValues, data }: { headerValues: string[]; data: ImportedRow[] }) => {
-        const initialComputedColumns = await snapshot.getPromise(
-          initialComputedColumnsSelector,
-        );
+      async ({
+        headerValues,
+        data,
+      }: {
+        headerValues: ImportedRow;
+        data: ImportedRow[];
+      }) => {
+        if (autoMapHeaders) {
+          const columns = snapshot
+            .getLoadable(initialComputedColumnsSelector(headerValues))
+            .getValue();
 
-        const { matchedColumns, suggestedFieldsByColumnHeader } =
-          getMatchedColumnsWithFuse(headerValues, data, fields, autoMapHeaders);
+          // try AI first — it handles messy headers better than fuzzy matching
+          const headers = columns.map((c) => c.header);
+          const sampleRows = data.slice(0, 5).map((row) =>
+            headers.map((_, i) => {
+              const val = row[i];
 
-        // find unmatched columns (those with type 'empty')
-        const unmatchedIndices = matchedColumns
-          .map((col, idx) => (col.type === SpreadsheetColumnType.empty ? idx : -1))
-          .filter((idx) => idx !== -1);
-
-        if (unmatchedIndices.length > 0) {
-          // collect already-used field keys from Fuse-matched columns
-          const usedFieldKeys = new Set(
-            matchedColumns
-              .filter(
-                (c) =>
-                  c.type === SpreadsheetColumnType.matched ||
-                  c.type === SpreadsheetColumnType.matchedCheckbox ||
-                  c.type === SpreadsheetColumnType.matchedSelect ||
-                  c.type === SpreadsheetColumnType.matchedSelectOptions,
-              )
-              .map((c) => ('value' in c ? c.value : undefined))
-              .filter((v): v is string => typeof v === 'string'),
+              return typeof val === 'string' ? val : String(val ?? '');
+            }),
           );
-
-          // only offer fields that Fuse hasn't already matched
-          const availableFields = fields
-            .filter((f) => !usedFieldKeys.has(f.key))
-            .map((f) => ({ key: f.key, label: f.label }));
-
-          const unmatchedColumns = unmatchedIndices.map((idx) => ({
-            index: idx,
-            header: matchedColumns[idx].header,
+          const targetFields = fields.map((f) => ({
+            key: f.key,
+            label: f.label,
           }));
 
           const aiMappings = await fetchAiMappings(
-            unmatchedColumns,
-            data as ImportedRow[],
-            availableFields,
+            headers,
+            sampleRows,
+            targetFields,
           );
 
+          let matchedColumns: SpreadsheetColumns;
+          let suggestedFieldsByColumnHeader: Record<
+            string,
+            SpreadsheetImportField[]
+          >;
+
           if (aiMappings) {
-            applyAiMappings(
-              matchedColumns,
-              aiMappings,
+            // AI succeeded — apply its mappings directly to the initial columns
+            matchedColumns = [...columns] as SpreadsheetColumns;
+            suggestedFieldsByColumnHeader = {} as Record<
+              string,
+              SpreadsheetImportField[]
+            >;
+            const usedKeys = new Set<string>();
+
+            for (let i = 0; i < matchedColumns.length; i++) {
+              const header = matchedColumns[i].header;
+              const targetKey = aiMappings[header];
+
+              if (
+                !targetKey ||
+                targetKey === 'skip' ||
+                usedKeys.has(targetKey)
+              ) {
+                continue;
+              }
+
+              const field = fields.find((f) => f.key === targetKey);
+
+              if (!field) continue;
+
+              usedKeys.add(targetKey);
+              matchedColumns[i] = setColumn(
+                matchedColumns[i],
+                field as Parameters<typeof setColumn>[1],
+                data,
+              );
+            }
+
+            // for any columns AI left unmatched, run Fuse to get suggestions
+            const unmatchedExist = matchedColumns.some(
+              (c) => c.type === SpreadsheetColumnType.empty,
+            );
+
+            if (unmatchedExist) {
+              const fuseResult = getMatchedColumnsWithFuse({
+                columns,
+                fields,
+                data,
+              });
+
+              suggestedFieldsByColumnHeader =
+                fuseResult.suggestedFieldsByColumnHeader;
+            }
+          } else {
+            // AI failed — fall back to Fuse-only (current behavior)
+            const fuseResult = getMatchedColumnsWithFuse({
+              columns,
               fields,
               data,
-              availableFields.map((f) => f.key),
-              usedFieldKeys,
-            );
-          }
-        }
+            });
 
-        set(matchColumnsState, matchedColumns);
-        set(suggestedFieldsByColumnHeaderState, suggestedFieldsByColumnHeader);
+            matchedColumns = fuseResult.matchedColumns;
+            suggestedFieldsByColumnHeader =
+              fuseResult.suggestedFieldsByColumnHeader;
+          }
+
+          set(matchColumnsState, matchedColumns);
+          set(
+            suggestedFieldsByColumnHeaderState,
+            suggestedFieldsByColumnHeader,
+          );
+        }
       },
     [autoMapHeaders, fields],
   );
 
   return computeColumnSuggestionsAndAutoMatch;
-};
-
-// mutate matchedColumns in place — apply AI mappings to columns
-const applyAiMappings = (
-  matchedColumns: SpreadsheetColumns,
-  aiMappings: Record<number, string>,
-  fields: readonly { key: string; label: string; fieldType: { type: string } }[],
-  data: ImportedRow[],
-  allowedKeys: string[],
-  alreadyUsedKeys: Set<string>,
-) => {
-  const usedByAi = new Set<string>(alreadyUsedKeys);
-
-  for (const [idxStr, targetKey] of Object.entries(aiMappings)) {
-    const colIdx = parseInt(idxStr, 10);
-    if (isNaN(colIdx) || colIdx < 0 || colIdx >= matchedColumns.length) continue;
-
-    // validate: must be in allowed keys
-    if (!allowedKeys.includes(targetKey)) continue;
-    // validate: must not be already used
-    if (targetKey === 'skip' || usedByAi.has(targetKey)) continue;
-
-    const field = fields.find((f) => f.key === targetKey);
-    if (!field) continue;
-
-    usedByAi.add(targetKey);
-    matchedColumns[colIdx] = setColumn(
-      matchedColumns[colIdx],
-      field as Parameters<typeof setColumn>[1],
-      data,
-    );
-  }
 };
