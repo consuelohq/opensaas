@@ -19,21 +19,26 @@ export class StoppingModelService {
     );
     const economics = await this.store.getWorkspaceEconomics(input.workspaceId);
 
-    const probabilityByAttempt = new Map<number, number>(
-      answerProbabilities.map((item) => [item.attemptNumber, item.probability]),
-    );
+    const probabilityByAttempt = new Map<number, number>();
+    for (const item of answerProbabilities) {
+      probabilityByAttempt.set(item.attemptNumber, item.probability);
+    }
 
     const thresholds: StoppingThreshold[] = [];
 
     for (let attemptNumber = 1; attemptNumber <= input.maxAttempts; attemptNumber += 1) {
-      const answerProbability = probabilityByAttempt.get(attemptNumber) ?? 0;
+      const answerProbability = probabilityByAttempt.get(attemptNumber);
+      
+      if (answerProbability === undefined) {
+        continue;
+      }
+      
       const expectedValue = answerProbability * economics.valuePerConnection;
       const shouldStop =
         attemptNumber > MIN_ATTEMPTS_BEFORE_STOP &&
         expectedValue < economics.costPerAttempt;
 
       thresholds.push({
-        segmentId: input.segmentId,
         attemptNumber,
         answerProbability,
         expectedValue,
@@ -50,15 +55,31 @@ export class StoppingModelService {
     attemptNumber: number;
     maxAttempts: number;
   }): Promise<StoppingThreshold | null> {
-    const thresholds = await this.getStoppingThresholds({
-      workspaceId: input.workspaceId,
-      segmentId: input.segmentId,
-      maxAttempts: input.maxAttempts,
-    });
-
-    return (
-      thresholds.find((threshold) => threshold.attemptNumber === input.attemptNumber) ??
-      null
+    const answerProbabilities = await this.store.getAnswerProbabilities(
+      input.segmentId,
     );
+    const economics = await this.store.getWorkspaceEconomics(input.workspaceId);
+
+    const probabilityByAttempt = new Map<number, number>();
+    for (const item of answerProbabilities) {
+      probabilityByAttempt.set(item.attemptNumber, item.probability);
+    }
+
+    if (!probabilityByAttempt.has(input.attemptNumber)) {
+      return null;
+    }
+
+    const answerProbability = probabilityByAttempt.get(input.attemptNumber)!;
+    const expectedValue = answerProbability * economics.valuePerConnection;
+    const shouldStop =
+      input.attemptNumber > MIN_ATTEMPTS_BEFORE_STOP &&
+      expectedValue < economics.costPerAttempt;
+
+    return {
+      attemptNumber: input.attemptNumber,
+      answerProbability,
+      expectedValue,
+      shouldStop,
+    };
   }
 }

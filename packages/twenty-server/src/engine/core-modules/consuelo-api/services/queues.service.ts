@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 
 import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
-import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store';
+import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store.service';
 
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
