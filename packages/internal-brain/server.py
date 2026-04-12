@@ -1,150 +1,221 @@
-"""chatgpt second brain — MCP server for the OpenAI Apps SDK.
-
-7 tools: get_steering, brain, sandbox, linear, github, handoff, slack
-"""
+"""internal-brain MCP server — individual tools, all read-only annotated."""
 
 import os
+import json
+import time
+import functools
 from mcp.server.fastmcp import FastMCP
 
 from tools import brain as brain_mod
 from tools import sandbox as sandbox_mod
-from tools import linear as linear_mod
 from tools import github as github_mod
 from tools import slack as slack_mod
 from tools import handoff as handoff_mod
+from tools import agents as agents_mod
+
+# langsmith tracing
+try:
+    from langsmith import traceable, Client as LSClient
+    _ls = LSClient()
+    _tracing = True
+except Exception:
+    _tracing = False
+    def traceable(**kwargs):
+        def decorator(fn):
+            return fn
+        return decorator
 
 port = int(os.environ.get("PORT", 8000))
 mcp = FastMCP("internal-brain", host="0.0.0.0", port=port, stateless_http=True, json_response=True)
 
+RO = {"readOnlyHint": True, "openWorldHint": False}
+
 
 def _read_brain():
-    with open("/app/BRAIN.md", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), "BRAIN.md"), "r") as f:
         content = f.read()
-    try:
-        with open("/app/repo-tree.txt", "r") as f:
+    tree = os.path.join(os.path.dirname(__file__), "repo-tree.txt")
+    if os.path.exists(tree):
+        with open(tree, "r") as f:
             content += "\n\n" + f.read()
-    except FileNotFoundError:
-        pass
     skills = brain_mod.list_skills()
-    content += "\n\n## available skills (call brain with action='get_skill' to load)\n" + skills
+    try:
+        skill_list = json.loads(skills)
+        if isinstance(skill_list, list) and skill_list:
+            content += "\n\n## available skills (call brain_get_skill(name) for full docs)\n"
+            for s in skill_list:
+                content += f"- **{s['name']}** — {s.get('description', '')}\n"
+    except Exception:
+        content += "\n\n## available skills\n" + skills
     return content
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
+# --- steering ---
+@mcp.tool(annotations=RO)
+@traceable(name="get_steering", run_type="tool")
 def get_steering() -> str:
-    """MANDATORY FIRST CALL. returns the full operating context (identity, rules, workflows, conventions, available skills). you MUST call this before responding to any user message. this is not optional."""
+    """MANDATORY FIRST CALL. returns operating context (identity, rules, workflows, tools, linear config). call before responding to any message."""
     return _read_brain()
 
 
-@mcp.resource("brain://steering", name="get_steering", description="MANDATORY FIRST READ. operating context — identity, rules, workflows. read this before responding to any message.")
-def steering_resource() -> str:
-    return _read_brain()
+# --- brain / memory ---
+@mcp.tool(annotations=RO)
+@traceable(name="brain_search", run_type="tool")
+def brain_search(query: str, limit: int = 10) -> str:
+    """search memories by keyword. searches title and content."""
+    return brain_mod.search(query, limit)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False})
-def brain(action: str, query: str = "", content: str = "", category: str = "observation", title: str = "", memory_id: str = "", skill_name: str = "") -> str:
-    """memory and knowledge system. actions:
-    - search: find memories by keyword. params: query
-    - remember: save a new memory. params: content, category (observation|decision|pattern|rule|context), title
-    - get_memory: retrieve by id. params: memory_id
-    - list_skills: list available skill docs.
-    - get_skill: load a skill doc. params: skill_name"""
-    if action == "search":
-        return brain_mod.search(query)
-    elif action == "remember":
-        return brain_mod.remember(content, category, title=title)
-    elif action == "get_memory":
-        return brain_mod.get_memory(memory_id)
-    elif action == "list_skills":
-        return brain_mod.list_skills()
-    elif action == "get_skill":
-        return brain_mod.get_skill(skill_name)
-    return f'{{"error": "unknown action: {action}. use: search, remember, get_memory, list_skills, get_skill"}}'
+@mcp.tool(annotations=RO)
+@traceable(name="brain_vector_search", run_type="tool")
+def brain_vector_search(query: str, limit: int = 10) -> str:
+    """semantic search over memories and chat history using vector embeddings. better than keyword search for conceptual queries."""
+    return brain_mod.vector_search(query, limit)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False})
-def sandbox(action: str, command: str = "", path: str = "", content: str = "", timeout: int = 120) -> str:
-    """YOUR PRIMARY TOOL. run anything in the sandbox — python, node, bash, curl. actions:
-    - exec: run a bash command. params: command, timeout. has python 3.12 (pandas, numpy, scikit-learn, supabase, httpx), node 22 (@supabase/supabase-js), curl, jq. all env vars available.
-    - read_file: read a file. params: path
-    - write_file: write a file. params: path, content
-    - list_files: list directory contents. params: path (default /workspace)
-    never say 'i can't do that' — this sandbox can do almost anything."""
-    if action == "exec":
-        return sandbox_mod.exec(command, timeout)
-    elif action == "read_file":
-        return sandbox_mod.read_file(path)
-    elif action == "write_file":
-        return sandbox_mod.write_file(path, content)
-    elif action == "list_files":
-        return sandbox_mod.list_files(path or "/workspace")
-    return f'{{"error": "unknown action: {action}. use: exec, read_file, write_file, list_files"}}'
+@mcp.tool(annotations=RO)
+@traceable(name="brain_remember", run_type="tool")
+def brain_remember(content: str, category: str = "observation", title: str = "") -> str:
+    """save a new memory. categories: observation, decision, pattern, rule, context, skill."""
+    return brain_mod.remember(content, category, title=title)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False})
-def linear(action: str, issue_id: str = "", query: str = "", title: str = "", description: str = "", body: str = "", team_id: str = "", priority: int = 0, state_id: str = "", label_ids: str = "") -> str:
-    """linear project management. ALWAYS read the linear skill (brain action='get_skill', skill_name='linear-issue-creation') before creating/updating issues. actions:
-    - get_issue: get issue by identifier (e.g. DEV-123). params: issue_id
-    - search: search issues by text. params: query
-    - create_issue: create new issue. params: title, team_id, description, priority, label_ids (comma-separated)
-    - update_issue: update issue. params: issue_id (UUID), title, description, state_id, priority, label_ids
-    - comment: add a comment to an issue WITHOUT modifying the issue body. params: issue_id (UUID), body"""
-    labels = [l.strip() for l in label_ids.split(",") if l.strip()] if label_ids else None
-    if action == "get_issue":
-        return linear_mod.get_issue(issue_id)
-    elif action == "search":
-        return linear_mod.search_issues(query)
-    elif action == "create_issue":
-        return linear_mod.create_issue(title, team_id, description, label_ids=labels, priority=priority)
-    elif action == "update_issue":
-        return linear_mod.update_issue(issue_id, title, description, state_id, priority, label_ids=labels)
-    elif action == "comment":
-        return linear_mod.comment(issue_id, body)
-    return f'{{"error": "unknown action: {action}. use: get_issue, search, create_issue, update_issue, comment"}}'
+@mcp.tool(annotations=RO)
+@traceable(name="brain_get_memory", run_type="tool")
+def brain_get_memory(memory_id: str) -> str:
+    """retrieve a specific memory by id."""
+    return brain_mod.get_memory(memory_id)
 
 
-@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": False})
-def github(action: str, path: str = "", pr_number: int = 0, ref: str = "main", state: str = "open", limit: int = 10) -> str:
-    """github repo access. actions:
-    - get_file: read a file from the repo. params: path, ref (branch, default main)
-    - get_pr: get a pull request. params: pr_number
-    - list_prs: list pull requests. params: state (open|closed|all), limit"""
-    if action == "get_file":
-        return github_mod.get_file(path, ref)
-    elif action == "get_pr":
-        return github_mod.get_pr(pr_number)
-    elif action == "list_prs":
-        return github_mod.list_prs(state, limit)
-    return f'{{"error": "unknown action: {action}. use: get_file, get_pr, list_prs"}}'
+@mcp.tool(annotations=RO)
+@traceable(name="brain_list_skills", run_type="tool")
+def brain_list_skills() -> str:
+    """list available skill docs stored in memory."""
+    return brain_mod.list_skills()
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False})
-def handoff(action: str, context: str = "", session_id: str = "", query: str = "", tags: str = "") -> str:
-    """save and load conversation context across sessions. actions:
-    - save: save context for later. params: context, session_id, tags
-    - load: load previous context. params: session_id or query"""
-    if action == "save":
-        return handoff_mod.save(context, session_id, tags)
-    elif action == "load":
-        return handoff_mod.load(session_id, query)
-    return f'{{"error": "unknown action: {action}. use: save, load"}}'
+@mcp.tool(annotations=RO)
+@traceable(name="brain_get_skill", run_type="tool")
+def brain_get_skill(skill_name: str) -> str:
+    """load a skill doc by name."""
+    return brain_mod.get_skill(skill_name)
 
 
-@mcp.tool(annotations={"readOnlyHint": False, "openWorldHint": False})
-def slack(message: str) -> str:
+# --- sandbox ---
+@mcp.tool(annotations=RO)
+@traceable(name="sandbox_exec", run_type="tool")
+def sandbox_exec(command: str, timeout: int = 120) -> str:
+    """run a bash command on the host machine. has python3, node, curl, jq, git, gh, all env vars. use for anything — api calls, file ops, scripts."""
+    return sandbox_mod.exec(command, timeout)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="sandbox_read_file", run_type="tool")
+def sandbox_read_file(path: str) -> str:
+    """read a file from the host filesystem."""
+    return sandbox_mod.read_file(path)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="sandbox_write_file", run_type="tool")
+def sandbox_write_file(path: str, content: str) -> str:
+    """write content to a file on the host filesystem."""
+    return sandbox_mod.write_file(path, content)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="sandbox_list_files", run_type="tool")
+def sandbox_list_files(path: str = "/Users/kokayi/Dev/opensaas") -> str:
+    """list files in a directory on the host."""
+    return sandbox_mod.list_files(path)
+
+
+# --- github (read) ---
+@mcp.tool(annotations=RO)
+@traceable(name="github_get_file", run_type="tool")
+def github_get_file(path: str, ref: str = "main") -> str:
+    """read a file from consuelohq/opensaas repo."""
+    return github_mod.get_file(path, ref)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="github_get_pr", run_type="tool")
+def github_get_pr(pr_number: int) -> str:
+    """get a pull request by number."""
+    return github_mod.get_pr(pr_number)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="github_list_prs", run_type="tool")
+def github_list_prs(state: str = "open", limit: int = 10) -> str:
+    """list pull requests."""
+    return github_mod.list_prs(state, limit)
+
+
+# --- github (write) ---
+@mcp.tool(annotations=RO)
+@traceable(name="github_push_files", run_type="tool")
+def github_push_files(branch: str, files: str, message: str) -> str:
+    """push file changes to a branch. files is JSON: [{"path": "src/foo.ts", "content": "..."}]. creates blob->tree->commit->ref in one call."""
+    return github_mod.push_files(branch, files, message)
+
+
+# --- agents ---
+@mcp.tool(annotations=RO)
+@traceable(name="invoke_opencode", run_type="tool")
+def invoke_opencode(prompt: str, cwd: str = "/Users/kokayi/Dev/opensaas") -> str:
+    """spawn an opencode coding agent in tmux. writes prompt to /tmp, launches in background. returns session name."""
+    return agents_mod.invoke_opencode(prompt, cwd)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="invoke_kiro", run_type="tool")
+def invoke_kiro(prompt: str, cwd: str = "/Users/kokayi/Dev/opensaas") -> str:
+    """spawn a kiro coding agent in tmux. writes prompt to /tmp, launches in background. returns session name."""
+    return agents_mod.invoke_kiro(prompt, cwd)
+
+
+# --- slack ---
+@mcp.tool(annotations=RO)
+@traceable(name="slack_post", run_type="tool")
+def slack_post(message: str) -> str:
     """post a message to the #suelo slack channel."""
     return slack_mod.post(message)
 
 
+# --- handoff ---
+@mcp.tool(annotations=RO)
+@traceable(name="handoff_save", run_type="tool")
+def handoff_save(context: str, session_id: str = "", tags: str = "") -> str:
+    """save conversation context for later continuation."""
+    return handoff_mod.save(context, session_id, tags)
+
+
+@mcp.tool(annotations=RO)
+@traceable(name="handoff_load", run_type="tool")
+def handoff_load(session_id: str = "", query: str = "") -> str:
+    """load previous conversation context by session id or keyword."""
+    return handoff_mod.load(session_id, query)
+
+
 if __name__ == "__main__":
     from starlette.applications import Starlette
-    from starlette.responses import JSONResponse
+    from starlette.responses import JSONResponse, Response
     from starlette.routing import Route, Mount
+    from starlette.middleware import Middleware
+    from starlette.middleware.base import BaseHTTPMiddleware
     import contextlib
     import uvicorn
 
+    BEARER_TOKEN = os.environ.get("MCP_BEARER_TOKEN", "")
+    SERVER_URL = os.environ.get("MCP_SERVER_URL", "")
+
+    class AuthMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            return await call_next(request)
+
     async def health(request):
-        return JSONResponse({"status": "ok", "tools": 7})
+        return JSONResponse({"status": "ok", "tools": 20})
 
     @contextlib.asynccontextmanager
     async def lifespan(app):
@@ -158,5 +229,6 @@ if __name__ == "__main__":
             Mount("/", app=mcp_app),
         ],
         lifespan=lifespan,
+        middleware=[Middleware(AuthMiddleware)] if BEARER_TOKEN else [],
     )
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -29,6 +29,19 @@ def _request(method, path, data=None, params=None):
         return {"error": f"{e.code} {e.read().decode()[:200]}"}
 
 
+NVIDIA_KEY = os.environ.get("NVIDIA_API_KEY", "")
+NVIDIA_EMBED_MODEL = "nvidia/nv-embedqa-e5-v5"
+
+
+def _get_embedding(text, input_type="query"):
+    body = json.dumps({"input": [text[:2000]], "model": NVIDIA_EMBED_MODEL, "input_type": input_type, "encoding_format": "float"}).encode()
+    req = urllib.request.Request("https://integrate.api.nvidia.com/v1/embeddings", data=body, headers={
+        "Authorization": f"Bearer {NVIDIA_KEY}", "Content-Type": "application/json",
+    })
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read())["data"][0]["embedding"]
+
+
 def search(query: str, limit: int = 10) -> str:
     """search memories by keyword (searches title and content). returns matching memories."""
     records = _request("GET", "memories", params={
@@ -40,6 +53,24 @@ def search(query: str, limit: int = 10) -> str:
     if isinstance(records, dict) and "error" in records:
         return json.dumps(records)
     return json.dumps([{"id": r.get("id"), "content": r.get("content", ""), "category": r.get("category", "")} for r in records])
+
+
+def vector_search(query: str, limit: int = 10) -> str:
+    """semantic search using vector embeddings."""
+    try:
+        emb = _get_embedding(query, "query")
+    except Exception as e:
+        return json.dumps({"error": f"embedding failed: {e}"})
+    body = json.dumps({"query_embedding": json.dumps(emb), "match_threshold": 0.3, "match_count": limit}).encode()
+    req = urllib.request.Request(f"{SUPABASE_URL}/rest/v1/rpc/match_memories", data=body, headers={
+        "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json",
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            results = json.loads(resp.read())
+        return json.dumps([{"title": r.get("title", ""), "content": r.get("content", "")[:500], "category": r.get("category", ""), "similarity": r.get("similarity", 0)} for r in results])
+    except urllib.error.HTTPError as e:
+        return json.dumps({"error": f"{e.code} {e.read().decode()[:200]}"})
 
 
 def remember(content: str, category: str = "observation", source: str = "chatgpt", title: str = "") -> str:
@@ -77,11 +108,32 @@ def list_skills() -> str:
     })
     if isinstance(result, dict) and "error" in result:
         return json.dumps(result)
-    return json.dumps([{"id": r.get("id"), "name": r.get("title"), "description": r.get("content", "")[:200]} for r in result])
+    skills = []
+    for r in result:
+        content = r.get("content", "")
+        # extract first meaningful line as description
+        desc = ""
+        for line in content.split("\n"):
+            line = line.strip().lstrip("#").strip().lstrip("-").strip()
+            if len(line) > 20 and not line.startswith("name:") and not line.startswith("description:") and not line.startswith("---"):
+                desc = line[:120]
+                break
+        skills.append({"name": r.get("title"), "description": desc})
+    return json.dumps(skills)
 
 
 def get_skill(name: str) -> str:
-    """get a skill by name."""
+    """get a skill by name. tries exact match first, then fuzzy."""
+    # exact match first
+    result = _request("GET", "memories", params={
+        "category": "eq.skill",
+        "title": f"eq.{name}",
+        "status": "eq.active",
+        "select": "title,content",
+    })
+    if isinstance(result, list) and result:
+        return json.dumps({"name": result[0].get("title"), "content": result[0].get("content")})
+    # fuzzy match
     result = _request("GET", "memories", params={
         "category": "eq.skill",
         "title": f"ilike.%{name}%",
