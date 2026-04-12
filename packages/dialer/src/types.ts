@@ -385,6 +385,23 @@ export type WhittleIndexResult = {
   };
 };
 
+export type AgeBucket = 'fresh' | 'aged';
+
+export type CadencePolicy = {
+  segmentId: string;
+  ageBucket: AgeBucket;
+  maxAttemptsPerDay: number;
+  minSpacingMinutes: number;
+  doubleDial: {
+    enabled: boolean;
+    windowSeconds: number;
+    maxPerSession: number;
+    triggerOutcomes: string[];
+    maxCallDuration: number;
+  };
+  source: 'learned' | 'age_bucket_default' | 'static_fallback';
+};
+
 export type HazardEstimate = {
   segmentId: string;
   hourOfDay: number;

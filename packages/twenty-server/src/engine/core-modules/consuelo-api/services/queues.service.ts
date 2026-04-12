@@ -1,11 +1,12 @@
-import * as Sentry from '@sentry/node';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 
-import { StoppingModelService } from '@consuelo/dialer';
+import * as Sentry from '@sentry/node';
+import { StoppingModelService, type CadencePolicy } from '@consuelo/dialer';
 import { DataSource } from 'typeorm';
 
 import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
+import { CadenceStoreService } from 'src/engine/core-modules/consuelo-api/services/cadence-store.service';
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
 import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store.service';
 import { WhittleIndexStoreService } from 'src/engine/core-modules/consuelo-api/services/whittle-index-store.service';
@@ -50,8 +51,11 @@ export class QueuesService {
     private readonly stoppingModelStore: StoppingModelStoreService,
     private readonly callTimingModelService: CallTimingModelService,
     private readonly whittleIndexStore: WhittleIndexStoreService,
+    private readonly cadenceStore: CadenceStoreService,
   ) {
-    this.stoppingModelService = new StoppingModelService(this.stoppingModelStore);
+    this.stoppingModelService = new StoppingModelService(
+      this.stoppingModelStore,
+    );
   }
 
   async createQueue(params: {
@@ -323,6 +327,44 @@ export class QueuesService {
       }
 
       const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
+      const callDurationSeconds = Number(current.call_duration_seconds ?? 0);
+      const shouldDoubleDial = await this.cadenceStore.shouldDoubleDial({
+        workspaceId: params.workspaceId,
+        queueId: params.queueId,
+        contactId: String(current.contact_id),
+        outcome: params.outcome ?? '',
+        callDurationSeconds,
+      });
+
+      if (shouldDoubleDial && (await this.hasQueueRetryColumns())) {
+        const updatedRows = await this.dataSource.query(
+          `UPDATE queue_items
+           SET status = $1,
+               call_outcome = $2,
+               retry_strategy = $3,
+               retry_scheduled_at = NOW() + ($4::text || ' seconds')::interval,
+               retry_reason = $5
+           WHERE id = $6
+           RETURNING *`,
+          [
+            'pending',
+            params.outcome ?? null,
+            'double-dial-no-answer',
+            '10',
+            'double_dial',
+            current.id,
+          ],
+        );
+
+        return {
+          retryScheduled: true,
+          retryStrategy: 'double-dial-no-answer',
+          retryScheduledAt: new Date(Date.now() + 10_000).toISOString(),
+          retryReason: 'double_dial',
+          currentItem: this.unwrapRow(updatedRows[0]),
+        };
+      }
+
       const retryDecision = await evaluateRetryPolicy(
         {
           workspaceId: params.workspaceId,
@@ -627,10 +669,18 @@ export class QueuesService {
         [queueId, workspaceId],
       );
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
-const category = queueRows[0]?.category ?? 'all';
+      const category = queueRows[0]?.category ?? 'all';
+      const isCadenceOptimizationEnabled =
+        await this.cadenceStore.isCadenceOptimizationEnabled(workspaceId);
+      const cadencePolicyBySegment = new Map<string, CadencePolicy>();
+      const queueRetryColumnsAvailable = await this.hasQueueRetryColumns();
+      const retryReasonSelect = queueRetryColumnsAvailable
+        ? 'qi.retry_reason,'
+        : 'NULL::text AS retry_reason,';
 
       const rows = await this.dataSource.query(
-        `SELECT qi.id, qi.contact_id, qi.position, qi.attempts, ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
+        `SELECT qi.id, qi.contact_id, qi.position, qi.attempts, qi.created_at AS contact_created_at, ${retryReasonSelect}
+                ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
                 ledger.day_window_start, ledger.week_window_start
          FROM queue_items qi
          LEFT JOIN contact_attempt_ledger ledger ON ledger.workspace_id = $2 AND ledger.contact_id = qi.contact_id
@@ -642,7 +692,6 @@ const category = queueRows[0]?.category ?? 'all';
 
       const eligibleCandidates: Array<Record<string, unknown>> = [];
       let suppression: { contactId: string; reason: string } | null = null;
-      const maxAttempts = this.getQueueMaxAttempts(settings);
 
       // load stopping model data once (not per-candidate) to avoid N+1
       const [answerProbabilities, economics] = await Promise.all([
@@ -657,7 +706,14 @@ const category = queueRows[0]?.category ?? 'all';
       }
 
       for (const row of rows as Array<Record<string, unknown>>) {
-        const suppressionReason = this.getSuppressionReason(settings, row);
+        const suppressionReason = await this.getSuppressionReason({
+          settings,
+          row,
+          workspaceId,
+          category,
+          isCadenceOptimizationEnabled,
+          cadencePolicyBySegment,
+        });
 
         if (suppressionReason) {
           if (!suppression) {
@@ -763,15 +819,21 @@ const category = queueRows[0]?.category ?? 'all';
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
 
-        this.logger.warn(`Whittle ranking failed, using FIFO fallback: ${message}`, {
-          queueId,
-          workspaceId,
-        });
+        this.logger.warn(
+          `Whittle ranking failed, using FIFO fallback: ${message}`,
+          {
+            queueId,
+            workspaceId,
+          },
+        );
 
-Sentry.captureException(err, {
-  tags: { component: 'QueuesService', operation: 'selectNextCallableItem' },
-  extra: { queueId, workspaceId },
-});
+        Sentry.captureException(err, {
+          tags: {
+            component: 'QueuesService',
+            operation: 'selectNextCallableItem',
+          },
+          extra: { queueId, workspaceId },
+        });
 
         const fallbackItem = eligibleCandidates[0];
 
@@ -800,33 +862,58 @@ Sentry.captureException(err, {
     }
   }
 
-  private getSuppressionReason(
-    settings: QueueSettings,
-    row: Record<string, unknown>,
-  ) {
+  private async getSuppressionReason(params: {
+    settings: QueueSettings;
+    row: Record<string, unknown>;
+    workspaceId: string;
+    category: string;
+    isCadenceOptimizationEnabled: boolean;
+    cadencePolicyBySegment: Map<string, CadencePolicy>;
+  }) {
+    const { settings, row } = params;
     const lastAttemptAt = row.last_attempt_at
       ? new Date(String(row.last_attempt_at))
       : null;
     const attemptsToday = Number(row.attempts_today ?? 0);
     const attemptsThisWeek = Number(row.attempts_this_week ?? 0);
+    let minRetrySpacingMinutes = settings.minRetrySpacingMinutes;
+    let maxAttemptsPerDay = settings.maxAttemptsPerDay;
+
+    if (params.isCadenceOptimizationEnabled) {
+      const contactCreatedAt = row.contact_created_at
+        ? new Date(String(row.contact_created_at))
+        : new Date();
+      const ageBucket = this.cadenceStore.classifyAgeBucket(contactCreatedAt);
+      const cadenceSegmentId = `${params.category}:${ageBucket}`;
+      let cadencePolicy = params.cadencePolicyBySegment.get(cadenceSegmentId);
+
+      if (!cadencePolicy) {
+        cadencePolicy = await this.cadenceStore.getCadencePolicy({
+          workspaceId: params.workspaceId,
+          segmentId: params.category,
+          contactCreatedAt,
+        });
+        params.cadencePolicyBySegment.set(cadenceSegmentId, cadencePolicy);
+      }
+
+      minRetrySpacingMinutes = cadencePolicy.minSpacingMinutes;
+      maxAttemptsPerDay = cadencePolicy.maxAttemptsPerDay;
+    }
 
     if (
-      settings.minRetrySpacingMinutes &&
+      minRetrySpacingMinutes &&
       lastAttemptAt &&
-      Date.now() - lastAttemptAt.getTime() <
-        settings.minRetrySpacingMinutes * 60_000
+      Date.now() - lastAttemptAt.getTime() < minRetrySpacingMinutes * 60_000
     ) {
       return 'MIN_RETRY_SPACING';
     }
 
-    if (
-      settings.maxAttemptsPerDay &&
-      attemptsToday >= settings.maxAttemptsPerDay
-    ) {
+    if (maxAttemptsPerDay && attemptsToday >= maxAttemptsPerDay) {
       return 'MAX_ATTEMPTS_PER_DAY';
     }
 
     if (
+      !params.isCadenceOptimizationEnabled &&
       settings.maxAttemptsPerWeek &&
       attemptsThisWeek >= settings.maxAttemptsPerWeek
     ) {
@@ -845,40 +932,60 @@ Sentry.captureException(err, {
         return null;
       }
 
-      const updatedRows = await this.dataSource.query(
-        "UPDATE queue_items SET status = $1, attempts = attempts + 1, last_attempt_at = NOW() WHERE id = $2 AND status = 'pending' RETURNING *",
-        ['calling', item.id],
-      );
+      const isDoubleDial = String(item.retry_reason ?? '') === 'double_dial';
+      const hasRetryColumns = await this.hasQueueRetryColumns();
+      const updatedRows = hasRetryColumns
+        ? await this.dataSource.query(
+            `UPDATE queue_items
+             SET status = $1,
+                 attempts = attempts + (CASE WHEN $3 THEN 0 ELSE 1 END),
+                 last_attempt_at = NOW(),
+                 retry_reason = CASE WHEN $3 THEN NULL ELSE retry_reason END
+             WHERE id = $2 AND status = 'pending'
+             RETURNING *`,
+            ['calling', item.id, isDoubleDial],
+          )
+        : await this.dataSource.query(
+            `UPDATE queue_items
+             SET status = $1,
+                 attempts = attempts + (CASE WHEN $3 THEN 0 ELSE 1 END),
+                 last_attempt_at = NOW()
+             WHERE id = $2 AND status = 'pending'
+             RETURNING *`,
+            ['calling', item.id, isDoubleDial],
+          );
 
       if (!updatedRows[0]) {
         return null;
       }
 
-      await this.dataSource.query(
-        `INSERT INTO contact_attempt_ledger (workspace_id, contact_id, last_attempt_at, attempts_total, attempts_today, attempts_this_week, outcomes, day_window_start, week_window_start)
-         VALUES ($1, $2, NOW(), 1, 1, 1, '[]'::jsonb, date_trunc('day', NOW()), date_trunc('week', NOW()))
-         ON CONFLICT (workspace_id, contact_id)
-         DO UPDATE SET
-           last_attempt_at = NOW(),
-           attempts_total = contact_attempt_ledger.attempts_total + 1,
-           attempts_today = CASE
-             WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN 1
-             ELSE contact_attempt_ledger.attempts_today + 1
-           END,
-           attempts_this_week = CASE
-             WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN 1
-             ELSE contact_attempt_ledger.attempts_this_week + 1
-           END,
-           day_window_start = CASE
-             WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN date_trunc('day', NOW())
-             ELSE contact_attempt_ledger.day_window_start
-           END,
-           week_window_start = CASE
-             WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN date_trunc('week', NOW())
-             ELSE contact_attempt_ledger.week_window_start
-           END`,
-        [workspaceId, item.contact_id],
-      );
+      if (!isDoubleDial) {
+        await this.dataSource.query(
+          `INSERT INTO contact_attempt_ledger (workspace_id, contact_id, last_attempt_at, attempts_total, attempts_today, attempts_this_week, outcomes, day_window_start, week_window_start)
+           VALUES ($1, $2, NOW(), 1, 1, 1, '[]'::jsonb, date_trunc('day', NOW()), date_trunc('week', NOW()))
+           ON CONFLICT (workspace_id, contact_id)
+           DO UPDATE SET
+             last_attempt_at = NOW(),
+             attempts_total = contact_attempt_ledger.attempts_total + 1,
+             attempts_today = CASE
+               WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN 1
+               ELSE contact_attempt_ledger.attempts_today + 1
+             END,
+             attempts_this_week = CASE
+               WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN 1
+               ELSE contact_attempt_ledger.attempts_this_week + 1
+             END,
+             day_window_start = CASE
+               WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN date_trunc('day', NOW())
+               ELSE contact_attempt_ledger.day_window_start
+             END,
+             week_window_start = CASE
+               WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN date_trunc('week', NOW())
+               ELSE contact_attempt_ledger.week_window_start
+             END`,
+          [workspaceId, item.contact_id],
+        );
+      }
 
       return this.unwrapRow(updatedRows[0]);
     } finally {
