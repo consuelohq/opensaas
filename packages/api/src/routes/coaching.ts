@@ -257,7 +257,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           // PostHog LLM tracking — non-blocking
           void trackLLMUsage({
             userId: auth.userId,
-            model: 'gpt-oss-120b-128k', // groq default model
+            model: 'openai/gpt-oss-120b', // groq default model
             provider: 'groq',
             inputTokens: 0, // TODO(DEV-831): provider doesn't return usage yet
             outputTokens: 0,
@@ -330,7 +330,7 @@ export const coachingRoutes = (): RouteDefinition[] => {
           // PostHog LLM tracking — non-blocking
           void trackLLMUsage({
             userId: auth.userId,
-            model: 'gpt-oss-120b-128k',
+            model: 'openai/gpt-oss-120b',
             provider: 'groq',
             inputTokens: 0,
             outputTokens: 0,

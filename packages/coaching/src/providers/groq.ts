@@ -15,7 +15,7 @@ export class GroqProvider implements CoachingProvider {
 
   constructor(config: CoachingConfig = {}) {
     this.config = {
-      model: 'gpt-oss-120b-128k',
+      model: 'openai/gpt-oss-120b',
       temperature: 0.4,
       maxTokens: 1000,
       ...config,

@@ -393,7 +393,7 @@ export const assistantRoutes = (): RouteDefinition[] => {
 
   const model =
     process.env.ASSISTANT_MODEL ??
-    (process.env.GROQ_API_KEY ? 'gpt-oss-120b-128k' : 'gpt-4o-mini');
+    (process.env.GROQ_API_KEY ? 'openai/gpt-oss-120b' : 'gpt-4o-mini');
   const baseUrl = process.env.API_BASE_URL ?? 'http://localhost:3000';
 
   return [

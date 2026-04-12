@@ -40,7 +40,7 @@ export async function parseDocument(
     const { default: Groq } = await import('groq-sdk');
     const groq = new Groq({ apiKey: groqApiKey });
     const response = await groq.chat.completions.create({
-      model: 'gpt-oss-120b-128k',
+      model: 'openai/gpt-oss-120b',
       messages: [
         { role: 'system', content: EXTRACTION_PROMPT },
         { role: 'user', content },
