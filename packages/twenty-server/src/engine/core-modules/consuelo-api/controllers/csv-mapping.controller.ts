@@ -32,6 +32,7 @@ export class CsvMappingController {
     @Body()
     body: {
       columns?: { index: number; header: string }[];
+      headers?: string[];
       sampleRows?: string[][];
       targetFields?: { key: string; label: string }[];
     },
@@ -41,20 +42,25 @@ export class CsvMappingController {
       throw new UnauthorizedException('Authentication required');
     }
 
+    // accept both {columns: [{index, header}]} and legacy {headers: string[]}
+    const columns =
+      body.columns ??
+      body.headers?.map((h, i) => ({ index: i, header: h }));
+
     if (
-      !Array.isArray(body.columns) ||
-      body.columns.length === 0 ||
+      !Array.isArray(columns) ||
+      columns.length === 0 ||
       !Array.isArray(body.targetFields) ||
       body.targetFields.length === 0
     ) {
       throw new BadRequestException(
-        'columns[] and targetFields[] are required',
+        'columns[] (or headers[]) and targetFields[] are required',
       );
     }
 
     try {
       return await this.csvMappingService.analyzeCsvMapping({
-        columns: body.columns,
+        columns,
         sampleRows: body.sampleRows ?? [],
         targetFields: body.targetFields,
       });
