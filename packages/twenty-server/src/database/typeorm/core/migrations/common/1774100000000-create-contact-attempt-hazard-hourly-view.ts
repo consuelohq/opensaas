@@ -10,6 +10,7 @@ export class CreateContactAttemptHazardHourlyView1774100000000
       CREATE MATERIALIZED VIEW IF NOT EXISTS core.contact_attempt_hazard_hourly_mv AS
       WITH attempt_events AS (
         SELECT
+          cq.workspace_id,
           COALESCE(cq.category, 'unclassified') AS segment_id,
           EXTRACT(HOUR FROM qi.last_attempt_at)::int AS hour_of_day,
           EXTRACT(DOW FROM qi.last_attempt_at)::int AS day_of_week,
@@ -23,8 +24,10 @@ export class CreateContactAttemptHazardHourlyView1774100000000
          AND ledger.contact_id = qi.contact_id
         WHERE qi.last_attempt_at IS NOT NULL
           AND qi.call_outcome IS NOT NULL
+          AND qi.status IN ('completed', 'skipped')
       )
       SELECT
+        workspace_id,
         segment_id,
         hour_of_day,
         day_of_week,
@@ -32,12 +35,13 @@ export class CreateContactAttemptHazardHourlyView1774100000000
         AVG(CASE WHEN call_outcome = 'answered' THEN 1.0 ELSE 0.0 END)::float AS answer_rate,
         COUNT(*)::int AS sample_size
       FROM attempt_events
-      GROUP BY segment_id, hour_of_day, day_of_week, attempt_number
+      GROUP BY workspace_id, segment_id, hour_of_day, day_of_week, attempt_number
     `);
 
     await queryRunner.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS idx_contact_attempt_hazard_hourly_mv_unique
       ON core.contact_attempt_hazard_hourly_mv (
+        workspace_id,
         segment_id,
         hour_of_day,
         day_of_week,
@@ -47,7 +51,7 @@ export class CreateContactAttemptHazardHourlyView1774100000000
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS idx_contact_attempt_hazard_hourly_mv_lookup
-      ON core.contact_attempt_hazard_hourly_mv (segment_id, attempt_number, answer_rate DESC)
+      ON core.contact_attempt_hazard_hourly_mv (workspace_id, segment_id, attempt_number, answer_rate DESC)
     `);
   }
 

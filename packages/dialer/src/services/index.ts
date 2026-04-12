@@ -11,4 +11,4 @@ export {
   InMemoryParallelStore,
 } from './parallel-dialer.js';
 
-export { CallTimingModel } from './call-timing-model.js';
+export { CallTimingModel } from './call-timing-model.service.js';

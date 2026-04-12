@@ -1,6 +1,6 @@
 import type { TimingModelStore } from '../types';
 
-import { CallTimingModel } from './call-timing-model';
+import { CallTimingModel } from './call-timing-model.service';
 
 describe('CallTimingModel', () => {
   it('should return null when segment has insufficient sample size', async () => {

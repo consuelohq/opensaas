@@ -139,23 +139,27 @@ export const evaluateRetryPolicy = async (
   let retryReason = 'no_answer_high_priority_local_daytime_under_cap';
 
   if (input.timingModel && input.segmentId) {
-    const optimalHazardWindow = await input.timingModel.getBestTimeToCall({
-      segmentId: input.segmentId,
-      attemptNumber: input.attemptsUsed + 1,
-    });
+    try {
+      const optimalHazardWindow = await input.timingModel.getBestTimeToCall({
+        segmentId: input.segmentId,
+        attemptNumber: input.attemptsUsed + 1,
+      });
 
-    if (optimalHazardWindow) {
-      const modelRetryDate = estimateRetryDateFromHazardWindow(
-        evaluatedAt,
-        input.localTimezone,
-        optimalHazardWindow,
-      );
+      if (optimalHazardWindow) {
+        const modelRetryDate = estimateRetryDateFromHazardWindow(
+          evaluatedAt,
+          input.localTimezone,
+          optimalHazardWindow,
+        );
 
-      if (modelRetryDate) {
-        retryScheduledAt = modelRetryDate;
-        retryReason =
-          'no_answer_high_priority_local_daytime_hazard_optimized_under_cap';
+        if (modelRetryDate) {
+          retryScheduledAt = modelRetryDate;
+          retryReason =
+            'no_answer_high_priority_local_daytime_hazard_optimized_under_cap';
+        }
       }
+    } catch {
+      // timing model failure — fall back to default delay silently
     }
   }
 
