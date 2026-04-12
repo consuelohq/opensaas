@@ -4,11 +4,13 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
+import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store';
 
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
   maxAttemptsPerDay?: number;
   maxAttemptsPerWeek?: number;
+  maxAttempts?: number;
   retryAttemptCap?: number;
 };
 
@@ -27,7 +29,10 @@ export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
   private queueRetryColumnsAvailable: boolean | null = null;
 
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly stoppingModelStore: StoppingModelStoreService,
+  ) {}
 
   async createQueue(params: {
     workspaceId: string;
@@ -293,17 +298,25 @@ export class QueuesService {
       }
 
       const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
-      const retryDecision = evaluateRetryPolicy({
-        outcome: params.outcome ?? null,
-        isHighPriority: params.isHighPriority === true,
-        attemptsUsed: Number(current.attempts ?? 0),
-        attemptCap:
-          typeof queueSettings.retryAttemptCap === 'number' &&
-          queueSettings.retryAttemptCap > 0
-            ? queueSettings.retryAttemptCap
-            : 2,
-        localTimezone: params.localTimezone ?? 'America/New_York',
-      });
+      const retryDecision = await evaluateRetryPolicy(
+        {
+          workspaceId: params.workspaceId,
+          segmentId: params.queueId,
+          outcome: params.outcome ?? null,
+          isHighPriority: params.isHighPriority === true,
+          attemptsUsed: Number(current.attempts ?? 0),
+          maxAttempts:
+            typeof queueSettings.maxAttempts === 'number' &&
+            queueSettings.maxAttempts > 0
+              ? queueSettings.maxAttempts
+              : typeof queueSettings.retryAttemptCap === 'number' &&
+                  queueSettings.retryAttemptCap > 0
+                ? queueSettings.retryAttemptCap
+                : 3,
+          localTimezone: params.localTimezone ?? 'America/New_York',
+        },
+        this.stoppingModelStore,
+      );
 
       if (retryDecision.shouldRetry) {
         const updatedRows = await this.updateQueueItemWithRetryFallback(

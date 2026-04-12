@@ -21,6 +21,7 @@ export {
   InMemoryParallelStore,
 } from './services/parallel-dialer.js';
 export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.js';
+export { StoppingModelService } from './services/stopping-model.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
@@ -66,4 +67,6 @@ export type {
   ParallelDialOptions,
   ParallelDialResult,
   ParallelStore,
+  StoppingThreshold,
+  StoppingModelStore,
 } from './types.js';
