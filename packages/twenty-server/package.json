@@ -236,8 +236,7 @@
     "node": "^24.5.0",
     "npm": "please-use-yarn",
     "yarn": "^4.0.2"
-  }
-,
+  },
   "peerDependencies": {
     "mammoth": "^1.0.0",
     "pdf-parse": "^1.0.0"

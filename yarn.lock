@@ -59637,6 +59637,9 @@ __metadata:
     vite: "npm:^7.0.0"
     vite-tsconfig-paths: "npm:4.3.2"
     zod: "npm:^4.1.11"
+  peerDependencies:
+    mammoth: ^1.0.0
+    pdf-parse: ^1.0.0
   languageName: unknown
   linkType: soft
 
