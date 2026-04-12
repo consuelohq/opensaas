@@ -644,6 +644,18 @@ const category = queueRows[0]?.category ?? 'all';
       let suppression: { contactId: string; reason: string } | null = null;
       const maxAttempts = this.getQueueMaxAttempts(settings);
 
+      // load stopping model data once (not per-candidate) to avoid N+1
+      const [answerProbabilities, economics] = await Promise.all([
+        this.stoppingModelStore.getAnswerProbabilities(queueId),
+        this.stoppingModelStore.getWorkspaceEconomics(workspaceId),
+      ]);
+
+      const probabilityByAttempt = new Map<number, number>();
+
+      for (const item of answerProbabilities) {
+        probabilityByAttempt.set(item.attemptNumber, item.probability);
+      }
+
       for (const row of rows as Array<Record<string, unknown>>) {
         const suppressionReason = this.getSuppressionReason(settings, row);
 
@@ -659,14 +671,13 @@ const category = queueRows[0]?.category ?? 'all';
         }
 
         const attemptNumber = Number(row.attempts ?? 0) + 1;
-        const threshold = await this.stoppingModelService.getThresholdForAttempt({
-          workspaceId,
-          segmentId: queueId,
-          attemptNumber,
-          maxAttempts,
-        });
+        const probability = probabilityByAttempt.get(attemptNumber);
+        const shouldStop =
+          probability !== undefined &&
+          attemptNumber > 2 &&
+          probability * economics.valuePerConnection < economics.costPerAttempt;
 
-        if (threshold?.shouldStop) {
+        if (shouldStop) {
           if (!suppression) {
             suppression = {
               contactId: String(row.contact_id ?? ''),
