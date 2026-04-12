@@ -348,6 +348,23 @@ export interface ParallelStore {
   deleteGroup(groupId: string): Promise<void>;
 }
 
+export type StoppingThreshold = {
+  segmentId: string;
+  attemptNumber: number;
+  answerProbability: number;
+  expectedValue: number;
+  shouldStop: boolean;
+};
+
+export type StoppingModelStore = {
+  getAnswerProbabilities(
+    segmentId: string,
+  ): Promise<{ attemptNumber: number; probability: number }[]>;
+  getWorkspaceEconomics(workspaceId: string): Promise<{
+    valuePerConnection: number;
+    costPerAttempt: number;
+  }>;
+
 export type HazardEstimate = {
   segmentId: string;
   hourOfDay: number;
