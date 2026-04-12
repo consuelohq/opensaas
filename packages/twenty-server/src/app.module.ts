@@ -131,7 +131,10 @@ export class AppModule {
         .forRoutes({ path: 'rest/*path', method });
 
       consumer
-        .apply(RestCoreMiddleware, WorkspaceAuthContextMiddleware)
+        .apply(
+          GraphQLHydrateRequestFromTokenMiddleware,
+          WorkspaceAuthContextMiddleware,
+        )
         .forRoutes({ path: 'api/v1/*path', method });
     }
   }
