@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { IconSparkles, IconUpload } from 'twenty-ui/display';
 import { Button } from 'twenty-ui/input';
@@ -14,15 +14,15 @@ import { useOpenListMemberImportDialog } from '@/dialer/hooks/useOpenListMemberI
 import { importedListIdState } from '@/dialer/states/importedListIdState';
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { MainContainerLayoutWithCommandMenu } from '@/object-record/components/MainContainerLayoutWithCommandMenu';
+import { useAggregateRecords } from '@/object-record/hooks/useAggregateRecords';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
-import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { AggregateOperations } from '@/object-record/record-table/constants/AggregateOperations';
 import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/components/SpreadsheetImportProvider';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 
-import { useEffect } from 'react';
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 const IMPORT_CONTEXT_STORE_ID = 'home-import-context-store';
@@ -55,15 +55,22 @@ export const HomePage = () => {
     objectNameSingular: 'opportunity',
   });
 
-  const { totalCount: opportunityCount = 0 } = useFindManyRecords({
+  const { data: opportunityAggregateData } = useAggregateRecords<{
+    id: { COUNT: number };
+  }>({
     objectNameSingular: 'opportunity',
-    limit: 1,
+    recordGqlFieldsAggregate: {
+      id: [AggregateOperations.COUNT],
+    },
   });
+
+  const opportunityCount = opportunityAggregateData?.id?.COUNT;
 
   const { openListMemberImportDialog } = useOpenListMemberImportDialog();
 
   const handleImportCSV = useCallback(async () => {
-    const defaultName = `List ${opportunityCount + 1}`;
+    const defaultName =
+      opportunityCount === undefined ? t`List` : t`List ${opportunityCount + 1}`;
     const listName = window.prompt(t`Name your list`, defaultName);
 
     if (!listName) {
