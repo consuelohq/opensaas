@@ -364,6 +364,26 @@ export type StoppingModelStore = {
     valuePerConnection: number;
     costPerAttempt: number;
   }>;
+};
+
+export type WhittleIndexInput = {
+  answerRate: number;
+  valuePerConnection: number;
+  costPerAttempt: number;
+  hoursRemainingInWindow: number;
+  segmentSampleSize: number;
+  explorationWeight?: number;
+};
+
+export type WhittleIndexResult = {
+  index: number;
+  components: {
+    expectedReward: number;
+    cost: number;
+    urgencyBonus: number;
+    explorationBonus: number;
+  };
+};
 
 export type HazardEstimate = {
   segmentId: string;

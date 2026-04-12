@@ -21,6 +21,7 @@ import { ParallelStrategyResolverService } from 'src/engine/core-modules/consuel
 import { QueuesService } from 'src/engine/core-modules/consuelo-api/services/queues.service';
 import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store.service';
 import { VoiceService } from 'src/engine/core-modules/consuelo-api/services/voice.service';
+import { WhittleIndexStoreService } from 'src/engine/core-modules/consuelo-api/services/whittle-index-store.service';
 import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services/voice-state.service';
 
 @Module({
@@ -43,6 +44,7 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     StoppingModelStoreService,
     CallTimingStore,
     CallTimingModelService,
+    WhittleIndexStoreService,
     RefreshContactAttemptHazardViewCronJob,
     RefreshContactAttemptHazardViewCronCommand,
     TwilioSignatureGuard,
