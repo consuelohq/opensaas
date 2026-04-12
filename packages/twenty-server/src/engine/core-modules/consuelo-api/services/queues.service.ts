@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 
@@ -622,10 +623,11 @@ export class QueuesService {
   ): Promise<QueueSelectionResult> {
     try {
       const queueRows = await this.dataSource.query(
-        'SELECT settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        'SELECT settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [queueId, workspaceId],
       );
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
+const category = queueRows[0]?.category ?? 'all';
 
       const rows = await this.dataSource.query(
         `SELECT qi.id, qi.contact_id, qi.position, qi.attempts, ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
@@ -689,7 +691,7 @@ export class QueuesService {
       try {
         const ranked = await this.whittleIndexStore.rankCandidates({
           workspaceId,
-          segmentId: queueId,
+          segmentId: category,
           localTimezone: this.getQueueLocalTimezone(settings),
           callableWindowEndHour: this.getCallableWindowEndHour(settings),
           candidates: eligibleCandidates.map((candidate) => ({
@@ -754,6 +756,11 @@ export class QueuesService {
           queueId,
           workspaceId,
         });
+
+Sentry.captureException(err, {
+  tags: { component: 'QueuesService', operation: 'selectNextCallableItem' },
+  extra: { queueId, workspaceId },
+});
 
         const fallbackItem = eligibleCandidates[0];
 

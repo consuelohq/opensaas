@@ -92,28 +92,6 @@ export class WhittleIndexStoreService {
           dayOfWeek: localParts.localDayOfWeek,
           attemptNumber: nextAttemptNumber,
         });
-        const stoppingThreshold = await this.stoppingModelService.getThresholdForAttempt({
-          workspaceId: params.workspaceId,
-          segmentId: params.segmentId,
-          attemptNumber: nextAttemptNumber,
-          maxAttempts: nextAttemptNumber,
-        });
-
-        if (stoppingThreshold?.shouldStop) {
-          return {
-            queueItemId: candidate.queueItemId,
-            contactId: candidate.contactId,
-            index: Number.NEGATIVE_INFINITY,
-            position: candidate.position,
-            components: {
-              expectedReward: 0,
-              cost: economics.costPerAttempt,
-              urgencyBonus: 0,
-              explorationBonus: 0,
-            },
-            filteredOut: true,
-          };
-        }
 
         const staleDecayFactor = this.getStaleDecayFactor(
           candidate.lastAttemptAt,
