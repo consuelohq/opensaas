@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 
+import { StoppingModelService } from '@consuelo/dialer';
 import { DataSource } from 'typeorm';
 
 import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
 import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store.service';
+import { WhittleIndexStoreService } from 'src/engine/core-modules/consuelo-api/services/whittle-index-store.service';
 
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
@@ -23,18 +25,33 @@ type QueueListFilters = {
 type QueueSelectionResult = {
   nextItem: Record<string, unknown> | null;
   suppression: { contactId: string; reason: string } | null;
+  ranking?: {
+    index: number;
+    components?: {
+      expectedReward: number;
+      cost: number;
+      urgencyBonus: number;
+      explorationBonus: number;
+    };
+    candidatesEvaluated: number;
+    selectionMethod: 'whittle_index' | 'fifo_fallback';
+  };
 };
 
 @Injectable()
 export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
   private queueRetryColumnsAvailable: boolean | null = null;
+  private readonly stoppingModelService: StoppingModelService;
 
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly stoppingModelStore: StoppingModelStoreService,
     private readonly callTimingModelService: CallTimingModelService,
-  ) {}
+    private readonly whittleIndexStore: WhittleIndexStoreService,
+  ) {
+    this.stoppingModelService = new StoppingModelService(this.stoppingModelStore);
+  }
 
   async createQueue(params: {
     workspaceId: string;
@@ -181,6 +198,7 @@ export class QueuesService {
           currentItem: this.unwrapRow(existingRows[0]),
           nextItem: this.unwrapRow(existingRows[0]),
           suppression: null,
+          ranking: undefined,
         };
       }
 
@@ -191,6 +209,7 @@ export class QueuesService {
         currentItem: this.unwrapRow(selection.nextItem),
         nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
+        ranking: selection.ranking,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -228,6 +247,7 @@ export class QueuesService {
           current: null,
           nextItem: this.unwrapRow(selection.nextItem),
           suppression: selection.suppression,
+          ranking: selection.ranking,
         };
       }
 
@@ -251,6 +271,7 @@ export class QueuesService {
         current: this.unwrapRow(updatedRows[0]),
         nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
+        ranking: selection.ranking,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -296,11 +317,12 @@ export class QueuesService {
           current: null,
           nextItem: this.unwrapRow(selection.nextItem),
           suppression: selection.suppression,
+          ranking: selection.ranking,
         };
       }
 
       const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
-const retryDecision = await evaluateRetryPolicy(
+      const retryDecision = await evaluateRetryPolicy(
         {
           workspaceId: params.workspaceId,
           segmentId: params.queueId,
@@ -358,6 +380,7 @@ const retryDecision = await evaluateRetryPolicy(
         return {
           current: this.unwrapRow(updatedRows[0]),
           nextItem: this.unwrapRow(selection.nextItem),
+          ranking: selection.ranking,
         };
       }
 
@@ -366,6 +389,7 @@ const retryDecision = await evaluateRetryPolicy(
           current: this.unwrapRow(updatedRows[0]),
           nextItem: null,
           suppression: selection.suppression,
+          ranking: selection.ranking,
         };
       }
 
@@ -604,7 +628,7 @@ const retryDecision = await evaluateRetryPolicy(
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
 
       const rows = await this.dataSource.query(
-        `SELECT qi.id, qi.contact_id, qi.position, ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
+        `SELECT qi.id, qi.contact_id, qi.position, qi.attempts, ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
                 ledger.day_window_start, ledger.week_window_start
          FROM queue_items qi
          LEFT JOIN contact_attempt_ledger ledger ON ledger.workspace_id = $2 AND ledger.contact_id = qi.contact_id
@@ -614,59 +638,135 @@ const retryDecision = await evaluateRetryPolicy(
         [queueId, workspaceId],
       );
 
-      const item = rows.find((row: Record<string, unknown>) => {
-        const lastAttemptAt = row.last_attempt_at
-          ? new Date(String(row.last_attempt_at))
-          : null;
-        const attemptsToday = Number(row.attempts_today ?? 0);
-        const attemptsThisWeek = Number(row.attempts_this_week ?? 0);
+      const eligibleCandidates: Array<Record<string, unknown>> = [];
+      let suppression: { contactId: string; reason: string } | null = null;
+      const maxAttempts = this.getQueueMaxAttempts(settings);
 
-        if (
-          settings.minRetrySpacingMinutes &&
-          lastAttemptAt &&
-          Date.now() - lastAttemptAt.getTime() <
-            settings.minRetrySpacingMinutes * 60_000
-        ) {
-          return false;
+      for (const row of rows as Array<Record<string, unknown>>) {
+        const suppressionReason = this.getSuppressionReason(settings, row);
+
+        if (suppressionReason) {
+          if (!suppression) {
+            suppression = {
+              contactId: String(row.contact_id ?? ''),
+              reason: suppressionReason,
+            };
+          }
+
+          continue;
         }
 
-        if (
-          settings.maxAttemptsPerDay &&
-          attemptsToday >= settings.maxAttemptsPerDay
-        ) {
-          return false;
+        const attemptNumber = Number(row.attempts ?? 0) + 1;
+        const threshold = await this.stoppingModelService.getThresholdForAttempt({
+          workspaceId,
+          segmentId: queueId,
+          attemptNumber,
+          maxAttempts,
+        });
+
+        if (threshold?.shouldStop) {
+          if (!suppression) {
+            suppression = {
+              contactId: String(row.contact_id ?? ''),
+              reason: 'STOPPING_MODEL',
+            };
+          }
+
+          continue;
         }
 
-        if (
-          settings.maxAttemptsPerWeek &&
-          attemptsThisWeek >= settings.maxAttemptsPerWeek
-        ) {
-          return false;
+        eligibleCandidates.push(row);
+
+        if (eligibleCandidates.length >= 50) {
+          break;
         }
-
-        return true;
-      });
-
-      if (!item) {
-        return { nextItem: null, suppression: null };
       }
 
-      const suppressionReason = this.getSuppressionReason(settings, item);
+      if (eligibleCandidates.length === 0) {
+        return { nextItem: null, suppression };
+      }
 
-      if (suppressionReason) {
+      try {
+        const ranked = await this.whittleIndexStore.rankCandidates({
+          workspaceId,
+          segmentId: queueId,
+          localTimezone: this.getQueueLocalTimezone(settings),
+          callableWindowEndHour: this.getCallableWindowEndHour(settings),
+          candidates: eligibleCandidates.map((candidate) => ({
+            queueItemId: String(candidate.id),
+            contactId: String(candidate.contact_id),
+            position: Number(candidate.position),
+            attempts: Number(candidate.attempts ?? 0),
+            lastAttemptAt: candidate.last_attempt_at
+              ? new Date(String(candidate.last_attempt_at))
+              : null,
+          })),
+        });
+
+        const topRanked = ranked[0];
+
+        if (!topRanked) {
+          const fallbackItem = eligibleCandidates[0];
+
+          return {
+            nextItem: await this.claimQueueItem(workspaceId, fallbackItem),
+            suppression: null,
+            ranking: {
+              index: 0,
+              candidatesEvaluated: eligibleCandidates.length,
+              selectionMethod: 'fifo_fallback',
+            },
+          };
+        }
+
+        const selectedItem = eligibleCandidates.find(
+          (candidate) => String(candidate.id) === topRanked.queueItemId,
+        );
+
+        if (!selectedItem) {
+          const fallbackItem = eligibleCandidates[0];
+
+          return {
+            nextItem: await this.claimQueueItem(workspaceId, fallbackItem),
+            suppression: null,
+            ranking: {
+              index: 0,
+              candidatesEvaluated: eligibleCandidates.length,
+              selectionMethod: 'fifo_fallback',
+            },
+          };
+        }
+
         return {
-          nextItem: null,
-          suppression: {
-            contactId: String(item.contact_id ?? ''),
-            reason: suppressionReason,
+          nextItem: await this.claimQueueItem(workspaceId, selectedItem),
+          suppression: null,
+          ranking: {
+            index: topRanked.index,
+            components: topRanked.components,
+            candidatesEvaluated: eligibleCandidates.length,
+            selectionMethod: 'whittle_index',
+          },
+        };
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+
+        this.logger.warn(`Whittle ranking failed, using FIFO fallback: ${message}`, {
+          queueId,
+          workspaceId,
+        });
+
+        const fallbackItem = eligibleCandidates[0];
+
+        return {
+          nextItem: await this.claimQueueItem(workspaceId, fallbackItem),
+          suppression: null,
+          ranking: {
+            index: 0,
+            candidatesEvaluated: eligibleCandidates.length,
+            selectionMethod: 'fifo_fallback',
           },
         };
       }
-
-      return {
-        nextItem: await this.claimQueueItem(workspaceId, item),
-        suppression: null,
-      };
     } catch (err: unknown) {
       if (this.isMissingRelationError(err, 'contact_attempt_ledger')) {
         return await this.selectNextCallableItemWithoutLedger(queueId);
@@ -790,6 +890,11 @@ const retryDecision = await evaluateRetryPolicy(
       return {
         nextItem: this.unwrapRow(updatedRows[0]),
         suppression: null,
+        ranking: {
+          index: 0,
+          candidatesEvaluated: 1,
+          selectionMethod: 'fifo_fallback',
+        },
       };
     } finally {
       // noop
@@ -801,6 +906,45 @@ const retryDecision = await evaluateRetryPolicy(
       err instanceof Error &&
       err.message.includes(`relation "${relationName}" does not exist`)
     );
+  }
+
+  private getQueueMaxAttempts(settings: QueueSettings) {
+    if (typeof settings.maxAttempts === 'number' && settings.maxAttempts > 0) {
+      return settings.maxAttempts;
+    }
+
+    if (
+      typeof settings.retryAttemptCap === 'number' &&
+      settings.retryAttemptCap > 0
+    ) {
+      return settings.retryAttemptCap;
+    }
+
+    return 3;
+  }
+
+  private getQueueLocalTimezone(settings: QueueSettings) {
+    const timezoneValue = (settings as Record<string, unknown>).localTimezone;
+
+    if (typeof timezoneValue === 'string' && timezoneValue.length > 0) {
+      return timezoneValue;
+    }
+
+    return 'America/New_York';
+  }
+
+  private getCallableWindowEndHour(settings: QueueSettings) {
+    const callableWindowEndHour = (settings as Record<string, unknown>)
+      .callableWindowEndHour;
+
+    if (
+      typeof callableWindowEndHour === 'number' &&
+      Number.isFinite(callableWindowEndHour)
+    ) {
+      return Math.max(0, Math.min(Math.trunc(callableWindowEndHour), 23));
+    }
+
+    return 20;
   }
 
   private async updateQueueItemWithRetryFallback(

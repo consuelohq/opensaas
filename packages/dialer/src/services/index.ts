@@ -12,3 +12,4 @@ export {
 } from './parallel-dialer.js';
 
 export { CallTimingModel } from './call-timing-model.service.js';
+export { WhittleIndexService } from './whittle-index.service.js';
