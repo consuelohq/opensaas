@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
+import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
 
 type QueueSettings = {
@@ -27,7 +28,10 @@ export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
   private queueRetryColumnsAvailable: boolean | null = null;
 
-  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly callTimingModelService: CallTimingModelService,
+  ) {}
 
   async createQueue(params: {
     workspaceId: string;
@@ -265,7 +269,7 @@ export class QueuesService {
   }) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id, settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        'SELECT id, settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [params.queueId, params.workspaceId],
       );
 
@@ -293,7 +297,7 @@ export class QueuesService {
       }
 
       const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
-      const retryDecision = evaluateRetryPolicy({
+      const retryDecision = await evaluateRetryPolicy({
         outcome: params.outcome ?? null,
         isHighPriority: params.isHighPriority === true,
         attemptsUsed: Number(current.attempts ?? 0),
@@ -303,6 +307,8 @@ export class QueuesService {
             ? queueSettings.retryAttemptCap
             : 2,
         localTimezone: params.localTimezone ?? 'America/New_York',
+        segmentId: String(queueCheck[0]?.category ?? 'all'),
+        timingModel: this.callTimingModelService,
       });
 
       if (retryDecision.shouldRetry) {

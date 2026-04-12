@@ -1,3 +1,5 @@
+import type { CallTimingModel } from '@consuelo/dialer';
+
 export type RetryStrategy = 'none' | 'double-dial-no-answer';
 
 export type RetryPolicyInput = {
@@ -6,6 +8,8 @@ export type RetryPolicyInput = {
   attemptsUsed: number;
   attemptCap: number;
   localTimezone: string;
+  segmentId?: string;
+  timingModel?: CallTimingModel;
   evaluatedAt?: Date;
 };
 
@@ -16,34 +20,64 @@ export type RetryPolicyDecision = {
   retryScheduledAt: string | null;
 };
 
-const DEFAULT_RETRY_DELAY_MINUTES = 5;
-const LOCAL_DAYTIME_START_HOUR = 9;
-const LOCAL_DAYTIME_END_HOUR = 18;
+export const DEFAULT_RETRY_DELAY_MINUTES = 5;
+export const LOCAL_DAYTIME_START_HOUR = 9;
+export const LOCAL_DAYTIME_END_HOUR = 18;
 
-const getLocalHour = (date: Date, timeZone: string): number | null => {
+const getLocalDateParts = (
+  date: Date,
+  timeZone: string,
+): { hour: number; dayOfWeek: number } | null => {
   try {
-    const localHour = new Intl.DateTimeFormat('en-US', {
+    const parts = new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       hour12: false,
+      weekday: 'short',
       timeZone,
-    }).format(date);
-    const parsed = Number(localHour);
+    }).formatToParts(date);
 
-    return Number.isFinite(parsed) ? parsed : null;
+    const hourPart = parts.find((part) => part.type === 'hour')?.value;
+    const weekdayPart = parts.find((part) => part.type === 'weekday')?.value;
+
+    if (!hourPart || !weekdayPart) {
+      return null;
+    }
+
+    const hour = Number(hourPart);
+    const weekdayMap: Record<string, number> = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    };
+    const dayOfWeek = weekdayMap[weekdayPart];
+
+    if (!Number.isFinite(hour) || dayOfWeek === undefined) {
+      return null;
+    }
+
+    return {
+      hour,
+      dayOfWeek,
+    };
   } catch {
     return null;
   }
 };
 
 const isLocalDaytime = (date: Date, timeZone: string): boolean => {
-  const localHour = getLocalHour(date, timeZone);
+  const localDateParts = getLocalDateParts(date, timeZone);
 
-  if (localHour === null) {
+  if (!localDateParts) {
     return false;
   }
 
   return (
-    localHour >= LOCAL_DAYTIME_START_HOUR && localHour < LOCAL_DAYTIME_END_HOUR
+    localDateParts.hour >= LOCAL_DAYTIME_START_HOUR &&
+    localDateParts.hour < LOCAL_DAYTIME_END_HOUR
   );
 };
 
@@ -54,9 +88,33 @@ const buildNoRetryDecision = (reason: string): RetryPolicyDecision => ({
   retryScheduledAt: null,
 });
 
-export const evaluateRetryPolicy = (
+const estimateRetryDateFromHazardWindow = (
+  evaluatedAt: Date,
+  localTimezone: string,
+  hazardWindow: { hour: number; dayOfWeek: number },
+): Date | null => {
+  for (let hoursOffset = 1; hoursOffset <= 14 * 24; hoursOffset += 1) {
+    const candidate = new Date(evaluatedAt.getTime() + hoursOffset * 60 * 60 * 1000);
+    const currentLocalParts = getLocalDateParts(candidate, localTimezone);
+
+    if (!currentLocalParts) {
+      return null;
+    }
+
+    const hasMatchingDay = currentLocalParts.dayOfWeek === hazardWindow.dayOfWeek;
+    const hasMatchingHour = currentLocalParts.hour === hazardWindow.hour;
+
+    if (hasMatchingDay && hasMatchingHour) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
+
+export const evaluateRetryPolicy = async (
   input: RetryPolicyInput,
-): RetryPolicyDecision => {
+): Promise<RetryPolicyDecision> => {
   const evaluatedAt = input.evaluatedAt ?? new Date();
 
   if (input.outcome !== 'no-answer') {
@@ -75,14 +133,36 @@ export const evaluateRetryPolicy = (
     return buildNoRetryDecision('attempt_cap_reached');
   }
 
-  const retryScheduledAt = new Date(
+  let retryScheduledAt = new Date(
     evaluatedAt.getTime() + DEFAULT_RETRY_DELAY_MINUTES * 60 * 1000,
   );
+  let retryReason = 'no_answer_high_priority_local_daytime_under_cap';
+
+  if (input.timingModel && input.segmentId) {
+    const optimalHazardWindow = await input.timingModel.getBestTimeToCall({
+      segmentId: input.segmentId,
+      attemptNumber: input.attemptsUsed + 1,
+    });
+
+    if (optimalHazardWindow) {
+      const modelRetryDate = estimateRetryDateFromHazardWindow(
+        evaluatedAt,
+        input.localTimezone,
+        optimalHazardWindow,
+      );
+
+      if (modelRetryDate) {
+        retryScheduledAt = modelRetryDate;
+        retryReason =
+          'no_answer_high_priority_local_daytime_hazard_optimized_under_cap';
+      }
+    }
+  }
 
   return {
     shouldRetry: true,
     retryStrategy: 'double-dial-no-answer',
-    retryReason: 'no_answer_high_priority_local_daytime_under_cap',
+    retryReason,
     retryScheduledAt: retryScheduledAt.toISOString(),
   };
 };
