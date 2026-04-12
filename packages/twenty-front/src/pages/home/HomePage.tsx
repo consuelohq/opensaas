@@ -15,6 +15,7 @@ import { importedListIdState } from '@/dialer/states/importedListIdState';
 import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadataItem';
 import { MainContainerLayoutWithCommandMenu } from '@/object-record/components/MainContainerLayoutWithCommandMenu';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
+import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/components/SpreadsheetImportProvider';
 import { PageContainer } from '@/ui/layout/page/components/PageContainer';
 import { PageHeader } from '@/ui/layout/page/components/PageHeader';
@@ -54,11 +55,15 @@ export const HomePage = () => {
     objectNameSingular: 'opportunity',
   });
 
+  const { totalCount: opportunityCount = 0 } = useFindManyRecords({
+    objectNameSingular: 'opportunity',
+    limit: 1,
+  });
+
   const { openListMemberImportDialog } = useOpenListMemberImportDialog();
 
   const handleImportCSV = useCallback(async () => {
-    const now = new Date();
-    const defaultName = `Import ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    const defaultName = `List ${opportunityCount + 1}`;
     const listName = window.prompt(t`Name your list`, defaultName);
 
     if (!listName) {
@@ -77,7 +82,12 @@ export const HomePage = () => {
     } catch {
       // createOpportunity handles its own errors
     }
-  }, [createOpportunity, setImportedListId, openListMemberImportDialog]);
+  }, [
+    createOpportunity,
+    opportunityCount,
+    setImportedListId,
+    openListMemberImportDialog,
+  ]);
 
   const handleAskAI = () => {
     if (isCommandMenuOpened) {
