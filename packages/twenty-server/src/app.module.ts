@@ -129,6 +129,10 @@ export class AppModule {
       consumer
         .apply(RestCoreMiddleware, WorkspaceAuthContextMiddleware)
         .forRoutes({ path: 'rest/*path', method });
+
+      consumer
+        .apply(RestCoreMiddleware, WorkspaceAuthContextMiddleware)
+        .forRoutes({ path: 'api/v1/*path', method });
     }
   }
 }
