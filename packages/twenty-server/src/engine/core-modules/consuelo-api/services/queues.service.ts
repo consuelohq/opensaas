@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
+import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
 import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
 import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store';
 
@@ -32,6 +33,7 @@ export class QueuesService {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly stoppingModelStore: StoppingModelStoreService,
+    private readonly callTimingModelService: CallTimingModelService,
   ) {}
 
   async createQueue(params: {
@@ -270,7 +272,7 @@ export class QueuesService {
   }) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id, settings FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        'SELECT id, settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2',
         [params.queueId, params.workspaceId],
       );
 
@@ -298,7 +300,7 @@ export class QueuesService {
       }
 
       const queueSettings = (queueCheck[0]?.settings ?? {}) as QueueSettings;
-      const retryDecision = await evaluateRetryPolicy(
+const retryDecision = await evaluateRetryPolicy(
         {
           workspaceId: params.workspaceId,
           segmentId: params.queueId,

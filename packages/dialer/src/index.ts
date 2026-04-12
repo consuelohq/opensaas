@@ -22,6 +22,7 @@ export {
 } from './services/parallel-dialer.js';
 export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.js';
 export { StoppingModelService } from './services/stopping-model.js';
+export { CallTimingModel } from './services/call-timing-model.service.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
@@ -69,4 +70,6 @@ export type {
   ParallelStore,
   StoppingThreshold,
   StoppingModelStore,
+  HazardEstimate,
+  TimingModelStore,
 } from './types.js';

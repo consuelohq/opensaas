@@ -364,4 +364,23 @@ export type StoppingModelStore = {
     valuePerConnection: number;
     costPerAttempt: number;
   }>;
+
+export type HazardEstimate = {
+  segmentId: string;
+  hourOfDay: number;
+  dayOfWeek: number;
+  attemptNumber: number;
+  answerRate: number;
+  sampleSize: number;
+};
+
+export type TimingModelStore = {
+  getHazardEstimates(
+    segmentId: string,
+    attemptNumber?: number,
+  ): Promise<HazardEstimate[]>;
+  getOptimalRetryTime(
+    segmentId: string,
+    attemptNumber: number,
+  ): Promise<{ hour: number; dayOfWeek: number } | null>;
 };

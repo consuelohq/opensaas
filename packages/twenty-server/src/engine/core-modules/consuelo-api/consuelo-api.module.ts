@@ -3,6 +3,10 @@ import { Module } from '@nestjs/common';
 import { TokenModule } from 'src/engine/core-modules/auth/token/token.module';
 import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 import { CallsController } from 'src/engine/core-modules/consuelo-api/controllers/calls.controller';
+import { RefreshContactAttemptHazardViewCronCommand } from 'src/engine/core-modules/consuelo-api/crons/commands/refresh-contact-attempt-hazard-view.cron.command';
+import { RefreshContactAttemptHazardViewCronJob } from 'src/engine/core-modules/consuelo-api/crons/jobs/refresh-contact-attempt-hazard-view.cron.job';
+import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
+import { CallTimingStore } from 'src/engine/core-modules/consuelo-api/services/call-timing-store';
 import { LegacyCallsController } from 'src/engine/core-modules/consuelo-api/controllers/legacy-calls.controller';
 import { ParallelController } from 'src/engine/core-modules/consuelo-api/controllers/parallel.controller';
 import { QueuesController } from 'src/engine/core-modules/consuelo-api/controllers/queues.controller';
@@ -37,6 +41,10 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     ParallelBetaSamplerService,
     ParallelStrategyResolverService,
     StoppingModelStoreService,
+    CallTimingStore,
+    CallTimingModelService,
+    RefreshContactAttemptHazardViewCronJob,
+    RefreshContactAttemptHazardViewCronCommand,
     TwilioSignatureGuard,
     VoiceService,
     VoiceStateService,

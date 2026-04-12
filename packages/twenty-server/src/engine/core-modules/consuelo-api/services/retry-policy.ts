@@ -1,4 +1,5 @@
 import { StoppingModelService, type StoppingModelStore } from '@consuelo/dialer';
+import type { CallTimingModel } from '@consuelo/dialer';
 
 export type RetryStrategy = 'none' | 'double-dial-no-answer';
 
@@ -10,6 +11,7 @@ export type RetryPolicyInput = {
   attemptsUsed: number;
   maxAttempts: number;
   localTimezone: string;
+  timingModel?: CallTimingModel;
   evaluatedAt?: Date;
 };
 
@@ -20,34 +22,51 @@ export type RetryPolicyDecision = {
   retryScheduledAt: string | null;
 };
 
-const DEFAULT_RETRY_DELAY_MINUTES = 5;
-const LOCAL_DAYTIME_START_HOUR = 9;
-const LOCAL_DAYTIME_END_HOUR = 18;
+export const DEFAULT_RETRY_DELAY_MINUTES = 5;
+export const LOCAL_DAYTIME_START_HOUR = 9;
+export const LOCAL_DAYTIME_END_HOUR = 18;
 
-const getLocalHour = (date: Date, timeZone: string): number | null => {
+const getLocalDateParts = (
+  date: Date,
+  timeZone: string,
+): { hour: number; dayOfWeek: number } | null => {
   try {
-    const localHour = new Intl.DateTimeFormat('en-US', {
+    const parts = new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       hour12: false,
+      weekday: 'short',
       timeZone,
-    }).format(date);
-    const parsed = Number(localHour);
+    }).formatToParts(date);
 
-    return Number.isFinite(parsed) ? parsed : null;
+    const hourPart = parts.find((p) => p.type === 'hour');
+    const dayPart = parts.find((p) => p.type === 'weekday');
+
+    if (!hourPart || !dayPart) {
+      return null;
+    }
+
+    const hour = Number(hourPart.value);
+    const dayMap: Record<string, number> = {
+      Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    };
+    const dayOfWeek = dayMap[dayPart.value] ?? 0;
+
+    return Number.isFinite(hour) ? { hour, dayOfWeek } : null;
   } catch {
     return null;
   }
 };
 
 const isLocalDaytime = (date: Date, timeZone: string): boolean => {
-  const localHour = getLocalHour(date, timeZone);
+  const localDateParts = getLocalDateParts(date, timeZone);
 
-  if (localHour === null) {
+  if (!localDateParts) {
     return false;
   }
 
   return (
-    localHour >= LOCAL_DAYTIME_START_HOUR && localHour < LOCAL_DAYTIME_END_HOUR
+    localDateParts.hour >= LOCAL_DAYTIME_START_HOUR &&
+    localDateParts.hour < LOCAL_DAYTIME_END_HOUR
   );
 };
 
@@ -57,6 +76,30 @@ const buildNoRetryDecision = (reason: string): RetryPolicyDecision => ({
   retryReason: reason,
   retryScheduledAt: null,
 });
+
+const estimateRetryDateFromHazardWindow = (
+  evaluatedAt: Date,
+  localTimezone: string,
+  hazardWindow: { hour: number; dayOfWeek: number },
+): Date | null => {
+  for (let hoursOffset = 1; hoursOffset <= 14 * 24; hoursOffset += 1) {
+    const candidate = new Date(evaluatedAt.getTime() + hoursOffset * 60 * 60 * 1000);
+    const currentLocalParts = getLocalDateParts(candidate, localTimezone);
+
+    if (!currentLocalParts) {
+      return null;
+    }
+
+    const hasMatchingDay = currentLocalParts.dayOfWeek === hazardWindow.dayOfWeek;
+    const hasMatchingHour = currentLocalParts.hour === hazardWindow.hour;
+
+    if (hasMatchingDay && hasMatchingHour) {
+      return candidate;
+    }
+  }
+
+  return null;
+};
 
 export const evaluateRetryPolicy = async (
   input: RetryPolicyInput,
@@ -80,6 +123,7 @@ export const evaluateRetryPolicy = async (
     return buildNoRetryDecision('attempt_cap_reached');
   }
 
+  // stopping model: should we retry at all? (expected value check)
   const nextAttempt = input.attemptsUsed + 1;
   const stoppingModel = new StoppingModelService(stoppingModelStore);
   const threshold = await stoppingModel.getThresholdForAttempt({
@@ -90,6 +134,7 @@ export const evaluateRetryPolicy = async (
   });
 
   if (threshold === null) {
+    // insufficient data — fall back to default delay
     const retryScheduledAt = new Date(
       evaluatedAt.getTime() + DEFAULT_RETRY_DELAY_MINUTES * 60 * 1000,
     );
@@ -106,14 +151,41 @@ export const evaluateRetryPolicy = async (
     return buildNoRetryDecision('expected_value_below_attempt_cost');
   }
 
-  const retryScheduledAt = new Date(
+  // timing model: WHEN should we retry? (hazard-optimized scheduling)
+  let retryScheduledAt = new Date(
     evaluatedAt.getTime() + DEFAULT_RETRY_DELAY_MINUTES * 60 * 1000,
   );
+  let retryReason = 'no_answer_high_priority_local_daytime_positive_expected_value';
+
+  if (input.timingModel && input.segmentId) {
+    try {
+      const optimalHazardWindow = await input.timingModel.getBestTimeToCall({
+        segmentId: input.segmentId,
+        attemptNumber: nextAttempt,
+      });
+
+      if (optimalHazardWindow) {
+        const modelRetryDate = estimateRetryDateFromHazardWindow(
+          evaluatedAt,
+          input.localTimezone,
+          optimalHazardWindow,
+        );
+
+        if (modelRetryDate) {
+          retryScheduledAt = modelRetryDate;
+          retryReason =
+            'no_answer_high_priority_local_daytime_hazard_optimized_positive_ev';
+        }
+      }
+    } catch {
+      // timing model failure — fall back to default delay silently
+    }
+  }
 
   return {
     shouldRetry: true,
     retryStrategy: 'double-dial-no-answer',
-    retryReason: 'no_answer_high_priority_local_daytime_positive_expected_value',
+    retryReason,
     retryScheduledAt: retryScheduledAt.toISOString(),
   };
 };
