@@ -34,6 +34,7 @@ export class CsvMappingController {
       columns?: { index: number; header: string }[];
       headers?: string[];
       sampleRows?: string[][];
+      rawRows?: string[][];
       targetFields?: { key: string; label: string }[];
     },
   ) {
@@ -42,27 +43,31 @@ export class CsvMappingController {
       throw new UnauthorizedException('Authentication required');
     }
 
-    // accept both {columns: [{index, header}]} and legacy {headers: string[]}
+    // accept rawRows (new) or columns/headers (legacy)
     const columns =
       body.columns ??
       body.headers?.map((h, i) => ({ index: i, header: h }));
 
+    // rawRows mode doesn't require columns
     if (
-      !Array.isArray(columns) ||
-      columns.length === 0 ||
-      !Array.isArray(body.targetFields) ||
-      body.targetFields.length === 0
+      !body.rawRows &&
+      (!Array.isArray(columns) || columns.length === 0)
     ) {
       throw new BadRequestException(
-        'columns[] (or headers[]) and targetFields[] are required',
+        'rawRows[] or columns[] (or headers[]) required',
       );
+    }
+
+    if (!Array.isArray(body.targetFields) || body.targetFields.length === 0) {
+      throw new BadRequestException('targetFields[] required');
     }
 
     try {
       return await this.csvMappingService.analyzeCsvMapping({
-        columns,
+        columns: columns ?? [],
         sampleRows: body.sampleRows ?? [],
         targetFields: body.targetFields,
+        rawRows: body.rawRows,
       });
     } catch (err: unknown) {
       const message =
