@@ -6,6 +6,7 @@ import { CallsController } from 'src/engine/core-modules/consuelo-api/controller
 import { RefreshContactAttemptHazardViewCronCommand } from 'src/engine/core-modules/consuelo-api/crons/commands/refresh-contact-attempt-hazard-view.cron.command';
 import { RefreshContactAttemptHazardViewCronJob } from 'src/engine/core-modules/consuelo-api/crons/jobs/refresh-contact-attempt-hazard-view.cron.job';
 import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
+import { CadenceStoreService } from 'src/engine/core-modules/consuelo-api/services/cadence-store.service';
 import { CallTimingStore } from 'src/engine/core-modules/consuelo-api/services/call-timing-store';
 import { LegacyCallsController } from 'src/engine/core-modules/consuelo-api/controllers/legacy-calls.controller';
 import { ParallelController } from 'src/engine/core-modules/consuelo-api/controllers/parallel.controller';
@@ -44,6 +45,7 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     StoppingModelStoreService,
     CallTimingStore,
     CallTimingModelService,
+    CadenceStoreService,
     WhittleIndexStoreService,
     RefreshContactAttemptHazardViewCronJob,
     RefreshContactAttemptHazardViewCronCommand,

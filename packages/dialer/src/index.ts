@@ -24,6 +24,7 @@ export { ParallelStrategyResolver } from './services/parallel-strategy-resolver.
 export { StoppingModelService } from './services/stopping-model.js';
 export { CallTimingModel } from './services/call-timing-model.service.js';
 export { WhittleIndexService } from './services/whittle-index.service.js';
+export { CadenceOptimizerService } from './services/cadence-optimizer.service.js';
 export type { LockStore } from './services/caller-id.js';
 export type { NumberPool } from './services/local-presence.js';
 
@@ -75,4 +76,6 @@ export type {
   TimingModelStore,
   WhittleIndexInput,
   WhittleIndexResult,
+  CadencePolicy,
+  AgeBucket,
 } from './types.js';
