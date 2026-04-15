@@ -62,19 +62,19 @@ export class Dialer {
     );
   }
 
-  /** Attach a caller ID lock service (optional, for concurrent call protection) */
+  // lets api layers share one lock service so caller-id locking stays consistent across requests.
   withCallerIdLock(service: CallerIdLockService): this {
     this.callerIdLock = service;
     return this;
   }
 
-  /** Attach a local presence service (optional, for custom proximity strategies) */
+  // lets workspace-specific dialers inject custom local-presence logic without rebuilding the dialer.
   withLocalPresence(service: LocalPresenceService): this {
     this.localPresence = service;
     return this;
   }
 
-  /** Resolve the final caller ID for an outbound call without dialing */
+  // preflight and queue flows need caller-id selection without creating a twilio call first.
   async resolveCallerId(
     options: Pick<
       DialOptions,
@@ -227,7 +227,13 @@ export class Dialer {
   async createCall(
     to: string,
     from: string,
-    opts: { url?: string; twiml?: string; statusCallback?: string; statusCallbackEvent?: string[]; timeout?: number },
+    opts: {
+      url?: string;
+      twiml?: string;
+      statusCallback?: string;
+      statusCallbackEvent?: string[];
+      timeout?: number;
+    },
   ): Promise<{ callSid: string }> {
     return this.conference.createCall(to, from, opts);
   }

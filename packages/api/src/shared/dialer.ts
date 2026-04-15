@@ -85,40 +85,47 @@ function haversineMiles(
 }
 
 async function loadAreaCodeLocations(areaCodes: string[]): Promise<void> {
-  const uncachedAreaCodes = Array.from(
-    new Set(
-      areaCodes.filter(
-        (areaCode) =>
-          areaCode.trim().length > 0 && !areaCodeLocationCache.has(areaCode),
+  try {
+    const uncachedAreaCodes = Array.from(
+      new Set(
+        areaCodes.filter(
+          (areaCode) =>
+            areaCode.trim().length > 0 && !areaCodeLocationCache.has(areaCode),
+        ),
       ),
-    ),
-  );
+    );
 
-  if (uncachedAreaCodes.length === 0) {
-    return;
-  }
-
-  const pool = await getSharedPool();
-  const { rows } = await pool.query<{
-    area_code: string;
-    latitude: number;
-    longitude: number;
-  }>(SQL_GET_AREA_CODE_LOCATIONS, [uncachedAreaCodes]);
-
-  const foundAreaCodes = new Set<string>();
-
-  for (const row of rows) {
-    foundAreaCodes.add(row.area_code);
-    areaCodeLocationCache.set(row.area_code, {
-      latitude: Number(row.latitude),
-      longitude: Number(row.longitude),
-    });
-  }
-
-  for (const areaCode of uncachedAreaCodes) {
-    if (!foundAreaCodes.has(areaCode)) {
-      areaCodeLocationCache.set(areaCode, null);
+    if (uncachedAreaCodes.length === 0) {
+      return;
     }
+
+    const pool = await getSharedPool();
+    const { rows } = await pool.query<{
+      area_code: string;
+      latitude: number;
+      longitude: number;
+    }>(SQL_GET_AREA_CODE_LOCATIONS, [uncachedAreaCodes]);
+
+    const foundAreaCodes = new Set<string>();
+
+    for (const row of rows) {
+      foundAreaCodes.add(row.area_code);
+      areaCodeLocationCache.set(row.area_code, {
+        latitude: Number(row.latitude),
+        longitude: Number(row.longitude),
+      });
+    }
+
+    for (const areaCode of uncachedAreaCodes) {
+      if (!foundAreaCodes.has(areaCode)) {
+        areaCodeLocationCache.set(areaCode, null);
+      }
+    }
+  } catch (err: unknown) {
+    Sentry.captureException(err, {
+      extra: { context: 'loadAreaCodeLocations', areaCodes },
+    });
+    throw err;
   }
 }
 
@@ -126,25 +133,32 @@ async function getAreaCodeDistanceMiles(
   areaCodeA: string,
   areaCodeB: string,
 ): Promise<number | null> {
-  if (!areaCodeA || !areaCodeB) {
+  try {
+    if (!areaCodeA || !areaCodeB) {
+      return null;
+    }
+
+    await loadAreaCodeLocations([areaCodeA, areaCodeB]);
+
+    const locationA = areaCodeLocationCache.get(areaCodeA) ?? null;
+    const locationB = areaCodeLocationCache.get(areaCodeB) ?? null;
+
+    if (locationA === null || locationB === null) {
+      return null;
+    }
+
+    return haversineMiles(
+      locationA.latitude,
+      locationA.longitude,
+      locationB.latitude,
+      locationB.longitude,
+    );
+  } catch (err: unknown) {
+    Sentry.captureException(err, {
+      extra: { context: 'getAreaCodeDistanceMiles', areaCodeA, areaCodeB },
+    });
     return null;
   }
-
-  await loadAreaCodeLocations([areaCodeA, areaCodeB]);
-
-  const locationA = areaCodeLocationCache.get(areaCodeA) ?? null;
-  const locationB = areaCodeLocationCache.get(areaCodeB) ?? null;
-
-  if (locationA === null || locationB === null) {
-    return null;
-  }
-
-  return haversineMiles(
-    locationA.latitude,
-    locationA.longitude,
-    locationB.latitude,
-    locationB.longitude,
-  );
 }
 
 function buildLocalPresenceService(): LocalPresenceService {

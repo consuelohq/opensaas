@@ -6,7 +6,6 @@ import { Checkbox } from 'twenty-ui/input';
 
 import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
 import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
-import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { Select } from '@/ui/input/components/Select';
 
 const StyledContainer = styled.div`
@@ -40,8 +39,9 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
     selectedCallerId,
     setSelectedCallerId,
     localPresenceEnabled,
+    preferences,
+    updatePreferences,
   } = useCallerIdSelection();
-  const { preferences, updatePreferences } = useUserPreferences();
 
   useEffect(() => {
     if (!selectedCallerId && availableCallerIds.length > 0) {
@@ -85,7 +85,9 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
             })
           }
         />
-        <span title={t`When enabled, we match the outbound caller ID to the closest area code available for the person being called.`}>
+        <span
+          title={t`When enabled, we match the outbound caller ID to the closest area code available for the person being called.`}
+        >
           {t`Prefer local presence calling`}
         </span>
       </StyledToggle>

@@ -59,7 +59,8 @@ const buildWorkspaceNumberPool = async (workspaceId: string) => {
   let primarySid: string | null = null;
   try {
     primarySid = await redisService.getPrimaryNumber(workspaceId);
-  } catch {
+  } catch (err: unknown) {
+    void err;
     primarySid = null;
   }
 
@@ -67,7 +68,9 @@ const buildWorkspaceNumberPool = async (workspaceId: string) => {
     (number: { isPrimary: boolean; twilioSid?: string }) => ({
       ...number,
       isPrimary:
-        primarySid !== null ? number.twilioSid === primarySid : number.isPrimary,
+        primarySid !== null
+          ? number.twilioSid === primarySid
+          : number.isPrimary,
     }),
   );
 
@@ -199,16 +202,32 @@ const recachePhoneNumbers = async (workspaceId: string) => {
     const dialer = await getDialerForWorkspace(workspaceId);
     const numbers = await dialer.listNumbers();
     let primarySid: string | null = null;
-    try { primarySid = await redisService.getPrimaryNumber(workspaceId); } catch { /* */ }
-    const phoneNumbers = numbers.map((num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => ({
-      phoneNumber: num.phoneNumber ?? '',
-      friendlyName: num.friendlyName ?? '',
-      areaCode: (num.phoneNumber ?? '').startsWith('+1') && (num.phoneNumber ?? '').length >= 5 ? (num.phoneNumber ?? '').slice(2, 5) : '',
-      sid: num.twilioSid ?? '',
-      isPrimary: primarySid !== null && num.twilioSid === primarySid,
-    }));
+    try {
+      primarySid = await redisService.getPrimaryNumber(workspaceId);
+    } catch {
+      /* */
+    }
+    const phoneNumbers = numbers.map(
+      (num: {
+        phoneNumber: string;
+        friendlyName?: string;
+        twilioSid?: string;
+      }) => ({
+        phoneNumber: num.phoneNumber ?? '',
+        friendlyName: num.friendlyName ?? '',
+        areaCode:
+          (num.phoneNumber ?? '').startsWith('+1') &&
+          (num.phoneNumber ?? '').length >= 5
+            ? (num.phoneNumber ?? '').slice(2, 5)
+            : '',
+        sid: num.twilioSid ?? '',
+        isPrimary: primarySid !== null && num.twilioSid === primarySid,
+      }),
+    );
     await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers });
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 };
 
 export const voiceRoutes = (): RouteDefinition[] => [
@@ -425,7 +444,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
         if (!numberExists) {
           res.status(404).json({
-            error: { code: 'NUMBER_NOT_FOUND', message: 'Number not found in workspace' },
+            error: {
+              code: 'NUMBER_NOT_FOUND',
+              message: 'Number not found in workspace',
+            },
           });
           return;
         }
@@ -587,7 +609,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const resolvedCallerId =
-          callerId && !to && body?.localPresence === undefined
+          callerId && !localPresence
             ? {
                 callerIdNumber: callerId,
                 selectionMethod: 'manual' as const,
@@ -598,19 +620,32 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 customerAreaCode: undefined,
               }
             : await (async () => {
-                const workspaceId = req.auth?.workspaceId ?? '';
-                const { dialer, numberPool } =
-                  await buildWorkspaceNumberPool(workspaceId);
+                try {
+                  const workspaceId = req.auth?.workspaceId ?? '';
+                  const { dialer, numberPool } =
+                    await buildWorkspaceNumberPool(workspaceId);
 
-                return dialer.resolveCallerId(
-                  {
-                    to: to ?? '',
-                    from: '',
-                    callerIdNumber: localPresence ? undefined : callerId,
-                    localPresence,
-                  },
-                  numberPool,
-                );
+                  return dialer.resolveCallerId(
+                    {
+                      to: to ?? '',
+                      from: '',
+                      callerIdNumber: localPresence ? undefined : callerId,
+                      localPresence,
+                    },
+                    numberPool,
+                  );
+                } catch (err: unknown) {
+                  Sentry.captureException(err, {
+                    extra: {
+                      context: 'voice.preflight.resolveCallerId',
+                      callerId,
+                      localPresence,
+                      to,
+                      userId,
+                    },
+                  });
+                  throw err;
+                }
               })();
 
         if (!resolvedCallerId.callerIdNumber) {
@@ -667,7 +702,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
         Sentry.captureException(
           err instanceof Error ? err : new Error(message),
           {
-            extra: { callerId, to, userId, localPresence, context: 'preflight' },
+            extra: {
+              callerId,
+              to,
+              userId,
+              localPresence,
+              context: 'preflight',
+            },
           },
         );
         res.status(500).json({ error: { code: 'LOCK_ERROR', message } });
@@ -859,7 +900,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const cachedStatus = await redisService.getVoiceStatusCache(workspaceId);
+        const cachedStatus =
+          await redisService.getVoiceStatusCache(workspaceId);
         if (cachedStatus) {
           res.json(JSON.parse(cachedStatus));
           return;
@@ -1855,19 +1897,26 @@ export const voiceRoutes = (): RouteDefinition[] => [
           const transfer = await redisService.getTransfer(transferId);
           if (transfer) {
             const updatedTransfer = { ...transfer };
-            
+
             // Update based on dial call status
-            if (dialCallStatus === 'completed' || dialCallStatus === 'answered') {
+            if (
+              dialCallStatus === 'completed' ||
+              dialCallStatus === 'answered'
+            ) {
               updatedTransfer.connectedAt = new Date().toISOString();
               if (transfer.transferType === 'cold') {
                 updatedTransfer.status = 'completed';
                 updatedTransfer.completedAt = new Date().toISOString();
               }
-            } else if (dialCallStatus === 'busy' || dialCallStatus === 'no-answer' || dialCallStatus === 'failed') {
+            } else if (
+              dialCallStatus === 'busy' ||
+              dialCallStatus === 'no-answer' ||
+              dialCallStatus === 'failed'
+            ) {
               updatedTransfer.status = 'failed';
               updatedTransfer.completedAt = new Date().toISOString();
             }
-            
+
             await redisService.setTransfer(transferId, updatedTransfer);
           }
         } catch (err: unknown) {
@@ -1875,10 +1924,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
           try {
             // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:dial-status').error('Failed to update transfer record', {
-              transferId,
-              error: err instanceof Error ? err.message : 'unknown error',
-            });
+            createLogger('voice:dial-status').error(
+              'Failed to update transfer record',
+              {
+                transferId,
+                error: err instanceof Error ? err.message : 'unknown error',
+              },
+            );
           } catch {
             // Logger unavailable, continue
           }
@@ -2171,7 +2223,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       // call completed or failed
-      const terminalStatuses = ['completed', 'busy', 'no-answer', 'canceled', 'failed'];
+      const terminalStatuses = [
+        'completed',
+        'busy',
+        'no-answer',
+        'canceled',
+        'failed',
+      ];
       if (terminalStatuses.includes(callStatus)) {
         const isFailed = callStatus !== 'completed';
         const eventType = isFailed ? 'call.failed' : 'call.ended';

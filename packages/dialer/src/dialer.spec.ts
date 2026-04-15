@@ -1,11 +1,9 @@
 import { Dialer } from './dialer';
 import { LocalPresenceService } from './services/local-presence';
+import type { PhoneNumber } from './types';
 
 describe('Dialer.resolveCallerId', () => {
-  const makeNumber = (
-    areaCode: string,
-    overrides?: Partial<PhoneNumber>,
-  ) => ({
+  const makeNumber = (areaCode: string, overrides?: Partial<PhoneNumber>) => ({
     phoneNumber: `+1${areaCode}5550000`,
     areaCode,
     isPrimary: false,
@@ -13,7 +11,7 @@ describe('Dialer.resolveCallerId', () => {
     ...overrides,
   });
 
-  it('returns the manual caller id when provided', async () => {
+  it('should return the manual caller id when one is provided', async () => {
     const dialer = new Dialer();
 
     const result = await dialer.resolveCallerId({
@@ -31,7 +29,7 @@ describe('Dialer.resolveCallerId', () => {
     );
   });
 
-  it('returns an exact local match from the shared service', async () => {
+  it('should return an exact local match when the shared service finds one', async () => {
     const dialer = new Dialer().withLocalPresence(new LocalPresenceService());
     const numberPool = {
       numbers: [makeNumber('212'), makeNumber('415'), makeNumber('310')],
@@ -57,7 +55,7 @@ describe('Dialer.resolveCallerId', () => {
     );
   });
 
-  it('returns a proximity match when the configured service supports it', async () => {
+  it('should return a proximity match when the configured service supports it', async () => {
     const dialer = new Dialer().withLocalPresence(
       new LocalPresenceService({
         maxDistanceMiles: 100,
@@ -99,7 +97,7 @@ describe('Dialer.resolveCallerId', () => {
     );
   });
 
-  it('falls back to the primary number when no match exists', async () => {
+  it('should fall back to the primary number when no match exists', async () => {
     const dialer = new Dialer().withLocalPresence(new LocalPresenceService());
     const numberPool = {
       numbers: [makeNumber('212'), makeNumber('310', { isPrimary: true })],
@@ -124,7 +122,7 @@ describe('Dialer.resolveCallerId', () => {
     );
   });
 
-  it('falls back to the dialer default number when no pool caller id resolves', async () => {
+  it('should fall back to the dialer default number when no pool caller id resolves', async () => {
     const dialer = new Dialer({ defaultNumber: '+15550001111' });
 
     const result = await dialer.resolveCallerId({

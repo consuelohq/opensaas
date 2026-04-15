@@ -1,8 +1,7 @@
 import styled from '@emotion/styled';
 import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { IconPhone, IconPhoneOff } from 'twenty-ui/display';
-import { IconLoader2 } from '@tabler/icons-react';
+import { IconLoader, IconPhone, IconPhoneOff } from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
 import { useLingui } from '@lingui/react/macro';
 
@@ -63,7 +62,7 @@ const StyledButton = styled.button<{ variant: 'call' | 'end' | 'disabled' }>`
   }
 `;
 
-const StyledSpinner = styled(IconLoader2)`
+const StyledSpinner = styled(IconLoader)`
   animation: spin 1s linear infinite;
 
   @keyframes spin {
@@ -75,7 +74,7 @@ const StyledSpinner = styled(IconLoader2)`
 
 export const CallButton = () => {
   const { t } = useLingui();
-  const callState = useRecoilValue(callStateAtom);
+  const { status: callStatus } = useRecoilValue(callStateAtom);
   const phoneNumber = useRecoilValue(phoneNumberState);
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
@@ -85,9 +84,8 @@ export const CallButton = () => {
   const { preferences } = useUserPreferences();
   const { connect, disconnect } = useTwilioDevice();
 
-  const isConnecting =
-    callState.status === 'connecting' || callState.status === 'ringing';
-  const isActive = callState.status === 'active';
+  const isConnecting = callStatus === 'connecting' || callStatus === 'ringing';
+  const isActive = callStatus === 'active';
   const isInCall = isConnecting || isActive;
   const valid = isValidNumber(phoneNumber);
   const localPresenceEnabled = preferences.dialer.localPresenceEnabled;
@@ -151,6 +149,11 @@ export const CallButton = () => {
         );
 
         if (!manualCallerId) {
+          setCallError({
+            reason: 'preflight_failed',
+            message: t`Unable to select a caller ID right now. Please try again.`,
+            occurredAt: new Date(),
+          });
           return;
         }
       }
@@ -194,6 +197,7 @@ export const CallButton = () => {
     disconnect,
     setCallError,
     setSelectedCallerId,
+    t,
   ]);
 
   const isDisabled = !isInCall && (!valid || !hasCallerIdAvailable);
