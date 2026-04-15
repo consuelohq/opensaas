@@ -53,7 +53,7 @@ function clampPagination(
   return { limit, offset };
 }
 
-@Controller('api/v1')
+@Controller('v1')
 export class CallsController {
   constructor(private readonly callsService: CallsService) {}
 
