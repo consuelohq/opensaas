@@ -129,6 +129,22 @@ export interface NumberSelection {
   customerAreaCode?: string;
 }
 
+/** Result of resolving the final caller ID for an outbound call */
+export interface ResolveCallerIdResult {
+  callerIdNumber?: string;
+  selectionMethod:
+    | 'manual'
+    | 'primary'
+    | 'local_presence'
+    | 'primary_fallback'
+    | 'system_default';
+  localMatch: boolean;
+  proximityMatch: boolean;
+  distanceMiles?: number;
+  isPrimary: boolean;
+  customerAreaCode?: string;
+}
+
 /** Caller ID lock record */
 export interface CallerIdLock {
   phoneNumber: string;

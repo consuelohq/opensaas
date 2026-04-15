@@ -24,6 +24,7 @@ import {
   type QueueOutcome,
 } from '@/dialer/types/queue';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
+import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
@@ -261,7 +262,9 @@ export const useOpportunityQueueWorkspace = ({
   );
 
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
+  const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
+  const { preferences } = useUserPreferences();
   const callState = useRecoilValue(callStateAtom);
   const { updateOneRecord } = useUpdateOneRecord();
 
@@ -716,10 +719,12 @@ export const useOpportunityQueueWorkspace = ({
   }, [callableRecords.length, listId, listStatus, startBackendQueueSession]);
 
   const startCurrentQueueItem = useCallback(async () => {
-    const fromNumber =
+    const localPresenceEnabled = preferences.dialer.localPresenceEnabled;
+    const defaultCallerId =
       selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
+    const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
 
-    if (!currentQueueItem || !fromNumber) {
+    if (!currentQueueItem || defaultCallerId === null) {
       return;
     }
 
@@ -739,18 +744,51 @@ export const useOpportunityQueueWorkspace = ({
     );
     setSelectedContact(currentQueueItem.contact);
     setPhoneNumber(currentQueueItem.contact.phone);
-    setCallState((previousCallState) => ({
-      ...previousCallState,
-      contact: currentQueueItem.contact,
-      fromNumber,
-    }));
 
     try {
-      await connect({ To: currentQueueItem.contact.phone, From: fromNumber });
+      const preflightRes = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            callerId: manualCallerId,
+            to: currentQueueItem.contact.phone,
+            localPresence: localPresenceEnabled,
+          }),
+        },
+      );
+
+      if (!preflightRes.ok) {
+        throw new Error(`Preflight failed: ${preflightRes.status}`);
+      }
+
+      const preflightBody = (await preflightRes.json()) as { callerId?: string };
+      const resolvedCallerId = preflightBody.callerId ?? manualCallerId;
+
+      if (!resolvedCallerId) {
+        throw new Error('No caller ID resolved for queue item');
+      }
+
+      setSelectedCallerId(resolvedCallerId);
+      setCallState((previousCallState) => ({
+        ...previousCallState,
+        contact: currentQueueItem.contact,
+        fromNumber: resolvedCallerId,
+      }));
+
+      await connect({
+        To: currentQueueItem.contact.phone,
+        From: resolvedCallerId,
+      });
     } catch (error: unknown) {
       autoStartedItemIdRef.current = null;
       Sentry.captureException(error, {
-        extra: { context: 'startCurrentQueueItem', listId },
+        extra: {
+          context: 'startCurrentQueueItem',
+          listId,
+          localPresenceEnabled,
+        },
       });
     }
   }, [
@@ -758,9 +796,11 @@ export const useOpportunityQueueWorkspace = ({
     connect,
     currentQueueItem,
     listId,
+    preferences.dialer.localPresenceEnabled,
     selectedCallerId,
     setCallState,
     setPhoneNumber,
+    setSelectedCallerId,
     setSelectedContact,
   ]);
 

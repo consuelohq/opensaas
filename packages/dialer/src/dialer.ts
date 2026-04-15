@@ -15,6 +15,7 @@ import type {
   AvailableNumber,
   ReleaseResult,
   PhoneNumber,
+  ResolveCallerIdResult,
 } from './types.js';
 import { TwilioProvider } from './providers/twilio.js';
 import {
@@ -44,7 +45,7 @@ import {
  */
 export class Dialer {
   readonly provider: DialerProvider;
-  readonly localPresence: LocalPresenceService;
+  localPresence: LocalPresenceService;
   readonly conference: ConferenceService;
   readonly parallel: ParallelDialerService;
   private callerIdLock?: CallerIdLockService;
@@ -67,6 +68,71 @@ export class Dialer {
     return this;
   }
 
+  /** Attach a local presence service (optional, for custom proximity strategies) */
+  withLocalPresence(service: LocalPresenceService): this {
+    this.localPresence = service;
+    return this;
+  }
+
+  /** Resolve the final caller ID for an outbound call without dialing */
+  async resolveCallerId(
+    options: Pick<
+      DialOptions,
+      'to' | 'from' | 'callerIdNumber' | 'localPresence'
+    >,
+    numberPool?: NumberPool,
+  ): Promise<ResolveCallerIdResult> {
+    if (options.callerIdNumber) {
+      return {
+        callerIdNumber: options.callerIdNumber,
+        selectionMethod: 'manual',
+        localMatch: false,
+        proximityMatch: false,
+        isPrimary: false,
+      };
+    }
+
+    if (options.localPresence !== false && numberPool) {
+      const selection = await this.localPresence.selectNumber(
+        numberPool,
+        options.to,
+      );
+
+      if (selection) {
+        return {
+          callerIdNumber: selection.phoneNumber,
+          selectionMethod:
+            selection.localMatch || selection.proximityMatch
+              ? 'local_presence'
+              : 'primary_fallback',
+          localMatch: selection.localMatch,
+          proximityMatch: selection.proximityMatch,
+          distanceMiles: selection.distanceMiles,
+          isPrimary: selection.isPrimary,
+          customerAreaCode: selection.customerAreaCode,
+        };
+      }
+    }
+
+    if (this.config.defaultNumber) {
+      return {
+        callerIdNumber: this.config.defaultNumber,
+        selectionMethod: 'primary',
+        localMatch: false,
+        proximityMatch: false,
+        isPrimary: true,
+      };
+    }
+
+    return {
+      callerIdNumber: undefined,
+      selectionMethod: 'system_default',
+      localMatch: false,
+      proximityMatch: false,
+      isPrimary: false,
+    };
+  }
+
   /**
    * Initiate an outbound call.
    *
@@ -80,33 +146,9 @@ export class Dialer {
     options: DialOptions,
     numberPool?: NumberPool,
   ): Promise<DialResult> {
-    let callerIdNumber = options.callerIdNumber;
-    let selectionMethod: DialResult['selectionMethod'] = 'manual';
-
-    // auto-select via local presence if no manual override
-    if (!callerIdNumber && options.localPresence !== false && numberPool) {
-      const selection = await this.localPresence.selectNumber(
-        numberPool,
-        options.to,
-      );
-      if (selection) {
-        callerIdNumber = selection.phoneNumber;
-        selectionMethod = selection.localMatch
-          ? 'local_presence'
-          : selection.proximityMatch
-            ? 'local_presence'
-            : 'primary_fallback';
-      }
-    }
-
-    if (!callerIdNumber && this.config.defaultNumber) {
-      callerIdNumber = this.config.defaultNumber;
-      selectionMethod = 'primary';
-    }
-
-    if (!callerIdNumber) {
-      selectionMethod = 'system_default';
-    }
+    const resolution = await this.resolveCallerId(options, numberPool);
+    const callerIdNumber = resolution.callerIdNumber;
+    const selectionMethod = resolution.selectionMethod;
 
     // acquire caller ID lock if service is configured
     if (callerIdNumber && this.callerIdLock) {

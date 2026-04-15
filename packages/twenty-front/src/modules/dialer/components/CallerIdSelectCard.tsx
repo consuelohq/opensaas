@@ -1,13 +1,12 @@
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useEffect } from 'react';
-import { useRecoilState } from 'recoil';
 import { IconPhone } from 'twenty-ui/display';
 import { Checkbox } from 'twenty-ui/input';
 
 import { useAvailableCallerIds } from '@/dialer/hooks/useAvailableCallerIds';
 import { useCallerIdSelection } from '@/dialer/hooks/useCallerIdSelection';
-import { localPresenceEnabledState } from '@/dialer/states/localPresenceEnabledState';
+import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { Select } from '@/ui/input/components/Select';
 
 const StyledContainer = styled.div`
@@ -36,11 +35,13 @@ type CallerIdSelectCardProps = {
 export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
   useAvailableCallerIds();
 
-  const { availableCallerIds, selectedCallerId, setSelectedCallerId } =
-    useCallerIdSelection();
-  const [localPresenceEnabled, setLocalPresenceEnabled] = useRecoilState(
-    localPresenceEnabledState,
-  );
+  const {
+    availableCallerIds,
+    selectedCallerId,
+    setSelectedCallerId,
+    localPresenceEnabled,
+  } = useCallerIdSelection();
+  const { preferences, updatePreferences } = useUserPreferences();
 
   useEffect(() => {
     if (!selectedCallerId && availableCallerIds.length > 0) {
@@ -75,7 +76,14 @@ export const CallerIdSelectCard = ({ dropdownId }: CallerIdSelectCardProps) => {
       <StyledToggle>
         <Checkbox
           checked={localPresenceEnabled}
-          onCheckedChange={(checked) => setLocalPresenceEnabled(checked)}
+          onCheckedChange={(checked) =>
+            updatePreferences({
+              dialer: {
+                ...preferences.dialer,
+                localPresenceEnabled: checked,
+              },
+            })
+          }
         />
         <span title={t`When enabled, we match the outbound caller ID to the closest area code available for the person being called.`}>
           {t`Prefer local presence calling`}

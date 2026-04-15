@@ -1,9 +1,4 @@
-import {
-  LocalPresenceService,
-  extractAreaCode,
-  type NumberPool,
-  type PhoneNumber,
-} from '@consuelo/dialer';
+import { extractAreaCode, type NumberPool, type PhoneNumber } from '@consuelo/dialer';
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
@@ -17,8 +12,6 @@ const getLockService = sharedCallerIdLockService;
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
 const localPresenceEnabled = new Map<string, boolean>();
-
-const presenceService = new LocalPresenceService({ maxDistanceMiles: 100 });
 
 /** /v1/local-presence + /v1/caller-id routes */
 export const localPresenceRoutes = (): RouteDefinition[] => [
@@ -96,70 +89,68 @@ export const localPresenceRoutes = (): RouteDefinition[] => [
         }
 
         const fromNumbersRaw = req.query?.fromNumbers;
-        if (!fromNumbersRaw) {
-          res.status(400).json({
-            error: {
-              code: 'BAD_REQUEST',
-              message:
-                'fromNumbers query param required (comma-separated E.164)',
-            },
-          });
-          return;
-        }
-
-        const fromNumbers = fromNumbersRaw
-          .split(',')
-          .filter((n) => E164_REGEX.test(n.trim()));
-        if (!fromNumbers.length) {
-          res.status(400).json({
-            error: {
-              code: 'BAD_REQUEST',
-              message:
-                'at least one valid E.164 number required in fromNumbers',
-            },
-          });
-          return;
-        }
-
-        const numbers: PhoneNumber[] = fromNumbers.map((n, i) => ({
-          phoneNumber: n.trim(),
-          areaCode: extractAreaCode(n.trim()) ?? '',
-          isPrimary: i === 0,
-          isActive: true,
-        }));
-
-        const pool: NumberPool = {
-          numbers,
-          primaryNumber: numbers[0],
-        };
-
-        const selection = await presenceService.selectNumber(pool, phoneNumber);
         const enabled = localPresenceEnabled.get(userId) ?? false;
         const customerAreaCode = extractAreaCode(phoneNumber) ?? '';
+        const workspaceId = req.auth?.workspaceId ?? '';
+        const dialer = await getDialerForWorkspace(workspaceId);
 
-        if (!selection) {
-          res.status(200).json({
-            selectedNumber: numbers[0]?.phoneNumber ?? null,
-            areaCode: numbers[0]?.areaCode ?? '',
-            localMatch: false,
-            proximityMatch: false,
-            distanceMiles: null,
-            isPrimary: true,
-            customerAreaCode,
-            localPresenceEnabled: enabled,
-          });
-          return;
+        let pool: NumberPool;
+        if (fromNumbersRaw) {
+          const fromNumbers = fromNumbersRaw
+            .split(',')
+            .filter((n) => E164_REGEX.test(n.trim()));
+          if (!fromNumbers.length) {
+            res.status(400).json({
+              error: {
+                code: 'BAD_REQUEST',
+                message:
+                  'at least one valid E.164 number required in fromNumbers',
+              },
+            });
+            return;
+          }
+
+          const numbers: PhoneNumber[] = fromNumbers.map((n, i) => ({
+            phoneNumber: n.trim(),
+            areaCode: extractAreaCode(n.trim()) ?? '',
+            isPrimary: i === 0,
+            isActive: true,
+          }));
+
+          pool = {
+            numbers,
+            primaryNumber: numbers[0],
+          };
+        } else {
+          const numbers = await dialer.listNumbers();
+          pool = {
+            numbers,
+            primaryNumber: numbers.find((number) => number.isPrimary) ?? numbers[0],
+          };
         }
 
+        const resolution = await dialer.resolveCallerId(
+          {
+            to: phoneNumber,
+            from: '',
+            localPresence: true,
+          },
+          pool,
+        );
+
         res.status(200).json({
-          selectedNumber: selection.phoneNumber,
-          areaCode: selection.areaCode,
-          localMatch: selection.localMatch,
-          proximityMatch: selection.proximityMatch,
-          distanceMiles: selection.distanceMiles ?? null,
-          isPrimary: selection.isPrimary,
-          customerAreaCode: selection.customerAreaCode ?? customerAreaCode,
+          selectedNumber: resolution.callerIdNumber ?? null,
+          areaCode:
+            extractAreaCode(resolution.callerIdNumber ?? '') ??
+            pool.primaryNumber?.areaCode ??
+            '',
+          localMatch: resolution.localMatch,
+          proximityMatch: resolution.proximityMatch,
+          distanceMiles: resolution.distanceMiles ?? null,
+          isPrimary: resolution.isPrimary,
+          customerAreaCode: resolution.customerAreaCode ?? customerAreaCode,
           localPresenceEnabled: enabled,
+          selectionMethod: resolution.selectionMethod,
         });
       } catch (err: unknown) {
         Sentry.captureException(

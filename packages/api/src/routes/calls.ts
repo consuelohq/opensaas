@@ -376,14 +376,19 @@ export const callRoutes = (): RouteDefinition[] => {
               if (numbers.length > 0) {
                 const pool = {
                   numbers,
-                  primaryNumber: numbers.find((n) => n.isPrimary),
+                  primaryNumber:
+                    numbers.find((number) => number.isPrimary) ?? numbers[0],
                 };
-                const selection = await dialer.localPresence.selectNumber(
+                const resolution = await dialer.resolveCallerId(
+                  {
+                    to: body.leadPhone,
+                    from: body.repPhone,
+                    localPresence: true,
+                  },
                   pool,
-                  body.leadPhone,
                 );
-                if (selection) {
-                  callerId = selection.phoneNumber;
+                if (resolution.callerIdNumber) {
+                  callerId = resolution.callerIdNumber;
                 }
               }
             } catch (err: unknown) {

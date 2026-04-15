@@ -16,6 +16,7 @@ import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { callErrorState } from '@/dialer/states/callErrorState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { stripNonDigits } from '@/dialer/utils/phoneFormat';
+import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 
 const isValidNumber = (phone: string): boolean => {
   const digits = stripNonDigits(phone);
@@ -79,7 +80,9 @@ export const CallButton = () => {
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const selectedContact = useRecoilValue(selectedContactState);
+  const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
   const setCallError = useSetRecoilState(callErrorState);
+  const { preferences } = useUserPreferences();
   const { connect, disconnect } = useTwilioDevice();
 
   const isConnecting =
@@ -87,8 +90,10 @@ export const CallButton = () => {
   const isActive = callState.status === 'active';
   const isInCall = isConnecting || isActive;
   const valid = isValidNumber(phoneNumber);
-  const fromNumber =
+  const localPresenceEnabled = preferences.dialer.localPresenceEnabled;
+  const defaultCallerId =
     selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
+  const hasCallerIdAvailable = defaultCallerId !== null;
 
   const handleClick = useCallback(async () => {
     if (isInCall) {
@@ -97,8 +102,8 @@ export const CallButton = () => {
       return;
     }
 
-    if (!valid || !fromNumber) {
-      if (!fromNumber) {
+    if (!valid || !hasCallerIdAvailable) {
+      if (!hasCallerIdAvailable) {
         setCallError({
           reason: 'no_caller_id',
           message: t`No caller ID available. Add a phone number in Settings → Dialer.`,
@@ -108,14 +113,19 @@ export const CallButton = () => {
       return;
     }
 
+    const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
+
     try {
-      // Preflight check: acquire caller ID lock before initiating call
       const preflightRes = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ callerId: fromNumber }),
+          body: JSON.stringify({
+            callerId: manualCallerId,
+            to: phoneNumber,
+            localPresence: localPresenceEnabled,
+          }),
         },
       );
 
@@ -128,23 +138,47 @@ export const CallButton = () => {
           });
           return;
         }
-        // For other errors, try to proceed with the call anyway
+
         captureException(
           new Error(`Preflight failed: ${preflightRes.status}`),
           {
-            extra: { status: preflightRes.status, callerId: fromNumber },
+            extra: {
+              status: preflightRes.status,
+              callerId: manualCallerId,
+              localPresenceEnabled,
+            },
           },
         );
+
+        if (!manualCallerId) {
+          return;
+        }
       }
 
-      await connect({ To: phoneNumber, From: fromNumber });
+      const preflightBody = preflightRes.ok
+        ? ((await preflightRes.json()) as { callerId?: string })
+        : null;
+      const resolvedCallerId = preflightBody?.callerId ?? manualCallerId;
+
+      if (!resolvedCallerId) {
+        setCallError({
+          reason: 'no_caller_id',
+          message: t`No caller ID available. Add a phone number in Settings → Dialer.`,
+          occurredAt: new Date(),
+        });
+        return;
+      }
+
+      setSelectedCallerId(resolvedCallerId);
+      await connect({ To: phoneNumber, From: resolvedCallerId });
     } catch (err: unknown) {
       captureException(err, {
         extra: {
           // eslint-disable-next-line lingui/no-unlocalized-strings
           context: 'CallButton.connect',
           to: phoneNumber,
-          from: fromNumber,
+          from: manualCallerId,
+          localPresenceEnabled,
         },
       });
       // connect failure already sets callState to 'failed' via useTwilioDevice
@@ -152,14 +186,17 @@ export const CallButton = () => {
   }, [
     isInCall,
     valid,
-    fromNumber,
+    hasCallerIdAvailable,
+    localPresenceEnabled,
+    defaultCallerId,
     phoneNumber,
     connect,
     disconnect,
     setCallError,
+    setSelectedCallerId,
   ]);
 
-  const isDisabled = !isInCall && (!valid || !fromNumber);
+  const isDisabled = !isInCall && (!valid || !hasCallerIdAvailable);
   const variant = isInCall ? 'end' : isDisabled ? 'disabled' : 'call';
 
   const firstName = selectedContact?.firstName;

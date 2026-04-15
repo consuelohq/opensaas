@@ -39,6 +39,7 @@ export type {
   SearchAvailableNumbersOptions,
   ReleaseResult,
   NumberSelection,
+  ResolveCallerIdResult,
   CallerIdLock,
   ConferenceParticipant,
   ConferenceInfo,
