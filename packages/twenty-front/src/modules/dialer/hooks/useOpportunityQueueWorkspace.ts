@@ -219,16 +219,34 @@ const mapBackendStatusToQueueItemStatus = (
 const mapRecordToDialerContact = (
   record: ListMemberWorkspaceRecord,
   fallbackPhoneNumber: string,
-): DialerContact => ({
-  id: record.personId ?? record.id,
-  name: record.person?.name ?? fallbackPhoneNumber,
-  firstName: record.person?.firstName ?? null,
-  lastName: record.person?.lastName ?? null,
-  company: record.person?.company ?? null,
-  phone: fallbackPhoneNumber,
-  email: record.person?.email ?? null,
-  avatarUrl: record.person?.avatarUrl ?? null,
-});
+): DialerContact => {
+  const nameComposite = record.person?.name as
+    | { firstName?: string; lastName?: string }
+    | string
+    | null
+    | undefined;
+  const firstName =
+    typeof nameComposite === 'object' && nameComposite !== null
+      ? (nameComposite.firstName ?? null)
+      : null;
+  const lastName =
+    typeof nameComposite === 'object' && nameComposite !== null
+      ? (nameComposite.lastName ?? null)
+      : null;
+  const name =
+    [firstName, lastName].filter(Boolean).join(' ') || fallbackPhoneNumber;
+
+  return {
+    id: record.personId ?? record.id,
+    name,
+    firstName,
+    lastName,
+    company: record.person?.company ?? null,
+    phone: fallbackPhoneNumber,
+    email: record.person?.email ?? null,
+    avatarUrl: record.person?.avatarUrl ?? null,
+  };
+};
 
 const getListMemberPhoneNumber = (record: ListMemberWorkspaceRecord) => {
   return (
