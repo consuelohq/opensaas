@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectDataSource } from "@nestjs/typeorm";
 
-import * as Sentry from '@sentry/node';
-import { StoppingModelService, type CadencePolicy } from '@consuelo/dialer';
-import { DataSource } from 'typeorm';
+import * as Sentry from "@sentry/node";
+import { StoppingModelService, type CadencePolicy } from "@consuelo/dialer";
+import { DataSource } from "typeorm";
 
-import { CallTimingModelService } from 'src/engine/core-modules/consuelo-api/services/call-timing-model.service';
-import { CadenceStoreService } from 'src/engine/core-modules/consuelo-api/services/cadence-store.service';
-import { evaluateRetryPolicy } from 'src/engine/core-modules/consuelo-api/services/retry-policy';
-import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/services/stopping-model-store.service';
-import { WhittleIndexStoreService } from 'src/engine/core-modules/consuelo-api/services/whittle-index-store.service';
+import { CallTimingModelService } from "src/engine/core-modules/consuelo-api/services/call-timing-model.service";
+import { CadenceStoreService } from "src/engine/core-modules/consuelo-api/services/cadence-store.service";
+import { evaluateRetryPolicy } from "src/engine/core-modules/consuelo-api/services/retry-policy";
+import { StoppingModelStoreService } from "src/engine/core-modules/consuelo-api/services/stopping-model-store.service";
+import { WhittleIndexStoreService } from "src/engine/core-modules/consuelo-api/services/whittle-index-store.service";
 
 type QueueSettings = {
   minRetrySpacingMinutes?: number;
@@ -36,7 +36,7 @@ type QueueSelectionResult = {
       explorationBonus: number;
     };
     candidatesEvaluated: number;
-    selectionMethod: 'whittle_index' | 'fifo_fallback';
+    selectionMethod: "whittle_index" | "fifo_fallback";
   };
 };
 
@@ -70,14 +70,14 @@ export class QueuesService {
   }) {
     try {
       const queueRows = await this.dataSource.query(
-        'INSERT INTO call_queues (workspace_id, user_id, name, source_type, source_id, category, settings, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+        "INSERT INTO call_queues (workspace_id, user_id, name, source_type, source_id, category, settings, total_contacts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
         [
           params.workspaceId,
           params.userId,
           params.name,
-          params.sourceType ?? 'manual',
+          params.sourceType ?? "manual",
           params.sourceId ?? null,
-          params.category ?? 'all',
+          params.category ?? "all",
           JSON.stringify(params.settings ?? {}),
           params.contactIds.length,
         ],
@@ -88,7 +88,7 @@ export class QueuesService {
       if (params.contactIds.length > 0) {
         const valuesClause = params.contactIds
           .map((_, index) => `($1, $${index + 2}, ${index + 1})`)
-          .join(',');
+          .join(",");
 
         await this.dataSource.query(
           `INSERT INTO queue_items (queue_id, contact_id, position) VALUES ${valuesClause}`,
@@ -98,7 +98,7 @@ export class QueuesService {
 
       return queue;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`createQueue failed: ${message}`, {
         workspaceId: params.workspaceId,
@@ -109,7 +109,7 @@ export class QueuesService {
 
   async listQueues(workspaceId: string, filters: QueueListFilters = {}) {
     try {
-      const whereClauses = ['workspace_id = $1'];
+      const whereClauses = ["workspace_id = $1"];
       const params: Array<string> = [workspaceId];
 
       if (filters.sourceType) {
@@ -123,11 +123,11 @@ export class QueuesService {
       }
 
       return this.dataSource.query(
-        `SELECT * FROM call_queues WHERE ${whereClauses.join(' AND ')} ORDER BY created_at DESC`,
+        `SELECT * FROM call_queues WHERE ${whereClauses.join(" AND ")} ORDER BY created_at DESC`,
         params,
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`listQueues failed: ${message}`, { workspaceId });
       throw err;
@@ -137,7 +137,7 @@ export class QueuesService {
   async getQueue(workspaceId: string, id: string) {
     try {
       const queueRows = await this.dataSource.query(
-        'SELECT * FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT * FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [id, workspaceId],
       );
       const queue = queueRows[0];
@@ -147,13 +147,13 @@ export class QueuesService {
       }
 
       const items = await this.dataSource.query(
-        'SELECT * FROM queue_items WHERE queue_id = $1 ORDER BY position ASC',
+        "SELECT * FROM queue_items WHERE queue_id = $1 ORDER BY position ASC",
         [id],
       );
 
       return { ...queue, items };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`getQueue failed: ${message}`, { workspaceId, id });
       throw err;
@@ -163,13 +163,13 @@ export class QueuesService {
   async updateQueueStatus(workspaceId: string, id: string, status: string) {
     try {
       const rows = await this.dataSource.query(
-        'UPDATE call_queues SET status = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
+        "UPDATE call_queues SET status = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
         [status, id, workspaceId],
       );
 
       return rows[0] ?? null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`updateQueueStatus failed: ${message}`, {
         workspaceId,
@@ -182,8 +182,8 @@ export class QueuesService {
   async startQueue(workspaceId: string, id: string) {
     try {
       const queueRows = await this.dataSource.query(
-        'UPDATE call_queues SET status = $1, started_at = COALESCE(started_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
-        ['active', id, workspaceId],
+        "UPDATE call_queues SET status = $1, started_at = COALESCE(started_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
+        ["active", id, workspaceId],
       );
 
       const queue = queueRows[0];
@@ -193,8 +193,8 @@ export class QueuesService {
       }
 
       const existingRows = await this.dataSource.query(
-        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 LIMIT 1',
-        [id, 'calling'],
+        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 LIMIT 1",
+        [id, "calling"],
       );
 
       if (existingRows[0]) {
@@ -217,7 +217,7 @@ export class QueuesService {
         ranking: selection.ranking,
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`startQueue failed: ${message}`, { workspaceId, id });
       throw err;
@@ -227,7 +227,7 @@ export class QueuesService {
   async skipCurrentItem(params: { queueId: string; workspaceId: string }) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [params.queueId, params.workspaceId],
       );
 
@@ -236,8 +236,8 @@ export class QueuesService {
       }
 
       const currentRows = await this.dataSource.query(
-        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
-        [params.queueId, 'calling'],
+        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
+        [params.queueId, "calling"],
       );
       const current = currentRows[0];
 
@@ -257,12 +257,12 @@ export class QueuesService {
       }
 
       const updatedRows = await this.dataSource.query(
-        'UPDATE queue_items SET status = $1, skip_reason = $2 WHERE id = $3 RETURNING *',
-        ['skipped', 'user_skip', current.id],
+        "UPDATE queue_items SET status = $1, skip_reason = $2 WHERE id = $3 RETURNING *",
+        ["skipped", "user_skip", current.id],
       );
 
       await this.dataSource.query(
-        'UPDATE call_queues SET skipped_contacts = skipped_contacts + 1, updated_at = NOW() WHERE id = $1',
+        "UPDATE call_queues SET skipped_contacts = skipped_contacts + 1, updated_at = NOW() WHERE id = $1",
         [params.queueId],
       );
 
@@ -279,7 +279,7 @@ export class QueuesService {
         ranking: selection.ranking,
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`skipCurrentItem failed: ${message}`, {
         queueId: params.queueId,
@@ -298,7 +298,7 @@ export class QueuesService {
   }) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id, settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT id, settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [params.queueId, params.workspaceId],
       );
 
@@ -307,8 +307,8 @@ export class QueuesService {
       }
 
       const currentRows = await this.dataSource.query(
-        'SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED',
-        [params.queueId, 'calling'],
+        "SELECT * FROM queue_items WHERE queue_id = $1 AND status = $2 ORDER BY position ASC LIMIT 1 FOR UPDATE SKIP LOCKED",
+        [params.queueId, "calling"],
       );
       const current = currentRows[0];
 
@@ -332,7 +332,7 @@ export class QueuesService {
         workspaceId: params.workspaceId,
         queueId: params.queueId,
         contactId: String(current.contact_id),
-        outcome: params.outcome ?? '',
+        outcome: params.outcome ?? "",
         callDurationSeconds,
       });
 
@@ -347,20 +347,20 @@ export class QueuesService {
            WHERE id = $6
            RETURNING *`,
           [
-            'pending',
+            "pending",
             params.outcome ?? null,
-            'double-dial-no-answer',
-            '10',
-            'double_dial',
+            "double-dial-no-answer",
+            "10",
+            "double_dial",
             current.id,
           ],
         );
 
         return {
           retryScheduled: true,
-          retryStrategy: 'double-dial-no-answer',
+          retryStrategy: "double-dial-no-answer",
           retryScheduledAt: new Date(Date.now() + 10_000).toISOString(),
-          retryReason: 'double_dial',
+          retryReason: "double_dial",
           currentItem: this.unwrapRow(updatedRows[0]),
         };
       }
@@ -373,14 +373,14 @@ export class QueuesService {
           isHighPriority: params.isHighPriority === true,
           attemptsUsed: Number(current.attempts ?? 0),
           maxAttempts:
-            typeof queueSettings.maxAttempts === 'number' &&
+            typeof queueSettings.maxAttempts === "number" &&
             queueSettings.maxAttempts > 0
               ? queueSettings.maxAttempts
-              : typeof queueSettings.retryAttemptCap === 'number' &&
+              : typeof queueSettings.retryAttemptCap === "number" &&
                   queueSettings.retryAttemptCap > 0
                 ? queueSettings.retryAttemptCap
                 : 3,
-          localTimezone: params.localTimezone ?? 'America/New_York',
+          localTimezone: params.localTimezone ?? "America/New_York",
         },
         this.stoppingModelStore,
       );
@@ -388,7 +388,7 @@ export class QueuesService {
       if (retryDecision.shouldRetry) {
         const updatedRows = await this.updateQueueItemWithRetryFallback(
           current.id,
-          'pending',
+          "pending",
           params.outcome ?? null,
           retryDecision,
         );
@@ -404,13 +404,13 @@ export class QueuesService {
 
       const updatedRows = await this.updateQueueItemWithRetryFallback(
         current.id,
-        'completed',
+        "completed",
         params.outcome ?? null,
         retryDecision,
       );
 
       await this.dataSource.query(
-        'UPDATE call_queues SET completed_contacts = completed_contacts + 1, updated_at = NOW() WHERE id = $1',
+        "UPDATE call_queues SET completed_contacts = completed_contacts + 1, updated_at = NOW() WHERE id = $1",
         [params.queueId],
       );
 
@@ -437,8 +437,8 @@ export class QueuesService {
       }
 
       await this.dataSource.query(
-        'UPDATE call_queues SET status = $1, completed_at = NOW(), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
-        ['completed', params.queueId, params.workspaceId],
+        "UPDATE call_queues SET status = $1, completed_at = NOW(), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
+        ["completed", params.queueId, params.workspaceId],
       );
 
       return {
@@ -447,7 +447,7 @@ export class QueuesService {
         queueCompleted: true,
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`completeCurrentAndAdvance failed: ${message}`, {
         queueId: params.queueId,
@@ -460,7 +460,7 @@ export class QueuesService {
   async restartQueue(workspaceId: string, id: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [id, workspaceId],
       );
 
@@ -469,18 +469,18 @@ export class QueuesService {
       }
 
       await this.dataSource.query(
-        'UPDATE queue_items SET status = $1, attempts = 0, call_outcome = NULL, skip_reason = NULL WHERE queue_id = $2',
-        ['pending', id],
+        "UPDATE queue_items SET status = $1, attempts = 0, call_outcome = NULL, skip_reason = NULL WHERE queue_id = $2",
+        ["pending", id],
       );
 
       await this.dataSource.query(
-        'UPDATE call_queues SET status = $1, completed_contacts = 0, skipped_contacts = 0, started_at = NULL, completed_at = NULL, updated_at = NOW() WHERE id = $2',
-        ['idle', id],
+        "UPDATE call_queues SET status = $1, completed_contacts = 0, skipped_contacts = 0, started_at = NULL, completed_at = NULL, updated_at = NOW() WHERE id = $2",
+        ["idle", id],
       );
 
       return { success: true };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`restartQueue failed: ${message}`, { workspaceId, id });
       throw err;
@@ -490,13 +490,13 @@ export class QueuesService {
   async assignQueue(workspaceId: string, id: string, userId: string) {
     try {
       const rows = await this.dataSource.query(
-        'UPDATE call_queues SET user_id = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
+        "UPDATE call_queues SET user_id = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
         [userId, id, workspaceId],
       );
 
       return rows[0] ?? null;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`assignQueue failed: ${message}`, { workspaceId, id });
       throw err;
@@ -506,7 +506,7 @@ export class QueuesService {
   async queueAnalytics(workspaceId: string, queueId: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id::text = $1 AND workspace_id::text = $2',
+        "SELECT id FROM call_queues WHERE id::text = $1 AND workspace_id::text = $2",
         [queueId, workspaceId],
       );
 
@@ -519,15 +519,15 @@ export class QueuesService {
         call_outcome: string | null;
         call_duration_seconds: number | null;
       }> = await this.dataSource.query(
-        'SELECT status, call_outcome, call_duration_seconds FROM queue_items WHERE queue_id = $1',
+        "SELECT status, call_outcome, call_duration_seconds FROM queue_items WHERE queue_id = $1",
         [queueId],
       );
 
       const total = rows.length;
-      const completed = rows.filter((row) => row.status === 'completed').length;
-      const skipped = rows.filter((row) => row.status === 'skipped').length;
+      const completed = rows.filter((row) => row.status === "completed").length;
+      const skipped = rows.filter((row) => row.status === "skipped").length;
       const rowsWithDuration = rows.filter(
-        (row) => typeof row.call_duration_seconds === 'number',
+        (row) => typeof row.call_duration_seconds === "number",
       );
       const totalDurationSeconds = rowsWithDuration.reduce(
         (acc, row) => acc + (row.call_duration_seconds ?? 0),
@@ -544,7 +544,7 @@ export class QueuesService {
             ? 0
             : Math.round(totalDurationSeconds / rowsWithDuration.length),
         outcomes: rows.reduce<Record<string, number>>((acc, row) => {
-          const key = row.call_outcome ?? 'unknown';
+          const key = row.call_outcome ?? "unknown";
 
           acc[key] = (acc[key] ?? 0) + 1;
 
@@ -552,7 +552,7 @@ export class QueuesService {
         }, {}),
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`queueAnalytics failed: ${message}`, {
         workspaceId,
@@ -563,7 +563,7 @@ export class QueuesService {
   }
 
   private sanitizeCsvValue(value: string): string {
-    const formulaChars = ['=', '+', '-', '@', '\t', '\r'];
+    const formulaChars = ["=", "+", "-", "@", "\t", "\r"];
     let sanitized = value;
 
     if (formulaChars.some((char) => sanitized.startsWith(char))) {
@@ -576,7 +576,7 @@ export class QueuesService {
   async exportQueueCsv(workspaceId: string, queueId: string) {
     try {
       const queueCheck = await this.dataSource.query(
-        'SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT id FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [queueId, workspaceId],
       );
 
@@ -594,25 +594,25 @@ export class QueuesService {
       );
 
       const header =
-        'id,position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
+        "id,position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at";
       const lines = rows.map((row: Record<string, unknown>) => {
         const values = [
           row.id,
           row.position,
           row.contact_id,
           row.status,
-          row.call_outcome ?? '',
-          row.call_duration_seconds ?? '',
-          this.sanitizeCsvValue(String(row.skip_reason ?? '')),
-          row.last_attempt_at ?? '',
+          row.call_outcome ?? "",
+          row.call_duration_seconds ?? "",
+          this.sanitizeCsvValue(String(row.skip_reason ?? "")),
+          row.last_attempt_at ?? "",
         ];
 
-        return values.map((value) => `"${value}"`).join(',');
+        return values.map((value) => `"${value}"`).join(",");
       });
 
-      return [header, ...lines].join('\n');
+      return [header, ...lines].join("\n");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`exportQueueCsv failed: ${message}`, {
         workspaceId,
@@ -625,7 +625,7 @@ export class QueuesService {
   async getContactDialerInfo(workspaceId: string, contactId: string) {
     try {
       const contactRows = await this.dataSource.query(
-        'SELECT id, name, phone FROM contacts WHERE id = $1 AND workspace_id = $2',
+        "SELECT id, name, phone FROM contacts WHERE id = $1 AND workspace_id = $2",
         [contactId, workspaceId],
       );
 
@@ -649,7 +649,7 @@ export class QueuesService {
         attempts,
       };
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`getContactDialerInfo failed: ${message}`, {
         workspaceId,
@@ -665,25 +665,60 @@ export class QueuesService {
   ): Promise<QueueSelectionResult> {
     try {
       const queueRows = await this.dataSource.query(
-        'SELECT settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2',
+        "SELECT settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [queueId, workspaceId],
       );
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
-      const category = queueRows[0]?.category ?? 'all';
+      const category = queueRows[0]?.category ?? "all";
       const isCadenceOptimizationEnabled =
         await this.cadenceStore.isCadenceOptimizationEnabled(workspaceId);
       const cadencePolicyBySegment = new Map<string, CadencePolicy>();
       const queueRetryColumnsAvailable = await this.hasQueueRetryColumns();
       const retryReasonSelect = queueRetryColumnsAvailable
-        ? 'qi.retry_reason,'
-        : 'NULL::text AS retry_reason,';
+        ? "qi.retry_reason,"
+        : "NULL::text AS retry_reason,";
 
       const rows = await this.dataSource.query(
-        `SELECT qi.id, qi.contact_id, qi.position, qi.attempts, qi.created_at AS contact_created_at, ${retryReasonSelect}
-                ledger.last_attempt_at, ledger.attempts_today, ledger.attempts_this_week,
-                ledger.day_window_start, ledger.week_window_start
+        `SELECT
+           qi.id,
+           qi.contact_id,
+           qi.position,
+           qi.attempts,
+           contacts.created_at AS contact_created_at,
+           first_attempts.first_attempt_at,
+           ${retryReasonSelect}
+           ledger.last_attempt_at,
+           ledger.attempts_today,
+           ledger.attempts_this_week,
+           ledger.day_window_start,
+           ledger.week_window_start
          FROM queue_items qi
-         LEFT JOIN contact_attempt_ledger ledger ON ledger.workspace_id = $2 AND ledger.contact_id = qi.contact_id
+         JOIN call_queues cq ON cq.id = qi.queue_id
+         LEFT JOIN contacts
+           ON contacts.id::text = qi.contact_id
+          AND contacts.workspace_id::text = cq.workspace_id
+         LEFT JOIN LATERAL (
+           SELECT MIN(attempted_at) AS first_attempt_at
+           FROM (
+             SELECT prior_qi.last_attempt_at AS attempted_at
+             FROM queue_items prior_qi
+             JOIN call_queues prior_cq ON prior_cq.id = prior_qi.queue_id
+             WHERE prior_qi.contact_id = qi.contact_id
+               AND prior_cq.workspace_id = cq.workspace_id
+               AND prior_qi.last_attempt_at IS NOT NULL
+
+             UNION ALL
+
+             SELECT COALESCE(calls.start_time, calls.created_at) AS attempted_at
+             FROM calls
+             WHERE calls.contact_id::text = qi.contact_id
+               AND calls.workspace_id::text = cq.workspace_id
+               AND COALESCE(calls.start_time, calls.created_at) IS NOT NULL
+           ) attempts
+         ) first_attempts ON true
+         LEFT JOIN contact_attempt_ledger ledger
+           ON ledger.workspace_id = $2
+          AND ledger.contact_id = qi.contact_id
          WHERE qi.queue_id = $1 AND qi.status = 'pending'
          ORDER BY qi.position ASC
          FOR UPDATE SKIP LOCKED`,
@@ -718,7 +753,7 @@ export class QueuesService {
         if (suppressionReason) {
           if (!suppression) {
             suppression = {
-              contactId: String(row.contact_id ?? ''),
+              contactId: String(row.contact_id ?? ""),
               reason: suppressionReason,
             };
           }
@@ -736,8 +771,8 @@ export class QueuesService {
         if (shouldStop) {
           if (!suppression) {
             suppression = {
-              contactId: String(row.contact_id ?? ''),
-              reason: 'STOPPING_MODEL',
+              contactId: String(row.contact_id ?? ""),
+              reason: "STOPPING_MODEL",
             };
           }
 
@@ -783,7 +818,7 @@ export class QueuesService {
             ranking: {
               index: 0,
               candidatesEvaluated: eligibleCandidates.length,
-              selectionMethod: 'fifo_fallback',
+              selectionMethod: "fifo_fallback",
             },
           };
         }
@@ -801,7 +836,7 @@ export class QueuesService {
             ranking: {
               index: 0,
               candidatesEvaluated: eligibleCandidates.length,
-              selectionMethod: 'fifo_fallback',
+              selectionMethod: "fifo_fallback",
             },
           };
         }
@@ -813,11 +848,11 @@ export class QueuesService {
             index: topRanked.index,
             components: topRanked.components,
             candidatesEvaluated: eligibleCandidates.length,
-            selectionMethod: 'whittle_index',
+            selectionMethod: "whittle_index",
           },
         };
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
+        const message = err instanceof Error ? err.message : "Unknown error";
 
         this.logger.warn(
           `Whittle ranking failed, using FIFO fallback: ${message}`,
@@ -829,8 +864,8 @@ export class QueuesService {
 
         Sentry.captureException(err, {
           tags: {
-            component: 'QueuesService',
-            operation: 'selectNextCallableItem',
+            component: "QueuesService",
+            operation: "selectNextCallableItem",
           },
           extra: { queueId, workspaceId },
         });
@@ -843,16 +878,16 @@ export class QueuesService {
           ranking: {
             index: 0,
             candidatesEvaluated: eligibleCandidates.length,
-            selectionMethod: 'fifo_fallback',
+            selectionMethod: "fifo_fallback",
           },
         };
       }
     } catch (err: unknown) {
-      if (this.isMissingRelationError(err, 'contact_attempt_ledger')) {
+      if (this.isMissingRelationError(err, "contact_attempt_ledger")) {
         return await this.selectNextCallableItemWithoutLedger(queueId);
       }
 
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
 
       this.logger.error(`selectNextCallableItem failed: ${message}`, {
         queueId,
@@ -880,24 +915,56 @@ export class QueuesService {
     let maxAttemptsPerDay = settings.maxAttemptsPerDay;
 
     if (params.isCadenceOptimizationEnabled) {
-      const contactCreatedAt = row.contact_created_at
-        ? new Date(String(row.contact_created_at))
-        : new Date();
-      const ageBucket = this.cadenceStore.classifyAgeBucket(contactCreatedAt);
-      const cadenceSegmentId = `${params.category}:${ageBucket}`;
-      let cadencePolicy = params.cadencePolicyBySegment.get(cadenceSegmentId);
-
-      if (!cadencePolicy) {
-        cadencePolicy = await this.cadenceStore.getCadencePolicy({
-          workspaceId: params.workspaceId,
-          segmentId: params.category,
-          contactCreatedAt,
+      try {
+        const cadenceReferenceAt = this.cadenceStore.resolveCadenceReferenceAt({
+          contactCreatedAt:
+            row.contact_created_at instanceof Date ||
+            typeof row.contact_created_at === "string"
+              ? row.contact_created_at
+              : null,
+          firstAttemptAt:
+            row.first_attempt_at instanceof Date ||
+            typeof row.first_attempt_at === "string"
+              ? row.first_attempt_at
+              : null,
         });
-        params.cadencePolicyBySegment.set(cadenceSegmentId, cadencePolicy);
-      }
+        const ageBucket =
+          this.cadenceStore.classifyAgeBucket(cadenceReferenceAt);
+        const cadenceSegmentId = `${params.category}:${ageBucket}`;
+        let cadencePolicy = params.cadencePolicyBySegment.get(cadenceSegmentId);
 
-      minRetrySpacingMinutes = cadencePolicy.minSpacingMinutes;
-      maxAttemptsPerDay = cadencePolicy.maxAttemptsPerDay;
+        if (!cadencePolicy) {
+          cadencePolicy = await this.cadenceStore.getCadencePolicy({
+            workspaceId: params.workspaceId,
+            segmentId: params.category,
+            cadenceReferenceAt,
+          });
+          params.cadencePolicyBySegment.set(cadenceSegmentId, cadencePolicy);
+        }
+
+        minRetrySpacingMinutes = cadencePolicy.minSpacingMinutes;
+        maxAttemptsPerDay = cadencePolicy.maxAttemptsPerDay;
+      } catch (err: unknown) {
+        this.logger.warn(
+          "[QueuesService] failed to load cadence policy for suppression, using queue settings",
+          {
+            workspaceId: params.workspaceId,
+            category: params.category,
+            contactId: String(row.contact_id ?? ""),
+          },
+        );
+        Sentry.captureException(err, {
+          tags: {
+            component: "QueuesService",
+            operation: "getSuppressionReason",
+          },
+          extra: {
+            workspaceId: params.workspaceId,
+            category: params.category,
+            contactId: String(row.contact_id ?? ""),
+          },
+        });
+      }
     }
 
     if (
@@ -905,19 +972,18 @@ export class QueuesService {
       lastAttemptAt &&
       Date.now() - lastAttemptAt.getTime() < minRetrySpacingMinutes * 60_000
     ) {
-      return 'MIN_RETRY_SPACING';
+      return "MIN_RETRY_SPACING";
     }
 
     if (maxAttemptsPerDay && attemptsToday >= maxAttemptsPerDay) {
-      return 'MAX_ATTEMPTS_PER_DAY';
+      return "MAX_ATTEMPTS_PER_DAY";
     }
 
     if (
-      !params.isCadenceOptimizationEnabled &&
       settings.maxAttemptsPerWeek &&
       attemptsThisWeek >= settings.maxAttemptsPerWeek
     ) {
-      return 'MAX_ATTEMPTS_PER_WEEK';
+      return "MAX_ATTEMPTS_PER_WEEK";
     }
 
     return null;
@@ -932,7 +998,7 @@ export class QueuesService {
         return null;
       }
 
-      const isDoubleDial = String(item.retry_reason ?? '') === 'double_dial';
+      const isDoubleDial = String(item.retry_reason ?? "") === "double_dial";
       const hasRetryColumns = await this.hasQueueRetryColumns();
       const updatedRows = hasRetryColumns
         ? await this.dataSource.query(
@@ -940,10 +1006,13 @@ export class QueuesService {
              SET status = $1,
                  attempts = attempts + (CASE WHEN $3 THEN 0 ELSE 1 END),
                  last_attempt_at = NOW(),
-                 retry_reason = CASE WHEN $3 THEN NULL ELSE retry_reason END
+                 retry_reason = CASE
+                   WHEN $3 THEN 'double_dial_attempted'
+                   ELSE retry_reason
+                 END
              WHERE id = $2 AND status = 'pending'
              RETURNING *`,
-            ['calling', item.id, isDoubleDial],
+            ["calling", item.id, isDoubleDial],
           )
         : await this.dataSource.query(
             `UPDATE queue_items
@@ -952,7 +1021,7 @@ export class QueuesService {
                  last_attempt_at = NOW()
              WHERE id = $2 AND status = 'pending'
              RETURNING *`,
-            ['calling', item.id, isDoubleDial],
+            ["calling", item.id, isDoubleDial],
           );
 
       if (!updatedRows[0]) {
@@ -1009,7 +1078,7 @@ export class QueuesService {
 
       const updatedRows = await this.dataSource.query(
         "UPDATE queue_items SET status = $1, attempts = attempts + 1, last_attempt_at = NOW() WHERE id = $2 AND status = 'pending' RETURNING *",
-        ['calling', item.id],
+        ["calling", item.id],
       );
 
       return {
@@ -1018,7 +1087,7 @@ export class QueuesService {
         ranking: {
           index: 0,
           candidatesEvaluated: 1,
-          selectionMethod: 'fifo_fallback',
+          selectionMethod: "fifo_fallback",
         },
       };
     } finally {
@@ -1034,12 +1103,12 @@ export class QueuesService {
   }
 
   private getQueueMaxAttempts(settings: QueueSettings) {
-    if (typeof settings.maxAttempts === 'number' && settings.maxAttempts > 0) {
+    if (typeof settings.maxAttempts === "number" && settings.maxAttempts > 0) {
       return settings.maxAttempts;
     }
 
     if (
-      typeof settings.retryAttemptCap === 'number' &&
+      typeof settings.retryAttemptCap === "number" &&
       settings.retryAttemptCap > 0
     ) {
       return settings.retryAttemptCap;
@@ -1051,11 +1120,11 @@ export class QueuesService {
   private getQueueLocalTimezone(settings: QueueSettings) {
     const timezoneValue = (settings as Record<string, unknown>).localTimezone;
 
-    if (typeof timezoneValue === 'string' && timezoneValue.length > 0) {
+    if (typeof timezoneValue === "string" && timezoneValue.length > 0) {
       return timezoneValue;
     }
 
-    return 'America/New_York';
+    return "America/New_York";
   }
 
   private getCallableWindowEndHour(settings: QueueSettings) {
@@ -1063,7 +1132,7 @@ export class QueuesService {
       .callableWindowEndHour;
 
     if (
-      typeof callableWindowEndHour === 'number' &&
+      typeof callableWindowEndHour === "number" &&
       Number.isFinite(callableWindowEndHour)
     ) {
       return Math.max(0, Math.min(Math.trunc(callableWindowEndHour), 23));
@@ -1074,7 +1143,7 @@ export class QueuesService {
 
   private async updateQueueItemWithRetryFallback(
     queueItemId: string,
-    status: 'pending' | 'completed',
+    status: "pending" | "completed",
     outcome: string | null,
     retryDecision: {
       retryStrategy: string;
@@ -1084,7 +1153,7 @@ export class QueuesService {
   ) {
     if (await this.hasQueueRetryColumns()) {
       return await this.dataSource.query(
-        'UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *',
+        "UPDATE queue_items SET status = $1, call_outcome = $2, retry_strategy = $3, retry_scheduled_at = $4, retry_reason = $5 WHERE id = $6 RETURNING *",
         [
           status,
           outcome,
@@ -1097,7 +1166,7 @@ export class QueuesService {
     }
 
     return await this.dataSource.query(
-      'UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *',
+      "UPDATE queue_items SET status = $1, call_outcome = $2 WHERE id = $3 RETURNING *",
       [status, outcome, queueItemId],
     );
   }
