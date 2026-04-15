@@ -64,24 +64,19 @@ const buildWorkspaceNumberPool = async (workspaceId: string) => {
     primarySid = null;
   }
 
-  const normalizedNumbers = numbers.map(
-    (number: { isPrimary: boolean; twilioSid?: string }) => ({
-      ...number,
-      isPrimary:
-        primarySid !== null
-          ? number.twilioSid === primarySid
-          : number.isPrimary,
-    }),
-  );
+  const normalizedNumbers = numbers.map((number) => ({
+    ...number,
+    isPrimary:
+      primarySid !== null ? number.twilioSid === primarySid : number.isPrimary,
+  }));
 
   return {
     dialer,
     numberPool: {
       numbers: normalizedNumbers,
       primaryNumber:
-        normalizedNumbers.find(
-          (number: { isPrimary: boolean }) => number.isPrimary,
-        ) ?? normalizedNumbers[0],
+        normalizedNumbers.find((number) => number.isPrimary) ??
+        normalizedNumbers[0],
     },
   };
 };
