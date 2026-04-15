@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
@@ -17,7 +23,8 @@ const loadFromStorage = (): UserPreferences => {
     if (raw) {
       return { ...DEFAULT_PREFERENCES, ...JSON.parse(raw) };
     }
-  } catch {
+  } catch (err: unknown) {
+    void err;
     // fall through
   }
   return DEFAULT_PREFERENCES;
@@ -27,9 +34,37 @@ const saveToStorage = (prefs: UserPreferences) => {
   localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(prefs));
 };
 
+let sharedPreferences = loadFromStorage();
+const preferenceListeners = new Set<() => void>();
+
+const emitPreferencesChange = () => {
+  for (const listener of preferenceListeners) {
+    listener();
+  }
+};
+
+const getPreferencesSnapshot = () => sharedPreferences;
+
+const subscribeToPreferences = (listener: () => void) => {
+  preferenceListeners.add(listener);
+
+  return () => {
+    preferenceListeners.delete(listener);
+  };
+};
+
+const setSharedPreferences = (prefs: UserPreferences) => {
+  sharedPreferences = prefs;
+  saveToStorage(prefs);
+  emitPreferencesChange();
+};
+
 export const useUserPreferences = () => {
-  const [preferences, setPreferences] =
-    useState<UserPreferences>(loadFromStorage);
+  const preferences = useSyncExternalStore(
+    subscribeToPreferences,
+    getPreferencesSnapshot,
+    getPreferencesSnapshot,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,10 +82,10 @@ export const useUserPreferences = () => {
         const data = (await res.json()) as UserPreferences;
         if (mountedRef.current) {
           const merged = { ...DEFAULT_PREFERENCES, ...data };
-          setPreferences(merged);
-          saveToStorage(merged);
+          setSharedPreferences(merged);
         }
-      } catch {
+      } catch (err: unknown) {
+        void err;
         // API unavailable — localStorage values already loaded
       } finally {
         if (mountedRef.current) setLoading(false);
@@ -77,7 +112,8 @@ export const useUserPreferences = () => {
         );
         if (!res.ok) throw new Error(`${res.status}`);
         setError(null);
-      } catch {
+      } catch (err: unknown) {
+        void err;
         setError('Failed to save preferences');
       }
     }, DEBOUNCE_MS);
@@ -92,12 +128,9 @@ export const useUserPreferences = () => {
 
   const updatePreferences = useCallback(
     (patch: Partial<UserPreferences>) => {
-      setPreferences((prev) => {
-        const next = { ...prev, ...patch };
-        saveToStorage(next);
-        persistToApi(next);
-        return next;
-      });
+      const next = { ...getPreferencesSnapshot(), ...patch };
+      setSharedPreferences(next);
+      persistToApi(next);
     },
     [persistToApi],
   );
