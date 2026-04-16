@@ -2,6 +2,7 @@ import {
   Dialer,
   CallerIdLockService,
   InMemoryLockStore,
+  LocalPresenceService,
   RedisLockStore,
 } from '@consuelo/dialer';
 import * as Sentry from '@sentry/node';
@@ -12,6 +13,7 @@ import {
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
+import { getSharedPool } from './db.js';
 
 // lazy logger to satisfy @nx/enforce-module-boundaries (peer dep)
 let _dialerLogger: {
@@ -25,7 +27,7 @@ const getLogger = async () => {
       const { createLogger } = await import('@consuelo/logger');
       _dialerLogger = createLogger('dialer:self-hosted');
     }
-    return _dialerLogger;
+    return _dialerLogger!;
   } catch (err: unknown) {
     Sentry.captureException(err);
     throw err;
@@ -44,6 +46,127 @@ let _inMemoryStore: InMemoryLockStore | null = null;
 
 // per-workspace dialer cache (keyed by workspaceId)
 const dialerCache = new Map<string, Dialer>();
+
+type AreaCodeLocation = {
+  latitude: number;
+  longitude: number;
+};
+
+const SQL_GET_AREA_CODE_LOCATIONS = `
+  SELECT
+    area_code,
+    latitude::float8 AS latitude,
+    longitude::float8 AS longitude
+  FROM area_code_locations
+  WHERE area_code = ANY($1::text[])
+`;
+
+const areaCodeLocationCache = new Map<string, AreaCodeLocation | null>();
+
+function haversineMiles(
+  latitudeA: number,
+  longitudeA: number,
+  latitudeB: number,
+  longitudeB: number,
+): number {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const earthRadiusMiles = 3958.7613;
+  const dLat = toRadians(latitudeB - latitudeA);
+  const dLon = toRadians(longitudeB - longitudeA);
+  const lat1 = toRadians(latitudeA);
+  const lat2 = toRadians(latitudeB);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return earthRadiusMiles * c;
+}
+
+async function loadAreaCodeLocations(areaCodes: string[]): Promise<void> {
+  try {
+    const uncachedAreaCodes = Array.from(
+      new Set(
+        areaCodes.filter(
+          (areaCode) =>
+            areaCode.trim().length > 0 && !areaCodeLocationCache.has(areaCode),
+        ),
+      ),
+    );
+
+    if (uncachedAreaCodes.length === 0) {
+      return;
+    }
+
+    const pool = await getSharedPool();
+    const { rows } = await pool.query<{
+      area_code: string;
+      latitude: number;
+      longitude: number;
+    }>(SQL_GET_AREA_CODE_LOCATIONS, [uncachedAreaCodes]);
+
+    const foundAreaCodes = new Set<string>();
+
+    for (const row of rows) {
+      foundAreaCodes.add(row.area_code);
+      areaCodeLocationCache.set(row.area_code, {
+        latitude: Number(row.latitude),
+        longitude: Number(row.longitude),
+      });
+    }
+
+    for (const areaCode of uncachedAreaCodes) {
+      if (!foundAreaCodes.has(areaCode)) {
+        areaCodeLocationCache.set(areaCode, null);
+      }
+    }
+  } catch (err: unknown) {
+    Sentry.captureException(err, {
+      extra: { context: 'loadAreaCodeLocations', areaCodes },
+    });
+    throw err;
+  }
+}
+
+async function getAreaCodeDistanceMiles(
+  areaCodeA: string,
+  areaCodeB: string,
+): Promise<number | null> {
+  try {
+    if (!areaCodeA || !areaCodeB) {
+      return null;
+    }
+
+    await loadAreaCodeLocations([areaCodeA, areaCodeB]);
+
+    const locationA = areaCodeLocationCache.get(areaCodeA) ?? null;
+    const locationB = areaCodeLocationCache.get(areaCodeB) ?? null;
+
+    if (locationA === null || locationB === null) {
+      return null;
+    }
+
+    return haversineMiles(
+      locationA.latitude,
+      locationA.longitude,
+      locationB.latitude,
+      locationB.longitude,
+    );
+  } catch (err: unknown) {
+    Sentry.captureException(err, {
+      extra: { context: 'getAreaCodeDistanceMiles', areaCodeA, areaCodeB },
+    });
+    return null;
+  }
+}
+
+function buildLocalPresenceService(): LocalPresenceService {
+  return new LocalPresenceService({
+    maxDistanceMiles: 100,
+    distanceFn: getAreaCodeDistanceMiles,
+  });
+}
 
 function getCallerIdLockService(): CallerIdLockService {
   if (!_lockService) {
@@ -71,6 +194,7 @@ function buildDialer(
     baseUrl,
   });
   dialer.withCallerIdLock(getCallerIdLockService());
+  dialer.withLocalPresence(buildLocalPresenceService());
   return dialer;
 }
 

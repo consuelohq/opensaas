@@ -871,10 +871,56 @@ lesson 1: `railway ssh` output can swallow simple echo commands. don't use railw
   lesson 7: "position" means different things. core.navigationMenuItem.position must be
   >= 0 per the sync validator. workspace record position (listMember rows) can be
   negative — that's twenty's prepend behavior.
-qmd query "APP_VERSION upgrade command allCommands version 1.16 1.17 1.18"
+
+
+## qmd queries by area
+
+  **csv import + ai matching**
+
+  csv import header detection row
+  ai column matching groq csv mapping
+  spreadsheet import upload step header row
+  buildRecordFromImportedStructuredRow phones composite
+  selectHeaderStepHook header selection
+
+  **dialer calling flow**
+
+  dialer call initiation voice token twilio
+  CallsController VoiceController route prefix
+  listMember phone number extraction dialer
+  getListMemberPhoneNumber extractPhoneNumber
+  dialer queue complete zero calls phone
+
+  **route architecture**
+
+  consuelo api controller route prefix v1
+  nestjs controller route mismatch spa catch-all
+  voice controller calls controller prefix
+
+ **github api push (no local checkout**
+
+  github api blob tree commit update ref
+  push to main without checkout worktree
+  suelo-kiro bot committer author github api
+
+  **listmember + person import**
+
+  listMember creation event stream error resilience
+  pre-generate person ids batch create
+  useOpenListMemberImportDialog import flow
+  person phones to listMember phoneNumber mapping
+
+  **workspace metadata + standard fields**
+
+  person workspace entity standard fields
+  workspace sync metadata standard objects
+  csv import available field metadata items
+
+  qmd query "APP_VERSION upgrade command allCommands version 1.16 1.17 1.18"
   qmd query "workspace version column null upgrade previous minor version"
   qmd query "standard application sync existing workspace metadata views fields"
   qmd query "custom view fields standard views applicationId sync ENTITY_NOT_FOUND"
   qmd query "orphaned view fields fieldMetadataId sync crash"
   qmd query "railway ssh echo env var output swallowed grep"
   qmd query "navigationMenuItem position non-negative vs record position negative"
+

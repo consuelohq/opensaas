@@ -221,7 +221,7 @@ export const DialConfirmationModal = ({
       <StyledContactRow>
         <StyledAvatar bgColor={avatarColor}>{initials}</StyledAvatar>
         <StyledContactInfo>
-          <StyledName>{selectedContact?.name ?? 'Unknown Number'}</StyledName>
+          <StyledName>{typeof selectedContact?.name === 'string' ? selectedContact.name : 'Unknown Number'}</StyledName>
           {selectedContact?.company && (
             <StyledDetail>{selectedContact.company}</StyledDetail>
           )}

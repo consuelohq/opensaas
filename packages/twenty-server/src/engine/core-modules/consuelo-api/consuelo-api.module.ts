@@ -12,6 +12,7 @@ import { LegacyCallsController } from 'src/engine/core-modules/consuelo-api/cont
 import { ParallelController } from 'src/engine/core-modules/consuelo-api/controllers/parallel.controller';
 import { QueuesController } from 'src/engine/core-modules/consuelo-api/controllers/queues.controller';
 import { VoiceController } from 'src/engine/core-modules/consuelo-api/controllers/voice.controller';
+import { CsvMappingController } from 'src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller';
 import { TwilioSignatureGuard } from 'src/engine/core-modules/consuelo-api/guards/twilio-signature.guard';
 import { CallsService } from 'src/engine/core-modules/consuelo-api/services/calls.service';
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
@@ -24,6 +25,7 @@ import { StoppingModelStoreService } from 'src/engine/core-modules/consuelo-api/
 import { VoiceService } from 'src/engine/core-modules/consuelo-api/services/voice.service';
 import { WhittleIndexStoreService } from 'src/engine/core-modules/consuelo-api/services/whittle-index-store.service';
 import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services/voice-state.service';
+import { CsvMappingService } from 'src/engine/core-modules/consuelo-api/services/csv-mapping.service';
 
 @Module({
   imports: [TokenModule, WorkspaceCacheStorageModule],
@@ -33,6 +35,7 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     LegacyCallsController,
     ParallelController,
     VoiceController,
+    CsvMappingController,
   ],
   providers: [
     QueuesService,
@@ -52,6 +55,7 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
     TwilioSignatureGuard,
     VoiceService,
     VoiceStateService,
+    CsvMappingService,
   ],
 })
 export class ConsueloApiModule {}

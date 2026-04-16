@@ -102,7 +102,7 @@ export const CallingPresenceSettings = () => {
         : `+1${previewPhone.trim().replace(/\D/g, '')}`;
 
       const res = await fetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/local-presence/preview?phoneNumber=${encodeURIComponent(phone)}&fromNumbers=${encodeURIComponent(phone)}`,
+        `${REACT_APP_SERVER_BASE_URL}/v1/local-presence/preview?phoneNumber=${encodeURIComponent(phone)}`,
         { credentials: 'include' },
       );
 

@@ -125,12 +125,16 @@ export const parallelRoutes = (): RouteDefinition[] => [
 
         const fromNumbers: string[] = [];
         for (const customerNumber of body.customerNumbers) {
-          const selection = await dialer.localPresence.selectNumber(
+          const resolution = await dialer.resolveCallerId(
+            {
+              to: customerNumber,
+              from: '',
+              localPresence: true,
+            },
             pool,
-            customerNumber,
           );
           fromNumbers.push(
-            selection?.phoneNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
+            resolution.callerIdNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
           );
         }
 

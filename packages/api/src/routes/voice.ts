@@ -37,7 +37,7 @@ const getLogger = async (): Promise<Logger> => {
       const { createLogger } = await import('@consuelo/logger');
       _logger = createLogger('api:audit');
     }
-    return _logger;
+    return _logger!;
   } catch (err: unknown) {
     _logger = null;
     const message = err instanceof Error ? err.message : 'unknown error';
@@ -51,6 +51,35 @@ const ringingStartTimes = new Map<string, number>();
 // legacy singleton for webhook routes (no auth context)
 const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
+
+const buildWorkspaceNumberPool = async (workspaceId: string) => {
+  const dialer = await getDialerForWorkspace(workspaceId);
+  const numbers = await dialer.listNumbers();
+
+  let primarySid: string | null = null;
+  try {
+    primarySid = await redisService.getPrimaryNumber(workspaceId);
+  } catch (err: unknown) {
+    void err;
+    primarySid = null;
+  }
+
+  const normalizedNumbers = numbers.map((number) => ({
+    ...number,
+    isPrimary:
+      primarySid !== null ? number.twilioSid === primarySid : number.isPrimary,
+  }));
+
+  return {
+    dialer,
+    numberPool: {
+      numbers: normalizedNumbers,
+      primaryNumber:
+        normalizedNumbers.find((number) => number.isPrimary) ??
+        normalizedNumbers[0],
+    },
+  };
+};
 
 /**
  * Validate Twilio signature on webhook requests.
@@ -168,16 +197,32 @@ const recachePhoneNumbers = async (workspaceId: string) => {
     const dialer = await getDialerForWorkspace(workspaceId);
     const numbers = await dialer.listNumbers();
     let primarySid: string | null = null;
-    try { primarySid = await redisService.getPrimaryNumber(workspaceId); } catch { /* */ }
-    const phoneNumbers = numbers.map((num: { phoneNumber: string; friendlyName?: string; twilioSid?: string }) => ({
-      phoneNumber: num.phoneNumber ?? '',
-      friendlyName: num.friendlyName ?? '',
-      areaCode: (num.phoneNumber ?? '').startsWith('+1') && (num.phoneNumber ?? '').length >= 5 ? (num.phoneNumber ?? '').slice(2, 5) : '',
-      sid: num.twilioSid ?? '',
-      isPrimary: primarySid !== null && num.twilioSid === primarySid,
-    }));
+    try {
+      primarySid = await redisService.getPrimaryNumber(workspaceId);
+    } catch {
+      /* */
+    }
+    const phoneNumbers = numbers.map(
+      (num: {
+        phoneNumber: string;
+        friendlyName?: string;
+        twilioSid?: string;
+      }) => ({
+        phoneNumber: num.phoneNumber ?? '',
+        friendlyName: num.friendlyName ?? '',
+        areaCode:
+          (num.phoneNumber ?? '').startsWith('+1') &&
+          (num.phoneNumber ?? '').length >= 5
+            ? (num.phoneNumber ?? '').slice(2, 5)
+            : '',
+        sid: num.twilioSid ?? '',
+        isPrimary: primarySid !== null && num.twilioSid === primarySid,
+      }),
+    );
     await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers });
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 };
 
 export const voiceRoutes = (): RouteDefinition[] => [
@@ -394,7 +439,10 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
         if (!numberExists) {
           res.status(404).json({
-            error: { code: 'NUMBER_NOT_FOUND', message: 'Number not found in workspace' },
+            error: {
+              code: 'NUMBER_NOT_FOUND',
+              message: 'Number not found in workspace',
+            },
           });
           return;
         }
@@ -532,21 +580,81 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       const body = req.body as
-        | { callerId: string; callSid?: string }
+        | {
+            callerId?: string;
+            to?: string;
+            localPresence?: boolean;
+            callSid?: string;
+          }
         | undefined;
       const callerId = body?.callerId;
+      const to = body?.to;
       const callSid = body?.callSid;
+      const localPresence = body?.localPresence ?? false;
 
-      if (!callerId) {
+      if (!callerId && !to) {
         res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'Missing "callerId"' },
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing "callerId" or "to"',
+          },
         });
         return;
       }
 
       try {
+        const resolvedCallerId =
+          callerId && !localPresence
+            ? {
+                callerIdNumber: callerId,
+                selectionMethod: 'manual' as const,
+                localMatch: false,
+                proximityMatch: false,
+                distanceMiles: undefined,
+                isPrimary: false,
+                customerAreaCode: undefined,
+              }
+            : await (async () => {
+                try {
+                  const workspaceId = req.auth?.workspaceId ?? '';
+                  const { dialer, numberPool } =
+                    await buildWorkspaceNumberPool(workspaceId);
+
+                  return dialer.resolveCallerId(
+                    {
+                      to: to ?? '',
+                      from: '',
+                      callerIdNumber: localPresence ? undefined : callerId,
+                      localPresence,
+                    },
+                    numberPool,
+                  );
+                } catch (err: unknown) {
+                  Sentry.captureException(err, {
+                    extra: {
+                      context: 'voice.preflight.resolveCallerId',
+                      callerId,
+                      localPresence,
+                      to,
+                      userId,
+                    },
+                  });
+                  throw err;
+                }
+              })();
+
+        if (!resolvedCallerId.callerIdNumber) {
+          res.status(400).json({
+            error: {
+              code: 'NO_CALLER_ID_AVAILABLE',
+              message: 'No caller ID available for this call',
+            },
+          });
+          return;
+        }
+
         const acquired = await getCallerIdLockService().acquireLock(
-          callerId,
+          resolvedCallerId.callerIdNumber,
           userId,
           callSid ?? `preflight-${randomUUID()}`,
         );
@@ -561,11 +669,27 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        res.status(200).json({ success: true, callerId });
+        if (callerId && !to && body?.localPresence === undefined) {
+          res.status(200).json({
+            success: true,
+            callerId: resolvedCallerId.callerIdNumber,
+          });
+        } else {
+          res.status(200).json({
+            success: true,
+            callerId: resolvedCallerId.callerIdNumber,
+            selectionMethod: resolvedCallerId.selectionMethod,
+            localMatch: resolvedCallerId.localMatch,
+            proximityMatch: resolvedCallerId.proximityMatch,
+            distanceMiles: resolvedCallerId.distanceMiles ?? null,
+            customerAreaCode: resolvedCallerId.customerAreaCode ?? null,
+          });
+        }
         (await getLogger()).info('voice.preflight', {
           action: 'voice.preflight',
           userId: req.auth?.userId ?? 'anonymous',
           outcome: 'success',
+          selectionMethod: resolvedCallerId.selectionMethod,
         });
       } catch (err: unknown) {
         const message =
@@ -573,7 +697,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
         Sentry.captureException(
           err instanceof Error ? err : new Error(message),
           {
-            extra: { callerId, userId, context: 'preflight' },
+            extra: {
+              callerId,
+              to,
+              userId,
+              localPresence,
+              context: 'preflight',
+            },
           },
         );
         res.status(500).json({ error: { code: 'LOCK_ERROR', message } });
@@ -765,7 +895,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const cachedStatus = await redisService.getVoiceStatusCache(workspaceId);
+        const cachedStatus =
+          await redisService.getVoiceStatusCache(workspaceId);
         if (cachedStatus) {
           res.json(JSON.parse(cachedStatus));
           return;
@@ -1761,19 +1892,26 @@ export const voiceRoutes = (): RouteDefinition[] => [
           const transfer = await redisService.getTransfer(transferId);
           if (transfer) {
             const updatedTransfer = { ...transfer };
-            
+
             // Update based on dial call status
-            if (dialCallStatus === 'completed' || dialCallStatus === 'answered') {
+            if (
+              dialCallStatus === 'completed' ||
+              dialCallStatus === 'answered'
+            ) {
               updatedTransfer.connectedAt = new Date().toISOString();
               if (transfer.transferType === 'cold') {
                 updatedTransfer.status = 'completed';
                 updatedTransfer.completedAt = new Date().toISOString();
               }
-            } else if (dialCallStatus === 'busy' || dialCallStatus === 'no-answer' || dialCallStatus === 'failed') {
+            } else if (
+              dialCallStatus === 'busy' ||
+              dialCallStatus === 'no-answer' ||
+              dialCallStatus === 'failed'
+            ) {
               updatedTransfer.status = 'failed';
               updatedTransfer.completedAt = new Date().toISOString();
             }
-            
+
             await redisService.setTransfer(transferId, updatedTransfer);
           }
         } catch (err: unknown) {
@@ -1781,10 +1919,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
           try {
             // eslint-disable-next-line @nx/enforce-module-boundaries
             const { createLogger } = await import('@consuelo/logger');
-            createLogger('voice:dial-status').error('Failed to update transfer record', {
-              transferId,
-              error: err instanceof Error ? err.message : 'unknown error',
-            });
+            createLogger('voice:dial-status').error(
+              'Failed to update transfer record',
+              {
+                transferId,
+                error: err instanceof Error ? err.message : 'unknown error',
+              },
+            );
           } catch {
             // Logger unavailable, continue
           }
@@ -2077,7 +2218,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       // call completed or failed
-      const terminalStatuses = ['completed', 'busy', 'no-answer', 'canceled', 'failed'];
+      const terminalStatuses = [
+        'completed',
+        'busy',
+        'no-answer',
+        'canceled',
+        'failed',
+      ];
       if (terminalStatuses.includes(callStatus)) {
         const isFailed = callStatus !== 'completed';
         const eventType = isFailed ? 'call.failed' : 'call.ended';
