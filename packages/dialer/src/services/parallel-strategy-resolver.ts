@@ -66,7 +66,7 @@ export class ParallelStrategyResolver {
     }
 
     try {
-      const loadedPosteriors = await this.posteriorStore.loadPosteriors();
+      const loadedPosteriors = await this.posteriorStore.loadPosteriors(context.workspaceId);
       const posteriorMap = this.buildPosteriorMap(loadedPosteriors);
 
       let winningProfile: ProfileKey = 'balanced';
