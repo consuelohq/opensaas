@@ -1,13 +1,19 @@
+import * as Sentry from "@sentry/node";
 import { randomUUID } from "node:crypto";
+
 import { errorHandler } from "../middleware/error-handler.js";
 import { requireAuth } from "../middleware/requireAuth.js";
-import type { RouteDefinition } from "./index.js";
-import * as Sentry from "@sentry/node";
+import { getSharedPool } from "../shared/db.js";
 import {
   sharedDialer,
   getDialerForWorkspace,
   sharedCallerIdLockService,
 } from "../shared/dialer.js";
+import { storeRecentCallbackRoute } from "../services/callback-routing.js";
+import { redisService } from "../services/redis.js";
+import { evaluateRetryPolicy } from "../services/retry-policy.js";
+import type { RouteDefinition } from "./index.js";
+import { validateTwilioSignature } from "./voice.js";
 
 let _callsLogger: {
   info: (message: string, meta?: Record<string, unknown>) => void;
@@ -27,13 +33,8 @@ const getCallsLogger = async () => {
   }
 };
 
-import { validateTwilioSignature } from "./voice.js";
-
 const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
-import { getSharedPool } from "../shared/db.js";
-import { redisService } from "../services/redis.js";
-import { evaluateRetryPolicy } from "../services/retry-policy.js";
 
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
@@ -178,6 +179,19 @@ export const callRoutes = (): RouteDefinition[] => {
             return;
           }
 
+          if (
+            result.fromNumber &&
+            req.auth?.workspaceId &&
+            req.auth?.userId
+          ) {
+            await storeRecentCallbackRoute({
+              workspaceId: req.auth.workspaceId,
+              userId: req.auth.userId,
+              twilioNumber: result.fromNumber,
+              prospectNumber: body.to,
+            });
+          }
+
           res
             .status(201)
             .json({ callSid: result.callSid, status: "initiated" });
@@ -250,6 +264,19 @@ export const callRoutes = (): RouteDefinition[] => {
             callerId,
             { url: twimlUrl },
           );
+
+          if (
+            req.auth?.workspaceId &&
+            req.auth?.userId
+          ) {
+            await storeRecentCallbackRoute({
+              workspaceId: req.auth.workspaceId,
+              userId: req.auth.userId,
+              twilioNumber: callerId,
+              prospectNumber: body.customerPhone,
+            });
+          }
+
           res
             .status(201)
             .json({ callSid, conferenceName, status: "calling-agent" });
@@ -470,6 +497,12 @@ export const callRoutes = (): RouteDefinition[] => {
             createdAt: new Date().toISOString(),
           });
           await redisService.mapCallSidToCallId(repCallSid, callId);
+          await storeRecentCallbackRoute({
+            workspaceId: auth.workspaceId,
+            userId: auth.userId,
+            twilioNumber: callerId,
+            prospectNumber: body.leadPhone,
+          });
 
           await redisService.publishCallEvent({
             type: "call.started",

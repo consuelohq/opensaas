@@ -2,7 +2,14 @@ import IORedis from "ioredis";
 import * as Sentry from "@sentry/node";
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
+const CALLBACK_ROUTE_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 const PKCE_TTL_SECONDS = 600; // 10 minutes
+
+const getCallbackRouteKey = (
+  twilioNumber: string,
+  prospectNumber: string,
+): string =>
+  `callback-route:${encodeURIComponent(twilioNumber)}:${encodeURIComponent(prospectNumber)}`;
 
 class RedisService {
   private client: IORedis | null = null;
@@ -354,6 +361,59 @@ class RedisService {
     } catch (err: unknown) {
       Sentry.captureException(err, {
         extra: { context: "deletePhoneCallState", callId },
+      });
+      throw err;
+    }
+  }
+
+  async setRecentCallbackRoute(route: {
+    workspaceId: string;
+    userId: string;
+    twilioNumber: string;
+    prospectNumber: string;
+    callbackNumber: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }): Promise<void> {
+    try {
+      const client = await this.getClient();
+      await client.setex(
+        getCallbackRouteKey(route.twilioNumber, route.prospectNumber),
+        CALLBACK_ROUTE_TTL_SECONDS,
+        JSON.stringify(route),
+      );
+    } catch (err: unknown) {
+      Sentry.captureException(err, {
+        extra: {
+          context: "setRecentCallbackRoute",
+          twilioNumber: route.twilioNumber,
+          prospectNumber: route.prospectNumber,
+          workspaceId: route.workspaceId,
+          userId: route.userId,
+        },
+      });
+      throw err;
+    }
+  }
+
+  async getRecentCallbackRoute(
+    twilioNumber: string,
+    prospectNumber: string,
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const client = await this.getClient();
+      const result = await client.get(
+        getCallbackRouteKey(twilioNumber, prospectNumber),
+      );
+      if (!result) return null;
+      return JSON.parse(result) as Record<string, unknown>;
+    } catch (err: unknown) {
+      Sentry.captureException(err, {
+        extra: {
+          context: "getRecentCallbackRoute",
+          twilioNumber,
+          prospectNumber,
+        },
       });
       throw err;
     }

@@ -2,15 +2,11 @@
 // Tests all 19 routes in voice.ts with 3+ cases each
 
 import type { RouteDefinition } from '../index';
-import type { ApiRequest, ApiResponse } from '../../types';
+import type { ApiRequest } from '../../types';
 import {
-  createMockRequest,
   createAuthenticatedRequest,
-  createMockResponse,
   executeHandler,
 } from '../../testing/routeTestHelper';
-import { fixtures } from '../../testing/fixtures';
-
 // ---- module mocks (hoisted by jest) ----
 
 jest.mock('../../services/redis', () => ({
@@ -30,6 +26,11 @@ jest.mock('../../services/redis', () => ({
   },
 }));
 
+jest.mock('../../services/callback-routing', () => ({
+  findRecentCallbackRoute: jest.fn(),
+  getCurrentCallbackNumber: jest.fn(),
+}));
+
 const mockDialerInstance = {
   getToken: jest.fn(),
   generateConferenceTwiml: jest.fn().mockReturnValue('<Response><Conference>conf</Conference></Response>'),
@@ -38,13 +39,17 @@ const mockDialerInstance = {
   searchAvailableNumbers: jest.fn().mockResolvedValue([]),
   provisionNumber: jest.fn(),
   releaseNumber: jest.fn(),
+  createCall: jest.fn(),
   initiateTransfer: jest.fn(),
   completeTransfer: jest.fn(),
   cancelTransfer: jest.fn(),
   holdParticipant: jest.fn(),
   muteParticipant: jest.fn(),
   listParticipants: jest.fn(),
-  conference: { findConferenceSid: jest.fn() },
+  conference: {
+    findConferenceSid: jest.fn(),
+    generateConferenceTwiml: jest.fn().mockReturnValue('<Response><Conference>callback-conf</Conference></Response>'),
+  },
 };
 
 const mockLockServiceInstance = {
@@ -92,6 +97,7 @@ import { voiceRoutes } from '../voice';
 import { redisService } from '../../services/redis';
 import { getDialerForWorkspace, sharedDialer, sharedCallerIdLockService } from '../../shared/dialer';
 import { getWorkspaceTwilioConfig, getDecryptedCredentials, isHostedInstance } from '../../services/twilio-config';
+import { findRecentCallbackRoute, getCurrentCallbackNumber } from '../../services/callback-routing';
 
 // typed references to mocked modules
 const mockRedis = redisService as unknown as Record<string, jest.Mock>;
@@ -101,6 +107,10 @@ const mockTwilioConfig = {
   getWorkspaceTwilioConfig: getWorkspaceTwilioConfig as jest.Mock,
   getDecryptedCredentials: getDecryptedCredentials as jest.Mock,
   isHostedInstance: isHostedInstance as unknown as jest.Mock,
+};
+const mockCallbackRouting = {
+  findRecentCallbackRoute: findRecentCallbackRoute as jest.Mock,
+  getCurrentCallbackNumber: getCurrentCallbackNumber as jest.Mock,
 };
 
 // wire up the dialer mocks
@@ -149,6 +159,10 @@ beforeEach(() => {
   mockRedis.getPrimaryNumber.mockResolvedValue(null);
   mockRedis.setPrimaryNumber.mockResolvedValue(undefined);
   mockRedis.deletePrimaryNumber.mockResolvedValue(undefined);
+  mockCallbackRouting.findRecentCallbackRoute.mockResolvedValue(null);
+  mockCallbackRouting.getCurrentCallbackNumber.mockResolvedValue(null);
+  mockDialer.createCall.mockResolvedValue({ callSid: 'CA-rep-001' });
+  mockDialer.conference.generateConferenceTwiml.mockReturnValue('<Response><Conference>callback-conf</Conference></Response>');
 });
 
 // ============================================================
@@ -428,6 +442,83 @@ describe('POST /v1/voice/twiml', () => {
     } as Partial<ApiRequest>;
     await exec(route(), req);
     expect(mockRedis.setConferenceName).toHaveBeenCalledWith('CA-001', 'conf-test-uuid-001');
+  });
+
+  it('bridges inbound callbacks to the rep callback number when a recent route matches', async () => {
+    mockCallbackRouting.findRecentCallbackRoute.mockResolvedValueOnce({
+      workspaceId: 'ws-test-001',
+      userId: 'user-test-001',
+      twilioNumber: '+15551234567',
+      prospectNumber: '+15559876543',
+      callbackNumber: '+15557654321',
+      createdAt: '2026-04-16T00:00:00.000Z',
+      updatedAt: '2026-04-16T00:00:00.000Z',
+    });
+    mockCallbackRouting.getCurrentCallbackNumber.mockResolvedValueOnce('+15557654321');
+
+    const req = {
+      auth: undefined,
+      method: 'POST',
+      path: '/v1/voice/twiml',
+      headers: {
+        'x-twilio-signature': 'valid-sig',
+        'x-forwarded-proto': 'https',
+        host: 'api.example.com',
+      },
+      body: { To: '+15551234567', From: '+15559876543', CallSid: 'CA-003' },
+    } as Partial<ApiRequest>;
+
+    const res = await exec(route(), req);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.contentType).toBe('text/xml');
+    expect(res.rawBody).toContain('callback-conf');
+    expect(mockRedis.setConferenceName).toHaveBeenCalledWith(
+      'CA-003',
+      'conf-callback-test-uuid-001',
+    );
+    expect(mockDialer.createCall).toHaveBeenCalledWith(
+      '+15557654321',
+      '+15551234567',
+      expect.objectContaining({
+        twiml: expect.stringContaining('callback-conf'),
+        timeout: 20,
+      }),
+    );
+    expect(mockDialer.addCustomerToConference).not.toHaveBeenCalled();
+  });
+
+  it('returns a fallback twiml when a recent route matches but the callback number is unavailable', async () => {
+    mockCallbackRouting.findRecentCallbackRoute.mockResolvedValueOnce({
+      workspaceId: 'ws-test-001',
+      userId: 'user-test-001',
+      twilioNumber: '+15551234567',
+      prospectNumber: '+15559876543',
+      callbackNumber: null,
+      createdAt: '2026-04-16T00:00:00.000Z',
+      updatedAt: '2026-04-16T00:00:00.000Z',
+    });
+    mockCallbackRouting.getCurrentCallbackNumber.mockResolvedValueOnce(null);
+
+    const req = {
+      auth: undefined,
+      method: 'POST',
+      path: '/v1/voice/twiml',
+      headers: {
+        'x-twilio-signature': 'valid-sig',
+        'x-forwarded-proto': 'https',
+        host: 'api.example.com',
+      },
+      body: { To: '+15551234567', From: '+15559876543', CallSid: 'CA-004' },
+    } as Partial<ApiRequest>;
+
+    const res = await exec(route(), req);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.contentType).toBe('text/xml');
+    expect(res.rawBody).toContain('we could not connect your callback right now');
+    expect(mockDialer.createCall).not.toHaveBeenCalled();
+    expect(mockDialer.addCustomerToConference).not.toHaveBeenCalled();
   });
 
   it('handles client: destinations without dialing customer', async () => {
