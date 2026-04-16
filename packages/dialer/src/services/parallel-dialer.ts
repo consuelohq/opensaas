@@ -316,6 +316,12 @@ export class ParallelDialerService {
   }
 
   async markTelemetryEmitted(groupId: string): Promise<void> {
+    const raw = await this.store.getGroup(groupId);
+    if (!raw) return;
+    const group: ParallelGroup = JSON.parse(raw);
+    group.telemetryEmittedAt = new Date().toISOString();
+    await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+  }
 
   async markTelemetryEmittedIfAbsent(groupId: string): Promise<boolean> {
     const raw = await this.store.getGroup(groupId);
