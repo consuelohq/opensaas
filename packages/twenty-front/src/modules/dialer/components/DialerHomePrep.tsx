@@ -1,6 +1,7 @@
 import { captureException } from '@sentry/react';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
+import { AsYouType, parsePhoneNumberFromString } from 'libphonenumber-js';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -29,6 +30,58 @@ type OpportunityRecord = ObjectRecord & {
 };
 
 type SourceMode = 'list' | 'phone';
+
+const DEFAULT_SINGLE_DIAL_COUNTRY = 'US';
+const MAX_E164_DIGITS = 15;
+const MAX_NANP_DIGITS = 11;
+
+const sanitizeSingleDialPhoneNumber = (value: string): string => {
+  const trimmedValue = value.trim();
+  const digits = trimmedValue.replace(/\D/g, '');
+
+  if (!digits) {
+    return '';
+  }
+
+  if (trimmedValue.startsWith('+')) {
+    return `+${digits.slice(0, MAX_E164_DIGITS)}`;
+  }
+
+  if (digits.length <= MAX_NANP_DIGITS) {
+    return digits;
+  }
+
+  return `+${digits.slice(0, MAX_E164_DIGITS)}`;
+};
+
+const formatSingleDialPhoneNumber = (value: string): string => {
+  const sanitizedPhoneNumber = sanitizeSingleDialPhoneNumber(value);
+
+  if (!sanitizedPhoneNumber) {
+    return '';
+  }
+
+  const formatter = new AsYouType(DEFAULT_SINGLE_DIAL_COUNTRY);
+
+  return formatter.input(sanitizedPhoneNumber);
+};
+
+const isValidSingleDialPhoneNumber = (value: string): boolean => {
+  const sanitizedPhoneNumber = sanitizeSingleDialPhoneNumber(value);
+
+  if (!sanitizedPhoneNumber) {
+    return false;
+  }
+
+  const parsedPhoneNumber = sanitizedPhoneNumber.startsWith('+')
+    ? parsePhoneNumberFromString(sanitizedPhoneNumber)
+    : parsePhoneNumberFromString(
+        sanitizedPhoneNumber,
+        DEFAULT_SINGLE_DIAL_COUNTRY,
+      );
+
+  return parsedPhoneNumber?.isValid() ?? false;
+};
 
 // -- styled --
 
@@ -121,13 +174,13 @@ export const DialerHomePrep = () => {
   const [importedListId, setImportedListId] = useRecoilState(importedListIdState);
   const [phoneNumber, setPhoneNumber] = useState<string>('');
 
-  // Auto-select a list that was just imported from the home page CSV flow
   useEffect(() => {
     if (importedListId) {
       setSelectedListId(importedListId);
       setImportedListId('');
     }
   }, [importedListId, setImportedListId]);
+
   const [numberOfLines, setNumberOfLines] = useState<string>('1');
   const { startQueue } = useQueueOperations();
 
@@ -137,9 +190,9 @@ export const DialerHomePrep = () => {
     limit: 50,
   });
 
-  const hasPhone = phoneNumber.trim().length > 0;
   const hasList = selectedListId.length > 0;
-  const canStart = hasList || hasPhone;
+  const hasValidPhoneNumber = isValidSingleDialPhoneNumber(phoneNumber);
+  const canStart = sourceMode === 'list' ? hasList : hasValidPhoneNumber;
 
   const handleLaunch = async () => {
     if (!canStart) return;
@@ -173,6 +226,10 @@ export const DialerHomePrep = () => {
     );
   };
 
+  const handlePhoneNumberChange = (value: string) => {
+    setPhoneNumber(formatSingleDialPhoneNumber(value));
+  };
+
   return (
     <StyledPage onKeyDown={handleKeyDown}>
       <StyledHeading>
@@ -186,7 +243,7 @@ export const DialerHomePrep = () => {
         <StyledLabel>{t`Call setup`}</StyledLabel>
 
         <StyledFieldGroup>
-          {/* 1. choose list / dial number toggle */}
+          {/* 1. choose list / single dial toggle */}
           <StyledToggleRow>
             <StyledToggleOption
               isActive={sourceMode === 'list'}
@@ -200,7 +257,7 @@ export const DialerHomePrep = () => {
               onClick={() => setSourceMode('phone')}
               type="button"
             >
-              {t`Dial number`}
+              {t`Single dial`}
             </StyledToggleOption>
           </StyledToggleRow>
 
@@ -229,7 +286,7 @@ export const DialerHomePrep = () => {
           ) : (
             <TextInput
               value={phoneNumber}
-              onChange={setPhoneNumber}
+              onChange={handlePhoneNumberChange}
               placeholder={t`(555) 123-4567`}
               fullWidth
             />
@@ -295,7 +352,6 @@ export const DialerHomePrep = () => {
           )}
         </StyledFieldGroup>
 
-        {/* launch */}
         <StyledFooterActions>
           <Button
             title={t`Settings`}
