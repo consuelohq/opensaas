@@ -61,7 +61,9 @@ export class CadenceOptimizerService {
 
     const maxAttemptsPerDay = this.boundAttemptsByAgeBucket(
       params.ageBucket,
-      profitableAttempts.at(-1) ?? 1,
+      profitableAttempts.length > 0
+        ? profitableAttempts[profitableAttempts.length - 1]
+        : 1,
     );
 
     const minSpacingMinutes = this.computeMinSpacingMinutes({
