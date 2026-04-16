@@ -30,6 +30,7 @@ export const MainNavigationDrawerFixedItems = () => {
           Icon={IconHome}
           onClick={() => navigate(AppPath.Home)}
           to={AppPath.Home}
+          keyboard={['G', 'H']}
         />
       </>
     )
