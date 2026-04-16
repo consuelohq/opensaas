@@ -285,6 +285,7 @@ export type PosteriorStore = {
 
 export type ParallelStrategyContext = {
   queueId: string;
+  workspaceId?: string;
   campaignSegment?: string;
   recentAnswerRate?: number;
   profileId?: string;
