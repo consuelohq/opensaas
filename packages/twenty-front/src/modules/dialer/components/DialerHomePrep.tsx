@@ -190,9 +190,10 @@ export const DialerHomePrep = () => {
     limit: 50,
   });
 
+  const isListMode = sourceMode === 'list';
   const hasList = selectedListId.length > 0;
   const hasValidPhoneNumber = isValidSingleDialPhoneNumber(phoneNumber);
-  const canStart = sourceMode === 'list' ? hasList : hasValidPhoneNumber;
+  const canStart = isListMode ? hasList : hasValidPhoneNumber;
 
   const handleLaunch = async () => {
     if (!canStart) return;
@@ -246,14 +247,14 @@ export const DialerHomePrep = () => {
           {/* 1. choose list / single dial toggle */}
           <StyledToggleRow>
             <StyledToggleOption
-              isActive={sourceMode === 'list'}
+              isActive={isListMode}
               onClick={() => setSourceMode('list')}
               type="button"
             >
               {t`Choose list`}
             </StyledToggleOption>
             <StyledToggleOption
-              isActive={sourceMode === 'phone'}
+              isActive={!isListMode}
               onClick={() => setSourceMode('phone')}
               type="button"
             >
@@ -261,7 +262,7 @@ export const DialerHomePrep = () => {
             </StyledToggleOption>
           </StyledToggleRow>
 
-          {sourceMode === 'list' ? (
+          {isListMode ? (
             <Select
               dropdownId="dialer-home-list-select"
               fullWidth
@@ -297,32 +298,39 @@ export const DialerHomePrep = () => {
 
           {!hasPermission && <AudioDeviceSelector />}
 
-          {/* 3. calling mode */}
-          <Select
-            dropdownId="dialer-home-dialing-mode"
-            fullWidth
-            label={t`Calling mode`}
-            value={dialingMode}
-            onChange={(value) => setDialingMode(value)}
-            options={[
-              { value: 'parallel', label: t`Predictive Dialer (recommended)` },
-              { value: 'single', label: t`Single (one call at a time)` },
-            ]}
-          />
+          {isListMode && (
+            <>
+              {/* 3. calling mode */}
+              <Select
+                dropdownId="dialer-home-dialing-mode"
+                fullWidth
+                label={t`Calling mode`}
+                value={dialingMode}
+                onChange={(value) => setDialingMode(value)}
+                options={[
+                  {
+                    value: 'parallel',
+                    label: t`Predictive Dialer (recommended)`,
+                  },
+                  { value: 'single', label: t`Single (one call at a time)` },
+                ]}
+              />
 
-          {/* 4. number of lines */}
-          <Select
-            dropdownId="dialer-home-number-of-lines"
-            fullWidth
-            label={t`Number of lines`}
-            value={numberOfLines}
-            onChange={(value) => setNumberOfLines(value)}
-            options={[
-              { value: '1', label: t`One` },
-              { value: '2', label: t`Two` },
-              { value: '3', label: t`Three` },
-            ]}
-          />
+              {/* 4. number of lines */}
+              <Select
+                dropdownId="dialer-home-number-of-lines"
+                fullWidth
+                label={t`Number of lines`}
+                value={numberOfLines}
+                onChange={(value) => setNumberOfLines(value)}
+                options={[
+                  { value: '1', label: t`One` },
+                  { value: '2', label: t`Two` },
+                  { value: '3', label: t`Three` },
+                ]}
+              />
+            </>
+          )}
 
           {/* 5. assist mode */}
           <Select
