@@ -39,6 +39,7 @@ export class StoppingModelService {
         expectedValue < economics.costPerAttempt;
 
       thresholds.push({
+        segmentId: input.segmentId,
         attemptNumber,
         answerProbability,
         expectedValue,
@@ -76,6 +77,7 @@ export class StoppingModelService {
       expectedValue < economics.costPerAttempt;
 
     return {
+      segmentId: input.segmentId,
       attemptNumber: input.attemptNumber,
       answerProbability,
       expectedValue,

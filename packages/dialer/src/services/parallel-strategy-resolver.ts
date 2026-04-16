@@ -53,7 +53,10 @@ export class ParallelStrategyResolver {
   ) {}
 
   async resolve(context: ParallelStrategyContext): Promise<ParallelStrategyResolution> {
-    const requested = context.profileId ? PROFILE_REGISTRY[context.profileId] : undefined;
+    const requested =
+      context.profileId && this.isProfileKey(context.profileId)
+        ? PROFILE_REGISTRY[context.profileId]
+        : undefined;
 
     if (requested) {
       return {
@@ -101,6 +104,10 @@ export class ParallelStrategyResolver {
 
   listProfiles(): ParallelDialProfile[] {
     return Object.values(PROFILE_REGISTRY);
+  }
+
+  private isProfileKey(value: string): value is ProfileKey {
+    return PROFILE_KEYS.includes(value as ProfileKey);
   }
 
   private buildPosteriorMap(loadedPosteriors: ProfilePosterior[]): Record<ProfileKey, ProfilePosterior> {
