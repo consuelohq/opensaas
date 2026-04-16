@@ -1,26 +1,10 @@
 {
-  "name": "@consuelo/workspace",
-  "version": "0.0.1",
-  "description": "Workspace system with SQLite database and REST API",
-  "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "openworkspace",
+  "private": true,
   "scripts": {
-    "build": "npx tsc",
-    "dev": "npx tsc --watch",
-    "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit"
+    "task:start": "bun ./scripts/task-start.js"
   },
-  "peerDependencies": {
-    "better-sqlite3": ">=9.0.0"
-  },
-  "peerDependenciesMeta": {
-    "better-sqlite3": {
-      "optional": true
-    }
-  },
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public"
+  "dependencies": {
+    "@supabase/supabase-js": "latest"
   }
 }
