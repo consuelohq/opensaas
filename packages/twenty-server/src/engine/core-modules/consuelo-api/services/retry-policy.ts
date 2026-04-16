@@ -1,88 +1,103 @@
+import { StoppingModelService, type StoppingModelStore } from '@consuelo/dialer';
+import type { CallTimingModel } from '@consuelo/dialer';
+
 export type RetryStrategy = 'none' | 'double-dial-no-answer';
 
 export type RetryPolicyInput = {
+  workspaceId: string;
+  segmentId: string;
   outcome: string | null;
   isHighPriority: boolean;
   attemptsUsed: number;
-  attemptCap: number;
+  maxAttempts: number;
   localTimezone: string;
+  timingModel?: CallTimingModel;
   evaluatedAt?: Date;
 };
 
 export type RetryPolicyDecision = {
   shouldRetry: boolean;
-  retryStrategy: RetryStrategy;
-  retryReason: string | null;
-  retryScheduledAt: string | null;
+  delaySeconds: number;
+  strategy: RetryStrategy;
+  reason: string;
 };
 
-const DEFAULT_RETRY_DELAY_MINUTES = 5;
-const LOCAL_DAYTIME_START_HOUR = 9;
-const LOCAL_DAYTIME_END_HOUR = 18;
+const STOPPING_MODEL_CACHE = new Map<string, StoppingModelService>();
 
-const getLocalHour = (date: Date, timeZone: string): number | null => {
-  try {
-    const localHour = new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      hour12: false,
-      timeZone,
-    }).format(date);
-    const parsed = Number(localHour);
-
-    return Number.isFinite(parsed) ? parsed : null;
-  } catch {
-    return null;
+function getStoppingModelService(store: StoppingModelStore): StoppingModelService {
+  const key = 'default';
+  if (!STOPPING_MODEL_CACHE.has(key)) {
+    STOPPING_MODEL_CACHE.set(key, new StoppingModelService(store));
   }
-};
+  return STOPPING_MODEL_CACHE.get(key)!;
+}
 
-const isLocalDaytime = (date: Date, timeZone: string): boolean => {
-  const localHour = getLocalHour(date, timeZone);
-
-  if (localHour === null) {
-    return false;
-  }
-
-  return (
-    localHour >= LOCAL_DAYTIME_START_HOUR && localHour < LOCAL_DAYTIME_END_HOUR
-  );
-};
-
-const buildNoRetryDecision = (reason: string): RetryPolicyDecision => ({
-  shouldRetry: false,
-  retryStrategy: 'none',
-  retryReason: reason,
-  retryScheduledAt: null,
-});
-
-export const evaluateRetryPolicy = (
+export async function evaluateRetryPolicy(
   input: RetryPolicyInput,
-): RetryPolicyDecision => {
-  const evaluatedAt = input.evaluatedAt ?? new Date();
-
-  if (input.outcome !== 'no-answer') {
-    return buildNoRetryDecision('outcome_not_no_answer');
+  stoppingModelStore: StoppingModelStore,
+): Promise<RetryPolicyDecision> {
+  if (input.outcome === 'answered') {
+    return {
+      shouldRetry: false,
+      delaySeconds: 0,
+      strategy: 'none',
+      reason: 'Call was answered',
+    };
   }
 
-  if (!input.isHighPriority) {
-    return buildNoRetryDecision('not_high_priority');
+  if (input.attemptsUsed >= input.maxAttempts) {
+    return {
+      shouldRetry: false,
+      delaySeconds: 0,
+      strategy: 'none',
+      reason: `Maximum attempts (${input.maxAttempts}) reached`,
+    };
   }
 
-  if (!isLocalDaytime(evaluatedAt, input.localTimezone)) {
-    return buildNoRetryDecision('outside_local_daytime');
+  const nextAttempt = input.attemptsUsed + 1;
+  const stoppingModel = getStoppingModelService(stoppingModelStore);
+  const threshold = await stoppingModel.getThresholdForAttempt({
+    workspaceId: input.workspaceId,
+    segmentId: input.segmentId,
+    attemptNumber: nextAttempt,
+    maxAttempts: input.maxAttempts,
+  });
+
+  if (threshold === null) {
+    const capFallback = input.maxAttempts;
+    if (nextAttempt <= capFallback) {
+      const baseDelay = 30;
+      const jitter = Math.random() * 10;
+      return {
+        shouldRetry: true,
+        delaySeconds: baseDelay + jitter,
+        strategy: 'double-dial-no-answer',
+        reason: `Insufficient data for attempt ${nextAttempt}, using cap fallback`,
+      };
+    }
+    return {
+      shouldRetry: false,
+      delaySeconds: 0,
+      strategy: 'none',
+      reason: 'Insufficient data and beyond fallback cap',
+    };
   }
 
-  if (input.attemptsUsed >= input.attemptCap) {
-    return buildNoRetryDecision('attempt_cap_reached');
+  if (threshold.shouldStop) {
+    return {
+      shouldRetry: false,
+      delaySeconds: 0,
+      strategy: 'none',
+      reason: `Optimal stopping: expected value (${threshold.expectedValue.toFixed(2)}) < cost per attempt for attempt ${nextAttempt}`,
+    };
   }
 
-  const retryScheduledAt = new Date(
-    evaluatedAt.getTime() + DEFAULT_RETRY_DELAY_MINUTES * 60 * 1000,
-  );
-
+  const baseDelay = 30;
+  const jitter = Math.random() * 10;
   return {
     shouldRetry: true,
-    retryStrategy: 'double-dial-no-answer',
-    retryReason: 'no_answer_high_priority_local_daytime_under_cap',
-    retryScheduledAt: retryScheduledAt.toISOString(),
+    delaySeconds: baseDelay + jitter,
+    strategy: 'double-dial-no-answer',
+    reason: `Threshold check passed for attempt ${nextAttempt}`,
   };
-};
+}
