@@ -1,9 +1,12 @@
 import { useAvailableCallerIds } from '~/modules/dialer/hooks/useAvailableCallerIds';
+import { useUserPreferences } from '~/modules/settings/hooks/useUserPreferences';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { useReleaseNumber } from '@/dialer/hooks/useReleaseNumber';
 import { useSetPrimaryNumber } from '@/dialer/hooks/useSetPrimaryNumber';
+import { TextInput } from '@/ui/input/components/TextInput';
 import styled from '@emotion/styled';
+import { t } from '@lingui/core/macro';
 import { useCallback, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
@@ -116,6 +119,10 @@ const StyledModalBackdrop = styled.div`
   z-index: 100;
 `;
 
+const StyledInputRow = styled.div`
+  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(3)}`};
+`;
+
 export const PhoneNumberSettings = () => {
   const { refetch } = useAvailableCallerIds();
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
@@ -123,6 +130,7 @@ export const PhoneNumberSettings = () => {
   const [showModal, setShowModal] = useState(false);
   const { release } = useReleaseNumber();
   const { setPrimary } = useSetPrimaryNumber();
+  const { preferences, updatePreferences } = useUserPreferences();
 
   const handleSetPrimary = useCallback(
     async (sid: string, phoneNumber: string) => {
@@ -149,70 +157,101 @@ export const PhoneNumberSettings = () => {
     refetch();
   }, [refetch]);
 
+  const handleCallbackNumberChange = useCallback(
+    (value: string) => {
+      updatePreferences({
+        dialer: {
+          ...preferences.dialer,
+          callbackNumber: value,
+        },
+      });
+    },
+    [preferences.dialer, updatePreferences],
+  );
+
   return (
-    <Section>
-      <StyledHeaderRow>
+    <>
+      <Section>
         <H2Title
-          title="Phone Numbers"
-          description="Manage your outbound caller IDs"
+          title={t`Callback Number`}
+          description={t`When Consuelo needs to ring you, use this number`}
         />
-        <StyledAddButton onClick={() => setShowModal(true)}>
-          <IconPlus size={14} />
-          Add Number
-        </StyledAddButton>
-      </StyledHeaderRow>
-      <Card rounded>
-        {availableCallerIds.length === 0 ? (
-          <StyledEmptyState>
-            No phone numbers yet. Click &quot;Add Number&quot; to get started.
-          </StyledEmptyState>
-        ) : (
-          availableCallerIds.map((number) => (
-            <StyledRow key={number.phoneNumber}>
-              <IconPhone size={16} />
-              <StyledNumberInfo>
-                <StyledPhoneNumber>{number.phoneNumber}</StyledPhoneNumber>
-                {number.friendlyName && (
-                  <StyledFriendlyName>{number.friendlyName}</StyledFriendlyName>
-                )}
-              </StyledNumberInfo>
-              {number.areaCode && (
-                <StyledAreaCode>{number.areaCode}</StyledAreaCode>
-              )}
-              {number.isPrimary ? (
-                <StyledPrimaryIcon aria-label="Primary number">
-                  <IconStarFilled size={16} />
-                </StyledPrimaryIcon>
-              ) : (
-                <StyledIconButton
-                  onClick={() =>
-                    handleSetPrimary(number.sid, number.phoneNumber)
-                  }
-                  aria-label="Set as primary"
-                >
-                  <IconStar size={16} />
-                </StyledIconButton>
-              )}
-              <StyledIconButton
-                onClick={() => handleDelete(number.sid)}
-                aria-label="Delete number"
-              >
-                <IconTrash size={16} />
-              </StyledIconButton>
-            </StyledRow>
-          ))
-        )}
-      </Card>
-      {showModal && (
-        <StyledModalBackdrop onClick={() => setShowModal(false)}>
-          <div onClick={(event) => event.stopPropagation()}>
-            <AddPhoneNumberModal
-              onClose={() => setShowModal(false)}
-              onProvisioned={handleProvisioned}
+        <Card rounded>
+          <StyledInputRow>
+            <TextInput
+              value={preferences.dialer.callbackNumber}
+              onChange={handleCallbackNumberChange}
+              placeholder={t`+15551234567`}
+              fullWidth
             />
-          </div>
-        </StyledModalBackdrop>
-      )}
-    </Section>
+          </StyledInputRow>
+        </Card>
+      </Section>
+
+      <Section>
+        <StyledHeaderRow>
+          <H2Title
+            title={t`Phone Numbers`}
+            description={t`Manage your outbound caller IDs`}
+          />
+          <StyledAddButton onClick={() => setShowModal(true)}>
+            <IconPlus size={14} />
+            {t`Add Number`}
+          </StyledAddButton>
+        </StyledHeaderRow>
+        <Card rounded>
+          {availableCallerIds.length === 0 ? (
+            <StyledEmptyState>
+              {t`No phone numbers yet. Click "Add Number" to get started.`}
+            </StyledEmptyState>
+          ) : (
+            availableCallerIds.map((number) => (
+              <StyledRow key={number.phoneNumber}>
+                <IconPhone size={16} />
+                <StyledNumberInfo>
+                  <StyledPhoneNumber>{number.phoneNumber}</StyledPhoneNumber>
+                  {number.friendlyName && (
+                    <StyledFriendlyName>{number.friendlyName}</StyledFriendlyName>
+                  )}
+                </StyledNumberInfo>
+                {number.areaCode && (
+                  <StyledAreaCode>{number.areaCode}</StyledAreaCode>
+                )}
+                {number.isPrimary ? (
+                  <StyledPrimaryIcon aria-label={t`Primary number`}>
+                    <IconStarFilled size={16} />
+                  </StyledPrimaryIcon>
+                ) : (
+                  <StyledIconButton
+                    onClick={() =>
+                      handleSetPrimary(number.sid, number.phoneNumber)
+                    }
+                    aria-label={t`Set as primary`}
+                  >
+                    <IconStar size={16} />
+                  </StyledIconButton>
+                )}
+                <StyledIconButton
+                  onClick={() => handleDelete(number.sid)}
+                  aria-label={t`Delete number`}
+                >
+                  <IconTrash size={16} />
+                </StyledIconButton>
+              </StyledRow>
+            ))
+          )}
+        </Card>
+        {showModal && (
+          <StyledModalBackdrop onClick={() => setShowModal(false)}>
+            <div onClick={(event) => event.stopPropagation()}>
+              <AddPhoneNumberModal
+                onClose={() => setShowModal(false)}
+                onProvisioned={handleProvisioned}
+              />
+            </div>
+          </StyledModalBackdrop>
+        )}
+      </Section>
+    </>
   );
 };
