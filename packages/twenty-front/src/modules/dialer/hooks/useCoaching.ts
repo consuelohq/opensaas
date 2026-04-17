@@ -26,8 +26,7 @@ const isValidTalkingPoints = (data: unknown): data is TalkingPoints => {
 
   return (
     (typeof value.product_or_option_name === 'string' ||
-      value.product_or_option_name === null ||
-      value.product_or_option_name === undefined) &&
+      value.product_or_option_name === null) &&
     Array.isArray(value.details) &&
     value.details.every((entry) => typeof entry === 'string') &&
     Array.isArray(value.clarifying_questions) &&

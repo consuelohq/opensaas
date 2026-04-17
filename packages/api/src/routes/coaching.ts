@@ -186,6 +186,30 @@ const clientsByCall = new Map<string, Set<WebSocketClient>>();
 const runtimeByCall = new Map<string, CallTranscriptRuntime>();
 const runtimeLoadersByCall = new Map<string, Promise<CallTranscriptRuntime>>();
 const entryCountersByCall = new Map<string, number>();
+const mediaConnectionsByCall = new Map<string, number>();
+
+const cleanupCallState = (callId: string): void => {
+  runtimeByCall.delete(callId);
+  runtimeLoadersByCall.delete(callId);
+  entryCountersByCall.delete(callId);
+};
+
+const incrementMediaConnectionCount = (callId: string): void => {
+  mediaConnectionsByCall.set(callId, (mediaConnectionsByCall.get(callId) ?? 0) + 1);
+};
+
+const decrementMediaConnectionCount = (callId: string): void => {
+  const nextCount = (mediaConnectionsByCall.get(callId) ?? 0) - 1;
+  if (nextCount > 0) {
+    mediaConnectionsByCall.set(callId, nextCount);
+    return;
+  }
+
+  mediaConnectionsByCall.delete(callId);
+  if ((clientsByCall.get(callId)?.size ?? 0) === 0) {
+    cleanupCallState(callId);
+  }
+};
 
 const withTimeout = <TResult>(
   promise: Promise<TResult>,
@@ -324,18 +348,15 @@ const validateMediaUpgradeRequest = async (
 ): Promise<boolean> => {
   const authToken = process.env.TWILIO_AUTH_TOKEN ?? '';
   const signature = getHeaderValue(request.headers['x-twilio-signature']);
-  if (!authToken || !signature) {
+  const upgradeUrl = buildUpgradeUrl(request);
+  const callId = new URL(upgradeUrl).searchParams.get('callId');
+  if (!authToken || !signature || !callId) {
     return false;
   }
 
   try {
     const twilio = await import('twilio');
-    return twilio.default.validateRequest(
-      authToken,
-      signature,
-      buildUpgradeUrl(request),
-      {},
-    );
+    return twilio.default.validateRequest(authToken, signature, upgradeUrl, {});
   } catch (error: unknown) {
     routeLogger.error('[Coaching] media websocket signature validation failed', {
       error: error instanceof Error ? error.message : 'unknown error',
@@ -547,13 +568,16 @@ const createCoachingPiSession = (): PiSession => ({
   ): AsyncIterable<PiStreamEvent> {
     const client = await getGroqChatClient();
     const response = await withTimeout(
-      client.chat.completions.create({
-        model: options?.model ?? 'openai/gpt-oss-120b',
-        messages: [{ role: 'user', content: message }],
-        temperature: 0.3,
-        max_tokens: 900,
-        response_format: { type: 'json_object' },
-      }),
+      client.chat.completions.create(
+        {
+          model: options?.model ?? 'openai/gpt-oss-120b',
+          messages: [{ role: 'user', content: message }],
+          temperature: 0.3,
+          max_tokens: 900,
+          response_format: { type: 'json_object' },
+        },
+        { signal: options?.signal },
+      ),
       LLM_TIMEOUT_MS,
     );
 
@@ -714,10 +738,29 @@ const persistTranscriptEntry = async (
   callId: string,
   workspaceId: string,
   entry: TranscriptEntry,
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     const pool = await getPool();
-    await pool.query(SQL_APPEND_TRANSCRIPT_ENTRY, [callId, workspaceId, JSON.stringify([entry])]);
+    const result = await pool.query(SQL_APPEND_TRANSCRIPT_ENTRY, [
+      callId,
+      workspaceId,
+      JSON.stringify([entry]),
+    ]);
+
+    if (result.rowCount === 0) {
+      routeLogger.warn('[Coaching] transcript append affected 0 rows', {
+        callId,
+        workspaceId,
+        entryId: entry.id,
+      });
+      Sentry.captureMessage('[Coaching] transcript append affected 0 rows', {
+        level: 'warning',
+        extra: { callId, workspaceId, entryId: entry.id },
+      });
+      return false;
+    }
+
+    return true;
   } catch (error: unknown) {
     Sentry.captureException(error);
     throw error;
@@ -864,13 +907,23 @@ const appendTranscriptEntry = async (
   }
 
   try {
-    await persistTranscriptEntry(callId, runtime.workspaceId, entry);
+    const persisted = await persistTranscriptEntry(callId, runtime.workspaceId, entry);
+    if (!persisted) {
+      runtime.entries = runtime.entries.filter(
+        (existingEntry) => existingEntry.id !== entry.id,
+      );
+      return;
+    }
   } catch (error: unknown) {
     Sentry.captureException(error);
+    runtime.entries = runtime.entries.filter(
+      (existingEntry) => existingEntry.id !== entry.id,
+    );
     routeLogger.error('[Coaching] transcript persistence failed', {
       callId,
       error: error instanceof Error ? error.message : 'unknown error',
     });
+    return;
   }
 
   broadcastTranscript(callId, entry);
@@ -915,6 +968,13 @@ const handleCoachingRefreshRequest = async (
       return;
     }
 
+    if (!(await callBelongsToWorkspace(body.callId, auth.workspaceId))) {
+      res.status(404).json({
+        error: { code: 'NOT_FOUND', message: 'Call not found' },
+      });
+      return;
+    }
+
     const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
     res.status(200).json({ data: talkingPoints });
   } catch (error: unknown) {
@@ -933,6 +993,13 @@ export const coachingRoutes = (): RouteDefinition[] => [
 
       const body = req.body as CoachBody | undefined;
       if (typeof body?.callId === 'string' && body.callId.length > 0) {
+        if (!(await callBelongsToWorkspace(body.callId, auth.workspaceId))) {
+          res.status(404).json({
+            error: { code: 'NOT_FOUND', message: 'Call not found' },
+          });
+          return;
+        }
+
         const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
         res.status(200).json({ data: talkingPoints });
         return;
@@ -1144,6 +1211,9 @@ export const setupCoachingWebSocket = async (
         clientsByCall.get(callId)?.delete(client);
         if (clientsByCall.get(callId)?.size === 0) {
           clientsByCall.delete(callId);
+          if ((mediaConnectionsByCall.get(callId) ?? 0) === 0) {
+            cleanupCallState(callId);
+          }
         }
       });
     });
@@ -1152,6 +1222,10 @@ export const setupCoachingWebSocket = async (
       const client = ws as WebSocketClient;
       const url = new URL(req.url ?? '', 'http://localhost');
       let callId: string | null = url.searchParams.get('callId');
+      let registeredMediaCallId: string | null = callId;
+      if (registeredMediaCallId) {
+        incrementMediaConnectionCount(registeredMediaCallId);
+      }
       const transcriptionAbortController = new AbortController();
       const audioBuffers: Record<'inbound' | 'outbound', Buffer[]> = {
         inbound: [],
@@ -1262,7 +1336,20 @@ export const setupCoachingWebSocket = async (
                   ? startPayload.callSid
                   : null;
             if (nextCallId) {
+              if (callId !== null && callId !== nextCallId) {
+                routeLogger.error('[Coaching] start frame callId mismatch', {
+                  urlCallId: callId,
+                  startCallId: nextCallId,
+                });
+                client.close();
+                return;
+              }
+
               callId = nextCallId;
+              if (registeredMediaCallId === null) {
+                registeredMediaCallId = nextCallId;
+                incrementMediaConnectionCount(registeredMediaCallId);
+              }
             }
             return;
           }
@@ -1295,10 +1382,17 @@ export const setupCoachingWebSocket = async (
       });
 
       client.on('close', () => {
-        transcriptionAbortController.abort();
         clearInterval(timer);
-        void transcribeBuffer('inbound');
-        void transcribeBuffer('outbound');
+        void Promise.allSettled([
+          transcribeBuffer('inbound'),
+          transcribeBuffer('outbound'),
+        ]).finally(() => {
+          transcriptionAbortController.abort();
+          if (registeredMediaCallId) {
+            decrementMediaConnectionCount(registeredMediaCallId);
+            registeredMediaCallId = null;
+          }
+        });
       });
     });
 

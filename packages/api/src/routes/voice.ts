@@ -750,9 +750,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
-      const streamUrl = process.env.API_BASE_URL
+      const mediaStreamBaseUrl = process.env.API_BASE_URL
         ? process.env.API_BASE_URL.replace(/^http/, 'ws') + '/v1/coaching/media'
         : undefined;
+      const streamUrl =
+        mediaStreamBaseUrl && callSid
+          ? `${mediaStreamBaseUrl}?callId=${encodeURIComponent(callSid)}`
+          : mediaStreamBaseUrl;
       const twiml = getLegacyDialer().generateConferenceTwiml(conferenceName, {
         participantLabel: 'agent',
         endOnExit: true,
