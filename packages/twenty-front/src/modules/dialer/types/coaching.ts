@@ -32,10 +32,17 @@ export type CoachingBroadcastMessage = {
   talkingPoints: TalkingPoints;
 };
 
+export type CoachingErrorBroadcastMessage = {
+  type: 'coaching_error';
+  message: string;
+  rawText?: string;
+};
+
 export type CoachingStreamMessage =
   | TranscriptSnapshotMessage
   | TranscriptBroadcastMessage
-  | CoachingBroadcastMessage;
+  | CoachingBroadcastMessage
+  | CoachingErrorBroadcastMessage;
 
 export type CallOutcome =
   | 'interested'

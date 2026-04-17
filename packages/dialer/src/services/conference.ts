@@ -65,6 +65,7 @@ export class ConferenceService {
       participantLabel?: string;
       streamUrl?: string;
       streamParameters?: Record<string, string>;
+      streamTrack?: 'inbound_track' | 'outbound_track' | 'both_tracks';
     },
   ): string {
     const startOnEnter = opts?.startOnEnter ?? true;
@@ -73,10 +74,11 @@ export class ConferenceService {
     const label = opts?.participantLabel
       ? ` participantLabel="${escapeXml(opts.participantLabel)}"`
       : '';
+    const streamTrack = opts?.streamTrack ?? 'both_tracks';
     const streamBlock = opts?.streamUrl
       ? [
           '<Start>',
-          `<Stream url="${escapeXml(opts.streamUrl)}">`,
+          `<Stream url="${escapeXml(opts.streamUrl)}" track="${escapeXml(streamTrack)}">`,
           ...Object.entries(opts.streamParameters ?? {}).map(
             ([name, value]) =>
               `<Parameter name="${escapeXml(name)}" value="${escapeXml(value)}" />`,

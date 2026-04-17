@@ -70,6 +70,23 @@ describe('ConferenceService', () => {
       expect(twiml).toContain('endConferenceOnExit="true"');
       expect(twiml).toContain('waitUrl="https://example.com/hold"');
     });
+
+    it('should include both_tracks by default for media streams', () => {
+      const twiml = service.generateConferenceTwiml('conf-789', {
+        streamUrl: 'wss://example.com/v1/coaching/media',
+      });
+
+      expect(twiml).toContain('track="both_tracks"');
+    });
+
+    it('should respect a custom stream track', () => {
+      const twiml = service.generateConferenceTwiml('conf-101', {
+        streamUrl: 'wss://example.com/v1/coaching/media',
+        streamTrack: 'outbound_track',
+      });
+
+      expect(twiml).toContain('track="outbound_track"');
+    });
   });
 
   describe('addParticipant', () => {

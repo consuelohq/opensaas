@@ -248,6 +248,7 @@ export class Dialer {
       waitUrl?: string;
       streamUrl?: string;
       streamParameters?: Record<string, string>;
+      streamTrack?: 'inbound_track' | 'outbound_track' | 'both_tracks';
     },
   ): string {
     return this.conference.generateConferenceTwiml(conferenceName, opts);

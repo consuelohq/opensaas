@@ -13,14 +13,33 @@ import {
 } from '@/dialer/states/coachingState';
 import { type TalkingPoints } from '@/dialer/types/coaching';
 
+const EMPTY_TALKING_POINTS: TalkingPoints = {
+  product_or_option_name: null,
+  details: [],
+  clarifying_questions: [],
+  objection_responses: [],
+};
+
 const isValidTalkingPoints = (data: unknown): data is TalkingPoints => {
   if (!data || typeof data !== 'object') return false;
   const value = data as Record<string, unknown>;
 
   return (
+    (typeof value.product_or_option_name === 'string' ||
+      value.product_or_option_name === null ||
+      value.product_or_option_name === undefined) &&
     Array.isArray(value.details) &&
+    value.details.every((entry) => typeof entry === 'string') &&
     Array.isArray(value.clarifying_questions) &&
-    Array.isArray(value.objection_responses)
+    value.clarifying_questions.every((entry) => typeof entry === 'string') &&
+    Array.isArray(value.objection_responses) &&
+    value.objection_responses.every(
+      (entry) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        typeof (entry as { objection?: unknown }).objection === 'string' &&
+        typeof (entry as { response?: unknown }).response === 'string',
+    )
   );
 };
 
@@ -77,7 +96,10 @@ export const useCoaching = (): UseCoachingReturn => {
 
       const payload = (await response.json()) as { data: unknown };
       if (!isValidTalkingPoints(payload.data)) {
-        setTalkingPoints(null);
+        setCoachingError(t`Invalid coaching payload`);
+        setTalkingPoints((previousTalkingPoints) =>
+          previousTalkingPoints ?? EMPTY_TALKING_POINTS,
+        );
         return;
       }
 

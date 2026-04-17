@@ -1,10 +1,12 @@
 // transcript context extension for pi-agent-core
 // injects the latest live call transcript into the prompt before each coaching turn
 
+import { Logger } from '@consuelo/logger';
 import type { AgentMessage } from '@mariozechner/pi-agent-core';
 
 const TRANSCRIPT_MARKER = '[TRANSCRIPT_CONTEXT]';
 const DEFAULT_MAX_ENTRIES = 24;
+const logger = new Logger('agent:transcript-extension');
 
 export type TranscriptContextEntry = {
   speaker: 'agent' | 'customer';
@@ -59,7 +61,12 @@ export const createTranscriptContext = (
   const maxEntries = options?.maxEntries ?? DEFAULT_MAX_ENTRIES;
 
   return {
-    transformContext: async (messages: AgentMessage[]): Promise<AgentMessage[]> => {
+    transformContext: async (
+      messages: AgentMessage[],
+      signal?: AbortSignal,
+    ): Promise<AgentMessage[]> => {
+      void signal;
+
       try {
         const transcript = getActiveTranscript();
 
@@ -78,7 +85,7 @@ export const createTranscriptContext = (
         const renderedTranscript = latestEntries.map(formatEntry).join('\n');
         const block = [
           TRANSCRIPT_MARKER,
-          `<live_transcript callSid=\"${transcript.callSid}\">`,
+          `<live_transcript callSid="${transcript.callSid}">`,
           renderedTranscript,
           '</live_transcript>',
         ].join('\n');
@@ -91,7 +98,14 @@ export const createTranscriptContext = (
         };
 
         return [transcriptMessage, ...filtered];
-      } catch {
+      } catch (error: unknown) {
+        const activeTranscript = getActiveTranscript();
+        logger.error('transcript context transform failed', {
+          error,
+          transcriptCallSid: activeTranscript?.callSid ?? null,
+          transcriptEntryCount: activeTranscript?.entries.length ?? 0,
+          transcriptMarker: TRANSCRIPT_MARKER,
+        });
         return messages.filter((message) => !isTranscriptMessage(message));
       }
     },

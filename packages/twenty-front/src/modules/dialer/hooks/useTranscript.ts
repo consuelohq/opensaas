@@ -7,6 +7,7 @@ import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { cookieStorage } from '~/utils/cookie-storage';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
+  coachingErrorState,
   coachingLoadingState,
   talkingPointsState,
   transcriptConnectedState,
@@ -15,6 +16,7 @@ import {
 } from '@/dialer/states/coachingState';
 import {
   type CoachingStreamMessage,
+  type TalkingPoints,
   type TranscriptEntry,
 } from '@/dialer/types/coaching';
 import { type CallStatus } from '@/dialer/types/dialer';
@@ -70,6 +72,34 @@ const isTranscriptEntry = (value: unknown): value is TranscriptEntry => {
   );
 };
 
+const isTalkingPoints = (value: unknown): value is TalkingPoints => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const talkingPoints = value as Record<string, unknown>;
+
+  return (
+    (typeof talkingPoints.product_or_option_name === 'string' ||
+      talkingPoints.product_or_option_name === null ||
+      talkingPoints.product_or_option_name === undefined) &&
+    Array.isArray(talkingPoints.details) &&
+    talkingPoints.details.every((entry) => typeof entry === 'string') &&
+    Array.isArray(talkingPoints.clarifying_questions) &&
+    talkingPoints.clarifying_questions.every(
+      (entry) => typeof entry === 'string',
+    ) &&
+    Array.isArray(talkingPoints.objection_responses) &&
+    talkingPoints.objection_responses.every(
+      (entry) =>
+        typeof entry === 'object' &&
+        entry !== null &&
+        typeof (entry as { objection?: unknown }).objection === 'string' &&
+        typeof (entry as { response?: unknown }).response === 'string',
+    )
+  );
+};
+
 const isCoachingStreamMessage = (
   value: unknown,
 ): value is CoachingStreamMessage => {
@@ -84,16 +114,20 @@ const isCoachingStreamMessage = (
   }
 
   if (message.type === 'coaching') {
-    return (
-      typeof message.talkingPoints === 'object' &&
-      message.talkingPoints !== null
-    );
+    return isTalkingPoints(message.talkingPoints);
+  }
+
+  if (message.type === 'coaching_error') {
+    return typeof message.message === 'string';
   }
 
   if (message.type === 'snapshot') {
     return (
       Array.isArray(message.entries) &&
-      message.entries.every((entry) => isTranscriptEntry(entry))
+      message.entries.every((entry) => isTranscriptEntry(entry)) &&
+      (message.talkingPoints === null ||
+        message.talkingPoints === undefined ||
+        isTalkingPoints(message.talkingPoints))
     );
   }
 
@@ -126,6 +160,7 @@ export const useTranscript = (): UseTranscriptReturn => {
   const setTranscriptError = useSetRecoilState(transcriptErrorState);
   const setTalkingPoints = useSetRecoilState(talkingPointsState);
   const setCoachingLoading = useSetRecoilState(coachingLoadingState);
+  const setCoachingError = useSetRecoilState(coachingErrorState);
 
   useEffect(() => {
     transcriptSocketState.callStatus = callStatus;
@@ -133,6 +168,7 @@ export const useTranscript = (): UseTranscriptReturn => {
 
   const disconnect = useCallback(() => {
     clearReconnectTimer();
+    transcriptSocketState.reconnectAttempts = 0;
     if (transcriptSocketState.socket !== null) {
       transcriptSocketState.socket.close();
       transcriptSocketState.socket = null;
@@ -143,8 +179,8 @@ export const useTranscript = (): UseTranscriptReturn => {
   const connect = useCallback(
     (nextCallSid: string) => {
       disconnect();
-      transcriptSocketState.reconnectAttempts = 0;
       setTranscriptError(null);
+      setCoachingError(null);
       setCoachingLoading(true);
 
       const token = getAuthToken();
@@ -154,14 +190,18 @@ export const useTranscript = (): UseTranscriptReturn => {
           ? `${baseUrl}&token=${encodeURIComponent(token)}`
           : baseUrl;
       const socket = new WebSocket(wsUrl);
-      transcriptSocketState.socket = socket;
+      const currentSocket = socket;
+      transcriptSocketState.socket = currentSocket;
 
-      socket.onopen = () => {
+      currentSocket.onopen = () => {
+        if (transcriptSocketState.socket !== currentSocket) {
+          return;
+        }
         setTranscriptConnected(true);
         transcriptSocketState.reconnectAttempts = 0;
       };
 
-      socket.onmessage = (event) => {
+      currentSocket.onmessage = (event) => {
         try {
           const parsed = JSON.parse(event.data as string) as unknown;
           if (!isCoachingStreamMessage(parsed)) {
@@ -183,6 +223,13 @@ export const useTranscript = (): UseTranscriptReturn => {
             return;
           }
 
+          if (parsed.type === 'coaching_error') {
+            setCoachingError(parsed.message);
+            setCoachingLoading(false);
+            return;
+          }
+
+          setCoachingError(null);
           setTalkingPoints(parsed.talkingPoints);
           setCoachingLoading(false);
         } catch (error: unknown) {
@@ -192,7 +239,11 @@ export const useTranscript = (): UseTranscriptReturn => {
         }
       };
 
-      socket.onclose = () => {
+      currentSocket.onclose = () => {
+        if (transcriptSocketState.socket !== currentSocket) {
+          return;
+        }
+
         setTranscriptConnected(false);
         transcriptSocketState.socket = null;
 
@@ -212,13 +263,17 @@ export const useTranscript = (): UseTranscriptReturn => {
         }
       };
 
-      socket.onerror = () => {
+      currentSocket.onerror = () => {
+        if (transcriptSocketState.socket !== currentSocket) {
+          return;
+        }
         setTranscriptError(t`WebSocket connection failed`);
         setCoachingLoading(false);
       };
     },
     [
       disconnect,
+      setCoachingError,
       setCoachingLoading,
       setTalkingPoints,
       setTranscript,
@@ -247,6 +302,7 @@ export const useTranscript = (): UseTranscriptReturn => {
       disconnect();
       setTranscript([]);
       setTranscriptError(null);
+      setCoachingError(null);
       setTalkingPoints(null);
       setCoachingLoading(false);
       transcriptSocketState.lastCallSid = null;
@@ -254,6 +310,7 @@ export const useTranscript = (): UseTranscriptReturn => {
   }, [
     callStatus,
     disconnect,
+    setCoachingError,
     setCoachingLoading,
     setTalkingPoints,
     setTranscript,
