@@ -21,6 +21,18 @@ import {
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
+import { createPhoneNumberAddonCheckout } from '../services/phone-number-addons.js';
+import { recommendPhoneNumbers } from '../services/phone-number-recommendations.js';
+import {
+  findWorkspacePhoneNumberBySid,
+  getPhoneNumberEntitlement,
+  listWorkspacePhoneNumbers,
+  recordProvisionedPhoneNumber,
+  releaseWorkspacePhoneNumber,
+  type PhoneNumberEntitlement,
+  type WorkspacePhoneNumber,
+  type WorkspacePhoneNumberOwnershipType,
+} from '../services/workspace-phone-numbers.js';
 type Logger = {
   info: (message: string, meta?: Record<string, unknown>) => void;
   error: (message: string, meta?: Record<string, unknown>) => void;
@@ -52,6 +64,32 @@ const ringingStartTimes = new Map<string, number>();
 const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
 
+const mapWorkspacePhoneNumberToResponse = (number: WorkspacePhoneNumber) => ({
+  areaCode: number.areaCode,
+  friendlyName: number.friendlyName ?? '',
+  isPrimary: number.isPrimary,
+  ownershipType: number.ownershipType,
+  phoneNumber: number.phoneNumber,
+  sid: number.twilioSid ?? '',
+});
+
+const getProvisionOwnershipType = (
+  entitlement: PhoneNumberEntitlement,
+): WorkspacePhoneNumberOwnershipType => {
+  if (entitlement.usedSlots < entitlement.includedSlots) {
+    return 'included';
+  }
+
+  if (
+    entitlement.usedSlots <
+    entitlement.includedSlots + entitlement.numberPackSlots
+  ) {
+    return 'pack';
+  }
+
+  return 'add_on';
+};
+
 const buildWorkspaceNumberPool = async (workspaceId: string) => {
   const dialer = await getDialerForWorkspace(workspaceId);
   const numbers = await dialer.listNumbers();
@@ -64,19 +102,19 @@ const buildWorkspaceNumberPool = async (workspaceId: string) => {
     primarySid = null;
   }
 
-  const normalizedNumbers = numbers.map((number) => ({
-    ...number,
-    isPrimary:
-      primarySid !== null ? number.twilioSid === primarySid : number.isPrimary,
-  }));
+  const workspaceNumbers = await listWorkspacePhoneNumbers(
+    workspaceId,
+    numbers,
+    primarySid,
+  );
 
   return {
     dialer,
     numberPool: {
-      numbers: normalizedNumbers,
+      numbers: workspaceNumbers,
       primaryNumber:
-        normalizedNumbers.find((number) => number.isPrimary) ??
-        normalizedNumbers[0],
+        workspaceNumbers.find((number) => number.isPrimary) ??
+        workspaceNumbers[0],
     },
   };
 };
@@ -202,23 +240,13 @@ const recachePhoneNumbers = async (workspaceId: string) => {
     } catch {
       /* */
     }
-    const phoneNumbers = numbers.map(
-      (num: {
-        phoneNumber: string;
-        friendlyName?: string;
-        twilioSid?: string;
-      }) => ({
-        phoneNumber: num.phoneNumber ?? '',
-        friendlyName: num.friendlyName ?? '',
-        areaCode:
-          (num.phoneNumber ?? '').startsWith('+1') &&
-          (num.phoneNumber ?? '').length >= 5
-            ? (num.phoneNumber ?? '').slice(2, 5)
-            : '',
-        sid: num.twilioSid ?? '',
-        isPrimary: primarySid !== null && num.twilioSid === primarySid,
-      }),
+
+    const workspaceNumbers = await listWorkspacePhoneNumbers(
+      workspaceId,
+      numbers,
+      primarySid,
     );
+    const phoneNumbers = workspaceNumbers.map(mapWorkspacePhoneNumberToResponse);
     await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers });
   } catch {
     /* best effort */
@@ -242,8 +270,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
       try {
         const workspaceId = req.auth!.workspaceId;
-
-        // check redis cache first
         const cached = await redisService.getPhoneNumbersCache(workspaceId);
         if (cached) {
           res.json(JSON.parse(cached));
@@ -257,37 +283,22 @@ export const voiceRoutes = (): RouteDefinition[] => [
         try {
           primarySid = await redisService.getPrimaryNumber(workspaceId);
         } catch {
-          // redis unavailable — continue without primary info
+          /* */
         }
 
-        const phoneNumbers = numbers.map(
-          (num: {
-            phoneNumber: string;
-            friendlyName?: string;
-            twilioSid?: string;
-          }) => {
-            const phoneNumber = num.phoneNumber ?? '';
-            const areaCode =
-              phoneNumber.startsWith('+1') && phoneNumber.length >= 5
-                ? phoneNumber.slice(2, 5)
-                : '';
-
-            return {
-              phoneNumber,
-              friendlyName: num.friendlyName ?? '',
-              areaCode,
-              sid: num.twilioSid ?? '',
-              isPrimary: primarySid !== null && num.twilioSid === primarySid,
-            };
-          },
+        const workspaceNumbers = await listWorkspacePhoneNumbers(
+          workspaceId,
+          numbers,
+          primarySid,
         );
+        const response = {
+          phoneNumbers: workspaceNumbers.map(mapWorkspacePhoneNumberToResponse),
+        };
 
-        const response = { phoneNumbers };
         await redisService.setPhoneNumbersCache(workspaceId, response);
         res.json(response);
       } catch (err: unknown) {
-        const { captureException } = await import('@sentry/node');
-        captureException(err);
+        Sentry.captureException(err);
         const message =
           err instanceof Error ? err.message : 'Failed to fetch phone numbers';
         res
@@ -341,6 +352,97 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
   {
     method: 'POST',
+    path: '/v1/phone-numbers/recommendations',
+    handler: errorHandler(async (req, res) => {
+      const userId = req.auth?.userId;
+      const workspaceId = req.auth?.workspaceId;
+      if (!userId || !workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const body = req.body as { limit?: number; query?: string } | undefined;
+      if (!body?.query || body.query.trim().length < 2) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'query must be at least 2 characters',
+          },
+        });
+        return;
+      }
+
+      try {
+        const dialer = await getDialerForWorkspace(workspaceId);
+        const available = await recommendPhoneNumbers(dialer, body.query, {
+          limit: body.limit,
+        });
+        res.json({ available });
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const message =
+          err instanceof Error ? err.message : 'Recommendation search failed';
+        res.status(500).json({
+          error: { code: 'RECOMMENDATION_ERROR', message },
+        });
+      }
+    }),
+  },
+
+  {
+    method: 'POST',
+    path: '/v1/phone-numbers/checkout',
+    handler: errorHandler(async (req, res) => {
+      const workspaceId = req.auth?.workspaceId;
+      if (!workspaceId) {
+        res.status(401).json({
+          error: { code: 'UNAUTHORIZED', message: 'Auth required' },
+        });
+        return;
+      }
+
+      const body = req.body as
+        | { cancelUrl?: string; quantity?: number; successUrl?: string }
+        | undefined;
+      const quantity = body?.quantity ?? 1;
+
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'quantity must be a positive integer',
+          },
+        });
+        return;
+      }
+
+      try {
+        const origin = req.headers.origin ?? 'http://localhost:3000';
+        const result = await createPhoneNumberAddonCheckout(
+          workspaceId,
+          quantity,
+          body?.successUrl ??
+            `${origin}/settings/dialer/subscription?phone_number_success=true`,
+          body?.cancelUrl ?? `${origin}/settings/dialer/subscription`,
+        );
+        res.json(result);
+      } catch (err: unknown) {
+        Sentry.captureException(err);
+        const status =
+          typeof (err as { status?: unknown })?.status === 'number'
+            ? (err as { status: number }).status
+            : 500;
+        const message =
+          err instanceof Error ? err.message : 'Checkout session failed';
+        res.status(status).json({ error: { code: 'CHECKOUT_ERROR', message } });
+      }
+    }),
+  },
+
+  {
+    method: 'POST',
     path: '/v1/phone-numbers/provision',
     handler: errorHandler(async (req, res) => {
       const userId = req.auth?.userId;
@@ -366,6 +468,17 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const entitlement = await getPhoneNumberEntitlement(workspaceId);
+        if (!entitlement.canProvision) {
+          res.status(400).json({
+            error: {
+              code: 'PHONE_NUMBER_SLOT_REQUIRED',
+              message: 'No phone number slots available for this workspace',
+            },
+          });
+          return;
+        }
+
         const dialer = await getDialerForWorkspace(workspaceId);
         const voiceUrl = process.env.API_BASE_URL
           ? `${process.env.API_BASE_URL}/v1/voice/twiml`
@@ -388,20 +501,37 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        // auto-set as primary if first number
-        try {
-          const numbers = await dialer.listNumbers();
-          if (numbers.length === 1 && result.sid) {
-            await redisService.setPrimaryNumber(workspaceId, result.sid);
-          }
-        } catch (err: unknown) {
-          Sentry.captureException(err, {
-            extra: { context: 'auto_set_primary', workspaceId },
+        if (!result.sid || !result.phoneNumber) {
+          res.status(500).json({
+            error: {
+              code: 'PROVISION_ERROR',
+              message: 'Provision response missing sid or phone number',
+            },
           });
+          return;
+        }
+
+        const ownershipType = getProvisionOwnershipType(entitlement);
+        await recordProvisionedPhoneNumber(workspaceId, {
+          areaCode: result.areaCode ?? body.areaCode ?? '',
+          friendlyName: body.friendlyName,
+          ownershipType,
+          phoneNumber: result.phoneNumber,
+          sid: result.sid,
+        });
+
+        if (entitlement.usedSlots === 0) {
+          try {
+            await redisService.setPrimaryNumber(workspaceId, result.sid);
+          } catch (err: unknown) {
+            Sentry.captureException(err, {
+              extra: { context: 'auto_set_primary', workspaceId },
+            });
+          }
         }
 
         await recachePhoneNumbers(workspaceId);
-        res.json(result);
+        res.json({ ...result, ownershipType });
       } catch (err: unknown) {
         Sentry.captureException(err);
         const message = err instanceof Error ? err.message : 'Provision failed';
@@ -432,12 +562,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const dialer = await getDialerForWorkspace(workspaceId);
-        const numbers = await dialer.listNumbers();
-        const numberExists = numbers.some(
-          (num: { twilioSid?: string }) => num.twilioSid === sid,
-        );
-        if (!numberExists) {
+        const number = await findWorkspacePhoneNumberBySid(workspaceId, sid);
+        if (!number) {
           res.status(404).json({
             error: {
               code: 'NUMBER_NOT_FOUND',
@@ -481,6 +607,17 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const number = await findWorkspacePhoneNumberBySid(workspaceId, sid);
+        if (!number) {
+          res.status(404).json({
+            error: {
+              code: 'NUMBER_NOT_FOUND',
+              message: 'Number not found in workspace',
+            },
+          });
+          return;
+        }
+
         const dialer = await getDialerForWorkspace(workspaceId);
         const result = await dialer.releaseNumber(sid);
 
@@ -494,7 +631,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        // clear primary if this was the primary number
+        await releaseWorkspacePhoneNumber(workspaceId, sid);
+
         try {
           const primarySid = await redisService.getPrimaryNumber(workspaceId);
           if (primarySid === sid) {
@@ -750,9 +888,14 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
+      const streamUrl = process.env.API_BASE_URL
+        ? process.env.API_BASE_URL.replace(/^http/, 'ws') + '/v1/coaching/media'
+        : undefined;
       const twiml = getLegacyDialer().generateConferenceTwiml(conferenceName, {
         participantLabel: 'agent',
         endOnExit: true,
+        streamUrl,
+        streamParameters: callSid ? { callId: callSid } : undefined,
       });
 
       // store mapping for lock release on call end

@@ -1,9 +1,10 @@
 import styled from '@emotion/styled';
-import { useCallback, useState } from 'react';
-import { IconPhone, IconSearch, IconX } from '@tabler/icons-react';
+import { useCallback, useMemo, useState } from 'react';
+import { IconMapPin, IconPhone, IconSearch, IconX } from '@tabler/icons-react';
 
 import { useSearchAvailableNumbers } from '@/dialer/hooks/useSearchAvailableNumbers';
 import { useProvisionNumber } from '@/dialer/hooks/useProvisionNumber';
+import { usePhoneNumberCheckout } from '@/dialer/hooks/usePhoneNumberCheckout';
 import { type AvailableNumberOption } from '@/dialer/types/dialer';
 
 type AddPhoneNumberModalProps = {
@@ -19,9 +20,9 @@ const StyledOverlay = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(3)};
-  max-height: 480px;
+  max-height: 640px;
   padding: ${({ theme }) => theme.spacing(4)};
-  width: 400px;
+  width: 520px;
 `;
 
 const StyledHeader = styled.div`
@@ -48,6 +49,11 @@ const StyledCloseButton = styled.button`
   &:hover {
     color: ${({ theme }) => theme.font.color.primary};
   }
+`;
+
+const StyledHint = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: 12px;
 `;
 
 const StyledSearchRow = styled.div`
@@ -83,69 +89,87 @@ const StyledSearchButton = styled.button<{ isDisabled: boolean }>`
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
   display: flex;
   gap: ${({ theme }) => theme.spacing(1)};
-  font-size: 13px;
   opacity: ${({ isDisabled }) => (isDisabled ? 0.5 : 1)};
   padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-
-  &:hover:not(:disabled) {
-    opacity: 0.9;
-  }
 `;
 
 const StyledResultsList = styled.div`
   display: flex;
   flex-direction: column;
-  max-height: 280px;
+  max-height: 320px;
   overflow-y: auto;
 `;
 
-const StyledResultRow = styled.button`
-  align-items: center;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+const StyledResultRow = styled.button<{ isSelected: boolean }>`
+  align-items: flex-start;
+  background: ${({ isSelected, theme }) =>
+    isSelected ? theme.background.transparent.light : 'transparent'};
+  border: 1px solid
+    ${({ isSelected, theme }) =>
+      isSelected ? theme.color.blue : theme.border.color.light};
+  border-radius: ${({ theme }) => theme.border.radius.sm};
   cursor: pointer;
   display: flex;
   gap: ${({ theme }) => theme.spacing(3)};
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
+  margin-bottom: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(3)};
   text-align: left;
   width: 100%;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: ${({ theme }) => theme.background.transparent.lighter};
-  }
 `;
 
 const StyledResultInfo = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: ${({ theme }) => theme.spacing(1)};
 `;
 
 const StyledResultNumber = styled.span`
   color: ${({ theme }) => theme.font.color.primary};
   font-size: 14px;
+  font-weight: 600;
 `;
 
 const StyledResultLocation = styled.span`
+  align-items: center;
   color: ${({ theme }) => theme.font.color.tertiary};
+  display: inline-flex;
+  font-size: 12px;
+  gap: ${({ theme }) => theme.spacing(1)};
+`;
+
+const StyledResultReason = styled.span`
+  color: ${({ theme }) => theme.font.color.secondary};
   font-size: 12px;
 `;
 
-const StyledGetButton = styled.button<{ isDisabled: boolean }>`
+const StyledRadio = styled.span<{ isSelected: boolean }>`
+  background: ${({ isSelected, theme }) =>
+    isSelected ? theme.color.blue : 'transparent'};
+  border: 1px solid
+    ${({ isSelected, theme }) =>
+      isSelected ? theme.color.blue : theme.border.color.medium};
+  border-radius: 999px;
+  flex-shrink: 0;
+  height: 16px;
+  margin-top: 2px;
+  width: 16px;
+`;
+
+const StyledFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(2)};
+`;
+
+const StyledBuyButton = styled.button<{ isDisabled: boolean }>`
   background: ${({ theme }) => theme.color.blue};
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
   color: #fff;
   cursor: ${({ isDisabled }) => (isDisabled ? 'not-allowed' : 'pointer')};
-  font-size: 12px;
   opacity: ${({ isDisabled }) => (isDisabled ? 0.5 : 1)};
-  padding: ${({ theme }) => theme.spacing(1)} ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
 `;
 
 const StyledError = styled.span`
@@ -160,62 +184,82 @@ const StyledEmpty = styled.span`
   text-align: center;
 `;
 
+const formatLocation = (number: AvailableNumberOption): string => {
+  return [number.city, number.state, number.region].filter(Boolean).join(', ');
+};
+
 export const AddPhoneNumberModal = ({
   onClose,
   onProvisioned,
 }: AddPhoneNumberModalProps) => {
-  const [areaCode, setAreaCode] = useState('');
-  const [provisioningSid, setProvisioningSid] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [selectedPhoneNumber, setSelectedPhoneNumber] = useState<string | null>(
+    null,
+  );
+  const { available, isSearching, error: searchError, search } =
+    useSearchAvailableNumbers();
+  const { isProvisioning, error: provisionError, provision } =
+    useProvisionNumber();
   const {
-    available,
-    isSearching,
-    error: searchError,
-    search,
-  } = useSearchAvailableNumbers();
-  const {
-    isProvisioning,
-    error: provisionError,
-    provision,
-  } = useProvisionNumber();
+    createCheckout,
+    error: checkoutError,
+    isCreatingCheckout,
+  } = usePhoneNumberCheckout();
 
-  const canSearch = /^\d{3}$/.test(areaCode) && !isSearching;
+  const selectedNumber = useMemo(() => {
+    return available.find((number) => number.phoneNumber === selectedPhoneNumber);
+  }, [available, selectedPhoneNumber]);
+
+  const canSearch = query.trim().length >= 2 && !isSearching;
+  const isBusy = isProvisioning || isCreatingCheckout;
+  const canBuy = selectedNumber !== undefined && !isBusy;
 
   const handleSearch = useCallback(() => {
-    if (canSearch) {
-      search(areaCode);
+    if (!canSearch) {
+      return;
     }
-  }, [canSearch, areaCode, search]);
+
+    void search(query.trim());
+  }, [canSearch, query, search]);
+
+  const handleBuy = useCallback(async () => {
+    if (!selectedNumber) {
+      return;
+    }
+
+    const result = await provision(
+      selectedNumber.areaCode,
+      selectedNumber.phoneNumber,
+    );
+
+    if (result.success) {
+      onProvisioned();
+      onClose();
+      return;
+    }
+
+    if (result.code === 'PHONE_NUMBER_SLOT_REQUIRED') {
+      const checkout = await createCheckout();
+      if (checkout.url) {
+        window.location.href = checkout.url;
+      }
+    }
+  }, [createCheckout, onClose, onProvisioned, provision, selectedNumber]);
 
   const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter') handleSearch();
-      if (event.key === 'Escape') onClose();
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        handleSearch();
+      }
+
+      if (event.key === 'Escape') {
+        onClose();
+      }
     },
     [handleSearch, onClose],
   );
 
-  const handleProvision = useCallback(
-    async (number: AvailableNumberOption) => {
-      setProvisioningSid(number.phoneNumber);
-      const result = await provision(number.areaCode, number.phoneNumber);
-      if (result.success) {
-        onProvisioned();
-        onClose();
-      }
-      setProvisioningSid(null);
-    },
-    [provision, onProvisioned, onClose],
-  );
-
-  const handleAreaCodeChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const digits = event.target.value.replace(/\D/g, '').slice(0, 3);
-      setAreaCode(digits);
-    },
-    [],
-  );
-
-  const error = searchError ?? provisionError;
+  const error = searchError ?? provisionError ?? checkoutError;
 
   return (
     <StyledOverlay>
@@ -226,14 +270,18 @@ export const AddPhoneNumberModal = ({
         </StyledCloseButton>
       </StyledHeader>
 
+      <StyledHint>
+        Search by city, state, market, or area code. We will rank the best
+        matches and buy one number when you confirm.
+      </StyledHint>
+
       <StyledSearchRow>
         <StyledInput
-          type="tel"
-          placeholder="Area code (e.g. 415)"
-          value={areaCode}
-          onChange={handleAreaCodeChange}
+          type="text"
+          placeholder="e.g. miami sales line or 415"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
           onKeyDown={handleKeyDown}
-          maxLength={3}
           autoFocus
         />
         <StyledSearchButton
@@ -249,42 +297,53 @@ export const AddPhoneNumberModal = ({
       {error && <StyledError>{error}</StyledError>}
 
       <StyledResultsList>
-        {available.length === 0 &&
-          !isSearching &&
-          areaCode.length === 3 &&
-          !error && (
-            <StyledEmpty>No numbers found for area code {areaCode}</StyledEmpty>
-          )}
+        {available.length === 0 && query.trim().length >= 2 && !isSearching && !error ? (
+          <StyledEmpty>No matching numbers found. Try a different market.</StyledEmpty>
+        ) : null}
+
         {available.map((number) => {
-          const isThisProvisioning =
-            isProvisioning && provisioningSid === number.phoneNumber;
+          const isSelected = number.phoneNumber === selectedPhoneNumber;
+          const location = formatLocation(number);
+
           return (
             <StyledResultRow
               key={number.phoneNumber}
-              onClick={() => handleProvision(number)}
+              isSelected={isSelected}
+              onClick={() => setSelectedPhoneNumber(number.phoneNumber)}
             >
-              <IconPhone size={14} />
+              <StyledRadio isSelected={isSelected} />
               <StyledResultInfo>
                 <StyledResultNumber>{number.phoneNumber}</StyledResultNumber>
-                {(number.city ?? number.state) && (
+                {location.length > 0 ? (
                   <StyledResultLocation>
-                    {[number.city, number.state].filter(Boolean).join(', ')}
+                    <IconMapPin size={12} />
+                    {location}
                   </StyledResultLocation>
-                )}
+                ) : null}
+                {number.reason ? (
+                  <StyledResultReason>{number.reason}</StyledResultReason>
+                ) : null}
               </StyledResultInfo>
-              <StyledGetButton
-                isDisabled={isProvisioning}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleProvision(number);
-                }}
-              >
-                {isThisProvisioning ? 'Getting...' : 'Get'}
-              </StyledGetButton>
+              <IconPhone size={14} />
             </StyledResultRow>
           );
         })}
       </StyledResultsList>
+
+      <StyledFooter>
+        <StyledHint>
+          {selectedNumber
+            ? `Selected ${selectedNumber.phoneNumber}`
+            : 'Choose one number to continue'}
+        </StyledHint>
+        <StyledBuyButton isDisabled={!canBuy} onClick={() => void handleBuy()}>
+          {isProvisioning
+            ? 'Buying number...'
+            : isCreatingCheckout
+              ? 'Opening checkout...'
+              : 'Buy Selected Number'}
+        </StyledBuyButton>
+      </StyledFooter>
     </StyledOverlay>
   );
 };

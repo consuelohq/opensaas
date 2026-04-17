@@ -100,6 +100,8 @@ export type AvailableNumberOption = {
   city?: string;
   state?: string;
   region?: string;
+  reason?: string;
+  score?: number;
 };
 
 /** Transfer types supported by the dialer */

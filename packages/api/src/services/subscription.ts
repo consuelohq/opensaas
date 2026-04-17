@@ -2,6 +2,10 @@ import * as Sentry from '@sentry/node';
 import { getSharedPool } from '../shared/db.js';
 import { getWorkspaceTwilioConfig, type TwilioMode } from './twilio-config.js';
 import { addNumberPack, removeNumberPack } from './number-packs.js';
+import {
+  removePhoneNumberAddonSubscription,
+  savePhoneNumberAddonSubscription,
+} from './phone-number-addons.js';
 
 const getStripe = async () => {
   try {
@@ -282,6 +286,28 @@ export const handleWebhookEvent = async (
           break;
         }
 
+        if (session.metadata?.type === 'phone_number_add_on') {
+          const subscription = await stripe.subscriptions.retrieve(
+            session.subscription as string,
+          );
+          const quantity = subscription.items.data.reduce((total, item) => {
+            return total + (item.quantity ?? 0);
+          }, 0);
+
+          await savePhoneNumberAddonSubscription(
+            workspaceId,
+            subscription.id,
+            Math.max(quantity, 1),
+            subscription.status,
+          );
+          logger.info('webhook.phone_number_add_on_purchased', {
+            workspaceId,
+            quantity: Math.max(quantity, 1),
+            subscriptionId: subscription.id,
+          });
+          break;
+        }
+
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
         );
@@ -309,6 +335,26 @@ export const handleWebhookEvent = async (
         const subscription = event.data.object;
         const workspaceId = subscription.metadata?.workspaceId;
         if (!workspaceId) break;
+
+        if (subscription.metadata?.type === 'phone_number_add_on') {
+          const quantity = subscription.items.data.reduce((total, item) => {
+            return total + (item.quantity ?? 0);
+          }, 0);
+
+          await savePhoneNumberAddonSubscription(
+            workspaceId,
+            subscription.id,
+            Math.max(quantity, 1),
+            subscription.status,
+          );
+          logger.info('webhook.phone_number_add_on_updated', {
+            workspaceId,
+            quantity: Math.max(quantity, 1),
+            status: subscription.status,
+            subscriptionId: subscription.id,
+          });
+          break;
+        }
 
         const addOns = extractAddOns(subscription);
         const periodEnd = getSubscriptionPeriodEnd(
@@ -347,6 +393,15 @@ export const handleWebhookEvent = async (
           break;
         }
 
+        if (subscription.metadata?.type === 'phone_number_add_on') {
+          await removePhoneNumberAddonSubscription(workspaceId, subscription.id);
+          logger.info('webhook.phone_number_add_on_deleted', {
+            workspaceId,
+            subscriptionId: subscription.id,
+          });
+          break;
+        }
+
         await pool.query(SQL_UPSERT_SUBSCRIPTION, [
           workspaceId,
           subscription.customer as string,
@@ -376,6 +431,25 @@ export const handleWebhookEvent = async (
           await stripe.subscriptions.retrieve(subscriptionId);
         const workspaceId = subscription.metadata?.workspaceId;
         if (!workspaceId) break;
+
+        if (subscription.metadata?.type === 'phone_number_add_on') {
+          const quantity = subscription.items.data.reduce((total, item) => {
+            return total + (item.quantity ?? 0);
+          }, 0);
+
+          await savePhoneNumberAddonSubscription(
+            workspaceId,
+            subscription.id,
+            Math.max(quantity, 1),
+            'past_due',
+          );
+          logger.info('webhook.phone_number_add_on_payment_failed', {
+            workspaceId,
+            quantity: Math.max(quantity, 1),
+            subscriptionId: subscription.id,
+          });
+          break;
+        }
 
         const periodEnd = getSubscriptionPeriodEnd(
           (subscription as unknown as Record<string, unknown>).current_period_end as number | null,
