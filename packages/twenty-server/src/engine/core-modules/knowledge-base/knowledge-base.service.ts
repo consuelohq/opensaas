@@ -93,12 +93,12 @@ export class KnowledgeBaseService {
   async extractText(buffer: Buffer, mimeType: string): Promise<string> {
     try {
       if (mimeType === 'application/pdf') {
-        // @ts-ignore — pdf-parse is a peerDependency
+        // @ts-ignore -- loaded lazily for document extraction
         const { default: pdfParse } = await import('pdf-parse');
         return (await pdfParse(buffer)).text;
       }
       if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        // @ts-ignore — mammoth is a peerDependency
+        // @ts-ignore -- loaded lazily for document extraction
         const mammoth = await import('mammoth');
         return (await mammoth.extractRawText({ buffer })).value;
       }
