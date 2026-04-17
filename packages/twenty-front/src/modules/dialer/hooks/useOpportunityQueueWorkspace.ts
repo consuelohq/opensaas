@@ -404,11 +404,18 @@ export const useOpportunityQueueWorkspace = ({
 
   const updateListRecord = useCallback(
     async (updateOneRecordInput: Record<string, unknown>) => {
-      await updateOneRecord({
-        objectNameSingular: 'opportunity',
-        idToUpdate: listId,
-        updateOneRecordInput,
-      });
+      try {
+        await updateOneRecord({
+          objectNameSingular: 'opportunity',
+          idToUpdate: listId,
+          updateOneRecordInput,
+        });
+      } catch (error: unknown) {
+        Sentry.captureException(error, {
+          extra: { context: 'updateListRecord', listId, updateOneRecordInput },
+        });
+        throw error;
+      }
     },
     [listId, updateOneRecord],
   );
@@ -450,7 +457,13 @@ export const useOpportunityQueueWorkspace = ({
       );
 
       if (!response.ok) {
-        throw new Error(`Queue lookup failed with status ${response.status}`);
+        const error = new Error(
+          `Queue lookup failed with status ${response.status}`,
+        );
+        Sentry.captureException(error, {
+          extra: { context: 'loadBackendQueue.lookup', listId },
+        });
+        throw error;
       }
 
       const queues = (await response.json()) as BackendQueue[];
@@ -467,9 +480,13 @@ export const useOpportunityQueueWorkspace = ({
       );
 
       if (!detailResponse.ok) {
-        throw new Error(
+        const error = new Error(
           `Queue detail lookup failed with status ${detailResponse.status}`,
         );
+        Sentry.captureException(error, {
+          extra: { context: 'loadBackendQueue.detail', listId },
+        });
+        throw error;
       }
 
       const queue = (await detailResponse.json()) as BackendQueue;
@@ -487,29 +504,68 @@ export const useOpportunityQueueWorkspace = ({
   }, [listId]);
 
   const ensureBackendQueue = useCallback(async () => {
-    const existingQueue = await loadBackendQueue();
+    try {
+      const existingQueue = await loadBackendQueue();
 
-    if (existingQueue) {
-      let allListRecords = allQueueRecords;
+      if (existingQueue) {
+        let allListRecords = allQueueRecords;
 
-      if (allListRecords === null) {
-        allListRecords =
-          (await fetchAllRecords()) as ListMemberWorkspaceRecord[];
-        setAllQueueRecords(allListRecords);
+        if (allListRecords === null) {
+          allListRecords =
+            (await fetchAllRecords()) as ListMemberWorkspaceRecord[];
+          setAllQueueRecords(allListRecords);
+        }
+        const totalCallableRecords = allListRecords.filter(
+          (record) => getListMemberPhoneNumber(record) !== null,
+        );
+
+        if (
+          existingQueue.status === 'active' ||
+          existingQueue.status === 'paused'
+        ) {
+          return existingQueue;
+        }
+
+        if (existingQueue.total_contacts === totalCallableRecords.length) {
+          return existingQueue;
+        }
+
+        const recreateResponse = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/api/v1/queues`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: listName ?? 'Calling list',
+              sourceType: 'list',
+              sourceId: listId,
+              category: 'custom',
+              settings: {
+                retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
+              },
+              contactIds: totalCallableRecords.map((record) => record.id),
+            }),
+          },
+        );
+
+        if (!recreateResponse.ok) {
+          const error = new Error(
+            `Queue recreation failed with status ${recreateResponse.status}`,
+          );
+          Sentry.captureException(error, {
+            extra: { context: 'ensureBackendQueue.recreate', listId },
+          });
+          throw error;
+        }
+
+        return await loadBackendQueue();
       }
-      const totalCallableRecords = allListRecords.filter(
-        (record) => getListMemberPhoneNumber(record) !== null,
-      );
 
-      if (existingQueue.status === 'active' || existingQueue.status === 'paused') {
-        return existingQueue;
+      if (callableRecords.length === 0) {
+        return null;
       }
 
-      if (existingQueue.total_contacts === totalCallableRecords.length) {
-        return existingQueue;
-      }
-
-      const recreateResponse = await authenticatedFetch(
+      const response = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/api/v1/queues`,
         {
           method: 'POST',
@@ -522,47 +578,28 @@ export const useOpportunityQueueWorkspace = ({
             settings: {
               retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
             },
-            contactIds: totalCallableRecords.map((record) => record.id),
+            contactIds: callableRecords.map((record) => record.id),
           }),
         },
       );
 
-      if (!recreateResponse.ok) {
-        throw new Error(
-          `Queue recreation failed with status ${recreateResponse.status}`,
+      if (!response.ok) {
+        const error = new Error(
+          `Queue creation failed with status ${response.status}`,
         );
+        Sentry.captureException(error, {
+          extra: { context: 'ensureBackendQueue.create', listId },
+        });
+        throw error;
       }
 
       return await loadBackendQueue();
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'ensureBackendQueue', listId },
+      });
+      throw error;
     }
-
-    if (callableRecords.length === 0) {
-      return null;
-    }
-
-    const response = await authenticatedFetch(
-      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: listName ?? 'Calling list',
-          sourceType: 'list',
-          sourceId: listId,
-          category: 'custom',
-          settings: {
-            retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
-          },
-          contactIds: callableRecords.map((record) => record.id),
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Queue creation failed with status ${response.status}`);
-    }
-
-    return await loadBackendQueue();
   }, [
     allQueueRecords,
     callableRecords,
@@ -647,6 +684,10 @@ export const useOpportunityQueueWorkspace = ({
     return hydratedQueueItems[currentQueueIndex + 1] !== undefined;
   }, [currentQueueIndex, hydratedQueueItems]);
 
+  const hasPendingQueueItems = useMemo(() => {
+    return hydratedQueueItems.some((item) => item.status === 'pending');
+  }, [hydratedQueueItems]);
+
   const autoStartedItemIdRef = useRef<string | null>(null);
   const previousCallStatusRef = useRef(callState.status);
   const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -661,41 +702,52 @@ export const useOpportunityQueueWorkspace = ({
   }, []);
 
   const startBackendQueueSession = useCallback(async () => {
-    if (listStatus !== 'ACTIVE') {
-      return null;
-    }
+    try {
+      if (listStatus !== 'ACTIVE') {
+        return null;
+      }
 
-    const queue = await ensureBackendQueue();
+      const queue = await ensureBackendQueue();
 
-    if (!queue) {
-      return null;
-    }
+      if (!queue) {
+        return null;
+      }
 
-    const endpoint = queue.status === 'paused' ? 'resume' : 'start';
-    const response = await authenticatedFetch(
-      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${queue.id}/${endpoint}`,
-      {
-        method: 'POST',
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Queue ${endpoint} failed with status ${response.status}`,
+      const endpoint = queue.status === 'paused' ? 'resume' : 'start';
+      const response = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${queue.id}/${endpoint}`,
+        {
+          method: 'POST',
+        },
       );
+
+      if (!response.ok) {
+        const error = new Error(
+          `Queue ${endpoint} failed with status ${response.status}`,
+        );
+        Sentry.captureException(error, {
+          extra: { context: 'startBackendQueueSession', endpoint, listId },
+        });
+        throw error;
+      }
+
+      const payload = (await response.json()) as {
+        currentItem?: { contact_id?: string | null } | null;
+        suppression?: { contactId?: string | null } | null;
+      };
+      const refreshedQueue = await loadBackendQueue();
+
+      await syncCurrentIndexFromContactId(
+        payload.currentItem?.contact_id ?? payload.suppression?.contactId,
+      );
+
+      return refreshedQueue;
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'startBackendQueueSession', listId },
+      });
+      throw error;
     }
-
-    const payload = (await response.json()) as {
-      currentItem?: { contact_id?: string | null } | null;
-      suppression?: { contactId?: string | null } | null;
-    };
-    const refreshedQueue = await loadBackendQueue();
-
-    await syncCurrentIndexFromContactId(
-      payload.currentItem?.contact_id ?? payload.suppression?.contactId,
-    );
-
-    return refreshedQueue;
   }, [
     ensureBackendQueue,
     listStatus,
@@ -705,49 +757,63 @@ export const useOpportunityQueueWorkspace = ({
 
   const advanceBackendQueueSession = useCallback(
     async (outcome: string) => {
-      if (!backendQueue?.id) {
-        return null;
-      }
+      try {
+        if (!backendQueue?.id) {
+          return null;
+        }
 
-      const response = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/next`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            outcome,
-            isHighPriority: false,
-            localTimezone: 'America/New_York',
-          }),
-        },
-      );
+        const response = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/next`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              outcome,
+              isHighPriority: false,
+              localTimezone: 'America/New_York',
+            }),
+          },
+        );
 
-      if (!response.ok) {
-        throw new Error(`Queue next failed with status ${response.status}`);
-      }
+        if (!response.ok) {
+          const error = new Error(
+            `Queue next failed with status ${response.status}`,
+          );
+          Sentry.captureException(error, {
+            extra: { context: 'advanceBackendQueueSession', listId, outcome },
+          });
+          throw error;
+        }
 
-      const payload = (await response.json()) as {
-        nextItem?: { contact_id?: string | null } | null;
-        suppression?: { contactId?: string | null } | null;
-        queueCompleted?: boolean;
-      };
+        const payload = (await response.json()) as {
+          nextItem?: { contact_id?: string | null } | null;
+          suppression?: { contactId?: string | null } | null;
+          queueCompleted?: boolean;
+        };
 
-      await loadBackendQueue();
+        await loadBackendQueue();
 
-      if (payload.queueCompleted) {
-        await updateListRecord({ listStatus: 'COMPLETED' });
+        if (payload.queueCompleted) {
+          await updateListRecord({ listStatus: 'COMPLETED' });
+
+          return payload;
+        }
+
+        await syncCurrentIndexFromContactId(
+          payload.nextItem?.contact_id ?? payload.suppression?.contactId,
+        );
 
         return payload;
+      } catch (error: unknown) {
+        Sentry.captureException(error, {
+          extra: { context: 'advanceBackendQueueSession', listId, outcome },
+        });
+        throw error;
       }
-
-      await syncCurrentIndexFromContactId(
-        payload.nextItem?.contact_id ?? payload.suppression?.contactId,
-      );
-
-      return payload;
     },
     [
       backendQueue?.id,
+      listId,
       loadBackendQueue,
       syncCurrentIndexFromContactId,
       updateListRecord,
@@ -865,7 +931,7 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    if (backendQueue?.status === 'completed') {
+    if (backendQueue?.status === 'completed' && !hasPendingQueueItems) {
       return;
     }
 
@@ -882,6 +948,7 @@ export const useOpportunityQueueWorkspace = ({
     backendQueue?.status,
     callableRecords.length,
     callingQueueItemIndex,
+    hasPendingQueueItems,
     listId,
     listStatus,
     startBackendQueueSession,
@@ -1151,70 +1218,108 @@ export const useOpportunityQueueWorkspace = ({
   }, [clearAutoAdvanceTimer]);
 
   const pauseList = useCallback(async () => {
-    if (!backendQueue?.id) {
-      await updateListRecord({ listStatus: 'PAUSED' });
+    try {
+      if (!backendQueue?.id) {
+        await updateListRecord({ listStatus: 'PAUSED' });
 
-      return;
-    }
-
-    await authenticatedFetch(
-      `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/pause`,
-      { method: 'POST' },
-    );
-    await loadBackendQueue();
-    await updateListRecord({ listStatus: 'PAUSED' });
-    autoStartedItemIdRef.current = null;
-  }, [backendQueue?.id, loadBackendQueue, updateListRecord]);
-
-  const resumeList = useCallback(async () => {
-    await updateListRecord({ listStatus: 'ACTIVE' });
-    autoStartedItemIdRef.current = null;
-  }, [updateListRecord]);
-
-  const skipCurrentListMember = useCallback(
-    async (reason: string) => {
-      if (!backendQueue?.id || !currentQueueItem) {
         return;
       }
 
-      disconnect();
-
       const response = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/skip`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason }),
-        },
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/pause`,
+        { method: 'POST' },
       );
 
       if (!response.ok) {
-        throw new Error(`Queue skip failed with status ${response.status}`);
-      }
-
-      const payload = (await response.json()) as {
-        skipped?: boolean;
-        nextItem?: { contact_id?: string | null } | null;
-        suppression?: { contactId?: string | null } | null;
-      };
-
-      if (payload.skipped !== false) {
-        await updateOneRecord({
-          objectNameSingular: 'listMember',
-          idToUpdate: currentQueueItem.id,
-          updateOneRecordInput: {
-            status: 'SKIPPED',
-            callSid: callState.callSid ?? '',
-            duration: callState.duration,
-            attemptedAt: new Date().toISOString(),
-          },
+        const error = new Error(
+          `Queue pause failed with status ${response.status}`,
+        );
+        Sentry.captureException(error, {
+          extra: { context: 'pauseList', listId },
         });
+        throw error;
       }
+
       await loadBackendQueue();
-      await syncCurrentIndexFromContactId(
-        payload.nextItem?.contact_id ?? payload.suppression?.contactId,
-      );
+      await updateListRecord({ listStatus: 'PAUSED' });
       autoStartedItemIdRef.current = null;
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'pauseList', listId },
+      });
+      throw error;
+    }
+  }, [backendQueue?.id, listId, loadBackendQueue, updateListRecord]);
+
+  const resumeList = useCallback(async () => {
+    try {
+      await updateListRecord({ listStatus: 'ACTIVE' });
+      autoStartedItemIdRef.current = null;
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'resumeList', listId },
+      });
+      throw error;
+    }
+  }, [listId, updateListRecord]);
+
+  const skipCurrentListMember = useCallback(
+    async (reason: string) => {
+      try {
+        if (!backendQueue?.id || !currentQueueItem) {
+          return;
+        }
+
+        disconnect();
+
+        const response = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/skip`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason }),
+          },
+        );
+
+        if (!response.ok) {
+          const error = new Error(
+            `Queue skip failed with status ${response.status}`,
+          );
+          Sentry.captureException(error, {
+            extra: { context: 'skipCurrentListMember', listId, reason },
+          });
+          throw error;
+        }
+
+        const payload = (await response.json()) as {
+          skipped?: boolean;
+          nextItem?: { contact_id?: string | null } | null;
+          suppression?: { contactId?: string | null } | null;
+        };
+
+        if (payload.skipped !== false) {
+          await updateOneRecord({
+            objectNameSingular: 'listMember',
+            idToUpdate: currentQueueItem.id,
+            updateOneRecordInput: {
+              status: 'SKIPPED',
+              callSid: callState.callSid ?? '',
+              duration: callState.duration,
+              attemptedAt: new Date().toISOString(),
+            },
+          });
+        }
+        await loadBackendQueue();
+        await syncCurrentIndexFromContactId(
+          payload.nextItem?.contact_id ?? payload.suppression?.contactId,
+        );
+        autoStartedItemIdRef.current = null;
+      } catch (error: unknown) {
+        Sentry.captureException(error, {
+          extra: { context: 'skipCurrentListMember', listId, reason },
+        });
+        throw error;
+      }
     },
     [
       backendQueue?.id,
@@ -1222,6 +1327,7 @@ export const useOpportunityQueueWorkspace = ({
       callState.duration,
       currentQueueItem,
       disconnect,
+      listId,
       loadBackendQueue,
       syncCurrentIndexFromContactId,
       updateOneRecord,
@@ -1229,38 +1335,52 @@ export const useOpportunityQueueWorkspace = ({
   );
 
   const restartList = useCallback(async () => {
-    if (backendQueue?.id) {
-      const response = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/restart`,
-        { method: 'POST' },
-      );
+    try {
+      if (backendQueue?.id) {
+        const response = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/api/v1/queues/${backendQueue.id}/restart`,
+          { method: 'POST' },
+        );
 
-      if (!response.ok) {
-        throw new Error(`Queue restart failed with status ${response.status}`);
+        if (!response.ok) {
+          const error = new Error(
+            `Queue restart failed with status ${response.status}`,
+          );
+          Sentry.captureException(error, {
+            extra: { context: 'restartList', listId },
+          });
+          throw error;
+        }
       }
-    }
 
-    await Promise.all(
-      callableRecords.map((record) =>
-        updateOneRecord({
-          objectNameSingular: 'listMember',
-          idToUpdate: record.id,
-          updateOneRecordInput: {
-            status: 'PENDING',
-            disposition: null,
-            duration: null,
-            callSid: null,
-            attemptedAt: null,
-          },
-        }),
-      ),
-    );
-    await updateListRecord({ listStatus: 'IDLE', currentIndex: 0 });
-    await loadBackendQueue();
-    autoStartedItemIdRef.current = null;
+      await Promise.all(
+        callableRecords.map((record) =>
+          updateOneRecord({
+            objectNameSingular: 'listMember',
+            idToUpdate: record.id,
+            updateOneRecordInput: {
+              status: 'PENDING',
+              disposition: null,
+              duration: null,
+              callSid: null,
+              attemptedAt: null,
+            },
+          }),
+        ),
+      );
+      await updateListRecord({ listStatus: 'IDLE', currentIndex: 0 });
+      await loadBackendQueue();
+      autoStartedItemIdRef.current = null;
+    } catch (error: unknown) {
+      Sentry.captureException(error, {
+        extra: { context: 'restartList', listId },
+      });
+      throw error;
+    }
   }, [
     backendQueue?.id,
     callableRecords,
+    listId,
     loadBackendQueue,
     updateListRecord,
     updateOneRecord,

@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { msg } from '@lingui/core/macro';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
   IconCalendar,
@@ -243,6 +243,38 @@ export const QueueControls = ({
   } = useQueueControls();
   const [showSkipModal, setShowSkipModal] = useState(false);
 
+  if (!activeQueue) return null;
+
+  const shouldContinueQueue =
+    canRestart &&
+    activeQueue.totalContacts >
+      activeQueue.completedContacts + activeQueue.skippedContacts;
+
+  const handleCompletedQueueAction = useCallback(() => {
+    if (shouldContinueQueue) {
+      if (onResumeQueue) {
+        void onResumeQueue();
+        return;
+      }
+
+      resumeQueue();
+      return;
+    }
+
+    if (onRestartQueue) {
+      void onRestartQueue();
+      return;
+    }
+
+    restartQueue();
+  }, [
+    onRestartQueue,
+    onResumeQueue,
+    restartQueue,
+    resumeQueue,
+    shouldContinueQueue,
+  ]);
+
   // keyboard shortcuts
   useGlobalHotkeys({
     keys: [' '],
@@ -268,14 +300,12 @@ export const QueueControls = ({
   useGlobalHotkeys({
     keys: ['r'],
     callback: () => {
-      if (canRestart) restartQueue();
+      if (canRestart) handleCompletedQueueAction();
     },
     containsModifier: false,
-    dependencies: [canRestart, restartQueue],
+    dependencies: [canRestart, handleCompletedQueueAction],
     options: { enableOnFormTags: false, enableOnContentEditable: false },
   });
-
-  if (!activeQueue) return null;
 
   // idle — start button
   if (activeQueue.status === 'idle') {
@@ -289,23 +319,17 @@ export const QueueControls = ({
     );
   }
 
-  // completed/stopped — restart
+  // completed/stopped — continue or restart
   if (canRestart) {
     return (
       <StyledControls>
-        <StyledButton
-          accent
-          onClick={() => {
-            if (onRestartQueue) {
-              void onRestartQueue();
-              return;
-            }
-
-            restartQueue();
-          }}
-        >
-          <IconRefresh size={14} />
-          {t`Restart Queue`}
+        <StyledButton accent onClick={handleCompletedQueueAction}>
+          {shouldContinueQueue ? (
+            <IconPlayerPlay size={14} />
+          ) : (
+            <IconRefresh size={14} />
+          )}
+          {shouldContinueQueue ? t`Continue Queue` : t`Restart Queue`}
           <StyledHint>(R)</StyledHint>
         </StyledButton>
       </StyledControls>

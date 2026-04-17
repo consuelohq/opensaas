@@ -241,15 +241,35 @@ export const ListRecordQueueControls = ({
     }
   }, [completeQueue, recordId]);
 
-  const handleRestart = useCallback(async () => {
+  const handleContinueOrRestart = useCallback(async () => {
     try {
+      const hasRemainingMembers =
+        stats.pending > 0 ||
+        stats.totalMembers > stats.completed + stats.skipped;
+
+      if (hasRemainingMembers) {
+        await resumeQueue(recordId);
+        return;
+      }
+
       await startQueue(recordId);
     } catch (err: unknown) {
       captureException(err, {
-        extra: { context: 'ListRecordQueueControls.handleRestart', recordId },
+        extra: {
+          context: 'ListRecordQueueControls.handleContinueOrRestart',
+          recordId,
+        },
       });
     }
-  }, [startQueue, recordId]);
+  }, [
+    recordId,
+    resumeQueue,
+    startQueue,
+    stats.completed,
+    stats.pending,
+    stats.skipped,
+    stats.totalMembers,
+  ]);
 
   const status = listStatus ?? 'IDLE';
   const progressPercent =
@@ -293,9 +313,17 @@ export const ListRecordQueueControls = ({
             </>
           )}
           {status === 'COMPLETED' && (
-            <StyledButton variant="accent" onClick={handleRestart}>
-              <IconRefresh size={14} />
-              {t`Restart`}
+            <StyledButton variant="accent" onClick={handleContinueOrRestart}>
+              {stats.pending > 0 ||
+              stats.totalMembers > stats.completed + stats.skipped ? (
+                <IconPlayerPlay size={14} />
+              ) : (
+                <IconRefresh size={14} />
+              )}
+              {stats.pending > 0 ||
+              stats.totalMembers > stats.completed + stats.skipped
+                ? t`Continue Queue`
+                : t`Restart`}
             </StyledButton>
           )}
         </StyledButtons>
