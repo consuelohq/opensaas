@@ -97,8 +97,9 @@ export const useCoaching = (): UseCoachingReturn => {
       const payload = (await response.json()) as { data: unknown };
       if (!isValidTalkingPoints(payload.data)) {
         setCoachingError(t`Invalid coaching payload`);
-        setTalkingPoints((previousTalkingPoints) =>
-          previousTalkingPoints ?? EMPTY_TALKING_POINTS,
+        setTalkingPoints(
+          (previousTalkingPoints) =>
+            previousTalkingPoints ?? EMPTY_TALKING_POINTS,
         );
         return;
       }

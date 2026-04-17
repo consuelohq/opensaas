@@ -26,11 +26,16 @@ const routeLogger = createLogger('api:coaching');
 
 let CoachModule: typeof import('@consuelo/coaching') | null = null;
 const getCoachModule = async () => {
-  if (!CoachModule) {
-    CoachModule = await import('@consuelo/coaching');
-  }
+  try {
+    if (!CoachModule) {
+      CoachModule = await import('@consuelo/coaching');
+    }
 
-  return CoachModule;
+    return CoachModule;
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
 };
 
 interface CoachBody {
@@ -364,22 +369,35 @@ const getOrCreateRuntime = (callId: string): CallTranscriptRuntime => {
 const resolveWorkspaceIdForCall = async (
   callId: string,
 ): Promise<string | null> => {
-  const pool = await getPool();
-  const { rows } = await pool.query(SQL_GET_WORKSPACE_ID_BY_CALL_SID, [callId]);
-  return typeof rows[0]?.workspace_id === 'string' ? rows[0].workspace_id : null;
+  try {
+    const pool = await getPool();
+    const { rows } = await pool.query(SQL_GET_WORKSPACE_ID_BY_CALL_SID, [callId]);
+
+    return typeof rows[0]?.workspace_id === 'string'
+      ? rows[0].workspace_id
+      : null;
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
 };
 
 const callBelongsToWorkspace = async (
   callId: string,
   workspaceId: string,
 ): Promise<boolean> => {
-  const pool = await getPool();
-  const { rows } = await pool.query(SQL_VALIDATE_CALL_IN_WORKSPACE, [
-    callId,
-    workspaceId,
-  ]);
+  try {
+    const pool = await getPool();
+    const { rows } = await pool.query(SQL_VALIDATE_CALL_IN_WORKSPACE, [
+      callId,
+      workspaceId,
+    ]);
 
-  return rows.length > 0;
+    return rows.length > 0;
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
 };
 
 const countWords = (entries: TranscriptEntry[]): number =>
@@ -444,36 +462,41 @@ const getRuntime = async (
     }
 
     const loader = (async (): Promise<CallTranscriptRuntime> => {
-      const resolvedWorkspaceId =
-        runtime.workspaceId ?? (await resolveWorkspaceIdForCall(callId));
+      try {
+        const resolvedWorkspaceId =
+          runtime.workspaceId ?? (await resolveWorkspaceIdForCall(callId));
 
-      if (!resolvedWorkspaceId) {
+        if (!resolvedWorkspaceId) {
+          runtime.loadedFromDatabase = true;
+          runtime.lastCoachingWordCount = countWords(runtime.entries);
+          routeLogger.warn('[Coaching] workspace not found for call runtime', {
+            callId,
+          });
+          return runtime;
+        }
+
+        const pool = await getPool();
+        const { rows } = await pool.query(SQL_GET_TRANSCRIPT_BY_CALL_SID, [
+          callId,
+          resolvedWorkspaceId,
+        ]);
+        const row = rows[0] as RuntimeTranscriptRow | undefined;
+        const transcriptValue = row?.transcript;
+
+        runtime.entries = Array.isArray(transcriptValue)
+          ? transcriptValue
+              .map((entry) => coerceTranscriptEntry(entry))
+              .filter((entry): entry is TranscriptEntry => entry !== null)
+          : [];
+        runtime.workspaceId = resolvedWorkspaceId;
         runtime.loadedFromDatabase = true;
         runtime.lastCoachingWordCount = countWords(runtime.entries);
-        routeLogger.warn('[Coaching] workspace not found for call runtime', {
-          callId,
-        });
+
         return runtime;
+      } catch (error: unknown) {
+        Sentry.captureException(error);
+        throw error;
       }
-
-      const pool = await getPool();
-      const { rows } = await pool.query(SQL_GET_TRANSCRIPT_BY_CALL_SID, [
-        callId,
-        resolvedWorkspaceId,
-      ]);
-      const row = rows[0] as RuntimeTranscriptRow | undefined;
-      const transcriptValue = row?.transcript;
-
-      runtime.entries = Array.isArray(transcriptValue)
-        ? transcriptValue
-            .map((entry) => coerceTranscriptEntry(entry))
-            .filter((entry): entry is TranscriptEntry => entry !== null)
-        : [];
-      runtime.workspaceId = resolvedWorkspaceId;
-      runtime.loadedFromDatabase = true;
-      runtime.lastCoachingWordCount = countWords(runtime.entries);
-
-      return runtime;
     })().finally(() => {
       runtimeLoadersByCall.delete(callId);
     });
@@ -875,21 +898,29 @@ const handleCoachingRefreshRequest = async (
     status: (code: number) => { json: (data: unknown) => void };
   },
 ): Promise<void> => {
-  const auth = requireAuth(req as Parameters<typeof requireAuth>[0], res as Parameters<typeof requireAuth>[1]);
-  if (auth === null) {
-    return;
-  }
+  try {
+    const auth = requireAuth(
+      req as Parameters<typeof requireAuth>[0],
+      res as Parameters<typeof requireAuth>[1],
+    );
+    if (auth === null) {
+      return;
+    }
 
-  const body = req.body as RefreshBody | CoachBody | undefined;
-  if (!body?.callId) {
-    res.status(400).json({
-      error: { code: 'INVALID_REQUEST', message: 'Missing "callId"' },
-    });
-    return;
-  }
+    const body = req.body as RefreshBody | CoachBody | undefined;
+    if (!body?.callId) {
+      res.status(400).json({
+        error: { code: 'INVALID_REQUEST', message: 'Missing "callId"' },
+      });
+      return;
+    }
 
-  const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
-  res.status(200).json({ data: talkingPoints });
+    const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
+    res.status(200).json({ data: talkingPoints });
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
 };
 
 export const coachingRoutes = (): RouteDefinition[] => [
