@@ -7,6 +7,8 @@ import {
 
 import { type Request, type Response } from 'express';
 
+import { applyCorsHeadersIfAllowed } from 'src/utils/cors';
+
 // In case of exception in middleware run before the CORS middleware (eg: JSON Middleware that checks the request body),
 // the CORS headers are missing in the response.
 // This class add CORS headers to exception response to avoid misleading CORS error
@@ -21,31 +23,41 @@ export class UnhandledExceptionFilter implements ExceptionFilter {
       return;
     }
 
-    const origin = request.headers.origin;
-    const requestedHeaders = request.headers['access-control-request-headers'];
-
-    if (typeof origin === 'string' && origin.length > 0) {
-      response.header('Access-Control-Allow-Origin', origin);
-      response.header('Vary', 'Origin');
-      response.header('Access-Control-Allow-Credentials', 'true');
-      response.header(
-        'Access-Control-Allow-Headers',
-        typeof requestedHeaders === 'string' && requestedHeaders.length > 0
-          ? requestedHeaders
-          : 'Authorization, Content-Type',
-      );
-      response.header(
-        'Access-Control-Allow-Methods',
-        'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-      );
-    }
+    applyCorsHeadersIfAllowed({
+      response,
+      origin:
+        typeof request.headers.origin === 'string'
+          ? request.headers.origin
+          : null,
+      requestedHeaders: request.headers['access-control-request-headers'],
+    });
 
     const status =
       exception instanceof HttpException ? exception.getStatus() : 500;
+    const rawResponse =
+      exception instanceof HttpException ? exception.getResponse() : null;
+    const normalizedObjectResponse =
+      rawResponse !== null && typeof rawResponse === 'object'
+        ? (rawResponse as Record<string, unknown>)
+        : null;
     const payload =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : { statusCode: status, message: 'Internal server error' };
+      normalizedObjectResponse === null
+        ? {
+            statusCode: status,
+            message:
+              typeof rawResponse === 'string'
+                ? rawResponse
+                : 'Internal server error',
+          }
+        : {
+            ...normalizedObjectResponse,
+            statusCode:
+              typeof normalizedObjectResponse.statusCode === 'number'
+                ? normalizedObjectResponse.statusCode
+                : status,
+            message:
+              normalizedObjectResponse.message ?? 'Internal server error',
+          };
 
     response.status(status).json(payload);
   }
