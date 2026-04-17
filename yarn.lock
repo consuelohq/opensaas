@@ -23105,15 +23105,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-bubble-menu@npm:^3.19.0":
-  version: 3.19.0
-  resolution: "@tiptap/extension-bubble-menu@npm:3.19.0"
+"@tiptap/extension-bubble-menu@npm:^3.22.2":
+  version: 3.22.2
+  resolution: "@tiptap/extension-bubble-menu@npm:3.22.2"
   dependencies:
     "@floating-ui/dom": "npm:^1.0.0"
   peerDependencies:
-    "@tiptap/core": ^3.19.0
-    "@tiptap/pm": ^3.19.0
-  checksum: 10c0/c7aa923f4c91151872b36749aa7082874a5397f5723efd410c3f24b0f0ab731b730d9e9411caa50825cbe831a532e784bfd7fd60784feaafbf5d17c8521f3f5d
+    "@tiptap/core": ^3.22.2
+    "@tiptap/pm": ^3.22.2
+  checksum: 10c0/a70495bb9c93be130452d380d7eaa296b52aa4034d17b63ff08a9527ebca4f4b3b2bc722259bcdc0dd94c11cf5afaa8a05ba4684f73d7fb712c619ca2c9ff503
   languageName: node
   linkType: hard
 
@@ -23147,14 +23147,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tiptap/extension-floating-menu@npm:^3.19.0":
-  version: 3.19.0
-  resolution: "@tiptap/extension-floating-menu@npm:3.19.0"
+"@tiptap/extension-floating-menu@npm:^3.22.2":
+  version: 3.22.2
+  resolution: "@tiptap/extension-floating-menu@npm:3.22.2"
   peerDependencies:
     "@floating-ui/dom": ^1.0.0
-    "@tiptap/core": ^3.19.0
-    "@tiptap/pm": ^3.19.0
-  checksum: 10c0/ae832af3edec737e1ab019908b248fd9105180e2b4b203279eb779befe6c7dbb23ef37e5bffed8bcb6b152abf4910164e043703405d5b97e7da57445f157e806
+    "@tiptap/core": ^3.22.2
+    "@tiptap/pm": ^3.22.2
+  checksum: 10c0/de47f58ccdb8abfe212117a4990783d39b261e10b990e1186c73009f7dc63f3be359439273e12ca9b1987f5f2dc66330c3c64341e98535e11bb98b015fc56953
   languageName: node
   linkType: hard
 
@@ -23438,17 +23438,17 @@ __metadata:
   linkType: hard
 
 "@tiptap/react@npm:^3.14.0":
-  version: 3.19.0
-  resolution: "@tiptap/react@npm:3.19.0"
+  version: 3.22.2
+  resolution: "@tiptap/react@npm:3.22.2"
   dependencies:
-    "@tiptap/extension-bubble-menu": "npm:^3.19.0"
-    "@tiptap/extension-floating-menu": "npm:^3.19.0"
+    "@tiptap/extension-bubble-menu": "npm:^3.22.2"
+    "@tiptap/extension-floating-menu": "npm:^3.22.2"
     "@types/use-sync-external-store": "npm:^0.0.6"
     fast-equals: "npm:^5.3.3"
     use-sync-external-store: "npm:^1.4.0"
   peerDependencies:
-    "@tiptap/core": ^3.19.0
-    "@tiptap/pm": ^3.19.0
+    "@tiptap/core": ^3.22.2
+    "@tiptap/pm": ^3.22.2
     "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
     "@types/react-dom": ^17.0.0 || ^18.0.0 || ^19.0.0
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -23458,7 +23458,7 @@ __metadata:
       optional: true
     "@tiptap/extension-floating-menu":
       optional: true
-  checksum: 10c0/591976edc9c6fd08276d7c7da528aaa03da12650f79be7108547fb9c4dbb95ab4b7d5664515eb85d1b2fa6b60ba439a04f52088c535e67a66048c3a64c7652f0
+  checksum: 10c0/4cc52d73b810e7f2ac12816846308c6b7198a349ba19fc6fe2f270c73b498ba694bda2ddcafe9da05e87e84fcbaa4a2760be9e3b89b79bd57fea0add2aab65a3
   languageName: node
   linkType: hard
 
