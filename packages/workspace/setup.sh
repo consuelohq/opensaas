@@ -109,8 +109,11 @@ else
   echo "cloudflared not found. install it manually if you want tunnel automation."
 fi
 
+bash "$root_dir/scripts/generate-system-daemons.sh"
+
 echo
 echo "setup complete"
 echo "workspace dir: $workspace_dir"
 echo "generated files: $generated_dir"
 echo "start server: $venv_dir/bin/python3 $root_dir/server.py"
+echo "install system daemons: sudo $root_dir/scripts/install-system-daemons.sh"

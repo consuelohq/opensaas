@@ -62,6 +62,7 @@ TRANSLATION_QA_REPORT.md
 .agent/.oauth-token.json
 .agent/.opencode-token.json
 .agent/workpads/
+.agent/handoffs/
 
 # Node compile cache (v8/node native caching)
 node-compile-cache/
