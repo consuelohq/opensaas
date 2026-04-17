@@ -244,6 +244,10 @@ export class Dialer {
     opts?: {
       participantLabel?: string;
       endOnExit?: boolean;
+      startOnEnter?: boolean;
+      waitUrl?: string;
+      streamUrl?: string;
+      streamParameters?: Record<string, string>;
     },
   ): string {
     return this.conference.generateConferenceTwiml(conferenceName, opts);

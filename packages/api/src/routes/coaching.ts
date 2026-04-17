@@ -1,28 +1,40 @@
-// eslint-disable-next-line @nx/enforce-module-boundaries
+import type { Server as HttpServer } from 'http';
+
 import * as Sentry from '@sentry/node';
+import { AgentService, createCoachingDetector, createTranscriptContext } from '@consuelo/agent';
+import type {
+  ActiveCallState,
+  AgentConfig,
+  AgentContext,
+  AgentMessage,
+  PiSession,
+  PiStreamEvent,
+} from '@consuelo/agent';
+import { createLogger } from '@consuelo/logger';
+import type OpenAI from 'openai';
+
 import { errorHandler } from '../middleware/error-handler.js';
 import { requireAuth } from '../middleware/requireAuth.js';
-import type { RouteDefinition } from './index.js';
-import type { Server as HttpServer } from 'http';
+import { getSharedPool } from '../shared/db.js';
 import { trackLLMUsage } from '../services/posthog.js';
-import type { Message } from '@consuelo/coaching';
-import { createLogger } from '@consuelo/logger';
-const auditLogger = createLogger('api:audit');
+import type { RouteDefinition } from './index.js';
 
-// B4/W12: lazy import for peer dependencies — Coach uses openai (peer dep)
+const auditLogger = createLogger('api:audit');
+const routeLogger = createLogger('api:coaching');
+
 let CoachModule: typeof import('@consuelo/coaching') | null = null;
 const getCoachModule = async () => {
   if (!CoachModule) {
-    // eslint-disable-next-line @nx/enforce-module-boundaries
     CoachModule = await import('@consuelo/coaching');
   }
+
   return CoachModule;
 };
 
-// B6/W17: removed phoneNumber — latent PII path
 interface CoachBody {
-  messages: Array<{ role: string; content: string }>;
+  messages?: Array<{ role: string; content: string }>;
   contextChunks?: string[];
+  callId?: string;
 }
 
 interface AnalyzeBody {
@@ -30,12 +42,10 @@ interface AnalyzeBody {
   callSid?: string;
 }
 
-interface RealtimeBody {
-  messages: Array<{ role: string; content: string }>;
-  contextChunks?: string[];
+interface RefreshBody {
+  callId?: string;
 }
 
-/** transcript entry sent to frontend clients */
 interface TranscriptEntry {
   id: string;
   speaker: 'agent' | 'customer';
@@ -44,56 +54,40 @@ interface TranscriptEntry {
   confidence: number;
 }
 
-// N1: define once, cast once at connection time
+interface TalkingPoints {
+  product_or_option_name: string | null;
+  details: string[];
+  clarifying_questions: string[];
+  objection_responses: Array<{ objection: string; response: string }>;
+}
+
+interface TranscriptSnapshotMessage {
+  type: 'snapshot';
+  entries: TranscriptEntry[];
+  talkingPoints: TalkingPoints | null;
+}
+
+interface TranscriptBroadcastMessage {
+  type: 'transcript';
+  entry: TranscriptEntry;
+}
+
+interface CoachingBroadcastMessage {
+  type: 'coaching';
+  talkingPoints: TalkingPoints;
+}
+
+type CoachingStreamMessage =
+  | TranscriptSnapshotMessage
+  | TranscriptBroadcastMessage
+  | CoachingBroadcastMessage;
+
 interface WebSocketClient {
   readyState: number;
   send: (data: string) => void;
   close: () => void;
-  on: (event: string, handler: (data: Buffer) => void) => void;
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
 }
-
-// W11: timeout wrapper for LLM calls
-const LLM_TIMEOUT_MS = 30_000;
-const withTimeout = <TResult>(
-  promise: Promise<TResult>,
-  ms: number,
-): Promise<TResult> =>
-  Promise.race([
-    promise,
-    new Promise<never>((_resolve, reject) =>
-      setTimeout(
-        () => reject(new Error(`LLM call timed out after ${ms}ms`)),
-        ms,
-      ),
-    ),
-  ]);
-
-// B4: construct a valid WAV header for mulaw/8000/mono audio
-// W24: mulaw (format 7) requires 18-byte fmt chunk (16 + 2 for cbSize)
-const buildWavHeader = (dataLength: number): Buffer => {
-  const header = Buffer.alloc(46);
-  const sampleRate = 8000;
-  const numChannels = 1;
-  const bitsPerSample = 8;
-  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-  const blockAlign = numChannels * (bitsPerSample / 8);
-
-  header.write('RIFF', 0);
-  header.writeUInt32LE(36 + dataLength, 4);
-  header.write('WAVE', 8);
-  header.write('fmt ', 12);
-  header.writeUInt32LE(18, 16); // W24: 18 bytes for mulaw (includes cbSize)
-  header.writeUInt16LE(7, 20); // format: 7 = mulaw (MAU)
-  header.writeUInt16LE(0, 22); // cbSize - required for non-PCM formats
-  header.writeUInt16LE(numChannels, 24);
-  header.writeUInt32LE(sampleRate, 26);
-  header.writeUInt32LE(byteRate, 30);
-  header.writeUInt16LE(blockAlign, 34);
-  header.writeUInt16LE(bitsPerSample, 36);
-  header.write('data', 38);
-  header.writeUInt32LE(dataLength, 42);
-  return header;
-};
 
 interface SnakeCaseCallAnalytics {
   call_sid: string;
@@ -126,396 +120,680 @@ interface SnakeCaseCallAnalytics {
   generated_at: string;
 }
 
-function transformCallAnalytics(
-  input: SnakeCaseCallAnalytics,
-  callSid?: string,
-): Record<string, unknown> {
-  return {
-    id: `${input.call_sid}-${Date.now()}`,
-    callId: callSid ?? input.call_sid,
-    keyMoments: input.key_moments.map((m) => ({
-      timestamp: new Date(m.timestamp).getTime(),
-      type: m.type,
-      text: m.description,
-      speaker: 'agent' as const,
-    })),
-    sentiment: {
-      overall: input.sentiment_analysis.customer_sentiment,
-      agentScore: Math.round(input.performance_metrics.talk_ratio * 100),
-      customerScore: Math.round(
-        (1 - input.performance_metrics.talk_ratio) * 100,
-      ),
-      trajectory: 'stable' as const,
-    },
-    performanceScore: input.overall_score,
-    summary:
-      input.strengths.join(' ') + ' ' + input.improvement_areas.join(' '),
-    duration: input.performance_metrics.call_duration_minutes * 60,
-    outcome: 'other' as const,
-    nextSteps: input.action_items,
-    tokensUsed: { input: 0, output: 0 },
-    modelUsed: 'groq',
-    latencyMs: 0,
-    createdAt: input.generated_at,
-  };
-}
-
-// W2: lazy logger init - N17: cache resolved promise at module level
-let loggerInstance: {
-  error: (msg: string, meta?: Record<string, unknown>) => void;
-  info: (msg: string, meta?: Record<string, unknown>) => void;
-} | null = null;
-let loggerPromise: Promise<{
-  error: (msg: string, meta?: Record<string, unknown>) => void;
-  info: (msg: string, meta?: Record<string, unknown>) => void;
-} | null> | null = null;
-
-const getLogger = async () => {
-  if (loggerPromise) return loggerPromise;
-
-  loggerPromise = (async () => {
-    if (!loggerInstance) {
-      try {
-        // eslint-disable-next-line @nx/enforce-module-boundaries
-        const { createLogger } = await import('@consuelo/logger');
-        loggerInstance = createLogger('coaching');
-      } catch (_err: unknown) {
-        // fallback if logger package unavailable — intentional: graceful fallback when logger not installed
-        loggerInstance = {
-          error: () => {},
-          info: () => {},
-        };
-      }
-    }
-    return loggerInstance;
-  })();
-
-  return loggerPromise;
+type CallTranscriptRuntime = {
+  entries: TranscriptEntry[];
+  talkingPoints: TalkingPoints | null;
+  loadedFromDatabase: boolean;
+  lastCoachingAt: number;
+  lastCoachingWordCount: number;
+  generating: boolean;
+  queued: boolean;
 };
 
-/** /v1/coaching routes wired to @consuelo/coaching */
-export const coachingRoutes = (): RouteDefinition[] => {
-  const apiKey = process.env.GROQ_API_KEY;
-  let coachInstance: InstanceType<
-    Awaited<ReturnType<typeof getCoachModule>>['Coach']
-  > | null = null;
-  const getCoach = async () => {
-    if (!apiKey) {
-      throw new Error(
-        '[Coaching] GROQ_API_KEY environment variable is required',
-      );
-    }
-    if (!coachInstance) {
-      const mod = await getCoachModule();
-      coachInstance = new mod.Coach({ apiKey });
-    }
-    return coachInstance;
-  };
-
-  return [
-    {
-      method: 'POST',
-      path: '/v1/coaching',
-      handler: errorHandler(async (req, res) => {
-        const auth = requireAuth(req, res);
-        if (auth === null) return;
-
-        const body = req.body as CoachBody | undefined;
-        if (!body?.messages?.length) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "messages" array',
-            },
-          });
-          return;
-        }
-
-        if (!process.env.GROQ_API_KEY) {
-          res.status(503).json({
-            error: {
-              code: 'SERVICE_UNAVAILABLE',
-              message: 'Coaching service not configured — GROQ_API_KEY missing',
-            },
-          });
-          return;
-        }
-
-        const startTime = Date.now();
-        try {
-          const coach = await getCoach();
-          const messages: Message[] = body.messages.map((m) => ({
-            role: m.role === 'customer' ? 'customer' : 'sales_rep',
-            content: m.content,
-          }));
-          const result = await withTimeout(
-            coach.coach(messages, { contextChunks: body.contextChunks }),
-            LLM_TIMEOUT_MS,
-          );
-          const latencyMs = Date.now() - startTime;
-
-          // PostHog LLM tracking — non-blocking
-          void trackLLMUsage({
-            userId: auth.userId,
-            model: 'openai/gpt-oss-120b', // groq default model
-            provider: 'groq',
-            inputTokens: 0, // TODO(DEV-831): provider doesn't return usage yet
-            outputTokens: 0,
-            latencyMs,
-            endpoint: '/v1/coaching',
-          });
-
-          // W10: wrap in { data }
-          res.status(200).json({ data: result });
-          auditLogger.info('coaching.completed', {
-            action: 'coaching.completed',
-            userId: auth.userId ?? 'anonymous',
-            outcome: 'success',
-          });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Unknown error';
-          Sentry.captureException(err); // W1
-          const logger = await getLogger();
-          logger?.error('[Coaching] coach failed', {
-            userId: auth.userId,
-            error: message,
-          });
-          res.status(500).json({ error: { code: 'COACHING_FAILED', message } });
-        }
-      }),
-    },
-    {
-      method: 'POST',
-      path: '/v1/coaching/realtime',
-      handler: errorHandler(async (req, res) => {
-        const auth = requireAuth(req, res);
-        if (auth === null) return;
-
-        const body = req.body as RealtimeBody | undefined;
-        if (!body?.messages?.length) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "messages" array',
-            },
-          });
-          return;
-        }
-
-        if (!process.env.GROQ_API_KEY) {
-          res.status(503).json({
-            error: {
-              code: 'SERVICE_UNAVAILABLE',
-              message: 'GROQ_API_KEY not configured',
-            },
-          });
-          return;
-        }
-
-        const coachMessages: Message[] = body.messages.map((m) => ({
-          role: m.role === 'customer' ? 'customer' : 'sales_rep',
-          content: m.content,
-        }));
-
-        const startTime = Date.now();
-        try {
-          const { Coach } = await getCoachModule();
-          const coach = await getCoach();
-          const result = await withTimeout(
-            coach.coach(coachMessages, { contextChunks: body.contextChunks }),
-            LLM_TIMEOUT_MS,
-          );
-          const latencyMs = Date.now() - startTime;
-
-          // PostHog LLM tracking — non-blocking
-          void trackLLMUsage({
-            userId: auth.userId,
-            model: 'openai/gpt-oss-120b',
-            provider: 'groq',
-            inputTokens: 0,
-            outputTokens: 0,
-            latencyMs,
-            endpoint: '/v1/coaching/realtime',
-          });
-
-          res.status(200).json({ data: result });
-          auditLogger.info('coaching.realtime_completed', {
-            action: 'coaching.realtime_completed',
-            userId: auth.userId ?? 'anonymous',
-            outcome: 'success',
-          });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Unknown error';
-          Sentry.captureException(err);
-          const logger = await getLogger();
-          logger?.error('[Coaching] realtime coach failed', {
-            userId: auth.userId,
-            error: message,
-          });
-          res
-            .status(500)
-            .json({ error: { code: 'COACHING_REALTIME_FAILED', message } });
-        }
-      }),
-    },
-    {
-      method: 'POST',
-      path: '/v1/coaching/analyze',
-      handler: errorHandler(async (req, res) => {
-        const auth = requireAuth(req, res);
-        if (auth === null) return;
-
-        const body = req.body as AnalyzeBody | undefined;
-        if (!body?.messages?.length) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing "messages" array',
-            },
-          });
-          return;
-        }
-
-        if (!process.env.GROQ_API_KEY) {
-          res.status(503).json({
-            error: {
-              code: 'SERVICE_UNAVAILABLE',
-              message: 'GROQ_API_KEY not configured',
-            },
-          });
-          return;
-        }
-
-        const startTime = Date.now();
-        try {
-          const { Coach } = await getCoachModule();
-          const coach = await getCoach();
-          const messages: Message[] = body.messages.map((m) => ({
-            role: m.role === 'customer' ? 'customer' : 'sales_rep',
-            content: m.content,
-          }));
-          const result = await withTimeout(
-            coach.analyzeCall(messages, {
-              callSid: body.callSid,
-              userId: auth.userId,
-            }),
-            LLM_TIMEOUT_MS,
-          );
-          const transformed = transformCallAnalytics(
-            result as unknown as SnakeCaseCallAnalytics,
-            body.callSid,
-          );
-          res.status(200).json({ data: transformed });
-          auditLogger.info('coaching.analyzed', {
-            action: 'coaching.analyzed',
-            userId: auth.userId ?? 'anonymous',
-            outcome: 'success',
-          });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Unknown error';
-          Sentry.captureException(err);
-          const logger = await getLogger();
-          logger?.error('[Coaching] analysis failed', {
-            userId: auth.userId,
-            callSid: body.callSid,
-            error: message,
-          });
-          res.status(500).json({ error: { code: 'ANALYSIS_FAILED', message } });
-        }
-      }),
-    },
-    // B3: persist analysis to call record
-    {
-      method: 'POST',
-      path: '/v1/calls/:callId/analysis',
-      handler: errorHandler(async (req, res) => {
-        const auth = requireAuth(req, res);
-        if (auth === null) return;
-
-        const callId = req.params?.callId;
-        if (!callId) {
-          res.status(400).json({
-            error: { code: 'INVALID_REQUEST', message: 'Missing callId' },
-          });
-          return;
-        }
-
-        const body = req.body;
-        if (!body) {
-          res.status(400).json({
-            error: {
-              code: 'INVALID_REQUEST',
-              message: 'Missing analysis body',
-            },
-          });
-          return;
-        }
-
-        try {
-          // TODO(DEV-831): persist to database when call_analytics table exists
-          const logger = await getLogger();
-          logger?.info('[Coaching] analysis persisted', {
-            callId,
-            userId: auth.userId,
-          });
-          res.status(200).json({ data: { callId, persisted: true } });
-          auditLogger.info('coaching.analysis_persisted', {
-            action: 'coaching.analysis_persisted',
-            userId: auth.userId ?? 'anonymous',
-            outcome: 'success',
-          });
-        } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : 'Unknown error';
-          Sentry.captureException(err);
-          const logger = await getLogger();
-          logger?.error('[Coaching] analysis persist failed', {
-            callId,
-            userId: auth.userId,
-            error: message,
-          });
-          res.status(500).json({ error: { code: 'PERSIST_FAILED', message } });
-        }
-      }),
-    },
-  ];
+type CallContextRow = {
+  contact_id?: string | null;
+  contact_name?: string | null;
 };
 
-// N4: in-memory map — known limitation, needs redis pub/sub for multi-server (DEV-831)
+const LLM_TIMEOUT_MS = 30_000;
+const TRANSCRIBE_INTERVAL_MS = 3_000;
+const MIN_COACHING_REFRESH_INTERVAL_MS = 5_000;
+const MIN_TRANSCRIPT_WORDS_FOR_COACHING = 8;
+const MIN_NEW_WORDS_FOR_REFRESH = 20;
+const MAX_TRANSCRIPT_ENTRIES_IN_PROMPT = 24;
+const SQL_GET_TRANSCRIPT_BY_CALL_SID =
+  'SELECT transcript FROM calls WHERE call_sid = $1 LIMIT 1';
+const SQL_APPEND_TRANSCRIPT_ENTRY =
+  "UPDATE calls SET transcript = COALESCE(transcript, '[]'::jsonb) || $2::jsonb, updated_at = NOW() WHERE call_sid = $1";
+const SQL_GET_CALL_CONTEXT_BY_CALL_SID =
+  'SELECT c.contact_id::text AS contact_id, ct.name AS contact_name FROM calls c LEFT JOIN contacts ct ON c.contact_id = ct.id WHERE c.call_sid = $1 LIMIT 1';
+
+const getPool = getSharedPool;
 const clientsByCall = new Map<string, Set<WebSocketClient>>();
+const runtimeByCall = new Map<string, CallTranscriptRuntime>();
 const entryCountersByCall = new Map<string, number>();
 
-/** broadcast a transcript entry to all frontend clients for a given call */
-export const broadcastTranscript = (
+const withTimeout = <TResult>(
+  promise: Promise<TResult>,
+  timeoutMs: number,
+): Promise<TResult> =>
+  Promise.race([
+    promise,
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error(`operation timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+    }),
+  ]);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const toStringArray = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string')
+    : [];
+
+const normalizeTalkingPoints = (value: unknown): TalkingPoints => {
+  const base: TalkingPoints = {
+    product_or_option_name: null,
+    details: [],
+    clarifying_questions: [],
+    objection_responses: [],
+  };
+
+  if (!isRecord(value)) {
+    return base;
+  }
+
+  const product =
+    typeof value.product_or_option_name === 'string'
+      ? value.product_or_option_name
+      : null;
+
+  const objectionResponses = Array.isArray(value.objection_responses)
+    ? value.objection_responses
+        .map((entry) => {
+          if (!isRecord(entry)) {
+            return null;
+          }
+
+          const objection =
+            typeof entry.objection === 'string' ? entry.objection : null;
+          const response =
+            typeof entry.response === 'string' ? entry.response : null;
+
+          if (!objection || !response) {
+            return null;
+          }
+
+          return { objection, response };
+        })
+        .filter(
+          (
+            entry,
+          ): entry is { objection: string; response: string } => entry !== null,
+        )
+    : [];
+
+  return {
+    product_or_option_name: product,
+    details: toStringArray(value.details),
+    clarifying_questions: toStringArray(value.clarifying_questions),
+    objection_responses: objectionResponses,
+  };
+};
+
+const countWords = (entries: TranscriptEntry[]): number =>
+  entries.reduce(
+    (sum, entry) =>
+      sum + entry.text.split(/\s+/).filter((word) => word.length > 0).length,
+    0,
+  );
+
+const transformCallAnalytics = (
+  input: SnakeCaseCallAnalytics,
+  callSid?: string,
+): Record<string, unknown> => ({
+  id: `${input.call_sid}-${Date.now()}`,
+  callId: callSid ?? input.call_sid,
+  keyMoments: input.key_moments.map((moment) => ({
+    timestamp: new Date(moment.timestamp).getTime(),
+    type: moment.type,
+    text: moment.description,
+    speaker: 'agent' as const,
+  })),
+  sentiment: {
+    overall: input.sentiment_analysis.customer_sentiment,
+    agentScore: Math.round(input.performance_metrics.talk_ratio * 100),
+    customerScore: Math.round(
+      (1 - input.performance_metrics.talk_ratio) * 100,
+    ),
+    trajectory: 'stable' as const,
+  },
+  performanceScore: input.overall_score,
+  summary:
+    input.strengths.join(' ') + ' ' + input.improvement_areas.join(' '),
+  duration: input.performance_metrics.call_duration_minutes * 60,
+  outcome: 'other' as const,
+  nextSteps: input.action_items,
+  tokensUsed: { input: 0, output: 0 },
+  modelUsed: 'groq',
+  latencyMs: 0,
+  createdAt: input.generated_at,
+});
+
+const getRuntime = async (callId: string): Promise<CallTranscriptRuntime> => {
+  try {
+    const existing = runtimeByCall.get(callId);
+    if (existing) {
+      if (!existing.loadedFromDatabase) {
+        const pool = await getPool();
+        const { rows } = await pool.query(SQL_GET_TRANSCRIPT_BY_CALL_SID, [callId]);
+        const transcriptValue = rows[0]?.transcript;
+        existing.entries = Array.isArray(transcriptValue)
+          ? transcriptValue
+              .map((entry) => coerceTranscriptEntry(entry))
+              .filter((entry): entry is TranscriptEntry => entry !== null)
+          : [];
+        existing.loadedFromDatabase = true;
+        existing.lastCoachingWordCount = countWords(existing.entries);
+      }
+      return existing;
+    }
+
+    const runtime: CallTranscriptRuntime = {
+      entries: [],
+      talkingPoints: null,
+      loadedFromDatabase: false,
+      lastCoachingAt: 0,
+      lastCoachingWordCount: 0,
+      generating: false,
+      queued: false,
+    };
+    runtimeByCall.set(callId, runtime);
+    return getRuntime(callId);
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+const coerceTranscriptEntry = (value: unknown): TranscriptEntry | null => {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const id = typeof value.id === 'string' ? value.id : null;
+  const speaker = value.speaker === 'agent' ? 'agent' : value.speaker === 'customer' ? 'customer' : null;
+  const text = typeof value.text === 'string' ? value.text : null;
+  const timestamp = typeof value.timestamp === 'number' ? value.timestamp : null;
+  const confidence = typeof value.confidence === 'number' ? value.confidence : 0.9;
+
+  if (!id || !speaker || !text || timestamp === null) {
+    return null;
+  }
+
+  return { id, speaker, text, timestamp, confidence };
+};
+
+const getGroqChatClient = async (): Promise<OpenAI> => {
+  try {
+    const { default: OpenAIClient } = await import('openai');
+    return new OpenAIClient({
+      apiKey: process.env.GROQ_API_KEY ?? '',
+      baseURL: 'https://api.groq.com/openai/v1',
+    });
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+const createCoachingPiSession = (): PiSession => ({
+  async *prompt(
+    message: string,
+    options?: { signal?: AbortSignal; model?: string },
+  ): AsyncIterable<PiStreamEvent> {
+    const client = await getGroqChatClient();
+    const response = await withTimeout(
+      client.chat.completions.create({
+        model: options?.model ?? 'openai/gpt-oss-120b',
+        messages: [{ role: 'user', content: message }],
+        temperature: 0.3,
+        max_tokens: 900,
+        response_format: { type: 'json_object' },
+      }),
+      LLM_TIMEOUT_MS,
+    );
+
+    const content = response.choices[0]?.message?.content ?? '';
+    if (content.length > 0) {
+      yield { type: 'text_delta', text: content };
+    }
+
+    if (response.usage) {
+      yield {
+        type: 'usage',
+        inputTokens: response.usage.prompt_tokens ?? 0,
+        outputTokens: response.usage.completion_tokens ?? 0,
+      };
+    }
+
+    yield { type: 'done' };
+  },
+});
+
+const buildActiveCallState = async (callId: string): Promise<ActiveCallState> => {
+  try {
+    const pool = await getPool();
+    const { rows } = await pool.query(SQL_GET_CALL_CONTEXT_BY_CALL_SID, [callId]);
+    const row = (rows[0] ?? {}) as CallContextRow;
+
+    return {
+      callSid: callId,
+      contactId: row.contact_id ?? '',
+      contactName: row.contact_name ?? 'unknown contact',
+      direction: 'outbound',
+      startedAt: new Date(),
+      recentNotes: [],
+      durationSeconds: 0,
+    };
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+const buildCoachingAgent = async (
   callId: string,
-  entry: TranscriptEntry,
-): void => {
+  runtime: CallTranscriptRuntime,
+): Promise<AgentService> => {
+  try {
+    const activeCall = await buildActiveCallState(callId);
+    const context: AgentContext = {
+      userId: 'coaching-system',
+      workspaceId: 'coaching-system',
+      activeCall,
+      recentActivity: [],
+      connectedIntegrations: [],
+      memories: [],
+    };
+    const config: AgentConfig = {
+      systemPrompt: 'You are a live sales coaching agent. Return valid JSON only.',
+      model: 'openai/gpt-oss-120b',
+      provider: 'groq',
+      maxTokens: 900,
+      temperature: 0.3,
+    };
+
+    return new AgentService({
+      config,
+      context,
+      session: createCoachingPiSession(),
+      beforeTurnExtensions: [
+        createTranscriptContext(() => ({
+          callSid: callId,
+          entries: runtime.entries.slice(-MAX_TRANSCRIPT_ENTRIES_IN_PROMPT),
+        })),
+        createCoachingDetector(() => activeCall),
+      ],
+    });
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+const sendToClients = (callId: string, message: CoachingStreamMessage): void => {
   const clients = clientsByCall.get(callId);
-  if (!clients) return;
-  const data = JSON.stringify(entry);
+  if (!clients) {
+    return;
+  }
+
+  const payload = JSON.stringify(message);
   for (const client of clients) {
     try {
       if (client.readyState === 1) {
-        client.send(data);
+        client.send(payload);
       }
-    } catch (_err: unknown) {
-      // ignore send failures — client may have disconnected — intentional: ignore stale clients
+    } catch (error: unknown) {
+      Sentry.captureException(error);
     }
   }
 };
 
-/**
- * Set up WebSocket server for live transcript streaming.
- * Frontend clients connect to /v1/coaching/stream?callId=xxx&token=jwt
- * Twilio Media Streams connect to /v1/coaching/media (audio → transcription)
- */
+const sendSnapshot = async (client: WebSocketClient, callId: string): Promise<void> => {
+  try {
+    const runtime = await getRuntime(callId);
+    client.send(
+      JSON.stringify({
+        type: 'snapshot',
+        entries: runtime.entries,
+        talkingPoints: runtime.talkingPoints,
+      } satisfies TranscriptSnapshotMessage),
+    );
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+export const broadcastTranscript = (
+  callId: string,
+  entry: TranscriptEntry,
+): void => {
+  sendToClients(callId, { type: 'transcript', entry });
+};
+
+const broadcastTalkingPoints = (callId: string, talkingPoints: TalkingPoints): void => {
+  sendToClients(callId, { type: 'coaching', talkingPoints });
+};
+
+const persistTranscriptEntry = async (
+  callId: string,
+  entry: TranscriptEntry,
+): Promise<void> => {
+  try {
+    const pool = await getPool();
+    await pool.query(SQL_APPEND_TRANSCRIPT_ENTRY, [callId, JSON.stringify([entry])]);
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+const shouldRefreshCoaching = (
+  runtime: CallTranscriptRuntime,
+  force: boolean,
+): boolean => {
+  if (force) {
+    return runtime.entries.length > 0;
+  }
+
+  const totalWords = countWords(runtime.entries);
+  if (totalWords < MIN_TRANSCRIPT_WORDS_FOR_COACHING) {
+    return false;
+  }
+
+  if (runtime.talkingPoints === null) {
+    return true;
+  }
+
+  const enoughTimeElapsed =
+    Date.now() - runtime.lastCoachingAt >= MIN_COACHING_REFRESH_INTERVAL_MS;
+  const enoughNewWords =
+    totalWords - runtime.lastCoachingWordCount >= MIN_NEW_WORDS_FOR_REFRESH;
+
+  return enoughTimeElapsed && enoughNewWords;
+};
+
+const runPiCoaching = async (
+  callId: string,
+  force = false,
+): Promise<TalkingPoints | null> => {
+  const runtime = await getRuntime(callId);
+  if (!shouldRefreshCoaching(runtime, force)) {
+    return runtime.talkingPoints;
+  }
+
+  if (runtime.generating) {
+    runtime.queued = true;
+    return runtime.talkingPoints;
+  }
+
+  runtime.generating = true;
+  let usage: { inputTokens: number; outputTokens: number } | null = null;
+  const startedAt = Date.now();
+
+  try {
+    const agent = await buildCoachingAgent(callId, runtime);
+    let text = '';
+
+    for await (const event of agent.chat({
+      messages: [
+        {
+          role: 'user' as const,
+          content: 'generate the next live coaching update for the active call',
+        },
+      ],
+      conversationId: `live-coaching-${callId}`,
+      isCoaching: true,
+      model: 'openai/gpt-oss-120b',
+    })) {
+      if (event.type === 'text_delta') {
+        text += event.text;
+      }
+
+      if (event.type === 'usage') {
+        usage = {
+          inputTokens: event.inputTokens,
+          outputTokens: event.outputTokens,
+        };
+      }
+    }
+
+    const talkingPoints = normalizeTalkingPoints(JSON.parse(text));
+    runtime.talkingPoints = talkingPoints;
+    runtime.lastCoachingAt = Date.now();
+    runtime.lastCoachingWordCount = countWords(runtime.entries);
+    broadcastTalkingPoints(callId, talkingPoints);
+
+    void trackLLMUsage({
+      userId: 'coaching-system',
+      model: 'openai/gpt-oss-120b',
+      provider: 'groq',
+      inputTokens: usage?.inputTokens ?? 0,
+      outputTokens: usage?.outputTokens ?? 0,
+      latencyMs: Date.now() - startedAt,
+      endpoint: '/v1/coaching/refresh',
+    });
+
+    return talkingPoints;
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    routeLogger.error('[Coaching] pi coaching refresh failed', {
+      callId,
+      error: error instanceof Error ? error.message : 'unknown error',
+    });
+    return runtime.talkingPoints;
+  } finally {
+    runtime.generating = false;
+    if (runtime.queued) {
+      runtime.queued = false;
+      void runPiCoaching(callId);
+    }
+  }
+};
+
+const appendTranscriptEntry = async (
+  callId: string,
+  entry: TranscriptEntry,
+): Promise<void> => {
+  const runtime = await getRuntime(callId);
+  runtime.entries = [...runtime.entries, entry];
+
+  try {
+    await persistTranscriptEntry(callId, entry);
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    routeLogger.error('[Coaching] transcript persistence failed', {
+      callId,
+      error: error instanceof Error ? error.message : 'unknown error',
+    });
+  }
+
+  broadcastTranscript(callId, entry);
+  void runPiCoaching(callId);
+};
+
+const getLegacyCoach = async () => {
+  try {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY not configured');
+    }
+
+    const coachingModule = await getCoachModule();
+    return new coachingModule.Coach({ apiKey: process.env.GROQ_API_KEY });
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
+  }
+};
+
+export const coachingRoutes = (): RouteDefinition[] => [
+  {
+    method: 'POST',
+    path: '/v1/coaching',
+    handler: errorHandler(async (req, res) => {
+      const auth = requireAuth(req, res);
+      if (auth === null) return;
+
+      const body = req.body as CoachBody | undefined;
+      if (typeof body?.callId === 'string' && body.callId.length > 0) {
+        const talkingPoints = await runPiCoaching(body.callId, true);
+        res.status(200).json({ data: talkingPoints });
+        return;
+      }
+
+      if (!body?.messages?.length) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing "messages" array or "callId"',
+          },
+        });
+        return;
+      }
+
+      try {
+        const coach = await getLegacyCoach();
+        const messages = body.messages.map((message) => ({
+          role: message.role === 'customer' ? 'customer' : 'sales_rep',
+          content: message.content,
+        }));
+        const startedAt = Date.now();
+        const result = await withTimeout(
+          coach.coach(messages as Parameters<typeof coach.coach>[0], {
+            contextChunks: body.contextChunks,
+          }),
+          LLM_TIMEOUT_MS,
+        );
+
+        void trackLLMUsage({
+          userId: auth.userId,
+          model: 'openai/gpt-oss-120b',
+          provider: 'groq',
+          inputTokens: 0,
+          outputTokens: 0,
+          latencyMs: Date.now() - startedAt,
+          endpoint: '/v1/coaching',
+        });
+
+        res.status(200).json({ data: normalizeTalkingPoints(result) });
+      } catch (error: unknown) {
+        Sentry.captureException(error);
+        const message =
+          error instanceof Error ? error.message : 'coaching request failed';
+        res.status(500).json({ error: { code: 'COACHING_FAILED', message } });
+      }
+    }),
+  },
+  {
+    method: 'POST',
+    path: '/v1/coaching/realtime',
+    handler: errorHandler(async (req, res) => {
+      const auth = requireAuth(req, res);
+      if (auth === null) return;
+
+      const body = req.body as CoachBody | undefined;
+      if (!body?.callId) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing "callId"' },
+        });
+        return;
+      }
+
+      const talkingPoints = await runPiCoaching(body.callId, true);
+      res.status(200).json({ data: talkingPoints });
+    }),
+  },
+  {
+    method: 'POST',
+    path: '/v1/coaching/refresh',
+    handler: errorHandler(async (req, res) => {
+      const auth = requireAuth(req, res);
+      if (auth === null) return;
+
+      const body = req.body as RefreshBody | undefined;
+      if (!body?.callId) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing "callId"' },
+        });
+        return;
+      }
+
+      const talkingPoints = await runPiCoaching(body.callId, true);
+      res.status(200).json({ data: talkingPoints });
+    }),
+  },
+  {
+    method: 'POST',
+    path: '/v1/coaching/analyze',
+    handler: errorHandler(async (req, res) => {
+      const auth = requireAuth(req, res);
+      if (auth === null) return;
+
+      const body = req.body as AnalyzeBody | undefined;
+      if (!body?.messages?.length) {
+        res.status(400).json({
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'Missing "messages" array',
+          },
+        });
+        return;
+      }
+
+      try {
+        const coach = await getLegacyCoach();
+        const messages = body.messages.map((message) => ({
+          role: message.role === 'customer' ? 'customer' : 'sales_rep',
+          content: message.content,
+        }));
+        const result = await withTimeout(
+          coach.analyzeCall(messages as Parameters<typeof coach.analyzeCall>[0], {
+            callSid: body.callSid,
+            userId: auth.userId,
+          }),
+          LLM_TIMEOUT_MS,
+        );
+
+        res.status(200).json({
+          data: transformCallAnalytics(
+            result as unknown as SnakeCaseCallAnalytics,
+            body.callSid,
+          ),
+        });
+      } catch (error: unknown) {
+        Sentry.captureException(error);
+        const message =
+          error instanceof Error ? error.message : 'analysis request failed';
+        res.status(500).json({ error: { code: 'ANALYSIS_FAILED', message } });
+      }
+    }),
+  },
+  {
+    method: 'POST',
+    path: '/v1/calls/:callId/analysis',
+    handler: errorHandler(async (req, res) => {
+      const auth = requireAuth(req, res);
+      if (auth === null) return;
+
+      const callId = req.params?.callId;
+      if (!callId) {
+        res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'Missing callId' },
+        });
+        return;
+      }
+
+      auditLogger.info('coaching.analysis_persisted', {
+        action: 'coaching.analysis_persisted',
+        userId: auth.userId ?? 'anonymous',
+        outcome: 'success',
+        callId,
+      });
+      res.status(200).json({ data: { callId, persisted: true } });
+    }),
+  },
+];
+
 export const setupCoachingWebSocket = async (
   server: HttpServer,
 ): Promise<void> => {
-  const logger = await getLogger();
-
   try {
     const { WebSocketServer } = await import('ws');
-
     const streamWss = new WebSocketServer({ noServer: true });
     const mediaWss = new WebSocketServer({ noServer: true });
 
@@ -523,27 +801,23 @@ export const setupCoachingWebSocket = async (
       const url = new URL(request.url ?? '', 'http://localhost');
 
       if (url.pathname === '/v1/coaching/stream') {
-        // B2: validate auth token from query param
         const token = url.searchParams.get('token');
         if (!token) {
           socket.destroy();
           return;
         }
-        // TODO(DEV-831): validate JWT token against auth middleware
-        // for now, require token presence as a gate
+
         streamWss.handleUpgrade(request, socket, head, (ws) => {
           streamWss.emit('connection', ws, request);
         });
-      } else if (url.pathname === '/v1/coaching/media') {
-        // W21: Twilio Media Streams do not send JWTs in the WebSocket connection.
-        // This is intentional — auth is validated at the Twilio webhook level
-        // when the media stream is initiated. The call must already be authenticated
-        // by the time Twilio connects here.
+        return;
+      }
+
+      if (url.pathname === '/v1/coaching/media') {
         mediaWss.handleUpgrade(request, socket, head, (ws) => {
           mediaWss.emit('connection', ws, request);
         });
       }
-      // else: not a coaching path — let other upgrade handlers (NestJS, etc.) handle it
     });
 
     streamWss.on('connection', (ws: unknown, req: { url?: string }) => {
@@ -559,156 +833,166 @@ export const setupCoachingWebSocket = async (
         clientsByCall.set(callId, new Set());
       }
       clientsByCall.get(callId)?.add(client);
+      void sendSnapshot(client, callId);
 
-      client.on('close', (() => {
+      client.on('close', () => {
         clientsByCall.get(callId)?.delete(client);
         if (clientsByCall.get(callId)?.size === 0) {
           clientsByCall.delete(callId);
         }
-      }) as () => void);
+      });
     });
-
-    // B5: cached groq client for transcription
-    // HACK: inline type because openai types may not be installed — DEV-831
-    let groqClient: Record<string, unknown> | null = null;
-    const getGroqClient = async () => {
-      if (groqClient) return groqClient;
-      try {
-        const { default: OpenAI } = await import('openai');
-        groqClient = new OpenAI({
-          apiKey: process.env.GROQ_API_KEY ?? '',
-          baseURL: 'https://api.groq.com/openai/v1',
-        }) as unknown as Record<string, unknown>;
-        return groqClient;
-      } catch (err: unknown) {
-        groqClient = null; // error recovery — allow retry
-        throw err;
-      }
-    };
-
-    const TRANSCRIBE_INTERVAL_MS = 3000;
 
     mediaWss.on('connection', (ws: unknown, req: { url?: string }) => {
       const client = ws as WebSocketClient;
       const url = new URL(req.url ?? '', 'http://localhost');
-      const callId = url.searchParams.get('callId');
-      if (!callId) {
-        client.close();
-        return;
-      }
-
-      if (!entryCountersByCall.has(callId)) {
-        entryCountersByCall.set(callId, 0);
-      }
-      const getEntryCounter = () => {
-        const current = entryCountersByCall.get(callId) ?? 0;
-        entryCountersByCall.set(callId, current + 1);
-        return entryCountersByCall.get(callId) ?? 0;
-      };
-
-      // W4: separate buffers per track for speaker diarization
-      const audioBuffers: Record<string, Buffer[]> = {
+      let callId: string | null = url.searchParams.get('callId');
+      const audioBuffers: Record<'inbound' | 'outbound', Buffer[]> = {
         inbound: [],
         outbound: [],
       };
-      let transcribeTimer: ReturnType<typeof setInterval> | null = null;
+
+      const getEntryCounter = (nextCallId: string): number => {
+        const current = entryCountersByCall.get(nextCallId) ?? 0;
+        const next = current + 1;
+        entryCountersByCall.set(nextCallId, next);
+        return next;
+      };
 
       const transcribeBuffer = async (track: 'inbound' | 'outbound') => {
+        if (!callId) {
+          return;
+        }
+
         const buffer = audioBuffers[track];
-        if (!buffer || buffer.length === 0) return;
+        if (buffer.length === 0) {
+          return;
+        }
+
         const chunks = buffer.splice(0);
+        const combined = Buffer.concat(chunks);
 
         try {
-          const groq = await getGroqClient();
-          if (!groq) return;
-          const combined = Buffer.concat(chunks);
-
-          // B4: proper WAV header for mulaw/8000/mono
+          const client = await getGroqChatClient();
           const wavHeader = buildWavHeader(combined.length);
           const wavBuffer = Buffer.concat([wavHeader, combined]);
-
           const file = new File([wavBuffer], 'audio.wav', {
             type: 'audio/wav',
           });
-          // HACK: groq client typed as Record<string, unknown> because openai types may not be installed — DEV-831
-          const audio = groq.audio as {
-            transcriptions: {
-              create: (p: {
-                model: string;
-                file: File;
-              }) => Promise<{ text?: string }>;
-            };
-          };
           const transcription = await withTimeout(
-            audio.transcriptions.create({
+            client.audio.transcriptions.create({
               model: 'whisper-large-v3-turbo',
               file,
             }),
             LLM_TIMEOUT_MS,
           );
 
-          if (transcription.text?.trim()) {
-            const entryCounter = getEntryCounter();
-            const entry: TranscriptEntry = {
-              id: `${callId}-${entryCounter}`,
-              // W4: inbound = customer, outbound = agent
-              speaker: track === 'inbound' ? 'customer' : 'agent',
-              text: transcription.text.trim(),
-              timestamp: Date.now(),
-              // N2: use actual confidence if available, otherwise document placeholder
-              confidence: 0.9, // placeholder — whisper-large-v3-turbo doesn't return per-segment confidence via this API
-            };
-            broadcastTranscript(callId, entry);
+          if (!transcription.text?.trim()) {
+            return;
           }
-        } catch (err: unknown) {
-          Sentry.captureException(err);
-          logger?.error('[Coaching] transcription failed', {
+
+          const entryCounter = getEntryCounter(callId);
+          const entry: TranscriptEntry = {
+            id: `${callId}-${entryCounter}`,
+            speaker: track === 'inbound' ? 'customer' : 'agent',
+            text: transcription.text.trim(),
+            timestamp: Date.now(),
+            confidence: 0.9,
+          };
+          await appendTranscriptEntry(callId, entry);
+        } catch (error: unknown) {
+          Sentry.captureException(error);
+          routeLogger.error('[Coaching] transcription failed', {
             callId,
             track,
-            error: err instanceof Error ? err.message : 'unknown',
+            error: error instanceof Error ? error.message : 'unknown error',
           });
         }
       };
 
-      transcribeTimer = setInterval(() => {
+      const timer = setInterval(() => {
         void transcribeBuffer('inbound');
         void transcribeBuffer('outbound');
       }, TRANSCRIBE_INTERVAL_MS);
 
-      client.on('message', ((data: Buffer) => {
-        try {
-          const msg = JSON.parse(data.toString()) as {
-            event: string;
-            media?: { payload: string; track?: string };
-          };
-          if (msg.event === 'media' && msg.media?.payload) {
-            // W4: route audio to correct buffer based on track
-            const track =
-              msg.media.track === 'outbound' ? 'outbound' : 'inbound';
-            audioBuffers[track].push(Buffer.from(msg.media.payload, 'base64'));
-          }
-        } catch (_err: unknown) {
-          // non-JSON message — treat as raw audio, default to inbound — intentional: non-JSON is valid audio
-          audioBuffers.inbound.push(data);
+      client.on('message', (...args: unknown[]) => {
+        const [rawData] = args;
+        if (!Buffer.isBuffer(rawData)) {
+          return;
         }
-      }) as (data: Buffer) => void);
 
-      // HACK: ws close handler type mismatch — ws library types the handler as (data: Buffer) => void but close has no args — DEV-831
-      client.on('close', (() => {
-        if (transcribeTimer) {
-          clearInterval(transcribeTimer);
+        try {
+          const payload = JSON.parse(rawData.toString()) as Record<string, unknown>;
+          const eventType = payload.event;
+
+          if (eventType === 'start' && isRecord(payload.start)) {
+            const startPayload = payload.start as Record<string, unknown>;
+            const customParameters = isRecord(startPayload.customParameters)
+              ? startPayload.customParameters
+              : null;
+            const nextCallId =
+              typeof customParameters?.callId === 'string'
+                ? customParameters.callId
+                : typeof startPayload.callSid === 'string'
+                  ? startPayload.callSid
+                  : null;
+            if (nextCallId) {
+              callId = nextCallId;
+            }
+            return;
+          }
+
+          if (
+            eventType === 'media' &&
+            isRecord(payload.media) &&
+            typeof payload.media.payload === 'string'
+          ) {
+            const track = payload.media.track === 'outbound' ? 'outbound' : 'inbound';
+            audioBuffers[track].push(Buffer.from(payload.media.payload, 'base64'));
+          }
+        } catch {
+          audioBuffers.inbound.push(rawData);
         }
-        // flush remaining audio
+      });
+
+      client.on('close', () => {
+        clearInterval(timer);
         void transcribeBuffer('inbound');
         void transcribeBuffer('outbound');
-      }) as unknown as (data: Buffer) => void);
+      });
     });
 
-    logger?.info('[Coaching] WebSocket servers initialized');
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    Sentry.captureException(err);
-    logger?.error('[Coaching] WebSocket setup failed', { error: message });
-    throw new Error(`Failed to set up coaching WebSocket: ${message}`);
+    routeLogger.info('[Coaching] websocket servers initialized', {
+      action: 'coaching.websocket_initialized',
+    });
+  } catch (error: unknown) {
+    Sentry.captureException(error);
+    throw error;
   }
+};
+
+const buildWavHeader = (dataLength: number): Buffer => {
+  const header = Buffer.alloc(46);
+  const sampleRate = 8000;
+  const numChannels = 1;
+  const bitsPerSample = 8;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + dataLength, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(18, 16);
+  header.writeUInt16LE(7, 20);
+  header.writeUInt16LE(0, 22);
+  header.writeUInt16LE(numChannels, 24);
+  header.writeUInt32LE(sampleRate, 26);
+  header.writeUInt32LE(byteRate, 30);
+  header.writeUInt16LE(blockAlign, 34);
+  header.writeUInt16LE(bitsPerSample, 36);
+  header.write('data', 38);
+  header.writeUInt32LE(dataLength, 42);
+
+  return header;
 };

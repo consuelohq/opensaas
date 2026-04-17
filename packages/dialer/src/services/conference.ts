@@ -63,6 +63,8 @@ export class ConferenceService {
       endOnExit?: boolean;
       waitUrl?: string;
       participantLabel?: string;
+      streamUrl?: string;
+      streamParameters?: Record<string, string>;
     },
   ): string {
     const startOnEnter = opts?.startOnEnter ?? true;
@@ -71,10 +73,23 @@ export class ConferenceService {
     const label = opts?.participantLabel
       ? ` participantLabel="${escapeXml(opts.participantLabel)}"`
       : '';
+    const streamBlock = opts?.streamUrl
+      ? [
+          '<Start>',
+          `<Stream url="${escapeXml(opts.streamUrl)}">`,
+          ...Object.entries(opts.streamParameters ?? {}).map(
+            ([name, value]) =>
+              `<Parameter name="${escapeXml(name)}" value="${escapeXml(value)}" />`,
+          ),
+          '</Stream>',
+          '</Start>',
+        ].join('')
+      : '';
 
     return [
       '<?xml version="1.0" encoding="UTF-8"?>',
       '<Response>',
+      streamBlock,
       `<Dial>`,
       `<Conference startConferenceOnEnter="${startOnEnter}" endConferenceOnExit="${endOnExit}" beep="false" waitUrl="${waitUrl}"${label}>`,
       escapeXml(conferenceName),

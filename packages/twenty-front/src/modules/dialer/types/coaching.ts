@@ -16,6 +16,27 @@ export interface TranscriptEntry {
   confidence: number;
 }
 
+export type TranscriptSnapshotMessage = {
+  type: 'snapshot';
+  entries: TranscriptEntry[];
+  talkingPoints: TalkingPoints | null;
+};
+
+export type TranscriptBroadcastMessage = {
+  type: 'transcript';
+  entry: TranscriptEntry;
+};
+
+export type CoachingBroadcastMessage = {
+  type: 'coaching';
+  talkingPoints: TalkingPoints;
+};
+
+export type CoachingStreamMessage =
+  | TranscriptSnapshotMessage
+  | TranscriptBroadcastMessage
+  | CoachingBroadcastMessage;
+
 export type CallOutcome =
   | 'interested'
   | 'not_interested'
