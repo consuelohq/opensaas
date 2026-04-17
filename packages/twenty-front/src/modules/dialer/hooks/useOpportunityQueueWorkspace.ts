@@ -361,6 +361,8 @@ export const useOpportunityQueueWorkspace = ({
   useEffect(() => {
     let isCancelled = false;
 
+    setAllQueueRecords(null);
+
     void fetchAllRecords()
       .then((fetchedRecords) => {
         if (isCancelled) {
@@ -488,9 +490,13 @@ export const useOpportunityQueueWorkspace = ({
     const existingQueue = await loadBackendQueue();
 
     if (existingQueue) {
-      const allListRecords =
-        allQueueRecords ??
-        ((await fetchAllRecords()) as ListMemberWorkspaceRecord[]);
+      let allListRecords = allQueueRecords;
+
+      if (allListRecords === null) {
+        allListRecords =
+          (await fetchAllRecords()) as ListMemberWorkspaceRecord[];
+        setAllQueueRecords(allListRecords);
+      }
       const totalCallableRecords = allListRecords.filter(
         (record) => getListMemberPhoneNumber(record) !== null,
       );
@@ -564,6 +570,7 @@ export const useOpportunityQueueWorkspace = ({
     listId,
     listName,
     loadBackendQueue,
+    setAllQueueRecords,
   ]);
 
   const hydratedQueueItems = useMemo<QueueItem[]>(() => {
@@ -842,16 +849,16 @@ export const useOpportunityQueueWorkspace = ({
   ]);
 
   useEffect(() => {
-    if (!backendQueue || listStatus === 'COMPLETED') {
+    if (listStatus === 'COMPLETED') {
       return;
     }
 
-    if (backendQueue.status !== 'completed') {
+    if (backendQueue?.status !== 'completed') {
       return;
     }
 
     void updateListRecord({ listStatus: 'COMPLETED' });
-  }, [backendQueue, listStatus, updateListRecord]);
+  }, [backendQueue?.status, listStatus, updateListRecord]);
 
   useEffect(() => {
     if (listStatus !== 'ACTIVE' || callableRecords.length === 0) {
@@ -862,7 +869,7 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    if (backendQueue?.status === 'active' && callingQueueItemIndex >= 0) {
+    if (backendQueue?.status === 'active') {
       return;
     }
 
