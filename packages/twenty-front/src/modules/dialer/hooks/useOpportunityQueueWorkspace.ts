@@ -27,6 +27,7 @@ import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { recordStoreFamilySelector } from '@/object-record/record-store/states/selectors/recordStoreFamilySelector';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { useLazyFetchAllRecords } from '@/object-record/hooks/useLazyFetchAllRecords';
 import { useUpdateOneRecord } from '@/object-record/hooks/useUpdateOneRecord';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 
@@ -258,6 +259,8 @@ const getListMemberPhoneNumber = (record: ListMemberWorkspaceRecord) => {
   );
 };
 
+const QUEUE_LIST_MEMBER_LIMIT = 500;
+
 export const useOpportunityQueueWorkspace = ({
   listId,
 }: {
@@ -303,10 +306,9 @@ export const useOpportunityQueueWorkspace = ({
   );
   const [backendQueue, setBackendQueue] = useState<BackendQueue | null>(null);
 
-  const { records } = useFindManyRecords<ListMemberWorkspaceRecord>({
-    objectNameSingular: 'listMember',
-    filter: { listId: { eq: listId } },
-    recordGqlFields: {
+  const listMemberFilter = useMemo(() => ({ listId: { eq: listId } }), [listId]);
+  const listMemberRecordGqlFields = useMemo(
+    () => ({
       id: true,
       position: true,
       status: true,
@@ -335,14 +337,56 @@ export const useOpportunityQueueWorkspace = ({
           },
         },
       },
-    },
+    }),
+    [],
+  );
+
+  const { records } = useFindManyRecords<ListMemberWorkspaceRecord>({
+    objectNameSingular: 'listMember',
+    filter: listMemberFilter,
+    limit: QUEUE_LIST_MEMBER_LIMIT,
+    recordGqlFields: listMemberRecordGqlFields,
+  });
+  const { fetchAllRecords } = useLazyFetchAllRecords<ListMemberWorkspaceRecord>({
+    objectNameSingular: 'listMember',
+    filter: listMemberFilter,
+    limit: QUEUE_LIST_MEMBER_LIMIT,
+    recordGqlFields: listMemberRecordGqlFields,
   });
 
+  const [allQueueRecords, setAllQueueRecords] = useState<
+    ListMemberWorkspaceRecord[] | null
+  >(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void fetchAllRecords()
+      .then((fetchedRecords) => {
+        if (isCancelled) {
+          return;
+        }
+
+        setAllQueueRecords(fetchedRecords as ListMemberWorkspaceRecord[]);
+      })
+      .catch((error: unknown) => {
+        Sentry.captureException(error, {
+          extra: { context: 'fetchAllQueueRecords', listId },
+        });
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [fetchAllRecords, listId]);
+
+  const listRecords = allQueueRecords ?? records;
+
   const orderedRecords = useMemo(() => {
-    return [...records].sort(
+    return [...listRecords].sort(
       (left, right) => (left.position ?? 0) - (right.position ?? 0),
     );
-  }, [records]);
+  }, [listRecords]);
 
   const callableRecords = useMemo(() => {
     return orderedRecords.filter(
@@ -367,6 +411,14 @@ export const useOpportunityQueueWorkspace = ({
     [listId, updateOneRecord],
   );
 
+  const persistedCurrentIndexRef = useRef<number | null>(
+    persistedCurrentIndex,
+  );
+
+  useEffect(() => {
+    persistedCurrentIndexRef.current = persistedCurrentIndex;
+  }, [persistedCurrentIndex]);
+
   const syncCurrentIndexFromContactId = useCallback(
     async (contactId: string | null | undefined) => {
       if (!contactId) {
@@ -377,13 +429,16 @@ export const useOpportunityQueueWorkspace = ({
         (record) => record.id === contactId,
       );
 
-      if (nextIndex < 0 || nextIndex === persistedCurrentIndex) {
+      if (
+        nextIndex < 0 ||
+        nextIndex === persistedCurrentIndexRef.current
+      ) {
         return;
       }
 
       await updateListRecord({ currentIndex: nextIndex });
     },
-    [callableRecords, persistedCurrentIndex, updateListRecord],
+    [callableRecords, updateListRecord],
   );
 
   const loadBackendQueue = useCallback(async () => {
@@ -433,7 +488,46 @@ export const useOpportunityQueueWorkspace = ({
     const existingQueue = await loadBackendQueue();
 
     if (existingQueue) {
-      return existingQueue;
+      const allListRecords =
+        allQueueRecords ??
+        ((await fetchAllRecords()) as ListMemberWorkspaceRecord[]);
+      const totalCallableRecords = allListRecords.filter(
+        (record) => getListMemberPhoneNumber(record) !== null,
+      );
+
+      if (existingQueue.status === 'active' || existingQueue.status === 'paused') {
+        return existingQueue;
+      }
+
+      if (existingQueue.total_contacts === totalCallableRecords.length) {
+        return existingQueue;
+      }
+
+      const recreateResponse = await authenticatedFetch(
+        `${REACT_APP_SERVER_BASE_URL}/api/v1/queues`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: listName ?? 'Calling list',
+            sourceType: 'list',
+            sourceId: listId,
+            category: 'custom',
+            settings: {
+              retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
+            },
+            contactIds: totalCallableRecords.map((record) => record.id),
+          }),
+        },
+      );
+
+      if (!recreateResponse.ok) {
+        throw new Error(
+          `Queue recreation failed with status ${recreateResponse.status}`,
+        );
+      }
+
+      return await loadBackendQueue();
     }
 
     if (callableRecords.length === 0) {
@@ -463,7 +557,14 @@ export const useOpportunityQueueWorkspace = ({
     }
 
     return await loadBackendQueue();
-  }, [callableRecords, listId, listName, loadBackendQueue]);
+  }, [
+    allQueueRecords,
+    callableRecords,
+    fetchAllRecords,
+    listId,
+    listName,
+    loadBackendQueue,
+  ]);
 
   const hydratedQueueItems = useMemo<QueueItem[]>(() => {
     return orderedRecords.reduce<QueueItem[]>((queueItems, record, index) => {
@@ -506,15 +607,38 @@ export const useOpportunityQueueWorkspace = ({
     }, []);
   }, [backendQueue?.id, backendQueueItemsByContactId, listId, orderedRecords]);
 
+  const callingQueueItemIndex = useMemo(() => {
+    return hydratedQueueItems.findIndex((item) => item.status === 'calling');
+  }, [hydratedQueueItems]);
+
+  const currentQueueIndex = useMemo(() => {
+    if (callingQueueItemIndex >= 0) {
+      return callingQueueItemIndex;
+    }
+
+    return persistedCurrentIndex ?? 0;
+  }, [callingQueueItemIndex, persistedCurrentIndex]);
+
   const currentQueueItem = useMemo(() => {
-    const index = persistedCurrentIndex ?? 0;
-    return hydratedQueueItems[index] ?? null;
-  }, [hydratedQueueItems, persistedCurrentIndex]);
+    if (
+      callingQueueItemIndex < 0 &&
+      (backendQueue?.status === 'completed' || listStatus === 'COMPLETED')
+    ) {
+      return null;
+    }
+
+    return hydratedQueueItems[currentQueueIndex] ?? null;
+  }, [
+    backendQueue?.status,
+    callingQueueItemIndex,
+    currentQueueIndex,
+    hydratedQueueItems,
+    listStatus,
+  ]);
 
   const hasNextQueueItem = useMemo(() => {
-    const index = persistedCurrentIndex ?? 0;
-    return hydratedQueueItems[index + 1] !== undefined;
-  }, [hydratedQueueItems, persistedCurrentIndex]);
+    return hydratedQueueItems[currentQueueIndex + 1] !== undefined;
+  }, [currentQueueIndex, hydratedQueueItems]);
 
   const autoStartedItemIdRef = useRef<string | null>(null);
   const previousCallStatusRef = useRef(callState.status);
@@ -624,17 +748,13 @@ export const useOpportunityQueueWorkspace = ({
   );
 
   useEffect(() => {
-    const callingQueueItemIndex = hydratedQueueItems.findIndex(
-      (item) => item.status === 'calling',
-    );
-
     setActiveQueue({
       id: backendQueue?.id ?? listId,
       name: backendQueue?.name ?? listName ?? 'Calling list',
       description: null,
       sourceType: 'list',
       sourceId: listId,
-      totalContacts: backendQueue?.total_contacts ?? hydratedQueueItems.length,
+      totalContacts: backendQueue?.total_contacts ?? callableRecords.length,
       completedContacts:
         backendQueue?.completed_contacts ??
         hydratedQueueItems.filter((item) => item.status === 'completed').length,
@@ -676,11 +796,7 @@ export const useOpportunityQueueWorkspace = ({
       aggregatedStats: null,
     });
     setQueueItems(hydratedQueueItems);
-    setCurrentQueueIndex(
-      callingQueueItemIndex >= 0
-        ? callingQueueItemIndex
-        : (persistedCurrentIndex ?? 0),
-    );
+    setCurrentQueueIndex(currentQueueIndex);
     setQueueSession(
       sessionStartedAt
         ? {
@@ -711,12 +827,13 @@ export const useOpportunityQueueWorkspace = ({
         : null,
     );
   }, [
+    callableRecords.length,
+    currentQueueIndex,
     hydratedQueueItems,
     backendQueue,
     listId,
     listName,
     listStatus,
-    persistedCurrentIndex,
     sessionStartedAt,
     setActiveQueue,
     setCurrentQueueIndex,
@@ -725,7 +842,27 @@ export const useOpportunityQueueWorkspace = ({
   ]);
 
   useEffect(() => {
+    if (!backendQueue || listStatus === 'COMPLETED') {
+      return;
+    }
+
+    if (backendQueue.status !== 'completed') {
+      return;
+    }
+
+    void updateListRecord({ listStatus: 'COMPLETED' });
+  }, [backendQueue, listStatus, updateListRecord]);
+
+  useEffect(() => {
     if (listStatus !== 'ACTIVE' || callableRecords.length === 0) {
+      return;
+    }
+
+    if (backendQueue?.status === 'completed') {
+      return;
+    }
+
+    if (backendQueue?.status === 'active' && callingQueueItemIndex >= 0) {
       return;
     }
 
@@ -734,7 +871,14 @@ export const useOpportunityQueueWorkspace = ({
         extra: { context: 'startBackendQueueSession', listId },
       });
     });
-  }, [callableRecords.length, listId, listStatus, startBackendQueueSession]);
+  }, [
+    backendQueue?.status,
+    callableRecords.length,
+    callingQueueItemIndex,
+    listId,
+    listStatus,
+    startBackendQueueSession,
+  ]);
 
   const startCurrentQueueItem = useCallback(async () => {
     const localPresenceEnabled = preferences.dialer.localPresenceEnabled;
@@ -742,7 +886,7 @@ export const useOpportunityQueueWorkspace = ({
       selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
     const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
 
-    if (!currentQueueItem || defaultCallerId === null) {
+    if (!currentQueueItem || (!localPresenceEnabled && defaultCallerId === null)) {
       return;
     }
 
@@ -754,8 +898,8 @@ export const useOpportunityQueueWorkspace = ({
           ? {
               ...queueItem,
               status: 'calling',
-              attempts: queueItem.attempts + 1,
-              lastAttemptAt: new Date().toISOString(),
+              lastAttemptAt:
+                queueItem.lastAttemptAt ?? new Date().toISOString(),
             }
           : queueItem,
       ),
@@ -1017,9 +1161,8 @@ export const useOpportunityQueueWorkspace = ({
 
   const resumeList = useCallback(async () => {
     await updateListRecord({ listStatus: 'ACTIVE' });
-    await startBackendQueueSession();
     autoStartedItemIdRef.current = null;
-  }, [startBackendQueueSession, updateListRecord]);
+  }, [updateListRecord]);
 
   const skipCurrentListMember = useCallback(
     async (reason: string) => {
@@ -1043,20 +1186,23 @@ export const useOpportunityQueueWorkspace = ({
       }
 
       const payload = (await response.json()) as {
+        skipped?: boolean;
         nextItem?: { contact_id?: string | null } | null;
         suppression?: { contactId?: string | null } | null;
       };
 
-      await updateOneRecord({
-        objectNameSingular: 'listMember',
-        idToUpdate: currentQueueItem.id,
-        updateOneRecordInput: {
-          status: 'SKIPPED',
-          callSid: callState.callSid ?? '',
-          duration: callState.duration,
-          attemptedAt: new Date().toISOString(),
-        },
-      });
+      if (payload.skipped !== false) {
+        await updateOneRecord({
+          objectNameSingular: 'listMember',
+          idToUpdate: currentQueueItem.id,
+          updateOneRecordInput: {
+            status: 'SKIPPED',
+            callSid: callState.callSid ?? '',
+            duration: callState.duration,
+            attemptedAt: new Date().toISOString(),
+          },
+        });
+      }
       await loadBackendQueue();
       await syncCurrentIndexFromContactId(
         payload.nextItem?.contact_id ?? payload.suppression?.contactId,
