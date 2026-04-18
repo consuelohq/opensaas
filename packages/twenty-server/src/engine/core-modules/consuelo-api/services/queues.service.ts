@@ -8,7 +8,10 @@ import { DataSource } from "typeorm";
 import { CallTimingModelService } from "src/engine/core-modules/consuelo-api/services/call-timing-model.service";
 import { CadenceStoreService } from "src/engine/core-modules/consuelo-api/services/cadence-store.service";
 import { evaluateRetryPolicy } from "src/engine/core-modules/consuelo-api/services/retry-policy";
-import { StoppingModelStoreService } from "src/engine/core-modules/consuelo-api/services/stopping-model-store.service";
+import {
+  DEFAULT_WORKSPACE_ECONOMICS,
+  StoppingModelStoreService,
+} from "src/engine/core-modules/consuelo-api/services/stopping-model-store.service";
 import { WhittleIndexStoreService } from "src/engine/core-modules/consuelo-api/services/whittle-index-store.service";
 
 type QueueSettings = {
@@ -24,10 +27,6 @@ type QueueListFilters = {
   sourceId?: string;
 };
 
-const DEFAULT_WORKSPACE_ECONOMICS = {
-  valuePerConnection: 100,
-  costPerAttempt: 0.03,
-};
 
 type QueueSelectionResult = {
   nextItem: Record<string, unknown> | null;
@@ -1246,7 +1245,7 @@ export class QueuesService {
       (errorCode === "42703" && message.includes("dialer_config")) ||
       message.includes('column "dialer_config" does not exist') ||
       message.includes("column dialer_config does not exist") ||
-      message.includes("core.workspace_settings") ||
+      this.isMissingRelationError(err, "core.workspace_settings") ||
       message.includes("schema \"core\" does not exist") ||
       (message.includes("workspace_settings") &&
         message.includes("dialer_config"))
