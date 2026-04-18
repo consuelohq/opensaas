@@ -109,29 +109,24 @@ msgid "Verify Email"
 msgstr "メールを確認"
 
 #. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Deleted Workspace"
-msgstr "削除されたワークスペース"
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "パスワードが更新されました"
 
 #. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
-msgstr "サブスクリプションが{daysSinceInactive}日前に期限切れとなったため、ワークスペース<0>{workspaceDisplayName}</0>が削除されました。"
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "アカウント（{email}）のパスワードが{formattedDate}に正常に変更されたことを確認しました。"
 
 #. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "All data in this workspace has been permanently deleted."
-msgstr "このワークスペースのすべてのデータは永久に削除されました。"
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "この変更を行っていない場合は、すぐにワークスペースの所有者に連絡してください。"
 
 #. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "If you wish to use Consuelo again, you can create a new workspace."
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
-
-#. js-lingui-explicit-id
-#: src/emails/clean-suspended-workspace.email.tsx
-msgid "Create a new workspace"
-msgstr "新しいワークスペースを作成"
 
 #. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
@@ -159,24 +154,29 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "このリンクは{duration}のみ有効です。リンクが機能しない場合は、ログイン認証リンクを直接ご利用ください："
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "パスワードが更新されました"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Deleted Workspace"
+msgstr "削除されたワークスペース"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "アカウント（{email}）のパスワードが{formattedDate}に正常に変更されたことを確認しました。"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Your workspace <0>{workspaceDisplayName}</0> has been deleted as your subscription expired {daysSinceInactive} days ago."
+msgstr "サブスクリプションが{daysSinceInactive}日前に期限切れとなったため、ワークスペース<0>{workspaceDisplayName}</0>が削除されました。"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "この変更を行っていない場合は、すぐにワークスペースの所有者に連絡してください。"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "All data in this workspace has been permanently deleted."
+msgstr "このワークスペースのすべてのデータは永久に削除されました。"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "If you wish to use Consuelo again, you can create a new workspace."
 msgstr ""
+
+#. js-lingui-explicit-id
+#: src/emails/clean-suspended-workspace.email.tsx
+msgid "Create a new workspace"
+msgstr "新しいワークスペースを作成"
 
 #. js-lingui-explicit-id
 #: src/components/WhatIsTwenty.tsx
