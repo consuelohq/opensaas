@@ -1238,9 +1238,14 @@ export class QueuesService {
       return false;
     }
 
+    const errorCode =
+      "code" in err && typeof err.code === "string" ? err.code : undefined;
     const message = err.message;
 
     return (
+      (errorCode === "42703" && message.includes("dialer_config")) ||
+      message.includes('column "dialer_config" does not exist') ||
+      message.includes("column dialer_config does not exist") ||
       message.includes("core.workspace_settings") ||
       message.includes("schema \"core\" does not exist") ||
       (message.includes("workspace_settings") &&
