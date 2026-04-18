@@ -8,7 +8,10 @@ import { DataSource } from "typeorm";
 import { CallTimingModelService } from "src/engine/core-modules/consuelo-api/services/call-timing-model.service";
 import { CadenceStoreService } from "src/engine/core-modules/consuelo-api/services/cadence-store.service";
 import { evaluateRetryPolicy } from "src/engine/core-modules/consuelo-api/services/retry-policy";
-import { StoppingModelStoreService } from "src/engine/core-modules/consuelo-api/services/stopping-model-store.service";
+import {
+  DEFAULT_WORKSPACE_ECONOMICS,
+  StoppingModelStoreService,
+} from "src/engine/core-modules/consuelo-api/services/stopping-model-store.service";
 import { WhittleIndexStoreService } from "src/engine/core-modules/consuelo-api/services/whittle-index-store.service";
 
 type QueueSettings = {
@@ -23,6 +26,7 @@ type QueueListFilters = {
   sourceType?: string;
   sourceId?: string;
 };
+
 
 type QueueSelectionResult = {
   nextItem: Record<string, unknown> | null;
@@ -45,6 +49,7 @@ export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
   private queueRetryColumnsAvailable: boolean | null = null;
   private contactAttemptLedgerCompatible: boolean | null = null;
+  private workspaceSettingsDialerConfigCompatible: boolean | null = null;
   private readonly stoppingModelService: StoppingModelService;
 
   constructor(
@@ -675,8 +680,35 @@ export class QueuesService {
       );
       const settings = (queueRows[0]?.settings ?? {}) as QueueSettings;
       const category = queueRows[0]?.category ?? "all";
-      const isCadenceOptimizationEnabled =
-        await this.cadenceStore.isCadenceOptimizationEnabled(workspaceId);
+      let isCadenceOptimizationEnabled = false;
+
+      try {
+        if (this.workspaceSettingsDialerConfigCompatible !== false) {
+          isCadenceOptimizationEnabled =
+            await this.cadenceStore.isCadenceOptimizationEnabled(workspaceId);
+          this.workspaceSettingsDialerConfigCompatible = true;
+        }
+      } catch (err: unknown) {
+        if (!this.isWorkspaceSettingsDialerConfigCompatibilityError(err)) {
+          throw err;
+        }
+
+        const message = err instanceof Error ? err.message : "Unknown error";
+
+        this.workspaceSettingsDialerConfigCompatible = false;
+        this.logger.warn(
+          `[QueuesService] disabling cadence optimization because dialer config is unavailable: ${message}`,
+          { queueId, workspaceId },
+        );
+        Sentry.captureException(err, {
+          tags: {
+            component: "QueuesService",
+            operation: "selectNextCallableItemCadenceConfigFallback",
+          },
+          extra: { queueId, workspaceId },
+        });
+      }
+
       const cadencePolicyBySegment = new Map<string, CadencePolicy>();
       const queueRetryColumnsAvailable = await this.hasQueueRetryColumns();
       const retryReasonSelect = queueRetryColumnsAvailable
@@ -734,10 +766,36 @@ export class QueuesService {
       let suppression: { contactId: string; reason: string } | null = null;
 
       // load stopping model data once (not per-candidate) to avoid N+1
-      const [answerProbabilities, economics] = await Promise.all([
-        this.stoppingModelStore.getAnswerProbabilities(queueId),
-        this.stoppingModelStore.getWorkspaceEconomics(workspaceId),
-      ]);
+      const answerProbabilities =
+        await this.stoppingModelStore.getAnswerProbabilities(queueId);
+      let economics = DEFAULT_WORKSPACE_ECONOMICS;
+
+      try {
+        if (this.workspaceSettingsDialerConfigCompatible !== false) {
+          economics =
+            await this.stoppingModelStore.getWorkspaceEconomics(workspaceId);
+          this.workspaceSettingsDialerConfigCompatible = true;
+        }
+      } catch (err: unknown) {
+        if (!this.isWorkspaceSettingsDialerConfigCompatibilityError(err)) {
+          throw err;
+        }
+
+        const message = err instanceof Error ? err.message : "Unknown error";
+
+        this.workspaceSettingsDialerConfigCompatible = false;
+        this.logger.warn(
+          `[QueuesService] using default workspace economics because dialer config is unavailable: ${message}`,
+          { queueId, workspaceId },
+        );
+        Sentry.captureException(err, {
+          tags: {
+            component: "QueuesService",
+            operation: "selectNextCallableItemWorkspaceEconomicsFallback",
+          },
+          extra: { queueId, workspaceId },
+        });
+      }
 
       const probabilityByAttempt = new Map<number, number>();
 
@@ -1169,6 +1227,28 @@ export class QueuesService {
       ) ||
       (message.includes("contact_attempt_ledger") &&
         message.includes("column"))
+    );
+  }
+
+  private isWorkspaceSettingsDialerConfigCompatibilityError(
+    err: unknown,
+  ) {
+    if (!(err instanceof Error)) {
+      return false;
+    }
+
+    const errorCode =
+      "code" in err && typeof err.code === "string" ? err.code : undefined;
+    const message = err.message;
+
+    return (
+      (errorCode === "42703" && message.includes("dialer_config")) ||
+      message.includes('column "dialer_config" does not exist') ||
+      message.includes("column dialer_config does not exist") ||
+      this.isMissingRelationError(err, "core.workspace_settings") ||
+      message.includes("schema \"core\" does not exist") ||
+      (message.includes("workspace_settings") &&
+        message.includes("dialer_config"))
     );
   }
 

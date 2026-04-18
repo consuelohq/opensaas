@@ -3,9 +3,41 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import type { StoppingModelStore } from '@consuelo/dialer';
 import { DataSource } from 'typeorm';
 
-const DEFAULT_AVERAGE_DEAL_VALUE = 1000;
-const DEFAULT_AVERAGE_CLOSE_RATE = 0.1;
-const DEFAULT_COST_PER_ATTEMPT = 0.03;
+export const DEFAULT_AVERAGE_DEAL_VALUE = 1000;
+export const DEFAULT_AVERAGE_CLOSE_RATE = 0.1;
+export const DEFAULT_COST_PER_ATTEMPT = 0.03;
+
+export const DEFAULT_WORKSPACE_ECONOMICS = {
+  valuePerConnection: DEFAULT_AVERAGE_DEAL_VALUE * DEFAULT_AVERAGE_CLOSE_RATE,
+  costPerAttempt: DEFAULT_COST_PER_ATTEMPT,
+};
+
+export function resolveWorkspaceEconomics(params: {
+  avgDealValue: number | string | null | undefined;
+  avgCloseRate: number | string | null | undefined;
+  costPerAttempt: number | string | null | undefined;
+}) {
+  const avgDealValue = Number(
+    params.avgDealValue ?? DEFAULT_AVERAGE_DEAL_VALUE,
+  );
+  const avgCloseRate = Number(
+    params.avgCloseRate ?? DEFAULT_AVERAGE_CLOSE_RATE,
+  );
+  const costPerAttempt = Number(
+    params.costPerAttempt ?? DEFAULT_COST_PER_ATTEMPT,
+  );
+
+  return {
+    valuePerConnection: avgDealValue * avgCloseRate,
+    costPerAttempt: Math.max(
+      0,
+      Number.isFinite(costPerAttempt)
+        ? costPerAttempt
+        : DEFAULT_COST_PER_ATTEMPT,
+    ),
+  };
+}
+
 const MIN_SAMPLE_SIZE_PER_ATTEMPT = 5;
 
 @Injectable()
@@ -82,13 +114,11 @@ export class StoppingModelStoreService implements StoppingModelStore {
     );
 
     const economics = rows[0];
-    const avgDealValue = Number(economics?.avgDealValue ?? DEFAULT_AVERAGE_DEAL_VALUE);
-    const avgCloseRate = Number(economics?.avgCloseRate ?? DEFAULT_AVERAGE_CLOSE_RATE);
-    const costPerAttempt = Number(economics?.costPerAttempt ?? DEFAULT_COST_PER_ATTEMPT);
 
-    return {
-      valuePerConnection: avgDealValue * avgCloseRate,
-      costPerAttempt: Math.max(0, isFinite(costPerAttempt) ? costPerAttempt : DEFAULT_COST_PER_ATTEMPT),
-    };
+    return resolveWorkspaceEconomics({
+      avgDealValue: economics?.avgDealValue,
+      avgCloseRate: economics?.avgCloseRate,
+      costPerAttempt: economics?.costPerAttempt,
+    });
   }
 }
