@@ -1,27 +1,31 @@
-import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
+import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { OpportunityCallAnalyticsTab } from '@/dialer/components/OpportunityCallAnalyticsTab';
 import { OpportunityCallCoachingTab } from '@/dialer/components/OpportunityCallCoachingTab';
 import { OpportunityCallPeopleTab } from '@/dialer/components/OpportunityCallPeopleTab';
 import { QueuePanel } from '@/dialer/components/QueuePanel';
+import { useCoaching } from '@/dialer/hooks/useCoaching';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useOpportunityQueueWorkspace } from '@/dialer/hooks/useOpportunityQueueWorkspace';
+import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
+import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { PageLayoutInitializationQueryEffect } from '@/page-layout/components/PageLayoutInitializationQueryEffect';
 import { PageLayoutRelationWidgetsSyncEffect } from '@/page-layout/components/PageLayoutRelationWidgetsSyncEffect';
 import { PageLayoutMainContent } from '@/page-layout/PageLayoutMainContent';
 import { useCurrentPageLayout } from '@/page-layout/hooks/useCurrentPageLayout';
+import { useNavigateSettings } from '~/hooks/useNavigateSettings';
 import { useSetIsPageLayoutInEditMode } from '@/page-layout/hooks/useSetIsPageLayoutInEditMode';
 import { PageLayoutComponentInstanceContext } from '@/page-layout/states/contexts/PageLayoutComponentInstanceContext';
 import { TabList } from '@/ui/layout/tab-list/components/TabList';
 import styled from '@emotion/styled';
 import { t } from '@lingui/core/macro';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { SettingsPath } from 'twenty-shared/types';
-import { getSettingsPath } from 'twenty-shared/utils';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   IconChartBar,
   IconLayoutSidebarRightCollapse,
@@ -29,6 +33,7 @@ import {
   IconSettings,
   useIcons,
 } from 'twenty-ui/display';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { Button } from 'twenty-ui/input';
 
 const StyledContainer = styled.div`
@@ -73,12 +78,20 @@ type OpportunityCallingWorkspaceProps = {
   pageLayoutId: string;
 };
 
+type OpportunityCallingWorkspaceContentProps = {
+  listId: string;
+};
+
 const OpportunityCallingWorkspaceContent = ({
   listId,
-}: Pick<OpportunityCallingWorkspaceProps, 'listId'>) => {
+}: OpportunityCallingWorkspaceContentProps) => {
+  useResetCoachingState();
+  useCoaching();
+  useTranscript();
+
   const { currentPageLayout } = useCurrentPageLayout();
   const callAssistMode = useRecoilValue(callAssistModeState);
-  const callState = useRecoilValue(callStateAtom);
+  const { status: callStatus } = useRecoilValue(callStateAtom);
   const { selectedScript } = useCoachingScripts();
   const {
     wrapUpState,
@@ -90,7 +103,7 @@ const OpportunityCallingWorkspaceContent = ({
     restartList,
   } = useOpportunityQueueWorkspace({ listId });
   const { getIcon } = useIcons();
-  const navigate = useNavigate();
+  const navigateSettings = useNavigateSettings();
   const [selectedTabId, setSelectedTabId] = useState('coaching');
   const activeScriptLabel = selectedScript?.name ?? '';
 
@@ -120,15 +133,15 @@ const OpportunityCallingWorkspaceContent = ({
   );
 
   useEffect(() => {
-    if (callState.status === 'active') {
+    if (callStatus === 'active') {
       setSelectedTabId('coaching');
       return;
     }
 
-    if (callState.status === 'ended') {
+    if (callStatus === 'ended') {
       setSelectedTabId('analytics');
     }
-  }, [callState.status]);
+  }, [callStatus]);
 
   return (
     <StyledContainer>
@@ -177,7 +190,7 @@ const OpportunityCallingWorkspaceContent = ({
               <Button
                 title={t`Open AI settings`}
                 variant="secondary"
-                onClick={() => navigate(getSettingsPath(SettingsPath.AI))}
+                onClick={() => navigateSettings(SettingsPath.AI)}
               />
             </StyledSettingsPanel>
           )}

@@ -37,7 +37,16 @@ export type CallAnalytics = {
 
 export type PostCallAnalysisResult = {
   analytics: CallAnalytics;
-  actions_taken: string[];
+  summary: string;
+  outcome:
+    | 'interested'
+    | 'not_interested'
+    | 'callback_scheduled'
+    | 'voicemail'
+    | 'no_answer'
+    | 'wrong_number'
+    | 'other';
+  next_steps: string[];
 };
 
 // zod schema builders — lazy-loaded, call only when runtime validation is needed
@@ -46,51 +55,61 @@ export const createCoachingSchemas = async () => {
   try {
     const { z } = await import('zod');
 
-  const SalesCoachingSchema = z.object({
-    product_or_option_name: z.string(),
-    details: z.array(z.string()).min(1).max(3),
-    clarifying_questions: z.array(z.string()).min(2).max(3),
-  });
+    const SalesCoachingSchema = z.object({
+      product_or_option_name: z.string(),
+      details: z.array(z.string()).min(1).max(3),
+      clarifying_questions: z.array(z.string()).min(2).max(3),
+    });
 
-  const KeyMomentSchema = z.object({
-    timestamp: z.string(),
-    type: z.enum(['objection', 'commitment', 'question', 'insight']),
-    description: z.string(),
-    impact: z.enum(['positive', 'negative', 'neutral']),
-  });
+    const KeyMomentSchema = z.object({
+      timestamp: z.string(),
+      type: z.enum(['objection', 'commitment', 'question', 'insight']),
+      description: z.string(),
+      impact: z.enum(['positive', 'negative', 'neutral']),
+    });
 
-  const SentimentAnalysisSchema = z.object({
-    overall: z.enum(['positive', 'negative', 'neutral', 'mixed']),
-    customer: z.string(),
-    agent: z.string(),
-    trend: z.enum(['improving', 'declining', 'stable']),
-  });
+    const SentimentAnalysisSchema = z.object({
+      overall: z.enum(['positive', 'negative', 'neutral', 'mixed']),
+      customer: z.string(),
+      agent: z.string(),
+      trend: z.enum(['improving', 'declining', 'stable']),
+    });
 
-  const PerformanceMetricsSchema = z.object({
-    talk_ratio: z.number(),
-    response_time_avg: z.number(),
-    objection_handling_score: z.number(),
-  });
+    const PerformanceMetricsSchema = z.object({
+      talk_ratio: z.number(),
+      response_time_avg: z.number(),
+      objection_handling_score: z.number(),
+    });
 
-  const CallAnalyticsSchema = z.object({
-    key_moments: z.array(KeyMomentSchema),
-    sentiment: SentimentAnalysisSchema,
-    performance: PerformanceMetricsSchema,
-  });
+    const CallAnalyticsSchema = z.object({
+      key_moments: z.array(KeyMomentSchema),
+      sentiment: SentimentAnalysisSchema,
+      performance: PerformanceMetricsSchema,
+    });
 
-  const PostCallAnalysisResultSchema = z.object({
-    analytics: CallAnalyticsSchema,
-    actions_taken: z.array(z.string()),
-  });
+    const PostCallAnalysisResultSchema = z.object({
+      analytics: CallAnalyticsSchema,
+      summary: z.string(),
+      outcome: z.enum([
+        'interested',
+        'not_interested',
+        'callback_scheduled',
+        'voicemail',
+        'no_answer',
+        'wrong_number',
+        'other',
+      ]),
+      next_steps: z.array(z.string()),
+    });
 
-  return {
-    SalesCoachingSchema,
-    KeyMomentSchema,
-    SentimentAnalysisSchema,
-    PerformanceMetricsSchema,
-    CallAnalyticsSchema,
-    PostCallAnalysisResultSchema,
-  };
+    return {
+      SalesCoachingSchema,
+      KeyMomentSchema,
+      SentimentAnalysisSchema,
+      PerformanceMetricsSchema,
+      CallAnalyticsSchema,
+      PostCallAnalysisResultSchema,
+    };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'failed to load zod';
     throw new Error(`createCoachingSchemas failed: ${message}`);
