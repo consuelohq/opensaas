@@ -512,13 +512,44 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         const ownershipType = getProvisionOwnershipType(entitlement);
-        await recordProvisionedPhoneNumber(workspaceId, {
-          areaCode: result.areaCode ?? body.areaCode ?? '',
-          friendlyName: body.friendlyName,
-          ownershipType,
-          phoneNumber: result.phoneNumber,
-          sid: result.sid,
-        });
+
+        try {
+          await recordProvisionedPhoneNumber(workspaceId, {
+            areaCode: result.areaCode ?? body.areaCode ?? '',
+            friendlyName: body.friendlyName,
+            ownershipType,
+            phoneNumber: result.phoneNumber,
+            sid: result.sid,
+          });
+        } catch (recordError: unknown) {
+          Sentry.captureException(recordError, {
+            extra: { context: 'record_provisioned_phone_number', workspaceId },
+          });
+
+          const releaseResult = await dialer.releaseNumber(result.sid);
+          if (!releaseResult.success) {
+            Sentry.captureMessage(
+              '[Voice] failed to roll back provisioned number after db error',
+              {
+                level: 'error',
+                extra: {
+                  releaseError: releaseResult.error,
+                  sid: result.sid,
+                  workspaceId,
+                },
+              },
+            );
+          }
+
+          const message =
+            recordError instanceof Error
+              ? recordError.message
+              : 'Failed to persist provisioned number';
+          res.status(500).json({
+            error: { code: 'PROVISION_ERROR', message },
+          });
+          return;
+        }
 
         if (entitlement.usedSlots === 0) {
           try {

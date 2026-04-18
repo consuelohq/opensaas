@@ -406,6 +406,27 @@ describe('POST /v1/phone-numbers/provision', () => {
     expect(res.statusCode).toBe(400);
     expect((res.body as { error: { code: string } }).error.code).toBe('PHONE_NUMBER_SLOT_REQUIRED');
   });
+
+  it('releases the purchased number when db persistence fails', async () => {
+    mockDialer.provisionNumber.mockResolvedValueOnce({
+      success: true,
+      sid: 'PN-new',
+      phoneNumber: '+15559990000',
+      areaCode: '555',
+    });
+    mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber.mockRejectedValueOnce(
+      new Error('db write failed'),
+    );
+    mockDialer.releaseNumber.mockResolvedValueOnce({ success: true });
+
+    const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
+
+    expect(res.statusCode).toBe(500);
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'PROVISION_ERROR',
+    );
+    expect(mockDialer.releaseNumber).toHaveBeenCalledWith('PN-new');
+  });
 });
 
 // ============================================================

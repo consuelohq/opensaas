@@ -65,6 +65,12 @@ const getLegacyWorkspaceId = (): string | null => {
   return workspaceId.length > 0 ? workspaceId : null;
 };
 
+const getBackfillOwnershipType = (
+  workspaceId: string,
+): WorkspacePhoneNumberOwnershipType => {
+  return workspaceId === getLegacyWorkspaceId() ? 'legacy_reserved' : 'included';
+};
+
 const mapToWorkspacePhoneNumber = (
   row: WorkspacePhoneNumberRow,
   dialerNumber: PhoneNumber,
@@ -137,10 +143,6 @@ const claimLegacyWorkspaceNumbers = async (
   dialerNumbers: PhoneNumber[],
 ): Promise<void> => {
   try {
-    if (workspaceId !== getLegacyWorkspaceId()) {
-      return;
-    }
-
     const twilioSids = dialerNumbers
       .map((number) => number.twilioSid)
       .filter((value): value is string => typeof value === 'string');
@@ -158,6 +160,8 @@ const claimLegacyWorkspaceNumbers = async (
         .filter((value): value is string => typeof value === 'string'),
     );
 
+    const ownershipType = getBackfillOwnershipType(workspaceId);
+
     for (const dialerNumber of dialerNumbers) {
       if (!dialerNumber.twilioSid || claimedSids.has(dialerNumber.twilioSid)) {
         continue;
@@ -169,7 +173,7 @@ const claimLegacyWorkspaceNumbers = async (
         dialerNumber.friendlyName ?? '',
         dialerNumber.areaCode,
         dialerNumber.twilioSid,
-        'legacy_reserved',
+        ownershipType,
       ]);
     }
   } catch (err: unknown) {
