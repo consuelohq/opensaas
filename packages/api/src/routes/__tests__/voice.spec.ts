@@ -54,7 +54,9 @@ const mockDialerInstance = {
 
 const mockLockServiceInstance = {
   acquireLock: jest.fn(),
+  releaseLock: jest.fn(),
   releaseLockByNumber: jest.fn(),
+  getUserLocks: jest.fn(),
 };
 
 jest.mock('../../shared/dialer', () => ({
@@ -80,6 +82,8 @@ jest.mock('@consuelo/logger', () => ({
 jest.mock('../../services/twilio-config', () => ({
   getWorkspaceTwilioConfig: jest.fn(),
   getDecryptedCredentials: jest.fn(),
+  getSharedTwilioPlatformCredentials: jest.fn(),
+  hasSharedTwilioPlatformConfig: jest.fn().mockReturnValue(false),
   isHostedInstance: jest.fn().mockReturnValue(false),
 }));
 
@@ -112,7 +116,13 @@ jest.mock('node:crypto', () => ({
 import { voiceRoutes } from '../voice';
 import { redisService } from '../../services/redis';
 import { getDialerForWorkspace, sharedDialer, sharedCallerIdLockService } from '../../shared/dialer';
-import { getWorkspaceTwilioConfig, getDecryptedCredentials, isHostedInstance } from '../../services/twilio-config';
+import {
+  getWorkspaceTwilioConfig,
+  getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
+  isHostedInstance,
+} from '../../services/twilio-config';
 import {
   findWorkspacePhoneNumberBySid,
   getPhoneNumberEntitlement,
@@ -130,6 +140,10 @@ const mockLockService = mockLockServiceInstance;
 const mockTwilioConfig = {
   getWorkspaceTwilioConfig: getWorkspaceTwilioConfig as jest.Mock,
   getDecryptedCredentials: getDecryptedCredentials as jest.Mock,
+  getSharedTwilioPlatformCredentials:
+    getSharedTwilioPlatformCredentials as jest.Mock,
+  hasSharedTwilioPlatformConfig:
+    hasSharedTwilioPlatformConfig as unknown as jest.Mock,
   isHostedInstance: isHostedInstance as unknown as jest.Mock,
 };
 const mockWorkspacePhoneNumbers = {
@@ -221,6 +235,12 @@ beforeEach(() => {
     url: 'https://checkout.stripe.test/session',
   });
   mockPhoneNumberRecommendations.recommendPhoneNumbers.mockResolvedValue([]);
+  mockLockService.acquireLock.mockResolvedValue(true);
+  mockLockService.releaseLock.mockResolvedValue(true);
+  mockLockService.releaseLockByNumber.mockResolvedValue(true);
+  mockLockService.getUserLocks.mockResolvedValue([]);
+  mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValue(false);
+  mockTwilioConfig.isHostedInstance.mockReturnValue(false);
 });
 
 // ============================================================
@@ -564,6 +584,26 @@ describe('POST /v1/voice/preflight', () => {
     expect((res.body as { error: { code: string } }).error.code).toBe('CALLER_ID_LOCKED');
   });
 
+  it('reclaims same-user stale preflight lock before returning 409', async () => {
+    mockLockService.acquireLock
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    mockLockService.getUserLocks.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'preflight-stale-001',
+        acquiredAt: new Date('2026-01-01T00:00:00.000Z'),
+        expiresAt: new Date('2026-01-01T00:05:00.000Z'),
+      },
+    ]);
+
+    const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
+
+    expect(res.statusCode).toBe(200);
+    expect(mockLockService.releaseLock).toHaveBeenCalledWith('preflight-stale-001');
+    expect(mockLockService.acquireLock).toHaveBeenCalledTimes(2);
+  });
+
   it('falls back to raw dialer numbers when workspace number hydration fails', async () => {
     mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockRejectedValueOnce(
       new Error('relation \"workspace_phone_numbers\" does not exist'),
@@ -768,6 +808,7 @@ describe('GET /v1/voice/status', () => {
 
   it('returns unconfigured for missing config', async () => {
     mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValueOnce(false);
     mockTwilioConfig.isHostedInstance.mockReturnValueOnce(false);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
@@ -775,8 +816,39 @@ describe('GET /v1/voice/status', () => {
     expect((res.body as { mode: string }).mode).toBe('byok');
   });
 
-  it('returns hosted mode for hosted instance without config', async () => {
+  it('returns hosted shared status without workspace twilio config', async () => {
     mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValue(true);
+    mockTwilioConfig.getSharedTwilioPlatformCredentials.mockReturnValueOnce({
+      accountSid: 'AC-shared',
+      authToken: 'shared-token',
+      twimlAppSid: 'AP-shared',
+    });
+    mockDialer.listNumbers.mockResolvedValueOnce([
+      { phoneNumber: '+15551234567', twilioSid: 'PN-001' },
+    ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+        ownershipType: 'included',
+        twilioSid: 'PN-001',
+        workspaceId: 'ws-test-001',
+      },
+    ]);
+    const res = await exec(route(), authReq());
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { mode: string }).mode).toBe('hosted');
+    expect((res.body as { configured: boolean }).configured).toBe(true);
+    expect((res.body as { hasPhoneNumbers: boolean }).hasPhoneNumbers).toBe(true);
+  });
+
+  it('returns hosted mode for hosted instance without shared config', async () => {
+    mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValueOnce(false);
     mockTwilioConfig.isHostedInstance.mockReturnValueOnce(true);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);

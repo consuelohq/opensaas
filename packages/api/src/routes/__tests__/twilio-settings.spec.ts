@@ -13,6 +13,8 @@ import {
 jest.mock('../../services/twilio-config', () => ({
   getWorkspaceTwilioConfig: jest.fn(),
   getDecryptedCredentials: jest.fn(),
+  getSharedTwilioPlatformCredentials: jest.fn(),
+  hasSharedTwilioPlatformConfig: jest.fn().mockReturnValue(false),
   saveByokConfig: jest.fn(),
   deleteWorkspaceTwilioConfig: jest.fn(),
   isHostedInstance: jest.fn().mockReturnValue(false),
@@ -62,6 +64,8 @@ import { twilioSettingsRoutes } from '../twilio-settings';
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
   saveByokConfig,
   deleteWorkspaceTwilioConfig,
   isHostedInstance,
@@ -75,6 +79,10 @@ const mockGetWorkspaceTwilioConfig = getWorkspaceTwilioConfig as jest.Mock;
 const mockGetDecryptedCredentials = getDecryptedCredentials as jest.Mock;
 const mockSaveByokConfig = saveByokConfig as jest.Mock;
 const mockDeleteWorkspaceTwilioConfig = deleteWorkspaceTwilioConfig as jest.Mock;
+const mockGetSharedTwilioPlatformCredentials =
+  getSharedTwilioPlatformCredentials as jest.Mock;
+const mockHasSharedTwilioPlatformConfig =
+  hasSharedTwilioPlatformConfig as unknown as jest.Mock;
 const mockIsHostedInstance = isHostedInstance as unknown as jest.Mock;
 const mockMaskCredential = maskCredential as unknown as jest.Mock;
 const mockEnsureOrCreateTwimlApp = ensureOrCreateTwimlApp as jest.Mock;
@@ -115,6 +123,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockHasSharedTwilioPlatformConfig.mockReturnValue(false);
   mockIsHostedInstance.mockReturnValue(false);
 });
 
@@ -146,6 +155,24 @@ describe('GET /v1/settings/twilio/health', () => {
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
     expect((res.body as { healthy: boolean }).healthy).toBe(false);
+  });
+
+  it('returns healthy when shared hosted Twilio config is available', async () => {
+    mockGetWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockHasSharedTwilioPlatformConfig.mockReturnValue(true);
+    mockGetSharedTwilioPlatformCredentials.mockReturnValueOnce({
+      accountSid: 'AC-shared',
+      authToken: 'shared-token',
+      twimlAppSid: 'AP-shared',
+    });
+    mockSyncTwimlAppUrl.mockResolvedValueOnce({
+      updated: false,
+      voiceUrl: 'https://api.com/v1/voice/twiml',
+    });
+
+    const res = await exec(route(), authReq());
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { healthy: boolean }).healthy).toBe(true);
   });
 
   it('returns unhealthy when no twiml app', async () => {
@@ -189,6 +216,21 @@ describe('GET /v1/settings/twilio', () => {
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
     expect((res.body as { configured: boolean }).configured).toBe(false);
+  });
+
+  it('returns hosted shared config when platform Twilio is available', async () => {
+    mockGetWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockHasSharedTwilioPlatformConfig.mockReturnValue(true);
+    mockGetSharedTwilioPlatformCredentials.mockReturnValueOnce({
+      accountSid: 'AC-shared',
+      authToken: 'shared-token',
+      twimlAppSid: 'AP-shared',
+    });
+
+    const res = await exec(route(), authReq());
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { configured: boolean }).configured).toBe(true);
+    expect((res.body as { mode: string }).mode).toBe('hosted');
   });
 
   it('returns 401 without auth', async () => {

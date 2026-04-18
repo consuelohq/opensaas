@@ -18,6 +18,8 @@ import {
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
@@ -845,11 +847,30 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const acquired = await getCallerIdLockService().acquireLock(
+        const preflightCallSid = callSid ?? `preflight-${randomUUID()}`;
+        let acquired = await getCallerIdLockService().acquireLock(
           resolvedCallerId.callerIdNumber,
           userId,
-          callSid ?? `preflight-${randomUUID()}`,
+          preflightCallSid,
         );
+
+        if (!acquired) {
+          const existingLocks = await getCallerIdLockService().getUserLocks(userId);
+          const stalePreflightLock = existingLocks.find(
+            (lock) =>
+              lock.phoneNumber === resolvedCallerId.callerIdNumber &&
+              lock.callSid.startsWith('preflight-'),
+          );
+
+          if (stalePreflightLock) {
+            await getCallerIdLockService().releaseLock(stalePreflightLock.callSid);
+            acquired = await getCallerIdLockService().acquireLock(
+              resolvedCallerId.callerIdNumber,
+              userId,
+              preflightCallSid,
+            );
+          }
+        }
 
         if (!acquired) {
           res.status(409).json({
@@ -1100,10 +1121,43 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         const config = await getWorkspaceTwilioConfig(workspaceId);
-        const hosted = isHostedInstance();
+        const hosted = hasSharedTwilioPlatformConfig() || isHostedInstance();
 
-        // no config row — check hosted, then legacy env vars
+        // no config row — check hosted shared platform first, then legacy env vars
         if (!config) {
+          if (hasSharedTwilioPlatformConfig()) {
+            try {
+              const { numberPool } = await buildWorkspaceNumberPool(workspaceId);
+              const sharedCredentials = getSharedTwilioPlatformCredentials();
+              const response = {
+                mode: 'hosted',
+                configured:
+                  numberPool.numbers.length > 0 && !!sharedCredentials.twimlAppSid,
+                twilioConnected: true,
+                hasPhoneNumbers: numberPool.numbers.length > 0,
+                twimlAppConfigured: !!sharedCredentials.twimlAppSid,
+                error: null,
+              };
+              await redisService.setVoiceStatusCache(workspaceId, response);
+              res.json(response);
+            } catch (err: unknown) {
+              const message =
+                err instanceof Error ? err.message : 'Connection failed';
+              Sentry.captureException(
+                err instanceof Error ? err : new Error(message),
+              );
+              res.json({
+                mode: 'hosted',
+                configured: false,
+                twilioConnected: false,
+                hasPhoneNumbers: false,
+                twimlAppConfigured: false,
+                error: message,
+              });
+            }
+            return;
+          }
+
           if (hosted) {
             res.json({
               mode: 'hosted',
@@ -1121,8 +1175,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
           const legacyToken = process.env.TWILIO_AUTH_TOKEN ?? '';
           if (legacySid && legacyToken) {
             try {
-              const dialer = await getDialerForWorkspace(workspaceId);
-              const numbers = await dialer.listNumbers();
+              const { numberPool } = await buildWorkspaceNumberPool(workspaceId);
               let hasTwiml = !!process.env.TWILIO_TWIML_APP_SID;
               if (!hasTwiml && process.env.API_BASE_URL) {
                 try {
@@ -1134,9 +1187,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
               }
               const response = {
                 mode: 'byok',
-                configured: numbers.length > 0 && hasTwiml,
+                configured: numberPool.numbers.length > 0 && hasTwiml,
                 twilioConnected: true,
-                hasPhoneNumbers: numbers.length > 0,
+                hasPhoneNumbers: numberPool.numbers.length > 0,
                 twimlAppConfigured: hasTwiml,
                 error: null,
               };

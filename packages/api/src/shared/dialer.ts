@@ -9,6 +9,8 @@ import * as Sentry from '@sentry/node';
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
   provisionSubAccount,
   isHostedInstance,
   ensureOrCreateTwimlApp,
@@ -184,13 +186,15 @@ function getInMemoryLockStore(): InMemoryLockStore {
   return _inMemoryStore;
 }
 
-function buildDialer(
-  accountSid: string,
-  authToken: string,
-  twimlAppSid?: string,
-): Dialer {
+function buildDialer(credentials: {
+  accountSid: string;
+  authToken: string;
+  apiKey?: string;
+  apiSecret?: string;
+  twimlAppSid?: string;
+}): Dialer {
   const dialer = new Dialer({
-    credentials: { accountSid, authToken, twimlAppSid },
+    credentials,
     baseUrl,
   });
   dialer.withCallerIdLock(getCallerIdLockService());
@@ -211,23 +215,22 @@ export async function getDialerForWorkspace(
 
     if (config) {
       const creds = getDecryptedCredentials(config);
-      const dialer = buildDialer(
-        creds.accountSid,
-        creds.authToken,
-        creds.twimlAppSid,
-      );
+      const dialer = buildDialer(creds);
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
 
-    // no config yet — auto-provision for hosted, or fall back to legacy env vars
+    // hosted SaaS uses one shared platform Twilio configuration.
+    if (hasSharedTwilioPlatformConfig()) {
+      const dialer = buildDialer(getSharedTwilioPlatformCredentials());
+      dialerCache.set(workspaceId, dialer);
+      return dialer;
+    }
+
+    // no config yet — optional sub-account provisioning path for hosted installs.
     if (isHostedInstance()) {
       const creds = await provisionSubAccount(workspaceId);
-      const dialer = buildDialer(
-        creds.accountSid,
-        creds.authToken,
-        creds.twimlAppSid,
-      );
+      const dialer = buildDialer(creds);
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
@@ -255,11 +258,11 @@ export async function getDialerForWorkspace(
         }
       }
 
-      const dialer = buildDialer(
-        legacyAccountSid,
-        legacyAuthToken,
+      const dialer = buildDialer({
+        accountSid: legacyAccountSid,
+        authToken: legacyAuthToken,
         twimlAppSid,
-      );
+      });
       dialerCache.set(workspaceId, dialer);
       return dialer;
     }
@@ -285,7 +288,10 @@ function ensureDialer(): Dialer {
   if (!legacyAccountSid || !legacyAuthToken) {
     throw new Error('TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN are required');
   }
-  return buildDialer(legacyAccountSid, legacyAuthToken);
+  return buildDialer({
+    accountSid: legacyAccountSid,
+    authToken: legacyAuthToken,
+  });
 }
 
 export { ensureDialer as sharedDialer };
