@@ -75,7 +75,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
           config && config.twimlAppSid
             ? {
                 credentials: getDecryptedCredentials(config),
-                twimlAppSid: credentialsSource.twimlAppSid,
+                twimlAppSid: config.twimlAppSid,
               }
             : sharedHostedConfigAvailable
               ? (() => {
@@ -134,7 +134,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
                   : "unknown error";
               res.status(200).json({
                 healthy: false,
-                twimlAppSid: config.twimlAppSid,
+                twimlAppSid: credentialsSource.twimlAppSid,
                 issues: [
                   `TwiML App deleted and re-creation failed: ${createMessage}`,
                 ],
