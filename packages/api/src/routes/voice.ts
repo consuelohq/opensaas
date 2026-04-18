@@ -750,9 +750,18 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
       }
 
+      const mediaStreamBaseUrl = process.env.API_BASE_URL
+        ? process.env.API_BASE_URL.replace(/^http/, 'ws') + '/v1/coaching/media'
+        : undefined;
+      const streamUrl =
+        mediaStreamBaseUrl && callSid
+          ? `${mediaStreamBaseUrl}?callId=${encodeURIComponent(callSid)}`
+          : mediaStreamBaseUrl;
       const twiml = getLegacyDialer().generateConferenceTwiml(conferenceName, {
         participantLabel: 'agent',
         endOnExit: true,
+        streamUrl,
+        streamParameters: callSid ? { callId: callSid } : undefined,
       });
 
       // store mapping for lock release on call end
