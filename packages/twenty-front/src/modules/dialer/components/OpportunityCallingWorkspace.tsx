@@ -1,11 +1,15 @@
-import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { AudioDeviceSelector } from '@/dialer/components/AudioDeviceSelector';
+import { CallerIdSelectCard } from '@/dialer/components/CallerIdSelectCard';
 import { OpportunityCallAnalyticsTab } from '@/dialer/components/OpportunityCallAnalyticsTab';
 import { OpportunityCallCoachingTab } from '@/dialer/components/OpportunityCallCoachingTab';
 import { OpportunityCallPeopleTab } from '@/dialer/components/OpportunityCallPeopleTab';
 import { QueuePanel } from '@/dialer/components/QueuePanel';
+import { useCoaching } from '@/dialer/hooks/useCoaching';
 import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useOpportunityQueueWorkspace } from '@/dialer/hooks/useOpportunityQueueWorkspace';
+import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
+import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
+import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { PageLayoutInitializationQueryEffect } from '@/page-layout/components/PageLayoutInitializationQueryEffect';
@@ -76,6 +80,11 @@ type OpportunityCallingWorkspaceProps = {
 const OpportunityCallingWorkspaceContent = ({
   listId,
 }: Pick<OpportunityCallingWorkspaceProps, 'listId'>) => {
+  useResetCoachingState();
+  useCoaching();
+  useTranscript();
+  usePostCallAnalysis();
+
   const { currentPageLayout } = useCurrentPageLayout();
   const callAssistMode = useRecoilValue(callAssistModeState);
   const callState = useRecoilValue(callStateAtom);

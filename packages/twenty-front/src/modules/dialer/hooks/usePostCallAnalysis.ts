@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   analysisErrorState,
   isAnalyzingState,
@@ -11,12 +10,15 @@ import {
   transcriptState,
 } from '@/dialer/states/coachingState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
+import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import {
   type CallAnalytics,
   type TranscriptEntry,
 } from '@/dialer/types/coaching';
 
-function isValidCallAnalytics(data: unknown): data is CallAnalytics {
+const isValidCallAnalytics = (
+  data: unknown,
+): data is CallAnalytics => {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
   return (
@@ -27,7 +29,23 @@ function isValidCallAnalytics(data: unknown): data is CallAnalytics {
     obj.sentiment !== null &&
     typeof obj.sentiment === 'object'
   );
-}
+};
+
+const isTranscriptEntry = (
+  data: unknown,
+): data is TranscriptEntry => {
+  if (!data || typeof data !== 'object') return false;
+
+  const entry = data as Record<string, unknown>;
+
+  return (
+    typeof entry.id === 'string' &&
+    (entry.speaker === 'agent' || entry.speaker === 'customer') &&
+    typeof entry.text === 'string' &&
+    typeof entry.timestamp === 'number' &&
+    typeof entry.confidence === 'number'
+  );
+};
 
 interface UsePostCallAnalysisReturn {
   postCallAnalysis: CallAnalytics | null;
@@ -53,6 +71,41 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
   const lastTranscriptRef = useRef<TranscriptEntry[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const fetchPersistedTranscript = useCallback(
+    async (callId: string, fallbackEntries: TranscriptEntry[]) => {
+      try {
+        const response = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/transcript`,
+          {
+            method: 'GET',
+            signal: abortControllerRef.current?.signal,
+          },
+        );
+
+        if (!response.ok) {
+          return fallbackEntries;
+        }
+
+        const json = (await response.json()) as { entries?: unknown };
+        const persistedEntries = Array.isArray(json.entries)
+          ? json.entries.filter(isTranscriptEntry)
+          : [];
+
+        return persistedEntries.length > 0 ? persistedEntries : fallbackEntries;
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw error;
+        }
+
+        captureException(error, {
+          extra: { context: 'fetchPersistedTranscript', callId },
+        });
+        return fallbackEntries;
+      }
+    },
+    [],
+  );
+
   const analyze = useCallback(
     async (callId: string, entries: TranscriptEntry[]) => {
       if (analyzedCallsRef.current.has(callId)) return;
@@ -66,9 +119,15 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
       setError(null);
 
       try {
-        const messages = entries.map((e) => ({
-          role: e.speaker === 'agent' ? 'sales_rep' : 'customer',
-          content: e.text,
+        const transcriptEntries = await fetchPersistedTranscript(callId, entries);
+
+        if (transcriptEntries.length === 0) {
+          throw new Error('No transcript available for analysis');
+        }
+
+        const messages = transcriptEntries.map((entry) => ({
+          role: entry.speaker === 'agent' ? 'sales_rep' : 'customer',
+          content: entry.text,
         }));
 
         const res = await authenticatedFetch(
@@ -92,20 +151,22 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
           throw new Error('Invalid postCallAnalysis response format');
         }
 
+        lastCallSidRef.current = callId;
+        lastTranscriptRef.current = transcriptEntries;
         setAnalysis(data);
 
-        authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/postCallAnalysis`,
+        const persistResponse = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           },
-        ).catch((err: unknown) => {
-          captureException(err, {
-            extra: { context: 'persistAnalysis', callId },
-          });
-        });
+        );
+
+        if (!persistResponse.ok) {
+          throw new Error(`Persist analysis API error: ${persistResponse.status}`);
+        }
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         captureException(err, { extra: { context: 'analyze', callId } });
@@ -116,10 +177,9 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
         setIsAnalyzing(false);
       }
     },
-    [setAnalysis, setIsAnalyzing, setError],
+    [fetchPersistedTranscript, setAnalysis, setIsAnalyzing, setError],
   );
 
-  // FIX: continuously capture transcript during active call to avoid race condition
   useEffect(() => {
     if (callState.status === 'active' && callState.callSid) {
       lastCallSidRef.current = callState.callSid;
@@ -127,7 +187,6 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     }
   }, [callState.status, callState.callSid, transcript]);
 
-  // auto-trigger when call transitions from active → ended
   useEffect(() => {
     const prev = prevStatusRef.current;
     prevStatusRef.current = callState.status;
@@ -137,12 +196,10 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
       callState.status === 'ended' &&
       callState.callSid
     ) {
-      // use the ref-captured transcript instead of current state
       void analyze(callState.callSid, lastTranscriptRef.current);
     }
   }, [callState.status, callState.callSid, analyze]);
 
-  // clear postCallAnalysis when a new call starts
   useEffect(() => {
     if (callState.status === 'idle') {
       if (abortControllerRef.current) {
@@ -154,7 +211,6 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
     }
   }, [callState.status, setAnalysis, setError]);
 
-  // retry with last known callSid + transcript
   const retry = useCallback(() => {
     if (lastCallSidRef.current && lastTranscriptRef.current.length > 0) {
       analyzedCallsRef.current.delete(lastCallSidRef.current);
