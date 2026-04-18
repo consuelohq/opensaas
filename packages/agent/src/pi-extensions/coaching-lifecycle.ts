@@ -16,13 +16,12 @@ const isPostCallMessage = (msg: AgentMessage): boolean =>
   msg.content.startsWith(POST_CALL_MARKER);
 
 // post-call analysis instructions — embedded so the library works without filesystem access
-const POST_CALL_INSTRUCTIONS = `You just finished a call. Analyze it and take action.
+const POST_CALL_INSTRUCTIONS = `You just finished a call. Analyze it for the permanent call record.
 
 1. Generate call analytics (sentiment, key moments, performance metrics)
-2. Log the call outcome in CRM (use the log_call tool)
-3. Update the deal if relevant (use the update_deal tool)
-4. Create follow-up tasks if needed (use the create_task tool)
-5. Create a call note with the summary (use the create_note tool)
+2. Write a concise factual summary of what happened
+3. Choose the best-fit call outcome
+4. List the concrete next steps that should happen after this call
 
 Respond with JSON:
 {
@@ -31,14 +30,17 @@ Respond with JSON:
     "sentiment": { "overall": "positive|negative|neutral|mixed", "customer": "string", "agent": "string", "trend": "improving|declining|stable" },
     "performance": { "talk_ratio": 0.0, "response_time_avg": 0.0, "objection_handling_score": 0.0 }
   },
-  "actions_taken": ["list of CRM actions performed"]
+  "summary": "string",
+  "outcome": "interested|not_interested|callback_scheduled|voicemail|no_answer|wrong_number|other",
+  "next_steps": ["string"]
 }
 
 Rules:
-- Always log the call outcome
-- Always create a note with key takeaways
-- If the customer expressed interest, update the deal stage
-- If a follow-up was promised, create a task with a due date`;
+- Base the analysis only on the transcript and completed-call metadata
+- Do not mention or call CRM tools
+- Use "N/A" for timestamps when the transcript does not provide them
+- Keep the summary factual and concise
+- Only include next steps that are directly supported by the call`;
 
 export type RecentlyEndedCall = {
   contactName: string;
@@ -63,7 +65,9 @@ export const createCoachingLifecycle = (
   let lastSuggestions: SkillSuggestion[] = [];
 
   return {
-    transformContext: async (messages: AgentMessage[]): Promise<AgentMessage[]> => {
+    transformContext: async (
+      messages: AgentMessage[],
+    ): Promise<AgentMessage[]> => {
       try {
         const recentCall = await getRecentlyEndedCall();
 
@@ -74,7 +78,9 @@ export const createCoachingLifecycle = (
         }
 
         // suggest post-call analysis skill
-        lastSuggestions = [{ skillId: 'post-call-analysis', reason: 'call recently ended' }];
+        lastSuggestions = [
+          { skillId: 'post-call-analysis', reason: 'call recently ended' },
+        ];
 
         const block = [
           POST_CALL_MARKER,

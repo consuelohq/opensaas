@@ -2,7 +2,11 @@ import { createHash } from 'node:crypto';
 import type { IncomingMessage, Server as HttpServer } from 'http';
 
 import * as Sentry from '@sentry/node';
-import { AgentService, createCoachingDetector, createTranscriptContext } from '@consuelo/agent';
+import {
+  AgentService,
+  createCoachingDetector,
+  createTranscriptContext,
+} from '@consuelo/agent';
 import type {
   ActiveCallState,
   AgentConfig,
@@ -21,7 +25,6 @@ import { trackLLMUsage } from '../services/posthog.js';
 import type { AuthContext } from '../types.js';
 import type { RouteDefinition } from './index.js';
 
-const auditLogger = createLogger('api:audit');
 const routeLogger = createLogger('api:coaching');
 
 let CoachModule: typeof import('@consuelo/coaching') | null = null;
@@ -42,11 +45,6 @@ interface CoachBody {
   messages?: Array<{ role: string; content: string }>;
   contextChunks?: string[];
   callId?: string;
-}
-
-interface AnalyzeBody {
-  messages: Array<{ role: string; content: string }>;
-  callSid?: string;
 }
 
 interface RefreshBody {
@@ -112,37 +110,6 @@ interface WebSocketClient {
   on: (event: string, handler: (...args: unknown[]) => void) => void;
 }
 
-interface SnakeCaseCallAnalytics {
-  call_sid: string;
-  user_id: string;
-  phone_number: string;
-  call_date: string;
-  key_moments: Array<{
-    timestamp: string;
-    type: string;
-    description: string;
-    transcript_snippet: string;
-  }>;
-  sentiment_analysis: {
-    customer_sentiment: string;
-    engagement_level: string;
-    objections_raised: string[];
-    buying_signals: string[];
-  };
-  performance_metrics: {
-    talk_ratio: number;
-    questions_asked: number;
-    objections_handled: number;
-    next_steps_established: boolean;
-    call_duration_minutes: number;
-  };
-  overall_score: number;
-  strengths: string[];
-  improvement_areas: string[];
-  action_items: string[];
-  generated_at: string;
-}
-
 type CallTranscriptRuntime = {
   entries: TranscriptEntry[];
   talkingPoints: TalkingPoints | null;
@@ -195,7 +162,10 @@ const cleanupCallState = (callId: string): void => {
 };
 
 const incrementMediaConnectionCount = (callId: string): void => {
-  mediaConnectionsByCall.set(callId, (mediaConnectionsByCall.get(callId) ?? 0) + 1);
+  mediaConnectionsByCall.set(
+    callId,
+    (mediaConnectionsByCall.get(callId) ?? 0) + 1,
+  );
 };
 
 const decrementMediaConnectionCount = (callId: string): void => {
@@ -268,9 +238,8 @@ const normalizeTalkingPoints = (value: unknown): TalkingPoints => {
           return { objection, response };
         })
         .filter(
-          (
-            entry,
-          ): entry is { objection: string; response: string } => entry !== null,
+          (entry): entry is { objection: string; response: string } =>
+            entry !== null,
         )
     : [];
 
@@ -281,7 +250,6 @@ const normalizeTalkingPoints = (value: unknown): TalkingPoints => {
     objection_responses: objectionResponses,
   };
 };
-
 
 const deriveSecret = (
   appSecret: string,
@@ -296,7 +264,8 @@ const getHeaderValue = (value: string | string[] | undefined): string =>
   Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 
 const buildUpgradeUrl = (request: IncomingMessage): string => {
-  const protocol = getHeaderValue(request.headers['x-forwarded-proto']) || 'https';
+  const protocol =
+    getHeaderValue(request.headers['x-forwarded-proto']) || 'https';
   const host = getHeaderValue(request.headers.host);
 
   return `${protocol}://${host}${request.url ?? ''}`;
@@ -358,9 +327,12 @@ const validateMediaUpgradeRequest = async (
     const twilio = await import('twilio');
     return twilio.default.validateRequest(authToken, signature, upgradeUrl, {});
   } catch (error: unknown) {
-    routeLogger.error('[Coaching] media websocket signature validation failed', {
-      error: error instanceof Error ? error.message : 'unknown error',
-    });
+    routeLogger.error(
+      '[Coaching] media websocket signature validation failed',
+      {
+        error: error instanceof Error ? error.message : 'unknown error',
+      },
+    );
     return false;
   }
 };
@@ -392,7 +364,9 @@ const resolveWorkspaceIdForCall = async (
 ): Promise<string | null> => {
   try {
     const pool = await getPool();
-    const { rows } = await pool.query(SQL_GET_WORKSPACE_ID_BY_CALL_SID, [callId]);
+    const { rows } = await pool.query(SQL_GET_WORKSPACE_ID_BY_CALL_SID, [
+      callId,
+    ]);
 
     return typeof rows[0]?.workspace_id === 'string'
       ? rows[0].workspace_id
@@ -427,38 +401,6 @@ const countWords = (entries: TranscriptEntry[]): number =>
       sum + entry.text.split(/\s+/).filter((word) => word.length > 0).length,
     0,
   );
-
-const transformCallAnalytics = (
-  input: SnakeCaseCallAnalytics,
-  callSid?: string,
-): Record<string, unknown> => ({
-  id: `${input.call_sid}-${Date.now()}`,
-  callId: callSid ?? input.call_sid,
-  keyMoments: input.key_moments.map((moment) => ({
-    timestamp: new Date(moment.timestamp).getTime(),
-    type: moment.type,
-    text: moment.description,
-    speaker: 'agent' as const,
-  })),
-  sentiment: {
-    overall: input.sentiment_analysis.customer_sentiment,
-    agentScore: Math.round(input.performance_metrics.talk_ratio * 100),
-    customerScore: Math.round(
-      (1 - input.performance_metrics.talk_ratio) * 100,
-    ),
-    trajectory: 'stable' as const,
-  },
-  performanceScore: input.overall_score,
-  summary:
-    input.strengths.join(' ') + ' ' + input.improvement_areas.join(' '),
-  duration: input.performance_metrics.call_duration_minutes * 60,
-  outcome: 'other' as const,
-  nextSteps: input.action_items,
-  tokensUsed: { input: 0, output: 0 },
-  modelUsed: 'groq',
-  latencyMs: 0,
-  createdAt: input.generated_at,
-});
 
 const getRuntime = async (
   callId: string,
@@ -536,10 +478,17 @@ const coerceTranscriptEntry = (value: unknown): TranscriptEntry | null => {
   }
 
   const id = typeof value.id === 'string' ? value.id : null;
-  const speaker = value.speaker === 'agent' ? 'agent' : value.speaker === 'customer' ? 'customer' : null;
+  const speaker =
+    value.speaker === 'agent'
+      ? 'agent'
+      : value.speaker === 'customer'
+        ? 'customer'
+        : null;
   const text = typeof value.text === 'string' ? value.text : null;
-  const timestamp = typeof value.timestamp === 'number' ? value.timestamp : null;
-  const confidence = typeof value.confidence === 'number' ? value.confidence : 0.9;
+  const timestamp =
+    typeof value.timestamp === 'number' ? value.timestamp : null;
+  const confidence =
+    typeof value.confidence === 'number' ? value.confidence : 0.9;
 
   if (!id || !speaker || !text || timestamp === null) {
     return null;
@@ -652,7 +601,8 @@ const buildCoachingAgent = async (
       memories: [],
     };
     const config: AgentConfig = {
-      systemPrompt: 'You are a live sales coaching agent. Return valid JSON only.',
+      systemPrompt:
+        'You are a live sales coaching agent. Return valid JSON only.',
       model: 'openai/gpt-oss-120b',
       provider: 'groq',
       maxTokens: 900,
@@ -677,7 +627,10 @@ const buildCoachingAgent = async (
   }
 };
 
-const sendToClients = (callId: string, message: CoachingStreamMessage): void => {
+const sendToClients = (
+  callId: string,
+  message: CoachingStreamMessage,
+): void => {
   const clients = clientsByCall.get(callId);
   if (!clients) {
     return;
@@ -722,7 +675,10 @@ export const broadcastTranscript = (
   sendToClients(callId, { type: 'transcript', entry });
 };
 
-const broadcastTalkingPoints = (callId: string, talkingPoints: TalkingPoints): void => {
+const broadcastTalkingPoints = (
+  callId: string,
+  talkingPoints: TalkingPoints,
+): void => {
   sendToClients(callId, { type: 'coaching', talkingPoints });
 };
 
@@ -850,7 +806,11 @@ const runPiCoaching = async (
         error: error instanceof Error ? error.message : 'unknown error',
         rawTextSnippet,
       });
-      broadcastCoachingError(callId, 'Invalid coaching payload', rawTextSnippet);
+      broadcastCoachingError(
+        callId,
+        'Invalid coaching payload',
+        rawTextSnippet,
+      );
       if (runtime.talkingPoints === null) {
         runtime.talkingPoints = normalizeTalkingPoints(null);
       }
@@ -898,16 +858,23 @@ const appendTranscriptEntry = async (
   runtime.entries = [...runtime.entries, entry];
 
   if (!runtime.workspaceId) {
-    routeLogger.warn('[Coaching] skipped transcript persistence without workspace', {
-      callId,
-    });
+    routeLogger.warn(
+      '[Coaching] skipped transcript persistence without workspace',
+      {
+        callId,
+      },
+    );
     broadcastTranscript(callId, entry);
     void runPiCoaching(callId, false, workspaceId);
     return;
   }
 
   try {
-    const persisted = await persistTranscriptEntry(callId, runtime.workspaceId, entry);
+    const persisted = await persistTranscriptEntry(
+      callId,
+      runtime.workspaceId,
+      entry,
+    );
     if (!persisted) {
       runtime.entries = runtime.entries.filter(
         (existingEntry) => existingEntry.id !== entry.id,
@@ -944,7 +911,6 @@ const getLegacyCoach = async () => {
   }
 };
 
-
 const handleCoachingRefreshRequest = async (
   req: { body?: unknown; auth?: AuthContext },
   res: {
@@ -975,7 +941,11 @@ const handleCoachingRefreshRequest = async (
       return;
     }
 
-    const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
+    const talkingPoints = await runPiCoaching(
+      body.callId,
+      true,
+      auth.workspaceId,
+    );
     res.status(200).json({ data: talkingPoints });
   } catch (error: unknown) {
     Sentry.captureException(error);
@@ -1000,7 +970,11 @@ export const coachingRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const talkingPoints = await runPiCoaching(body.callId, true, auth.workspaceId);
+        const talkingPoints = await runPiCoaching(
+          body.callId,
+          true,
+          auth.workspaceId,
+        );
         res.status(200).json({ data: talkingPoints });
         return;
       }
@@ -1064,76 +1038,6 @@ export const coachingRoutes = (): RouteDefinition[] => [
       await handleCoachingRefreshRequest(req, res);
     }),
   },
-  {
-    method: 'POST',
-    path: '/v1/coaching/analyze',
-    handler: errorHandler(async (req, res) => {
-      const auth = requireAuth(req, res);
-      if (auth === null) return;
-
-      const body = req.body as AnalyzeBody | undefined;
-      if (!body?.messages?.length) {
-        res.status(400).json({
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'Missing "messages" array',
-          },
-        });
-        return;
-      }
-
-      try {
-        const coach = await getLegacyCoach();
-        const messages = body.messages.map((message) => ({
-          role: message.role === 'customer' ? 'customer' : 'sales_rep',
-          content: message.content,
-        }));
-        const result = await withTimeout(
-          coach.analyzeCall(messages as Parameters<typeof coach.analyzeCall>[0], {
-            callSid: body.callSid,
-            userId: auth.userId,
-          }),
-          LLM_TIMEOUT_MS,
-        );
-
-        res.status(200).json({
-          data: transformCallAnalytics(
-            result as unknown as SnakeCaseCallAnalytics,
-            body.callSid,
-          ),
-        });
-      } catch (error: unknown) {
-        Sentry.captureException(error);
-        const message =
-          error instanceof Error ? error.message : 'analysis request failed';
-        res.status(500).json({ error: { code: 'ANALYSIS_FAILED', message } });
-      }
-    }),
-  },
-  {
-    method: 'POST',
-    path: '/v1/calls/:callId/analysis',
-    handler: errorHandler(async (req, res) => {
-      const auth = requireAuth(req, res);
-      if (auth === null) return;
-
-      const callId = req.params?.callId;
-      if (!callId) {
-        res.status(400).json({
-          error: { code: 'INVALID_REQUEST', message: 'Missing callId' },
-        });
-        return;
-      }
-
-      auditLogger.info('coaching.analysis_persisted', {
-        action: 'coaching.analysis_persisted',
-        userId: auth.userId ?? 'anonymous',
-        outcome: 'success',
-        callId,
-      });
-      res.status(200).json({ data: { callId, persisted: true } });
-    }),
-  },
 ];
 
 export const setupCoachingWebSocket = async (
@@ -1150,7 +1054,9 @@ export const setupCoachingWebSocket = async (
 
         try {
           if (url.pathname === '/v1/coaching/stream') {
-            const auth = await validateStreamToken(url.searchParams.get('token'));
+            const auth = await validateStreamToken(
+              url.searchParams.get('token'),
+            );
             const callId = url.searchParams.get('callId');
             if (
               !auth ||
@@ -1169,7 +1075,8 @@ export const setupCoachingWebSocket = async (
           }
 
           if (url.pathname === '/v1/coaching/media') {
-            const isValidMediaUpgrade = await validateMediaUpgradeRequest(request);
+            const isValidMediaUpgrade =
+              await validateMediaUpgradeRequest(request);
             if (!isValidMediaUpgrade) {
               socket.destroy();
               return;
@@ -1191,7 +1098,10 @@ export const setupCoachingWebSocket = async (
 
     streamWss.on(
       'connection',
-      (ws: unknown, req: IncomingMessage & { url?: string; auth?: AuthContext }) => {
+      (
+        ws: unknown,
+        req: IncomingMessage & { url?: string; auth?: AuthContext },
+      ) => {
         const client = ws as WebSocketClient;
         const url = new URL(req.url ?? '', 'http://localhost');
         const callId = url.searchParams.get('callId');
@@ -1207,16 +1117,17 @@ export const setupCoachingWebSocket = async (
         clientsByCall.get(callId)?.add(client);
         void sendSnapshot(client, callId, auth.workspaceId);
 
-      client.on('close', () => {
-        clientsByCall.get(callId)?.delete(client);
-        if (clientsByCall.get(callId)?.size === 0) {
-          clientsByCall.delete(callId);
-          if ((mediaConnectionsByCall.get(callId) ?? 0) === 0) {
-            cleanupCallState(callId);
+        client.on('close', () => {
+          clientsByCall.get(callId)?.delete(client);
+          if (clientsByCall.get(callId)?.size === 0) {
+            clientsByCall.delete(callId);
+            if ((mediaConnectionsByCall.get(callId) ?? 0) === 0) {
+              cleanupCallState(callId);
+            }
           }
-        }
-      });
-    });
+        });
+      },
+    );
 
     mediaWss.on('connection', (ws: unknown, req: { url?: string }) => {
       const client = ws as WebSocketClient;
@@ -1251,7 +1162,10 @@ export const setupCoachingWebSocket = async (
 
         const currentCallId = callId;
         const runtime = await getRuntime(currentCallId);
-        if (!runtime.workspaceId || transcriptionAbortController.signal.aborted) {
+        if (
+          !runtime.workspaceId ||
+          transcriptionAbortController.signal.aborted
+        ) {
           return;
         }
 
@@ -1291,7 +1205,11 @@ export const setupCoachingWebSocket = async (
             timestamp: Date.now(),
             confidence: 0.9,
           };
-          await appendTranscriptEntry(currentCallId, entry, runtime.workspaceId);
+          await appendTranscriptEntry(
+            currentCallId,
+            entry,
+            runtime.workspaceId,
+          );
         } catch (error: unknown) {
           if (
             transcriptionAbortController.signal.aborted ||
@@ -1321,7 +1239,10 @@ export const setupCoachingWebSocket = async (
         }
 
         try {
-          const payload = JSON.parse(rawData.toString()) as Record<string, unknown>;
+          const payload = JSON.parse(rawData.toString()) as Record<
+            string,
+            unknown
+          >;
           const eventType = payload.event;
 
           if (eventType === 'start' && isRecord(payload.start)) {
@@ -1361,14 +1282,19 @@ export const setupCoachingWebSocket = async (
           ) {
             const track = payload.media.track;
             if (track !== 'inbound' && track !== 'outbound') {
-              routeLogger.error('[Coaching] dropped media frame with invalid track', {
-                callId,
-                track,
-              });
+              routeLogger.error(
+                '[Coaching] dropped media frame with invalid track',
+                {
+                  callId,
+                  track,
+                },
+              );
               return;
             }
 
-            audioBuffers[track].push(Buffer.from(payload.media.payload, 'base64'));
+            audioBuffers[track].push(
+              Buffer.from(payload.media.payload, 'base64'),
+            );
           }
         } catch (err: unknown) {
           routeLogger.error('[Coaching] dropped malformed media frame', {

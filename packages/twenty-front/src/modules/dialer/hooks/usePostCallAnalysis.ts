@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { captureException } from '@sentry/react';
+import { useCallback, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react';
+import { t } from '@lingui/core/macro';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -7,18 +8,12 @@ import {
   analysisErrorState,
   isAnalyzingState,
   postCallAnalysisState,
-  transcriptState,
 } from '@/dialer/states/coachingState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
-import {
-  type CallAnalytics,
-  type TranscriptEntry,
-} from '@/dialer/types/coaching';
+import { type CallAnalytics } from '@/dialer/types/coaching';
 
-const isValidCallAnalytics = (
-  data: unknown,
-): data is CallAnalytics => {
+const isValidCallAnalytics = (data: unknown): data is CallAnalytics => {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
   return (
@@ -31,33 +26,20 @@ const isValidCallAnalytics = (
   );
 };
 
-const isTranscriptEntry = (
-  data: unknown,
-): data is TranscriptEntry => {
-  if (!data || typeof data !== 'object') return false;
-
-  const entry = data as Record<string, unknown>;
-
-  return (
-    typeof entry.id === 'string' &&
-    (entry.speaker === 'agent' || entry.speaker === 'customer') &&
-    typeof entry.text === 'string' &&
-    typeof entry.timestamp === 'number' &&
-    typeof entry.confidence === 'number'
-  );
+type AnalyzeOptions = {
+  force?: boolean;
 };
 
 interface UsePostCallAnalysisReturn {
   postCallAnalysis: CallAnalytics | null;
   isAnalyzing: boolean;
   analysisError: string | null;
-  analyze: (callId: string, transcript: TranscriptEntry[]) => Promise<void>;
+  analyze: (callId: string, options?: AnalyzeOptions) => Promise<void>;
   retry: () => void;
 }
 
 export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
-  const callState = useRecoilValue(callStateAtom);
-  const transcript = useRecoilValue(transcriptState);
+  const { status: callStatus, callSid } = useRecoilValue(callStateAtom);
   const setAnalysis = useSetRecoilState(postCallAnalysisState);
   const setIsAnalyzing = useSetRecoilState(isAnalyzingState);
   const setError = useSetRecoilState(analysisErrorState);
@@ -65,158 +47,182 @@ export const usePostCallAnalysis = (): UsePostCallAnalysisReturn => {
   const isAnalyzing = useRecoilValue(isAnalyzingState);
   const analysisError = useRecoilValue(analysisErrorState);
 
-  const prevStatusRef = useRef(callState.status);
-  const analyzedCallsRef = useRef<Set<string>>(new Set());
-  const lastCallSidRef = useRef<string | null>(null);
-  const lastTranscriptRef = useRef<TranscriptEntry[]>([]);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const [analyzedCallIds, setAnalyzedCallIds] = useState<string[]>([]);
+  const [lastCallSid, setLastCallSid] = useState<string | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
-  const fetchPersistedTranscript = useCallback(
-    async (callId: string, fallbackEntries: TranscriptEntry[]) => {
+  const clearAnalyzedCall = useCallback((callId: string) => {
+    setAnalyzedCallIds((previousCallIds) =>
+      previousCallIds.filter((existingCallId) => existingCallId !== callId),
+    );
+  }, []);
+
+  const markAnalyzedCall = useCallback((callId: string) => {
+    setAnalyzedCallIds((previousCallIds) =>
+      previousCallIds.includes(callId)
+        ? previousCallIds
+        : [...previousCallIds, callId],
+    );
+  }, []);
+
+  const fetchPersistedAnalysis = useCallback(
+    async (callId: string, signal?: AbortSignal) => {
       try {
         const response = await authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/transcript`,
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}`,
           {
             method: 'GET',
-            signal: abortControllerRef.current?.signal,
+            signal,
           },
         );
 
         if (!response.ok) {
-          return fallbackEntries;
+          const error = new Error(`Call fetch API error: ${response.status}`);
+          Sentry.captureException(error, {
+            extra: { context: 'fetchPersistedAnalysisHttp', callId },
+          });
+          return null;
         }
 
-        const json = (await response.json()) as { entries?: unknown };
-        const persistedEntries = Array.isArray(json.entries)
-          ? json.entries.filter(isTranscriptEntry)
-          : [];
+        const json = (await response.json()) as { analysis?: unknown };
 
-        return persistedEntries.length > 0 ? persistedEntries : fallbackEntries;
+        return isValidCallAnalytics(json.analysis) ? json.analysis : null;
       } catch (error: unknown) {
         if (error instanceof Error && error.name === 'AbortError') {
           throw error;
         }
 
-        captureException(error, {
-          extra: { context: 'fetchPersistedTranscript', callId },
+        Sentry.captureException(error, {
+          extra: { context: 'fetchPersistedAnalysis', callId },
         });
-        return fallbackEntries;
+        return null;
       }
     },
     [],
   );
 
   const analyze = useCallback(
-    async (callId: string, entries: TranscriptEntry[]) => {
-      if (analyzedCallsRef.current.has(callId)) return;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    async (callId: string, options?: AnalyzeOptions) => {
+      if (analyzedCallIds.includes(callId) && options?.force !== true) {
+        return;
       }
-      abortControllerRef.current = new AbortController();
 
-      analyzedCallsRef.current.add(callId);
+      abortController?.abort();
+      const nextAbortController = new AbortController();
+      setAbortController(nextAbortController);
+
+      markAnalyzedCall(callId);
       setIsAnalyzing(true);
       setError(null);
 
       try {
-        const transcriptEntries = await fetchPersistedTranscript(callId, entries);
+        const persistedAnalysis = await fetchPersistedAnalysis(
+          callId,
+          nextAbortController.signal,
+        );
 
-        if (transcriptEntries.length === 0) {
-          throw new Error('No transcript available for analysis');
+        if (persistedAnalysis !== null && options?.force !== true) {
+          setLastCallSid(callId);
+          setAnalysis(persistedAnalysis);
+          return;
         }
 
-        const messages = transcriptEntries.map((entry) => ({
-          role: entry.speaker === 'agent' ? 'sales_rep' : 'customer',
-          content: entry.text,
-        }));
-
-        const res = await authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/coaching/analyze`,
+        const query = options?.force === true ? '?force=true' : '';
+        const response = await authenticatedFetch(
+          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis${query}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: abortControllerRef.current.signal,
-            body: JSON.stringify({ messages, callSid: callId }),
+            signal: nextAbortController.signal,
           },
         );
 
-        if (!res.ok) {
-          throw new Error(`Analysis API error: ${res.status}`);
+        if (!response.ok) {
+          const error = new Error(`Analysis API error: ${response.status}`);
+          Sentry.captureException(error, {
+            extra: { context: 'analyzeHttp', callId },
+          });
+          throw error;
         }
 
-        const json = (await res.json()) as { data: unknown };
+        const json = (await response.json()) as { data: unknown };
         const data = json.data;
 
         if (!isValidCallAnalytics(data)) {
-          throw new Error('Invalid postCallAnalysis response format');
+          throw new Error(t`Invalid post-call analysis response format`);
         }
 
-        lastCallSidRef.current = callId;
-        lastTranscriptRef.current = transcriptEntries;
+        setLastCallSid(callId);
         setAnalysis(data);
-
-        const persistResponse = await authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/calls/${callId}/analysis`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-          },
-        );
-
-        if (!persistResponse.ok) {
-          throw new Error(`Persist analysis API error: ${persistResponse.status}`);
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
         }
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') return;
-        captureException(err, { extra: { context: 'analyze', callId } });
-        const message = err instanceof Error ? err.message : 'Analysis failed';
+
+        Sentry.captureException(error, {
+          extra: { context: 'analyze', callId },
+        });
+        const message =
+          error instanceof Error ? error.message : t`Analysis failed`;
         setError(message);
-        analyzedCallsRef.current.delete(callId);
+        clearAnalyzedCall(callId);
       } finally {
         setIsAnalyzing(false);
+        setAbortController((currentAbortController) =>
+          currentAbortController === nextAbortController
+            ? null
+            : currentAbortController,
+        );
       }
     },
-    [fetchPersistedTranscript, setAnalysis, setIsAnalyzing, setError],
+    [
+      abortController,
+      analyzedCallIds,
+      clearAnalyzedCall,
+      fetchPersistedAnalysis,
+      markAnalyzedCall,
+      setAnalysis,
+      setError,
+      setIsAnalyzing,
+    ],
   );
 
   useEffect(() => {
-    if (callState.status === 'active' && callState.callSid) {
-      lastCallSidRef.current = callState.callSid;
-      lastTranscriptRef.current = transcript;
+    if (callStatus === 'active' && callSid !== null) {
+      setLastCallSid(callSid);
     }
-  }, [callState.status, callState.callSid, transcript]);
+  }, [callSid, callStatus]);
 
   useEffect(() => {
-    const prev = prevStatusRef.current;
-    prevStatusRef.current = callState.status;
-
     if (
-      prev === 'active' &&
-      callState.status === 'ended' &&
-      callState.callSid
+      callStatus === 'ended' &&
+      callSid !== null &&
+      lastCallSid === callSid &&
+      !analyzedCallIds.includes(callSid) &&
+      !isAnalyzing
     ) {
-      void analyze(callState.callSid, lastTranscriptRef.current);
+      void analyze(callSid);
     }
-  }, [callState.status, callState.callSid, analyze]);
+  }, [analyze, analyzedCallIds, callSid, callStatus, isAnalyzing, lastCallSid]);
 
   useEffect(() => {
-    if (callState.status === 'idle') {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
+    if (callStatus === 'idle') {
+      abortController?.abort();
+      setAbortController(null);
+      setAnalyzedCallIds([]);
+      setLastCallSid(null);
       setAnalysis(null);
       setError(null);
     }
-  }, [callState.status, setAnalysis, setError]);
+  }, [abortController, callStatus, setAnalysis, setError]);
 
   const retry = useCallback(() => {
-    if (lastCallSidRef.current && lastTranscriptRef.current.length > 0) {
-      analyzedCallsRef.current.delete(lastCallSidRef.current);
-      void analyze(lastCallSidRef.current, lastTranscriptRef.current);
+    if (lastCallSid !== null) {
+      clearAnalyzedCall(lastCallSid);
+      void analyze(lastCallSid, { force: true });
     }
-  }, [analyze]);
+  }, [analyze, clearAnalyzedCall, lastCallSid]);
 
   return { postCallAnalysis, isAnalyzing, analysisError, analyze, retry };
 };

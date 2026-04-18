@@ -4,6 +4,7 @@ import { captureException } from '@sentry/react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
+import { usePostCallAnalysis } from '@/dialer/hooks/usePostCallAnalysis';
 import { cookieStorage } from '~/utils/cookie-storage';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import {
@@ -151,6 +152,7 @@ interface UseTranscriptReturn {
 }
 
 export const useTranscript = (): UseTranscriptReturn => {
+  usePostCallAnalysis();
   const { t } = useLingui();
   const { status: callStatus, callSid } = useRecoilValue(callStateAtom);
   const transcript = useRecoilValue(transcriptState);
