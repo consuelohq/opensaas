@@ -27,6 +27,10 @@ jest.mock('../../services/redis', () => ({
     getPrimaryNumber: jest.fn(),
     setPrimaryNumber: jest.fn(),
     deletePrimaryNumber: jest.fn(),
+    getPhoneNumbersCache: jest.fn(),
+    setPhoneNumbersCache: jest.fn(),
+    getVoiceStatusCache: jest.fn(),
+    setVoiceStatusCache: jest.fn(),
   },
 }));
 
@@ -78,6 +82,22 @@ jest.mock('../../services/twilio-config', () => ({
   isHostedInstance: jest.fn().mockReturnValue(false),
 }));
 
+jest.mock('../../services/workspace-phone-numbers', () => ({
+  findWorkspacePhoneNumberBySid: jest.fn(),
+  getPhoneNumberEntitlement: jest.fn(),
+  listWorkspacePhoneNumbers: jest.fn(),
+  recordProvisionedPhoneNumber: jest.fn(),
+  releaseWorkspacePhoneNumber: jest.fn(),
+}));
+
+jest.mock('../../services/phone-number-addons', () => ({
+  createPhoneNumberAddonCheckout: jest.fn(),
+}));
+
+jest.mock('../../services/phone-number-recommendations', () => ({
+  recommendPhoneNumbers: jest.fn(),
+}));
+
 jest.mock('twilio', () => ({
   validateRequest: jest.fn().mockReturnValue(true),
 }));
@@ -92,6 +112,15 @@ import { voiceRoutes } from '../voice';
 import { redisService } from '../../services/redis';
 import { getDialerForWorkspace, sharedDialer, sharedCallerIdLockService } from '../../shared/dialer';
 import { getWorkspaceTwilioConfig, getDecryptedCredentials, isHostedInstance } from '../../services/twilio-config';
+import {
+  findWorkspacePhoneNumberBySid,
+  getPhoneNumberEntitlement,
+  listWorkspacePhoneNumbers,
+  recordProvisionedPhoneNumber,
+  releaseWorkspacePhoneNumber,
+} from '../../services/workspace-phone-numbers';
+import { createPhoneNumberAddonCheckout } from '../../services/phone-number-addons';
+import { recommendPhoneNumbers } from '../../services/phone-number-recommendations';
 
 // typed references to mocked modules
 const mockRedis = redisService as unknown as Record<string, jest.Mock>;
@@ -101,6 +130,19 @@ const mockTwilioConfig = {
   getWorkspaceTwilioConfig: getWorkspaceTwilioConfig as jest.Mock,
   getDecryptedCredentials: getDecryptedCredentials as jest.Mock,
   isHostedInstance: isHostedInstance as unknown as jest.Mock,
+};
+const mockWorkspacePhoneNumbers = {
+  findWorkspacePhoneNumberBySid: findWorkspacePhoneNumberBySid as jest.Mock,
+  getPhoneNumberEntitlement: getPhoneNumberEntitlement as jest.Mock,
+  listWorkspacePhoneNumbers: listWorkspacePhoneNumbers as jest.Mock,
+  recordProvisionedPhoneNumber: recordProvisionedPhoneNumber as jest.Mock,
+  releaseWorkspacePhoneNumber: releaseWorkspacePhoneNumber as jest.Mock,
+};
+const mockPhoneNumberAddons = {
+  createPhoneNumberAddonCheckout: createPhoneNumberAddonCheckout as jest.Mock,
+};
+const mockPhoneNumberRecommendations = {
+  recommendPhoneNumbers: recommendPhoneNumbers as jest.Mock,
 };
 
 // wire up the dialer mocks
@@ -149,6 +191,35 @@ beforeEach(() => {
   mockRedis.getPrimaryNumber.mockResolvedValue(null);
   mockRedis.setPrimaryNumber.mockResolvedValue(undefined);
   mockRedis.deletePrimaryNumber.mockResolvedValue(undefined);
+  mockRedis.getPhoneNumbersCache.mockResolvedValue(null);
+  mockRedis.setPhoneNumbersCache.mockResolvedValue(undefined);
+  mockRedis.getVoiceStatusCache.mockResolvedValue(null);
+  mockRedis.setVoiceStatusCache.mockResolvedValue(undefined);
+  mockWorkspacePhoneNumbers.getPhoneNumberEntitlement.mockResolvedValue({
+    canProvision: true,
+    includedSlots: 3,
+    numberPackSlots: 0,
+    remainingSlots: 3,
+    singleNumberAddOnSlots: 0,
+    totalSlots: 3,
+    usedSlots: 0,
+  });
+  mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValue([]);
+  mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValue({
+    workspace_id: 'ws-test-001',
+    phone_number: '+15551234567',
+    friendly_name: 'Main',
+    area_code: '555',
+    twilio_sid: 'PN-001',
+    ownership_type: 'included',
+    status: 'active',
+  });
+  mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber.mockResolvedValue(undefined);
+  mockWorkspacePhoneNumbers.releaseWorkspacePhoneNumber.mockResolvedValue(undefined);
+  mockPhoneNumberAddons.createPhoneNumberAddonCheckout.mockResolvedValue({
+    url: 'https://checkout.stripe.test/session',
+  });
+  mockPhoneNumberRecommendations.recommendPhoneNumbers.mockResolvedValue([]);
 });
 
 // ============================================================
@@ -162,11 +233,26 @@ describe('GET /v1/phone-numbers', () => {
     mockDialer.listNumbers.mockResolvedValueOnce([
       { phoneNumber: '+15551234567', friendlyName: 'Main', twilioSid: 'PN-001' },
     ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: false,
+        ownershipType: 'included',
+        twilioSid: 'PN-001',
+        workspaceId: 'ws-test-001',
+      },
+    ]);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({
       phoneNumbers: [
-        expect.objectContaining({ phoneNumber: '+15551234567', friendlyName: 'Main' }),
+        expect.objectContaining({
+          phoneNumber: '+15551234567',
+          friendlyName: 'Main',
+          ownershipType: 'included',
+        }),
       ],
     });
   });
@@ -216,6 +302,62 @@ describe('GET /v1/phone-numbers/available', () => {
   });
 });
 
+
+// ============================================================
+// POST /v1/phone-numbers/recommendations
+// ============================================================
+
+describe('POST /v1/phone-numbers/recommendations', () => {
+  const route = () => findRoute('POST', '/v1/phone-numbers/recommendations');
+
+  it('returns ranked recommendations', async () => {
+    mockPhoneNumberRecommendations.recommendPhoneNumbers.mockResolvedValueOnce([
+      { phoneNumber: '+14155550123', areaCode: '415', friendlyName: 'SF', reason: 'matched san francisco', score: 97 },
+    ]);
+    const res = await exec(route(), authReq({ body: { query: 'san francisco sales line' } }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      available: [expect.objectContaining({ phoneNumber: '+14155550123', score: 97 })],
+    });
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await exec(route(), noAuthReq({ body: { query: 'miami' } }));
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 400 for short query', async () => {
+    const res = await exec(route(), authReq({ body: { query: 'a' } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_REQUEST');
+  });
+});
+
+// ============================================================
+// POST /v1/phone-numbers/checkout
+// ============================================================
+
+describe('POST /v1/phone-numbers/checkout', () => {
+  const route = () => findRoute('POST', '/v1/phone-numbers/checkout');
+
+  it('creates checkout for extra phone number slot', async () => {
+    const res = await exec(route(), authReq({ body: { quantity: 1 } }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ url: 'https://checkout.stripe.test/session' });
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await exec(route(), noAuthReq({ body: { quantity: 1 } }));
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 400 for invalid quantity', async () => {
+    const res = await exec(route(), authReq({ body: { quantity: 0 } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_REQUEST');
+  });
+});
+
 // ============================================================
 // POST /v1/phone-numbers/provision
 // ============================================================
@@ -224,11 +366,12 @@ describe('POST /v1/phone-numbers/provision', () => {
   const route = () => findRoute('POST', '/v1/phone-numbers/provision');
 
   it('provisions a number successfully', async () => {
-    mockDialer.provisionNumber.mockResolvedValueOnce({ success: true, sid: 'PN-new', phoneNumber: '+15559990000' });
+    mockDialer.provisionNumber.mockResolvedValueOnce({ success: true, sid: 'PN-new', phoneNumber: '+15559990000', areaCode: '555' });
     mockDialer.listNumbers.mockResolvedValueOnce([{ twilioSid: 'PN-new' }]);
     const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
     expect(res.statusCode).toBe(200);
     expect((res.body as { success: boolean }).success).toBe(true);
+    expect(mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber).toHaveBeenCalled();
   });
 
   it('returns 401 without auth', async () => {
@@ -247,6 +390,42 @@ describe('POST /v1/phone-numbers/provision', () => {
     const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
     expect(res.statusCode).toBe(400);
     expect((res.body as { error: { code: string } }).error.code).toBe('PROVISION_FAILED');
+  });
+
+  it('returns 400 when no phone number slots remain', async () => {
+    mockWorkspacePhoneNumbers.getPhoneNumberEntitlement.mockResolvedValueOnce({
+      canProvision: false,
+      includedSlots: 3,
+      numberPackSlots: 0,
+      remainingSlots: 0,
+      singleNumberAddOnSlots: 0,
+      totalSlots: 3,
+      usedSlots: 3,
+    });
+    const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('PHONE_NUMBER_SLOT_REQUIRED');
+  });
+
+  it('releases the purchased number when db persistence fails', async () => {
+    mockDialer.provisionNumber.mockResolvedValueOnce({
+      success: true,
+      sid: 'PN-new',
+      phoneNumber: '+15559990000',
+      areaCode: '555',
+    });
+    mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber.mockRejectedValueOnce(
+      new Error('db write failed'),
+    );
+    mockDialer.releaseNumber.mockResolvedValueOnce({ success: true });
+
+    const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
+
+    expect(res.statusCode).toBe(500);
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'PROVISION_ERROR',
+    );
+    expect(mockDialer.releaseNumber).toHaveBeenCalledWith('PN-new');
   });
 });
 
@@ -274,10 +453,11 @@ describe('PUT /v1/phone-numbers/:sid/primary', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it('returns 500 on redis error', async () => {
-    mockRedis.setPrimaryNumber.mockRejectedValueOnce(new Error('redis down'));
+  it('returns 404 when number is not owned by workspace', async () => {
+    mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValueOnce(null);
     const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
-    expect(res.statusCode).toBe(500);
+    expect(res.statusCode).toBe(404);
+    expect((res.body as { error: { code: string } }).error.code).toBe('NUMBER_NOT_FOUND');
   });
 });
 
@@ -305,6 +485,13 @@ describe('DELETE /v1/phone-numbers/:sid', () => {
     const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
     expect(res.statusCode).toBe(400);
     expect((res.body as { error: { code: string } }).error.code).toBe('RELEASE_FAILED');
+  });
+
+  it('returns 404 when number is not owned by workspace', async () => {
+    mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValueOnce(null);
+    const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
+    expect(res.statusCode).toBe(404);
+    expect((res.body as { error: { code: string } }).error.code).toBe('NUMBER_NOT_FOUND');
   });
 
   it('clears primary if released number was primary', async () => {
