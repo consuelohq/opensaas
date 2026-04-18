@@ -36,6 +36,7 @@ jest.mock('../../services/redis', () => ({
 
 const mockDialerInstance = {
   getToken: jest.fn(),
+  resolveCallerId: jest.fn(),
   generateConferenceTwiml: jest.fn().mockReturnValue('<Response><Conference>conf</Conference></Response>'),
   addCustomerToConference: jest.fn().mockResolvedValue({ callSid: 'CA-cust-001' }),
   listNumbers: jest.fn().mockResolvedValue([]),
@@ -561,6 +562,73 @@ describe('POST /v1/voice/preflight', () => {
     const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
     expect(res.statusCode).toBe(409);
     expect((res.body as { error: { code: string } }).error.code).toBe('CALLER_ID_LOCKED');
+  });
+
+  it('falls back to raw dialer numbers when workspace number hydration fails', async () => {
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockRejectedValueOnce(
+      new Error('relation \"workspace_phone_numbers\" does not exist'),
+    );
+    mockDialer.listNumbers.mockResolvedValue([
+      {
+        phoneNumber: '+15551234567',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+      },
+    ]);
+    mockDialer.resolveCallerId.mockResolvedValueOnce({
+      callerIdNumber: '+15551234567',
+      selectionMethod: 'primary_fallback',
+      localMatch: false,
+      proximityMatch: false,
+      distanceMiles: undefined,
+      isPrimary: true,
+      customerAreaCode: '415',
+    });
+    mockLockService.acquireLock.mockResolvedValueOnce(true);
+
+    const res = await exec(
+      route(),
+      authReq({
+        body: { to: '+14155551212', localPresence: true },
+      }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      success: true,
+      callerId: '+15551234567',
+      selectionMethod: 'primary_fallback',
+      localMatch: false,
+      proximityMatch: false,
+      distanceMiles: null,
+      customerAreaCode: '415',
+    });
+    expect(mockDialer.listNumbers).toHaveBeenCalled();
+    expect(mockDialer.resolveCallerId).toHaveBeenCalledWith(
+      {
+        to: '+14155551212',
+        from: '',
+        callerIdNumber: undefined,
+        localPresence: true,
+      },
+      {
+        numbers: [
+          {
+            phoneNumber: '+15551234567',
+            areaCode: '555',
+            isPrimary: true,
+            isActive: true,
+          },
+        ],
+        primaryNumber: {
+          phoneNumber: '+15551234567',
+          areaCode: '555',
+          isPrimary: true,
+          isActive: true,
+        },
+      },
+    );
   });
 });
 

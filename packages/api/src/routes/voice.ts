@@ -772,6 +772,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
       }
 
       try {
+        const workspaceId = req.auth?.workspaceId ?? '';
         const resolvedCallerId =
           callerId && !localPresence
             ? {
@@ -784,11 +785,32 @@ export const voiceRoutes = (): RouteDefinition[] => [
                 customerAreaCode: undefined,
               }
             : await (async () => {
-                try {
-                  const workspaceId = req.auth?.workspaceId ?? '';
-                  const { dialer, numberPool } =
-                    await buildWorkspaceNumberPool(workspaceId);
+                const dialer = await getDialerForWorkspace(workspaceId);
+                let numberPool;
 
+                try {
+                  ({ numberPool } = await buildWorkspaceNumberPool(workspaceId));
+                } catch (err: unknown) {
+                  Sentry.captureException(err, {
+                    extra: {
+                      context: 'voice.preflight.buildWorkspaceNumberPool',
+                      callerId,
+                      localPresence,
+                      to,
+                      userId,
+                      workspaceId,
+                    },
+                  });
+
+                  const numbers = await dialer.listNumbers();
+                  numberPool = {
+                    numbers,
+                    primaryNumber:
+                      numbers.find((number) => number.isPrimary) ?? numbers[0],
+                  };
+                }
+
+                try {
                   return dialer.resolveCallerId(
                     {
                       to: to ?? '',
@@ -806,6 +828,7 @@ export const voiceRoutes = (): RouteDefinition[] => [
                       localPresence,
                       to,
                       userId,
+                      workspaceId,
                     },
                   });
                   throw err;
