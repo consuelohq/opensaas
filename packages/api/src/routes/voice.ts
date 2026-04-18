@@ -21,6 +21,10 @@ import {
   isHostedInstance,
   ensureOrCreateTwimlApp,
 } from '../services/twilio-config.js';
+import {
+  findRecentCallbackRoute,
+  getCurrentCallbackNumber,
+} from '../services/callback-routing.js';
 type Logger = {
   info: (message: string, meta?: Record<string, unknown>) => void;
   error: (message: string, meta?: Record<string, unknown>) => void;
@@ -183,6 +187,43 @@ interface CancelBody {
   transferCallSid: string;
   conferenceSid: string;
 }
+
+const buildCallbackFailureTwiml = (message: string): string => {
+  const escapedMessage = message
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<Response>',
+    `<Say>${escapedMessage}</Say>`,
+    '<Hangup/>',
+    '</Response>',
+  ].join('');
+};
+
+const resolveCallbackNumber = ({
+  liveCallbackNumber,
+  cachedCallbackNumber,
+  twilioNumber,
+}: {
+  liveCallbackNumber: string | null;
+  cachedCallbackNumber: string | null;
+  twilioNumber: string;
+}): string | null => {
+  if (liveCallbackNumber && liveCallbackNumber !== twilioNumber) {
+    return liveCallbackNumber;
+  }
+
+  if (cachedCallbackNumber && cachedCallbackNumber !== twilioNumber) {
+    return cachedCallbackNumber;
+  }
+
+  return null;
+};
 
 /** Twilio status callback events that indicate call failure */
 const FAILURE_STATUSES = new Set(['failed', 'busy', 'no-answer', 'canceled']);
@@ -721,6 +762,142 @@ export const voiceRoutes = (): RouteDefinition[] => [
       const to = body?.To ?? '';
       const from = body?.From ?? '';
       const callSid = body?.CallSid ?? '';
+      const logger = await getLogger();
+
+      const callbackRoute = await findRecentCallbackRoute({
+        twilioNumber: to,
+        prospectNumber: from,
+      });
+
+      if (callbackRoute) {
+        const conferenceName = `conf-callback-${randomUUID()}`;
+
+        try {
+          await redisService.setConferenceName(callSid, conferenceName);
+        } catch (err: unknown) {
+          Sentry.captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            {
+              extra: {
+                context: 'twiml_callback_setConferenceName',
+                callSid,
+                conferenceName,
+                workspaceId: callbackRoute.workspaceId,
+                userId: callbackRoute.userId,
+              },
+            },
+          );
+        }
+
+        const liveCallbackNumber = await getCurrentCallbackNumber(
+          callbackRoute.userId,
+          callbackRoute.workspaceId,
+        );
+        const callbackNumber = resolveCallbackNumber({
+          liveCallbackNumber,
+          cachedCallbackNumber: callbackRoute.callbackNumber,
+          twilioNumber: callbackRoute.twilioNumber,
+        });
+
+        if (!callbackNumber) {
+          logger.warn('voice.callback_route_unavailable', {
+            action: 'voice.callback_route_unavailable',
+            callSid,
+            workspaceId: callbackRoute.workspaceId,
+            userId: callbackRoute.userId,
+            twilioNumber: callbackRoute.twilioNumber,
+            prospectNumber: callbackRoute.prospectNumber,
+            hasLiveCallbackNumber: !!liveCallbackNumber,
+            hasCachedCallbackNumber: !!callbackRoute.callbackNumber,
+          });
+          res
+            .type('text/xml')
+            .status(200)
+            .send(
+              buildCallbackFailureTwiml(
+                'we could not connect your callback right now. please try again later.',
+              ),
+            );
+          return;
+        }
+
+        const customerTwiml = getLegacyDialer().conference.generateConferenceTwiml(
+          conferenceName,
+          {
+            startOnEnter: false,
+            endOnExit: true,
+            participantLabel: 'customer',
+          },
+        );
+
+        res.type('text/xml').status(200).send(customerTwiml);
+
+        logger.info('voice.callback_route_matched', {
+          action: 'voice.callback_route_matched',
+          callSid,
+          workspaceId: callbackRoute.workspaceId,
+          userId: callbackRoute.userId,
+          twilioNumber: callbackRoute.twilioNumber,
+          prospectNumber: callbackRoute.prospectNumber,
+          callbackNumber,
+          usedCachedCallbackNumber:
+            liveCallbackNumber !== callbackNumber &&
+            callbackRoute.callbackNumber === callbackNumber,
+        });
+
+        void (async () => {
+          try {
+            const dialer = await getDialerForWorkspace(callbackRoute.workspaceId);
+            const repTwiml = dialer.conference.generateConferenceTwiml(
+              conferenceName,
+              {
+                startOnEnter: true,
+                endOnExit: false,
+                participantLabel: 'agent',
+              },
+            );
+
+            await dialer.createCall(callbackNumber, callbackRoute.twilioNumber, {
+              twiml: repTwiml,
+              timeout: 20,
+            });
+          } catch (err: unknown) {
+            Sentry.captureException(
+              err instanceof Error ? err : new Error(String(err)),
+              {
+                extra: {
+                  context: 'twiml_callback_rep_dial',
+                  callSid,
+                  conferenceName,
+                  workspaceId: callbackRoute.workspaceId,
+                  userId: callbackRoute.userId,
+                  callbackNumber,
+                },
+              },
+            );
+            logger.error('voice.callback_route_rep_dial_failed', {
+              action: 'voice.callback_route_rep_dial_failed',
+              callSid,
+              conferenceName,
+              workspaceId: callbackRoute.workspaceId,
+              userId: callbackRoute.userId,
+              callbackNumber,
+            });
+          }
+        })();
+
+        return;
+      }
+
+      if (to && from && !to.startsWith('client:') && !from.startsWith('client:')) {
+        logger.debug('voice.callback_route_miss', {
+          action: 'voice.callback_route_miss',
+          callSid,
+          twilioNumber: to,
+          prospectNumber: from,
+        });
+      }
+
       const conferenceName = `conf-${randomUUID()}`;
 
       try {

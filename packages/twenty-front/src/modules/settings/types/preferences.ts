@@ -24,6 +24,7 @@ export type DialerPreferences = {
   callingMode: CallingMode;
   maxParallelLines: number; // 2-5, only used when callingMode === 'parallel'
   localPresenceEnabled: boolean;
+  callbackNumber: string;
 };
 
 export type DisplayPreferences = {
@@ -156,6 +157,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
     callingMode: 'single',
     maxParallelLines: 3,
     localPresenceEnabled: false,
+    callbackNumber: '',
   },
   display: {
     theme: 'system',
