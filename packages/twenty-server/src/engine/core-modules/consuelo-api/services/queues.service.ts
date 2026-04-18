@@ -44,6 +44,7 @@ type QueueSelectionResult = {
 export class QueuesService {
   private readonly logger = new Logger(QueuesService.name);
   private queueRetryColumnsAvailable: boolean | null = null;
+  private contactAttemptLedgerCompatible: boolean | null = null;
   private readonly stoppingModelService: StoppingModelService;
 
   constructor(
@@ -664,6 +665,10 @@ export class QueuesService {
     workspaceId: string,
   ): Promise<QueueSelectionResult> {
     try {
+      if (this.contactAttemptLedgerCompatible === false) {
+        return await this.selectNextCallableItemWithoutLedger(queueId);
+      }
+
       const queueRows = await this.dataSource.query(
         "SELECT settings, category FROM call_queues WHERE id = $1 AND workspace_id = $2",
         [queueId, workspaceId],
@@ -883,7 +888,25 @@ export class QueuesService {
         };
       }
     } catch (err: unknown) {
-      if (this.isMissingRelationError(err, "contact_attempt_ledger")) {
+      if (this.isContactAttemptLedgerCompatibilityError(err)) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+
+        this.contactAttemptLedgerCompatible = false;
+        this.logger.warn(
+          `[QueuesService] falling back to queue selection without contact attempt ledger: ${message}`,
+          {
+            queueId,
+            workspaceId,
+          },
+        );
+        Sentry.captureException(err, {
+          tags: {
+            component: "QueuesService",
+            operation: "selectNextCallableItemLedgerFallback",
+          },
+          extra: { queueId, workspaceId },
+        });
+
         return await this.selectNextCallableItemWithoutLedger(queueId);
       }
 
@@ -1028,32 +1051,62 @@ export class QueuesService {
         return null;
       }
 
-      if (!isDoubleDial) {
-        await this.dataSource.query(
-          `INSERT INTO contact_attempt_ledger (workspace_id, contact_id, last_attempt_at, attempts_total, attempts_today, attempts_this_week, outcomes, day_window_start, week_window_start)
-           VALUES ($1, $2, NOW(), 1, 1, 1, '[]'::jsonb, date_trunc('day', NOW()), date_trunc('week', NOW()))
-           ON CONFLICT (workspace_id, contact_id)
-           DO UPDATE SET
-             last_attempt_at = NOW(),
-             attempts_total = contact_attempt_ledger.attempts_total + 1,
-             attempts_today = CASE
-               WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN 1
-               ELSE contact_attempt_ledger.attempts_today + 1
-             END,
-             attempts_this_week = CASE
-               WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN 1
-               ELSE contact_attempt_ledger.attempts_this_week + 1
-             END,
-             day_window_start = CASE
-               WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN date_trunc('day', NOW())
-               ELSE contact_attempt_ledger.day_window_start
-             END,
-             week_window_start = CASE
-               WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN date_trunc('week', NOW())
-               ELSE contact_attempt_ledger.week_window_start
-             END`,
-          [workspaceId, item.contact_id],
-        );
+      if (!isDoubleDial && this.contactAttemptLedgerCompatible !== false) {
+        try {
+          await this.dataSource.query(
+            `INSERT INTO contact_attempt_ledger (workspace_id, contact_id, last_attempt_at, attempts_total, attempts_today, attempts_this_week, outcomes, day_window_start, week_window_start)
+             VALUES ($1, $2, NOW(), 1, 1, 1, '[]'::jsonb, date_trunc('day', NOW()), date_trunc('week', NOW()))
+             ON CONFLICT (workspace_id, contact_id)
+             DO UPDATE SET
+               last_attempt_at = NOW(),
+               attempts_total = contact_attempt_ledger.attempts_total + 1,
+               attempts_today = CASE
+                 WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN 1
+                 ELSE contact_attempt_ledger.attempts_today + 1
+               END,
+               attempts_this_week = CASE
+                 WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN 1
+                 ELSE contact_attempt_ledger.attempts_this_week + 1
+               END,
+               day_window_start = CASE
+                 WHEN contact_attempt_ledger.day_window_start < date_trunc('day', NOW()) THEN date_trunc('day', NOW())
+                 ELSE contact_attempt_ledger.day_window_start
+               END,
+               week_window_start = CASE
+                 WHEN contact_attempt_ledger.week_window_start < date_trunc('week', NOW()) THEN date_trunc('week', NOW())
+                 ELSE contact_attempt_ledger.week_window_start
+               END`,
+            [workspaceId, item.contact_id],
+          );
+          this.contactAttemptLedgerCompatible = true;
+        } catch (err: unknown) {
+          if (!this.isContactAttemptLedgerCompatibilityError(err)) {
+            throw err;
+          }
+
+          const message = err instanceof Error ? err.message : "Unknown error";
+
+          this.contactAttemptLedgerCompatible = false;
+          this.logger.warn(
+            `[QueuesService] skipping contact attempt ledger update because schema is incompatible: ${message}`,
+            {
+              workspaceId,
+              queueItemId: String(item.id),
+              contactId: String(item.contact_id),
+            },
+          );
+          Sentry.captureException(err, {
+            tags: {
+              component: "QueuesService",
+              operation: "claimQueueItemContactAttemptLedger",
+            },
+            extra: {
+              workspaceId,
+              queueItemId: String(item.id),
+              contactId: String(item.contact_id),
+            },
+          });
+        }
       }
 
       return this.unwrapRow(updatedRows[0]);
@@ -1099,6 +1152,23 @@ export class QueuesService {
     return (
       err instanceof Error &&
       err.message.includes(`relation "${relationName}" does not exist`)
+    );
+  }
+
+  private isContactAttemptLedgerCompatibilityError(err: unknown) {
+    if (!(err instanceof Error)) {
+      return false;
+    }
+
+    const message = err.message;
+
+    return (
+      this.isMissingRelationError(err, "contact_attempt_ledger") ||
+      message.includes(
+        "there is no unique or exclusion constraint matching the ON CONFLICT specification",
+      ) ||
+      (message.includes("contact_attempt_ledger") &&
+        message.includes("column"))
     );
   }
 
