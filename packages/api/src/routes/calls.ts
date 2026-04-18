@@ -36,6 +36,52 @@ const getCallsLogger = async () => {
 const getLegacyDialer = sharedDialer;
 const getCallerIdLockService = sharedCallerIdLockService;
 
+const storeRecentCallbackRouteBestEffort = async ({
+  workspaceId,
+  userId,
+  twilioNumber,
+  prospectNumber,
+}: {
+  workspaceId: string;
+  userId: string;
+  twilioNumber: string;
+  prospectNumber: string;
+}): Promise<void> => {
+  try {
+    await storeRecentCallbackRoute({
+      workspaceId,
+      userId,
+      twilioNumber,
+      prospectNumber,
+    });
+  } catch (err: unknown) {
+    Sentry.captureException(
+      err instanceof Error ? err : new Error(String(err)),
+      {
+        extra: {
+          context: 'storeRecentCallbackRouteBestEffort',
+          workspaceId,
+          userId,
+          twilioNumber,
+          prospectNumber,
+        },
+      },
+    );
+
+    try {
+      (await getCallsLogger()).error('call.callback_route_store_failed', {
+        action: 'call.callback_route_store_failed',
+        workspaceId,
+        userId,
+        twilioNumber,
+        prospectNumber,
+      });
+    } catch (loggerErr: unknown) {
+      void loggerErr;
+    }
+  }
+};
+
 const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 
 interface CallBody {
@@ -184,7 +230,7 @@ export const callRoutes = (): RouteDefinition[] => {
             req.auth?.workspaceId &&
             req.auth?.userId
           ) {
-            await storeRecentCallbackRoute({
+            await storeRecentCallbackRouteBestEffort({
               workspaceId: req.auth.workspaceId,
               userId: req.auth.userId,
               twilioNumber: result.fromNumber,
@@ -269,7 +315,7 @@ export const callRoutes = (): RouteDefinition[] => {
             req.auth?.workspaceId &&
             req.auth?.userId
           ) {
-            await storeRecentCallbackRoute({
+            await storeRecentCallbackRouteBestEffort({
               workspaceId: req.auth.workspaceId,
               userId: req.auth.userId,
               twilioNumber: callerId,
@@ -497,7 +543,7 @@ export const callRoutes = (): RouteDefinition[] => {
             createdAt: new Date().toISOString(),
           });
           await redisService.mapCallSidToCallId(repCallSid, callId);
-          await storeRecentCallbackRoute({
+          await storeRecentCallbackRouteBestEffort({
             workspaceId: auth.workspaceId,
             userId: auth.userId,
             twilioNumber: callerId,

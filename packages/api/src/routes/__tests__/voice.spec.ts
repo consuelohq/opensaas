@@ -488,6 +488,45 @@ describe('POST /v1/voice/twiml', () => {
     expect(mockDialer.addCustomerToConference).not.toHaveBeenCalled();
   });
 
+  it('falls back to the cached callback number when the live lookup is unavailable', async () => {
+    mockCallbackRouting.findRecentCallbackRoute.mockResolvedValueOnce({
+      workspaceId: 'ws-test-001',
+      userId: 'user-test-001',
+      twilioNumber: '+15551234567',
+      prospectNumber: '+15559876543',
+      callbackNumber: '+15557654321',
+      createdAt: '2026-04-16T00:00:00.000Z',
+      updatedAt: '2026-04-16T00:00:00.000Z',
+    });
+    mockCallbackRouting.getCurrentCallbackNumber.mockResolvedValueOnce(null);
+
+    const req = {
+      auth: undefined,
+      method: 'POST',
+      path: '/v1/voice/twiml',
+      headers: {
+        'x-twilio-signature': 'valid-sig',
+        'x-forwarded-proto': 'https',
+        host: 'api.example.com',
+      },
+      body: { To: '+15551234567', From: '+15559876543', CallSid: 'CA-004A' },
+    } as Partial<ApiRequest>;
+
+    const res = await exec(route(), req);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.contentType).toBe('text/xml');
+    expect(res.rawBody).toContain('callback-conf');
+    expect(mockDialer.createCall).toHaveBeenCalledWith(
+      '+15557654321',
+      '+15551234567',
+      expect.objectContaining({
+        twiml: expect.stringContaining('callback-conf'),
+        timeout: 20,
+      }),
+    );
+  });
+
   it('returns a fallback twiml when a recent route matches but the callback number is unavailable', async () => {
     mockCallbackRouting.findRecentCallbackRoute.mockResolvedValueOnce({
       workspaceId: 'ws-test-001',

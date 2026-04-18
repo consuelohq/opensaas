@@ -132,6 +132,25 @@ describe('POST /v1/calls', () => {
       prospectNumber: '+15559876543',
     });
   });
+
+  it('still returns success when recent callback route persistence fails', async () => {
+    mockCallbackRouting.storeRecentCallbackRoute.mockRejectedValueOnce(
+      new Error('redis down'),
+    );
+
+    const res = await exec(
+      route(),
+      createAuthenticatedRequest({
+        body: {
+          to: '+15559876543',
+          from: '+15551112222',
+        },
+      }) as unknown as Record<string, unknown>,
+    );
+
+    expect(res.statusCode).toBe(201);
+    expect(mockCallbackRouting.storeRecentCallbackRoute).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('POST /v1/calls/callback', () => {
@@ -157,6 +176,26 @@ describe('POST /v1/calls/callback', () => {
       prospectNumber: '+15559876543',
     });
   });
+
+  it('still returns success when callback route persistence fails for bridge calls', async () => {
+    mockCallbackRouting.storeRecentCallbackRoute.mockRejectedValueOnce(
+      new Error('redis down'),
+    );
+
+    const res = await exec(
+      route(),
+      createAuthenticatedRequest({
+        body: {
+          agentPhone: '+15551112222',
+          customerPhone: '+15559876543',
+          callerId: '+15551230000',
+        },
+      }) as unknown as Record<string, unknown>,
+    );
+
+    expect(res.statusCode).toBe(201);
+    expect(mockCallbackRouting.storeRecentCallbackRoute).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('POST /v1/calls/initiate-phone', () => {
@@ -181,5 +220,25 @@ describe('POST /v1/calls/initiate-phone', () => {
       twilioNumber: '+15551230000',
       prospectNumber: '+15559876543',
     });
+  });
+
+  it('still returns success when callback route persistence fails for phone-initiated calls', async () => {
+    mockCallbackRouting.storeRecentCallbackRoute.mockRejectedValueOnce(
+      new Error('redis down'),
+    );
+
+    const res = await exec(
+      route(),
+      createAuthenticatedRequest({
+        body: {
+          repPhone: '+15551112222',
+          leadPhone: '+15559876543',
+          from: '+15551230000',
+        },
+      }) as unknown as Record<string, unknown>,
+    );
+
+    expect(res.statusCode).toBe(201);
+    expect(mockCallbackRouting.storeRecentCallbackRoute).toHaveBeenCalledTimes(1);
   });
 });

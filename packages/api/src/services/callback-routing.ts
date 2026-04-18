@@ -41,10 +41,12 @@ const normalizePhone = (phone: string): string => {
   return `+${digits}`;
 };
 
+const E164_REGEX = /^\+[1-9]\d{7,14}$/;
+
 const normalizeRoutePhone = (phone: string): string | null => {
   const normalized = normalizePhone(phone);
 
-  return normalized.length > 0 ? normalized : null;
+  return E164_REGEX.test(normalized) ? normalized : null;
 };
 
 export const getCurrentCallbackNumber = async (
@@ -147,16 +149,28 @@ export const findRecentCallbackRoute = async ({
   }
 
   try {
-    const route = await redisService.getRecentCallbackRoute(
+    const routes = await redisService.getRecentCallbackRoutes(
       normalizedTwilioNumber,
       normalizedProspectNumber,
     );
 
-    if (route === null) {
+    if (routes.length !== 1) {
+      if (routes.length > 1) {
+        Sentry.captureMessage('ambiguous recent callback route match', {
+          level: 'warning',
+          extra: {
+            context: 'findRecentCallbackRoute',
+            twilioNumber: normalizedTwilioNumber,
+            prospectNumber: normalizedProspectNumber,
+            routeCount: routes.length,
+          },
+        });
+      }
+
       return null;
     }
 
-    return route as RecentCallbackRoute;
+    return routes[0] as RecentCallbackRoute;
   } catch (err: unknown) {
     Sentry.captureException(err instanceof Error ? err : new Error(String(err)), {
       extra: {

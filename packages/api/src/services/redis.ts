@@ -2,14 +2,21 @@ import IORedis from "ioredis";
 import * as Sentry from "@sentry/node";
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
-const CALLBACK_ROUTE_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+const CALLBACK_ROUTE_TTL_SECONDS = 60 * 60 * 4; // 4 hours
 const PKCE_TTL_SECONDS = 600; // 10 minutes
 
 const getCallbackRouteKey = (
+  workspaceId: string,
   twilioNumber: string,
   prospectNumber: string,
 ): string =>
-  `callback-route:${encodeURIComponent(twilioNumber)}:${encodeURIComponent(prospectNumber)}`;
+  `callback-route:${encodeURIComponent(workspaceId)}:${encodeURIComponent(twilioNumber)}:${encodeURIComponent(prospectNumber)}`;
+
+const getCallbackRoutePattern = (
+  twilioNumber: string,
+  prospectNumber: string,
+): string =>
+  `callback-route:*:${encodeURIComponent(twilioNumber)}:${encodeURIComponent(prospectNumber)}`;
 
 class RedisService {
   private client: IORedis | null = null;
@@ -378,7 +385,11 @@ class RedisService {
     try {
       const client = await this.getClient();
       await client.setex(
-        getCallbackRouteKey(route.twilioNumber, route.prospectNumber),
+        getCallbackRouteKey(
+          route.workspaceId,
+          route.twilioNumber,
+          route.prospectNumber,
+        ),
         CALLBACK_ROUTE_TTL_SECONDS,
         JSON.stringify(route),
       );
@@ -396,21 +407,57 @@ class RedisService {
     }
   }
 
-  async getRecentCallbackRoute(
+  async getRecentCallbackRoutes(
     twilioNumber: string,
     prospectNumber: string,
-  ): Promise<Record<string, unknown> | null> {
+  ): Promise<Record<string, unknown>[]> {
     try {
       const client = await this.getClient();
-      const result = await client.get(
-        getCallbackRouteKey(twilioNumber, prospectNumber),
-      );
-      if (!result) return null;
-      return JSON.parse(result) as Record<string, unknown>;
+      const pattern = getCallbackRoutePattern(twilioNumber, prospectNumber);
+      const keys: string[] = [];
+      let cursor = "0";
+
+      do {
+        const [nextCursor, batch] = await client.scan(
+          cursor,
+          "MATCH",
+          pattern,
+          "COUNT",
+          50,
+        );
+        cursor = nextCursor;
+        keys.push(...batch);
+      } while (cursor !== "0");
+
+      if (keys.length === 0) {
+        return [];
+      }
+
+      const results = await client.mget(...keys);
+
+      return results.flatMap((result) => {
+        if (!result) {
+          return [];
+        }
+
+        try {
+          return [JSON.parse(result) as Record<string, unknown>];
+        } catch (err: unknown) {
+          Sentry.captureException(err, {
+            extra: {
+              context: "getRecentCallbackRoutes.parse",
+              twilioNumber,
+              prospectNumber,
+            },
+          });
+
+          return [];
+        }
+      });
     } catch (err: unknown) {
       Sentry.captureException(err, {
         extra: {
-          context: "getRecentCallbackRoute",
+          context: "getRecentCallbackRoutes",
           twilioNumber,
           prospectNumber,
         },

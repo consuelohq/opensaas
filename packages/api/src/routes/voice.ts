@@ -205,6 +205,26 @@ const buildCallbackFailureTwiml = (message: string): string => {
   ].join('');
 };
 
+const resolveCallbackNumber = ({
+  liveCallbackNumber,
+  cachedCallbackNumber,
+  twilioNumber,
+}: {
+  liveCallbackNumber: string | null;
+  cachedCallbackNumber: string | null;
+  twilioNumber: string;
+}): string | null => {
+  if (liveCallbackNumber && liveCallbackNumber !== twilioNumber) {
+    return liveCallbackNumber;
+  }
+
+  if (cachedCallbackNumber && cachedCallbackNumber !== twilioNumber) {
+    return cachedCallbackNumber;
+  }
+
+  return null;
+};
+
 /** Twilio status callback events that indicate call failure */
 const FAILURE_STATUSES = new Set(['failed', 'busy', 'no-answer', 'canceled']);
 
@@ -769,12 +789,17 @@ export const voiceRoutes = (): RouteDefinition[] => [
           );
         }
 
-        const callbackNumber = await getCurrentCallbackNumber(
+        const liveCallbackNumber = await getCurrentCallbackNumber(
           callbackRoute.userId,
           callbackRoute.workspaceId,
         );
+        const callbackNumber = resolveCallbackNumber({
+          liveCallbackNumber,
+          cachedCallbackNumber: callbackRoute.callbackNumber,
+          twilioNumber: callbackRoute.twilioNumber,
+        });
 
-        if (!callbackNumber || callbackNumber === callbackRoute.twilioNumber) {
+        if (!callbackNumber) {
           logger.warn('voice.callback_route_unavailable', {
             action: 'voice.callback_route_unavailable',
             callSid,
@@ -782,7 +807,8 @@ export const voiceRoutes = (): RouteDefinition[] => [
             userId: callbackRoute.userId,
             twilioNumber: callbackRoute.twilioNumber,
             prospectNumber: callbackRoute.prospectNumber,
-            hasCallbackNumber: !!callbackNumber,
+            hasLiveCallbackNumber: !!liveCallbackNumber,
+            hasCachedCallbackNumber: !!callbackRoute.callbackNumber,
           });
           res
             .type('text/xml')
@@ -814,6 +840,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
           twilioNumber: callbackRoute.twilioNumber,
           prospectNumber: callbackRoute.prospectNumber,
           callbackNumber,
+          usedCachedCallbackNumber:
+            liveCallbackNumber !== callbackNumber &&
+            callbackRoute.callbackNumber === callbackNumber,
         });
 
         void (async () => {
