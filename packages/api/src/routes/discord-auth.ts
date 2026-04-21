@@ -1,29 +1,9 @@
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
-import {
-  encryptCredential,
-  decryptCredential,
-} from '../services/twilio-encryption.js';
-import type Redis from 'ioredis';
+import { encryptCredential } from '../services/twilio-encryption.js';
+import { getApiRedisClient } from '../services/redis-client.js';
 
 const REDIS_KEY_PREFIX = 'consuelo:discord:user:';
-
-let redisClient: Redis | null = null;
-
-const getRedis = async (): Promise<Redis> => {
-  try {
-    if (!redisClient) {
-      const { default: Redis } = await import('ioredis');
-      redisClient = new Redis(
-        process.env.REDIS_URL ?? 'redis://localhost:6379',
-      );
-    }
-    return redisClient;
-  } catch (err: unknown) {
-    redisClient = null;
-    throw err;
-  }
-};
 
 const authFormHtml = (discordUserId: string): string => {
   return `<!DOCTYPE html>
@@ -79,7 +59,7 @@ export const discordAuthRoutes = (): RouteDefinition[] => {
           return;
         }
 
-        const redis = await getRedis();
+        const redis = await getApiRedisClient('session');
         const encryptedApiKey = encryptCredential(apiKey, workspaceId);
         const value = JSON.stringify({
           workspaceId,

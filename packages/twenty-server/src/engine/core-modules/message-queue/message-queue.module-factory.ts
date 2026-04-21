@@ -26,11 +26,10 @@ export const messageQueueModuleFactory = async (
       return {
         type: MessageQueueDriverType.BullMQ,
         options: {
-          // HACK: ioredis Redis instance is structurally compatible with BullMQ's
-          // connection type but has incompatible generic signatures. Using type
-          // assertion to bridge the gap between ioredis v4 and BullMQ expectations.
-          // TODO: DEV-XXX - investigate proper typing or version alignment
-          connection: redisClientService.getQueueClient() as never,
+          // BullMQ creates additional Redis connections internally for workers.
+          // Passing connection options instead of a live singleton keeps queue
+          // connection behavior consistent across the full worker lifecycle.
+          connection: redisClientService.getQueueConnectionOptions() as never,
         },
         metricsService,
       } satisfies BullMQDriverFactoryOptions;
