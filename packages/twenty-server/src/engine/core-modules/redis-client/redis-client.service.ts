@@ -169,7 +169,6 @@ export class RedisClientService implements OnModuleDestroy {
         'pubsub',
         () => {
           this.redisPubSubBaseClient = null;
-          this.redisPubSubClient = null;
         },
       );
     }
