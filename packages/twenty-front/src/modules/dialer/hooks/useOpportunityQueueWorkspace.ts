@@ -16,6 +16,7 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
+import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import { type DialerContact } from '@/dialer/types/dialer';
 import {
@@ -298,7 +299,8 @@ export const useOpportunityQueueWorkspace = ({
   const setPhoneNumber = useSetRecoilState(phoneNumberState);
   const setCallState = useSetRecoilState(callStateAtom);
 
-  const { connect, disconnect } = useTwilioDevice();
+  const { status: twilioConfigStatus } = useTwilioConfigStatus();
+  const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
   const { recordResult } = useQueueOperations();
 
   const [wrapUpState, setWrapUpState] = useState<OpportunityWrapUpState | null>(
@@ -931,6 +933,14 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
+    if (twilioConfigStatus === null) {
+      return;
+    }
+
+    if (!twilioConfigStatus.configured || !deviceReady) {
+      return;
+    }
+
     if (backendQueue?.status === 'completed' && !hasPendingQueueItems) {
       return;
     }
@@ -941,17 +951,27 @@ export const useOpportunityQueueWorkspace = ({
 
     void startBackendQueueSession().catch((error: unknown) => {
       Sentry.captureException(error, {
-        extra: { context: 'startBackendQueueSession', listId },
+        extra: {
+          context: 'startBackendQueueSession',
+          deviceError,
+          deviceReady,
+          listId,
+          twilioConfigured: twilioConfigStatus.configured,
+          twilioMode: twilioConfigStatus.mode,
+        },
       });
     });
   }, [
     backendQueue?.status,
     callableRecords.length,
     callingQueueItemIndex,
+    deviceError,
+    deviceReady,
     hasPendingQueueItems,
     listId,
     listStatus,
     startBackendQueueSession,
+    twilioConfigStatus,
   ]);
 
   const startCurrentQueueItem = useCallback(async () => {
@@ -959,6 +979,14 @@ export const useOpportunityQueueWorkspace = ({
     const defaultCallerId =
       selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
     const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
+
+    if (
+      !deviceReady ||
+      twilioConfigStatus === null ||
+      !twilioConfigStatus.configured
+    ) {
+      return;
+    }
 
     if (!currentQueueItem || (!localPresenceEnabled && defaultCallerId === null)) {
       return;
@@ -1022,8 +1050,12 @@ export const useOpportunityQueueWorkspace = ({
       Sentry.captureException(error, {
         extra: {
           context: 'startCurrentQueueItem',
+          deviceError,
+          deviceReady,
           listId,
           localPresenceEnabled,
+          twilioConfigured: twilioConfigStatus?.configured ?? false,
+          twilioMode: twilioConfigStatus?.mode ?? null,
         },
       });
     }
@@ -1031,6 +1063,8 @@ export const useOpportunityQueueWorkspace = ({
     availableCallerIds,
     connect,
     currentQueueItem,
+    deviceError,
+    deviceReady,
     listId,
     preferences.dialer.localPresenceEnabled,
     selectedCallerId,
@@ -1038,11 +1072,13 @@ export const useOpportunityQueueWorkspace = ({
     setPhoneNumber,
     setSelectedCallerId,
     setSelectedContact,
+    twilioConfigStatus,
   ]);
 
   useEffect(() => {
     if (
       listStatus !== 'ACTIVE' ||
+      !deviceReady ||
       !['idle', 'ended', 'failed'].includes(callState.status) ||
       !currentQueueItem ||
       currentQueueItem.status !== 'calling' ||
@@ -1052,7 +1088,13 @@ export const useOpportunityQueueWorkspace = ({
     }
 
     void startCurrentQueueItem();
-  }, [callState.status, currentQueueItem, listStatus, startCurrentQueueItem]);
+  }, [
+    callState.status,
+    currentQueueItem,
+    deviceReady,
+    listStatus,
+    startCurrentQueueItem,
+  ]);
 
   const processedCallSidRef = useRef<string | null>(null);
 
