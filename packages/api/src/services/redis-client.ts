@@ -7,6 +7,7 @@ const REDIS_LIFECYCLE_LOG_COOLDOWN_MS = 30000;
 
 const redisClients: Partial<Record<ApiRedisClientRole, IORedis>> = {};
 const lastLifecycleLogAt = new Map<string, number>();
+const lastSentryCaptureAt = new Map<string, number>();
 
 let loggerInstance: {
   error: (message: string, attributes?: Record<string, unknown>) => void;
@@ -40,6 +41,19 @@ const shouldLogLifecycleEvent = (key: string): boolean => {
   }
 
   lastLifecycleLogAt.set(key, now);
+
+  return true;
+};
+
+const shouldCaptureSentryError = (key: string): boolean => {
+  const now = Date.now();
+  const lastCapturedAt = lastSentryCaptureAt.get(key) ?? 0;
+
+  if (now - lastCapturedAt < REDIS_LIFECYCLE_LOG_COOLDOWN_MS) {
+    return false;
+  }
+
+  lastSentryCaptureAt.set(key, now);
 
   return true;
 };
@@ -125,6 +139,7 @@ const attachLifecycleHandlers = (
 
   client.on("error", (err) => {
     const redisError = err as NodeJS.ErrnoException;
+    const sentryDedupeKey = `${role}:error:${String(redisError.code ?? "")}:${redisError.message}`;
 
     void logLifecycleEvent("error", role, "error", {
       code: redisError.code ?? null,
@@ -132,12 +147,17 @@ const attachLifecycleHandlers = (
       status: client.status,
     });
 
+    if (!shouldCaptureSentryError(sentryDedupeKey)) {
+      return;
+    }
+
     Sentry.captureException(err, {
       tags: {
         component: "ApiRedisClient",
         role,
       },
       extra: {
+        code: redisError.code ?? null,
         event: "error",
         status: client.status,
       },
