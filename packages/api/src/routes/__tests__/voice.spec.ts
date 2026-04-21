@@ -70,14 +70,19 @@ jest.mock('@sentry/node', () => ({
   captureMessage: jest.fn(),
 }));
 
-jest.mock('@consuelo/logger', () => ({
-  createLogger: jest.fn().mockReturnValue({
+jest.mock('@consuelo/logger', () => {
+  const sharedMockRouteLogger = {
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
-  }),
-}));
+  };
+
+  return {
+    createLogger: jest.fn().mockReturnValue(sharedMockRouteLogger),
+    __mockRouteLogger: sharedMockRouteLogger,
+  };
+});
 
 jest.mock('../../services/twilio-config', () => ({
   getWorkspaceTwilioConfig: jest.fn(),
@@ -135,6 +140,14 @@ import { recommendPhoneNumbers } from '../../services/phone-number-recommendatio
 
 // typed references to mocked modules
 const mockRedis = redisService as unknown as Record<string, jest.Mock>;
+const mockRouteLogger = (jest.requireMock('@consuelo/logger') as {
+  __mockRouteLogger: {
+    info: jest.Mock;
+    warn: jest.Mock;
+    error: jest.Mock;
+    debug: jest.Mock;
+  };
+}).__mockRouteLogger;
 const mockDialer = mockDialerInstance;
 const mockLockService = mockLockServiceInstance;
 const mockTwilioConfig = {
@@ -668,6 +681,45 @@ describe('POST /v1/voice/preflight', () => {
           isActive: true,
         },
       },
+    );
+
+    expect(mockRouteLogger.warn).toHaveBeenCalledWith(
+      'voice.preflight.build_number_pool.failed_falling_back',
+      expect.objectContaining({
+        callerIdSuffix: null,
+      }),
+    );
+    expect(mockRouteLogger.info).toHaveBeenCalledWith(
+      'voice.preflight.list_numbers_fallback.success',
+      expect.objectContaining({
+        numberCount: 1,
+        stage: 'list_numbers_fallback',
+      }),
+    );
+  });
+
+  it('returns failure stage metadata when lock acquisition throws', async () => {
+    mockLockService.acquireLock.mockRejectedValueOnce(new Error('redis unavailable'));
+
+    const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body).toEqual({
+      error: {
+        code: 'LOCK_ERROR',
+        message: 'redis unavailable',
+      },
+      stage: 'acquire_lock',
+    });
+
+    expect(mockRouteLogger.error).toHaveBeenCalledWith(
+      'voice.preflight.failed',
+      expect.objectContaining({
+        callerIdSuffix: '***4567',
+        errorMessage: 'redis unavailable',
+        stage: 'acquire_lock',
+        usedRawNumberFallback: false,
+      }),
     );
   });
 });
