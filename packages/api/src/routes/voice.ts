@@ -4,6 +4,7 @@ import type {
   TransferStatus,
   RingTimeMetrics,
 } from '@consuelo/dialer';
+import { normalizePhone } from '@consuelo/contacts';
 import { errorHandler } from '../middleware/error-handler.js';
 import { redisService } from '../services/redis.js';
 import type { RouteDefinition } from './index.js';
@@ -57,6 +58,52 @@ const getLogger = async (): Promise<Logger> => {
     const message = err instanceof Error ? err.message : 'unknown error';
     throw new Error(`[getLogger] failed: ${message}`);
   }
+};
+
+const NOOP_LOGGER: Logger = {
+  info: () => undefined,
+  error: () => undefined,
+  warn: () => undefined,
+  debug: () => undefined,
+};
+
+const getSafeLogger = async (context: string): Promise<Logger> => {
+  try {
+    return await getLogger();
+  } catch (err: unknown) {
+    Sentry.captureException(err, {
+      extra: { context },
+    });
+
+    return NOOP_LOGGER;
+  }
+};
+
+const maskPhoneNumberForLogs = (value: string | undefined): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const digits = value.replace(/\D/g, '');
+  const suffix = digits.slice(-4);
+
+  return suffix.length > 0 ? `***${suffix}` : '***';
+};
+
+const getErrorLogDetails = (err: unknown) => {
+  if (err instanceof Error) {
+    return {
+      errorMessage: err.message,
+      errorStack: err.stack,
+      errorType: err.constructor.name,
+    };
+  }
+
+  return {
+    errorMessage: String(err),
+    errorStack: undefined,
+    errorType: typeof err,
+  };
 };
 
 // in-memory tracking for ring time (will move to redis later)
@@ -773,8 +820,32 @@ export const voiceRoutes = (): RouteDefinition[] => [
         return;
       }
 
+      const workspaceId = req.auth?.workspaceId ?? '';
+      const preflightLogger = await getSafeLogger('voice.preflight.getSafeLogger');
+      const preflightCallSid = callSid ?? `preflight-${randomUUID()}`;
+      const preflightLogContext = {
+        action: 'voice.preflight',
+        callerIdSuffix: maskPhoneNumberForLogs(callerId),
+        hasCallSid: Boolean(callSid),
+        hasCallerId: Boolean(callerId),
+        hasTo: Boolean(to),
+        localPresence,
+        preflightCallSid,
+        toSuffix: maskPhoneNumberForLogs(to),
+        userId,
+        workspaceId,
+      };
+      let preflightStage = 'received';
+      let usedRawNumberFallback = false;
+      let reclaimedPreflightLock = false;
+
+      preflightLogger.info('voice.preflight.started', {
+        ...preflightLogContext,
+        stage: preflightStage,
+      });
+
       try {
-        const workspaceId = req.auth?.workspaceId ?? '';
+        preflightStage = callerId && !localPresence ? 'manual_caller_id' : 'build_number_pool';
         const resolvedCallerId =
           callerId && !localPresence
             ? {
@@ -792,28 +863,52 @@ export const voiceRoutes = (): RouteDefinition[] => [
 
                 try {
                   ({ numberPool } = await buildWorkspaceNumberPool(workspaceId));
+                  preflightLogger.debug('voice.preflight.build_number_pool.success', {
+                    ...preflightLogContext,
+                    stage: preflightStage,
+                  });
                 } catch (err: unknown) {
+                  const errorDetails = getErrorLogDetails(err);
+                  usedRawNumberFallback = true;
+                  preflightLogger.warn(
+                    'voice.preflight.build_number_pool.failed_falling_back',
+                    {
+                      ...preflightLogContext,
+                      ...errorDetails,
+                      stage: preflightStage,
+                    },
+                  );
                   Sentry.captureException(err, {
                     extra: {
                       context: 'voice.preflight.buildWorkspaceNumberPool',
                       callerId,
                       localPresence,
+                      preflightCallSid,
+                      stage: preflightStage,
                       to,
                       userId,
                       workspaceId,
                     },
                   });
 
+                  preflightStage = 'list_numbers_fallback';
                   const numbers = await dialer.listNumbers();
                   numberPool = {
                     numbers,
                     primaryNumber:
                       numbers.find((number) => number.isPrimary) ?? numbers[0],
                   };
+
+                  preflightLogger.info('voice.preflight.list_numbers_fallback.success', {
+                    ...preflightLogContext,
+                    numberCount: numbers.length,
+                    stage: preflightStage,
+                  });
                 }
 
                 try {
-                  return dialer.resolveCallerId(
+                  preflightStage = 'resolve_caller_id';
+                  return await dialer.resolveCallerId(
                     {
                       to: to ?? '',
                       from: '',
@@ -823,12 +918,22 @@ export const voiceRoutes = (): RouteDefinition[] => [
                     numberPool,
                   );
                 } catch (err: unknown) {
+                  const errorDetails = getErrorLogDetails(err);
+                  preflightLogger.error('voice.preflight.resolve_caller_id.failed', {
+                    ...preflightLogContext,
+                    ...errorDetails,
+                    stage: preflightStage,
+                    usedRawNumberFallback,
+                  });
                   Sentry.captureException(err, {
                     extra: {
                       context: 'voice.preflight.resolveCallerId',
                       callerId,
                       localPresence,
+                      preflightCallSid,
+                      stage: preflightStage,
                       to,
+                      usedRawNumberFallback,
                       userId,
                       workspaceId,
                     },
@@ -838,6 +943,12 @@ export const voiceRoutes = (): RouteDefinition[] => [
               })();
 
         if (!resolvedCallerId.callerIdNumber) {
+          preflightLogger.warn('voice.preflight.no_caller_id_available', {
+            ...preflightLogContext,
+            selectionMethod: resolvedCallerId.selectionMethod,
+            stage: 'no_caller_id_available',
+            usedRawNumberFallback,
+          });
           res.status(400).json({
             error: {
               code: 'NO_CALLER_ID_AVAILABLE',
@@ -847,7 +958,17 @@ export const voiceRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const preflightCallSid = callSid ?? `preflight-${randomUUID()}`;
+        preflightLogger.info('voice.preflight.resolve_caller_id.success', {
+          ...preflightLogContext,
+          resolvedCallerIdSuffix: maskPhoneNumberForLogs(
+            resolvedCallerId.callerIdNumber,
+          ),
+          selectionMethod: resolvedCallerId.selectionMethod,
+          stage: 'resolve_caller_id',
+          usedRawNumberFallback,
+        });
+
+        preflightStage = 'acquire_lock';
         let acquired = await getCallerIdLockService().acquireLock(
           resolvedCallerId.callerIdNumber,
           userId,
@@ -855,15 +976,30 @@ export const voiceRoutes = (): RouteDefinition[] => [
         );
 
         if (!acquired) {
+          preflightStage = 'check_existing_locks';
           const existingLocks = await getCallerIdLockService().getUserLocks(userId);
+          const normalizedResolvedCallerId = normalizePhone(
+            resolvedCallerId.callerIdNumber,
+          );
           const stalePreflightLock = existingLocks.find(
             (lock) =>
-              lock.phoneNumber === resolvedCallerId.callerIdNumber &&
+              normalizePhone(lock.phoneNumber) === normalizedResolvedCallerId &&
               lock.callSid.startsWith('preflight-'),
           );
 
           if (stalePreflightLock) {
+            reclaimedPreflightLock = true;
+            preflightStage = 'reclaim_stale_preflight_lock';
+            preflightLogger.warn('voice.preflight.reclaiming_stale_lock', {
+              ...preflightLogContext,
+              resolvedCallerIdSuffix: maskPhoneNumberForLogs(
+                resolvedCallerId.callerIdNumber,
+              ),
+              staleCallSid: stalePreflightLock.callSid,
+              stage: preflightStage,
+            });
             await getCallerIdLockService().releaseLock(stalePreflightLock.callSid);
+            preflightStage = 'acquire_lock_retry';
             acquired = await getCallerIdLockService().acquireLock(
               resolvedCallerId.callerIdNumber,
               userId,
@@ -873,6 +1009,15 @@ export const voiceRoutes = (): RouteDefinition[] => [
         }
 
         if (!acquired) {
+          preflightLogger.warn('voice.preflight.caller_id_locked', {
+            ...preflightLogContext,
+            reclaimedPreflightLock,
+            resolvedCallerIdSuffix: maskPhoneNumberForLogs(
+              resolvedCallerId.callerIdNumber,
+            ),
+            stage: 'caller_id_locked',
+            usedRawNumberFallback,
+          });
           res.status(409).json({
             error: {
               code: 'CALLER_ID_LOCKED',
@@ -898,28 +1043,53 @@ export const voiceRoutes = (): RouteDefinition[] => [
             customerAreaCode: resolvedCallerId.customerAreaCode ?? null,
           });
         }
-        (await getLogger()).info('voice.preflight', {
-          action: 'voice.preflight',
-          userId: req.auth?.userId ?? 'anonymous',
+        preflightLogger.info('voice.preflight.success', {
+          ...preflightLogContext,
           outcome: 'success',
+          reclaimedPreflightLock,
+          resolvedCallerIdSuffix: maskPhoneNumberForLogs(
+            resolvedCallerId.callerIdNumber,
+          ),
           selectionMethod: resolvedCallerId.selectionMethod,
+          stage: 'success',
+          usedRawNumberFallback,
         });
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Lock acquisition failed';
+        const errorDetails = getErrorLogDetails(err);
+
+        preflightLogger.error('voice.preflight.failed', {
+          ...preflightLogContext,
+          ...errorDetails,
+          reclaimedPreflightLock,
+          stage: preflightStage,
+          usedRawNumberFallback,
+        });
         Sentry.captureException(
           err instanceof Error ? err : new Error(message),
           {
             extra: {
               callerId,
-              to,
-              userId,
-              localPresence,
               context: 'preflight',
+              localPresence,
+              preflightCallSid,
+              reclaimedPreflightLock,
+              stage: preflightStage,
+              to,
+              usedRawNumberFallback,
+              userId,
+              workspaceId,
             },
           },
         );
-        res.status(500).json({ error: { code: 'LOCK_ERROR', message } });
+        res.status(500).json({
+          error: {
+            code: 'LOCK_ERROR',
+            message,
+          },
+          stage: preflightStage,
+        });
       }
     }),
   },
