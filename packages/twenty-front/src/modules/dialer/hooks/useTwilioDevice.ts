@@ -219,7 +219,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallState((prev) => ({
           ...prev,
           status: 'ringing',
-          callSid: call.parameters?.CallSid ?? prev.callSid,
+          callSid: call.parameters?.CallSid ?? null,
         }));
       });
 
@@ -242,7 +242,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallState((prev) => ({
           ...prev,
           status: 'failed',
-          callSid: call.parameters?.CallSid ?? prev.callSid,
+          callSid: call.parameters?.CallSid ?? null,
         }));
         clearPersistence();
       };
@@ -297,7 +297,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallState((prev) => ({
           ...prev,
           status: 'failed',
-          callSid: call.parameters?.CallSid ?? prev.callSid,
+          callSid: call.parameters?.CallSid ?? null,
         }));
         clearPersistence();
       });
@@ -459,6 +459,8 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallState((previousCallState) => ({
           ...previousCallState,
           fromNumber: params.From,
+          callSid: null,
+          startedAt: null,
         }));
         updateCallStatus('connecting');
         playDialingStartedSound();
@@ -471,7 +473,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallError(null);
         setCallState((previousCallState) => ({
           ...previousCallState,
-          callSid: call.parameters?.CallSid ?? previousCallState.callSid,
+          callSid: call.parameters?.CallSid ?? null,
         }));
         bindCallEvents(call);
         return call;

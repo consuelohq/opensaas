@@ -1080,6 +1080,11 @@ export const useOpportunityQueueWorkspace = ({
       autoStartedItemIdRef.current = null;
       setCallState((previousCallState) => ({
         ...previousCallState,
+        contact: currentQueueItem.contact,
+        fromNumber: manualCallerId ?? null,
+        callSid: null,
+        duration: 0,
+        startedAt: null,
         status: 'failed',
       }));
       Sentry.captureException(error, {
