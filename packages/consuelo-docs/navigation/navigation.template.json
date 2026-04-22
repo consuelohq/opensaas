@@ -31,6 +31,17 @@
             "dataMigrationCapabilities": {
               "label": "Capabilities"
             },
+            "fileSystem": {
+              "label": "File System",
+              "groups": {
+                "fileSystemCapabilities": {
+                  "label": "Capabilities"
+                },
+                "fileSystemHowTos": {
+                  "label": "How-Tos"
+                }
+              }
+            },
             "dataMigrationHowTos": {
               "label": "How-Tos"
             }

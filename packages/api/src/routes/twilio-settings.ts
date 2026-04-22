@@ -4,6 +4,8 @@ import * as Sentry from "@sentry/node";
 import {
   getWorkspaceTwilioConfig,
   getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
   saveByokConfig,
   deleteWorkspaceTwilioConfig,
   isHostedInstance,
@@ -68,7 +70,25 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
 
       try {
         const config = await getWorkspaceTwilioConfig(workspaceId);
-        if (!config || !config.twimlAppSid) {
+        const sharedHostedConfigAvailable = hasSharedTwilioPlatformConfig();
+        const credentialsSource =
+          config && config.twimlAppSid
+            ? {
+                credentials: getDecryptedCredentials(config),
+                twimlAppSid: credentialsSource.twimlAppSid,
+              }
+            : sharedHostedConfigAvailable
+              ? (() => {
+                  const sharedCredentials =
+                    getSharedTwilioPlatformCredentials();
+                  return {
+                    credentials: sharedCredentials,
+                    twimlAppSid: sharedCredentials.twimlAppSid ?? null,
+                  };
+                })()
+              : null;
+
+        if (!credentialsSource || !credentialsSource.twimlAppSid) {
           res.status(200).json({
             healthy: false,
             issues: ["No TwiML App configured for this workspace"],
@@ -76,14 +96,14 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
           return;
         }
 
-        const creds = getDecryptedCredentials(config);
+        const creds = credentialsSource.credentials;
         const issues: string[] = [];
 
         try {
           const syncResult = await syncTwimlAppUrl(
             creds.accountSid,
             creds.authToken,
-            config.twimlAppSid,
+            credentialsSource.twimlAppSid,
           );
           if (syncResult.updated) {
             issues.push(
@@ -114,7 +134,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
                   : "unknown error";
               res.status(200).json({
                 healthy: false,
-                twimlAppSid: config.twimlAppSid,
+                twimlAppSid: credentialsSource.twimlAppSid,
                 issues: [
                   `TwiML App deleted and re-creation failed: ${createMessage}`,
                 ],
@@ -130,7 +150,8 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
         res.status(200).json({
           healthy:
             issues.length === 0 || issues.every((i) => i.includes("has been")),
-          twimlAppSid: updatedConfig?.twimlAppSid ?? config.twimlAppSid,
+          twimlAppSid:
+            updatedConfig?.twimlAppSid ?? credentialsSource.twimlAppSid,
           issues,
         });
       } catch (err: unknown) {
@@ -156,9 +177,21 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
 
       try {
         const config = await getWorkspaceTwilioConfig(workspaceId);
-        const hosted = isHostedInstance();
+        const hosted = isHostedInstance() || hasSharedTwilioPlatformConfig();
 
         if (!config) {
+          if (hasSharedTwilioPlatformConfig()) {
+            const sharedCredentials = getSharedTwilioPlatformCredentials();
+            res.status(200).json({
+              configured: true,
+              mode: "hosted",
+              hostedAvailable: hosted,
+              accountSid: maskCredential(sharedCredentials.accountSid),
+              twimlAppSid: sharedCredentials.twimlAppSid ?? null,
+            });
+            return;
+          }
+
           res.status(200).json({
             configured: false,
             mode: hosted ? "hosted" : null,

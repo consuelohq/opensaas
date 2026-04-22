@@ -29,7 +29,7 @@ Webhook-Trigger ermöglichen es externen Diensten, Ihre Workflows zu starten, in
 2. Wählen Sie **Webhook** aus
 3. Sie erhalten eine eindeutige Webhook-URL wie:
    ```
-   https://api.twenty.com/webhooks/workflow/abc123...
+   https://api.consuelo.com/webhooks/workflow/abc123...
    ```
 4. Kopieren Sie diese URL — Sie benötigen sie für Ihren externen Dienst
 
@@ -76,7 +76,7 @@ Testen Sie Ihren Webhook, bevor Sie ihn aktivieren:
 **Mit cURL**:
 
 ```bash
-curl -X POST https://api.twenty.com/webhooks/workflow/abc123... \
+curl -X POST https://api.consuelo.com/webhooks/workflow/abc123... \
   -H "Content-Type: application/json" \
   -d '{"firstName":"Test","lastName":"User","email":"test@example.com"}'
 ```

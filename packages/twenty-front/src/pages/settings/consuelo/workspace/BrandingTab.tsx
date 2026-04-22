@@ -63,7 +63,7 @@ const StyledColorInput = styled.input`
   width: 36px;
 `;
 
-type Props = {
+type BrandingTabProps = {
   branding: WorkspaceBranding;
   onSave: (branding: WorkspaceBranding) => Promise<void>;
 };
@@ -73,7 +73,7 @@ export const BrandingTab = ({ branding, onSave }: BrandingTabProps) => {
   const [saving, setSaving] = useState(false);
 
   const patch = (p: Partial<WorkspaceBranding>) =>
-    setDraft((prev) => ({ ...prev, ...p }));
+    setDraft((prev: WorkspaceBranding) => ({ ...prev, ...p }));
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(branding);
 

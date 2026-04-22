@@ -18,6 +18,13 @@ import { TOKEN_REFRESH_INTERVAL } from '@/dialer/constants/dialerConstants';
 import { selectedMicState } from '@/dialer/states/selectedMicState';
 import { selectedSpeakerState } from '@/dialer/states/selectedSpeakerState';
 import type { CallStatus } from '@/dialer/types/dialer';
+import {
+  playCallConnectedSound,
+  playCallEndSound,
+  playDialingStartedSound,
+  playErrorSound,
+  playIncomingCallSound,
+} from '@/dialer/utils/notificationSounds';
 
 const EDGES: string[] = [
   'ashburn',
@@ -174,10 +181,17 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
   // wire call-level events
   const bindCallEvents = useCallback(
     (call: Call) => {
+      let hasAccepted = false;
+      let hasRung = false;
+
       call.on('accept', async () => {
+        hasAccepted = true;
+
         try {
+          playCallConnectedSound();
           setActiveCall(call);
           const callSid = call.parameters?.CallSid ?? null;
+          setCallError(null);
           setCallState((prev) => ({
             ...prev,
             status: 'active',
@@ -198,7 +212,48 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }
       });
 
-      const handleEnd = () => {
+      call.on('ringing', () => {
+        hasRung = true;
+        setActiveCall(call);
+        setCallError(null);
+        setCallState((prev) => ({
+          ...prev,
+          status: 'ringing',
+          callSid: call.parameters?.CallSid ?? null,
+        }));
+      });
+
+      const handleTerminalBeforeRinging = (eventName: 'cancel' | 'disconnect' | 'reject') => {
+        const terminalMessage =
+          eventName === 'cancel'
+            ? t`Call was canceled before it started ringing`
+            : eventName === 'reject'
+              ? t`Call was rejected before it started ringing`
+              : t`Call ended before it started ringing`;
+
+        playErrorSound();
+        setActiveCall(null);
+        stopStatusPolling();
+        setCallError({
+          reason: 'failed',
+          message: terminalMessage,
+          occurredAt: new Date(),
+        });
+        setCallState((prev) => ({
+          ...prev,
+          status: 'failed',
+          callSid: call.parameters?.CallSid ?? null,
+        }));
+        clearPersistence();
+      };
+
+      const handleEnd = (eventName: 'cancel' | 'disconnect' | 'reject') => {
+        if (!hasAccepted && !hasRung) {
+          handleTerminalBeforeRinging(eventName);
+          return;
+        }
+
+        playCallEndSound();
         setActiveCall(null);
         stopStatusPolling();
         setCallError(null);
@@ -206,11 +261,49 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         clearPersistence();
       };
 
-      call.on('disconnect', handleEnd);
-      call.on('cancel', handleEnd);
-      call.on('reject', handleEnd);
+      call.on('disconnect', () => {
+        handleEnd('disconnect');
+      });
+      call.on('cancel', () => {
+        handleEnd('cancel');
+      });
+      call.on('reject', () => {
+        handleEnd('reject');
+      });
+
+      call.on('error', (callError) => {
+        const message = callError.message ?? 'Call failed';
+
+        captureException(new Error(message), {
+          extra: {
+            context: 'call:error',
+            callSid: call.parameters?.CallSid ?? null,
+            callStatus:
+              typeof call.status === 'function' ? call.status() : null,
+            errorCode: callError.code ?? null,
+            from: call.parameters?.From ?? null,
+            to: call.parameters?.To ?? null,
+          },
+        });
+
+        playErrorSound();
+        setActiveCall(null);
+        stopStatusPolling();
+        setCallError({
+          reason: 'failed',
+          message,
+          occurredAt: new Date(),
+        });
+        setCallState((prev) => ({
+          ...prev,
+          status: 'failed',
+          callSid: call.parameters?.CallSid ?? null,
+        }));
+        clearPersistence();
+      });
 
       call.on('deviceError', () => {
+        playErrorSound();
         setActiveCall(null);
         stopStatusPolling();
         updateCallStatus('failed');
@@ -250,6 +343,11 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         closeProtection: true,
       });
 
+      // disable Twilio's default sounds — we play our own via notificationSounds.ts
+      dev.audio?.incoming(false);
+      dev.audio?.outgoing(false);
+      dev.audio?.disconnect(false);
+
       dev.on('registered', () => {
         setDeviceReady(true);
         setDeviceError(null);
@@ -281,6 +379,7 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       });
 
       dev.on('incoming', (call: Call) => {
+        playIncomingCallSound();
         bindCallEvents(call);
         updateCallStatus('ringing');
       });
@@ -360,13 +459,22 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         setCallState((previousCallState) => ({
           ...previousCallState,
           fromNumber: params.From,
+          callSid: null,
+          startedAt: null,
         }));
         updateCallStatus('connecting');
+        playDialingStartedSound();
 
         const call = await deviceRef.current.connect({
           params: { To: params.To, From: params.From },
         });
 
+        setActiveCall(call);
+        setCallError(null);
+        setCallState((previousCallState) => ({
+          ...previousCallState,
+          callSid: call.parameters?.CallSid ?? null,
+        }));
         bindCallEvents(call);
         return call;
       } catch (err: unknown) {
@@ -381,7 +489,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       updateCallStatus,
       bindCallEvents,
       requestMicPermission,
+      setActiveCall,
       setCallState,
+      setCallError,
       setDeviceError,
     ],
   );

@@ -40,7 +40,12 @@ export interface DialResult {
   success: boolean;
   callSid?: string;
   fromNumber?: string;
-  selectionMethod?: 'manual' | 'primary' | 'local_presence' | 'primary_fallback' | 'system_default';
+  selectionMethod?:
+    | 'manual'
+    | 'primary'
+    | 'local_presence'
+    | 'primary_fallback'
+    | 'system_default';
   error?: string;
 }
 
@@ -129,6 +134,21 @@ export interface NumberSelection {
   customerAreaCode?: string;
 }
 
+export type ResolveCallerIdResult = {
+  callerIdNumber?: string;
+  selectionMethod:
+    | 'manual'
+    | 'primary'
+    | 'local_presence'
+    | 'primary_fallback'
+    | 'system_default';
+  localMatch: boolean;
+  proximityMatch: boolean;
+  distanceMiles?: number;
+  isPrimary: boolean;
+  customerAreaCode?: string;
+};
+
 /** Caller ID lock record */
 export interface CallerIdLock {
   phoneNumber: string;
@@ -198,7 +218,7 @@ export type RingTimeMetrics = {
   ringingAt: string;
   answeredAt?: string;
   ringDurationMs?: number;
-}
+};
 
 // Dial status callback payload from Twilio
 export type DialStatusPayload = {
@@ -209,19 +229,23 @@ export type DialStatusPayload = {
   RecordingUrl?: string;
   CallerName?: string;
   transferId?: string;
-}
+};
 
 // TwiML generation params for the conference webhook
 export type TwimlParams = {
   to: string;
   from: string;
   conferenceName?: string;
-}
+};
 
 // --- Parallel dialing types ---
 
 // Parallel dial group lifecycle
-export type ParallelGroupStatus = 'dialing' | 'connected' | 'completed' | 'failed';
+export type ParallelGroupStatus =
+  | 'dialing'
+  | 'connected'
+  | 'completed'
+  | 'failed';
 
 // AMD (answering machine detection) result
 export type AmdResult = 'human' | 'machine' | 'unknown';
@@ -231,30 +255,53 @@ export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
 export type ParallelTerminationPolicy = 'winner-take-all';
 
 export type ParallelDialProfile = {
-  id: string;
+  id: ProfileKey;
   fanout: number;
   staggerMs: number;
   amdPolicy: ParallelAmdPolicy;
   terminationPolicy: ParallelTerminationPolicy;
+};
+
+export type ProfileKey = 'balanced' | 'aggressive' | 'conservative';
+
+export type ProfilePosterior = {
+  profileId: ProfileKey;
+  alpha: number;
+  beta: number;
+}
+
+export type BetaSampler = {
+  sample(alpha: number, beta: number): number;
+}
+
+export type PosteriorStore = {
+  loadPosteriors(workspaceId?: string): Promise<ProfilePosterior[]>;
+  updatePosterior(
+    profileId: ProfileKey,
+    success: boolean,
+    workspaceId?: string,
+  ): Promise<void>;
 }
 
 export type ParallelStrategyContext = {
   queueId: string;
+  workspaceId?: string;
   campaignSegment?: string;
   recentAnswerRate?: number;
   profileId?: string;
-}
+};
 
 export type ParallelStrategyResolution = {
   profile: ParallelDialProfile;
   reason: string;
-}
+  scope?: 'global' | 'workspace' | 'fallback';
+};
 
 export type ParallelTelemetry = {
   winnerRate: number;
   wastedLegs: number;
   connectLatencyMs: number | null;
-}
+};
 
 // Single call within a parallel group
 export type ParallelCall = {
@@ -268,7 +315,7 @@ export type ParallelCall = {
   dialStartedAt: string;
   answeredAt?: string;
   terminatedAt?: string;
-}
+};
 
 // Full parallel dial group state (stored in redis)
 export type ParallelGroup = {
@@ -286,7 +333,7 @@ export type ParallelGroup = {
   connectedAt?: string;
   completedAt?: string;
   telemetryEmittedAt?: string;
-}
+};
 
 /** Options for initiating a parallel dial batch */
 export interface ParallelDialOptions {
@@ -319,9 +366,92 @@ export interface ParallelDialResult {
 export interface ParallelStore {
   setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void>;
   getGroup(groupId: string): Promise<string | null>;
-  setCallMapping(callSid: string, groupId: string, ttlSeconds: number): Promise<void>;
+  setCallMapping(
+    callSid: string,
+    groupId: string,
+    ttlSeconds: number,
+  ): Promise<void>;
   getCallMapping(callSid: string): Promise<string | null>;
-  setWinnerIfAbsent(groupId: string, callSid: string, ttlSeconds: number): Promise<boolean>;
+  setWinnerIfAbsent(
+    groupId: string,
+    callSid: string,
+    ttlSeconds: number,
+  ): Promise<boolean>;
   getWinner(groupId: string): Promise<string | null>;
   deleteGroup(groupId: string): Promise<void>;
 }
+
+export type StoppingThreshold = {
+  segmentId: string;
+  attemptNumber: number;
+  answerProbability: number;
+  expectedValue: number;
+  shouldStop: boolean;
+};
+
+export type StoppingModelStore = {
+  getAnswerProbabilities(
+    segmentId: string,
+  ): Promise<{ attemptNumber: number; probability: number }[]>;
+  getWorkspaceEconomics(workspaceId: string): Promise<{
+    valuePerConnection: number;
+    costPerAttempt: number;
+  }>;
+};
+
+export type WhittleIndexInput = {
+  answerRate: number;
+  valuePerConnection: number;
+  costPerAttempt: number;
+  hoursRemainingInWindow: number;
+  segmentSampleSize: number;
+  explorationWeight?: number;
+};
+
+export type WhittleIndexResult = {
+  index: number;
+  components: {
+    expectedReward: number;
+    cost: number;
+    urgencyBonus: number;
+    explorationBonus: number;
+  };
+};
+
+export type AgeBucket = 'fresh' | 'aged';
+
+export type CadencePolicy = {
+  segmentId: string;
+  ageBucket: AgeBucket;
+  maxAttemptsPerDay: number;
+  minSpacingMinutes: number;
+  doubleDial: {
+    enabled: boolean;
+    windowSeconds: number;
+    maxPerSession: number;
+    triggerOutcomes: string[];
+    maxCallDuration: number;
+  };
+  source: 'learned' | 'age_bucket_default' | 'static_fallback';
+};
+
+export type HazardEstimate = {
+  segmentId: string;
+  hourOfDay: number;
+  dayOfWeek: number;
+  attemptNumber: number;
+  answerRate: number;
+  sampleSize: number;
+};
+
+export type TimingModelStore = {
+  getHazardEstimates(
+    segmentId: string,
+    attemptNumber?: number,
+  ): Promise<HazardEstimate[]>;
+  getOptimalRetryTime(
+    segmentId: string,
+    attemptNumber: number,
+  ): Promise<{ hour: number; dayOfWeek: number } | null>;
+};
+

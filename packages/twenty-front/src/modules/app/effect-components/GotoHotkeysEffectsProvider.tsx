@@ -7,6 +7,8 @@ import { useGoToHotkeys } from '@/ui/utilities/hotkey/hooks/useGoToHotkeys';
 import { useRecoilCallback } from 'recoil';
 import { useNavigate } from 'react-router-dom';
 import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
+import { FeatureFlagKey } from '~/generated-metadata/graphql';
 import { getAppPath, getSettingsPath } from 'twenty-shared/utils';
 
 export const GotoHotkeysEffectsProvider = () => {
@@ -24,6 +26,11 @@ export const GotoHotkeysEffectsProvider = () => {
       },
     [navigate],
   );
+
+  useGoToHotkeys({
+    key: 'h',
+    location: AppPath.Home,
+  });
 
   useGoToHotkeys({
     key: 's',
@@ -45,10 +52,15 @@ export const GotoHotkeysEffectsProvider = () => {
     dependencies: [expandDrawerAndNavigateToSettings],
   });
 
-  // g+a → go to computer (agent)
+  // g+a → go to computer (agent) — gated behind feature flag
+  const isComputerSidebarEnabled = useIsFeatureEnabled(
+    FeatureFlagKey.IS_COMPUTER_SIDEBAR_ENABLED,
+  );
+
   useGoToHotkeys({
     key: 'a',
     location: AppPath.Agent,
+    enabled: isComputerSidebarEnabled,
   });
 
   return activeNonSystemObjectMetadataItems.map((objectMetadataItem) => {

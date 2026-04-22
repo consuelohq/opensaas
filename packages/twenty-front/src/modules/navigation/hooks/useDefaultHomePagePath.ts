@@ -1,6 +1,7 @@
 import { currentUserState } from '@/auth/states/currentUserState';
 import { lastVisitedObjectMetadataItemIdState } from '@/navigation/states/lastVisitedObjectMetadataItemIdState';
-import { type ObjectPathInfo } from '@/navigation/types/ObjectPathInfo';
+import { lastVisitedPagePathState } from '@/navigation/states/lastVisitedPagePathState';
+
 import { useFilteredObjectMetadataItems } from '@/object-metadata/hooks/useFilteredObjectMetadataItems';
 import { useObjectPermissions } from '@/object-record/hooks/useObjectPermissions';
 import { getObjectPermissionsFromMapByObjectMetadataId } from '@/settings/roles/role-permissions/objects-permissions/utils/getObjectPermissionsFromMapByObjectMetadataId';
@@ -54,18 +55,12 @@ export const useDefaultHomePagePath = () => {
     };
   }, []);
 
-  const firstObjectPathInfo = useMemo<ObjectPathInfo | null>(() => {
-    const [firstObjectMetadataItem] =
-      readableAlphaSortedActiveNonSystemObjectMetadataItems;
-
-    if (!isDefined(firstObjectMetadataItem)) {
-      return null;
-    }
-
-    const view = getFirstView(firstObjectMetadataItem?.id);
-
-    return { objectMetadataItem: firstObjectMetadataItem, view };
-  }, [getFirstView, readableAlphaSortedActiveNonSystemObjectMetadataItems]);
+  const getLastVisitedPagePath = useRecoilCallback(
+    ({ snapshot }) => {
+      return () => snapshot.getLoadable(lastVisitedPagePathState).getValue();
+    },
+    [],
+  );
 
   const getDefaultObjectPathInfo = useRecoilCallback(
     ({ snapshot }) => {
@@ -89,10 +84,10 @@ export const useDefaultHomePagePath = () => {
           };
         }
 
-        return firstObjectPathInfo;
+        return null;
       };
     },
-    [firstObjectPathInfo, getActiveObjectMetadataItemMatchingId, getFirstView],
+    [getActiveObjectMetadataItemMatchingId, getFirstView],
   );
 
   const defaultHomePagePath = useMemo(() => {
@@ -104,10 +99,18 @@ export const useDefaultHomePagePath = () => {
       return getSettingsPath(SettingsPath.ProfilePage);
     }
 
+    const lastVisitedPagePath = getLastVisitedPagePath();
+
+    if (isDefined(lastVisitedPagePath)) {
+      if (lastVisitedPagePath === AppPath.Home) {
+        return AppPath.Home;
+      }
+    }
+
     const defaultObjectPathInfo = getDefaultObjectPathInfo();
 
     if (!isDefined(defaultObjectPathInfo)) {
-      return AppPath.NotFound;
+      return AppPath.Home;
     }
 
     const namePlural = defaultObjectPathInfo.objectMetadataItem?.namePlural;
@@ -120,6 +123,7 @@ export const useDefaultHomePagePath = () => {
     );
   }, [
     currentUser,
+    getLastVisitedPagePath,
     getDefaultObjectPathInfo,
     readableAlphaSortedActiveNonSystemObjectMetadataItems,
   ]);

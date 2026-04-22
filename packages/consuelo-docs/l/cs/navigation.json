@@ -3,7 +3,7 @@
     "userGuide": {
       "label": "Uživatelská příručka",
       "groups": {
-        "discoverTwenty": {
+        "discoverConsuelo": {
           "label": "Objevte Consuelo",
           "groups": {
             "gettingStartedCapabilities": {
@@ -171,7 +171,7 @@
                 "frontendDevelopment": {
                   "label": "Vývoj frontendu",
                   "groups": {
-                    "twentyUi": {
+                    "consueloUi": {
                       "label": "Consuelo UI",
                       "groups": {
                         "display": {

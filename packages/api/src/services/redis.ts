@@ -1,32 +1,13 @@
-import IORedis from "ioredis";
 import * as Sentry from "@sentry/node";
+
+import { getApiRedisClient } from "./redis-client.js";
 
 const CONFERENCE_TTL_SECONDS = 3600; // 1 hour
 const PKCE_TTL_SECONDS = 600; // 10 minutes
 
 class RedisService {
-  private client: IORedis | null = null;
-
-  async getClient(): Promise<IORedis> {
-    try {
-      if (!this.client) {
-        const redisUrl = process.env.REDIS_URL;
-        if (!redisUrl) {
-          throw new Error("REDIS_URL not configured");
-        }
-        this.client = new IORedis(redisUrl, {
-          retryStrategy: (times) => Math.min(times * 50, 2000),
-          maxRetriesPerRequest: 3,
-        });
-      }
-      return this.client;
-    } catch (err: unknown) {
-      this.client = null;
-      Sentry.captureException(err, {
-        extra: { context: "RedisService.getClient" },
-      });
-      throw err;
-    }
+  async getClient() {
+    return getApiRedisClient("request");
   }
 
   async getConferenceName(callSid: string): Promise<string | null> {
@@ -443,7 +424,6 @@ class RedisService {
       const client = await this.getClient();
       return await client.get(`voice-status:${workspaceId}`);
     } catch (err: unknown) {
-      this.client = null;
       Sentry.captureException(err, {
         extra: { context: "getVoiceStatusCache", workspaceId },
       });
@@ -464,7 +444,6 @@ class RedisService {
         JSON.stringify(data),
       );
     } catch (err: unknown) {
-      this.client = null;
       Sentry.captureException(err, {
         extra: { context: "setVoiceStatusCache", workspaceId },
       });

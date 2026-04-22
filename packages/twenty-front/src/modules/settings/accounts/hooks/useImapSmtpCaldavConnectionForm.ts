@@ -45,7 +45,8 @@ export const useImapSmtpCaldavConnectionForm = ({
 
   const formMethods = useForm<ConnectionFormData>({
     mode: 'onSubmit',
-    resolver: zodResolver(connectionImapSmtpCalDav),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(connectionImapSmtpCalDav) as any,
     defaultValues: {
       handle: '',
       IMAP: { host: '', port: 993, password: '', secure: true },

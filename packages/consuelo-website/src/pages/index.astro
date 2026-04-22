@@ -8,12 +8,32 @@ import LaunchOverview from '../components/launch/LaunchOverview.astro';
 import LaunchPrivacy from '../components/launch/LaunchPrivacy.astro';
 import LaunchStats from '../components/launch/LaunchStats.astro';
 import { launchFaqItems, launchPageSections } from '../data/launch-content';
+import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
 import LaunchLayout from '../layouts/LaunchLayout.astro';
 
-const description = 'Software that shows up in the browser, inside your CRM, in work channels, and in agent workflows.';
+const description = 'Sales infrastructure for insurance sales teams with a connected crm, dialer, real-time ai coaching, and workflow surfaces that integrate everywhere your team works.';
+
+const schemaEntries = [
+  getSoftwareApplicationSchema({
+    offers: {
+      '@type': 'AggregateOffer',
+      lowPrice: '0',
+      highPrice: '20',
+      priceCurrency: 'USD',
+      offerCount: '2',
+    },
+  }),
+  getFaqSchema(launchFaqItems),
+];
 ---
 
-<LaunchLayout title="Consuelo" description={description} canonicalPath="/" image="/og.png">
+<LaunchLayout
+  title="Consuelo | Sales Infrastructure for Insurance Sales Teams"
+  description={description}
+  canonicalPath="/"
+  image="/og.png"
+  schemaEntries={schemaEntries}
+>
   <LaunchHeader pageSections={launchPageSections} />
   <LaunchHero sectionId="intro" />
   <LaunchOverview sectionId="overview" />

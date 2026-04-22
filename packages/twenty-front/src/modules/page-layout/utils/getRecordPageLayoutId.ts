@@ -4,6 +4,7 @@ import { DEFAULT_COMPANY_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/D
 import { DEFAULT_NOTE_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultNoteRecordPageLayoutId';
 import { DEFAULT_OPPORTUNITY_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultOpportunityRecordPageLayoutId';
 import { DEFAULT_PERSON_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultPersonRecordPageLayoutId';
+import { DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultAttachmentRecordPageLayoutId';
 import { DEFAULT_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultRecordPageLayoutId';
 import { DEFAULT_TASK_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultTaskRecordPageLayoutId';
 import { DEFAULT_WORKFLOW_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultWorkflowPageLayoutId';
@@ -12,6 +13,7 @@ import { DEFAULT_WORKFLOW_VERSION_PAGE_LAYOUT_ID } from '@/page-layout/constants
 import { isDefined } from 'twenty-shared/utils';
 
 const OBJECT_NAME_TO_DEFAULT_LAYOUT_ID: Record<string, string> = {
+  [CoreObjectNameSingular.Attachment]: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
   [CoreObjectNameSingular.Company]: DEFAULT_COMPANY_RECORD_PAGE_LAYOUT_ID,
   [CoreObjectNameSingular.Person]: DEFAULT_PERSON_RECORD_PAGE_LAYOUT_ID,
   [CoreObjectNameSingular.Opportunity]:

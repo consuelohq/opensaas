@@ -5,7 +5,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import {
   setSessionId,
@@ -38,12 +38,13 @@ import { useRecoilComponentValue } from '@/ui/utilities/state/component-state/ho
 import { AppBasePath, AppPath } from 'twenty-shared/types';
 import { isDefined } from 'twenty-shared/utils';
 import { AnalyticsType } from '~/generated-metadata/graphql';
+import { lastVisitedPagePathState } from '@/navigation/states/lastVisitedPagePathState';
 import { usePageChangeEffectNavigateLocation } from '~/hooks/usePageChangeEffectNavigateLocation';
 import { useInitializeQueryParamState } from '~/modules/app/hooks/useInitializeQueryParamState';
 import { isMatchingLocation } from '~/utils/isMatchingLocation';
 import { getPageTitleFromPath } from '~/utils/title-utils';
 
-// TODO: break down into smaller functions and / or hooks
+// TODO(DEV-1459): break down into smaller functions and / or hooks
 //  - moved usePageChangeEffectNavigateLocation into dedicated hook
 export const PageChangeEffect = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export const PageChangeEffect = () => {
 
   const { initializeQueryParamState } = useInitializeQueryParamState();
 
-  //TODO: refactor useResetTableRowSelection hook to not throw when the argument `recordTableId` is an empty string
+  //TODO(DEV-1459): refactor useResetTableRowSelection hook to not throw when the argument `recordTableId` is an empty string
   // - replace CoreObjectNamePlural.Person
   const objectNamePlural =
     useParams().objectNamePlural ?? CoreObjectNamePlural.Person;
@@ -101,6 +102,8 @@ export const PageChangeEffect = () => {
 
   const { resetFocusStackToRecordIndex } = useResetFocusStackToRecordIndex();
 
+  const setLastVisitedPagePath = useSetRecoilState(lastVisitedPagePathState);
+
   const { openNewRecordTitleCell } = useOpenNewRecordTitleCell();
 
   useEffect(() => {
@@ -111,10 +114,22 @@ export const PageChangeEffect = () => {
     if (!previousLocation || previousLocation !== location.pathname) {
       setPreviousLocation(location.pathname);
       executeTasksOnAnyLocationChange();
+
+      if (
+        isMatchingLocation(location, AppPath.Home) ||
+        isMatchingLocation(location, AppPath.RecordIndexPage)
+      ) {
+        setLastVisitedPagePath(location.pathname);
+      }
     } else {
       return;
     }
-  }, [location, previousLocation, executeTasksOnAnyLocationChange]);
+  }, [
+    location,
+    previousLocation,
+    executeTasksOnAnyLocationChange,
+    setLastVisitedPagePath,
+  ]);
 
   useEffect(() => {
     initializeQueryParamState();
@@ -156,6 +171,22 @@ export const PageChangeEffect = () => {
     }
 
     switch (true) {
+      case isMatchingLocation(location, AppPath.Home): {
+        resetFocusStackToFocusItem({
+          focusStackItem: {
+            focusId: PageFocusId.Home,
+            componentInstance: {
+              componentType: FocusComponentType.PAGE,
+              componentInstanceId: PageFocusId.Home,
+            },
+            globalHotkeysConfig: {
+              enableGlobalHotkeysWithModifiers: true,
+              enableGlobalHotkeysConflictingWithKeyboard: true,
+            },
+          },
+        });
+        break;
+      }
       case isMatchingLocation(location, AppPath.RecordIndexPage): {
         resetFocusStackToRecordIndex();
         break;

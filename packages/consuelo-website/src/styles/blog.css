@@ -5,7 +5,7 @@
 /* astropaper base styles — adapted from astro-paper/src/styles/global.css for tw3 */
 
 :root {
-  --mono-font: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --background: #ffffff;
   --foreground: #000000;
   --accent: #000000;

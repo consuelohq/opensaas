@@ -112,10 +112,21 @@
                       "user-guide/data-migration/how-tos/fix-import-errors",
                       "user-guide/data-migration/how-tos/export-your-data",
                       "user-guide/data-migration/how-tos/import-data-via-api",
+                      "user-guide/data-migration/how-tos/upload-csv-programmatically",
                       "user-guide/data-migration/how-tos/migrating-from-other-crms",
                       "user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ],
                     "root": "user-guide/data-migration/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "user-guide/file-system/capabilities/file-categories",
+                      "user-guide/file-system/capabilities/knowledge-base",
+                      "user-guide/file-system/capabilities/auto-indexing",
+                      "user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "user-guide/file-system/overview"
                   },
                   {
                     "group": "AI",
@@ -724,6 +735,16 @@
                       "l/fr/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/fr/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/fr/user-guide/file-system/capabilities/file-categories",
+                      "l/fr/user-guide/file-system/capabilities/knowledge-base",
+                      "l/fr/user-guide/file-system/capabilities/auto-indexing",
+                      "l/fr/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/fr/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -1106,6 +1127,16 @@
                       "l/ar/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/ar/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/ar/user-guide/file-system/capabilities/file-categories",
+                      "l/ar/user-guide/file-system/capabilities/knowledge-base",
+                      "l/ar/user-guide/file-system/capabilities/auto-indexing",
+                      "l/ar/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/ar/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -1488,6 +1519,16 @@
                       "l/cs/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/cs/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/cs/user-guide/file-system/capabilities/file-categories",
+                      "l/cs/user-guide/file-system/capabilities/knowledge-base",
+                      "l/cs/user-guide/file-system/capabilities/auto-indexing",
+                      "l/cs/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/cs/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -1870,6 +1911,16 @@
                       "l/de/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/de/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/de/user-guide/file-system/capabilities/file-categories",
+                      "l/de/user-guide/file-system/capabilities/knowledge-base",
+                      "l/de/user-guide/file-system/capabilities/auto-indexing",
+                      "l/de/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/de/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -2252,6 +2303,16 @@
                       "l/es/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/es/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/es/user-guide/file-system/capabilities/file-categories",
+                      "l/es/user-guide/file-system/capabilities/knowledge-base",
+                      "l/es/user-guide/file-system/capabilities/auto-indexing",
+                      "l/es/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/es/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -2634,6 +2695,16 @@
                       "l/it/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/it/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/it/user-guide/file-system/capabilities/file-categories",
+                      "l/it/user-guide/file-system/capabilities/knowledge-base",
+                      "l/it/user-guide/file-system/capabilities/auto-indexing",
+                      "l/it/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/it/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -3016,6 +3087,16 @@
                       "l/ja/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/ja/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/ja/user-guide/file-system/capabilities/file-categories",
+                      "l/ja/user-guide/file-system/capabilities/knowledge-base",
+                      "l/ja/user-guide/file-system/capabilities/auto-indexing",
+                      "l/ja/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/ja/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -3398,6 +3479,16 @@
                       "l/ko/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/ko/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/ko/user-guide/file-system/capabilities/file-categories",
+                      "l/ko/user-guide/file-system/capabilities/knowledge-base",
+                      "l/ko/user-guide/file-system/capabilities/auto-indexing",
+                      "l/ko/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/ko/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -3606,10 +3697,21 @@
                       "l/pt/user-guide/data-migration/how-tos/fix-import-errors",
                       "l/pt/user-guide/data-migration/how-tos/export-your-data",
                       "l/pt/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/pt/user-guide/data-migration/how-tos/upload-csv-programmatically",
                       "l/pt/user-guide/data-migration/how-tos/migrating-from-other-crms",
                       "l/pt/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ],
                     "root": "l/pt/user-guide/data-migration/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/pt/user-guide/file-system/capabilities/file-categories",
+                      "l/pt/user-guide/file-system/capabilities/knowledge-base",
+                      "l/pt/user-guide/file-system/capabilities/auto-indexing",
+                      "l/pt/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/pt/user-guide/file-system/overview"
                   },
                   {
                     "group": "Overview",
@@ -3978,10 +4080,21 @@
                       "l/ro/user-guide/data-migration/how-tos/fix-import-errors",
                       "l/ro/user-guide/data-migration/how-tos/export-your-data",
                       "l/ro/user-guide/data-migration/how-tos/import-data-via-api",
+                      "l/ro/user-guide/data-migration/how-tos/upload-csv-programmatically",
                       "l/ro/user-guide/data-migration/how-tos/migrating-from-other-crms",
                       "l/ro/user-guide/data-migration/how-tos/migrating-from-self-hosted-to-cloud"
                     ],
                     "root": "l/ro/user-guide/data-migration/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/ro/user-guide/file-system/capabilities/file-categories",
+                      "l/ro/user-guide/file-system/capabilities/knowledge-base",
+                      "l/ro/user-guide/file-system/capabilities/auto-indexing",
+                      "l/ro/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/ro/user-guide/file-system/overview"
                   },
                   {
                     "group": "Overview",
@@ -4524,6 +4637,16 @@
                       "l/ru/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/ru/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/ru/user-guide/file-system/capabilities/file-categories",
+                      "l/ru/user-guide/file-system/capabilities/knowledge-base",
+                      "l/ru/user-guide/file-system/capabilities/auto-indexing",
+                      "l/ru/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/ru/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -4906,6 +5029,16 @@
                       "l/tr/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/tr/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/tr/user-guide/file-system/capabilities/file-categories",
+                      "l/tr/user-guide/file-system/capabilities/knowledge-base",
+                      "l/tr/user-guide/file-system/capabilities/auto-indexing",
+                      "l/tr/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/tr/user-guide/file-system/overview"
                   }
                 ]
               }
@@ -5288,6 +5421,16 @@
                       "l/zh/user-guide/settings/how-tos/settings-faq"
                     ],
                     "root": "l/zh/user-guide/settings/overview"
+                  },
+                  {
+                    "group": "File System",
+                    "pages": [
+                      "l/zh/user-guide/file-system/capabilities/file-categories",
+                      "l/zh/user-guide/file-system/capabilities/knowledge-base",
+                      "l/zh/user-guide/file-system/capabilities/auto-indexing",
+                      "l/zh/user-guide/file-system/how-tos/file-system-faq"
+                    ],
+                    "root": "l/zh/user-guide/file-system/overview"
                   }
                 ]
               }

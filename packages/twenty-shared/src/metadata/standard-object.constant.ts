@@ -26,6 +26,9 @@ export const STANDARD_OBJECTS = {
       fileCategory: {
         universalIdentifier: '20202020-8c3f-4d9e-9a1b-2e5f7a8c9d0e',
       },
+      expiresAt: {
+        universalIdentifier: '20202020-a01e-4005-9e05-5f9fb27fce6e',
+      },
       createdBy: {
         universalIdentifier: '395be3bd-a5c9-463d-aafe-9bc3bbec3f15',
       },
@@ -78,6 +81,159 @@ export const STANDARD_OBJECTS = {
       },
       workflowIdIndex: {
         universalIdentifier: '14d0f5a9-6c81-4e3b-5f2a-8d9e0c1b2f36',
+      },
+    },
+    views: {
+      allAttachments: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a11a000',
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af10-4a10-8a10-f11e5a11af00',
+          },
+          file: {
+            universalIdentifier: '20202020-af10-4a10-8a10-f11e5a11af01',
+          },
+          fileCategory: {
+            universalIdentifier: '20202020-af10-4a10-8a10-f11e5a11af02',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af10-4a10-8a10-f11e5a11af03',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af10-4a10-8a10-f11e5a11af04',
+          },
+        },
+      },
+      recordings: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a11a001',
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11af00',
+          },
+          file: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11af01',
+          },
+          fileCategory: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11af02',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11af03',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11af04',
+          },
+        },
+        viewFilters: {
+          fileCategoryIsAudio: {
+            universalIdentifier: '20202020-af11-4a10-8a10-f11e5a11bf00',
+          },
+        },
+      },
+      agentFiles: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a11a002',
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11af00',
+          },
+          file: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11af01',
+          },
+          fileCategory: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11af02',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11af03',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11af04',
+          },
+        },
+        viewFilters: {
+          fileCategoryIsAgentFile: {
+            universalIdentifier: '20202020-af12-4a10-8a10-f11e5a11bf00',
+          },
+        },
+      },
+      scripts: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a11a003',
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11af00',
+          },
+          file: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11af01',
+          },
+          fileCategory: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11af02',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11af03',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11af04',
+          },
+        },
+        viewFilters: {
+          fileCategoryIsScript: {
+            universalIdentifier: '20202020-af13-4a10-8a10-f11e5a11bf00',
+          },
+        },
+      },
+      temporary: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a11a004',
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11af00',
+          },
+          file: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11af01',
+          },
+          expiresAt: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11af02',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11af03',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11af04',
+          },
+        },
+        viewFilters: {
+          expiresAtIsNotEmpty: {
+            universalIdentifier: '20202020-af14-4a10-8a10-f11e5a11bf00',
+          },
+        },
+      },
+      attachmentRecordPageFields: {
+        universalIdentifier: '20202020-a010-4a10-8a10-f11e5a115001',
+        viewFieldGroups: {
+          general: {
+            universalIdentifier: '20202020-a010-4a10-8a10-f11e5a115101',
+          },
+          additional: {
+            universalIdentifier: '20202020-a010-4a10-8a10-f11e5a115102',
+          },
+          other: {
+            universalIdentifier: '20202020-a010-4a10-8a10-f11e5a115103',
+          },
+        },
+        viewFields: {
+          name: {
+            universalIdentifier: '20202020-af15-4a10-8a10-f11e5a115200',
+          },
+          file: {
+            universalIdentifier: '20202020-af15-4a10-8a10-f11e5a115201',
+          },
+          fileCategory: {
+            universalIdentifier: '20202020-af15-4a10-8a10-f11e5a115202',
+          },
+          createdAt: {
+            universalIdentifier: '20202020-af15-4a10-8a10-f11e5a115203',
+          },
+          createdBy: {
+            universalIdentifier: '20202020-af15-4a10-8a10-f11e5a115204',
+          },
+        },
       },
     },
   },
@@ -722,6 +878,9 @@ export const STANDARD_OBJECTS = {
       },
       position: {
         universalIdentifier: 'ce0cb82d-7570-4286-a63e-d5008cbbe501',
+      },
+      name: {
+        universalIdentifier: '09a02d86-8406-4dce-969f-ad832af28726',
       },
       phoneNumber: {
         universalIdentifier: '475dd001-b04d-45b2-bcfb-dcf6f78c7764',

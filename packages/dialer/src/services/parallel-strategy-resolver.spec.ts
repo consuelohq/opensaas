@@ -1,157 +1,191 @@
+import type { BetaSampler, PosteriorStore, ProfilePosterior } from '../types';
+
 import { ParallelStrategyResolver } from './parallel-strategy-resolver';
 
 describe('ParallelStrategyResolver', () => {
-  const resolver = new ParallelStrategyResolver();
-
   describe('explicit profile selection', () => {
-    it('should use explicit profileId when provided', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'conservative' });
+    it('should use explicit profileId when provided and bypass sampling', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest.fn().mockReturnValue(0.5),
+      };
+
+      const mockStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockResolvedValue([]),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
+      const result = await resolver.resolve({
+        queueId: 'q1',
+        profileId: 'conservative',
+      });
+
       expect(result.profile.id).toBe('conservative');
       expect(result.reason).toBe('explicit-profile-id');
-    });
-
-    it('should use aggressive profile when explicitly requested', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'aggressive' });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.profile.fanout).toBe(4);
-    });
-
-    it('should fall through to rules when profileId is unknown', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'nonexistent' });
-      // unknown profileId → no match → falls through to default balanced
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
+      expect(mockStore.loadPosteriors).not.toHaveBeenCalled();
+      expect(mockSampler.sample).not.toHaveBeenCalled();
     });
   });
 
-  describe('VIP segment detection', () => {
-    it('should choose conservative for vip campaignSegment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'vip' });
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
-    });
+  describe('thompson sampling', () => {
+    it('should deterministically pick aggressive when it samples highest', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest
+          .fn()
+          .mockReturnValueOnce(0.5)
+          .mockReturnValueOnce(0.9)
+          .mockReturnValueOnce(0.1),
+      };
 
-    it('should choose conservative when queueId contains vip', () => {
-      const result = resolver.resolve({ queueId: 'vip-inbound' });
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
-    });
+      const mockStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockResolvedValue([
+          { profileId: 'balanced', alpha: 10, beta: 10 },
+          { profileId: 'aggressive', alpha: 10, beta: 10 },
+          { profileId: 'conservative', alpha: 10, beta: 10 },
+        ]),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
 
-    it('should choose conservative when queueId contains VIP (case insensitive)', () => {
-      const result = resolver.resolve({ queueId: 'VIP-QUEUE' });
-      expect(result.profile.id).toBe('conservative');
-    });
-  });
+      const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
 
-  describe('answer rate thresholds', () => {
-    it('should choose aggressive for answer rate below 0.12', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.08 });
+      const result = await resolver.resolve({ queueId: 'q1' });
+
       expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('low-answer-rate');
+      expect(result.reason).toBe('thompson-sampling-global');
     });
 
-    it('should NOT choose aggressive at exactly 0.12 (boundary)', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.12 });
-      // 0.12 is NOT < 0.12, so falls through to default
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
-    });
+    it('should use informed default priors on cold start when no posteriors are returned', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest.fn().mockReturnValue(0.5),
+      };
 
-    it('should choose aggressive at 0.119', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0.119 });
-      expect(result.profile.id).toBe('aggressive');
-    });
+      const mockStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockResolvedValue([]),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
 
-    it('should choose aggressive at 0 answer rate', () => {
-      const result = resolver.resolve({ queueId: 'q1', recentAnswerRate: 0 });
-      expect(result.profile.id).toBe('aggressive');
-    });
-  });
+      const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
 
-  describe('cold/new-leads segments', () => {
-    it('should choose aggressive for cold segment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'cold' });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('cold-segment');
-    });
-
-    it('should choose aggressive for new-leads segment', () => {
-      const result = resolver.resolve({ queueId: 'q1', campaignSegment: 'new-leads' });
-      expect(result.profile.id).toBe('aggressive');
-      expect(result.reason).toBe('cold-segment');
-    });
-  });
-
-  describe('default fallback', () => {
-    it('should choose balanced when no special conditions match', () => {
-      const result = resolver.resolve({ queueId: 'regular-queue' });
-      expect(result.profile.id).toBe('balanced');
-      expect(result.reason).toBe('default-balanced');
-    });
-
-    it('should choose balanced with undefined optional fields', () => {
-      const result = resolver.resolve({
-        queueId: 'q1',
-        campaignSegment: undefined,
-        recentAnswerRate: undefined,
-        profileId: undefined,
+      await expect(resolver.resolve({ queueId: 'q1' })).resolves.toMatchObject({
+        reason: 'thompson-sampling-global',
+        scope: 'global',
       });
-      expect(result.profile.id).toBe('balanced');
+
+      expect(mockSampler.sample).toHaveBeenCalledTimes(3);
+      expect((mockSampler.sample as jest.Mock).mock.calls).toEqual(
+        expect.arrayContaining([[11, 11], [9, 13], [13, 9]]),
+      );
+    });
+
+    it('should merge loaded posterior values instead of using defaults', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest.fn().mockReturnValue(0.2),
+      };
+
+      const loadedPosteriors: ProfilePosterior[] = [
+        { profileId: 'balanced', alpha: 15, beta: 15 },
+        { profileId: 'aggressive', alpha: 50, beta: 10 },
+        { profileId: 'conservative', alpha: 7, beta: 20 },
+      ];
+
+      const mockStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockResolvedValue(loadedPosteriors),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
+      await resolver.resolve({ queueId: 'q1' });
+
+      expect(mockSampler.sample).toHaveBeenCalledTimes(3);
+      expect((mockSampler.sample as jest.Mock).mock.calls).toEqual(
+        expect.arrayContaining([[15, 15], [50, 10], [7, 20]]),
+      );
+    });
+
+    it('should sample all profiles exactly once when no explicit profileId is set', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest.fn().mockReturnValue(0.4),
+      };
+
+      const mockStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockResolvedValue([]),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const resolver = new ParallelStrategyResolver(mockStore, mockSampler);
+
+      await resolver.resolve({ queueId: 'q1' });
+
+      expect(mockSampler.sample).toHaveBeenCalledTimes(3);
     });
   });
 
-  describe('profile properties', () => {
-    it('balanced profile should have fanout 3 and human-or-unknown AMD', () => {
-      const result = resolver.resolve({ queueId: 'q1' });
-      expect(result.profile.fanout).toBe(3);
-      expect(result.profile.staggerMs).toBe(500);
-      expect(result.profile.amdPolicy).toBe('human-or-unknown');
-      expect(result.profile.terminationPolicy).toBe('winner-take-all');
-    });
+  describe('fallback behavior', () => {
+    it('should fallback to balanced when posterior loading fails without throwing', async () => {
+      const mockSampler: BetaSampler = {
+        sample: jest.fn().mockReturnValue(0.1),
+      };
 
-    it('aggressive profile should have fanout 4 and human-only AMD', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'aggressive' });
-      expect(result.profile.fanout).toBe(4);
-      expect(result.profile.staggerMs).toBe(250);
-      expect(result.profile.amdPolicy).toBe('human-only');
-    });
+      const failingStore: PosteriorStore = {
+        loadPosteriors: jest.fn().mockRejectedValue(new Error('load failed')),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      };
 
-    it('conservative profile should have fanout 2', () => {
-      const result = resolver.resolve({ queueId: 'q1', profileId: 'conservative' });
-      expect(result.profile.fanout).toBe(2);
-      expect(result.profile.staggerMs).toBe(900);
+      const resolver = new ParallelStrategyResolver(failingStore, mockSampler);
+
+      await expect(resolver.resolve({ queueId: 'q1' })).resolves.toMatchObject({
+        profile: { id: 'balanced' },
+        reason: 'thompson-sampling-fallback',
+        scope: 'fallback',
+      });
     });
   });
 
-  describe('getProfile', () => {
+  describe('profile lookup APIs', () => {
+    const resolver = new ParallelStrategyResolver(
+      {
+        loadPosteriors: jest.fn().mockResolvedValue([]),
+        updatePosterior: jest.fn().mockResolvedValue(undefined),
+      },
+      { sample: jest.fn().mockReturnValue(0.5) },
+    );
+
     it('should return profile by id', () => {
-      expect(resolver.getProfile('balanced')).toMatchObject({ id: 'balanced' });
-    });
-
-    it('should return null for unknown profile', () => {
-      expect(resolver.getProfile('nonexistent')).toBeNull();
-    });
-  });
-
-  describe('listProfiles', () => {
-    it('should return all 3 profiles', () => {
-      const profiles = resolver.listProfiles();
-      expect(profiles).toHaveLength(3);
-      const ids = profiles.map((p) => p.id).sort();
-      expect(ids).toEqual(['aggressive', 'balanced', 'conservative']);
-    });
-  });
-
-  describe('priority order — VIP beats low answer rate', () => {
-    it('should choose conservative for vip even with low answer rate', () => {
-      const result = resolver.resolve({
-        queueId: 'q1',
-        campaignSegment: 'vip',
-        recentAnswerRate: 0.05,
+      expect(resolver.getProfile('balanced')).toMatchObject({
+        id: 'balanced',
+        fanout: 3,
+        staggerMs: 500,
+        amdPolicy: 'human-or-unknown',
       });
-      // VIP check comes before answer rate check
-      expect(result.profile.id).toBe('conservative');
-      expect(result.reason).toBe('segment-vip');
+
+      expect(resolver.getProfile('aggressive')).toMatchObject({
+        id: 'aggressive',
+        fanout: 4,
+        staggerMs: 250,
+        amdPolicy: 'human-only',
+      });
+
+      expect(resolver.getProfile('conservative')).toMatchObject({
+        id: 'conservative',
+        fanout: 2,
+        staggerMs: 900,
+        amdPolicy: 'human-or-unknown',
+      });
+    });
+
+    it('should return all profiles', () => {
+      const profiles = resolver.listProfiles();
+
+      expect(profiles).toHaveLength(3);
+      expect(profiles).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'balanced' }),
+          expect.objectContaining({ id: 'aggressive' }),
+          expect.objectContaining({ id: 'conservative' }),
+        ]),
+      );
     });
   });
 });

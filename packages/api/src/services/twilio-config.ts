@@ -49,6 +49,45 @@ export const isHostedInstance = (): boolean =>
     process.env.TWILIO_MASTER_AUTH_TOKEN
   );
 
+
+export const hasSharedTwilioPlatformConfig = (): boolean =>
+  !!(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN &&
+    process.env.TWILIO_API_KEY &&
+    process.env.TWILIO_API_SECRET &&
+    process.env.TWILIO_TWIML_APP_SID
+  );
+
+export const getSharedTwilioPlatformCredentials = (): DecryptedCredentials => {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID ?? '';
+  const authToken = process.env.TWILIO_AUTH_TOKEN ?? '';
+  const apiKey = process.env.TWILIO_API_KEY ?? '';
+  const apiSecret = process.env.TWILIO_API_SECRET ?? '';
+  const twimlAppSid = process.env.TWILIO_TWIML_APP_SID ?? '';
+
+  const missing: string[] = [];
+  if (!accountSid) missing.push('TWILIO_ACCOUNT_SID');
+  if (!authToken) missing.push('TWILIO_AUTH_TOKEN');
+  if (!apiKey) missing.push('TWILIO_API_KEY');
+  if (!apiSecret) missing.push('TWILIO_API_SECRET');
+  if (!twimlAppSid) missing.push('TWILIO_TWIML_APP_SID');
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Shared Twilio platform config missing: ${missing.join(', ')}`,
+    );
+  }
+
+  return {
+    accountSid,
+    authToken,
+    apiKey,
+    apiSecret,
+    twimlAppSid,
+  };
+};
+
 export const getWorkspaceTwilioConfig = async (
   workspaceId: string,
 ): Promise<WorkspaceTwilioConfig | null> => {

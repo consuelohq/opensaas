@@ -1,4 +1,5 @@
 import {
+  STANDARD_ATTACHMENT_PAGE_LAYOUT_CONFIG,
   STANDARD_COMPANY_PAGE_LAYOUT_CONFIG,
   STANDARD_DASHBOARD_PAGE_LAYOUT_CONFIG,
   STANDARD_NOTE_PAGE_LAYOUT_CONFIG,
@@ -12,6 +13,7 @@ import {
 import { type StandardRecordPageLayouts } from 'src/engine/workspace-manager/twenty-standard-application/utils/page-layout-config/standard-page-layout-config.type';
 
 export const STANDARD_PAGE_LAYOUTS = {
+  attachmentRecordPage: STANDARD_ATTACHMENT_PAGE_LAYOUT_CONFIG,
   myFirstDashboard: STANDARD_DASHBOARD_PAGE_LAYOUT_CONFIG,
   companyRecordPage: STANDARD_COMPANY_PAGE_LAYOUT_CONFIG,
   personRecordPage: STANDARD_PERSON_PAGE_LAYOUT_CONFIG,

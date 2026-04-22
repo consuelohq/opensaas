@@ -3,6 +3,7 @@ import { type FlatEntityMaps } from 'src/engine/metadata-modules/flat-entity/typ
 import { addFlatEntityToFlatEntityMapsOrThrow } from 'src/engine/metadata-modules/flat-entity/utils/add-flat-entity-to-flat-entity-maps-or-throw.util';
 import { type FlatViewFieldGroup } from 'src/engine/metadata-modules/flat-view-field-group/types/flat-view-field-group.type';
 import { type AllStandardObjectName } from 'src/engine/workspace-manager/twenty-standard-application/types/all-standard-object-name.type';
+import { computeStandardAttachmentViewFieldGroups } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field-group/compute-standard-attachment-view-field-groups.util';
 import { computeStandardCompanyViewFieldGroups } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field-group/compute-standard-company-view-field-groups.util';
 import { computeStandardNoteViewFieldGroups } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field-group/compute-standard-note-view-field-groups.util';
 import { computeStandardOpportunityViewFieldGroups } from 'src/engine/workspace-manager/twenty-standard-application/utils/view-field-group/compute-standard-opportunity-view-field-groups.util';
@@ -15,6 +16,7 @@ type StandardViewFieldGroupBuilder<P extends AllStandardObjectName> = (
 ) => Record<string, FlatViewFieldGroup>;
 
 const STANDARD_FLAT_VIEW_FIELD_GROUP_METADATA_BUILDERS_BY_OBJECT_NAME = {
+  attachment: computeStandardAttachmentViewFieldGroups,
   company: computeStandardCompanyViewFieldGroups,
   person: computeStandardPersonViewFieldGroups,
   opportunity: computeStandardOpportunityViewFieldGroups,

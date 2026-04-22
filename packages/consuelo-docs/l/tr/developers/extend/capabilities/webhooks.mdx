@@ -73,15 +73,15 @@ Consuelo, güvenlik için her webhook isteğini imzalar. İsteklerin gerçekliğ
 
 | Başlık                       | Açıklama            |
 | ---------------------------- | ------------------- |
-| `X-Twenty-Webhook-Signature` | HMAC SHA256 imzası  |
-| `X-Twenty-Webhook-Timestamp` | İstek zaman damgası |
+| `X-Consuelo-Webhook-Signature` | HMAC SHA256 imzası  |
+| `X-Consuelo-Webhook-Timestamp` | İstek zaman damgası |
 
 ### Doğrulama Adımları
 
-1. `X-Twenty-Webhook-Timestamp` değerinden zaman damgasını alın
+1. `X-Consuelo-Webhook-Timestamp` değerinden zaman damgasını alın
 2. Dizeyi oluşturun: `{timestamp}:{JSON payload}`
 3. Webhook gizli anahtarınızı kullanarak HMAC SHA256 hesaplayın
-4. `X-Twenty-Webhook-Signature` ile karşılaştırın
+4. `X-Consuelo-Webhook-Signature` ile karşılaştırın
 
 ### Örnek (Node.js)
 

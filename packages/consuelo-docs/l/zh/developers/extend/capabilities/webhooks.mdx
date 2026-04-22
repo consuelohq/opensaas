@@ -73,15 +73,15 @@ Consuelo 会针对以下事件类型发送 Webhook：
 
 | 标题                           | 描述             |
 | ---------------------------- | -------------- |
-| `X-Twenty-Webhook-Signature` | HMAC SHA256 签名 |
-| `X-Twenty-Webhook-Timestamp` | 请求时间戳          |
+| `X-Consuelo-Webhook-Signature` | HMAC SHA256 签名 |
+| `X-Consuelo-Webhook-Timestamp` | 请求时间戳          |
 
 ### 验证步骤
 
-1. 从 `X-Twenty-Webhook-Timestamp` 获取时间戳
+1. 从 `X-Consuelo-Webhook-Timestamp` 获取时间戳
 2. 构造字符串：`{timestamp}:{JSON payload}`
 3. 使用您的 Webhook 密钥计算 HMAC SHA256
-4. 与 `X-Twenty-Webhook-Signature` 进行比较
+4. 与 `X-Consuelo-Webhook-Signature` 进行比较
 
 ### 示例（Node.js）
 

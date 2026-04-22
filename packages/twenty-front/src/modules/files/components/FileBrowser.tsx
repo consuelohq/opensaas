@@ -12,6 +12,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useCallback, useState } from 'react';
 import { useRecoilState, useSetRecoilState } from 'recoil';
 import {
+  type IconComponent,
   IconFile,
   IconFolder,
   IconHeadphones,
@@ -228,14 +229,11 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
   }, [selected, deleteFiles]);
 
   const handleViewChange = useCallback(
-    (v: FileBrowserView) => () => setView(v),
-    [setView],
+    (v: FileBrowserView) => () => setFileBrowserView(v),
+    [setFileBrowserView],
   );
 
-  const folderIcons: Record<
-    string,
-    React.ComponentType<{ size?: number; stroke?: number }>
-  > = {
+  const folderIcons: Record<string, IconComponent> = {
     all: IconFolder,
     documents: IconFile,
     images: IconPhoto,
@@ -261,14 +259,14 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
           <LightIconButton
             Icon={IconLayoutGrid}
             accent="secondary"
-            active={view === 'grid'}
+            active={fileBrowserView === 'grid'}
             onClick={handleViewChange('grid')}
             aria-label={t`Grid view`}
           />
           <LightIconButton
             Icon={IconLayoutList}
             accent="secondary"
-            active={view === 'list'}
+            active={fileBrowserView === 'list'}
             onClick={handleViewChange('list')}
             aria-label={t`List view`}
           />
@@ -318,7 +316,7 @@ export const FileBrowser = ({ onFileClick }: FileBrowserProps) => {
             </AnimatedPlaceholderEmptySubTitle>
           </AnimatedPlaceholderEmptyTextContainer>
         </StyledEmptyContainer>
-      ) : view === 'grid' ? (
+      ) : fileBrowserView === 'grid' ? (
         <StyledGrid>
           {files.map((file) => (
             <FileCard

@@ -52,7 +52,7 @@ yarn app:dev
 # Add a new entity to your application (guided)
 yarn entity:add
 
-# Generate a typed Twenty client and workspace entity types
+# Generate a typed Consuelo client and workspace entity types
 yarn app:generate
 
 # Watch your application's function logs
@@ -76,7 +76,7 @@ yarn help
 
 * `my-twenty-app/`에 최소한의 기본 애플리케이션을 복사합니다
 * 로컬 `twenty-sdk` 종속성과 Yarn 4 구성을 추가합니다
-* `twenty` CLI와 연결된 설정 파일과 스크립트를 생성합니다
+* `consuelo` CLI와 연결된 설정 파일과 스크립트를 생성합니다
 * 기본 애플리케이션 구성과 기본 함수 역할을 생성합니다
 
 새로 스캐폴딩된 앱은 다음과 같습니다:
@@ -157,7 +157,7 @@ src/
 
 개요:
 
-* **package.json**: 앱 이름, 버전, 엔진(Node 24+, Yarn 4)을 선언하고, `twenty-sdk`와 함께 `app:dev`, `app:generate`, `entity:add`, `function:logs`, `function:execute`, `app:uninstall`, `auth:login` 같은 스크립트를 추가합니다. 이 스크립트들은 로컬 `twenty` CLI에 위임됩니다.
+* **package.json**: 앱 이름, 버전, 엔진(Node 24+, Yarn 4)을 선언하고, `twenty-sdk`와 함께 `app:dev`, `app:generate`, `entity:add`, `function:logs`, `function:execute`, `app:uninstall`, `auth:login` 같은 스크립트를 추가합니다. 이 스크립트들은 로컬 `consuelo` CLI에 위임됩니다.
 * **.gitignore**: `node_modules`, `.yarn`, `generated/`(타입드 클라이언트), `dist/`, `build/`, 커버리지 폴더, 로그 파일, `.env*` 파일 등의 일반 산출물을 무시합니다.
 * **yarn.lock**, **.yarnrc.yml**, **.yarn/**: 프로젝트에서 사용하는 Yarn 4 툴체인을 고정하고 구성합니다.
 * **.nvmrc**: 프로젝트에서 예상하는 Node.js 버전을 고정합니다.
@@ -328,8 +328,8 @@ import { DEFAULT_ROLE_UNIVERSAL_IDENTIFIER } from './default-function.role';
 
 export default defineApplication({
   universalIdentifier: '4ec0391d-18d5-411c-b2f3-266ddc1c3ef7',
-  displayName: 'My Twenty App',
-  description: 'My first Twenty app',
+  displayName: 'My Consuelo App',
+  description: 'My first Consuelo app',
   icon: 'IconWorld',
   applicationVariables: {
     DEFAULT_RECIPIENT_NAME: {
@@ -371,7 +371,7 @@ export const DEFAULT_ROLE_UNIVERSAL_IDENTIFIER =
 export default defineRole({
   universalIdentifier: DEFAULT_ROLE_UNIVERSAL_IDENTIFIER,
   label: 'Default function role',
-  description: 'Default role for function Twenty client',
+  description: 'Default role for function Consuelo client',
   canReadAllObjectRecords: false,
   canUpdateAllObjectRecords: false,
   canSoftDeleteAllObjectRecords: false,
@@ -411,7 +411,7 @@ The `universalIdentifier` of this role is then referenced in `application.config
 * 스캐폴딩된 역할에서 시작하여, 최소 권한 원칙에 따라 점진적으로 제한하세요.
 * `objectPermissions`와 `fieldPermissions`를 함수에 필요한 객체/필드로 교체하세요.
 * `permissionFlags`는 플랫폼 수준 기능에 대한 액세스를 제어합니다. 최소한으로 유지하고, 필요한 것만 추가하세요.
-* Hello World 앱의 동작 예제를 참조하세요: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/twenty/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
+* Hello World 앱의 동작 예제를 참조하세요: [`packages/twenty-apps/hello-world/src/roles/function-role.ts`](https://github.com/twentyhq/consuelo/blob/main/packages/twenty-apps/hello-world/src/roles/function-role.ts).
 
 ### 로직 함수 구성과 엔트리포인트
 
@@ -421,10 +421,10 @@ The `universalIdentifier` of this role is then referenced in `application.config
 // src/app/createPostCard.function.ts
 import { defineFunction } from 'twenty-sdk';
 import type { DatabaseEventPayload, ObjectRecordCreateEvent, CronPayload, RoutePayload } from 'twenty-sdk';
-import Twenty, { type Person } from '~/generated';
+import Consuelo, { type Person } from '~/generated';
 
 const handler = async (params: RoutePayload) => {
-  const client = new Twenty(); // generated typed client
+  const client = new Consuelo(); // generated typed client
   const name = 'name' in params.queryStringParameters
     ? params.queryStringParameters.name ?? process.env.DEFAULT_RECIPIENT_NAME ?? 'Hello world'
     : 'Hello world';
@@ -588,9 +588,9 @@ const handler = async (event: RoutePayload) => {
 워크스페이스 스키마를 기반으로 generated/에 로컬 타입드 클라이언트를 생성하려면 yarn app:generate를 실행하세요. 함수에서 사용하세요:
 
 ```typescript
-import Twenty from '~/generated';
+import Consuelo from '~/generated';
 
-const client = new Twenty();
+const client = new Consuelo();
 const { me } = await client.query({ me: { id: true, displayName: true } });
 ```
 
@@ -611,7 +611,7 @@ const { me } = await client.query({ me: { id: true, displayName: true } });
 
 ### Hello World 예제
 
-객체, 함수, 여러 트리거를 보여주는 최소한의 엔드투엔드 예제를 [여기](https://github.com/twentyhq/twenty/tree/main/packages/twenty-apps/hello-world)에서 살펴보세요:
+객체, 함수, 여러 트리거를 보여주는 최소한의 엔드투엔드 예제를 [여기](https://github.com/twentyhq/consuelo/tree/main/packages/twenty-apps/hello-world)에서 살펴보세요:
 
 ## 수동 설정(스캐폴더 없이)
 
@@ -626,18 +626,18 @@ yarn add -D twenty-sdk
 ```json filename="package.json"
 {
   "scripts": {
-    "auth:login": "twenty auth:login",
-    "auth:logout": "twenty auth:logout",
-    "auth:status": "twenty auth:status",
-    "auth:switch": "twenty auth:switch",
-    "auth:list": "twenty auth:list",
-    "app:dev": "twenty app:dev",
-    "app:generate": "twenty app:generate",
-    "app:uninstall": "twenty app:uninstall",
-    "entity:add": "twenty entity:add",
-    "function:logs": "twenty function:logs",
-    "function:execute": "twenty function:execute",
-    "help": "twenty help"
+    "auth:login": "consuelo auth:login",
+    "auth:logout": "consuelo auth:logout",
+    "auth:status": "consuelo auth:status",
+    "auth:switch": "consuelo auth:switch",
+    "auth:list": "consuelo auth:list",
+    "app:dev": "consuelo app:dev",
+    "app:generate": "consuelo app:generate",
+    "app:uninstall": "consuelo app:uninstall",
+    "entity:add": "consuelo entity:add",
+    "function:logs": "consuelo function:logs",
+    "function:execute": "consuelo function:execute",
+    "help": "consuelo help"
   }
 }
 ```

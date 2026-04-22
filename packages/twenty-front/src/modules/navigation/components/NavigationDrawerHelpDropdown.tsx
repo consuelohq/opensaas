@@ -1,10 +1,31 @@
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useLingui } from '@lingui/react/macro';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { useLingui } from '@lingui/react/macro';
+import {
+  IconArrowLeft,
+  IconBook2,
+  IconBrandChrome,
+  IconBrandDiscord,
+  IconBrandOpenai,
+  IconBrandSlack,
+  IconBrandTabler,
+  IconBrandWindows,
+  IconCommand,
+  IconComment,
+  IconDownload,
+  IconHelpCircle,
+  IconSettings,
+  IconStatusChange,
+  IconTerminal2,
+} from 'twenty-ui/display';
+import { MenuItem } from 'twenty-ui/navigation';
+import { getOsControlSymbol } from 'twenty-ui/utilities';
+import { AppPath, SettingsPath } from 'twenty-shared/types';
+import { getSettingsPath } from 'twenty-shared/utils';
 
 import { currentWorkspaceMemberState } from '@/auth/states/currentWorkspaceMemberState';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
@@ -29,51 +50,36 @@ import { useCloseDropdown } from '@/ui/layout/dropdown/hooks/useCloseDropdown';
 import { isNavigationDrawerExpandedState } from '@/ui/navigation/states/isNavigationDrawerExpanded';
 import { navigationDrawerExpandedMemorizedState } from '@/ui/navigation/states/navigationDrawerExpandedMemorizedState';
 import { navigationMemorizedUrlState } from '@/ui/navigation/states/navigationMemorizedUrlState';
-import { getOsControlSymbol } from 'twenty-ui/utilities';
-import { AppPath, SettingsPath } from 'twenty-shared/types';
-import { getSettingsPath } from 'twenty-shared/utils';
-import {
-  IconArrowLeft,
-  IconBook2,
-  IconBrandChrome,
-  IconBrandDiscord,
-  IconBrandOpenai,
-  IconBrandSlack,
-  IconBrandTabler,
-  IconBrandWindows,
-  IconCommand,
-  IconDeviceLaptop,
-  IconDownload,
-  IconHelpCircle,
-  IconMessageCircle,
-  IconSettings,
-  IconStatusChange,
-  IconTerminal2,
-} from '@tabler/icons-react';
-import { MenuItem } from 'twenty-ui/navigation';
 
 const SUPPORT_EMAIL = 'support@consuelohq.com';
 
 const StyledHelpButton = styled.button`
   align-items: center;
   background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.strong};
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
+  border: 1px solid ${({ theme }) => theme.border.color.medium};
+  border-radius: 50%;
   color: ${({ theme }) => theme.font.color.primary};
   cursor: pointer;
   display: inline-flex;
-  height: ${({ theme }) => theme.spacing(7)};
+  flex-shrink: 0;
+  height: ${({ theme }) => theme.spacing(8)};
   justify-content: center;
+  padding: ${({ theme }) => theme.spacing(1)};
   transition:
     background ${({ theme }) => theme.animation.duration.normal}s,
     border-color ${({ theme }) => theme.animation.duration.normal}s,
     color ${({ theme }) => theme.animation.duration.normal}s;
-  width: ${({ theme }) => theme.spacing(7)};
+  width: ${({ theme }) => theme.spacing(8)};
 
   &:hover {
     background: ${({ theme }) => theme.background.transparent.light};
-    border-color: ${({ theme }) => theme.border.color.strong};
+    border-color: ${({ theme }) => theme.border.color.medium};
     color: ${({ theme }) => theme.font.color.primary};
+  }
+
+  & > svg {
+    height: ${({ theme }) => theme.spacing(5)};
+    width: ${({ theme }) => theme.spacing(5)};
   }
 `;
 
@@ -84,7 +90,6 @@ const StyledDropdownFrame = styled(motion.div)`
   box-shadow: ${({ theme }) => theme.boxShadow.strong};
   display: flex;
   flex-direction: column;
-  min-height: 400px;
   padding: ${({ theme }) => theme.spacing(1.5)};
 `;
 
@@ -94,34 +99,103 @@ const StyledDropdownBody = styled(motion.div)`
   flex-direction: column;
 `;
 
-const getDownloadItemLabel = (
-  itemId: DownloadAppItemId,
-  t: ReturnType<typeof useLingui>['t'],
-) => {
-  switch (itemId) {
-    case 'web':
-      return t`Web`;
-    case 'gohighlevel':
-      return t`GoHighLevel`;
-    case 'chatgpt':
-      return t`ChatGPT`;
-    case 'claude':
-      return t`Claude`;
-    case 'discord':
-      return t`Discord`;
-    case 'slack':
-      return t`Slack`;
-    case 'chrome':
-      return t`Chrome`;
-    case 'cli':
-      return t`CLI`;
+const StyledBoldMenuItems = styled.div`
+  & div {
+    font-weight: ${({ theme }) => theme.font.weight.medium};
   }
+`;
+
+const StyledWhatsNewSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(0.5)};
+  padding: ${({ theme }) => theme.spacing(2, 2, 1, 2)};
+`;
+
+const StyledWhatsNewHeader = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  padding-bottom: ${({ theme }) => theme.spacing(1)};
+`;
+
+const StyledTimelineList = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: ${({ theme }) => theme.spacing(1)};
+  position: relative;
+
+  &::before {
+    background: ${({ theme }) => theme.border.color.medium};
+    bottom: ${({ theme }) => theme.spacing(1.5)};
+    content: '';
+    left: ${({ theme }) => theme.spacing(1.75)};
+    position: absolute;
+    top: ${({ theme }) => theme.spacing(1.5)};
+    width: 1px;
+  }
+`;
+
+const StyledTimelineItem = styled.button`
+  align-items: center;
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.font.color.primary};
+  cursor: pointer;
+  display: flex;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  gap: ${({ theme }) => theme.spacing(2)};
+  padding: ${({ theme }) => theme.spacing(1, 0.5)};
+  position: relative;
+  text-align: left;
+
+  &::before {
+    background: ${({ theme }) => theme.font.color.tertiary};
+    border-radius: 50%;
+    content: '';
+    flex-shrink: 0;
+    height: 5px;
+    width: 5px;
+  }
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.secondary};
+  }
+`;
+
+const StyledChangelogLink = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.font.color.tertiary};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => theme.spacing(1, 0.5, 0, 3.5)};
+  text-align: left;
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.primary};
+  }
+`;
+
+const useDownloadItemLabels = (): Record<DownloadAppItemId, string> => {
+  const { t } = useLingui();
+
+  return useMemo(
+    () => ({
+      gohighlevel: t`GoHighLevel`,
+      chatgpt: t`ChatGPT`,
+      claude: t`Claude`,
+      discord: t`Discord`,
+      slack: t`Slack`,
+      chrome: t`Chrome`,
+      cli: t`CLI`,
+    }),
+    [t],
+  );
 };
 
 const getDownloadItemIcon = (itemId: DownloadAppItemId) => {
   switch (itemId) {
-    case 'web':
-      return IconDeviceLaptop;
     case 'gohighlevel':
       return IconBrandWindows;
     case 'chatgpt':
@@ -165,8 +239,11 @@ export const NavigationDrawerHelpDropdown = () => {
 
   const [view, setView] = useState<HelpDropdownView>('main');
   const [direction, setDirection] = useState(1);
-  const openAppsTimeoutRef = useRef<number | null>(null);
+  const [openAppsTimeoutId, setOpenAppsTimeoutId] = useState<number | null>(
+    null,
+  );
 
+  const downloadItemLabels = useDownloadItemLabels();
   const commandSymbol = getOsControlSymbol();
 
   const changelogPreviewItems = [
@@ -180,16 +257,16 @@ export const NavigationDrawerHelpDropdown = () => {
 
   useEffect(() => {
     return () => {
-      if (openAppsTimeoutRef.current !== null) {
-        window.clearTimeout(openAppsTimeoutRef.current);
+      if (openAppsTimeoutId !== null) {
+        window.clearTimeout(openAppsTimeoutId);
       }
     };
-  }, []);
+  }, [openAppsTimeoutId]);
 
   const clearOpenAppsTimeout = () => {
-    if (openAppsTimeoutRef.current !== null) {
-      window.clearTimeout(openAppsTimeoutRef.current);
-      openAppsTimeoutRef.current = null;
+    if (openAppsTimeoutId !== null) {
+      window.clearTimeout(openAppsTimeoutId);
+      setOpenAppsTimeoutId(null);
     }
   };
 
@@ -212,9 +289,10 @@ export const NavigationDrawerHelpDropdown = () => {
   const handleDownloadAppsHoverStart = () => {
     clearOpenAppsTimeout();
 
-    openAppsTimeoutRef.current = window.setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       openAppsView();
     }, DOWNLOAD_APPS_HOVER_DELAY_IN_MS);
+    setOpenAppsTimeoutId(timeoutId);
   };
 
   const handleOpenSettings = () => {
@@ -291,7 +369,7 @@ export const NavigationDrawerHelpDropdown = () => {
         return;
       }
 
-      const downloadItemLabel = getDownloadItemLabel(item.id, t);
+      const downloadItemLabel = downloadItemLabels[item.id];
       const copiedCommandMessage = t`${downloadItemLabel} command copied`;
 
       await copyToClipboard(item.value, copiedCommandMessage);
@@ -320,6 +398,7 @@ export const NavigationDrawerHelpDropdown = () => {
           >
             {view === 'main' ? (
               <>
+                <StyledBoldMenuItems>
                 <DropdownMenuItemsContainer scrollable={false}>
                   <MenuItem
                     LeftIcon={IconBook2}
@@ -327,7 +406,7 @@ export const NavigationDrawerHelpDropdown = () => {
                     text={t`Docs`}
                   />
                   <MenuItem
-                    LeftIcon={IconMessageCircle}
+                    LeftIcon={IconComment}
                     onClick={() => {
                       void handleOpenFeedback();
                     }}
@@ -367,26 +446,44 @@ export const NavigationDrawerHelpDropdown = () => {
                     text={t`Discord community`}
                   />
                 </DropdownMenuItemsContainer>
+                </StyledBoldMenuItems>
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItemsContainer scrollable={false}>
-                  {changelogPreviewItems.map((item) => (
-                    <MenuItem
-                      key={item.title}
-                      LeftIcon={null}
-                      onClick={() => {
-                        window.open(
-                          CONSUELO_CHANGELOG_URL,
-                          '_blank',
-                          'noopener,noreferrer',
-                        );
-                        closeHelpDropdown();
-                      }}
-                      text={item.title}
-                    />
-                  ))}
-                </DropdownMenuItemsContainer>
+                <StyledWhatsNewSection>
+                  <StyledWhatsNewHeader>{t`What's new`}</StyledWhatsNewHeader>
+                  <StyledTimelineList>
+                    {changelogPreviewItems.map((item) => (
+                      <StyledTimelineItem
+                        key={item.title}
+                        type="button"
+                        onClick={() => {
+                          window.open(
+                            CONSUELO_CHANGELOG_URL,
+                            '_blank',
+                            'noopener,noreferrer',
+                          );
+                          closeHelpDropdown();
+                        }}
+                      >
+                        {item.title}
+                      </StyledTimelineItem>
+                    ))}
+                  </StyledTimelineList>
+                  <StyledChangelogLink
+                    type="button"
+                    onClick={() => {
+                      window.open(
+                        CONSUELO_CHANGELOG_URL,
+                        '_blank',
+                        'noopener,noreferrer',
+                      );
+                      closeHelpDropdown();
+                    }}
+                  >
+                    {t`Full changelog`}
+                  </StyledChangelogLink>
+                </StyledWhatsNewSection>
               </>
             ) : (
               <>
@@ -409,7 +506,7 @@ export const NavigationDrawerHelpDropdown = () => {
                         onClick={() => {
                           void handleDownloadAppClick(item.id);
                         }}
-                        text={getDownloadItemLabel(item.id, t)}
+                        text={downloadItemLabels[item.id]}
                         contextualText={
                           item.type === 'command' ? t`Copy command` : undefined
                         }
@@ -430,10 +527,10 @@ export const NavigationDrawerHelpDropdown = () => {
     <Dropdown
       dropdownId={NAVIGATION_DRAWER_SUPPORT_DROPDOWN_ID}
       dropdownPlacement="top-start"
-      dropdownOffset={{ x: 0, y: -10 }}
+      dropdownOffset={{ x: 0, y: -16 }}
       clickableComponent={
         <StyledHelpButton type="button" title={t`Help`}>
-          <IconHelpCircle size={theme.icon.size.md} stroke={1.8} />
+          <IconHelpCircle stroke={1.8} />
         </StyledHelpButton>
       }
       dropdownComponents={dropdownContent}

@@ -12,6 +12,7 @@ import type { ContextInjection } from './pi-extensions/context-injection.js';
 import type { PipelineIntelligence } from './pi-extensions/pipeline-intelligence.js';
 import type { CoachingDetector } from './pi-extensions/coaching-extension.js';
 import type { CoachingLifecycle } from './pi-extensions/coaching-lifecycle.js';
+import type { TranscriptContextExtension } from './pi-extensions/transcript-extension.js';
 
 const logger = new Logger('agent');
 
@@ -19,6 +20,7 @@ export type BeforeTurnExtension =
   | ContextInjection
   | PipelineIntelligence
   | CoachingDetector
+  | TranscriptContextExtension
   | CoachingLifecycle;
 
 // pi stream event types — emitted during session.prompt() streaming
@@ -104,6 +106,50 @@ export class AgentService {
   private afterTurnExtensions: AfterTurnExtension[];
   private modelCycling?: ModelCyclingConfig;
 
+  private renderMessageContent(message: AgentMessage): string {
+    if (typeof message.content === 'string') {
+      return message.content;
+    }
+
+    if (!Array.isArray(message.content)) {
+      return '';
+    }
+
+    return message.content
+      .map((part) => {
+        if (typeof part === 'string') {
+          return part;
+        }
+
+        if (!part || typeof part !== 'object') {
+          return '';
+        }
+
+        const typedPart = part as { type?: unknown; text?: unknown };
+        if (typedPart.type === 'text' && typeof typedPart.text === 'string') {
+          return typedPart.text;
+        }
+
+        return '';
+      })
+      .filter((part) => part.length > 0)
+      .join('\n');
+  }
+
+  private renderPrompt(messages: AgentMessage[]): string {
+    return messages
+      .map((message) => {
+        const content = this.renderMessageContent(message).trim();
+        if (content.length === 0) {
+          return '';
+        }
+
+        return `${message.role.toUpperCase()}:\n${content}`;
+      })
+      .filter((content) => content.length > 0)
+      .join('\n\n');
+  }
+
   constructor(options: AgentOptions) {
     this.config = options.config;
     this.context = options.context;
@@ -129,17 +175,13 @@ export class AgentService {
     // extract user message (last user message in the array)
     const lastUserMsg = [...transformedMessages]
       .reverse()
-      .find((m) => m.role === 'user');
-    const userText =
-      lastUserMsg &&
-      'content' in lastUserMsg &&
-      typeof lastUserMsg.content === 'string'
-        ? lastUserMsg.content
-        : '';
+      .find((message) => message.role === 'user');
+    const userText = lastUserMsg ? this.renderMessageContent(lastUserMsg) : '';
+    const promptText = this.renderPrompt(transformedMessages);
 
     // delegate to pi session — yields stream events
     const model = this.resolveModel(options);
-    const stream = this.session.prompt(userText, {
+    const stream = this.session.prompt(promptText, {
       signal: options.abortSignal,
       model,
     });

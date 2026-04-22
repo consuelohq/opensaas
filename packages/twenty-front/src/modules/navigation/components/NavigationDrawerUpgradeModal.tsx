@@ -1,171 +1,154 @@
 import { captureException } from '@sentry/react';
-import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
+import { useRecoilValue } from 'recoil';
 
+import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
-import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
+import { useModal } from '@/ui/layout/modal/hooks/useModal';
 import { Modal } from '@/ui/layout/modal/components/Modal';
-import { IconCheck, IconSparkles } from '@tabler/icons-react';
-import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
 import { IconX } from 'twenty-ui/display';
 import { LightIconButton } from 'twenty-ui/input';
-
+import { REACT_APP_SERVER_BASE_URL } from '~/config';
 const CONSUELO_PRICING_URL = 'https://www.consuelohq.com/mercury';
 
+// -- layout --
+
 const StyledModalContent = styled(Modal.Content)`
-  gap: ${({ theme }) => theme.spacing(5)};
-  padding: ${({ theme }) => theme.spacing(4.5)};
+  gap: ${({ theme }) => theme.spacing(4)};
+  padding: ${({ theme }) => theme.spacing(5)};
 `;
 
 const StyledHeader = styled.div`
-  align-items: flex-start;
   display: flex;
   justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing(3)};
 `;
 
-const StyledHeaderCopy = styled.div`
+const StyledHeaderText = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(2)};
+  gap: ${({ theme }) => theme.spacing(1)};
 `;
 
 const StyledTitle = styled.h2`
   color: ${({ theme }) => theme.font.color.primary};
-  font-size: ${({ theme }) => theme.font.size.xxl};
-  font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin: 0;
-`;
-
-const StyledEyebrow = styled.div`
-  align-items: center;
-  color: ${({ theme }) => theme.font.color.secondary};
-  display: flex;
-  font-size: ${({ theme }) => theme.font.size.sm};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  gap: ${({ theme }) => theme.spacing(1)};
-`;
-
-const StyledDescription = styled.p`
-  color: ${({ theme }) => theme.font.color.primary};
-  font-size: ${({ theme }) => theme.font.size.md};
-  line-height: 1.55;
-  margin: 0;
-`;
-
-const StyledPlansGrid = styled.div`
-  display: grid;
-  gap: ${({ theme }) => theme.spacing(3)};
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const StyledPlanCard = styled.div<{ featured?: boolean }>`
-  background: ${({ featured, theme }) =>
-    featured ? theme.background.transparent.light : theme.background.primary};
-  border: 1px solid
-    ${({ featured, theme }) =>
-      featured ? theme.border.color.strong : theme.border.color.medium};
-  border-radius: ${({ theme }) => theme.border.radius.md};
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(3)};
-  min-height: 100%;
-  padding: ${({ theme }) => theme.spacing(4)};
-`;
-
-const StyledPlanHeading = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(1)};
-`;
-
-const StyledPlanTitleRow = styled.div`
-  align-items: center;
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  justify-content: space-between;
-`;
-
-const StyledPlanTitle = styled.div`
-  color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.lg};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  margin: 0;
 `;
 
-const StyledPlanBadge = styled.span<{ featured?: boolean }>`
-  background: ${({ featured, theme }) =>
-    featured ? theme.color.blue + '20' : theme.background.transparent.light};
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
-  color: ${({ featured, theme }) =>
-    featured ? theme.color.blue : theme.font.color.secondary};
-  font-size: ${({ theme }) => theme.font.size.xs};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  padding: ${({ theme }) => theme.spacing(0.5, 1.5)};
+const StyledSubtitle = styled.p`
+  color: ${({ theme }) => theme.font.color.secondary};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  line-height: 1.4;
+  margin: 0;
 `;
 
-const StyledPlanPrice = styled.div`
+// -- table --
+
+const StyledTable = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const StyledTableHeader = styled.div`
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: ${({ theme }) => theme.spacing(3)};
+`;
+
+const StyledColumnHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing(0.5)};
+`;
+
+const StyledColumnTitle = styled.span`
   color: ${({ theme }) => theme.font.color.primary};
-  font-size: ${({ theme }) => theme.font.size.xxl};
+  font-size: ${({ theme }) => theme.font.size.md};
   font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  letter-spacing: -0.03em;
 `;
 
-const StyledPlanSubtitle = styled.div`
+const StyledColumnSubtitle = styled.span`
   color: ${({ theme }) => theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
-const StyledFeatureList = styled.div`
+const StyledTableRow = styled.div`
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: ${({ theme }) => theme.spacing(2.5, 0)};
+`;
+
+const StyledCell = styled.div`
+  align-items: center;
+  color: ${({ theme }) => theme.font.color.primary};
   display: flex;
-  flex-direction: column;
+  font-size: ${({ theme }) => theme.font.size.sm};
   gap: ${({ theme }) => theme.spacing(2)};
 `;
 
-const StyledFeature = styled.div`
-  align-items: flex-start;
-  color: ${({ theme }) => theme.font.color.primary};
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  line-height: 1.5;
+const StyledStatusDot = styled.span<{ status: 'limited' | 'included' }>`
+  background: ${({ status, theme }) =>
+    status === 'limited' ? theme.color.red : theme.color.green};
+  border-radius: 50%;
+  flex-shrink: 0;
+  height: 8px;
+  width: 8px;
 `;
+
+const StyledCheckIcon = styled.span`
+  align-items: center;
+  background: ${({ theme }) => theme.color.green};
+  border-radius: 50%;
+  color: ${({ theme }) => theme.font.color.inverted};
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 10px;
+  height: 16px;
+  justify-content: center;
+  width: 16px;
+`;
+
+// -- footer --
 
 const StyledFooter = styled(Modal.Footer)`
   display: flex;
   gap: ${({ theme }) => theme.spacing(2)};
   justify-content: flex-end;
-  padding: ${({ theme }) => theme.spacing(1, 4.5, 4, 4.5)};
+  padding: ${({ theme }) => theme.spacing(0, 5, 4, 5)};
 `;
 
-const StyledActionButton = styled.button<{ primary?: boolean }>`
-  align-items: center;
-  background: ${({ primary, theme }) =>
-    primary ? theme.color.blue : theme.background.transparent.light};
+const StyledLinkButton = styled.button`
+  background: none;
   border: none;
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
-  color: ${({ primary, theme }) =>
-    primary ? theme.grayScale.gray1 : theme.font.color.primary};
+  color: ${({ theme }) => theme.font.color.secondary};
   cursor: pointer;
-  display: inline-flex;
   font-size: ${({ theme }) => theme.font.size.sm};
-  font-weight: ${({ theme }) => theme.font.weight.medium};
-  height: 34px;
-  justify-content: center;
-  min-width: 120px;
-  padding: ${({ theme }) => theme.spacing(0, 3)};
+  padding: ${({ theme }) => theme.spacing(1, 2)};
 
   &:hover {
-    filter: brightness(0.98);
+    color: ${({ theme }) => theme.font.color.primary};
+  }
+`;
+
+const StyledUpgradeButton = styled.button`
+  background: ${({ theme }) => theme.background.invertedPrimary};
+  border: none;
+  border-radius: ${({ theme }) => theme.border.radius.sm};
+  color: ${({ theme }) => theme.font.color.inverted};
+  cursor: pointer;
+  font-size: ${({ theme }) => theme.font.size.sm};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  padding: ${({ theme }) => theme.spacing(1.5, 3)};
+
+  &:hover {
+    filter: brightness(0.95);
   }
 
   &:disabled {
@@ -174,65 +157,19 @@ const StyledActionButton = styled.button<{ primary?: boolean }>`
   }
 `;
 
-const getPlanName = (
-  subscriptionStatus: WorkspaceSubscriptionStatus | null,
-) => {
-  const normalizedPlanName = subscriptionStatus?.plan.name
-    ?.trim()
-    .toLowerCase();
+// -- component --
 
-  if (
-    normalizedPlanName === undefined ||
-    normalizedPlanName === '' ||
-    normalizedPlanName === 'none' ||
-    normalizedPlanName === 'no plan' ||
-    normalizedPlanName === 'starter'
-  ) {
-    return 'Free';
-  }
-
-  if (normalizedPlanName === 'growth') {
-    return 'Growth';
-  }
-
-  if (normalizedPlanName === 'enterprise') {
-    return 'Enterprise';
-  }
-
-  return subscriptionStatus?.plan.name ?? 'Free';
-};
-
-type NavigationDrawerUpgradeModalProps = {
-  subscriptionStatus: WorkspaceSubscriptionStatus | null;
-};
-
-export const NavigationDrawerUpgradeModal = ({
-  subscriptionStatus,
-}: NavigationDrawerUpgradeModalProps) => {
-  const theme = useTheme();
+export const NavigationDrawerUpgradeModal = () => {
   const { t } = useLingui();
   const { closeModal } = useModal();
   const { enqueueErrorSnackBar } = useSnackBar();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentWorkspace = useRecoilValue(currentWorkspaceState);
 
-  const currentPlanName = getPlanName(subscriptionStatus);
-  const shouldOpenBillingPortal = currentPlanName !== 'Free';
-  const freePlanFeatures = [
-    t`1 seat`,
-    t`Power dialer`,
-    t`Full CRM (contacts, companies, pipeline)`,
-    t`50 AI coaching minutes / month`,
-    t`Basic analytics`,
-  ];
-  const growthPlanFeatures = [
-    t`Unlimited seats`,
-    t`Local presence dialing`,
-    t`Multi-line dialing`,
-    t`Unlimited AI coaching`,
-    t`Call transfer (warm + cold)`,
-    t`Full analytics and reporting`,
-    t`Priority support`,
-  ];
+  const isFreePlan =
+    !currentWorkspace?.currentBillingSubscription ||
+    currentWorkspace.currentBillingSubscription.status === 'canceled' ||
+    currentWorkspace.currentBillingSubscription.status === 'unpaid';
 
   const handleClose = () => {
     closeModal(NAVIGATION_DRAWER_UPGRADE_MODAL_ID);
@@ -242,19 +179,17 @@ export const NavigationDrawerUpgradeModal = ({
     setIsSubmitting(true);
 
     try {
-      const endpoint = shouldOpenBillingPortal
-        ? `${REACT_APP_SERVER_BASE_URL}/v1/subscription/portal`
-        : `${REACT_APP_SERVER_BASE_URL}/v1/subscription/checkout`;
+      const endpoint = isFreePlan
+        ? `${REACT_APP_SERVER_BASE_URL}/v1/subscription/checkout`
+        : `${REACT_APP_SERVER_BASE_URL}/v1/subscription/portal`;
 
-      const payload = shouldOpenBillingPortal
+      const payload = isFreePlan
         ? {
-            returnUrl: window.location.href,
-          }
-        : {
             interval: 'month',
             successUrl: window.location.href,
             cancelUrl: window.location.href,
-          };
+          }
+        : { returnUrl: window.location.href };
 
       const response = await authenticatedFetch(endpoint, {
         method: 'POST',
@@ -265,19 +200,9 @@ export const NavigationDrawerUpgradeModal = ({
       if (!response.ok) {
         captureException(
           new Error(`Upgrade request failed: ${response.status}`),
-          {
-            extra: {
-              context: 'NavigationDrawerUpgradeModal',
-              endpoint,
-              responseStatus: response.status,
-            },
-          },
+          { extra: { context: 'NavigationDrawerUpgradeModal', endpoint } },
         );
-
-        enqueueErrorSnackBar({
-          message: t`Couldn't open billing right now`,
-        });
-
+        enqueueErrorSnackBar({ message: t`Couldn't open billing right now` });
         return;
       }
 
@@ -285,16 +210,9 @@ export const NavigationDrawerUpgradeModal = ({
 
       if (!result.url) {
         captureException(new Error('Missing billing url'), {
-          extra: {
-            context: 'NavigationDrawerUpgradeModal',
-            endpoint,
-          },
+          extra: { context: 'NavigationDrawerUpgradeModal' },
         });
-
-        enqueueErrorSnackBar({
-          message: t`Couldn't open billing right now`,
-        });
-
+        enqueueErrorSnackBar({ message: t`Couldn't open billing right now` });
         return;
       }
 
@@ -303,111 +221,92 @@ export const NavigationDrawerUpgradeModal = ({
       captureException(err, {
         extra: { context: 'NavigationDrawerUpgradeModal' },
       });
-      enqueueErrorSnackBar({
-        message: t`Couldn't open billing right now`,
-      });
+      enqueueErrorSnackBar({ message: t`Couldn't open billing right now` });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const features = [
+    { free: t`No dialer`, growth: t`Predictive power dialer` },
+    { free: t`Limited compute`, growth: t`Unlimited compute` },
+    { free: t`10MB file limit`, growth: t`10MB file limit` },
+    { free: t`No integrations`, growth: t`Integrations` },
+  ];
 
   return (
     <Modal
       modalId={NAVIGATION_DRAWER_UPGRADE_MODAL_ID}
       isClosable={true}
       onClose={handleClose}
-      size="large"
+      size="medium"
       padding="none"
       shouldCloseModalOnClickOutsideOrEscape={false}
     >
       <StyledModalContent>
         <StyledHeader>
-          <StyledHeaderCopy>
-            <StyledEyebrow>
-              <IconSparkles size={theme.icon.size.md} stroke={1.8} />
-              {t`Free plan`}
-            </StyledEyebrow>
+          <StyledHeaderText>
             <StyledTitle>{t`Upgrade your workspace`}</StyledTitle>
-            <StyledDescription>
-              {t`Move from the free plan into Growth to unlock hosted dialing, unlimited AI coaching, and team-scale calling.`}
-            </StyledDescription>
-            <StyledDescription>
-              {t`You can start with the free CRM, then turn on hosted calling and AI when your team is ready.`}
-            </StyledDescription>
-          </StyledHeaderCopy>
+            <StyledSubtitle>
+              {t`Upgrade to keep creating and access more features.`}
+            </StyledSubtitle>
+          </StyledHeaderText>
           <LightIconButton
             Icon={IconX}
             accent="tertiary"
             size="small"
             onClick={handleClose}
-            aria-label={t`Close upgrade modal`}
+            aria-label={t`Close`}
           />
         </StyledHeader>
 
-        <StyledPlansGrid>
-          <StyledPlanCard>
-            <StyledPlanHeading>
-              <StyledPlanTitleRow>
-                <StyledPlanTitle>{t`Current plan`}</StyledPlanTitle>
-                <StyledPlanBadge>
-                  {currentPlanName === 'Free' ? t`Free plan` : t`Paid plan`}
-                </StyledPlanBadge>
-              </StyledPlanTitleRow>
-              <StyledPlanPrice>{t`$0`}</StyledPlanPrice>
-              <StyledPlanSubtitle>{t`Free forever`}</StyledPlanSubtitle>
-            </StyledPlanHeading>
+        <StyledTable>
+          <StyledTableHeader>
+            <StyledColumnHeader>
+              <StyledColumnTitle>{t`Current plan`}</StyledColumnTitle>
+              <StyledColumnSubtitle>{t`Free`}</StyledColumnSubtitle>
+            </StyledColumnHeader>
+            <StyledColumnHeader>
+              <StyledColumnTitle>{t`Growth`}</StyledColumnTitle>
+              <StyledColumnSubtitle>
+                {t`$20 per seat/month`}
+              </StyledColumnSubtitle>
+            </StyledColumnHeader>
+          </StyledTableHeader>
 
-            <StyledFeatureList>
-              {freePlanFeatures.map((feature) => (
-                <StyledFeature key={feature}>
-                  <IconCheck size={16} color={theme.color.green} />
-                  <span>{feature}</span>
-                </StyledFeature>
-              ))}
-            </StyledFeatureList>
-          </StyledPlanCard>
-
-          <StyledPlanCard featured>
-            <StyledPlanHeading>
-              <StyledPlanTitleRow>
-                <StyledPlanTitle>{t`Growth`}</StyledPlanTitle>
-                <StyledPlanBadge featured>{t`Recommended`}</StyledPlanBadge>
-              </StyledPlanTitleRow>
-              <StyledPlanPrice>{t`$20`}</StyledPlanPrice>
-              <StyledPlanSubtitle>{t`Per seat / month`}</StyledPlanSubtitle>
-            </StyledPlanHeading>
-
-            <StyledFeatureList>
-              {growthPlanFeatures.map((feature) => (
-                <StyledFeature key={feature}>
-                  <IconCheck size={16} color={theme.color.blue} />
-                  <span>{feature}</span>
-                </StyledFeature>
-              ))}
-            </StyledFeatureList>
-          </StyledPlanCard>
-        </StyledPlansGrid>
+          {features.map((row) => (
+            <StyledTableRow key={row.free}>
+              <StyledCell>
+                <StyledStatusDot status="limited" />
+                {row.free}
+              </StyledCell>
+              <StyledCell>
+                <StyledCheckIcon>✓</StyledCheckIcon>
+                {row.growth}
+              </StyledCell>
+            </StyledTableRow>
+          ))}
+        </StyledTable>
       </StyledModalContent>
 
       <StyledFooter>
-        <StyledActionButton
+        <StyledLinkButton
           type="button"
           onClick={() => {
             window.open(CONSUELO_PRICING_URL, '_blank', 'noopener,noreferrer');
           }}
         >
           {t`See all plans`}
-        </StyledActionButton>
-        <StyledActionButton
+        </StyledLinkButton>
+        <StyledUpgradeButton
           type="button"
-          primary
           onClick={() => {
             void handleUpgrade();
           }}
           disabled={isSubmitting}
         >
-          {shouldOpenBillingPortal ? t`Manage billing` : t`Upgrade to Growth`}
-        </StyledActionButton>
+          {isFreePlan ? t`Upgrade to Growth` : t`Manage billing`}
+        </StyledUpgradeButton>
       </StyledFooter>
     </Modal>
   );

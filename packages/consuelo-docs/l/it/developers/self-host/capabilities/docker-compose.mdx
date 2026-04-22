@@ -24,13 +24,13 @@ Consulta i documenti [Configurazione delle Variabili di Ambiente](/l/it/develope
 Installa l'ultima versione stabile di Consuelo con un unico comando:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 Per installare una versione o un ramo specifico:
 
 ```bash
-VERSION=vx.y.z BRANCH=nome-ramo bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=nome-ramo bash <(curl -sL https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * Sostituisci x.y.z con il numero di versione desiderato.
@@ -47,7 +47,7 @@ Segui questi passaggi per un setup manuale.
    Copia il file di ambiente di esempio in un nuovo file .env nella tua directory di lavoro:
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **Genera Token Segreti**
@@ -81,7 +81,7 @@ Segui questi passaggi per un setup manuale.
 Scarica il file `docker-compose.yml` nella tua directory di lavoro:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/consuelohq/opensaas/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### Passo 3: Avvia l'Applicazione
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### Passo 4: Accedi all'Applicazione
 
-Se ospiti twentyCRM sul tuo computer, apri il browser e naviga a [http://localhost:3000](http://localhost:3000).
+Se ospiti Consuelo sul tuo computer, apri il browser e naviga a [http://localhost:3000](http://localhost:3000).
 
 Se lo ospiti su un server, controlla che il server sia in esecuzione e che tutto sia ok con
 
@@ -167,7 +167,7 @@ Raccomandiamo fortemente di configurare Consuelo dietro un proxy inverso con ter
      ```
    * Accesso tramite dominio con SSL:
      ```ini
-     SERVER_URL=https://mytwentyapp.com
+     SERVER_URL=https://myconsueloapp.com
      ```
 
 3. **Riavvia l'Applicazione**

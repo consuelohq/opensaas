@@ -6,6 +6,7 @@ import { type OpportunityWorkspaceEntity } from 'src/modules/opportunity/standar
 import { type PersonWorkspaceEntity } from 'src/modules/person/standard-objects/person.workspace-entity';
 
 export class ListMemberWorkspaceEntity extends BaseWorkspaceEntity {
+  name: string | null;
   position: number | null;
   phoneNumber: PhonesMetadata | null;
   status: string;

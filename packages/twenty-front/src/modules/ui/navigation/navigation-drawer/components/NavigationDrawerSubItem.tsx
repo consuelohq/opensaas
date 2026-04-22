@@ -9,6 +9,7 @@ export const NavigationDrawerSubItem = ({
   className,
   label,
   secondaryLabel,
+  indentationLevel = 2,
   Icon,
   iconBackgroundColor,
   to,
@@ -29,7 +30,7 @@ export const NavigationDrawerSubItem = ({
       className={className}
       label={label}
       secondaryLabel={secondaryLabel}
-      indentationLevel={2}
+      indentationLevel={indentationLevel}
       subItemState={subItemState}
       Icon={Icon}
       iconBackgroundColor={iconBackgroundColor}

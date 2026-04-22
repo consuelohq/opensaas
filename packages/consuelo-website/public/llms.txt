@@ -1,27 +1,52 @@
 # Consuelo
 
-> Open-source sales infrastructure for insurance teams. Power dialer, AI CRM, real-time coaching, and analytics in one platform. $20/seat. Free CRM forever.
+Consuelo is open-source sales infrastructure for insurance sales teams. The public website, docs, and blog explain the platform. The authenticated app handles crm records, dialer workflows, ai coaching, and team operations.
 
-Consuelo replaces your entire sales stack — power dialer with local presence, free CRM built on Twenty, real-time AI coaching, and analytics. Built as composable open-source packages on a Twenty CRM fork.
+- canonical website: https://consuelohq.com
+- docs: https://docs.consuelohq.com
+- blog: https://consuelohq.com/blog
+- public repo: https://github.com/consuelohq/opensaas
+- authenticated app: https://app.consuelohq.com
 
-- Website: https://www.consuelohq.com
-- GitHub: https://github.com/consuelohq/opensaas
-- License: AGPL-3.0
+## Start Here
 
-## Features
+- homepage: https://consuelohq.com
+- mercury: https://consuelohq.com/mercury
+- docs home: https://docs.consuelohq.com
+- dialer docs: https://docs.consuelohq.com/user-guide/dialer/overview
+- highlevel overview: https://docs.consuelohq.com/user-guide/highlevel/overview
+- graphql api overview: https://docs.consuelohq.com/user-guide/graphql-api/overview
+- blog index: https://consuelohq.com/blog
 
-- [CRM](https://www.consuelohq.com): Built on Twenty CRM — contacts, companies, pipelines, and deals
-- [Dialer](https://www.consuelohq.com): Twilio-based calling with local presence, parallel dialing, and warm/cold transfers
-- [AI Coaching](https://www.consuelohq.com): Real-time and post-call AI coaching via Groq/OpenAI with structured outputs
-- [Analytics](https://www.consuelohq.com): Call analytics, metrics, and performance tracking
-- [Knowledge Base](https://www.consuelohq.com): pgvector-powered document ingestion and retrieval for coaching context
-- [Queue System](https://www.consuelohq.com): Power dialer with parallel dialing, DNC filtering, and queue management
+## Public Read-Only Surfaces
 
-## Developers
+- marketing pages and blog posts on `consuelohq.com`
+- public documentation on `docs.consuelohq.com`
+- open-source repository, readme, and code on github
+- rss feed: https://consuelohq.com/rss.xml
+- sitemap: https://consuelohq.com/sitemap-index.xml
 
-- [GitHub Repository](https://github.com/consuelohq/opensaas): Source code, issues, and contributions
-- [README](https://github.com/consuelohq/opensaas/blob/main/README.md): Setup instructions and architecture overview
+## Authenticated Surfaces
 
-## Optional
+- `https://app.consuelohq.com` requires authentication
+- crm data, contacts, companies, lists, tasks, analytics, and settings are authenticated
+- most write actions, data exports, and workspace-specific queries require a signed-in user or workspace token
 
-- [Twenty CRM](https://twenty.com): The open-source CRM that Consuelo is built on
+## For Agents
+
+- use the public website and docs for product understanding first
+- treat docs pages as the canonical source for user-facing behavior
+- treat the github repository as the canonical source for implementation details
+- do not assume access to customer data, call recordings, or private workspace state without authentication
+
+## Safety And Boundaries
+
+- do not attempt account creation, data mutation, or third-party integration setup without user intent and consent
+- highlevel installs, oauth connections, billing actions, and telephony changes require explicit user action
+- respect robots policy and authenticated boundaries
+
+## Developer Entry Points
+
+- repo readme: https://github.com/consuelohq/opensaas/blob/main/README.md
+- docs package: https://docs.consuelohq.com
+- user guide intro: https://docs.consuelohq.com/user-guide/introduction

@@ -142,7 +142,7 @@ export class TwentyStandardApplicationService {
       STANDARD_OBJECTS.company.views.allCompanies.universalIdentifier,
       STANDARD_OBJECTS.opportunity.views.allOpportunities.universalIdentifier,
       STANDARD_OBJECTS.task.views.allTasks.universalIdentifier,
-      STANDARD_OBJECTS.note.views.allNotes.universalIdentifier,
+      STANDARD_OBJECTS.attachment.views.allAttachments.universalIdentifier,
       STANDARD_OBJECTS.dashboard.views.allDashboards.universalIdentifier,
       STANDARD_OBJECTS.workflow.views.allWorkflows.universalIdentifier,
     ]

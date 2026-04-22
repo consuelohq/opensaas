@@ -30,6 +30,7 @@
     "@blocknote/server-util": "^0.31.1",
     "@clickhouse/client": "^1.11.0",
     "@consuelo/agent": "workspace:*",
+    "@consuelo/dialer": "workspace:^",
     "@dagrejs/dagre": "^1.1.2",
     "@e2b/code-interpreter": "^1.0.4",
     "@envelop/core": "4.0.3",
@@ -235,5 +236,10 @@
     "node": "^24.5.0",
     "npm": "please-use-yarn",
     "yarn": "^4.0.2"
+  }
+,
+  "peerDependencies": {
+    "mammoth": "^1.0.0",
+    "pdf-parse": "^1.0.0"
   }
 }

@@ -7,12 +7,14 @@ type GoToHotkeysProps = {
   key: Keys;
   location: string;
   preNavigateFunction?: () => void;
+  enabled?: boolean;
 };
 
 export const useGoToHotkeys = ({
   key,
   location,
   preNavigateFunction,
+  enabled = true,
 }: GoToHotkeysProps) => {
   const navigate = useNavigate();
 
@@ -20,6 +22,7 @@ export const useGoToHotkeys = ({
     'g',
     key,
     () => {
+      if (!enabled) return;
       preNavigateFunction?.();
       navigate(location);
     },
@@ -28,6 +31,6 @@ export const useGoToHotkeys = ({
       enableOnFormTags: true,
       preventDefault: true,
     },
-    [navigate],
+    [navigate, enabled],
   );
 };

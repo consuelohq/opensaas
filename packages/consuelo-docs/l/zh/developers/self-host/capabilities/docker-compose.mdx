@@ -24,13 +24,13 @@ title: 1-点击使用Docker Compose
 通过简单的命令安装最新的Consuelo稳定版本：
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 要安装特定版本或分支：
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * 将x.y.z替换为所需的版本号。
@@ -47,7 +47,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
    将示例环境文件复制到工作目录中的新.env文件：
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **生成密钥令牌**
@@ -81,7 +81,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
 将`docker-compose.yml`文件下载到工作目录：
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### 步骤3：启动应用程序
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### 步骤4：访问应用程序
 
-如果您在自己的电脑上托管twentyCRM，打开浏览器并导航到[http://localhost:3000](http://localhost:3000)。
+如果您在自己的电脑上托管Consuelo，打开浏览器并导航到[http://localhost:3000](http://localhost:3000)。
 
 如果您在服务器上托管它，请检查服务器是否正在运行并确保一切正常。
 
@@ -210,7 +210,7 @@ curl http://localhost:3000
 ### 创建数据库备份
 
 ```bash
-docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).sql
+docker exec twenty-postgres pg_dump -U postgres consuelo > backup_$(date +%Y%m%d).sql
 ```
 
 ### 自动化每日备份
@@ -218,7 +218,7 @@ docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).
 将以下内容添加到您的 crontab（`crontab -e`）：
 
 ```bash
-0 2 * * * docker exec twenty-postgres pg_dump -U postgres twenty > /backups/twenty_$(date +\%Y\%m\%d).sql
+0 2 * * * docker exec twenty-postgres pg_dump -U postgres consuelo > /backups/twenty_$(date +\%Y\%m\%d).sql
 ```
 
 ### 从备份恢复
@@ -232,7 +232,7 @@ docker compose stop twenty-server twenty-front
 2. 恢复数据库：
 
 ```bash
-docker exec -i twenty-postgres psql -U postgres twenty < backup_20240115.sql
+docker exec -i twenty-postgres psql -U postgres consuelo < backup_20240115.sql
 ```
 
 3. 重启服务：

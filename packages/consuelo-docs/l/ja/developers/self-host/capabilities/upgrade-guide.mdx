@@ -121,9 +121,9 @@ yarn command:prod upgrade
 #### Docker-compose.ymlの変更
 
 このバージョンには、`worker` サービスが `server-local-data` ボリュームにアクセスできるようにするための `docker-compose.yml` の変更が含まれています。
-ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
-ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
-ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
+ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
+ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
+ローカルの `docker-compose.yml` を[v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)に更新してください。
 
 ### v0.43.0からv0.44.0
 
@@ -164,7 +164,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 ダンプファイルが空でないことを確認してください。
 
-2. docker-compose.ymlを、新しいpostgres:16イメージを使用するようにアップグレードします。[docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)を参照してください。
+2. docker-compose.ymlを、新しいpostgres:16イメージを使用するようにアップグレードします。[docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml)を参照してください。
 
 3. データベースを新しいpostgres:16コンテナへ復元します。
 
@@ -276,7 +276,7 @@ The `yarn command:prod upgrade-0.22` command will apply specific data transforma
 このバージョンから、DB用のtwenty-postgresイメージは廃止され、twenty-postgres-spiloが代わりに使用されるようになりました。
 このバージョンから、DB用のtwenty-postgresイメージは廃止され、twenty-postgres-spiloが代わりに使用されるようになりました。
 このバージョンから、DB用のtwenty-postgresイメージは廃止され、twenty-postgres-spiloが代わりに使用されるようになりました。
-twenty-postgresイメージを使い続けたい場合は、docker-compose.yml内の`twentycrm/twenty-postgres:${TAG}`を`twentycrm/twenty-postgres`に置き換えるだけで済みます。
+twenty-postgresイメージを使い続けたい場合は、docker-compose.yml内の`Consuelo/twenty-postgres:${TAG}`を`Consuelo/twenty-postgres`に置き換えるだけで済みます。
 
 ### v0.31.0からv0.32.0
 
@@ -331,7 +331,7 @@ yarn command:prod upgrade-0.31
 Consueloインスタンスをv0.30.0イメージにアップグレードします。
 
 **破壊的な変更**:
-パフォーマンスを向上させるために、ConsueloはRedisキャッシュの設定を必要とするようになりました。 これを反映した[docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)を更新しました。
+パフォーマンスを向上させるために、ConsueloはRedisキャッシュの設定を必要とするようになりました。 これを反映した[docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml)を更新しました。
 構成を更新し、環境変数を適切に更新してください：
 構成を更新し、環境変数を適切に更新してください：
 構成を更新し、環境変数を適切に更新してください：

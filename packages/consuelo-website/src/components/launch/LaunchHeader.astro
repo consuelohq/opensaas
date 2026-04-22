@@ -24,14 +24,14 @@ const hasPageSections = pageSections.length > 0;
     <a class="launch-header__brand launch-mono" href="/">consuelo.</a>
 
     <div class="launch-header__desktop">
-      <nav class="launch-header__nav launch-mono" aria-label="Primary">
+      <nav class="launch-header__nav" aria-label="Primary">
         {launchHeaderLinks.map((link) => (
           <a href={link.href}>{link.label}</a>
         ))}
       </nav>
 
-      <div class="launch-header__actions launch-mono">
-        <a class="launch-header__login" href={siteLinks.login}>login</a>
+      <div class="launch-header__actions">
+        <a class="launch-header__login" href={siteLinks.login}>Login</a>
         <a class="launch-button" href={siteLinks.free} style="font-size: 1.1rem; padding: 0.4rem 1rem;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.2rem;">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -89,9 +89,9 @@ const hasPageSections = pageSections.length > 0;
       </button>
     </div>
 
-    <div class="launch-header__mobile-scroll launch-mono">
+    <div class="launch-header__mobile-scroll">
       <section class="launch-header__mobile-section">
-        <p class="launch-eyebrow">menu</p>
+        <p class="launch-eyebrow">Menu</p>
         <nav class="launch-header__mobile-links" aria-label="mobile navigation">
           {launchMobileMenuLinks.map((link) => (
             <a class="launch-header__mobile-link" href={link.href} data-mobile-link>{link.label}</a>
@@ -100,7 +100,7 @@ const hasPageSections = pageSections.length > 0;
       </section>
 
       <section class="launch-header__mobile-section">
-        <p class="launch-eyebrow">docs</p>
+        <p class="launch-eyebrow">Docs</p>
 
         <div class="launch-header__docs-groups">
           {launchDocsMenuTabs.flatMap((tab) => tab.groups).map((group) => (

@@ -23,6 +23,7 @@ export class AttachmentWorkspaceEntity extends BaseWorkspaceEntity {
   type: string | null;
   /** @deprecated Use `file[0].extension` field instead */
   fileCategory: string;
+  expiresAt: Date | null;
   createdBy: ActorMetadata;
   updatedBy: ActorMetadata;
   /** @deprecated */

@@ -28,7 +28,7 @@ export const AgentContextPanel = () => {
   const { selectedConversationId, selectConversation } =
     useAgentConversations();
 
-  if (collapsed) {
+  if (agentContextPanelCollapsed) {
     return null;
   }
 

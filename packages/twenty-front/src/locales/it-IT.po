@@ -29,6 +29,11 @@ msgstr " fatturato annualmente"
 msgid " must be one of {ratingValues} values"
 msgstr " deve essere uno dei valori {ratingValues}"
 
+#. js-lingui-id: EQ5tG3
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "— Select —"
+msgstr ""
+
 #. js-lingui-id: ypz2+E
 #: src/modules/object-record/object-filter-dropdown/utils/getOperandLabel.ts
 msgid ": Empty"
@@ -78,6 +83,11 @@ msgstr ". La modifica verrà applicata il {beautifiedRenewDate}."
 #: src/modules/views/components/ViewBarFilterDropdownAnyFieldSearchButtonMenuItem.tsx
 msgid "· {objectFilterDropdownSearchInput}"
 msgstr "· {objectFilterDropdownSearchInput}"
+
+#. js-lingui-id: LHyt/I
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "(555) 123-4567"
+msgstr ""
 
 #. js-lingui-id: L4H5SW
 #: src/modules/ui/input/components/IconPicker.tsx
@@ -713,6 +723,7 @@ msgstr "Accessibile nella tua funzione tramite process.env.KEY"
 #: src/pages/settings/accounts/SettingsAccounts.tsx
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepEmail.tsx
+#: src/pages/settings/consuelo/TwilioSettings.tsx
 msgid "Account"
 msgstr "Account"
 
@@ -730,6 +741,16 @@ msgstr "Account aggiunto con successo. Sincronizzazione avviata."
 #: src/modules/settings/profile/components/DeleteAccount.tsx
 msgid "Account Deletion"
 msgstr "Eliminazione account"
+
+#. js-lingui-id: zmu4+P
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Account SID"
+msgstr ""
+
+#. js-lingui-id: OeeEJw
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Account SID and Auth Token are required"
+msgstr ""
 
 #. js-lingui-id: bPwFdf
 #: src/modules/settings/accounts/components/SettingsAccountsEditImapSmtpCaldavConnection.tsx
@@ -1382,11 +1403,6 @@ msgstr "Preparazione della richiesta IA"
 msgid "AI Response Schema"
 msgstr "Schema di risposta AI"
 
-#. js-lingui-id: nuuKEk
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "AI-built list"
-msgstr ""
-
 #. js-lingui-id: Zdun41
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
 msgid "Alert"
@@ -1748,6 +1764,11 @@ msgstr "Chiave API"
 msgid "API Key (masked)"
 msgstr ""
 
+#. js-lingui-id: cB4HKI
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "API Key (optional)"
+msgstr ""
+
 #. js-lingui-id: r+NRG6
 #: src/modules/settings/developers/components/ApiKeyInput.tsx
 msgid "API Key copied to clipboard"
@@ -1794,6 +1815,11 @@ msgstr "Nomi API (Plurale)"
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
 msgid "API Name (Singular)"
 msgstr "Nome dell'API (Singolare)"
+
+#. js-lingui-id: A5TTWm
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "API Secret (optional)"
+msgstr ""
 
 #. js-lingui-id: Z3Brb2
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectForm.tsx
@@ -1982,17 +2008,11 @@ msgstr "Ascendente"
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/action-menu/actions/record-agnostic-actions/constants/RecordAgnosticActionsConfig.tsx
 #: src/modules/command-menu/hooks/useOpenAskAIPageInCommandMenu.ts
-#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
 #: src/pages/home/HomePage.tsx
 #: src/pages/object-record/RecordShowPage.tsx
 msgid "Ask AI"
 msgstr "Chiedi a AI"
-
-#. js-lingui-id: 42QgR+
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Ask AI to find the best people to call, then turn that answer into your next list."
-msgstr ""
 
 #. js-lingui-id: 2J838w
 #: src/modules/agent/components/AgentChatPanel.tsx
@@ -2185,6 +2205,11 @@ msgstr "Autenticazione"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionTriggersTab.tsx
 msgid "Auth Required"
 msgstr "Autenticazione richiesta"
+
+#. js-lingui-id: qk/EkE
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Auth Token"
+msgstr ""
 
 #. js-lingui-id: P8fBlG
 #: src/pages/settings/security/SettingsSecurity.tsx
@@ -2486,24 +2511,9 @@ msgstr "Marrone"
 msgid "Build a dashboard that shows: (1) total pipeline value by stage for the last 3 months, (2) count of deals won vs lost per month, (3) average deal size. Use our standard pipeline stages."
 msgstr ""
 
-#. js-lingui-id: gcfNIp
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Build a targeted segment from saved views before you call."
-msgstr ""
-
-#. js-lingui-id: 48nL8D
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Build from a segment"
-msgstr ""
-
 #. js-lingui-id: 8SlslB
 #: src/modules/settings/data-model/fields/forms/morph-relation/components/SettingsDataModelFieldRelationJunctionForm.tsx
 msgid "Build many-to-many relations. <0>Learn more</0>"
-msgstr ""
-
-#. js-lingui-id: 69Zn2P
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Build with Ask AI"
 msgstr ""
 
 #. js-lingui-id: +7fBMP
@@ -2709,6 +2719,11 @@ msgstr ""
 msgid "Calling & Presence"
 msgstr ""
 
+#. js-lingui-id: 02rQw7
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Calling mode"
+msgstr ""
+
 #. js-lingui-id: VuSTpI
 #: src/modules/dialer/components/QueueAnalytics.tsx
 msgid "Calls Made"
@@ -2759,6 +2774,7 @@ msgstr "Non puoi scansionare? Copia il"
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
 #: src/modules/ui/layout/modal/components/ConfirmationModal.tsx
 #: src/pages/auth/Authorize.tsx
+#: src/pages/settings/consuelo/TwilioSettings.tsx
 msgid "Cancel"
 msgstr "Annulla"
 
@@ -2953,9 +2969,9 @@ msgstr "Cinese semplificato"
 msgid "Chinese — Traditional"
 msgstr "Cinese tradizionale"
 
-#. js-lingui-id: AjtI8+
+#. js-lingui-id: 3j/YJk
 #: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Choose a list"
+msgid "Choose a list or dial a single number."
 msgstr ""
 
 #. js-lingui-id: NFfUic
@@ -2972,6 +2988,11 @@ msgstr "Scegli tra i protocolli OIDC e SAML"
 #: src/modules/settings/data-model/fields/forms/currency/components/SettingsDataModelFieldCurrencyForm.tsx
 msgid "Choose between Short and Full"
 msgstr "Scegli tra Breve e Completo"
+
+#. js-lingui-id: gd8M6Z
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Choose list"
+msgstr ""
 
 #. js-lingui-id: YcrXB2
 #: src/modules/settings/data-model/fields/forms/currency/components/SettingsDataModelFieldCurrencyForm.tsx
@@ -3774,6 +3795,8 @@ msgstr "Impossibile copiare negli appunti"
 
 #. js-lingui-id: +qJJQv
 #: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
 msgid "Couldn't open billing right now"
 msgstr ""
 
@@ -3939,6 +3962,11 @@ msgstr "Crea vista personalizzata"
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownCalendarFieldsContent.tsx
 msgid "Create date field"
 msgstr "Crea campo data"
+
+#. js-lingui-id: XTKtey
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Create list"
+msgstr ""
 
 #. js-lingui-id: kCNBJG
 #: src/modules/action-menu/actions/record-actions/constants/DashboardActionsConfig.tsx
@@ -4120,11 +4148,6 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowAiAgentPermissionList.tsx
 #: src/modules/workflow/workflow-steps/workflow-actions/ai-agent-action/components/WorkflowAiAgentPermissionsCrudList.tsx
 msgid "CRUD"
-msgstr ""
-
-#. js-lingui-id: sDljb5
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "CSV upload"
 msgstr ""
 
 #. js-lingui-id: J1QT+3
@@ -4928,9 +4951,9 @@ msgstr "Dettagli"
 msgid "Developers links"
 msgstr ""
 
-#. js-lingui-id: pW0zB9
+#. js-lingui-id: 54vgCI
 #: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Dial a single number with coaching or script mode."
+msgid "Dial number"
 msgstr ""
 
 #. js-lingui-id: ErTdky
@@ -5902,6 +5925,7 @@ msgid "Erasure of soft-deleted records"
 msgstr "Cancellazione dei record eliminati temporaneamente"
 
 #. js-lingui-id: SlfejT
+#: src/modules/assistant/components/CommandCard.tsx
 #: src/modules/ui/feedback/snack-bar-manager/components/SnackBar.tsx
 msgid "Error"
 msgstr "Errore"
@@ -6177,11 +6201,6 @@ msgstr ""
 #: src/modules/workflow/workflow-steps/workflow-actions/form-action/components/WorkflowFormFieldSettingsSelect.tsx
 msgid "Existing Field"
 msgstr "Campo esistente"
-
-#. js-lingui-id: /j5GKq
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Existing list"
-msgstr ""
 
 #. js-lingui-id: fV7V51
 #: src/pages/settings/data-model/SettingsObjects.tsx
@@ -6485,6 +6504,11 @@ msgstr "Impossibile assumere l'identità dell'utente. {errorMessage}"
 msgid "Failed to load attached files"
 msgstr ""
 
+#. js-lingui-id: pj8ZKb
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Failed to load config"
+msgstr ""
+
 #. js-lingui-id: Pte4jt
 #: src/modules/files/hooks/useFiles.ts
 msgid "Failed to load files"
@@ -6520,10 +6544,20 @@ msgstr "Non è stato possibile rimuovere l'override"
 msgid "Failed to remove picture"
 msgstr "Impossibile rimuovere l'immagine"
 
+#. js-lingui-id: 0tsGfH
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Failed to reset"
+msgstr ""
+
 #. js-lingui-id: SJEIIJ
 #: src/modules/settings/admin-panel/health-status/hooks/useRetryJobs.ts
 msgid "Failed to retry jobs. Please try again later."
 msgstr "Impossibile riprovare i lavori. Per favore riprova più tardi."
+
+#. js-lingui-id: +Ya+b9
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Failed to save"
+msgstr ""
 
 #. js-lingui-id: fuRtgB
 #: src/modules/navigation-menu-item/components/NavigationMenuEditModeBar.tsx
@@ -6827,11 +6861,6 @@ msgstr ""
 msgid "Filter group rule options"
 msgstr "Opzioni del gruppo di regole del filtro"
 
-#. js-lingui-id: 4yK0oz
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Filtered segment"
-msgstr ""
-
 #. js-lingui-id: cSev+j
 #: src/modules/settings/developers/components/SettingsDevelopersWebhookForm.tsx
 msgid "Filters"
@@ -6852,11 +6881,6 @@ msgstr "Termina il flusso con errori"
 #. js-lingui-id: 8BwQeU
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 msgid "Finish Setup"
-msgstr ""
-
-#. js-lingui-id: 8jUiZQ
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Finish your phone setup before starting outbound calls."
 msgstr ""
 
 #. js-lingui-id: eYwdpC
@@ -7003,6 +7027,7 @@ msgstr ""
 
 #. js-lingui-id: xYSDvt
 #: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
 msgid "Free plan"
 msgstr ""
 
@@ -7051,11 +7076,6 @@ msgstr "Accesso completo"
 #. js-lingui-id: 9lSqNI
 #: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
 msgid "Full analytics and reporting"
-msgstr ""
-
-#. js-lingui-id: PVP87I
-#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
-msgid "Full changelog"
 msgstr ""
 
 #. js-lingui-id: 5k+3dL
@@ -7211,11 +7231,6 @@ msgstr "Vai ai workflow"
 #. js-lingui-id: XwH7hv
 #: src/modules/settings/hooks/useSettingsNavigationItems.tsx
 msgid "GoHighLevel"
-msgstr ""
-
-#. js-lingui-id: uv/r+w
-#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
-msgid "GoHighLevel navigation, nav reorg, and docs updates"
 msgstr ""
 
 #. js-lingui-id: FYlHHU
@@ -7496,6 +7511,11 @@ msgstr ""
 msgid "Horizontal Bar Chart"
 msgstr ""
 
+#. js-lingui-id: GEsihl
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Hosted by Consuelo"
+msgstr ""
+
 #. js-lingui-id: yY8wAv
 #: src/modules/workflow/workflow-steps/workflow-actions/delay-actions/components/WorkflowEditActionDelay.tsx
 msgid "Hours"
@@ -7702,26 +7722,22 @@ msgstr "L'impersonificazione è disabilitata per questo spazio di lavoro"
 msgid "Import"
 msgstr "Importa"
 
-#. js-lingui-id: jRQolr
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Import a CSV"
-msgstr ""
-
-#. js-lingui-id: tCjaoY
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Import a fresh batch of leads and turn them into the next call run."
-msgstr ""
-
 #. js-lingui-id: sqOGcv
 #: src/modules/settings/accounts/components/SettingsAccountsMessageFolderCard.tsx
 msgid "Import all emails"
 msgstr "Importa tutte le email"
 
 #. js-lingui-id: 2CeOI3
-#: src/modules/dialer/components/DialerHomePrep.tsx
+#: src/modules/object-record/record-field-list/record-detail-section/relation/components/RecordDetailRelationSectionDropdownToMany.tsx
 #: src/modules/settings/roles/role-permissions/permission-flags/hooks/useActionRolePermissionFlagConfig.ts
+#: src/pages/home/HomePage.tsx
 msgid "Import CSV"
 msgstr "Importa CSV"
+
+#. js-lingui-id: BEVzjL
+#: src/modules/dialer/hooks/useOpenListMemberImportDialog.ts
+msgid "Import failed"
+msgstr ""
 
 #. js-lingui-id: D5QSQM
 #: src/modules/settings/accounts/components/SettingsAccountsMessageFolderCard.tsx
@@ -8271,11 +8287,6 @@ msgstr "Unisciti al team {workspaceName}"
 msgid "JSON"
 msgstr ""
 
-#. js-lingui-id: ey/ZPa
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Jump into the fullscreen list workspace and start dialing."
-msgstr ""
-
 #. js-lingui-id: OGXtL8
 #: src/modules/object-record/object-options-dropdown/components/ObjectOptionsDropdownLayoutContent.tsx
 #: src/modules/views/view-picker/constants/ViewPickerTypeSelectOptions.ts
@@ -8445,9 +8456,9 @@ msgstr "Avvia"
 msgid "Launch manually"
 msgstr "Avvia manualmente"
 
-#. js-lingui-id: 7FzvjE
+#. js-lingui-id: sja17Y
 #: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
-msgid "Launch site refresh and mercury positioning updates"
+msgid "Launch site and mercury updates"
 msgstr ""
 
 #. js-lingui-id: rdU729
@@ -8619,11 +8630,6 @@ msgstr "ha collegato un'email con"
 msgid "list"
 msgstr ""
 
-#. js-lingui-id: 2BBAbc
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "List"
-msgstr ""
-
 #. js-lingui-id: 5Kn+XX
 #: src/pages/settings/applications/components/SettingsApplicationsTable.tsx
 msgid "List installed applications. Use filter to search for a specific application"
@@ -8770,6 +8776,7 @@ msgstr "Caricamento del thread"
 #: src/modules/activities/timeline-activities/rows/message/components/EventCardMessage.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminVersionDisplay.tsx
 #: src/modules/settings/roles/role-assignment/components/SettingsRoleAssignmentEntityPickerDropdown.tsx
+#: src/pages/settings/consuelo/TwilioSettings.tsx
 #: src/pages/settings/emailing-domains/SettingsEmailingDomainDetail.tsx
 #: src/pages/skills/SkillDetailPage.tsx
 msgid "Loading..."
@@ -8899,11 +8906,6 @@ msgstr "Gestisci fatturazione e abbonamenti"
 #: src/modules/billing/components/SettingsBillingContent.tsx
 msgid "Manage billing information"
 msgstr "Gestisci le informazioni di fatturazione"
-
-#. js-lingui-id: kBrc1S
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Manage coachingScripts"
-msgstr ""
 
 #. js-lingui-id: U8dG4j
 #: src/modules/views/view-picker/components/ViewPickerOptionDropdown.tsx
@@ -9467,6 +9469,11 @@ msgstr "Nome della chiave API"
 #: src/pages/settings/SettingsWorkspace.tsx
 msgid "Name of your workspace"
 msgstr "Nome del tuo spazio di lavoro"
+
+#. js-lingui-id: w4Wdz6
+#: src/pages/home/HomePage.tsx
+msgid "Name your list"
+msgstr ""
 
 #. js-lingui-id: JxC/pi
 #: src/modules/workflow/workflow-trigger/components/WorkflowEditTriggerManual.tsx
@@ -10325,6 +10332,16 @@ msgstr "Non disponibile per la vista predefinita"
 msgid "Not available on Default View"
 msgstr "Non disponibile nella Vista Predefinita"
 
+#. js-lingui-id: SDND4q
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Not configured"
+msgstr ""
+
+#. js-lingui-id: Ia5BQF
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Not configured — will auto-provision on first call"
+msgstr ""
+
 #. js-lingui-id: 4wUkDk
 #: src/modules/object-record/record-board/record-board-column/utils/getAggregateOperationShortLabel.ts
 msgid "Not empty"
@@ -10431,6 +10448,11 @@ msgstr ""
 #: src/modules/settings/data-model/fields/forms/number/components/SettingsDataModelFieldNumberForm.tsx
 msgid "Number of decimals"
 msgstr "Numero di decimali"
+
+#. js-lingui-id: hXw6PS
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Number of lines"
+msgstr ""
 
 #. js-lingui-id: tYOaY8
 #: src/modules/billing/components/internal/MeteredPriceSelector.tsx
@@ -10636,6 +10658,11 @@ msgstr "Su quale(i) oggetto(i) dovrebbe essere disponibile questo trigger"
 msgid "Onboarding call"
 msgstr "Chiamata di onboarding"
 
+#. js-lingui-id: /DFChQ
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "One"
+msgstr ""
+
 #. js-lingui-id: +xmpL1
 #: src/pages/status/Status.tsx
 msgid "One or more services need attention. Refresh this page or open support if something looks off."
@@ -10694,11 +10721,6 @@ msgstr "Solo il timestamp e i partecipanti verranno condivisi con il tuo team."
 msgid "Open"
 msgstr "Apri"
 
-#. js-lingui-id: y7f063
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Open {personLabel}"
-msgstr ""
-
 #. js-lingui-id: YPMEpM
 #: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
 msgid "Open AI settings"
@@ -10713,11 +10735,6 @@ msgstr "Apri come link"
 #: src/modules/ui/layout/page-header/components/PageHeaderToggleCommandMenuButton.tsx
 msgid "Open command menu"
 msgstr "Apri il menu comandi"
-
-#. js-lingui-id: 3DtwqU
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Open fullscreen workspace"
-msgstr ""
 
 #. js-lingui-id: pZZH4Q
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
@@ -10739,11 +10756,6 @@ msgstr "Apri in Ruoli"
 #: src/modules/auth/sign-in-up/components/EmailVerificationSent.tsx
 msgid "Open Outlook"
 msgstr "Aprire Outlook"
-
-#. js-lingui-id: R4wqwI
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Open your people view, apply the right filters, and save the segment you want to call."
-msgstr ""
 
 #. js-lingui-id: OV5wZZ
 #: src/modules/object-metadata/components/NavigationDrawerOpenedSection.tsx
@@ -10961,6 +10973,11 @@ msgstr "Pagina non trovata | Twenty"
 msgid "Page Views"
 msgstr ""
 
+#. js-lingui-id: qm5Hsd
+#: src/modules/navigation/components/NavigationDrawerUpgradeModal.tsx
+msgid "Paid plan"
+msgstr ""
+
 #. js-lingui-id: ijBN4V
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
 msgid "paragraph"
@@ -11037,7 +11054,6 @@ msgstr "In sospeso"
 #. js-lingui-id: 1wdjme
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/action-menu/mock/action-menu-actions.mock.tsx
-#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
 msgid "People"
 msgstr "Persone"
@@ -11176,9 +11192,14 @@ msgstr "Numero di telefono copiato negli appunti"
 msgid "Phone Numbers"
 msgstr ""
 
-#. js-lingui-id: FjnwJb
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Phone settings"
+#. js-lingui-id: LbJvQS
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Phone system configuration"
+msgstr ""
+
+#. js-lingui-id: cEVHQm
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Phone system configuration for calling"
 msgstr ""
 
 #. js-lingui-id: 6l9inc
@@ -11384,9 +11405,14 @@ msgstr "Codice postale"
 msgid "Power dialer"
 msgstr ""
 
-#. js-lingui-id: 8roEn3
+#. js-lingui-id: Q1o0CB
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Predictive Dialer (recommended)"
+msgstr ""
+
+#. js-lingui-id: A4b/xr
 #: src/modules/dialer/components/CallerIdSelectCard.tsx
-msgid "Prefer a local presence number when a matching area code exists."
+msgid "Prefer local presence calling"
 msgstr ""
 
 #. js-lingui-id: /v6Rp9
@@ -11842,6 +11868,7 @@ msgid "Redis"
 msgstr ""
 
 #. js-lingui-id: lCF0wC
+#: src/pages/settings/consuelo/TwilioSettings.tsx
 #: src/pages/settings/security/event-logs/SettingsEventLogs.tsx
 #: src/pages/status/Status.tsx
 msgid "Refresh"
@@ -12079,6 +12106,11 @@ msgstr "Reimposta"
 msgid "Reset 2FA"
 msgstr "Reimposta 2FA"
 
+#. js-lingui-id: gDnFaU
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Reset Configuration"
+msgstr ""
+
 #. js-lingui-id: 1IWc1n
 #: src/modules/command-menu/components/ResetContextToSelectionCommandButton.tsx
 msgid "Reset to"
@@ -12103,6 +12135,11 @@ msgstr ""
 #: src/pages/settings/admin-panel/SettingsAdminConfigVariableDetails.tsx
 msgid "Reset variable"
 msgstr "Ripristina variabile"
+
+#. js-lingui-id: kCn6wb
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Resetting..."
+msgstr ""
 
 #. js-lingui-id: ZlCDf+
 #: src/modules/dialer/components/CoachingPanel.tsx
@@ -13222,6 +13259,7 @@ msgstr ""
 #. js-lingui-id: Tz0i8g
 #: src/modules/action-menu/actions/record-actions/constants/DefaultRecordActionsConfig.tsx
 #: src/modules/command-menu/pages/page-layout/components/CommandMenuPageLayoutTabSettings.tsx
+#: src/modules/dialer/components/DialerHomePrep.tsx
 #: src/modules/dialer/components/OpportunityCallingWorkspace.tsx
 #: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
 #: src/modules/object-record/record-merge/hooks/useMergeRecordsContainerTabs.ts
@@ -13248,9 +13286,9 @@ msgstr "Accesso completo alle impostazioni"
 msgid "Settings permissions"
 msgstr "Autorizzazioni delle impostazioni"
 
-#. js-lingui-id: RceylA
+#. js-lingui-id: A/1LA0
 #: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
-msgid "Settings restructure, agent polish, and landing refresh"
+msgid "Settings refresh and agent polish"
 msgstr ""
 
 #. js-lingui-id: rl/5Qa
@@ -13360,9 +13398,9 @@ msgstr ""
 msgid "Sign up"
 msgstr "Registrati"
 
-#. js-lingui-id: U+Kov1
+#. js-lingui-id: bfW/1I
 #: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Single call"
+msgid "Single (one call at a time)"
 msgstr ""
 
 #. js-lingui-id: BZdVGR
@@ -13654,14 +13692,14 @@ msgstr ""
 msgid "Start a new conversation"
 msgstr ""
 
-#. js-lingui-id: Zwg92u
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Start a one-off call, launch a list, or prepare your next outreach session from one place."
-msgstr ""
-
 #. js-lingui-id: D3iCkb
 #: src/pages/settings/security/event-logs/components/EventLogFilters.tsx
 msgid "Start Date"
+msgstr ""
+
+#. js-lingui-id: lezbmN
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Start Dialer"
 msgstr ""
 
 #. js-lingui-id: WI/6No
@@ -14140,6 +14178,11 @@ msgstr "Termini di servizio"
 msgid "Test"
 msgstr "Test"
 
+#. js-lingui-id: 3QH+xL
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Test Connection & Save"
+msgstr ""
+
 #. js-lingui-id: 5KFQvk
 #: src/pages/skills/SkillDetailPage.tsx
 msgid "Test runner will be available once the skill execution engine is wired."
@@ -14154,6 +14197,11 @@ msgstr "Test Workflow"
 #: src/modules/settings/logic-functions/components/tabs/SettingsLogicFunctionTestTab.tsx
 msgid "Test your function"
 msgstr "Testa la tua funzione"
+
+#. js-lingui-id: RAzB0Q
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Testing & Saving..."
+msgstr ""
 
 #. js-lingui-id: F0lHkW
 #: src/modules/advanced-text-editor/extensions/slash-command/DefaultSlashCommands.ts
@@ -14507,6 +14555,11 @@ msgstr "Questo eliminerà definitivamente il tuo metodo di autenticazione a due 
 msgid "This will revert the database value to environment/default value. The database override will be removed and the system will use the environment settings."
 msgstr "Ciò ripristinerà il valore del database al valore di ambiente/predefinito. L'override del database verrà rimosso e il sistema utilizzerà le impostazioni dell'ambiente."
 
+#. js-lingui-id: Dh8njt
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Three"
+msgstr ""
+
 #. js-lingui-id: 5g/sE8
 #: src/modules/action-menu/actions/record-actions/constants/WorkflowActionsConfig.tsx
 msgid "Tidy up"
@@ -14851,8 +14904,15 @@ msgid "Turquoise"
 msgstr "Turchese"
 
 #. js-lingui-id: Wy25yg
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+#: src/pages/settings/consuelo/TwilioSettings.tsx
 #: src/pages/status/Status.tsx
 msgid "Twilio"
+msgstr ""
+
+#. js-lingui-id: g8Lo4d
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Twilio configuration reset"
 msgstr ""
 
 #. js-lingui-id: NWp3kO
@@ -14860,10 +14920,25 @@ msgstr ""
 msgid "Twilio connection failed"
 msgstr ""
 
+#. js-lingui-id: I8EG4o
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Twilio credentials saved and verified"
+msgstr ""
+
+#. js-lingui-id: eMnyc/
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "TwiML App"
+msgstr ""
+
 #. js-lingui-id: YIjS4q
 #: src/pages/settings/ai/components/SettingsAgentModelCapabilities.tsx
 msgid "Twitter/X Search"
 msgstr "Cerca Twitter/X"
+
+#. js-lingui-id: z9dG+S
+#: src/modules/dialer/components/DialerHomePrep.tsx
+msgid "Two"
+msgstr ""
 
 #. js-lingui-id: tuvLv1
 #: src/modules/settings/security/components/Toggle2FA.tsx
@@ -15267,11 +15342,6 @@ msgstr "Carica"
 msgid "Upload .xlsx, .xls or .csv file"
 msgstr "Carica un file .xlsx, .xls o .csv"
 
-#. js-lingui-id: 7h2CW5
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Upload a CSV into {personLabelLowercase} first, then turn the imported records into your next calling list."
-msgstr ""
-
 #. js-lingui-id: 2IXDgU
 #: src/modules/advanced-text-editor/components/WorkflowSendEmailAttachments.tsx
 #: src/modules/object-record/record-field/ui/meta-types/input/components/FilesFieldInput.tsx
@@ -15332,11 +15402,6 @@ msgstr "URL da incorporare"
 msgid "Use as draft"
 msgstr "Usa come bozza"
 
-#. js-lingui-id: NVEXAn
-#: src/modules/dialer/components/DialerHomePrep.tsx
-msgid "Use Ask AI to figure out who should be called next."
-msgstr ""
-
 #. js-lingui-id: 6kLyt5
 #: src/modules/auth/sign-in-up/components/internal/SignInUpTwoFactorAuthenticationProvision.tsx
 msgid "Use authenticator apps and browser extensions like 1Password, Authy, Microsoft Authenticator to generate one-time passwords"
@@ -15351,6 +15416,11 @@ msgstr ""
 #: src/modules/object-record/record-table/empty-state/utils/getEmptyStateSubTitle.ts
 msgid "Use our API or add your first {objectLabel} manually"
 msgstr "Usa la nostra API o aggiungi manualmente il tuo primo {objectLabel}"
+
+#. js-lingui-id: KkUnLG
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Use Own Twilio Account"
+msgstr ""
 
 #. js-lingui-id: AQVj2A
 #: src/modules/settings/data-model/objects/forms/components/SettingsDataModelObjectAboutForm.tsx
@@ -15881,11 +15951,6 @@ msgstr ""
 msgid "What this API can do: Select a user role to define its permissions."
 msgstr "Cosa può fare questa API: Seleziona un ruolo utente per definire le sue autorizzazioni."
 
-#. js-lingui-id: 3ePd3I
-#: src/modules/navigation/components/NavigationDrawerHelpDropdown.tsx
-msgid "What's new"
-msgstr ""
-
 #. js-lingui-id: m7GziZ
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "When a deal's stage changes to Closed Won, create a task assigned to the deal owner, due 7 days after the close date, with title \"Post-sale check-in\" and the company name in the description."
@@ -15899,6 +15964,11 @@ msgstr ""
 #. js-lingui-id: haFWB2
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts
 msgid "When any deal with amount over $100,000 has its stage or amount updated, send a notification to the sales channel with the deal name, company, new stage, amount and owner."
+msgstr ""
+
+#. js-lingui-id: N1s+58
+#: src/modules/dialer/components/CallerIdSelectCard.tsx
+msgid "When enabled, we match the outbound caller ID to the closest area code available for the person being called."
 msgstr ""
 
 #. js-lingui-id: C51ilI
@@ -16301,6 +16371,11 @@ msgstr ""
 msgid "Your account has been activated."
 msgstr "Il tuo account è stato attivato."
 
+#. js-lingui-id: a0RHUR
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Your API secret"
+msgstr ""
+
 #. js-lingui-id: tOPGvO
 #: src/modules/apollo/services/apollo.factory.ts
 msgid "Your app version is out of date. Please refresh the page."
@@ -16326,6 +16401,16 @@ msgstr "Il tuo nome come verrà visualizzato"
 msgid "Your name as it will be displayed on the app"
 msgstr "Il tuo nome come sarà visualizzato sull'app"
 
+#. js-lingui-id: qgyb5l
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Your Own Twilio Account"
+msgstr ""
+
+#. js-lingui-id: LUKOMZ
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Your phone system is managed by Consuelo. No configuration needed."
+msgstr ""
+
 #. js-lingui-id: X3Mjxz
 #: src/modules/dialer/components/CallHistoryList.tsx
 msgid "Your recent calls will appear here"
@@ -16340,6 +16425,11 @@ msgstr "Il periodo di prova terminerà, e "
 #: src/modules/billing/hooks/useBillingWording.ts
 msgid "Your trial period will end, and you will be charged ${yearlyPrice} per user per year billed annually. A prorata with your current subscription will be applied."
 msgstr "Il periodo di prova terminerà, e ti sarà addebitato ${yearlyPrice} per utente all'anno fatturato annualmente. Verrà applicato un prorata con la tua sottoscrizione attuale."
+
+#. js-lingui-id: TktWE6
+#: src/pages/settings/consuelo/TwilioSettings.tsx
+msgid "Your Twilio auth token"
+msgstr ""
 
 #. js-lingui-id: oC6WBs
 #: src/modules/information-banner/components/billing/InformationBannerNoBillingSubscription.tsx

@@ -1,7 +1,0 @@
-{
-  "name": "internal-brain",
-  "private": true,
-  "dependencies": {
-    "@supabase/supabase-js": "latest"
-  }
-}

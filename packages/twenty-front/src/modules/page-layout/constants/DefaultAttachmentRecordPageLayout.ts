@@ -1,0 +1,168 @@
+import { DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID } from '@/page-layout/constants/DefaultAttachmentRecordPageLayoutId';
+import { type PageLayout } from '@/page-layout/types/PageLayout';
+import {
+  PageLayoutTabLayoutMode,
+  PageLayoutType,
+  WidgetType,
+} from '~/generated-metadata/graphql';
+
+export const DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT: PageLayout = {
+  __typename: 'PageLayout',
+  id: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
+  name: 'Default Attachment Layout',
+  type: PageLayoutType.RECORD_PAGE,
+  objectMetadataId: null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  deletedAt: null,
+  tabs: [
+    {
+      __typename: 'PageLayoutTab',
+      id: 'attachment-tab-fields',
+      title: 'Home',
+      icon: 'IconHome',
+      position: 100,
+      layoutMode: PageLayoutTabLayoutMode.VERTICAL_LIST,
+      pageLayoutId: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      widgets: [
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-fields',
+          pageLayoutTabId: 'attachment-tab-fields',
+          title: 'Fields',
+          type: WidgetType.FIELDS,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 0,
+            column: 0,
+            rowSpan: 12,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+        },
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-file-preview-mobile',
+          pageLayoutTabId: 'attachment-tab-fields',
+          title: 'File Preview',
+          type: WidgetType.FILE_PREVIEW,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 12,
+            column: 0,
+            rowSpan: 6,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+          conditionalDisplay: {
+            and: [
+              {
+                '===': [{ var: 'device' }, 'MOBILE'],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      __typename: 'PageLayoutTab',
+      id: 'attachment-tab-file-preview',
+      title: 'File Preview',
+      icon: 'IconFileDescription',
+      position: 150,
+      layoutMode: PageLayoutTabLayoutMode.CANVAS,
+      pageLayoutId: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      widgets: [
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-file-preview-desktop',
+          pageLayoutTabId: 'attachment-tab-file-preview',
+          title: 'File Preview',
+          type: WidgetType.FILE_PREVIEW,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 0,
+            column: 0,
+            rowSpan: 6,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+          conditionalDisplay: {
+            and: [
+              {
+                '===': [{ var: 'device' }, 'DESKTOP'],
+              },
+            ],
+          },
+        },
+      ],
+    },
+    {
+      __typename: 'PageLayoutTab',
+      id: 'attachment-tab-timeline',
+      title: 'Timeline',
+      icon: 'IconTimelineEvent',
+      position: 200,
+      layoutMode: PageLayoutTabLayoutMode.CANVAS,
+      pageLayoutId: DEFAULT_ATTACHMENT_RECORD_PAGE_LAYOUT_ID,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null,
+      widgets: [
+        {
+          __typename: 'PageLayoutWidget',
+          id: 'attachment-widget-timeline',
+          pageLayoutTabId: 'attachment-tab-timeline',
+          title: 'Timeline',
+          type: WidgetType.TIMELINE,
+          objectMetadataId: null,
+          gridPosition: {
+            __typename: 'GridPosition',
+            row: 0,
+            column: 0,
+            rowSpan: 6,
+            columnSpan: 12,
+          },
+          configuration: {
+            __typename: 'FieldsConfiguration',
+            configurationType: 'FIELDS',
+            sections: [],
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+        },
+      ],
+    },
+  ],
+};

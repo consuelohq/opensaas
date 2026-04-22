@@ -1,6 +1,7 @@
 import { Injectable, type OnModuleInit } from '@nestjs/common';
 
 import {
+  i18n,
   type I18n,
   type MessageOptions,
   type Messages,
@@ -90,6 +91,10 @@ export class I18nService implements OnModuleInit {
 
       this.i18nInstancesMap[locale] = localeI18n;
     });
+
+    // Load source locale into global i18n instance (used by t macro at runtime)
+    i18n.load(SOURCE_LOCALE, enMessages);
+    i18n.activate(SOURCE_LOCALE);
   }
 
   getI18nInstance(locale: keyof typeof APP_LOCALES) {

@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Docker-compose.yml 변경
 
 이 버전은 `worker` 서비스가 `server-local-data` 볼륨에 접근할 수 있도록 `docker-compose.yml` 변경을 포함합니다.
-로컬 `docker-compose.yml`을 [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)로 업데이트하십시오.
+로컬 `docker-compose.yml`을 [v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)로 업데이트하십시오.
 
 ### v0.43.0 to v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 덤프 파일이 비어 있지 않은지 확인하십시오.
 
-2. docker-compose.yml을 postgres:16 이미지를 사용하도록 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) 파일에 따라 업그레이드하십시오.
+2. docker-compose.yml을 postgres:16 이미지를 사용하도록 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) 파일에 따라 업그레이드하십시오.
 
 3. 새로운 postgres:16 컨테이너에 데이터베이스를 복원하십시오.
 
@@ -259,7 +259,7 @@ yarn command:prod upgrade-0.33
 `yarn database:migrate:prod` 명령은 데이터베이스 구조(핵심 및 메타데이터 스키마)에 마이그레이션을 적용합니다. `yarn command:prod upgrade-0.33`는 모든 워크스페이스의 데이터 마이그레이션을 처리합니다.
 
 이 버전부터 DB용으로 twenty-postgres 이미지가 폐기되어 twenty-postgres-spilo가 대신 사용되었습니다.
-twenty-postgres 이미지를 계속 사용하려면, docker-compose.yml에서 `twentycrm/twenty-postgres:${TAG}`를 `twentycrm/twenty-postgres`로 교체하십시오.
+twenty-postgres 이미지를 계속 사용하려면, docker-compose.yml에서 `Consuelo/twenty-postgres:${TAG}`를 `Consuelo/twenty-postgres`로 교체하십시오.
 
 ### v0.31.0 to v0.32.0
 
@@ -312,7 +312,7 @@ yarn command:prod upgrade-0.31
 Consuelo 인스턴스를 v0.30.0 이미지로 업그레이드하십시오.
 
 **중대한 변경 사항**:
-성능을 개선하기 위해, 이제 Consuelo는 redis 캐시 구성이 필요합니다. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml)을 업데이트하여 이를 반영했습니다.
+성능을 개선하기 위해, 이제 Consuelo는 redis 캐시 구성이 필요합니다. [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml)을 업데이트하여 이를 반영했습니다.
 구성을 업데이트하고 환경 변수를 적절히 업데이트하십시오:
 
 ```

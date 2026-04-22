@@ -1,4 +1,4 @@
-# CLAUDE.md — opensaas agent instructions
+# Agents.md — opensaas agent instructions
 
 ## first things first
 
@@ -245,7 +245,7 @@ dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules
 
 ## deployment — railway
 
-production is deployed on railway at `app.consuelohq.com`. four services:
+production is deployed on railway at `app.consuelohq.com`. four services: we are selling this to insurance agents
 
 | service         | what it does                          | Dockerfile                                 |
 | --------------- | ------------------------------------- | ------------------------------------------ |
@@ -340,7 +340,7 @@ key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-
 - `resolverSchemaScope: 'metadata'` — for the metadata graphql config
 - workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
 
-## consuelo internal instance — direct API access
+## consuelo internal instance — direct API access this is NOT the same as app.consuelohq.com this is our workspace for us to dev and work on and app.consuelohq.com is what we sell.
 
 the internal consuelo instance at `consuelo.consuelohq.com` has a graphql API you can hit directly.
 
@@ -643,6 +643,68 @@ gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.sha'
 
 ALl text must be localized with Lingui
 
+# MCP tools — USE THEM
+
+you have MCP servers available. learn them, use them, stop doing things the hard way.
+
+## codemode (`execute_code`) — batch file operations
+
+**this is your most important token-saving tool.** every time you're about to make 2+ sequential tool calls that touch files, search, or bash — stop and use codemode instead. one round-trip instead of many.
+
+```javascript
+// available async functions (all paths relative to workingDirectory):
+await readFile('src/foo.ts')                    // full file
+await readFile('src/foo.ts', 10, 30)            // lines 10-30
+await writeFile('src/foo.ts', content)           // create/overwrite
+await editFile('src/foo.ts', 'old text', 'new') // str_replace
+await appendFile('src/foo.ts', '\nnew line')
+await insertLine('src/foo.ts', 15, 'new code')  // insert after line 15
+await readDir('src/', 2)                         // list with depth
+await grep('pattern', 'src/', { include: '*.ts' })
+await glob('*.test.ts', 'src/')
+await bash('npm run build')                      // shell commands
+```
+
+**when to use codemode:**
+- reading 2+ files → `Promise.all([readFile(a), readFile(b), readFile(c)])`
+- grep → read → edit chains (the whole flow in one call)
+- batch edits across multiple files
+- any sequence where one result feeds into the next
+- investigating a codebase (readDir + readFile several files)
+
+**the token math:** 5 file reads = 5 tool calls = 5 round-trips. with codemode: 1 call = 1 round-trip. each saved round-trip saves the full context window being re-sent.
+
+**return only what matters** — don't return a 500-line file when you need 20 lines:
+```javascript
+const content = await readFile('src/big-service.ts');
+const relevant = content.split('\n').filter(l => l.includes('transferCall')).join('\n');
+return { matchingLines: relevant, totalLines: content.split('\n').length };
+```
+
+## context7 — up-to-date library docs
+
+when writing code that uses any library/framework, look up the latest docs instead of relying on training data. prevents hallucinated APIs.
+
+```
+// 1. resolve the library ID
+resolve-library-id({ libraryName: "nestjs" })
+
+// 2. fetch docs for a specific topic
+get-library-docs({ context7CompatibleLibraryID: "/nestjs/nest", topic: "guards" })
+```
+
+use for: code generation, setup/config, API docs, version-specific behavior. especially important for fast-moving libraries (react, nestjs, twilio, stripe, typeorm).
+
+## qmd — memory and knowledge search
+
+qmd is a local hybrid search engine (BM25 + vector + LLM reranking) that indexes all markdown files across opensaas, kiro sessions, opencode sessions, and docs. **search before you say "i don't know."**
+
+if available as an MCP tool, use `qmd_query` for best results. otherwise via shell:
+```bash
+~/.bun/bin/qmd query "conference transfer architecture"  # hybrid search (best)
+~/.bun/bin/qmd search "twilio conference"                # keyword only (fast)
+```
+
 # context-mode — MANDATORY routing rules
 
 You have context-mode MCP tools available. These rules are NOT optional — they protect your context window from flooding. A single unrouted command can dump 56 KB into context and waste the entire session.
@@ -781,3 +843,84 @@ these are layer 1 (logic with mocks). layer 2 (integration with real twilio) and
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+lesson 1: `railway ssh` output can swallow simple echo commands. don't use railway ssh
+  -- sh -c 'echo VAR=$VAR' to check env vars — the output gets eaten. use railway ssh --
+  env | grep VAR_NAME instead. the env vars ARE injected on deploy, they just don't show
+  up with echo in some cases.
+
+  lesson 2: APP_VERSION must match a version in the upgrade command's `allCommands`
+  record. setting it to an arbitrary version will pass
+  semver validation but fail with "No command found for version X."
+
+  lesson 3: workspace `version` column must be set to the previous minor version. the
+  upgrade command checks core.workspace.version and requires it to be at least one minor
+  version behind APP_VERSION. if it's null (never upgraded), set it to the previous
+  version (e.g. 1.17.0 for upgrading to 1.18.0).
+
+  lesson 4: the standard application sync is the ONLY correct way to apply metadata
+  changes to existing workspaces. manually inserting views/nav items into the DB creates
+  broken shells with no view fields, filters, or field groups. never do it.
+
+  lesson 5: custom-app view fields on standard-app views break the sync validator. fix:
+  reassign those view fields to the standard app's applicationId before running sync.
+
+  lesson 6: orphaned view fields (referencing deleted/moved field metadata) also crash
+  the sync. check for them before running sync.
+
+  lesson 7: "position" means different things. core.navigationMenuItem.position must be
+  >= 0 per the sync validator. workspace record position (listMember rows) can be
+  negative — that's twenty's prepend behavior.
+
+
+## qmd queries by area
+
+  **csv import + ai matching**
+
+  csv import header detection row
+  ai column matching groq csv mapping
+  spreadsheet import upload step header row
+  buildRecordFromImportedStructuredRow phones composite
+  selectHeaderStepHook header selection
+
+  **dialer calling flow**
+
+  dialer call initiation voice token twilio
+  CallsController VoiceController route prefix
+  listMember phone number extraction dialer
+  getListMemberPhoneNumber extractPhoneNumber
+  dialer queue complete zero calls phone
+
+  **route architecture**
+
+  consuelo api controller route prefix v1
+  nestjs controller route mismatch spa catch-all
+  voice controller calls controller prefix
+
+ **github api push (no local checkout**
+
+  github api blob tree commit update ref
+  push to main without checkout worktree
+  suelo-kiro bot committer author github api
+
+  **listmember + person import**
+
+  listMember creation event stream error resilience
+  pre-generate person ids batch create
+  useOpenListMemberImportDialog import flow
+  person phones to listMember phoneNumber mapping
+
+  **workspace metadata + standard fields**
+
+  person workspace entity standard fields
+  workspace sync metadata standard objects
+  csv import available field metadata items
+
+  qmd query "APP_VERSION upgrade command allCommands version 1.16 1.17 1.18"
+  qmd query "workspace version column null upgrade previous minor version"
+  qmd query "standard application sync existing workspace metadata views fields"
+  qmd query "custom view fields standard views applicationId sync ENTITY_NOT_FOUND"
+  qmd query "orphaned view fields fieldMetadataId sync crash"
+  qmd query "railway ssh echo env var output swallowed grep"
+  qmd query "navigationMenuItem position non-negative vs record position negative"
+

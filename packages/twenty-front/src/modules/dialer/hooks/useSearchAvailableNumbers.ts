@@ -9,14 +9,19 @@ export const useSearchAvailableNumbers = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const search = useCallback(async (areaCode: string) => {
+  const search = useCallback(async (query: string) => {
     setIsSearching(true);
     setError(null);
     setAvailable([]);
 
     try {
       const res = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/phone-numbers/available?areaCode=${encodeURIComponent(areaCode)}`,
+        `${REACT_APP_SERVER_BASE_URL}/v1/phone-numbers/recommendations`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, limit: 8 }),
+        },
       );
 
       if (!res.ok) {

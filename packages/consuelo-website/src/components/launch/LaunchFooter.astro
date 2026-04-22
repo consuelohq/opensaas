@@ -37,11 +37,11 @@ const { sectionId } = Astro.props as Props;
     ))}
   </div>
   <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
-    <span>©2026 consuelo</span>
-    <a href="/blog">blog</a>
-    <a href={siteLinks.github}>github</a>
-    <a href={siteLinks.privacy}>privacy</a>
-    <a href={siteLinks.terms}>terms</a>
+    <span>©2026 Consuelo</span>
+    <a href="/blog">Blog</a>
+    <a href={siteLinks.github} class="desktop-only-link">GitHub</a>
+    <a href={siteLinks.privacy}>Privacy</a>
+    <a href={siteLinks.terms}>Terms</a>
     <LanguageSelector />
   </div>
 </footer>
@@ -70,7 +70,7 @@ const { sectionId } = Astro.props as Props;
   .launch-footer-signup__intro {
     display: grid;
     gap: 0.75rem;
-    max-width: 36rem;
+    max-width: 28rem;
   }
 
   .launch-footer-signup h2 {
@@ -180,6 +180,12 @@ const { sectionId } = Astro.props as Props;
 
     .launch-footer-meta {
       gap: 0.85rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .desktop-only-link {
+      display: none !important;
     }
   }
 </style>

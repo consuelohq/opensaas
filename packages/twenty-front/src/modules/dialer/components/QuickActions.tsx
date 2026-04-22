@@ -160,7 +160,7 @@ export const QuickActions = () => {
   const handleSchedule = useCallback(async () => {
     if (selectedDays === null) return;
     const dueAt = getFollowUpDate(selectedDays);
-    const name = selectedContact?.name ?? selectedContact?.firstName ?? t`Unknown`;
+    const name = (typeof selectedContact?.name === 'string' ? selectedContact.name : null) ?? (typeof selectedContact?.firstName === 'string' ? selectedContact.firstName : null) ?? t`Unknown`;
     const ok = await scheduleFollowUp(dueAt, name);
     if (ok) {
       enqueueSuccessSnackBar({ message: t`Follow-up scheduled` });

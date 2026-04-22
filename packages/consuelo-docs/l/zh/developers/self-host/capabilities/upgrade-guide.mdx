@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Docker-compose.yml 修改
 
 此版本包括对 `docker-compose.yml` 的修改，以赋予 `worker` 服务对 `server-local-data` 卷的访问权限。
-请使用 [v0.50.0 docker-compose.yml](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml) 更新本地主机上的 `docker-compose.yml`
+请使用 [v0.50.0 docker-compose.yml](https://github.com/twentyhq/consuelo/blob/v0.50.0/packages/twenty-docker/docker-compose.yml) 更新本地主机上的 `docker-compose.yml`
 
 ### v0.43.0 to v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 确保您的转储文件不为空。
 
-2. 将您的 docker-compose.yml 升级为与 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) 文件中的 postgres:16 映像相同。
+2. 将您的 docker-compose.yml 升级为与 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) 文件中的 postgres:16 映像相同。
 
 3. 将新 postgres:16 容器中的数据库恢复
 
@@ -262,7 +262,7 @@ yarn command:prod upgrade-0.33
 `yarn command:prod upgrade-0.33` 负责所有工作区的数据迁移。
 
 从该版本开始，用于 DB 的 twenty-postgres 图像已经弃用，并改用 twenty-postgres-spilo。
-如果要继续使用 twenty-postgres 映像，只需在 docker-compose.yml 中将 `twentycrm/twenty-postgres:${TAG}` 替换为 `twentycrm/twenty-postgres` 即可。
+如果要继续使用 twenty-postgres 映像，只需在 docker-compose.yml 中将 `Consuelo/twenty-postgres:${TAG}` 替换为 `Consuelo/twenty-postgres` 即可。
 
 ### v0.31.0 to v0.32.0
 
@@ -317,7 +317,7 @@ yarn command:prod upgrade-0.31
 升级您的 Consuelo 实例以使用 v0.30.0 映像
 
 **重大更改**：
-为了提高性能，Consuelo 现在要求配置 Redis 缓存。 我们更新了我们的 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) 来反映这一点。
+为了提高性能，Consuelo 现在要求配置 Redis 缓存。 我们更新了我们的 [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/docker-compose.yml) 来反映这一点。
 确保更新您的配置并相应地更新您的环境变量：
 
 ```

@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { msg } from '@lingui/core/macro';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRecoilValue } from 'recoil';
 import {
   IconCalendar,
@@ -13,7 +13,13 @@ import {
   IconRefresh,
   IconX,
 } from 'twenty-ui/display';
-import { IconBan, IconDots, IconPlayerTrackNext, IconThumbDown, IconMailbox } from '@tabler/icons-react';
+import {
+  IconBan,
+  IconDots,
+  IconPlayerTrackNext,
+  IconThumbDown,
+  IconMailbox,
+} from '@tabler/icons-react';
 
 import { activeQueueState } from '@/dialer/states/queueState';
 import { useQueueControls } from '@/dialer/hooks/useQueueControls';
@@ -209,7 +215,19 @@ const SkipReasonModal = ({
 
 // main component
 
-export const QueueControls = () => {
+type QueueControlsProps = {
+  onPauseQueue?: () => Promise<void> | void;
+  onResumeQueue?: () => Promise<void> | void;
+  onSkipQueueItem?: (reason: string) => Promise<void> | void;
+  onRestartQueue?: () => Promise<void> | void;
+};
+
+export const QueueControls = ({
+  onPauseQueue,
+  onResumeQueue,
+  onSkipQueueItem,
+  onRestartQueue,
+}: QueueControlsProps) => {
   const { t } = useLingui();
   const activeQueue = useRecoilValue(activeQueueState);
   const {
@@ -224,6 +242,38 @@ export const QueueControls = () => {
     canRestart,
   } = useQueueControls();
   const [showSkipModal, setShowSkipModal] = useState(false);
+
+  if (!activeQueue) return null;
+
+  const shouldContinueQueue =
+    canRestart &&
+    activeQueue.totalContacts >
+      activeQueue.completedContacts + activeQueue.skippedContacts;
+
+  const handleCompletedQueueAction = useCallback(() => {
+    if (shouldContinueQueue) {
+      if (onResumeQueue) {
+        void onResumeQueue();
+        return;
+      }
+
+      resumeQueue();
+      return;
+    }
+
+    if (onRestartQueue) {
+      void onRestartQueue();
+      return;
+    }
+
+    restartQueue();
+  }, [
+    onRestartQueue,
+    onResumeQueue,
+    restartQueue,
+    resumeQueue,
+    shouldContinueQueue,
+  ]);
 
   // keyboard shortcuts
   useGlobalHotkeys({
@@ -250,14 +300,12 @@ export const QueueControls = () => {
   useGlobalHotkeys({
     keys: ['r'],
     callback: () => {
-      if (canRestart) restartQueue();
+      if (canRestart) handleCompletedQueueAction();
     },
     containsModifier: false,
-    dependencies: [canRestart, restartQueue],
+    dependencies: [canRestart, handleCompletedQueueAction],
     options: { enableOnFormTags: false, enableOnContentEditable: false },
   });
-
-  if (!activeQueue) return null;
 
   // idle — start button
   if (activeQueue.status === 'idle') {
@@ -271,13 +319,17 @@ export const QueueControls = () => {
     );
   }
 
-  // completed/stopped — restart
+  // completed/stopped — continue or restart
   if (canRestart) {
     return (
       <StyledControls>
-        <StyledButton accent onClick={restartQueue}>
-          <IconRefresh size={14} />
-          {t`Restart Queue`}
+        <StyledButton accent onClick={handleCompletedQueueAction}>
+          {shouldContinueQueue ? (
+            <IconPlayerPlay size={14} />
+          ) : (
+            <IconRefresh size={14} />
+          )}
+          {shouldContinueQueue ? t`Continue Queue` : t`Restart Queue`}
           <StyledHint>(R)</StyledHint>
         </StyledButton>
       </StyledControls>
@@ -294,12 +346,31 @@ export const QueueControls = () => {
           <StyledHint>(S)</StyledHint>
         </StyledButton>
         {isActive ? (
-          <StyledButton onClick={pauseQueue}>
+          <StyledButton
+            onClick={() => {
+              if (onPauseQueue) {
+                void onPauseQueue();
+                return;
+              }
+
+              pauseQueue();
+            }}
+          >
             <IconPlayerPause size={14} />
             {t`Pause`}
           </StyledButton>
         ) : (
-          <StyledButton accent onClick={resumeQueue}>
+          <StyledButton
+            accent
+            onClick={() => {
+              if (onResumeQueue) {
+                void onResumeQueue();
+                return;
+              }
+
+              resumeQueue();
+            }}
+          >
             <IconPlayerPlay size={14} />
             {t`Resume`}
           </StyledButton>
@@ -313,7 +384,11 @@ export const QueueControls = () => {
       {showSkipModal && (
         <SkipReasonModal
           onSkip={(reason) => {
-            skipContact(reason);
+            if (onSkipQueueItem) {
+              void onSkipQueueItem(reason);
+            } else {
+              skipContact(reason);
+            }
             setShowSkipModal(false);
           }}
           onClose={() => setShowSkipModal(false)}

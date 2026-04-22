@@ -22,10 +22,10 @@ export interface Config {
 }
 
 export const configData: Config = {
-	siteTitle: 'Consuelo — Open-Source Sales Infrastructure',
+	siteTitle: 'Consuelo | Open-Source Sales Infrastructure for Insurance Sales Teams',
 	siteDescription:
-		'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. $20/seat. Free CRM forever. Open source.',
-	ogImage: '/og.jpg',
+		'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Open source, composable, and built to integrate everywhere your team works.',
+	ogImage: '/og.png',
 	logo: {
 		src: '/logo.svg',
 		darkSrc: '/logo-dark.svg',

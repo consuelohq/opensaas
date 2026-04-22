@@ -2,12 +2,7 @@ import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import {
-  IconList,
-  IconSettings,
-  IconUser,
-  IconX,
-} from 'twenty-ui/display';
+import { IconList, IconSettings, IconUser, IconX } from 'twenty-ui/display';
 import { IconPhoneCall } from '@tabler/icons-react';
 
 import { QueueAnalytics } from '@/dialer/components/QueueAnalytics';
@@ -342,7 +337,19 @@ const ParallelDialingStatus = () => {
 
 // main component
 
-export const QueuePanel = () => {
+type QueuePanelProps = {
+  onPauseQueue?: () => Promise<void> | void;
+  onResumeQueue?: () => Promise<void> | void;
+  onSkipQueueItem?: (reason: string) => Promise<void> | void;
+  onRestartQueue?: () => Promise<void> | void;
+};
+
+export const QueuePanel = ({
+  onPauseQueue,
+  onResumeQueue,
+  onSkipQueueItem,
+  onRestartQueue,
+}: QueuePanelProps) => {
   const { t } = useLingui();
   const activeQueue = useRecoilValue(activeQueueState);
   const currentQueueItem = useRecoilValue(currentQueueItemSelector);
@@ -375,7 +382,8 @@ export const QueuePanel = () => {
       {/* stats + queueProgress */}
       <StyledStats>
         <span>
-          {queueProgress?.completed ?? 0}/{queueProgress?.total ?? 0} {t`completed`}
+          {queueProgress?.completed ?? 0}/{queueProgress?.total ?? 0}{' '}
+          {t`completed`}
         </span>
         <span>•</span>
         <span>
@@ -467,7 +475,12 @@ export const QueuePanel = () => {
       )}
 
       {/* controls */}
-      <QueueControls />
+      <QueueControls
+        onPauseQueue={onPauseQueue}
+        onResumeQueue={onResumeQueue}
+        onSkipQueueItem={onSkipQueueItem}
+        onRestartQueue={onRestartQueue}
+      />
 
       {/* settings modal */}
       {showSettings && (

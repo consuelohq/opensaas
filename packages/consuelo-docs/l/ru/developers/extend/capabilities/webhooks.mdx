@@ -73,15 +73,15 @@ Consuelo подписывает каждый запрос вебхука для 
 
 | Заголовок                    | Описание              |
 | ---------------------------- | --------------------- |
-| `X-Twenty-Webhook-Signature` | Подпись HMAC SHA256   |
-| `X-Twenty-Webhook-Timestamp` | Метка времени запроса |
+| `X-Consuelo-Webhook-Signature` | Подпись HMAC SHA256   |
+| `X-Consuelo-Webhook-Timestamp` | Метка времени запроса |
 
 ### Шаги проверки
 
-1. Получите метку времени из `X-Twenty-Webhook-Timestamp`
+1. Получите метку времени из `X-Consuelo-Webhook-Timestamp`
 2. Создайте строку: `{timestamp}:{JSON payload}`
 3. Вычислите HMAC SHA256, используя секрет вашего вебхука
-4. Сравните с `X-Twenty-Webhook-Signature`
+4. Сравните с `X-Consuelo-Webhook-Signature`
 
 ### Пример (Node.js)
 

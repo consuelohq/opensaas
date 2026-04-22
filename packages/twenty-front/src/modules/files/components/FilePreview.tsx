@@ -94,7 +94,7 @@ export const FilePreview = () => {
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
-    if (!isDefined(file)) {
+    if (!isDefined(filePreview)) {
       return;
     }
 
@@ -105,7 +105,7 @@ export const FilePreview = () => {
 
     const controller = new AbortController();
 
-    fetch(`${REACT_APP_SERVER_BASE_URL}/v1/files/${file.id}`, {
+    fetch(`${REACT_APP_SERVER_BASE_URL}/v1/files/${filePreview.id}`, {
       credentials: 'include',
       signal: controller.signal,
     })
@@ -137,27 +137,27 @@ export const FilePreview = () => {
     return () => {
       controller.abort();
     };
-  }, [file, openModal, enqueueSnackBar]);
+  }, [filePreview, openModal, enqueueSnackBar]);
 
   const handleClose = useCallback(() => {
     closeModal(FILE_PREVIEW_MODAL_ID);
-    setFile(null);
+    setFilePreview(null);
     setDownloadUrl(null);
-  }, [closeModal, setFile]);
+  }, [closeModal, setFilePreview]);
 
   const handleDownload = useCallback(() => {
-    if (!isDefined(downloadUrl) || !isDefined(file)) {
+    if (!isDefined(downloadUrl) || !isDefined(filePreview)) {
       return;
     }
     downloadFile(downloadUrl, file.name);
-  }, [downloadUrl, file]);
+  }, [downloadUrl, filePreview]);
 
-  if (!isDefined(file)) {
+  if (!isDefined(filePreview)) {
     return null;
   }
 
-  const extension = file.name.includes('.')
-    ? (file.name.split('.').pop() ?? '')
+  const extension = filePreview.name.includes('.')
+    ? (filePreview.name.split('.').pop() ?? '')
     : '';
 
   return (
@@ -169,7 +169,7 @@ export const FilePreview = () => {
       ignoreContainer
     >
       <StyledHeader>
-        <StyledTitle>{file.name}</StyledTitle>
+        <StyledTitle>{filePreview.name}</StyledTitle>
         <StyledButtons>
           {isDefined(downloadUrl) && (
             <IconButton
@@ -181,7 +181,7 @@ export const FilePreview = () => {
           <IconButton Icon={IconX} onClick={handleClose} size="small" />
         </StyledButtons>
       </StyledHeader>
-      <ScrollWrapper componentInstanceId={`file-preview-${file.id}`}>
+      <ScrollWrapper componentInstanceId={`file-preview-${filePreview.id}`}>
         <StyledContent>
           {loading && (
             <StyledLoadingContainer>
@@ -209,7 +209,7 @@ export const FilePreview = () => {
               }
             >
               <DocumentViewer
-                documentName={file.name}
+                documentName={filePreview.name}
                 documentUrl={downloadUrl}
                 documentExtension={extension}
               />

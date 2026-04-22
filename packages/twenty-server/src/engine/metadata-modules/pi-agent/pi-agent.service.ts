@@ -17,6 +17,7 @@ import type {
   MemoryStore,
   ExecutionStore,
   UsageStore,
+  PhoneNumberRecommendationService,
   PiSession,
   PiStreamEvent,
   ChatRequest,
@@ -174,6 +175,7 @@ export class PiAgentService {
       memoryStore?: MemoryStore;
       executionStore?: ExecutionStore;
       usageStore?: UsageStore;
+      phoneNumberRecommendationService?: PhoneNumberRecommendationService;
     },
   ): Promise<AgentSessionData> {
     try {
@@ -186,6 +188,7 @@ export class PiAgentService {
         createPiCrmTools,
         createDialerTools,
         createKbTools,
+        createPhoneNumberTools,
       } = await import('@consuelo/agent');
 
       const sessionManager = await this.getSessionManager();
@@ -223,6 +226,9 @@ export class PiAgentService {
           ? createDialerTools(options.dialerService, userId)
           : []),
         ...(options?.kbService ? createKbTools(options.kbService) : []),
+        ...(options?.phoneNumberRecommendationService
+          ? createPhoneNumberTools(options.phoneNumberRecommendationService)
+          : []),
       ];
 
       const session: AgentSessionData = {

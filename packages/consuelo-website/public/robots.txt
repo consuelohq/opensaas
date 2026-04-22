@@ -1,85 +1,19 @@
-# search engines
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# openai
 User-agent: GPTBot
-Allow: /
+Disallow: /
 
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-# anthropic
 User-agent: ClaudeBot
-Allow: /
+Disallow: /
 
-User-agent: Claude-SearchBot
-Allow: /
-
-User-agent: Claude-User
-Allow: /
-
-# google ai
 User-agent: Google-Extended
-Allow: /
+Disallow: /
 
-User-agent: Gemini-Deep-Research
-Allow: /
-
-User-agent: Google-CloudVertexBot
-Allow: /
-
-# perplexity
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Perplexity-User
-Allow: /
-
-# apple
-User-agent: Applebot-Extended
-Allow: /
-
-# meta
-User-agent: meta-externalagent
-Allow: /
-
-User-agent: Meta-WebIndexer
-Allow: /
-
-# microsoft
-User-agent: bingbot
-Allow: /
-
-# amazon
-User-agent: Amazonbot
-Allow: /
-
-# duckduckgo
-User-agent: DuckAssistBot
-Allow: /
-
-# bytedance
-User-agent: Bytespider
-Allow: /
-
-# common crawl
 User-agent: CCBot
-Allow: /
+Disallow: /
 
-# mistral
-User-agent: MistralAI-User
-Allow: /
+User-agent: Bytespider
+Disallow: /
 
-# catch-all
 User-agent: *
 Allow: /
 
-Sitemap: https://www.consuelohq.com/sitemap-index.xml
-Host: https://www.consuelohq.com
+Sitemap: https://consuelohq.com/sitemap-index.xml

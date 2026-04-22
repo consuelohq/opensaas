@@ -118,7 +118,7 @@ yarn command:prod upgrade
 #### Docker-compose.yml Verlagerung
 
 Diese Version enthält eine Mutation von `docker-compose.yml`, um dem `worker`-Dienst Zugriff auf das `server-local-data`-Volume zu geben.
-Bitte aktualisieren Sie Ihre lokale `docker-compose.yml` mit der [docker-compose.yml v0.50.0](https://github.com/twentyhq/twenty/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
+Bitte aktualisieren Sie Ihre lokale `docker-compose.yml` mit der [docker-compose.yml v0.50.0](https://github.com/consuelohq/opensaas/blob/v0.50.0/packages/twenty-docker/docker-compose.yml)
 
 ### v0.43.0 bis v0.44.0
 
@@ -159,7 +159,7 @@ docker cp twenty-db-1:/home/postgres/databases_backup.sql .
 
 Stellen Sie sicher, dass Ihre Dump-Datei nicht leer ist.
 
-2. Aktualisieren Sie Ihre docker-compose.yml, um das postgres:16-Image gemäß der [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) zu verwenden.
+2. Aktualisieren Sie Ihre docker-compose.yml, um das postgres:16-Image gemäß der [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) zu verwenden.
 
 3. Stellen Sie die Datenbank in den neuen postgres:16-Container wieder her.
 
@@ -317,7 +317,7 @@ Die `yarn command:prod upgrade-0.31` kümmert sich um die Datenmigration aller A
 Aktualisieren Sie Ihre Twenty-Instanz, um das v0.30.0-Image zu verwenden.
 
 **Wichtige Änderung**:
-Um die Leistung zu verbessern, erfordert Consuelo jetzt, dass der Redis-Cache konfiguriert wird. Wir haben unser [docker-compose.yml](https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/docker-compose.yml) aktualisiert, um dies zu reflektieren.
+Um die Leistung zu verbessern, erfordert Consuelo jetzt, dass der Redis-Cache konfiguriert wird. Wir haben unser [docker-compose.yml](https://raw.githubusercontent.com/consuelohq/opensaas/main/packages/twenty-docker/docker-compose.yml) aktualisiert, um dies zu reflektieren.
 Stellen Sie sicher, dass Sie Ihre Konfiguration aktualisieren und Ihre Umgebungsvariablen entsprechend anpassen:
 
 ```

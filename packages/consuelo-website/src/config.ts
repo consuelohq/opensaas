@@ -1,10 +1,12 @@
+import { siteMetadata } from './lib/site-seo';
+
 export const SITE = {
-  website: "https://consuelohq.com", // replace this with your deployed domain
-  author: "Kokayi Cobb",
+  website: siteMetadata.siteUrl,
+  author: "Consuelo Team",
   profile: "",
-  desc: "The open source infrastructure for modern sales teams.",
-  title: "Consuelo Blog",
-  ogImage: "og.jpg",
+  desc: siteMetadata.blogDescription,
+  title: siteMetadata.blogTitle,
+  ogImage: siteMetadata.defaultOgImage,
   lightAndDarkMode: false,
   postPerIndex: 4,
   postPerPage: 4,
@@ -14,10 +16,10 @@ export const SITE = {
   editPost: {
     enabled: false,
     text: "Edit page",
-    url: "https://github.com/satnaing/astro-paper/edit/main/",
+    url: "https://github.com/consuelohq/opensaas/edit/main/packages/consuelo-website/",
   },
   dynamicOgImage: true,
   dir: "ltr", // "rtl" | "auto"
   lang: "en", // html lang code. Set this empty and default will be "en"
-  timezone: "Asia/Bangkok", // Default global timezone (IANA format) https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  timezone: "UTC", // Default global timezone (IANA format) https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 } as const;

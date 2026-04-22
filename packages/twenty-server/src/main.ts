@@ -17,6 +17,7 @@ import { LoggerService } from 'src/engine/core-modules/logger/logger.service';
 import { getSessionStorageOptions } from 'src/engine/core-modules/session-storage/session-storage.module-factory';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { UnhandledExceptionFilter } from 'src/filters/unhandled-exception.filter';
+import { applyCorsHeadersIfAllowed, isCorsOriginAllowed } from 'src/utils/cors';
 
 import { AppModule } from './app.module';
 import './instrument';
@@ -25,27 +26,11 @@ import { settings } from './engine/constants/settings';
 import { generateFrontConfig } from './utils/generate-front-config';
 
 const applyMountedRouteCors = (req: Request, res: Response) => {
-  const origin = req.headers.origin;
-
-  if (!origin) {
-    return;
-  }
-
-  const requestedHeaders = req.headers['access-control-request-headers'];
-
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Vary', 'Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    typeof requestedHeaders === 'string' && requestedHeaders.length > 0
-      ? requestedHeaders
-      : 'Authorization, Content-Type',
-  );
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-  );
+  applyCorsHeadersIfAllowed({
+    response: res,
+    origin: typeof req.headers.origin === 'string' ? req.headers.origin : null,
+    requestedHeaders: req.headers['access-control-request-headers'],
+  });
 };
 
 const bootstrap = async () => {
@@ -53,7 +38,14 @@ const bootstrap = async () => {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+
+        callback(null, isCorsOriginAllowed(origin));
+      },
       credentials: true,
     },
     bufferLogs: process.env.LOGGER_IS_BUFFER_ENABLED === 'true',
@@ -73,10 +65,8 @@ const bootstrap = async () => {
 
   app.use(session(getSessionStorageOptions(twentyConfigService)));
 
-  // Apply class-validator container so that we can use injection in validators
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  // Use our logger
   app.useLogger(logger);
 
   app.useGlobalFilters(new UnhandledExceptionFilter());
@@ -87,7 +77,6 @@ const bootstrap = async () => {
     extended: true,
   });
 
-  // Graphql file upload
   app.use(
     '/graphql',
     graphqlUploadExpress({
@@ -104,10 +93,8 @@ const bootstrap = async () => {
     }),
   );
 
-  // Inject the server url in the frontend page
   generateFrontConfig();
 
-  // Log uncaught errors but avoid flooding logs on repeated connection resets
   let uncaughtCount = 0;
 
   process.on('uncaughtException', (err) => {
@@ -124,8 +111,6 @@ const bootstrap = async () => {
     console.error('UNHANDLED REJECTION:', reason);
   });
 
-  // Mount API routes on the Express instance (optional — server works without them)
-  // Dynamic path prevents nx from detecting this as a build dependency
   const apiRoutesPath = ['..', '..', 'api', 'dist', 'routes', 'index.js'].join(
     '/',
   );
@@ -138,7 +123,6 @@ const bootstrap = async () => {
     const routes = routesModule.allRoutes();
     const expressApp = app.getHttpAdapter().getInstance();
 
-    // Load auth middleware
     const apiMiddlewarePath = [
       '..',
       '..',
@@ -179,7 +163,6 @@ const bootstrap = async () => {
       }
 
       handlers.push(async (req: Request, res: Response) => {
-        // HACK: Express types are compatible with ApiRequest/ApiResponse but TypeScript cannot verify across packages
         try {
           await routeHandler(
             req as Parameters<typeof route.handler>[0],
@@ -201,7 +184,6 @@ const bootstrap = async () => {
     }
     console.log(`Mounted ${routes.length} API routes OK`);
 
-    // Set up WebSocket servers for coaching (live transcript streaming + audio transcription)
     console.log('Setting up coaching WebSocket servers...');
     const httpServer = app.getHttpServer();
 

@@ -24,13 +24,13 @@ title: Docker Compose로 1-클릭
 단일 명령으로 최신 안정 버전의 Consuelo를 설치하십시오:
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 특정 버전 또는 브랜치를 설치하려면:
 
 ```bash
-VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/twenty/main/packages/twenty-docker/scripts/install.sh)
+VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.com/twentyhq/consuelo/main/packages/twenty-docker/scripts/install.sh)
 ```
 
 * 원하는 버전 번호로 x.y.z를 대체하십시오.
@@ -47,7 +47,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
    예제 환경 파일을 워킹 디렉토리의 새 .env 파일로 복사합니다.
 
    ```bash
-   curl -o .env https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/.env.example
+   curl -o .env https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/.env.example
    ```
 
 2. **비밀 토큰 생성**
@@ -81,7 +81,7 @@ VERSION=vx.y.z BRANCH=branch-name bash <(curl -sL https://raw.githubusercontent.
 작업 디렉토리에 `docker-compose.yml` 파일을 다운로드합니다.
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/twenty/refs/heads/main/packages/twenty-docker/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/twentyhq/consuelo/refs/heads/main/packages/twenty-docker/docker-compose.yml
 ```
 
 ### 단계 3: 애플리케이션 시작
@@ -94,7 +94,7 @@ docker compose up -d
 
 ### 단계 4: 애플리케이션에 액세스
 
-twentyCRM을 개인 컴퓨터에 호스팅하는 경우 브라우저를 열고 [http://localhost:3000](http://localhost:3000)으로 이동하세요.
+Consuelo을 개인 컴퓨터에 호스팅하는 경우 브라우저를 열고 [http://localhost:3000](http://localhost:3000)으로 이동하세요.
 
 서버에서 호스팅하는 경우 서버가 실행 중이며 모든 것이 문제없는지 확인하십시오.
 
@@ -210,7 +210,7 @@ SSL(HTTPS)는 일부 브라우저 기능이 제대로 작동하기 위해 필수
 ### 데이터베이스 백업 생성
 
 ```bash
-docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).sql
+docker exec twenty-postgres pg_dump -U postgres consuelo > backup_$(date +%Y%m%d).sql
 ```
 
 ### 일일 백업 자동화
@@ -218,7 +218,7 @@ docker exec twenty-postgres pg_dump -U postgres twenty > backup_$(date +%Y%m%d).
 crontab에 추가하세요 (`crontab -e`):
 
 ```bash
-0 2 * * * docker exec twenty-postgres pg_dump -U postgres twenty > /backups/twenty_$(date +\%Y\%m\%d).sql
+0 2 * * * docker exec twenty-postgres pg_dump -U postgres consuelo > /backups/twenty_$(date +\%Y\%m\%d).sql
 ```
 
 ### 백업에서 복원
@@ -232,7 +232,7 @@ docker compose stop twenty-server twenty-front
 2. 데이터베이스를 복원하세요:
 
 ```bash
-docker exec -i twenty-postgres psql -U postgres twenty < backup_20240115.sql
+docker exec -i twenty-postgres psql -U postgres consuelo < backup_20240115.sql
 ```
 
 3. 서비스 재시작:

@@ -4,6 +4,7 @@ import { addFlatEntityToFlatEntityMapsOrThrow } from 'src/engine/metadata-module
 import { type FlatView } from 'src/engine/metadata-modules/flat-view/types/flat-view.type';
 import { ViewType } from 'src/engine/metadata-modules/view/enums/view-type.enum';
 import { type AllStandardObjectName } from 'src/engine/workspace-manager/twenty-standard-application/types/all-standard-object-name.type';
+import { computeStandardAttachmentViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-attachment-views.util';
 import { computeStandardCalendarEventViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-calendar-event-views.util';
 import { computeStandardCompanyViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-company-views.util';
 import { computeStandardDashboardViews } from 'src/engine/workspace-manager/twenty-standard-application/utils/view/compute-standard-dashboard-views.util';
@@ -24,6 +25,7 @@ type StandardViewBuilder<P extends AllStandardObjectName> = (
 ) => Record<string, FlatView>;
 
 const STANDARD_FLAT_VIEW_METADATA_BUILDERS_BY_OBJECT_NAME = {
+  attachment: computeStandardAttachmentViews,
   calendarEvent: computeStandardCalendarEventViews,
   company: computeStandardCompanyViews,
   dashboard: computeStandardDashboardViews,

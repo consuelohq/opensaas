@@ -15,15 +15,15 @@ const icons = [
 ];
 
 const problems = [
-  'instant twilio business accounts',
-  'built-in spam shield & local presence',
-  'frictionless team management',
-  'seamless out-of-the-box integrations'
+  'Too many moving parts',
+  'Spam and compliance drag',
+  'Insurance chargebacks',
+  'Wanting more from AI'
 ];
 
 const steps = [
   { n: '1', text: 'sign up and add $20 balance — follow the', link: 'setup instructions', href: siteLinks.docs },
-  { n: '2', text: 'use mercury with transparent pricing —', link: 'pay per request', href: siteLinks.docs, after: ' with zero markups' },
+  { n: '2', text: 'Use Mercury with transparent pricing — ', link: 'pay per request', href: siteLinks.docs, after: ' with zero markups' },
   { n: '3', text: 'auto-top up — when your balance reaches $5 we\'ll automatically add $20' },
 ];
 ---
@@ -34,25 +34,25 @@ const steps = [
   <!-- hero -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-hero">
-      <h1 class="mercury-hero__logo launch-mono">mercury</h1>
-      <h2 class="mercury-hero__subtitle">reliable hosted infrastructure for sales teams</h2>
-      <p class="launch-copy">mercury gives you access to a curated set of providers that consuelo has tested and configured specifically for sales teams. no need to worry about inconsistent performance and quality, use validated infrastructure that works.</p>
+      <h1 class="mercury-hero__logo launch-mono">Mercury</h1>
+      <h2 class="mercury-hero__subtitle">Hosted calling and AI, ready to go.</h2>
+      <p class="launch-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
       <div class="mercury-hero__icons">
         {icons.map((icon) => (
           <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
         ))}
       </div>
-      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>get started with mercury ↗</a>
-      <p class="launch-copy mercury-hero__pricing">add $20 pay as you go balance (+$1.23 card processing fee)</p>
-      <p class="launch-copy mercury-hero__note">use with any plan. set monthly spend limits. cancel any time.</p>
+      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>Get started with Mercury ↗</a>
+      <p class="launch-copy mercury-hero__pricing">$20 pay as you go balance (+$1.23 card processing fee)</p>
+      <p class="launch-copy mercury-hero__note">Use with any plan. Set monthly spend limits. Cancel any time.</p>
     </div>
   </section>
 
   <!-- problem -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">what problem is mercury solving?</p>
-      <p class="launch-copy">teams waste weeks configuring business accounts and fighting telecom spam flags instead of using a persistent tech layer that follows them across devices and contexts.</p>
+      <p class="mercury-block__eyebrow launch-mono">What problem is Mercury solving?</p>
+      <p class="launch-copy">Teams waste weeks configuring business accounts and fighting telecom spam flags instead of using a persistent tech layer that follows them across devices and contexts.</p>
       {problems.map((item) => (
         <details class="mercury-expandable">
           <summary class="mercury-expandable__trigger launch-mono">{item}</summary>
@@ -64,25 +64,28 @@ const steps = [
   <!-- how it works -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">how mercury works</p>
-      <p class="launch-copy">while we suggest you use mercury with consuelo, you can use mercury with any sales tool.</p>
+      <p class="mercury-block__eyebrow launch-mono">How Mercury works</p>
+      <p class="launch-copy">While we suggest you use Mercury with Consuelo, you can use Mercury with any sales tool.</p>
       {steps.map((step) => (
         <p class="mercury-step launch-copy">
           <span class="mercury-step__n launch-mono">[{step.n}]</span>
           {step.text}{' '}
-          {step.link && step.href ? <a class="launch-inline-link" href={step.href}>{step.link}</a> : null}
-          {step.after ?? ''}
+          {step.link && step.href && (
+            <a class="launch-inline-link" href={step.href}>{step.link}</a>
+          )}
+          {step.after && (
+            <span class="mercury-step__after">{' '}{step.after}</span>
+          )}
         </p>
-      ))}
-    </div>
+      ))}   </div>
   </section>
 
   <!-- privacy -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">your privacy is important to us</p>
+      <p class="mercury-block__eyebrow launch-mono">Your privacy is important to us</p>
       <details class="mercury-expandable">
-        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">all mercury providers are hosted in the us. providers follow a zero-retention policy and do not use your data for model training, <span style="white-space: nowrap">with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</span></summary>
+        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">All Mercury providers are hosted in the US. Providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
       </details>
     </div>
   </section>
@@ -90,7 +93,7 @@ const steps = [
   <!-- faq -->
   <section class="launch-section">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">faq</p>
+      <p class="mercury-block__eyebrow launch-mono">FAQ</p>
       {mercuryFaqItems.map((item) => (
         <details class="mercury-expandable">
           <summary class="mercury-expandable__trigger launch-mono">{item.question}</summary>
@@ -187,8 +190,8 @@ const steps = [
     cursor: pointer;
     list-style: none;
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
+    flex-wrap: nowrap;
+    align-items: flex-start;
     gap: 0.6rem;
   }
 
@@ -213,17 +216,36 @@ const steps = [
 
   /* steps */
   .mercury-step {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
     border-top: 1px solid var(--launch-line);
     padding-top: 0.75rem;
     color: var(--launch-fg);
   }
 
   .mercury-step__n {
-    flex-shrink: 0;
-    font-size: 0.78rem;
     color: var(--launch-muted);
+    margin-right: 0.5rem;
+  }
+
+  @media (max-width: 720px) {
+    .mercury-step__after {
+      display: none;
+    }
+  }
+
+  .mercury-step {
+    border-top: 1px solid var(--launch-line);
+    padding-top: 0.75rem;
+    color: var(--launch-fg);
+  }
+
+  .mercury-step__n {
+    color: var(--launch-muted);
+    margin-right: 0.35rem;
+  }
+
+  @media (max-width: 720px) {
+    .mercury-step__after {
+      display: none;
+    }
   }
 </style>

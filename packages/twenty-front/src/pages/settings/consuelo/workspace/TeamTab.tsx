@@ -106,7 +106,7 @@ const StyledRoleName = styled.span`
   min-width: 60px;
 `;
 
-type Props = {
+type TeamTabProps = {
   team: TeamMember[];
   seats: UsageMetric;
   onInvite: (email: string, role: TeamRole) => Promise<void>;
@@ -114,7 +114,7 @@ type Props = {
   onRemove: (memberId: string) => Promise<void>;
 };
 
-const ROLES: TeamRole[] = ['owner', 'admin', 'member', 'viewer'];
+const ROLES: TeamRole[] = ['owner', 'admin', 'member'];
 
 export const TeamTab = ({
   team,
@@ -201,7 +201,7 @@ export const TeamTab = ({
             </tr>
           </thead>
           <tbody>
-            {team.map((m) => (
+            {team.map((m: TeamMember) => (
               <tr key={m.id}>
                 <StyledTd>{m.name}</StyledTd>
                 <StyledTd>{m.email}</StyledTd>

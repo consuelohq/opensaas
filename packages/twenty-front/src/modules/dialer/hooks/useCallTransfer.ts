@@ -9,6 +9,11 @@ import { isOnHoldState } from '@/dialer/states/isOnHoldState';
 import { conferenceSidState } from '@/dialer/states/conferenceState';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { TransferType, TransferStatus } from '@/dialer/types/dialer';
+import {
+  playCallStartSound,
+  playErrorSound,
+  playSuccessSound,
+} from '@/dialer/utils/notificationSounds';
 
 interface TransferState {
   status: TransferStatus | 'idle';
@@ -91,12 +96,14 @@ export const useCallTransfer = (): UseCallTransferReturn => {
           conferenceSid: (data.conferenceSid as string) ?? null,
           error: null,
         });
+        playCallStartSound();
         if (data.conferenceSid) setConferenceSid(data.conferenceSid as string);
       } catch (err: unknown) {
         captureException(err, {
           extra: { context: 'initiateTransfer', callSid, to, type },
         });
         const message = err instanceof Error ? err.message : 'Transfer failed';
+        playErrorSound();
         setTransferState((prev) => ({
           ...prev,
           status: 'failed',
@@ -123,6 +130,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         conferenceSid: null,
         error: null,
       });
+      playSuccessSound();
       setActiveTransfer(null);
     } catch (err: unknown) {
       captureException(err, {
@@ -133,6 +141,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         },
       });
       const message = err instanceof Error ? err.message : 'Complete failed';
+      playErrorSound();
       setTransferState((prev) => ({
         ...prev,
         status: 'failed',
@@ -173,6 +182,7 @@ export const useCallTransfer = (): UseCallTransferReturn => {
         },
       });
       const message = err instanceof Error ? err.message : 'Cancel failed';
+      playErrorSound();
       setTransferState((prev) => ({
         ...prev,
         status: 'failed',

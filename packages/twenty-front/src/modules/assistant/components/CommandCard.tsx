@@ -109,26 +109,26 @@ const MeCard = ({
   t,
 }: {
   data: MetricsData;
-  t: ReturnType<typeof useLingui>["t"];
+  t: ReturnType<typeof useLingui>['t'];
 }) => (
   <StyledCard>
-    <StyledCardHeader>{translate`Your Stats`}</StyledCardHeader>
+    <StyledCardHeader>{t('Your Stats')}</StyledCardHeader>
     <StyledCardBody>
       <StyledFields>
         <StyledField>
-          <StyledFieldLabel>{translate`Calls Today`}</StyledFieldLabel>
+          <StyledFieldLabel>{t('Calls Today')}</StyledFieldLabel>
           <StyledFieldValue>{data.callsToday}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>{translate`Calls This Week`}</StyledFieldLabel>
+          <StyledFieldLabel>{t('Calls This Week')}</StyledFieldLabel>
           <StyledFieldValue>{data.callsThisWeek}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>{translate`Connect Rate`}</StyledFieldLabel>
+          <StyledFieldLabel>{t('Connect Rate')}</StyledFieldLabel>
           <StyledFieldValue>{formatRate(data.answerRate)}</StyledFieldValue>
         </StyledField>
         <StyledField>
-          <StyledFieldLabel>{translate`Avg Duration`}</StyledFieldLabel>
+          <StyledFieldLabel>{t('Avg Duration')}</StyledFieldLabel>
           <StyledFieldValue>
             {formatDuration(data.avgDuration)}
           </StyledFieldValue>
@@ -149,15 +149,15 @@ const StatusCard = ({
 
   return (
     <StyledCard>
-      <StyledCardHeader>{translate`Service Status`}</StyledCardHeader>
+      <StyledCardHeader>{t('Service Status')}</StyledCardHeader>
       <StyledCardBody>
         <StyledRow>
           <StyledRowPrimary>
             <StyledStatusDot healthy={isHealthy} />
-            {translate`API`}
+            {t('API')}
           </StyledRowPrimary>
           <StyledRowSecondary>
-            {isHealthy ? translate`Healthy` : translate`Unhealthy`}
+            {isHealthy ? t('Healthy') : t('Unhealthy')}
           </StyledRowSecondary>
         </StyledRow>
       </StyledCardBody>
@@ -170,15 +170,15 @@ const ContactsCard = ({
   t,
 }: {
   data: ContactResult[];
-  t: ReturnType<typeof useLingui>["t"];
+  t: ReturnType<typeof useLingui>['t'];
 }) => (
   <StyledCard>
     <StyledCardHeader>
-      {translate`${data.length} Contact${data.length !== 1 ? 's' : ''} Found`}
+      {t(`${data.length} Contact${data.length !== 1 ? 's' : ''} Found`)}
     </StyledCardHeader>
     <StyledCardBody>
       {data.length === 0 ? (
-        <StyledRowSecondary>{translate`No matching contacts`}</StyledRowSecondary>
+        <StyledRowSecondary>{t('No matching contacts')}</StyledRowSecondary>
       ) : (
         data.map((c) => (
           <StyledRow key={c.id}>
@@ -202,13 +202,13 @@ const HistoryCard = ({
   t,
 }: {
   data: HistoryEntry[];
-  t: ReturnType<typeof useLingui>["t"];
+  t: ReturnType<typeof useLingui>['t'];
 }) => (
   <StyledCard>
-    <StyledCardHeader>{translate`Recent Calls`}</StyledCardHeader>
+    <StyledCardHeader>{t('Recent Calls')}</StyledCardHeader>
     <StyledCardBody>
       {data.length === 0 ? (
-        <StyledRowSecondary>{translate`No call history`}</StyledRowSecondary>
+        <StyledRowSecondary>{t('No call history')}</StyledRowSecondary>
       ) : (
         data.map((entry) => (
           <StyledRow key={entry.id}>

@@ -7,12 +7,15 @@ import remarkCollapse from 'remark-collapse';
 
 export default defineConfig({
   output: 'static',
-  site: 'https://www.consuelohq.com',
+  site: 'https://consuelohq.com',
   integrations: [react(), icon(), sitemap()],
   markdown: {
     remarkPlugins: [
       remarkToc,
-      [remarkCollapse, { test: "Table of contents", summary: "Open Table of contents" }],
+      [
+        remarkCollapse,
+        { test: 'Table of contents', summary: 'Open Table of contents' },
+      ],
     ],
   },
 });

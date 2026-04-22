@@ -10,7 +10,8 @@ export const isObjectMetadataAvailableForRelation = (
   return (
     (!objectMetadataItem.isSystem ||
       objectMetadataItem.nameSingular ===
-        CoreObjectNameSingular.WorkspaceMember) &&
+        CoreObjectNameSingular.WorkspaceMember ||
+      objectMetadataItem.nameSingular === 'listMember') &&
     !objectMetadataItem.isRemote
   );
 };
