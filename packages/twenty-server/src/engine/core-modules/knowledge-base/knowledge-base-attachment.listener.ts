@@ -5,7 +5,7 @@ import { type ObjectRecordCreateEvent } from 'twenty-shared/database-events';
 import { OnDatabaseBatchEvent } from 'src/engine/api/graphql/graphql-query-runner/decorators/on-database-batch-event.decorator';
 import { DatabaseEventAction } from 'src/engine/api/graphql/graphql-query-runner/enums/database-event-action';
 import { ExceptionHandlerService } from 'src/engine/core-modules/exception-handler/exception-handler.service';
-import { FileStorageDriverFactory } from 'src/engine/core-modules/file-storage/file-storage-driver.factory';
+import { FileStorageService } from 'src/engine/core-modules/file-storage/file-storage.service';
 import { KnowledgeBaseService } from 'src/engine/core-modules/knowledge-base/knowledge-base.service';
 import { WorkspaceEventBatch } from 'src/engine/workspace-event-emitter/types/workspace-event-batch.type';
 import { type AttachmentWorkspaceEntity } from 'src/modules/attachment/standard-objects/attachment.workspace-entity';
@@ -29,7 +29,7 @@ export class KnowledgeBaseAttachmentListener {
 
   constructor(
     private readonly knowledgeBaseService: KnowledgeBaseService,
-    private readonly fileStorageDriverFactory: FileStorageDriverFactory,
+    private readonly fileStorageService: FileStorageService,
     private readonly exceptionHandlerService: ExceptionHandlerService,
   ) {}
 
@@ -102,8 +102,7 @@ export class KnowledgeBaseAttachmentListener {
       return;
     }
 
-    const driver = this.fileStorageDriverFactory.getCurrentDriver();
-    const stream = await driver.readFile({ filePath });
+    const stream = await this.fileStorageService.readFileLegacy({ filePath });
 
     // collect stream into buffer
     const chunks: Buffer[] = [];

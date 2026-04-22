@@ -18,7 +18,7 @@ export const computeStandardAttachmentViewFilters = (
         viewFilterName: 'fileCategoryIsAudio',
         fieldName: 'fileCategory',
         operand: ViewFilterOperand.IS,
-        value: JSON.stringify('AUDIO'),
+        value: JSON.stringify(['RECORDING']),
       },
     }),
     agentFilesFileCategoryIsAgentFile: createStandardViewFilterFlatMetadata({
@@ -29,7 +29,7 @@ export const computeStandardAttachmentViewFilters = (
         viewFilterName: 'fileCategoryIsAgentFile',
         fieldName: 'fileCategory',
         operand: ViewFilterOperand.IS,
-        value: JSON.stringify('AGENT_FILE'),
+        value: JSON.stringify(['AGENT_FILE']),
       },
     }),
     scriptsFileCategoryIsScript: createStandardViewFilterFlatMetadata({
@@ -40,7 +40,7 @@ export const computeStandardAttachmentViewFilters = (
         viewFilterName: 'fileCategoryIsScript',
         fieldName: 'fileCategory',
         operand: ViewFilterOperand.IS,
-        value: JSON.stringify('SCRIPT'),
+        value: JSON.stringify(['SCRIPT']),
       },
     }),
     temporaryExpiresAtIsNotEmpty: createStandardViewFilterFlatMetadata({

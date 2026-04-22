@@ -1,58 +1,67 @@
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
-import { localPresenceEnabledState } from '@/dialer/states/localPresenceEnabledState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
-import { useEffect } from 'react';
+import { useUserPreferences } from '@/settings/hooks/useUserPreferences';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
-// whether the current selection was auto-matched by area code
+const normalizePhone = (phoneNumber: string) => {
+  const digits = phoneNumber.replace(/\D/g, '');
+
+  if (digits.length == 10) {
+    return `+1${digits}`;
+  }
+
+  if (digits.length == 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+
+  if (phoneNumber.startsWith('+')) {
+    return `+${digits}`;
+  }
+
+  return digits.length > 0 ? `+${digits}` : '';
+};
+
 export const useCallerIdSelection = () => {
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
-  const localPresenceEnabled = useRecoilValue(localPresenceEnabledState);
   const selectedContact = useRecoilValue(selectedContactState);
   const [selectedCallerId, setSelectedCallerId] = useRecoilState(
     selectedCallerIdState,
   );
+  const { preferences, updatePreferences } = useUserPreferences();
 
   const contactPhone = selectedContact?.phone ?? null;
-
-  // extract area code from E.164 (+1XXXXXXXXXX)
+  const normalizedContactPhone = contactPhone
+    ? normalizePhone(contactPhone)
+    : null;
   const contactAreaCode =
-    contactPhone && contactPhone.length >= 5 ? contactPhone.slice(2, 5) : null;
+    normalizedContactPhone && normalizedContactPhone.length >= 5
+      ? normalizedContactPhone.slice(2, 5)
+      : null;
 
-  const matchedNumber = contactAreaCode
-    ? availableCallerIds.find((n) => n.areaCode === contactAreaCode)
+  const normalizedSelectedCallerId = selectedCallerId
+    ? normalizePhone(selectedCallerId)
+    : null;
+  const selectedNumber = normalizedSelectedCallerId
+    ? availableCallerIds.find(
+        (number) =>
+          normalizePhone(number.phoneNumber) === normalizedSelectedCallerId,
+      )
     : null;
 
+  const localPresenceEnabled = preferences.dialer.localPresenceEnabled;
   const isLocalMatch =
     localPresenceEnabled &&
-    matchedNumber !== null &&
-    matchedNumber !== undefined &&
-    selectedCallerId === matchedNumber.phoneNumber;
-
-  // auto-select matching area code when local presence is on
-  useEffect(() => {
-    if (!localPresenceEnabled || availableCallerIds.length === 0) return;
-
-    if (matchedNumber) {
-      setSelectedCallerId(matchedNumber.phoneNumber);
-    } else if (!selectedCallerId && availableCallerIds.length > 0) {
-      // fallback to first available
-      setSelectedCallerId(availableCallerIds[0].phoneNumber);
-    }
-  }, [
-    contactAreaCode,
-    localPresenceEnabled,
-    availableCallerIds,
-    matchedNumber,
-    selectedCallerId,
-    setSelectedCallerId,
-  ]);
+    contactAreaCode !== null &&
+    selectedNumber?.areaCode === contactAreaCode;
 
   return {
     selectedCallerId,
     setSelectedCallerId,
     availableCallerIds,
     isLocalMatch,
+    localPresenceEnabled,
+    preferences,
+    updatePreferences,
   };
 };

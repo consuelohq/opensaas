@@ -28,6 +28,11 @@ export const GotoHotkeysEffectsProvider = () => {
   );
 
   useGoToHotkeys({
+    key: 'h',
+    location: AppPath.Home,
+  });
+
+  useGoToHotkeys({
     key: 's',
     location: getSettingsPath(SettingsPath.ProfilePage),
     preNavigateFunction: useRecoilCallback(

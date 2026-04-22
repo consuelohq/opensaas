@@ -251,7 +251,6 @@
       "packages/twenty-shared",
       "packages/twenty-ui",
       "packages/twenty-utils",
-      "packages/twenty-website",
       "packages/twenty-zapier",
       "packages/workspace"
     ]

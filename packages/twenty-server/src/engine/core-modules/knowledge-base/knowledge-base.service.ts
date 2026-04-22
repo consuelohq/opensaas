@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
-import { FileStorageDriverFactory } from 'src/engine/core-modules/file-storage/file-storage-driver.factory';
+import { FileStorageService } from 'src/engine/core-modules/file-storage/file-storage.service';
 
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 const EMBEDDING_DIMENSIONS = 1536;
@@ -38,7 +38,7 @@ export class KnowledgeBaseService {
 
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
-    private readonly fileStorageDriverFactory: FileStorageDriverFactory,
+    private readonly fileStorageService: FileStorageService,
   ) {}
 
   async createCollection(workspaceId: string, name: string, description?: string) {
@@ -204,8 +204,7 @@ export class KnowledgeBaseService {
     // read file from storage
     const filePath = 'workspace-' + workspaceId + '/attachment/' + fileId;
     try {
-      const driver = this.fileStorageDriverFactory.getCurrentDriver();
-      const stream = await driver.readFile({ filePath });
+      const stream = await this.fileStorageService.readFileLegacy({ filePath });
       const buffers: Buffer[] = [];
       for await (const chunk of stream) {
         buffers.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));

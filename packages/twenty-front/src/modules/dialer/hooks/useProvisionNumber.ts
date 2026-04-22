@@ -8,7 +8,9 @@ type ProvisionResult = {
   phoneNumber?: string;
   sid?: string;
   areaCode?: string;
+  ownershipType?: 'add_on' | 'included' | 'legacy_reserved' | 'pack';
   error?: string;
+  code?: string;
 };
 
 export const useProvisionNumber = () => {
@@ -34,10 +36,12 @@ export const useProvisionNumber = () => {
         );
 
         if (!res.ok) {
-          const data = (await res.json()) as { error?: { message?: string } };
+          const data = (await res.json()) as {
+            error?: { code?: string; message?: string };
+          };
           const message = data.error?.message ?? `HTTP ${res.status}`;
           setError(message);
-          return { success: false, error: message };
+          return { success: false, error: message, code: data.error?.code };
         }
 
         const data = (await res.json()) as ProvisionResult;

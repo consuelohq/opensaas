@@ -3,86 +3,117 @@ title: Dialer
 description: Make calls, run queues, and coach reps — all inside the CRM.
 ---
 
-> The Consuelo dialer is a full telephony surface built into the CRM. Open it from any page, dial a number or start a queue, and stay in context while you call.
+## What is the Dialer?
 
-The dialer handles single calls, parallel dialing, warm and cold transfers, AI coaching, script-guided conversations, and call queue campaigns. Every call runs through a Twilio conference, which means transfers, holds, and whisper coaching work without switching tools.
+The dialer is a full phone system built into Consuelo. Instead of switching between your CRM and a separate calling tool, you make calls right where your contacts live — click a number, dial from the keypad, or start a queue campaign, all without leaving the page you're on.
 
-## What you can do
+Every call runs through a **Twilio conference** behind the scenes. This means features like transfers, holds, and whisper coaching "just work" — no complicated setup, no call bridging, no dropped connections.
+
+## Key Concepts
+
+### Calls
+
+A **call** is a single outbound connection to one person. You can dial manually from the keypad, click a contact's phone number, or let the queue auto-dial for you.
+
+### Queues
+
+A **queue** is a list of contacts to call in order. Load a list, hit start, and the dialer works through each contact — tracking who answered, who didn't, and what happened on each call. Think of it like a playlist for phone calls.
+
+### Parallel Dialing
+
+**Parallel dialing** calls up to 5 people at the same time. The first person to answer gets connected to you. Everyone else hangs up automatically. This dramatically reduces the time you spend listening to rings and voicemails.
+
+### AI Coaching
+
+During a call, the dialer can show you **real-time talking points** based on the conversation, or guide you through a **step-by-step script**. Choose your mode before you start calling.
+
+**An analogy:**
+| Dialer Concept | Real-World Analogy |
+|---------------|-------------------|
+| **Single call** | Picking up the phone and dialing one person |
+| **Queue** | A call sheet — work through the list, check off each one |
+| **Parallel dialing** | Calling 5 people at once, talking to whoever picks up first |
+| **AI coaching** | Having a coach whispering in your ear during the call |
+
+## What You Can Do
 
 <CardGroup cols={2}>
   <Card title="Making Calls" icon="phone" href="/user-guide/dialer/capabilities/making-calls">
-    Dial from the keypad, click a contact's number, or search and call from anywhere in the CRM.
+    Dial from the keypad, click a contact's number, or start from the home screen.
   </Card>
   <Card title="Transfers" icon="arrow-right-arrow-left" href="/user-guide/dialer/capabilities/transfers">
-    Cold and warm transfers to colleagues or external numbers, powered by Twilio conferences.
+    Cold and warm transfers to colleagues or external numbers.
   </Card>
   <Card title="Hold, Mute & DTMF" icon="pause" href="/user-guide/dialer/capabilities/hold-mute-dtmf">
     Place callers on hold, mute your mic, and send touch-tone digits mid-call.
   </Card>
   <Card title="Queue Management" icon="list-ol" href="/user-guide/dialer/capabilities/queue-management">
-    Build call lists, configure auto-advance, track dispositions, and review queue analytics.
+    Build call lists, auto-advance through contacts, and track dispositions.
   </Card>
   <Card title="Parallel Dialing" icon="phone-volume" href="/user-guide/dialer/capabilities/parallel-dialing">
-    Dial up to 5 contacts at once. First to answer wins — the rest hang up automatically.
+    Dial up to 5 contacts at once. First to answer wins.
   </Card>
   <Card title="Local Presence" icon="map-pin" href="/user-guide/dialer/capabilities/local-presence">
-    Auto-select a caller ID matching the recipient's area code to improve answer rates.
+    Auto-match your caller ID to the recipient's area code.
   </Card>
-  <Card title="AI Coaching" icon="sparkles" href="/user-guide/dialer/capabilities/ai-coaching">
-    Get real-time talking points during calls, or follow a guided script step by step.
+  <Card title="AI Coaching" icon="brain" href="/user-guide/dialer/capabilities/ai-coaching">
+    Real-time talking points or guided scripts during calls.
   </Card>
   <Card title="Caller ID" icon="id-card" href="/user-guide/dialer/capabilities/caller-id">
-    Provision, manage, and select outbound phone numbers. Set a primary and configure local presence.
+    Manage your outbound phone numbers and set defaults.
   </Card>
-  <Card title="Call History & Analytics" icon="clock-rotate-left" href="/user-guide/dialer/capabilities/call-history">
-    Review past calls, filter by outcome or date, play recordings, and track performance metrics.
+  <Card title="Call History" icon="clock-rotate-left" href="/user-guide/dialer/capabilities/call-history">
+    Review past calls, play recordings, and track performance.
   </Card>
   <Card title="Keyboard Shortcuts" icon="keyboard" href="/user-guide/dialer/capabilities/keyboard-shortcuts">
-    Control the dialer, queue, and call actions without touching the mouse.
+    Control everything without touching the mouse.
   </Card>
 </CardGroup>
 
-## Key features
+## Before You Start
 
-| Feature | Description |
-|---|---|
-| **Conference-based architecture** | Every call uses a Twilio conference — transfers, holds, and coaching work by adding/removing participants, never by bridging calls |
-| **Single and parallel modes** | Dial one contact at a time or up to 5 simultaneously with configurable strategy profiles |
-| **Local presence** | Auto-select a caller ID matching the recipient's area code from your provisioned numbers |
-| **AI coaching** | Real-time talking points, objection handling, and suggested questions refreshed every 30 seconds based on live transcript |
-| **Script mode** | Follow a guided script with sections that auto-advance as the conversation progresses |
-| **Live transcription** | WebSocket-powered real-time transcript displayed alongside call controls |
-| **Queue campaigns** | Work through contact lists with auto-advance, skip reasons, retry logic, and outcome tracking |
-| **Priority scoring** | Queue engine scores contacts by lead value, attempt history, campaign priority, and optimal call hour |
-| **Cadence suppression** | Per-contact rate limiting prevents over-calling with configurable daily/weekly caps and minimum retry spacing |
-| **DNC compliance** | Contacts on the Do Not Call list are automatically filtered out of queues |
-| **Post-call analysis** | AI-generated call summary with sentiment, key moments, and suggested next steps |
-| **Quick actions** | Add notes and schedule follow-ups during or after calls without leaving the dialer |
-| **Recording playback** | Listen to call recordings directly in the browser with seek and progress controls |
-| **Audio device selection** | Choose your microphone and speaker from the dialer settings |
+To use the dialer, you need:
 
-## Quick reference — keyboard shortcuts
-
-| Shortcut | Action |
-|---|---|
-| `Cmd+D` / `Ctrl+D` | Open or close the dialer sidebar |
-| `Enter` | Start the call |
-| `M` | Toggle mute |
-| `H` | Toggle hold |
-| `T` | Open transfer dialog |
-| `Escape` | Close dialer or cancel current action |
-| `Cmd+Shift+M` / `Ctrl+Shift+M` | Toggle calling mode (single ↔ parallel) |
-| `Cmd+Shift+C` / `Ctrl+Shift+C` | Toggle coaching panel |
-| `Space` | Pause / resume queue |
-| `S` | Skip current contact in queue |
-| `E` | End queue |
-
-## Quick start
-
-1. **[Set up Twilio](/user-guide/dialer/how-tos/set-up-twilio)** — connect your Twilio account and provision at least one phone number
-2. **[Open the dialer](/user-guide/dialer/getting-started)** — press `Cmd+D` and grant microphone access
-3. **[Make your first call](/user-guide/dialer/capabilities/making-calls)** — enter a number and press Call
+<Check>A **Twilio account** with at least one phone number</Check>
+<Check>Twilio credentials configured in **Settings → Integrations → Twilio**</Check>
+<Check>A modern browser with microphone access (Chrome recommended)</Check>
 
 <Note>
-The dialer requires a Twilio account with at least one provisioned phone number. The status indicator in the sidebar shows your connection state — if it's not green, see [Troubleshoot Calls](/user-guide/dialer/how-tos/troubleshoot-calls).
+**Don't have Twilio yet?** Follow our [Set Up Twilio](/user-guide/dialer/how-tos/set-up-twilio) guide — it takes about 5 minutes.
 </Note>
+
+## Tips for Getting the Most Out of the Dialer
+
+### 1. Start with Single Calls
+
+Get comfortable making individual calls before jumping into queues or parallel dialing. The home screen lets you dial any number or search for a contact.
+
+### 2. Use Queues for Outbound Campaigns
+
+If you're calling more than a handful of people, load them into a queue. The dialer tracks progress, handles retries, and logs outcomes automatically — so you don't have to.
+
+### 3. Try Local Presence
+
+People are much more likely to answer calls from local numbers. If you have phone numbers in multiple area codes, turn on local presence and the dialer picks the best match automatically.
+
+### 4. Let AI Help You
+
+Whether you're new to sales calls or a veteran, AI coaching gives you an edge. Use **script mode** for structured conversations or **AI mode** for dynamic, context-aware suggestions.
+
+## Special Note on Call Recording
+
+<Warning>
+**Call recording laws vary by state and country.** Some jurisdictions require all-party consent. Make sure you understand the recording laws in your area and your contact's area before enabling recording.
+</Warning>
+
+## Next Steps
+
+Ready to start?
+
+- [Getting Started](/user-guide/dialer/getting-started) — set up and make your first call
+- [Set Up Twilio](/user-guide/dialer/how-tos/set-up-twilio) — configure your phone provider
+- [Run a Queue Campaign](/user-guide/dialer/how-tos/run-a-queue-campaign) — work through a contact list
+
+## Need Help?
+
+Check the [Dialer FAQ](/user-guide/dialer/how-tos/dialer-faq) or reach out to our team through [Implementation Services](/user-guide/getting-started/capabilities/implementation-services).

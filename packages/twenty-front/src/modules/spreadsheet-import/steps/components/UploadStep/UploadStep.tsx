@@ -63,22 +63,37 @@ export const UploadStep = ({
               data: mappedWorkbook,
             });
           } else {
-            // Automatically select first row as header
-            const trimmedData = mappedWorkbook.slice(1);
+            // default: assume row 0 is header, but let AI override
+            const defaultHeaderValues = mappedWorkbook[0];
+            const defaultData = mappedWorkbook.slice(1);
 
             const { importedRows: data, headerRow: headerValues } =
-              await selectHeaderStepHook(mappedWorkbook[0], trimmedData);
+              await selectHeaderStepHook(defaultHeaderValues, defaultData);
 
-            await computeColumnSuggestionsAndAutoMatch({
+            // pass all raw rows so AI can detect the real header
+            const aiResult = await computeColumnSuggestionsAndAutoMatch({
               headerValues,
               data,
+              rawRows: mappedWorkbook,
             });
 
-            setCurrentStepState({
-              type: SpreadsheetImportStepType.matchColumns,
-              data,
-              headerValues,
-            });
+            // if AI detected a different header row, use its split
+            if (aiResult && aiResult.headerRowIndex > 0) {
+              const aiHeaderValues = mappedWorkbook[aiResult.headerRowIndex];
+              const aiData = mappedWorkbook.slice(aiResult.headerRowIndex + 1);
+
+              setCurrentStepState({
+                type: SpreadsheetImportStepType.matchColumns,
+                data: aiData,
+                headerValues: aiHeaderValues,
+              });
+            } else {
+              setCurrentStepState({
+                type: SpreadsheetImportStepType.matchColumns,
+                data,
+                headerValues,
+              });
+            }
           }
         } catch (e) {
           onError((e as Error).message);

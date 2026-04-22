@@ -1,3 +1,5 @@
+import type { ParallelDialProfile } from '../types';
+
 import { ParallelDialerService, InMemoryParallelStore } from './parallel-dialer';
 
 const mockCallsCreate = jest.fn();
@@ -19,12 +21,12 @@ describe('ParallelDialerService', () => {
   let store: InMemoryParallelStore;
   let service: ParallelDialerService;
 
-  const baseProfile = {
+  const baseProfile: ParallelDialProfile = {
     id: 'balanced',
     fanout: 3,
     staggerMs: 1,
-    amdPolicy: 'human-or-unknown' as const,
-    terminationPolicy: 'winner-take-all' as const,
+    amdPolicy: 'human-or-unknown',
+    terminationPolicy: 'winner-take-all',
   };
 
   const baseOpts = {

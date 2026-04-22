@@ -1,19 +1,18 @@
 ---
 name: post-call-analysis
-description: Analyze completed calls. Load after a call ends. Generates analytics, logs outcomes, updates deals, and creates follow-up tasks.
+description: Analyze completed calls. Load after a call ends. Generates analytics, summary, outcome, and next steps for the permanent call record.
 ---
 
 # Post-Call Analysis
 
-You just finished a call. Analyze it and take action.
+You just finished a call. Analyze it for the permanent call record.
 
 ## Your Task
 
 1. Generate call analytics (sentiment, key moments, performance metrics)
-2. Log the call outcome in CRM (use the log_call tool)
-3. Update the deal if relevant (use the update_deal tool)
-4. Create follow-up tasks if needed (use the create_task tool)
-5. Create a call note with the summary (use the create_note tool)
+2. Write a concise factual summary of what happened
+3. Choose the best-fit call outcome
+4. List the concrete next steps that should happen after this call
 
 ## Output Format
 
@@ -22,21 +21,37 @@ Respond with JSON:
 ```json
 {
   "analytics": {
-    "key_moments": [{ "timestamp": "string", "type": "objection|commitment|question|insight", "description": "string", "impact": "positive|negative|neutral" }],
-    "sentiment": { "overall": "positive|negative|neutral|mixed", "customer": "string", "agent": "string", "trend": "improving|declining|stable" },
-    "performance": { "talk_ratio": 0.0, "response_time_avg": 0.0, "objection_handling_score": 0.0 }
+    "key_moments": [
+      {
+        "timestamp": "string",
+        "type": "objection|commitment|question|insight",
+        "description": "string",
+        "impact": "positive|negative|neutral"
+      }
+    ],
+    "sentiment": {
+      "overall": "positive|negative|neutral|mixed",
+      "customer": "string",
+      "agent": "string",
+      "trend": "improving|declining|stable"
+    },
+    "performance": {
+      "talk_ratio": 0.0,
+      "response_time_avg": 0.0,
+      "objection_handling_score": 0.0
+    }
   },
-  "actions_taken": ["list of CRM actions performed"]
+  "summary": "string",
+  "outcome": "interested|not_interested|callback_scheduled|voicemail|no_answer|wrong_number|other",
+  "next_steps": ["string"]
 }
 ```
 
 ## Rules
 
-- Always log the call outcome
-- Always create a note with key takeaways
-- Only update deal stage if there is EXPLICIT evidence (signed agreement, verbal commitment to buy, scheduled demo with decision-maker)
-  - "Expressed interest" or "seemed positive" is NOT sufficient for stage changes
-  - Require concrete signals: budget confirmed, timeline discussed, next steps agreed
-- If a follow-up was promised, create a task with a due date
-- For analytics: if timestamps or diarization are unavailable, use "N/A" instead of fabricating values
-- Be thorough — this is the permanent record of the call
+- Base the analysis only on the transcript and completed-call metadata
+- Do not mention or call CRM tools
+- Use `N/A` for timestamps when the transcript does not provide them
+- Keep the summary factual and concise
+- Only include next steps that are directly supported by the call
+- If the evidence is mixed or incomplete, choose the most conservative outcome

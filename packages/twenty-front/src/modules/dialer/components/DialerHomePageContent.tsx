@@ -2,12 +2,19 @@ import { useRecoilValue } from 'recoil';
 
 import { DialerHomeLivePanel } from '@/dialer/components/DialerHomeLivePanel';
 import { DialerHomePrep } from '@/dialer/components/DialerHomePrep';
+import { useCoaching } from '@/dialer/hooks/useCoaching';
+import { useResetCoachingState } from '@/dialer/hooks/useResetCoachingState';
+import { useTranscript } from '@/dialer/hooks/useTranscript';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 
 export const DialerHomePageContent = () => {
-  const callState = useRecoilValue(callStateAtom);
+  useResetCoachingState();
+  useCoaching();
+  useTranscript();
 
-  if (callState.status === 'active' || callState.status === 'ended') {
+  const { status: callStatus } = useRecoilValue(callStateAtom);
+
+  if (callStatus === 'active' || callStatus === 'ended') {
     return <DialerHomeLivePanel />;
   }
 

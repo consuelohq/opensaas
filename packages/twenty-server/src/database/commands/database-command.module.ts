@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CronRegisterAllCommand } from 'src/database/commands/cron-register-all.command';
+import { SyncStandardCommand } from 'src/database/commands/sync-standard.command';
+import { TwentyStandardApplicationModule } from 'src/engine/workspace-manager/twenty-standard-application/twenty-standard-application.module';
 import { DataSeedWorkspaceCommand } from 'src/database/commands/data-seed-dev-workspace.command';
 import { ListOrphanedWorkspaceEntitiesCommand } from 'src/database/commands/list-and-delete-orphaned-workspace-entities.command';
 import { ConfirmationQuestion } from 'src/database/commands/questions/confirmation.question';
@@ -45,6 +47,7 @@ import { AutomatedTriggerModule } from 'src/modules/workflow/workflow-trigger/au
     ObjectMetadataModule,
     DevSeederModule,
     WorkspaceManagerModule,
+    TwentyStandardApplicationModule,
     DataSourceModule,
     WorkspaceCacheStorageModule,
     ApiKeyModule,
@@ -59,6 +62,7 @@ import { AutomatedTriggerModule } from 'src/modules/workflow/workflow-trigger/au
     DataSeedWorkspaceCommand,
     ConfirmationQuestion,
     CronRegisterAllCommand,
+    SyncStandardCommand,
     ListOrphanedWorkspaceEntitiesCommand,
   ],
 })

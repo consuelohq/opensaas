@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { initPostHog, optOut } from '../lib/analytics';
+import { optOut } from '../lib/analytics';
 
 const CONSENT_KEY = 'consuelo-cookie-consent';
 
@@ -7,15 +7,11 @@ export function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // always init — tracking is on by default
-    initPostHog();
     const consent = localStorage.getItem(CONSENT_KEY);
-    if (consent === 'declined') {
-      optOut();
-    } else if (!consent) {
-      setVisible(true);
-    }
-    // if 'accepted' or anything else — tracking stays on
+    // only show banner if they haven't decided yet
+    if (!consent) setVisible(true);
+    // if they previously declined, opt out (inline script also checks this)
+    if (consent === 'declined') optOut();
   }, []);
 
   const accept = () => {
@@ -27,6 +23,11 @@ export function CookieConsent() {
     localStorage.setItem(CONSENT_KEY, 'declined');
     setVisible(false);
     optOut();
+  };
+
+  const dismiss = () => {
+    // x-ing out = not declining, tracking continues
+    setVisible(false);
   };
 
   if (!visible) return null;
@@ -52,9 +53,27 @@ export function CookieConsent() {
         lineHeight: '1.5',
       }}
     >
-      <p style={{ margin: 0, opacity: 0.7 }}>
-        we use cookies to understand how you use our site and improve your experience.
-      </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+        <p style={{ margin: 0, opacity: 0.7, flex: 1 }}>
+          we use cookies to understand how you use our site and improve your experience.
+        </p>
+        <button
+          onClick={dismiss}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--color-fg)',
+            opacity: 0.4,
+            cursor: 'pointer',
+            fontSize: '16px',
+            padding: '0 0 0 8px',
+            lineHeight: 1,
+          }}
+          aria-label="dismiss"
+        >
+          ×
+        </button>
+      </div>
       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
         <button
           onClick={accept}

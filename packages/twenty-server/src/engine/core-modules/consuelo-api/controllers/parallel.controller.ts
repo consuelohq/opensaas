@@ -25,8 +25,8 @@ export class ParallelController {
 
   @UseGuards(PublicEndpointGuard, TwilioSignatureGuard, NoPermissionGuard)
   @Post('status-callback')
-  async statusCallback() {
-    return this.parallelService.statusCallback();
+  async statusCallback(@Body() body: Record<string, string | undefined>) {
+    return this.parallelService.statusCallback(body);
   }
 
   @UseGuards(PublicEndpointGuard, TwilioSignatureGuard, NoPermissionGuard)

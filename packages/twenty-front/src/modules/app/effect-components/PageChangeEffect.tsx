@@ -44,7 +44,7 @@ import { useInitializeQueryParamState } from '~/modules/app/hooks/useInitializeQ
 import { isMatchingLocation } from '~/utils/isMatchingLocation';
 import { getPageTitleFromPath } from '~/utils/title-utils';
 
-// TODO: break down into smaller functions and / or hooks
+// TODO(DEV-1459): break down into smaller functions and / or hooks
 //  - moved usePageChangeEffectNavigateLocation into dedicated hook
 export const PageChangeEffect = () => {
   const navigate = useNavigate();
@@ -60,7 +60,7 @@ export const PageChangeEffect = () => {
 
   const { initializeQueryParamState } = useInitializeQueryParamState();
 
-  //TODO: refactor useResetTableRowSelection hook to not throw when the argument `recordTableId` is an empty string
+  //TODO(DEV-1459): refactor useResetTableRowSelection hook to not throw when the argument `recordTableId` is an empty string
   // - replace CoreObjectNamePlural.Person
   const objectNamePlural =
     useParams().objectNamePlural ?? CoreObjectNamePlural.Person;
@@ -115,14 +115,21 @@ export const PageChangeEffect = () => {
       setPreviousLocation(location.pathname);
       executeTasksOnAnyLocationChange();
 
-      if (isMatchingLocation(location, AppPath.Home) ||
-          isMatchingLocation(location, AppPath.RecordIndexPage)) {
+      if (
+        isMatchingLocation(location, AppPath.Home) ||
+        isMatchingLocation(location, AppPath.RecordIndexPage)
+      ) {
         setLastVisitedPagePath(location.pathname);
       }
     } else {
       return;
     }
-  }, [location, previousLocation, executeTasksOnAnyLocationChange, setLastVisitedPagePath]);
+  }, [
+    location,
+    previousLocation,
+    executeTasksOnAnyLocationChange,
+    setLastVisitedPagePath,
+  ]);
 
   useEffect(() => {
     initializeQueryParamState();
@@ -164,6 +171,22 @@ export const PageChangeEffect = () => {
     }
 
     switch (true) {
+      case isMatchingLocation(location, AppPath.Home): {
+        resetFocusStackToFocusItem({
+          focusStackItem: {
+            focusId: PageFocusId.Home,
+            componentInstance: {
+              componentType: FocusComponentType.PAGE,
+              componentInstanceId: PageFocusId.Home,
+            },
+            globalHotkeysConfig: {
+              enableGlobalHotkeysWithModifiers: true,
+              enableGlobalHotkeysConflictingWithKeyboard: true,
+            },
+          },
+        });
+        break;
+      }
       case isMatchingLocation(location, AppPath.RecordIndexPage): {
         resetFocusStackToRecordIndex();
         break;

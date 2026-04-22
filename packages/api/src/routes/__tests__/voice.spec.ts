@@ -27,11 +27,16 @@ jest.mock('../../services/redis', () => ({
     getPrimaryNumber: jest.fn(),
     setPrimaryNumber: jest.fn(),
     deletePrimaryNumber: jest.fn(),
+    getPhoneNumbersCache: jest.fn(),
+    setPhoneNumbersCache: jest.fn(),
+    getVoiceStatusCache: jest.fn(),
+    setVoiceStatusCache: jest.fn(),
   },
 }));
 
 const mockDialerInstance = {
   getToken: jest.fn(),
+  resolveCallerId: jest.fn(),
   generateConferenceTwiml: jest.fn().mockReturnValue('<Response><Conference>conf</Conference></Response>'),
   addCustomerToConference: jest.fn().mockResolvedValue({ callSid: 'CA-cust-001' }),
   listNumbers: jest.fn().mockResolvedValue([]),
@@ -49,7 +54,9 @@ const mockDialerInstance = {
 
 const mockLockServiceInstance = {
   acquireLock: jest.fn(),
+  releaseLock: jest.fn(),
   releaseLockByNumber: jest.fn(),
+  getUserLocks: jest.fn(),
 };
 
 jest.mock('../../shared/dialer', () => ({
@@ -63,19 +70,42 @@ jest.mock('@sentry/node', () => ({
   captureMessage: jest.fn(),
 }));
 
-jest.mock('@consuelo/logger', () => ({
-  createLogger: jest.fn().mockReturnValue({
+jest.mock('@consuelo/logger', () => {
+  const sharedMockRouteLogger = {
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
-  }),
-}));
+  };
+
+  return {
+    createLogger: jest.fn().mockReturnValue(sharedMockRouteLogger),
+    __mockRouteLogger: sharedMockRouteLogger,
+  };
+});
 
 jest.mock('../../services/twilio-config', () => ({
   getWorkspaceTwilioConfig: jest.fn(),
   getDecryptedCredentials: jest.fn(),
+  getSharedTwilioPlatformCredentials: jest.fn(),
+  hasSharedTwilioPlatformConfig: jest.fn().mockReturnValue(false),
   isHostedInstance: jest.fn().mockReturnValue(false),
+}));
+
+jest.mock('../../services/workspace-phone-numbers', () => ({
+  findWorkspacePhoneNumberBySid: jest.fn(),
+  getPhoneNumberEntitlement: jest.fn(),
+  listWorkspacePhoneNumbers: jest.fn(),
+  recordProvisionedPhoneNumber: jest.fn(),
+  releaseWorkspacePhoneNumber: jest.fn(),
+}));
+
+jest.mock('../../services/phone-number-addons', () => ({
+  createPhoneNumberAddonCheckout: jest.fn(),
+}));
+
+jest.mock('../../services/phone-number-recommendations', () => ({
+  recommendPhoneNumbers: jest.fn(),
 }));
 
 jest.mock('twilio', () => ({
@@ -91,16 +121,56 @@ jest.mock('node:crypto', () => ({
 import { voiceRoutes } from '../voice';
 import { redisService } from '../../services/redis';
 import { getDialerForWorkspace, sharedDialer, sharedCallerIdLockService } from '../../shared/dialer';
-import { getWorkspaceTwilioConfig, getDecryptedCredentials, isHostedInstance } from '../../services/twilio-config';
+import {
+  getWorkspaceTwilioConfig,
+  getDecryptedCredentials,
+  getSharedTwilioPlatformCredentials,
+  hasSharedTwilioPlatformConfig,
+  isHostedInstance,
+} from '../../services/twilio-config';
+import {
+  findWorkspacePhoneNumberBySid,
+  getPhoneNumberEntitlement,
+  listWorkspacePhoneNumbers,
+  recordProvisionedPhoneNumber,
+  releaseWorkspacePhoneNumber,
+} from '../../services/workspace-phone-numbers';
+import { createPhoneNumberAddonCheckout } from '../../services/phone-number-addons';
+import { recommendPhoneNumbers } from '../../services/phone-number-recommendations';
 
 // typed references to mocked modules
 const mockRedis = redisService as unknown as Record<string, jest.Mock>;
+const mockRouteLogger = (jest.requireMock('@consuelo/logger') as {
+  __mockRouteLogger: {
+    info: jest.Mock;
+    warn: jest.Mock;
+    error: jest.Mock;
+    debug: jest.Mock;
+  };
+}).__mockRouteLogger;
 const mockDialer = mockDialerInstance;
 const mockLockService = mockLockServiceInstance;
 const mockTwilioConfig = {
   getWorkspaceTwilioConfig: getWorkspaceTwilioConfig as jest.Mock,
   getDecryptedCredentials: getDecryptedCredentials as jest.Mock,
+  getSharedTwilioPlatformCredentials:
+    getSharedTwilioPlatformCredentials as jest.Mock,
+  hasSharedTwilioPlatformConfig:
+    hasSharedTwilioPlatformConfig as unknown as jest.Mock,
   isHostedInstance: isHostedInstance as unknown as jest.Mock,
+};
+const mockWorkspacePhoneNumbers = {
+  findWorkspacePhoneNumberBySid: findWorkspacePhoneNumberBySid as jest.Mock,
+  getPhoneNumberEntitlement: getPhoneNumberEntitlement as jest.Mock,
+  listWorkspacePhoneNumbers: listWorkspacePhoneNumbers as jest.Mock,
+  recordProvisionedPhoneNumber: recordProvisionedPhoneNumber as jest.Mock,
+  releaseWorkspacePhoneNumber: releaseWorkspacePhoneNumber as jest.Mock,
+};
+const mockPhoneNumberAddons = {
+  createPhoneNumberAddonCheckout: createPhoneNumberAddonCheckout as jest.Mock,
+};
+const mockPhoneNumberRecommendations = {
+  recommendPhoneNumbers: recommendPhoneNumbers as jest.Mock,
 };
 
 // wire up the dialer mocks
@@ -149,6 +219,41 @@ beforeEach(() => {
   mockRedis.getPrimaryNumber.mockResolvedValue(null);
   mockRedis.setPrimaryNumber.mockResolvedValue(undefined);
   mockRedis.deletePrimaryNumber.mockResolvedValue(undefined);
+  mockRedis.getPhoneNumbersCache.mockResolvedValue(null);
+  mockRedis.setPhoneNumbersCache.mockResolvedValue(undefined);
+  mockRedis.getVoiceStatusCache.mockResolvedValue(null);
+  mockRedis.setVoiceStatusCache.mockResolvedValue(undefined);
+  mockWorkspacePhoneNumbers.getPhoneNumberEntitlement.mockResolvedValue({
+    canProvision: true,
+    includedSlots: 3,
+    numberPackSlots: 0,
+    remainingSlots: 3,
+    singleNumberAddOnSlots: 0,
+    totalSlots: 3,
+    usedSlots: 0,
+  });
+  mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValue([]);
+  mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValue({
+    workspace_id: 'ws-test-001',
+    phone_number: '+15551234567',
+    friendly_name: 'Main',
+    area_code: '555',
+    twilio_sid: 'PN-001',
+    ownership_type: 'included',
+    status: 'active',
+  });
+  mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber.mockResolvedValue(undefined);
+  mockWorkspacePhoneNumbers.releaseWorkspacePhoneNumber.mockResolvedValue(undefined);
+  mockPhoneNumberAddons.createPhoneNumberAddonCheckout.mockResolvedValue({
+    url: 'https://checkout.stripe.test/session',
+  });
+  mockPhoneNumberRecommendations.recommendPhoneNumbers.mockResolvedValue([]);
+  mockLockService.acquireLock.mockResolvedValue(true);
+  mockLockService.releaseLock.mockResolvedValue(true);
+  mockLockService.releaseLockByNumber.mockResolvedValue(true);
+  mockLockService.getUserLocks.mockResolvedValue([]);
+  mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValue(false);
+  mockTwilioConfig.isHostedInstance.mockReturnValue(false);
 });
 
 // ============================================================
@@ -162,11 +267,26 @@ describe('GET /v1/phone-numbers', () => {
     mockDialer.listNumbers.mockResolvedValueOnce([
       { phoneNumber: '+15551234567', friendlyName: 'Main', twilioSid: 'PN-001' },
     ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: false,
+        ownershipType: 'included',
+        twilioSid: 'PN-001',
+        workspaceId: 'ws-test-001',
+      },
+    ]);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({
       phoneNumbers: [
-        expect.objectContaining({ phoneNumber: '+15551234567', friendlyName: 'Main' }),
+        expect.objectContaining({
+          phoneNumber: '+15551234567',
+          friendlyName: 'Main',
+          ownershipType: 'included',
+        }),
       ],
     });
   });
@@ -216,6 +336,62 @@ describe('GET /v1/phone-numbers/available', () => {
   });
 });
 
+
+// ============================================================
+// POST /v1/phone-numbers/recommendations
+// ============================================================
+
+describe('POST /v1/phone-numbers/recommendations', () => {
+  const route = () => findRoute('POST', '/v1/phone-numbers/recommendations');
+
+  it('returns ranked recommendations', async () => {
+    mockPhoneNumberRecommendations.recommendPhoneNumbers.mockResolvedValueOnce([
+      { phoneNumber: '+14155550123', areaCode: '415', friendlyName: 'SF', reason: 'matched san francisco', score: 97 },
+    ]);
+    const res = await exec(route(), authReq({ body: { query: 'san francisco sales line' } }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      available: [expect.objectContaining({ phoneNumber: '+14155550123', score: 97 })],
+    });
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await exec(route(), noAuthReq({ body: { query: 'miami' } }));
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 400 for short query', async () => {
+    const res = await exec(route(), authReq({ body: { query: 'a' } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_REQUEST');
+  });
+});
+
+// ============================================================
+// POST /v1/phone-numbers/checkout
+// ============================================================
+
+describe('POST /v1/phone-numbers/checkout', () => {
+  const route = () => findRoute('POST', '/v1/phone-numbers/checkout');
+
+  it('creates checkout for extra phone number slot', async () => {
+    const res = await exec(route(), authReq({ body: { quantity: 1 } }));
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ url: 'https://checkout.stripe.test/session' });
+  });
+
+  it('returns 401 without auth', async () => {
+    const res = await exec(route(), noAuthReq({ body: { quantity: 1 } }));
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns 400 for invalid quantity', async () => {
+    const res = await exec(route(), authReq({ body: { quantity: 0 } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('INVALID_REQUEST');
+  });
+});
+
 // ============================================================
 // POST /v1/phone-numbers/provision
 // ============================================================
@@ -224,11 +400,12 @@ describe('POST /v1/phone-numbers/provision', () => {
   const route = () => findRoute('POST', '/v1/phone-numbers/provision');
 
   it('provisions a number successfully', async () => {
-    mockDialer.provisionNumber.mockResolvedValueOnce({ success: true, sid: 'PN-new', phoneNumber: '+15559990000' });
+    mockDialer.provisionNumber.mockResolvedValueOnce({ success: true, sid: 'PN-new', phoneNumber: '+15559990000', areaCode: '555' });
     mockDialer.listNumbers.mockResolvedValueOnce([{ twilioSid: 'PN-new' }]);
     const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
     expect(res.statusCode).toBe(200);
     expect((res.body as { success: boolean }).success).toBe(true);
+    expect(mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber).toHaveBeenCalled();
   });
 
   it('returns 401 without auth', async () => {
@@ -247,6 +424,42 @@ describe('POST /v1/phone-numbers/provision', () => {
     const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
     expect(res.statusCode).toBe(400);
     expect((res.body as { error: { code: string } }).error.code).toBe('PROVISION_FAILED');
+  });
+
+  it('returns 400 when no phone number slots remain', async () => {
+    mockWorkspacePhoneNumbers.getPhoneNumberEntitlement.mockResolvedValueOnce({
+      canProvision: false,
+      includedSlots: 3,
+      numberPackSlots: 0,
+      remainingSlots: 0,
+      singleNumberAddOnSlots: 0,
+      totalSlots: 3,
+      usedSlots: 3,
+    });
+    const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
+    expect(res.statusCode).toBe(400);
+    expect((res.body as { error: { code: string } }).error.code).toBe('PHONE_NUMBER_SLOT_REQUIRED');
+  });
+
+  it('releases the purchased number when db persistence fails', async () => {
+    mockDialer.provisionNumber.mockResolvedValueOnce({
+      success: true,
+      sid: 'PN-new',
+      phoneNumber: '+15559990000',
+      areaCode: '555',
+    });
+    mockWorkspacePhoneNumbers.recordProvisionedPhoneNumber.mockRejectedValueOnce(
+      new Error('db write failed'),
+    );
+    mockDialer.releaseNumber.mockResolvedValueOnce({ success: true });
+
+    const res = await exec(route(), authReq({ body: { areaCode: '555' } }));
+
+    expect(res.statusCode).toBe(500);
+    expect((res.body as { error: { code: string } }).error.code).toBe(
+      'PROVISION_ERROR',
+    );
+    expect(mockDialer.releaseNumber).toHaveBeenCalledWith('PN-new');
   });
 });
 
@@ -274,10 +487,11 @@ describe('PUT /v1/phone-numbers/:sid/primary', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it('returns 500 on redis error', async () => {
-    mockRedis.setPrimaryNumber.mockRejectedValueOnce(new Error('redis down'));
+  it('returns 404 when number is not owned by workspace', async () => {
+    mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValueOnce(null);
     const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
-    expect(res.statusCode).toBe(500);
+    expect(res.statusCode).toBe(404);
+    expect((res.body as { error: { code: string } }).error.code).toBe('NUMBER_NOT_FOUND');
   });
 });
 
@@ -305,6 +519,13 @@ describe('DELETE /v1/phone-numbers/:sid', () => {
     const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
     expect(res.statusCode).toBe(400);
     expect((res.body as { error: { code: string } }).error.code).toBe('RELEASE_FAILED');
+  });
+
+  it('returns 404 when number is not owned by workspace', async () => {
+    mockWorkspacePhoneNumbers.findWorkspacePhoneNumberBySid.mockResolvedValueOnce(null);
+    const res = await exec(route(), authReq({ params: { sid: 'PN-001' } }));
+    expect(res.statusCode).toBe(404);
+    expect((res.body as { error: { code: string } }).error.code).toBe('NUMBER_NOT_FOUND');
   });
 
   it('clears primary if released number was primary', async () => {
@@ -374,6 +595,132 @@ describe('POST /v1/voice/preflight', () => {
     const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
     expect(res.statusCode).toBe(409);
     expect((res.body as { error: { code: string } }).error.code).toBe('CALLER_ID_LOCKED');
+  });
+
+  it('reclaims same-user stale preflight lock before returning 409', async () => {
+    mockLockService.acquireLock
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    mockLockService.getUserLocks.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        callSid: 'preflight-stale-001',
+        acquiredAt: new Date('2026-01-01T00:00:00.000Z'),
+        expiresAt: new Date('2026-01-01T00:05:00.000Z'),
+      },
+    ]);
+
+    const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
+
+    expect(res.statusCode).toBe(200);
+    expect(mockLockService.releaseLock).toHaveBeenCalledWith('preflight-stale-001');
+    expect(mockLockService.acquireLock).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to raw dialer numbers when workspace number hydration fails', async () => {
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockRejectedValueOnce(
+      new Error('relation \"workspace_phone_numbers\" does not exist'),
+    );
+    mockDialer.listNumbers.mockResolvedValue([
+      {
+        phoneNumber: '+15551234567',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+      },
+    ]);
+    mockDialer.resolveCallerId.mockResolvedValueOnce({
+      callerIdNumber: '+15551234567',
+      selectionMethod: 'primary_fallback',
+      localMatch: false,
+      proximityMatch: false,
+      distanceMiles: undefined,
+      isPrimary: true,
+      customerAreaCode: '415',
+    });
+    mockLockService.acquireLock.mockResolvedValueOnce(true);
+
+    const res = await exec(
+      route(),
+      authReq({
+        body: { to: '+14155551212', localPresence: true },
+      }),
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      success: true,
+      callerId: '+15551234567',
+      selectionMethod: 'primary_fallback',
+      localMatch: false,
+      proximityMatch: false,
+      distanceMiles: null,
+      customerAreaCode: '415',
+    });
+    expect(mockDialer.listNumbers).toHaveBeenCalled();
+    expect(mockDialer.resolveCallerId).toHaveBeenCalledWith(
+      {
+        to: '+14155551212',
+        from: '',
+        callerIdNumber: undefined,
+        localPresence: true,
+      },
+      {
+        numbers: [
+          {
+            phoneNumber: '+15551234567',
+            areaCode: '555',
+            isPrimary: true,
+            isActive: true,
+          },
+        ],
+        primaryNumber: {
+          phoneNumber: '+15551234567',
+          areaCode: '555',
+          isPrimary: true,
+          isActive: true,
+        },
+      },
+    );
+
+    expect(mockRouteLogger.warn).toHaveBeenCalledWith(
+      'voice.preflight.build_number_pool.failed_falling_back',
+      expect.objectContaining({
+        callerIdSuffix: null,
+      }),
+    );
+    expect(mockRouteLogger.info).toHaveBeenCalledWith(
+      'voice.preflight.list_numbers_fallback.success',
+      expect.objectContaining({
+        numberCount: 1,
+        stage: 'list_numbers_fallback',
+      }),
+    );
+  });
+
+  it('returns failure stage metadata when lock acquisition throws', async () => {
+    mockLockService.acquireLock.mockRejectedValueOnce(new Error('redis unavailable'));
+
+    const res = await exec(route(), authReq({ body: { callerId: '+15551234567' } }));
+
+    expect(res.statusCode).toBe(500);
+    expect(res.body).toEqual({
+      error: {
+        code: 'LOCK_ERROR',
+        message: 'redis unavailable',
+      },
+      stage: 'acquire_lock',
+    });
+
+    expect(mockRouteLogger.error).toHaveBeenCalledWith(
+      'voice.preflight.failed',
+      expect.objectContaining({
+        callerIdSuffix: '***4567',
+        errorMessage: 'redis unavailable',
+        stage: 'acquire_lock',
+        usedRawNumberFallback: false,
+      }),
+    );
   });
 });
 
@@ -513,6 +860,7 @@ describe('GET /v1/voice/status', () => {
 
   it('returns unconfigured for missing config', async () => {
     mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValueOnce(false);
     mockTwilioConfig.isHostedInstance.mockReturnValueOnce(false);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);
@@ -520,8 +868,39 @@ describe('GET /v1/voice/status', () => {
     expect((res.body as { mode: string }).mode).toBe('byok');
   });
 
-  it('returns hosted mode for hosted instance without config', async () => {
+  it('returns hosted shared status without workspace twilio config', async () => {
     mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValue(true);
+    mockTwilioConfig.getSharedTwilioPlatformCredentials.mockReturnValueOnce({
+      accountSid: 'AC-shared',
+      authToken: 'shared-token',
+      twimlAppSid: 'AP-shared',
+    });
+    mockDialer.listNumbers.mockResolvedValueOnce([
+      { phoneNumber: '+15551234567', twilioSid: 'PN-001' },
+    ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+        ownershipType: 'included',
+        twilioSid: 'PN-001',
+        workspaceId: 'ws-test-001',
+      },
+    ]);
+    const res = await exec(route(), authReq());
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { mode: string }).mode).toBe('hosted');
+    expect((res.body as { configured: boolean }).configured).toBe(true);
+    expect((res.body as { hasPhoneNumbers: boolean }).hasPhoneNumbers).toBe(true);
+  });
+
+  it('returns hosted mode for hosted instance without shared config', async () => {
+    mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValueOnce(false);
     mockTwilioConfig.isHostedInstance.mockReturnValueOnce(true);
     const res = await exec(route(), authReq());
     expect(res.statusCode).toBe(200);

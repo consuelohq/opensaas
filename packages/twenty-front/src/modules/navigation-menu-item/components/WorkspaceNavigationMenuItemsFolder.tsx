@@ -88,17 +88,26 @@ export const WorkspaceNavigationMenuItemsFolder = ({
   const views = coreViews.map(convertCoreViewToView);
   const location = useLocation();
 
-  // resolve shortcut from first child's object metadata for the folder badge
   const folderShortcut = (() => {
     const firstChild = navigationMenuItems[0];
-    if (!firstChild) return undefined;
-    const objMeta = getObjectMetadataForNavigationMenuItem(
+
+    if (!firstChild) {
+      return undefined;
+    }
+
+    const objectMetadataItem = getObjectMetadataForNavigationMenuItem(
       firstChild,
       objectMetadataItems,
       views,
     );
-    if (!objMeta?.shortcut) return undefined;
-    return ['G', objMeta.shortcut.toUpperCase()];
+
+    const shortcut = objectMetadataItem?.shortcut?.toUpperCase();
+
+    if (!shortcut) {
+      return undefined;
+    }
+
+    return ['G', shortcut];
   })();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -241,6 +250,7 @@ export const WorkspaceNavigationMenuItemsFolder = ({
                         disableInteractiveElementBlocking={isEditMode}
                         itemComponent={
                           <NavigationDrawerSubItem
+                            indentationLevel={1}
                             secondaryLabel={
                               navigationMenuItem.viewKey === ViewKey.Index
                                 ? undefined

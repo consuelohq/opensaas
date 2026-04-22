@@ -1,15 +1,22 @@
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import styled from '@emotion/styled';
+import { useMemo, useState } from 'react';
 import { t } from '@lingui/core/macro';
+
+type NameComposite = {
+  firstName?: string | null;
+  lastName?: string | null;
+};
 
 type ListMemberRecord = ObjectRecord & {
   id: string;
   position?: number | null;
   status?: string | null;
   disposition?: string | null;
+  name?: string | null;
   person?: {
-    name?: string | null;
+    name?: NameComposite | string | null;
     phone?: string | null;
     phones?: {
       primaryPhoneNumber?: string | null;
@@ -20,6 +27,29 @@ type ListMemberRecord = ObjectRecord & {
     primaryPhoneNumber?: string | null;
     additionalPhones?: Array<{ number?: string | null }> | null;
   } | null;
+};
+
+const extractName = (record: ListMemberRecord, index: number): string => {
+  // listMember.name (string set during import)
+  if (typeof record.name === 'string' && record.name.length > 0) {
+    return record.name;
+  }
+
+  const personName = record.person?.name;
+
+  if (typeof personName === 'string' && personName.length > 0) {
+    return personName;
+  }
+
+  if (personName && typeof personName === 'object') {
+    const parts = [personName.firstName, personName.lastName].filter(Boolean);
+
+    if (parts.length > 0) {
+      return parts.join(' ');
+    }
+  }
+
+  return `Person ${index + 1}`;
 };
 
 const getListMemberPhone = (record: ListMemberRecord) => {
@@ -35,55 +65,96 @@ const getListMemberPhone = (record: ListMemberRecord) => {
   );
 };
 
+const CALLED_STATUSES = new Set(['COMPLETED', 'CALLED', 'SKIPPED']);
+
+// styles
+
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(3)};
-  padding: ${({ theme }) => theme.spacing(4)};
+  gap: ${({ theme }) => theme.spacing(1)};
+  padding: ${({ theme }) => theme.spacing(3)};
+  overflow-y: auto;
 `;
 
-const StyledCard = styled.div`
-  background: ${({ theme }) => theme.background.secondary};
-  border: 1px solid ${({ theme }) => theme.border.color.medium};
-  border-radius: ${({ theme }) => theme.border.radius.md};
+const StyledSectionHeader = styled.button`
+  align-items: center;
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.font.color.secondary};
+  cursor: pointer;
   display: flex;
-  justify-content: space-between;
-  gap: ${({ theme }) => theme.spacing(2)};
-  padding: ${({ theme }) => theme.spacing(3)};
+  font-size: ${({ theme }) => theme.font.size.sm};
+  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  gap: ${({ theme }) => theme.spacing(1)};
+  padding: ${({ theme }) => `${theme.spacing(2)} 0`};
+  text-transform: uppercase;
+
+  &:hover {
+    color: ${({ theme }) => theme.font.color.primary};
+  }
+`;
+
+const StyledChevron = styled.span<{ isOpen: boolean }>`
+  display: inline-block;
+  transition: transform 0.15s ease;
+  transform: ${({ isOpen }) => (isOpen ? 'rotate(90deg)' : 'rotate(0deg)')};
+`;
+
+const StyledCount = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-weight: ${({ theme }) => theme.font.weight.regular};
+`;
+
+const StyledRow = styled.div`
+  align-items: center;
+  border-bottom: 1px solid ${({ theme }) => theme.border.color.light};
+  display: flex;
+  gap: ${({ theme }) => theme.spacing(3)};
+  padding: ${({ theme }) => `${theme.spacing(2)} ${theme.spacing(1)}`};
+`;
+
+const StyledPosition = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
+  font-size: ${({ theme }) => theme.font.size.xs};
+  min-width: 24px;
+  text-align: right;
 `;
 
 const StyledInfo = styled.div`
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(1)};
+  gap: 2px;
+  min-width: 0;
 `;
 
 const StyledName = styled.span`
   color: ${({ theme }) => theme.font.color.primary};
   font-size: ${({ theme }) => theme.font.size.md};
-  font-weight: ${({ theme }) => theme.font.weight.semiBold};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
-const StyledMeta = styled.span`
+const StyledPhone = styled.span`
   color: ${({ theme }) => theme.font.color.secondary};
   font-size: ${({ theme }) => theme.font.size.sm};
 `;
 
-const StyledBadge = styled.span`
-  align-items: center;
-  background: ${({ theme }) => theme.background.primary};
-  border: 1px solid ${({ theme }) => theme.border.color.medium};
-  border-radius: ${({ theme }) => theme.border.radius.rounded};
-  color: ${({ theme }) => theme.font.color.secondary};
-  display: inline-flex;
+const StyledDisposition = styled.span`
+  color: ${({ theme }) => theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.xs};
-  height: fit-content;
-  padding: ${({ theme }) => `${theme.spacing(1)} ${theme.spacing(2)}`};
+  text-transform: capitalize;
+  white-space: nowrap;
 `;
 
 const StyledEmpty = styled.div`
   color: ${({ theme }) => theme.font.color.tertiary};
   font-size: ${({ theme }) => theme.font.size.sm};
+  padding: ${({ theme }) => theme.spacing(4)};
+  text-align: center;
 `;
 
 type OpportunityCallPeopleTabProps = {
@@ -93,15 +164,19 @@ type OpportunityCallPeopleTabProps = {
 export const OpportunityCallPeopleTab = ({
   listId,
 }: OpportunityCallPeopleTabProps) => {
+  const [calledOpen, setCalledOpen] = useState(false);
+
   const { records, loading } = useFindManyRecords<ListMemberRecord>({
     objectNameSingular: 'listMember',
     filter: { listId: { eq: listId } },
-    limit: 100,
+    limit: 200,
+    orderBy: [{ position: 'AscNullsLast' }],
     recordGqlFields: {
       id: true,
       position: true,
       status: true,
       disposition: true,
+      name: true,
       phoneNumber: {
         primaryPhoneNumber: true,
         additionalPhones: {
@@ -109,7 +184,10 @@ export const OpportunityCallPeopleTab = ({
         },
       },
       person: {
-        name: true,
+        name: {
+          firstName: true,
+          lastName: true,
+        },
         phone: true,
         phones: {
           primaryPhoneNumber: true,
@@ -121,6 +199,28 @@ export const OpportunityCallPeopleTab = ({
     },
   });
 
+  const { called, upNext } = useMemo(() => {
+    const calledList: ListMemberRecord[] = [];
+    const upNextList: ListMemberRecord[] = [];
+
+    for (const record of records) {
+      const status = (record.status ?? '').toUpperCase();
+      const disposition = (record.disposition ?? '').toUpperCase();
+
+      if (
+        CALLED_STATUSES.has(status) ||
+        CALLED_STATUSES.has(disposition) ||
+        disposition.length > 0
+      ) {
+        calledList.push(record);
+      } else {
+        upNextList.push(record);
+      }
+    }
+
+    return { called: calledList, upNext: upNextList };
+  }, [records]);
+
   if (loading) {
     return <StyledContainer>{t`Loading people...`}</StyledContainer>;
   }
@@ -128,32 +228,54 @@ export const OpportunityCallPeopleTab = ({
   if (records.length === 0) {
     return (
       <StyledContainer>
-        <StyledEmpty>{t`No list members have been loaded for this list yet.`}</StyledEmpty>
+        <StyledEmpty>{t`No list members yet.`}</StyledEmpty>
       </StyledContainer>
     );
   }
 
+  const renderRow = (record: ListMemberRecord, index: number) => {
+    const phone = getListMemberPhone(record);
+    const name = extractName(record, index);
+    const disposition = record.disposition ?? record.status ?? null;
+
+    return (
+      <StyledRow key={record.id}>
+        <StyledPosition>{record.position ?? index + 1}</StyledPosition>
+        <StyledInfo>
+          <StyledName>{name}</StyledName>
+          {phone && <StyledPhone>{phone}</StyledPhone>}
+        </StyledInfo>
+        {disposition && (
+          <StyledDisposition>{disposition.toLowerCase()}</StyledDisposition>
+        )}
+      </StyledRow>
+    );
+  };
+
   return (
     <StyledContainer>
-      {records.map((record, index) => {
-        const positionLabel = String(record.position ?? index + 1);
-        const personName = record.person?.name ?? t`Person ${positionLabel}`;
+      {called.length > 0 && (
+        <>
+          <StyledSectionHeader
+            onClick={() => setCalledOpen((prev) => !prev)}
+          >
+            <StyledChevron isOpen={calledOpen}>▶</StyledChevron>
+            {t`Called`}
+            <StyledCount>({called.length})</StyledCount>
+          </StyledSectionHeader>
+          {calledOpen && called.map((record, i) => renderRow(record, i))}
+        </>
+      )}
 
-        return (
-          <StyledCard key={record.id}>
-            <StyledInfo>
-              <StyledName>{personName}</StyledName>
-              <StyledMeta>
-                {getListMemberPhone(record) ?? t`Phone unavailable`}
-              </StyledMeta>
-              <StyledMeta>
-                {record.disposition ?? record.status ?? t`Pending`}
-              </StyledMeta>
-            </StyledInfo>
-            <StyledBadge>{t`#${positionLabel}`}</StyledBadge>
-          </StyledCard>
-        );
-      })}
+      <StyledSectionHeader as="div">
+        {t`Up Next`}
+        <StyledCount>({upNext.length})</StyledCount>
+      </StyledSectionHeader>
+      {upNext.map((record, i) => renderRow(record, i))}
+
+      {upNext.length === 0 && called.length > 0 && (
+        <StyledEmpty>{t`All members have been called.`}</StyledEmpty>
+      )}
     </StyledContainer>
   );
 };

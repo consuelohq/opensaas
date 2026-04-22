@@ -1,8 +1,8 @@
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
-import { useMemo } from 'react';
+import { useRecoilValue } from 'recoil';
 
-import { useWorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
+import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { NavigationDrawerUpgradeModal } from '@/navigation/components/NavigationDrawerUpgradeModal';
 import { NavigationDrawerHelpDropdown } from '@/navigation/components/NavigationDrawerHelpDropdown';
 import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
@@ -46,28 +46,17 @@ const StyledPlanLabel = styled.span`
 export const MainNavigationDrawerFooter = () => {
   const { t } = useLingui();
   const { openModal } = useModal();
-  const { subscriptionStatus } = useWorkspaceSubscriptionStatus();
+  const currentWorkspace = useRecoilValue(currentWorkspaceState);
 
-  const planLabel = useMemo(() => {
-    const normalizedPlanName = subscriptionStatus?.plan.name
-      ?.trim()
-      .toLowerCase();
+  const hasActiveSubscription =
+    currentWorkspace?.currentBillingSubscription?.status === 'active' ||
+    currentWorkspace?.currentBillingSubscription?.status === 'trialing';
 
-    if (
-      normalizedPlanName === undefined ||
-      normalizedPlanName === '' ||
-      normalizedPlanName === 'no plan' ||
-      normalizedPlanName === 'starter'
-    ) {
-      return t`Free plan`;
-    }
-
-    return t`Paid plan`;
-  }, [subscriptionStatus?.plan.name, t]);
+  const planLabel = hasActiveSubscription ? t`Paid plan` : t`Free plan`;
 
   return (
     <>
-      <NavigationDrawerUpgradeModal subscriptionStatus={subscriptionStatus} />
+      <NavigationDrawerUpgradeModal />
 
       <StyledFooterRow>
         <NavigationDrawerHelpDropdown />

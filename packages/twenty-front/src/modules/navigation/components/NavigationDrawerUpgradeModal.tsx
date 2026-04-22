@@ -1,11 +1,10 @@
 import { captureException } from '@sentry/react';
-import { useTheme } from '@emotion/react';
 import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { useState } from 'react';
-import { IconCheck, IconSparkles } from '@tabler/icons-react';
+import { useRecoilValue } from 'recoil';
 
-import { type WorkspaceSubscriptionStatus } from '@/billing/hooks/useWorkspaceSubscriptionStatus';
+import { currentWorkspaceState } from '@/auth/states/currentWorkspaceState';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
 import { NAVIGATION_DRAWER_UPGRADE_MODAL_ID } from '@/navigation/constants/navigation-drawer-support-menu.constants';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
@@ -107,7 +106,7 @@ const StyledCheckIcon = styled.span`
   align-items: center;
   background: ${({ theme }) => theme.color.green};
   border-radius: 50%;
-  color: white;
+  color: ${({ theme }) => theme.font.color.inverted};
   display: inline-flex;
   flex-shrink: 0;
   font-size: 10px;
@@ -139,10 +138,10 @@ const StyledLinkButton = styled.button`
 `;
 
 const StyledUpgradeButton = styled.button`
-  background: ${({ theme }) => theme.color.blue};
+  background: ${({ theme }) => theme.background.invertedPrimary};
   border: none;
   border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: white;
+  color: ${({ theme }) => theme.font.color.inverted};
   cursor: pointer;
   font-size: ${({ theme }) => theme.font.size.sm};
   font-weight: ${({ theme }) => theme.font.weight.medium};
@@ -160,26 +159,17 @@ const StyledUpgradeButton = styled.button`
 
 // -- component --
 
-type NavigationDrawerUpgradeModalProps = {
-  subscriptionStatus: WorkspaceSubscriptionStatus | null;
-};
-
-export const NavigationDrawerUpgradeModal = ({
-  subscriptionStatus,
-}: NavigationDrawerUpgradeModalProps) => {
-  const theme = useTheme();
+export const NavigationDrawerUpgradeModal = () => {
   const { t } = useLingui();
   const { closeModal } = useModal();
   const { enqueueErrorSnackBar } = useSnackBar();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const currentWorkspace = useRecoilValue(currentWorkspaceState);
 
-  const normalizedPlan = subscriptionStatus?.plan.name?.trim().toLowerCase();
   const isFreePlan =
-    !normalizedPlan ||
-    normalizedPlan === '' ||
-    normalizedPlan === 'none' ||
-    normalizedPlan === 'no plan' ||
-    normalizedPlan === 'starter';
+    !currentWorkspace?.currentBillingSubscription ||
+    currentWorkspace.currentBillingSubscription.status === 'canceled' ||
+    currentWorkspace.currentBillingSubscription.status === 'unpaid';
 
   const handleClose = () => {
     closeModal(NAVIGATION_DRAWER_UPGRADE_MODAL_ID);
@@ -238,7 +228,7 @@ export const NavigationDrawerUpgradeModal = ({
   };
 
   const features = [
-    { free: t`Basic dialer`, growth: t`Twilio-powered dialing` },
+    { free: t`No dialer`, growth: t`Predictive power dialer` },
     { free: t`Limited compute`, growth: t`Unlimited compute` },
     { free: t`10MB file limit`, growth: t`10MB file limit` },
     { free: t`No integrations`, growth: t`Integrations` },

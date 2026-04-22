@@ -152,7 +152,9 @@ export {
   createPipelineIntelligence,
   createDialerTools,
   createKbTools,
+  createPhoneNumberTools,
   createCoachingDetector,
+  createTranscriptContext,
   createCoachingLifecycle,
   createPreferenceInference,
   createTurnGrading,
@@ -166,7 +168,12 @@ export type {
   PipelineIntelligence,
   DialerService,
   KbService,
+  PhoneNumberRecommendation,
+  PhoneNumberRecommendationService,
   CoachingDetector,
+  TranscriptContextExtension,
+  TranscriptContextEntry,
+  ActiveTranscriptState,
   CoachingLifecycle,
   RecentlyEndedCall,
   AfterTurnEvent,
@@ -187,6 +194,10 @@ export type {
   PostCallAnalysisResult,
 } from './schemas/coaching.js';
 export { createCoachingSchemas } from './schemas/coaching.js';
+
+// skill executor (non-interactive skill invocation)
+export { executeSkill } from './skill-executor.js';
+export type { SkillExecutorOptions, SkillInput, SkillResult } from './skill-executor.js';
 
 // types
 export type {

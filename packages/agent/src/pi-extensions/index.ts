@@ -16,10 +16,21 @@ export { createDialerTools } from './dialer-tools.js';
 export type { DialerService } from './dialer-tools.js';
 export { createKbTools } from './kb-tools.js';
 export type { KbService } from './kb-tools.js';
+export { createPhoneNumberTools } from './phone-number-tools.js';
+export type {
+  PhoneNumberRecommendation,
+  PhoneNumberRecommendationService,
+} from './phone-number-tools.js';
 
 // coaching
 export { createCoachingDetector } from './coaching-extension.js';
 export type { CoachingDetector } from './coaching-extension.js';
+export { createTranscriptContext } from './transcript-extension.js';
+export type {
+  TranscriptContextExtension,
+  TranscriptContextEntry,
+  ActiveTranscriptState,
+} from './transcript-extension.js';
 
 // coaching lifecycle (post-call analysis)
 export { createCoachingLifecycle } from './coaching-lifecycle.js';

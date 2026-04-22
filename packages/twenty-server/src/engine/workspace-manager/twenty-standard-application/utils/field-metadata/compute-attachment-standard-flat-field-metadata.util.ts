@@ -448,6 +448,7 @@ export const buildAttachmentStandardFlatFieldMetadatas = ({
       label: 'Workflow',
       description: 'Attachment workflow',
       icon: 'IconSettingsAutomation',
+      isSystem: true,
       isNullable: true,
       isUIReadOnly: true,
       targetObjectName: 'workflow',
