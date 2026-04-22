@@ -1047,9 +1047,25 @@ export const useOpportunityQueueWorkspace = ({
       });
     } catch (error: unknown) {
       autoStartedItemIdRef.current = null;
+      setQueueItems((previousQueueItems) =>
+        previousQueueItems.map((queueItem) =>
+          queueItem.id === currentQueueItem.id
+            ? {
+                ...queueItem,
+                status: 'failed',
+                lastAttemptAt: new Date().toISOString(),
+              }
+            : queueItem,
+        ),
+      );
+      setCallState((previousCallState) => ({
+        ...previousCallState,
+        status: 'failed',
+      }));
       Sentry.captureException(error, {
         extra: {
           context: 'startCurrentQueueItem',
+          currentQueueItemId: currentQueueItem.id,
           deviceError,
           deviceReady,
           listId,
@@ -1208,16 +1224,14 @@ export const useOpportunityQueueWorkspace = ({
           extra: { context: 'continueList', disposition, listId },
         });
       }
-    },
-    [
+    }, [
       advanceBackendQueueSession,
       listId,
       recordResult,
       saveDisposition,
       setLastCallOutcome,
       wrapUpState,
-    ],
-  );
+    ]);
 
   const endList = useCallback(
     async (disposition: string) => {
@@ -1242,16 +1256,14 @@ export const useOpportunityQueueWorkspace = ({
           extra: { context: 'endList', disposition, listId },
         });
       }
-    },
-    [
+    }, [
       listId,
       recordResult,
       saveDisposition,
       setLastCallOutcome,
       updateListRecord,
       wrapUpState,
-    ],
-  );
+    ]);
 
   useEffect(() => {
     return () => {
@@ -1362,8 +1374,7 @@ export const useOpportunityQueueWorkspace = ({
         });
         throw error;
       }
-    },
-    [
+    }, [
       backendQueue?.id,
       callState.callSid,
       callState.duration,
@@ -1373,8 +1384,7 @@ export const useOpportunityQueueWorkspace = ({
       loadBackendQueue,
       syncCurrentIndexFromContactId,
       updateOneRecord,
-    ],
-  );
+    ]);
 
   const restartList = useCallback(async () => {
     try {
