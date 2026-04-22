@@ -75,7 +75,7 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
           config && config.twimlAppSid
             ? {
                 credentials: getDecryptedCredentials(config),
-                twimlAppSid: config.twimlAppSid,
+                twimlAppSid: credentialsSource.twimlAppSid,
               }
             : sharedHostedConfigAvailable
               ? (() => {
