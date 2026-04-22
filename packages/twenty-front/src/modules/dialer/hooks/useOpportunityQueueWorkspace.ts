@@ -1046,18 +1046,38 @@ export const useOpportunityQueueWorkspace = ({
         From: resolvedCallerId,
       });
     } catch (error: unknown) {
-      autoStartedItemIdRef.current = null;
+      const failedAt = new Date().toISOString();
+
+      // update the backend-hydrated queue source before releasing the
+      // auto-start guard so the same item cannot restart immediately.
+      setBackendQueue((previousBackendQueue) =>
+        previousBackendQueue
+          ? {
+              ...previousBackendQueue,
+              items: previousBackendQueue.items?.map((backendQueueItem) =>
+                backendQueueItem.contact_id === currentQueueItem.id
+                  ? {
+                      ...backendQueueItem,
+                      status: 'failed',
+                      last_attempt_at: failedAt,
+                    }
+                  : backendQueueItem,
+              ),
+            }
+          : previousBackendQueue,
+      );
       setQueueItems((previousQueueItems) =>
         previousQueueItems.map((queueItem) =>
           queueItem.id === currentQueueItem.id
             ? {
                 ...queueItem,
                 status: 'failed',
-                lastAttemptAt: new Date().toISOString(),
+                lastAttemptAt: failedAt,
               }
             : queueItem,
         ),
       );
+      autoStartedItemIdRef.current = null;
       setCallState((previousCallState) => ({
         ...previousCallState,
         status: 'failed',
