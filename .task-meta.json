@@ -1,0 +1,12 @@
+{
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/test-publish-flow",
+  "baseBranch": "stream/workspace",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 150,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/150",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-test-publish-flow",
+  "createdAt": "2026-04-23T22:15:40.820Z"
+}
