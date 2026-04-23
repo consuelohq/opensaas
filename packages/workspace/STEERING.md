@@ -510,6 +510,11 @@ Here's what i think you should do (and why)
 
 Don't just execute blindly — especially for bigger decisions. Present the landscape, then recommend. If it's tiny/quick, just do it. But if it affects workflow, requires setup, or has tradeoffs → options first.
 
+## link formatting
+
+always format links as markdown links in chat instead of pasting raw urls. use descriptive clickable text like `[pr #135](https://github.com/consuelohq/opensaas/pull/135)`, `[workspace pr](https://github.com/consuelohq/opensaas/pull/135)`, or `[linear issue](https://linear.app/...)` so the message stays clean and easy to scan. when referring to github, prefer the object name in the link text — pr number, branch name, commit sha, or file name — rather than dumping the naked url.
+
+
 ## Response Modes
 
 switch between modes based on context:
