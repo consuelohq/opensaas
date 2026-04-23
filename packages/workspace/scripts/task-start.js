@@ -1,18 +1,42 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_REPO = 'consuelohq/opensaas';
-const DEFAULT_BASE = 'main';
-const GITHUB_API_URL = 'https://api.github.com';
+const {
+  DEFAULT_MAIN_BRANCH,
+  DEFAULT_REPO,
+  getWorktreeRoot,
+  resolveGitRoot,
+  toWorktreeDirectoryName,
+} = require('./lib/paths');
+const {
+  assertStreamBranchName,
+  assertTaskBranchName,
+  getDefaultStreamBranch,
+  getDefaultTaskBranch,
+  normalizeArea,
+} = require('./lib/validation');
+const {
+  createBranch,
+  createPullRequest,
+  findOpenPullRequest,
+  getBranchRef,
+  getToken,
+} = require('./lib/github');
+const {
+  createOrResetLocalBranch,
+  createWorktree,
+  fetchOrigin,
+  getRefSha,
+  getWorktreeForBranch,
+  runGit,
+  setBranchUpstream,
+} = require('./lib/git');
+const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 
-class GitHubRequestError extends Error {
-  constructor(message, details) {
-    super(message);
-    this.name = 'GitHubRequestError';
-    this.details = details;
-  }
-}
+const DEFAULT_START_FROM = 'main';
+const START_FROM_OPTIONS = new Set(['main', 'stream']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -23,30 +47,29 @@ function writeStderr(value = '') {
 }
 
 function printHelp() {
-  writeStdout('usage: task-start.js --title "task title" [options]');
+  writeStdout('usage: bun run task:start -- --area <area> --title "task title" [options]');
   writeStdout('');
   writeStdout('required:');
-  writeStdout('  --title <value>        pull request title and branch slug source');
+  writeStdout('  --area <value>         stream area, for example dialer');
+  writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
+  writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
+  writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
+  writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
-  writeStdout(`  --base <branch>        base branch (default: ${DEFAULT_BASE})`);
-  writeStdout('  --branch <name>        branch name (default: task/<slug-from-title>)');
   writeStdout('  --body <text>          pull request body text');
-  writeStdout('  --body-file <path>     pull request body file path');
-  writeStdout('  --json                 print json output');
+  writeStdout('  --body-file <path>     pull request body markdown file');
+  writeStdout('  --worktree-root <dir>  worktree root (default: /private/tmp/opensaas-worktrees)');
+  writeStdout('  --json                 print machine-readable json');
   writeStdout('  --help                 show this help message');
-  writeStdout('');
-  writeStdout('examples:');
-  writeStdout('  bun ./scripts/task-start.js --title "github workflow bootstrap" --json');
-  writeStdout('  yarn workspace openworkspace task:start --title "dialer retry fix"');
 }
 
 function parseArgs(argv) {
   const args = {
     repo: DEFAULT_REPO,
-    base: DEFAULT_BASE,
     json: false,
+    startFrom: DEFAULT_START_FROM,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -69,23 +92,33 @@ function parseArgs(argv) {
     }
 
     switch (flag) {
+      case '--area':
+        args.area = value;
+        break;
       case '--title':
         args.title = value;
         break;
-      case '--repo':
-        args.repo = value;
-        break;
+      case '--stream':
       case '--base':
-        args.base = value;
+        args.stream = value;
+        break;
+      case '--start-from':
+        args.startFrom = value;
         break;
       case '--branch':
         args.branch = value;
+        break;
+      case '--repo':
+        args.repo = value;
         break;
       case '--body':
         args.body = value;
         break;
       case '--body-file':
         args.bodyFile = value;
+        break;
+      case '--worktree-root':
+        args.worktreeRoot = value;
         break;
       case '--json':
         args.json = true;
@@ -102,120 +135,34 @@ function parseArgs(argv) {
     throw new Error('use either --body or --body-file, not both');
   }
 
+  if (!START_FROM_OPTIONS.has(args.startFrom)) {
+    throw new Error(`--start-from must be one of: ${Array.from(START_FROM_OPTIONS).join(', ')}`);
+  }
+
   return args;
 }
 
-function slugifyTitle(title) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-{2,}/g, '-');
-}
-
-function parseRepository(repo) {
-  const [owner, name] = repo.split('/');
-
-  if (!owner || !name || repo.split('/').length !== 2) {
-    throw new Error(`invalid repo format: ${repo}`);
-  }
-
-  return { owner, name };
-}
-
-function getToken() {
-  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-
-  if (!token) {
-    throw new Error('missing github token: set GITHUB_TOKEN or GH_TOKEN');
-  }
-
-  return token;
-}
-
-async function githubRequest({ token, method = 'GET', endpoint, body }) {
-  const response = await fetch(`${GITHUB_API_URL}${endpoint}`, {
-    method,
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'opensaas-task-start-script',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const responseText = await response.text();
-  let data = null;
-
-  if (responseText) {
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      data = responseText;
-    }
-  }
-
-  if (!response.ok) {
-    const message = typeof data === 'object' && data && data.message ? data.message : response.statusText;
-
-    throw new GitHubRequestError(`github api request failed: ${method} ${endpoint} -> ${response.status} ${message}`, {
-      status: response.status,
-      data,
-    });
-  }
-
-  return data;
-}
-
-async function getBranchRef({ token, owner, name, branch }) {
-  try {
-    return await githubRequest({
-      token,
-      endpoint: `/repos/${owner}/${name}/git/ref/heads/${branch}`,
-    });
-  } catch (error) {
-    if (error instanceof GitHubRequestError && error.details && error.details.status === 404) {
-      return null;
-    }
-
-    throw error;
-  }
-}
-
-async function getPullRequest({ token, owner, name, branch, base }) {
-  const query = new URLSearchParams({
-    state: 'open',
-    head: `${owner}:${branch}`,
-    base,
-  });
-
-  const pullRequests = await githubRequest({
-    token,
-    endpoint: `/repos/${owner}/${name}/pulls?${query.toString()}`,
-  });
-
-  return Array.isArray(pullRequests) && pullRequests.length > 0 ? pullRequests[0] : null;
-}
-
-function readPullRequestBody(args) {
+function readPullRequestBody(args, defaults) {
   if (args.body) {
     return args.body;
   }
 
   if (args.bodyFile) {
-    const filePath = path.resolve(process.cwd(), args.bodyFile);
-    return fs.readFileSync(filePath, 'utf8');
+    return fs.readFileSync(path.resolve(process.cwd(), args.bodyFile), 'utf8');
   }
 
   return [
     '## summary',
-    '- bootstrap task branch and draft pr',
+    `- area: ${defaults.area}`,
+    `- stream: ${defaults.stream}`,
+    `- task branch: ${defaults.taskBranch}`,
+    `- start source: ${defaults.sourceBranch}`,
+    '',
+    '## workspace',
+    `- worktree: ${defaults.worktreePath}`,
     '',
     '## notes',
-    '- created by `packages/workspace/scripts/task-start.js`',
+    '- draft pr created automatically by packages/workspace/scripts/task-start.js',
   ].join('\n');
 }
 
@@ -225,14 +172,84 @@ function printResult(result, useJson) {
     return;
   }
 
-  writeStdout(`repo: ${result.repo}`);
-  writeStdout(`base: ${result.base}`);
+  writeStdout(`area: ${result.area}`);
+  writeStdout(`stream: ${result.stream}`);
+  writeStdout(`start from: ${result.startFrom}`);
+  writeStdout(`source branch: ${result.sourceBranch}`);
   writeStdout(`branch: ${result.branch}`);
+  writeStdout(`worktree: ${result.worktreePath}`);
   writeStdout(`created branch: ${result.createdBranch}`);
-  writeStdout(`created bootstrap commit: ${result.createdBootstrapCommit}`);
+  writeStdout(`created worktree: ${result.createdWorktree}`);
+  writeStdout(`bootstrapped branch: ${result.bootstrappedBranch}`);
   writeStdout(`created pr: ${result.createdPr}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
+}
+
+function resolveSourceBranch(startFrom, stream) {
+  if (startFrom === 'stream') {
+    return stream;
+  }
+
+  return DEFAULT_MAIN_BRANCH;
+}
+
+async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef }) {
+  let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
+
+  if (streamRef) {
+    return {
+      streamRef,
+      created: false,
+    };
+  }
+
+  writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
+  streamRef = await createBranch({
+    token,
+    repository,
+    branch: streamBranch,
+    sha: mainRef.object.sha,
+  });
+
+  return {
+    streamRef,
+    created: true,
+  };
+}
+
+async function ensureRemoteTaskBranch({ token, repository, taskBranch, sourceSha }) {
+  let remoteTaskRef = await getBranchRef({ token, repository, branch: taskBranch });
+
+  if (remoteTaskRef) {
+    return {
+      remoteTaskRef,
+      created: false,
+    };
+  }
+
+  writeStderr(`creating remote ${taskBranch} from source sha ${sourceSha.slice(0, 8)}...`);
+  remoteTaskRef = await createBranch({
+    token,
+    repository,
+    branch: taskBranch,
+    sha: sourceSha,
+  });
+
+  return {
+    remoteTaskRef,
+    created: true,
+  };
+}
+
+function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
+  writeStderr(`creating bootstrap commit on ${taskBranch}...`);
+  runGit(
+    ['-C', worktreePath, 'commit', '--allow-empty', '-m', `chore(workspace): bootstrap ${taskBranch} branch`],
+    { cwd: repoRoot },
+  );
+  writeStderr(`pushing bootstrap commit for ${taskBranch}...`);
+  runGit(['-C', worktreePath, 'push', 'origin', taskBranch], { cwd: repoRoot });
 }
 
 async function main() {
@@ -243,135 +260,201 @@ async function main() {
     return;
   }
 
+  if (!args.area) {
+    throw new Error('missing required --area');
+  }
+
   if (!args.title) {
     throw new Error('missing required --title');
   }
 
-  // sync local main with github before creating branch
-  const workspaceDir = process.env.WORKSPACE_DIR || path.resolve(__dirname, '..', '..', '..');
-  writeStderr('syncing local main with github...');
-  const { execSync } = require('child_process');
-  try {
-    execSync('git pull origin main', { cwd: workspaceDir, stdio: ['pipe', 'pipe', 'pipe'] });
-    writeStderr('local main synced.');
-  } catch (pullError) {
-    writeStderr('warning: git pull failed (dirty state or offline). continuing with current local state.');
-  }
-
-  const slug = slugifyTitle(args.title);
-
-  if (!slug) {
-    throw new Error('unable to derive branch slug from title');
-  }
-
-  const branch = args.branch || `task/${slug}`;
-  const { owner, name } = parseRepository(args.repo);
+  const area = normalizeArea(args.area);
+  const stream = args.stream || getDefaultStreamBranch(area);
+  const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
+  const repoRoot = resolveGitRoot(process.cwd());
+  const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
   const token = getToken();
-  const prBody = readPullRequestBody(args);
 
-  await githubRequest({
-    token,
-    endpoint: `/repos/${owner}/${name}`,
-  });
+  assertStreamBranchName(stream, area);
+  assertTaskBranchName(taskBranch, area);
 
-  const baseRef = await githubRequest({
-    token,
-    endpoint: `/repos/${owner}/${name}/git/ref/heads/${args.base}`,
-  });
+  fetchOrigin(repoRoot);
 
-  let createdBranch = false;
-  let createdBootstrapCommit = false;
-  let branchRef = await getBranchRef({ token, owner, name, branch });
+  const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
 
-  if (!branchRef) {
-    branchRef = await githubRequest({
-      token,
-      method: 'POST',
-      endpoint: `/repos/${owner}/${name}/git/refs`,
-      body: {
-        ref: `refs/heads/${branch}`,
-        sha: baseRef.object.sha,
-      },
-    });
-    createdBranch = true;
+  if (!mainRef) {
+    throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
   }
 
-  if (branchRef.object.sha === baseRef.object.sha) {
-    const currentCommit = await githubRequest({
-      token,
-      endpoint: `/repos/${owner}/${name}/git/commits/${branchRef.object.sha}`,
-    });
+  const streamDetails = await ensureRemoteStreamBranch({
+    token,
+    repository: args.repo,
+    streamBranch: stream,
+    mainRef,
+  });
 
-    const bootstrapCommit = await githubRequest({
-      token,
-      method: 'POST',
-      endpoint: `/repos/${owner}/${name}/git/commits`,
-      body: {
-        message: `chore(workspace): bootstrap ${branch} branch`,
-        tree: currentCommit.tree.sha,
-        parents: [branchRef.object.sha],
-      },
-    });
-
-    branchRef = await githubRequest({
-      token,
-      method: 'PATCH',
-      endpoint: `/repos/${owner}/${name}/git/refs/heads/${branch}`,
-      body: {
-        sha: bootstrapCommit.sha,
-        force: false,
-      },
-    });
-    createdBootstrapCommit = true;
+  if (streamDetails.created) {
+    fetchOrigin(repoRoot);
   }
 
-  let pullRequest = await getPullRequest({
+  const sourceBranch = resolveSourceBranch(args.startFrom, stream);
+  const sourceRef = `refs/remotes/origin/${sourceBranch}`;
+  const sourceSha = getRefSha(repoRoot, sourceRef);
+
+  const remoteTaskDetails = await ensureRemoteTaskBranch({
     token,
-    owner,
-    name,
-    branch,
-    base: args.base,
+    repository: args.repo,
+    taskBranch,
+    sourceSha,
   });
+
+  if (remoteTaskDetails.created) {
+    fetchOrigin(repoRoot);
+  }
+
+  let worktree = getWorktreeForBranch(repoRoot, taskBranch);
+
+  if (!worktree) {
+    createOrResetLocalBranch(repoRoot, taskBranch, `origin/${taskBranch}`);
+  }
+
+  try {
+    setBranchUpstream(repoRoot, taskBranch, `origin/${taskBranch}`);
+  } catch {
+    // ignore upstream wiring failures on older local setups
+  }
+
+  let createdWorktree = false;
+  const desiredWorktreePath = path.join(worktreeRoot, toWorktreeDirectoryName(taskBranch));
+
+  // guard 1: reject if worktree path already exists
+  if (fs.existsSync(desiredWorktreePath) && !worktree) {
+    throw new Error(
+      `worktree path already exists: ${desiredWorktreePath}\n` +
+      'run: bun run task:cleanup\n' +
+      'or pick a different --title to generate a new branch slug.',
+    );
+  }
+
+  if (!worktree) {
+    writeStderr(`creating worktree ${desiredWorktreePath}...`);
+    createWorktree(repoRoot, desiredWorktreePath, taskBranch);
+    worktree = getWorktreeForBranch(repoRoot, taskBranch) || { path: desiredWorktreePath };
+    createdWorktree = true;
+  }
+
+  const worktreePath = worktree.path;
+  let localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
+  let remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
+  let pullRequest = await findOpenPullRequest({
+    token,
+    repository: args.repo,
+    branch: taskBranch,
+    base: stream,
+  });
+  let bootstrappedBranch = false;
+
+  if (!pullRequest && localTaskSha === sourceSha && remoteTaskSha === sourceSha) {
+    createBootstrapCommit({
+      repoRoot,
+      worktreePath,
+      taskBranch,
+    });
+    bootstrappedBranch = true;
+    fetchOrigin(repoRoot);
+    localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
+    remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
+  }
+
+  const prBody = readPullRequestBody(args, {
+    area,
+    stream,
+    taskBranch,
+    worktreePath,
+    sourceBranch,
+  });
+
   let createdPr = false;
 
   if (!pullRequest) {
-    pullRequest = await githubRequest({
+    writeStderr(`creating draft pr ${taskBranch} -> ${stream}...`);
+    pullRequest = await createPullRequest({
       token,
-      method: 'POST',
-      endpoint: `/repos/${owner}/${name}/pulls`,
-      body: {
-        title: args.title,
-        body: prBody,
-        head: branch,
-        base: args.base,
-        draft: true,
-      },
+      repository: args.repo,
+      title: args.title,
+      body: prBody,
+      head: taskBranch,
+      base: stream,
+      draft: true,
     });
     createdPr = true;
   }
 
+  // guard 3: verify PR targets stream, not main
+  if (pullRequest.base.ref !== stream) {
+    throw new Error(
+      `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\n` +
+      'the draft pr must target the stream branch, not main.\n' +
+      'close the incorrect pr on github and rerun task:start.',
+    );
+  }
+
+  const taskMeta = {
+    area,
+    stream,
+    taskBranch,
+    baseBranch: stream,
+    sourceBranch,
+    startFrom: args.startFrom,
+    prNumber: pullRequest.number,
+    prUrl: pullRequest.html_url,
+    worktreePath,
+    createdAt: new Date().toISOString(),
+  };
+
+  writeTaskMeta(worktreePath, taskMeta);
+
+  // guard 2: verify .task-meta.json was written correctly
+  const verifyMeta = readTaskMeta(worktreePath);
+  if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
+    throw new Error(
+      `.task-meta.json verification failed in ${worktreePath}.\n` +
+      'the file was not written correctly. check disk permissions.',
+    );
+  }
+
+  await saveTaskMetaMemory(taskMeta);
+
   printResult(
     {
-      repo: `${owner}/${name}`,
-      base: args.base,
-      branch,
-      createdBranch,
-      createdBootstrapCommit,
-      createdPr,
+      area,
+      stream,
+      sourceBranch,
+      startFrom: args.startFrom,
+      branch: taskBranch,
+      worktreePath,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
+      createdBranch: remoteTaskDetails.created,
+      createdWorktree,
+      bootstrappedBranch,
+      createdPr,
     },
     args.json,
   );
+
+  // guard 4: print next steps
+  if (!args.json) {
+    writeStderr('');
+    writeStderr('next steps:');
+    writeStderr(`  cd ${worktreePath}`);
+    writeStderr('  # make your changes');
+    writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
+    writeStderr('  bun run task:pr');
+  }
 }
 
 main().catch((error) => {
-  const message = error instanceof Error ? error.message : 'unknown error';
-  writeStderr(message);
-
-  if (error instanceof GitHubRequestError && error.details && error.details.data) {
-    writeStderr(JSON.stringify(error.details.data, null, 2));
-  }
-
+  writeStderr(error instanceof Error ? error.message : 'unknown error');
   process.exit(1);
 });

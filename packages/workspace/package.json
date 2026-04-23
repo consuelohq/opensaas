@@ -2,7 +2,17 @@
   "name": "openworkspace",
   "private": true,
   "scripts": {
-    "task:start": "bun ./scripts/task-start.js"
+    "task:start": "bun ./scripts/task-start.js",
+    "task:pr": "bun ./scripts/task-pr.js",
+    "task:push": "bun ./scripts/task-push.js",
+    "task:cleanup": "bun ./scripts/task-cleanup.js",
+    "task:finish": "bun ./scripts/task-finish.js",
+    "stream:sync": "bun ./scripts/stream-sync.js",
+    "stream:context": "bun ./scripts/stream-context.js",
+    "stream:list": "bun ./scripts/stream-list.js",
+    "railway:logs": "bun ./scripts/railway-logs.js",
+    "browser": "bun ./scripts/browser.js",
+    "website:deploy": "bun ./scripts/website-deploy.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
