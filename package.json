@@ -234,7 +234,8 @@
     "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",
     "prepare": "husky",
     "railway:logs": "bun packages/workspace/scripts/railway-logs.js",
-    "browser": "bun packages/workspace/scripts/browser.js"
+    "browser": "bun packages/workspace/scripts/browser.js",
+    "website:deploy": "bun packages/workspace/scripts/website-deploy.js"
   },
   "workspaces": {
     "packages": [
