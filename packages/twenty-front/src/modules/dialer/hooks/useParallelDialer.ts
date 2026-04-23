@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -9,8 +9,24 @@ import {
   currentQueueIndexState,
   queueItemsState,
 } from '@/dialer/states/queueState';
-import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { ParallelCall } from '@/dialer/types/dialer';
+import {
+  playCallConnectedSound,
+  playDialingStartedSound,
+  playErrorSound,
+} from '@/dialer/utils/notificationSounds';
+
+const getParallelProfileId = (maxLines: number): 'conservative' | 'balanced' | 'aggressive' => {
+  if (maxLines <= 2) {
+    return 'conservative';
+  }
+
+  if (maxLines === 3) {
+    return 'balanced';
+  }
+
+  return 'aggressive';
+};
 
 export const useParallelDialer = () => {
   const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
@@ -18,7 +34,6 @@ export const useParallelDialer = () => {
   const [currentQueueIndex, setCurrentQueueIndex] = useRecoilState(
     currentQueueIndexState,
   );
-  const callState = useRecoilValue(callStateAtom);
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -32,6 +47,8 @@ export const useParallelDialer = () => {
 
   const handleWinner = useCallback(
     (winner: ParallelCall, allCalls: ParallelCall[]) => {
+      playCallConnectedSound();
+
       setQueueItems((prev) =>
         prev.map((item) => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
@@ -53,7 +70,12 @@ export const useParallelDialer = () => {
 
       setActiveQueue((prev) =>
         prev
-          ? { ...prev, parallelDialingActive: false, parallelActiveCalls: [] }
+          ? {
+              ...prev,
+              parallelDialingActive: false,
+              parallelActiveCalls: [],
+              parallelGroupId: null,
+            }
           : null,
       );
       setIsDialing(false);
@@ -63,6 +85,8 @@ export const useParallelDialer = () => {
 
   const handleAllFailed = useCallback(
     (allCalls: ParallelCall[]) => {
+      playErrorSound();
+
       setQueueItems((prev) =>
         prev.map((item) => {
           const call = allCalls.find((c) => c.contactId === item.contactId);
@@ -73,6 +97,17 @@ export const useParallelDialer = () => {
             callOutcome: 'no-answer' as const,
           };
         }),
+      );
+
+      setActiveQueue((prev) =>
+        prev
+          ? {
+              ...prev,
+              parallelDialingActive: false,
+              parallelActiveCalls: [],
+              parallelGroupId: null,
+            }
+          : null,
       );
 
       const cooldown = activeQueue?.settings.parallelDialingCooldown ?? 2000;
@@ -138,7 +173,7 @@ export const useParallelDialer = () => {
     const maxLines = activeQueue.settings.parallelDialingMaxLines;
     const batchItems = queueItems
       .slice(currentQueueIndex, currentQueueIndex + maxLines)
-      .filter((item) => item.status === 'pending');
+      .filter((item) => item.status === 'pending' || item.status === 'calling');
 
     if (batchItems.length === 0) return;
 
@@ -158,6 +193,8 @@ export const useParallelDialer = () => {
     );
 
     try {
+      playDialingStartedSound();
+
       const res = await authenticatedFetch(
         `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`,
         {
@@ -165,14 +202,16 @@ export const useParallelDialer = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             queueId: activeQueue.id,
-            contacts: batchItems.map((item) => ({
-              contactId: item.contactId,
-              phone: item.contact.phone,
-            })),
-            fromNumber: callState.fromNumber,
+            customerNumbers: batchItems.map((item) => item.contact.phone),
+            contactIds: batchItems.map((item) => item.contactId),
+            profileId: getParallelProfileId(maxLines),
           }),
         },
       );
+
+      if (!res.ok) {
+        throw new Error(`Parallel dial failed: ${res.status}`);
+      }
 
       const { groupId, calls } = await res.json();
 
@@ -209,7 +248,6 @@ export const useParallelDialer = () => {
     isDialing,
     queueItems,
     currentQueueIndex,
-    callState.fromNumber,
     setQueueItems,
     setActiveQueue,
     startPolling,

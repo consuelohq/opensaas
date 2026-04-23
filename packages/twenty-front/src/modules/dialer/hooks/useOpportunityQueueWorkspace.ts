@@ -12,8 +12,11 @@ import {
   queueSessionState,
 } from '@/dialer/states/queueState';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
+import { dialingModeState } from '@/dialer/states/dialingModeState';
+import { parallelLineCountState } from '@/dialer/states/parallelLineCountState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
+import { useParallelDialer } from '@/dialer/hooks/useParallelDialer';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
@@ -174,6 +177,38 @@ const mapWrapUpDispositionToQueueOutcome = (
   }
 };
 
+const normalizeParallelDialingMaxLines = (requestedLineCount: number): number => {
+  if (Number.isFinite(requestedLineCount) === false) {
+    return DEFAULT_QUEUE_SETTINGS.parallelDialingMaxLines;
+  }
+
+  if (requestedLineCount <= 2) {
+    return 2;
+  }
+
+  if (requestedLineCount === 3) {
+    return 3;
+  }
+
+  return 4;
+};
+
+const readQueueBooleanSetting = (
+  value: unknown,
+  fallbackValue: boolean,
+): boolean => {
+  return typeof value === 'boolean' ? value : fallbackValue;
+};
+
+const readQueueNumberSetting = (
+  value: unknown,
+  fallbackValue: number,
+): number => {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : fallbackValue;
+};
+
 const mapBackendOutcomeToQueueOutcome = (
   outcome: string | null | undefined,
 ): QueueOutcome | null => {
@@ -286,10 +321,17 @@ export const useOpportunityQueueWorkspace = ({
   const selectedCallerId = useRecoilValue(selectedCallerIdState);
   const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
+  const dialingMode = useRecoilValue(dialingModeState);
+  const parallelLineCount = useRecoilValue(parallelLineCountState);
   const { preferences } = useUserPreferences();
+  const requestedParallelDialingEnabled = dialingMode === 'parallel';
+  const requestedParallelDialingMaxLines = normalizeParallelDialingMaxLines(
+    parallelLineCount,
+  );
   const callState = useRecoilValue(callStateAtom);
   const { updateOneRecord } = useUpdateOneRecord();
 
+  const activeQueue = useRecoilValue(activeQueueState);
   const setActiveQueue = useSetRecoilState(activeQueueState);
   const setQueueItems = useSetRecoilState(queueItemsState);
   const setCurrentQueueIndex = useSetRecoilState(currentQueueIndexState);
@@ -301,6 +343,7 @@ export const useOpportunityQueueWorkspace = ({
 
   const { status: twilioConfigStatus } = useTwilioConfigStatus();
   const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
+  const { startParallelBatch } = useParallelDialer();
   const { recordResult } = useQueueOperations();
 
   const [wrapUpState, setWrapUpState] = useState<OpportunityWrapUpState | null>(
@@ -528,7 +571,21 @@ export const useOpportunityQueueWorkspace = ({
           return existingQueue;
         }
 
-        if (existingQueue.total_contacts === totalCallableRecords.length) {
+        const existingQueueSettings = existingQueue.settings ?? {};
+        const existingParallelDialingEnabled = readQueueBooleanSetting(
+          existingQueueSettings.parallelDialingEnabled,
+          false,
+        );
+        const existingParallelDialingMaxLines = readQueueNumberSetting(
+          existingQueueSettings.parallelDialingMaxLines,
+          DEFAULT_QUEUE_SETTINGS.parallelDialingMaxLines,
+        );
+
+        if (
+          existingQueue.total_contacts === totalCallableRecords.length &&
+          existingParallelDialingEnabled === requestedParallelDialingEnabled &&
+          existingParallelDialingMaxLines === requestedParallelDialingMaxLines
+        ) {
           return existingQueue;
         }
 
@@ -544,6 +601,8 @@ export const useOpportunityQueueWorkspace = ({
               category: 'custom',
               settings: {
                 retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
+                parallelDialingEnabled: requestedParallelDialingEnabled,
+                parallelDialingMaxLines: requestedParallelDialingMaxLines,
               },
               contactIds: totalCallableRecords.map((record) => record.id),
             }),
@@ -579,6 +638,8 @@ export const useOpportunityQueueWorkspace = ({
             category: 'custom',
             settings: {
               retryAttemptCap: DEFAULT_QUEUE_SETTINGS.maxAttempts,
+              parallelDialingEnabled: requestedParallelDialingEnabled,
+              parallelDialingMaxLines: requestedParallelDialingMaxLines,
             },
             contactIds: callableRecords.map((record) => record.id),
           }),
@@ -609,6 +670,8 @@ export const useOpportunityQueueWorkspace = ({
     listId,
     listName,
     loadBackendQueue,
+    requestedParallelDialingEnabled,
+    requestedParallelDialingMaxLines,
     setAllQueueRecords,
   ]);
 
@@ -853,7 +916,16 @@ export const useOpportunityQueueWorkspace = ({
               : 'idle',
       settings: {
         ...DEFAULT_QUEUE_SETTINGS,
+        ...(backendQueue?.settings ?? {}),
         autoAdvance: false,
+        parallelDialingEnabled: readQueueBooleanSetting(
+          backendQueue?.settings?.parallelDialingEnabled,
+          requestedParallelDialingEnabled,
+        ),
+        parallelDialingMaxLines: readQueueNumberSetting(
+          backendQueue?.settings?.parallelDialingMaxLines,
+          requestedParallelDialingMaxLines,
+        ),
       },
       createdAt: backendQueue?.created_at ?? new Date().toISOString(),
       updatedAt: backendQueue?.updated_at ?? new Date().toISOString(),
@@ -862,7 +934,10 @@ export const useOpportunityQueueWorkspace = ({
       category: backendQueue?.category === 'all' ? 'all' : 'custom',
       callingMode: 'browser',
       dncFilteredCount: 0,
-      parallelDialingEnabled: false,
+      parallelDialingEnabled: readQueueBooleanSetting(
+        backendQueue?.settings?.parallelDialingEnabled,
+        requestedParallelDialingEnabled,
+      ),
       parallelDialFromNumbers: [],
       parallelDialingActive: false,
       parallelCurrentBatch: 0,
@@ -1128,13 +1203,21 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
+    if (activeQueue?.parallelDialingEnabled) {
+      autoStartedItemIdRef.current = currentQueueItem.id;
+      void startParallelBatch();
+      return;
+    }
+
     void startCurrentQueueItem();
   }, [
+    activeQueue?.parallelDialingEnabled,
     callState.status,
     currentQueueItem,
     deviceReady,
     listStatus,
     startCurrentQueueItem,
+    startParallelBatch,
   ]);
 
   const processedCallSidRef = useRef<string | null>(null);
