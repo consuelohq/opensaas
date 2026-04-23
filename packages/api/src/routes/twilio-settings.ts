@@ -71,11 +71,16 @@ export const twilioSettingsRoutes = (): RouteDefinition[] => [
       try {
         const config = await getWorkspaceTwilioConfig(workspaceId);
         const sharedHostedConfigAvailable = hasSharedTwilioPlatformConfig();
-        const credentialsSource =
+        const credentialsSource:
+          | {
+              credentials: ReturnType<typeof getDecryptedCredentials>;
+              twimlAppSid: string | null;
+            }
+          | null =
           config && config.twimlAppSid
             ? {
                 credentials: getDecryptedCredentials(config),
-                twimlAppSid: credentialsSource.twimlAppSid,
+                twimlAppSid: config.twimlAppSid,
               }
             : sharedHostedConfigAvailable
               ? (() => {

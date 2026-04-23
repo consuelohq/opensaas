@@ -16,6 +16,7 @@ import { useCoachingScripts } from '@/dialer/hooks/useCoachingScripts';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
 import { callAssistModeState } from '@/dialer/states/callAssistModeState';
 import { dialingModeState } from '@/dialer/states/dialingModeState';
+import { parallelLineCountState } from '@/dialer/states/parallelLineCountState';
 import { importedListIdState } from '@/dialer/states/importedListIdState';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
@@ -166,6 +167,9 @@ export const DialerHomePrep = () => {
   const [callAssistMode, setCallAssistMode] =
     useRecoilState(callAssistModeState);
   const [dialingMode, setDialingMode] = useRecoilState(dialingModeState);
+  const [parallelLineCount, setParallelLineCount] = useRecoilState(
+    parallelLineCountState,
+  );
   const { selectedCoachingScriptId, setSelectedCoachingScriptId, coachingScripts } =
     useCoachingScripts();
   const { hasPermission } = useAudioDevices();
@@ -181,7 +185,6 @@ export const DialerHomePrep = () => {
     }
   }, [importedListId, setImportedListId]);
 
-  const [numberOfLines, setNumberOfLines] = useState<string>('1');
   const { startQueue } = useQueueOperations();
 
   const { records: listRecords } = useFindManyRecords<OpportunityRecord>({
@@ -321,8 +324,8 @@ export const DialerHomePrep = () => {
                 dropdownId="dialer-home-number-of-lines"
                 fullWidth
                 label={t`Number of lines`}
-                value={numberOfLines}
-                onChange={(value) => setNumberOfLines(value)}
+                value={String(parallelLineCount)}
+                onChange={(value) => setParallelLineCount(Number(value))}
                 options={[
                   { value: '1', label: t`One` },
                   { value: '2', label: t`Two` },
