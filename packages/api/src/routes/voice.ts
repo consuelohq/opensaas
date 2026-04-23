@@ -1,5 +1,6 @@
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import type {
+  PhoneNumber,
   TransferType,
   TransferStatus,
   RingTimeMetrics,
@@ -139,7 +140,50 @@ const getProvisionOwnershipType = (
   return 'add_on';
 };
 
-const buildWorkspaceNumberPool = async (workspaceId: string) => {
+type NumberPoolResponseNumber = {
+  areaCode: string;
+  friendlyName: string;
+  isPrimary: boolean;
+  ownershipType: WorkspacePhoneNumberOwnershipType;
+  phoneNumber: string;
+  sid: string;
+};
+
+const isWorkspaceNumberHydrationError = (err: unknown) => {
+  if (!(err instanceof Error)) {
+    return false;
+  }
+
+  return err.message.toLowerCase().includes('workspace_phone_numbers');
+};
+
+const mapRawPhoneNumberToResponse = (
+  number: PhoneNumber,
+  primarySid: string | null,
+): NumberPoolResponseNumber => ({
+  areaCode: number.areaCode ?? '',
+  friendlyName: number.friendlyName ?? '',
+  isPrimary: primarySid !== null && number.twilioSid === primarySid,
+  ownershipType: 'legacy_reserved',
+  phoneNumber: number.phoneNumber ?? '',
+  sid: number.twilioSid ?? '',
+});
+
+const mapPhoneNumberToResponse = (
+  number: WorkspacePhoneNumber | PhoneNumber,
+  primarySid: string | null,
+): NumberPoolResponseNumber => {
+  if ('workspaceId' in number || 'ownershipType' in number) {
+    return mapWorkspacePhoneNumberToResponse(number as WorkspacePhoneNumber);
+  }
+
+  return mapRawPhoneNumberToResponse(number as PhoneNumber, primarySid);
+};
+
+const buildWorkspaceNumberPool = async (
+  workspaceId: string,
+  options?: { allowRawFallback?: boolean },
+) => {
   const dialer = await getDialerForWorkspace(workspaceId);
   const numbers = await dialer.listNumbers();
 
@@ -151,21 +195,52 @@ const buildWorkspaceNumberPool = async (workspaceId: string) => {
     primarySid = null;
   }
 
-  const workspaceNumbers = await listWorkspacePhoneNumbers(
-    workspaceId,
-    numbers,
-    primarySid,
-  );
+  try {
+    const workspaceNumbers = await listWorkspacePhoneNumbers(
+      workspaceId,
+      numbers,
+      primarySid,
+    );
 
-  return {
-    dialer,
-    numberPool: {
-      numbers: workspaceNumbers,
-      primaryNumber:
-        workspaceNumbers.find((number) => number.isPrimary) ??
-        workspaceNumbers[0],
-    },
-  };
+    return {
+      dialer,
+      usedRawFallback: false,
+      numberPool: {
+        numbers: workspaceNumbers,
+        primaryNumber:
+          workspaceNumbers.find((number) => number.isPrimary) ??
+          workspaceNumbers[0],
+      },
+    };
+  } catch (err: unknown) {
+    if (!options?.allowRawFallback || !isWorkspaceNumberHydrationError(err)) {
+      throw err;
+    }
+
+    Sentry.captureMessage('voice.buildWorkspaceNumberPool.raw_fallback', {
+      level: 'warning',
+      extra: {
+        workspaceId,
+        errorMessage: err instanceof Error ? err.message : String(err),
+      },
+    });
+
+    const fallbackNumbers = numbers.map((number) => ({
+      ...number,
+      isPrimary: primarySid !== null && number.twilioSid === primarySid,
+    }));
+
+    return {
+      dialer,
+      usedRawFallback: true,
+      numberPool: {
+        numbers: fallbackNumbers,
+        primaryNumber:
+          fallbackNumbers.find((number) => number.isPrimary) ??
+          fallbackNumbers[0],
+      },
+    };
+  }
 };
 
 /**
@@ -281,8 +356,6 @@ const callerIdMap = new Map<string, string>(); // callSid → callerIdNumber
 
 const recachePhoneNumbers = async (workspaceId: string) => {
   try {
-    const dialer = await getDialerForWorkspace(workspaceId);
-    const numbers = await dialer.listNumbers();
     let primarySid: string | null = null;
     try {
       primarySid = await redisService.getPrimaryNumber(workspaceId);
@@ -290,12 +363,12 @@ const recachePhoneNumbers = async (workspaceId: string) => {
       /* */
     }
 
-    const workspaceNumbers = await listWorkspacePhoneNumbers(
-      workspaceId,
-      numbers,
-      primarySid,
+    const { numberPool } = await buildWorkspaceNumberPool(workspaceId, {
+      allowRawFallback: true,
+    });
+    const phoneNumbers = numberPool.numbers.map((number) =>
+      mapPhoneNumberToResponse(number, primarySid),
     );
-    const phoneNumbers = workspaceNumbers.map(mapWorkspacePhoneNumberToResponse);
     await redisService.setPhoneNumbersCache(workspaceId, { phoneNumbers });
   } catch {
     /* best effort */
@@ -324,10 +397,6 @@ export const voiceRoutes = (): RouteDefinition[] => [
           res.json(JSON.parse(cached));
           return;
         }
-
-        const dialer = await getDialerForWorkspace(workspaceId);
-        const numbers = await dialer.listNumbers();
-
         let primarySid: string | null = null;
         try {
           primarySid = await redisService.getPrimaryNumber(workspaceId);
@@ -335,13 +404,13 @@ export const voiceRoutes = (): RouteDefinition[] => [
           /* */
         }
 
-        const workspaceNumbers = await listWorkspacePhoneNumbers(
-          workspaceId,
-          numbers,
-          primarySid,
-        );
+        const { numberPool } = await buildWorkspaceNumberPool(workspaceId, {
+          allowRawFallback: true,
+        });
         const response = {
-          phoneNumbers: workspaceNumbers.map(mapWorkspacePhoneNumberToResponse),
+          phoneNumbers: numberPool.numbers.map((number) =>
+            mapPhoneNumberToResponse(number, primarySid),
+          ),
         };
 
         await redisService.setPhoneNumbersCache(workspaceId, response);
@@ -1297,7 +1366,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
         if (!config) {
           if (hasSharedTwilioPlatformConfig()) {
             try {
-              const { numberPool } = await buildWorkspaceNumberPool(workspaceId);
+              const { numberPool } = await buildWorkspaceNumberPool(workspaceId, {
+                allowRawFallback: true,
+              });
               const sharedCredentials = getSharedTwilioPlatformCredentials();
               const response = {
                 mode: 'hosted',
@@ -1345,7 +1416,9 @@ export const voiceRoutes = (): RouteDefinition[] => [
           const legacyToken = process.env.TWILIO_AUTH_TOKEN ?? '';
           if (legacySid && legacyToken) {
             try {
-              const { numberPool } = await buildWorkspaceNumberPool(workspaceId);
+              const { numberPool } = await buildWorkspaceNumberPool(workspaceId, {
+                allowRawFallback: true,
+              });
               let hasTwiml = !!process.env.TWILIO_TWIML_APP_SID;
               if (!hasTwiml && process.env.API_BASE_URL) {
                 try {

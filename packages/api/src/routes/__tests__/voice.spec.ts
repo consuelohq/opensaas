@@ -297,6 +297,39 @@ describe('GET /v1/phone-numbers', () => {
     expect(res.body).toEqual({ error: { code: 'UNAUTHORIZED', message: 'Auth required' } });
   });
 
+  it('falls back to raw dialer numbers when workspace number hydration fails', async () => {
+    mockDialer.listNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+        twilioSid: 'PN-001',
+      },
+    ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockRejectedValueOnce(
+      new Error('relation "workspace_phone_numbers" does not exist'),
+    );
+    mockRedis.getPrimaryNumber.mockResolvedValueOnce('PN-001');
+
+    const res = await exec(route(), authReq());
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+      phoneNumbers: [
+        expect.objectContaining({
+          phoneNumber: '+15551234567',
+          friendlyName: 'Main',
+          areaCode: '555',
+          isPrimary: true,
+          ownershipType: 'legacy_reserved',
+          sid: 'PN-001',
+        }),
+      ],
+    });
+  });
+
   it('returns 500 on dialer error', async () => {
     mockDialer.listNumbers.mockRejectedValueOnce(new Error('twilio down'));
     const res = await exec(route(), authReq());
@@ -896,6 +929,38 @@ describe('GET /v1/voice/status', () => {
     expect((res.body as { mode: string }).mode).toBe('hosted');
     expect((res.body as { configured: boolean }).configured).toBe(true);
     expect((res.body as { hasPhoneNumbers: boolean }).hasPhoneNumbers).toBe(true);
+  });
+
+  it('falls back to raw dialer numbers for hosted shared status when workspace number hydration fails', async () => {
+    mockTwilioConfig.getWorkspaceTwilioConfig.mockResolvedValueOnce(null);
+    mockTwilioConfig.hasSharedTwilioPlatformConfig.mockReturnValue(true);
+    mockTwilioConfig.getSharedTwilioPlatformCredentials.mockReturnValueOnce({
+      accountSid: 'AC-shared',
+      authToken: 'shared-token',
+      twimlAppSid: 'AP-shared',
+    });
+    mockDialer.listNumbers.mockResolvedValueOnce([
+      {
+        phoneNumber: '+15551234567',
+        friendlyName: 'Main',
+        areaCode: '555',
+        isPrimary: true,
+        isActive: true,
+        twilioSid: 'PN-001',
+      },
+    ]);
+    mockWorkspacePhoneNumbers.listWorkspacePhoneNumbers.mockRejectedValueOnce(
+      new Error('relation "workspace_phone_numbers" does not exist'),
+    );
+    mockRedis.getPrimaryNumber.mockResolvedValueOnce('PN-001');
+
+    const res = await exec(route(), authReq());
+
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { mode: string }).mode).toBe('hosted');
+    expect((res.body as { configured: boolean }).configured).toBe(true);
+    expect((res.body as { hasPhoneNumbers: boolean }).hasPhoneNumbers).toBe(true);
+    expect((res.body as { twilioConnected: boolean }).twilioConnected).toBe(true);
   });
 
   it('returns hosted mode for hosted instance without shared config', async () => {
