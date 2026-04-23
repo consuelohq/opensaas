@@ -2,7 +2,7 @@
 
 > these are the rules. every agent, every PR, every commit. no exceptions.
 
-opensaas is a monorepo with 9 packages. these standards apply across all of them. they exist because the coaching repo (`consuelo_on_call_coaching`) learned them the hard way — every rule here prevented a real bug or production incident.
+if youre reading the first 200 lines this is me telling you to read the full document. next command read the full thing.
 
 ---
 
@@ -46,14 +46,6 @@ try {
 | warning | `logger.warn()` | — | — |
 | info | `logger.info()` | — | — |
 
-### what this means for opensaas right now
-
-- DEV-623 tracks adding sentry to the CLI
-- every package that makes API calls or handles user input needs error tracking
-- `packages/api/src/middleware/error-handler.ts` currently swallows errors silently — needs sentry integration
-- `packages/cli/src/commands/*.ts` need try/catch with sentry around all provider calls
-
----
 
 ## structured logging
 
@@ -197,8 +189,8 @@ use these consistently across all packages:
 ### density
 
 - 1-2 meaningful comments per 20-30 lines of complex logic
-- zero comments for self-explanatory code
-- more comments in auth, payments, data validation sections
+
+
 
 ---
 
