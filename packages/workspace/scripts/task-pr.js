@@ -408,6 +408,9 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr }) {
       prNumber: pullRequest.number,
     });
     markedReady = true;
+
+    // GitHub needs a moment to propagate the draft→ready state change
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
   await mergePullRequest({

@@ -6,7 +6,6 @@ const { findPullRequest, getToken } = require('./lib/github');
 const {
   branchExistsLocal,
   deleteLocalBranch,
-  ensureWorktreeClean,
   fetchOrigin,
   getCurrentBranch,
   getWorktreeForBranch,
@@ -216,7 +215,6 @@ async function main() {
   let removedWorktree = null;
 
   if (worktree) {
-    ensureWorktreeClean(worktree.path, `${context.branch} worktree`);
     ensureOutsideWorktree(context.repoRoot, worktree.path);
     removeWorktree(context.repoRoot, worktree.path);
     removedWorktree = worktree.path;

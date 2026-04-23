@@ -17,9 +17,14 @@ function toWorktreeDirectoryName(branch) {
   return branch.replace(/\//g, '-');
 }
 
+function getPackageRoot() {
+  return path.resolve(__dirname, '..', '..');
+}
+
 module.exports = {
   DEFAULT_MAIN_BRANCH,
   DEFAULT_REPO,
+  getPackageRoot,
   getWorktreeRoot,
   resolveGitRoot,
   toWorktreeDirectoryName,

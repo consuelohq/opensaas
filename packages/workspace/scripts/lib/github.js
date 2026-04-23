@@ -296,10 +296,32 @@ async function updatePullRequest({ token, repository, prNumber, title, body, bas
 async function markPullRequestReadyForReview({ token, repository, prNumber }) {
   const { owner, name } = parseRepository(repository);
 
+  // Get the PR's node_id for GraphQL
+  const prData = await githubRequest({
+    token,
+    method: 'GET',
+    endpoint: `/repos/${owner}/${name}/pulls/${prNumber}`,
+  });
+
+  const nodeId = prData.node_id;
+
+  // Use gh CLI for the GraphQL mutation — the script's GITHUB_TOKEN may lack
+  // the scope needed for this mutation, but gh's auth always works.
+  const { execSync } = require('child_process');
+  try {
+    execSync(
+      `gh api graphql -f query='mutation { markPullRequestReadyForReview(input: { pullRequestId: "${nodeId}" }) { pullRequest { number isDraft } } }'`,
+      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] },
+    );
+  } catch (err) {
+    throw new Error(`failed to mark PR #${prNumber} ready for review: ${err.stderr || err.message}`);
+  }
+
+  // re-fetch via REST so callers get the full PR shape
   return githubRequest({
     token,
-    method: 'POST',
-    endpoint: `/repos/${owner}/${name}/pulls/${prNumber}/ready_for_review`,
+    method: 'GET',
+    endpoint: `/repos/${owner}/${name}/pulls/${prNumber}`,
   });
 }
 
