@@ -758,6 +758,11 @@ export const useOpportunityQueueWorkspace = ({
   const autoAdvanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const queueUsesParallelDialing =
+    activeQueue?.parallelDialingEnabled ?? requestedParallelDialingEnabled;
+  const queueSessionReady =
+    twilioConfigStatus !== null && twilioConfigStatus.configured;
+  const queueRunnerReady = queueUsesParallelDialing || deviceReady;
 
   const clearAutoAdvanceTimer = useCallback(() => {
     if (autoAdvanceTimerRef.current) {
@@ -1008,11 +1013,7 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    if (twilioConfigStatus === null) {
-      return;
-    }
-
-    if (!twilioConfigStatus.configured || !deviceReady) {
+    if (!queueSessionReady) {
       return;
     }
 
@@ -1031,8 +1032,9 @@ export const useOpportunityQueueWorkspace = ({
           deviceError,
           deviceReady,
           listId,
-          twilioConfigured: twilioConfigStatus.configured,
-          twilioMode: twilioConfigStatus.mode,
+          queueUsesParallelDialing,
+          twilioConfigured: twilioConfigStatus?.configured ?? false,
+          twilioMode: twilioConfigStatus?.mode ?? null,
         },
       });
     });
@@ -1045,6 +1047,8 @@ export const useOpportunityQueueWorkspace = ({
     hasPendingQueueItems,
     listId,
     listStatus,
+    queueSessionReady,
+    queueUsesParallelDialing,
     startBackendQueueSession,
     twilioConfigStatus,
   ]);
@@ -1194,7 +1198,7 @@ export const useOpportunityQueueWorkspace = ({
   useEffect(() => {
     if (
       listStatus !== 'ACTIVE' ||
-      !deviceReady ||
+      !queueRunnerReady ||
       !['idle', 'ended', 'failed'].includes(callState.status) ||
       !currentQueueItem ||
       currentQueueItem.status !== 'calling' ||
@@ -1203,7 +1207,7 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    if (activeQueue?.parallelDialingEnabled) {
+    if (queueUsesParallelDialing) {
       autoStartedItemIdRef.current = currentQueueItem.id;
       void startParallelBatch();
       return;
@@ -1211,11 +1215,11 @@ export const useOpportunityQueueWorkspace = ({
 
     void startCurrentQueueItem();
   }, [
-    activeQueue?.parallelDialingEnabled,
     callState.status,
     currentQueueItem,
-    deviceReady,
     listStatus,
+    queueRunnerReady,
+    queueUsesParallelDialing,
     startCurrentQueueItem,
     startParallelBatch,
   ]);
