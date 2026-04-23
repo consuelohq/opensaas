@@ -135,7 +135,16 @@ function getTaskContext(args) {
   const repoRoot = resolveGitRoot(startDirectory);
   const currentBranch = getCurrentBranch(startDirectory);
   const taskMeta = findTaskMeta(startDirectory);
-  const branch = args.branch || (taskMeta && taskMeta.data.taskBranch) || currentBranch;
+
+  if (!taskMeta) {
+    throw new Error(
+      'no .task-meta.json found. this worktree was not created by task:start.\n' +
+      'run: bun run task:start -- --area <area> --title "<title>"\n' +
+      'then work in the new worktree it creates.',
+    );
+  }
+
+  const branch = args.branch || taskMeta.data.taskBranch;
 
   if (!branch) {
     throw new Error('unable to determine the current branch');

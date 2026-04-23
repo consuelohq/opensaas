@@ -209,7 +209,16 @@ function getPrContext(args) {
   const repoRoot = resolveGitRoot(process.cwd());
   const taskMeta = findTaskMeta(process.cwd());
   const currentBranch = getCurrentBranch(process.cwd());
-  const taskBranch = args.branch || (taskMeta && taskMeta.data.taskBranch) || currentBranch;
+
+  if (!taskMeta) {
+    throw new Error(
+      'no .task-meta.json found. this worktree was not created by task:start.\n' +
+      'run: bun run task:start -- --area <area> --title "<title>"\n' +
+      'then work in the new worktree it creates.',
+    );
+  }
+
+  const taskBranch = args.branch || taskMeta.data.taskBranch;
 
   if (!taskBranch) {
     throw new Error('unable to determine the task branch');
