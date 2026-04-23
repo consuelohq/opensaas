@@ -6,6 +6,7 @@ mcp_servers.nx-mcp.args = [
 ]
 features.multi_agent = true
 
+approval_policy = "never"
 [agents.ci-monitor-subagent]
 description = 'CI helper for /monitor-ci. Fetches CI status, retrieves fix details, or updates self-healing fixes. Executes one MCP tool call and returns the result.'
 config_file = 'agents/ci-monitor-subagent.toml'

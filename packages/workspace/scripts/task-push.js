@@ -1,0 +1,420 @@
+#!/usr/bin/env bun
+
+const fs = require('fs');
+const path = require('path');
+
+const DEFAULT_REPO = 'consuelohq/opensaas';
+const AUTHOR = { name: 'kokayicobb', email: 'kokayicobb@users.noreply.github.com' };
+const COMMITTER = {
+  name: 'suelo-kiro[bot]',
+  email: '260422584+suelo-kiro[bot]@users.noreply.github.com',
+};
+
+const {
+  createBlob,
+  createCommit,
+  createTree,
+  getBranchRef,
+  getCommit,
+  getToken,
+  updateBranchRef,
+} = require('./lib/github');
+const {
+  fetchOrigin,
+  getTrackedChanges,
+  getCurrentBranch,
+  getRefSha,
+  refExists,
+} = require('./lib/git');
+const { resolveGitRoot } = require('./lib/paths');
+const {
+  assertCommitMessageFormat,
+  assertTaskBranchName,
+  isStreamBranchName,
+} = require('./lib/validation');
+const { findTaskMeta } = require('./lib/task-meta');
+
+function writeStdout(value = '') {
+  process.stdout.write(`${value}\n`);
+}
+
+function writeStderr(value = '') {
+  process.stderr.write(`${value}\n`);
+}
+
+function printHelp() {
+  writeStdout('usage: bun run task:push -- --message "fix(area): summary" [options]');
+  writeStdout('');
+  writeStdout('options:');
+  writeStdout('  --message <text>       commit message in conventional format (required)');
+  writeStdout('  --changed              push tracked changed files from the current task worktree');
+  writeStdout('  --files <paths...>     explicit file paths to read from disk');
+  writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
+  writeStdout('  --branch <name>        override task branch (normally inferred from .task-meta.json)');
+  writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
+  writeStdout('  --cwd <dir>            base directory for explicit file paths');
+  writeStdout('  --json                 output json');
+  writeStdout('  --help                 show this help');
+}
+
+function parseArgs(argv) {
+  const args = {
+    repo: DEFAULT_REPO,
+    filePaths: [],
+    json: false,
+    changed: false,
+  };
+
+  let index = 0;
+
+  while (index < argv.length) {
+    const rawArgument = argv[index];
+
+    if (!rawArgument.startsWith('--')) {
+      throw new Error(`unexpected argument: ${rawArgument}`);
+    }
+
+    if (rawArgument === '--files') {
+      index += 1;
+      while (index < argv.length && !argv[index].startsWith('--')) {
+        args.filePaths.push(argv[index]);
+        index += 1;
+      }
+      continue;
+    }
+
+    const [flag, inlineValue] = rawArgument.split('=', 2);
+    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--changed';
+    const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
+
+    if (!isBooleanFlag && (!value || value.startsWith('--'))) {
+      throw new Error(`missing value for ${flag}`);
+    }
+
+    if (inlineValue === undefined && !isBooleanFlag) {
+      index += 1;
+    }
+
+    switch (flag) {
+      case '--message':
+        args.message = value;
+        break;
+      case '--files-json':
+        args.filesJson = value;
+        break;
+      case '--branch':
+        args.branch = value;
+        break;
+      case '--cwd':
+        args.cwd = value;
+        break;
+      case '--repo':
+        args.repo = value;
+        break;
+      case '--changed':
+        args.changed = true;
+        break;
+      case '--json':
+        args.json = true;
+        break;
+      case '--help':
+        args.help = true;
+        break;
+      default:
+        throw new Error(`unknown flag: ${flag}`);
+    }
+
+    index += 1;
+  }
+
+  return args;
+}
+
+function getTaskContext(args) {
+  const startDirectory = path.resolve(args.cwd || process.cwd());
+  const repoRoot = resolveGitRoot(startDirectory);
+  const currentBranch = getCurrentBranch(startDirectory);
+  const taskMeta = findTaskMeta(startDirectory);
+
+  if (!taskMeta) {
+    throw new Error(
+      'no .task-meta.json found. this worktree was not created by task:start.\n' +
+      'run: bun run task:start -- --area <area> --title "<title>"\n' +
+      'then work in the new worktree it creates.',
+    );
+  }
+
+  const branch = args.branch || taskMeta.data.taskBranch;
+
+  if (!branch) {
+    throw new Error('unable to determine the current branch');
+  }
+
+  if (branch === 'main' || isStreamBranchName(branch)) {
+    throw new Error('task:push only supports task/* branches; refusing to push from main or stream branches');
+  }
+
+  assertTaskBranchName(branch);
+
+  if (currentBranch !== branch) {
+    throw new Error(`current git branch mismatch: expected ${branch}, received ${currentBranch}`);
+  }
+
+  if (taskMeta) {
+    if (taskMeta.data.taskBranch !== branch) {
+      throw new Error(`task metadata branch mismatch: ${taskMeta.data.taskBranch} != ${branch}`);
+    }
+
+    if (path.resolve(taskMeta.data.worktreePath) !== path.resolve(repoRoot)) {
+      throw new Error(
+        `task metadata worktree mismatch: expected ${taskMeta.data.worktreePath}, received ${repoRoot}`,
+      );
+    }
+  }
+
+  return {
+    branch,
+    currentBranch,
+    repoRoot,
+    taskMeta,
+  };
+}
+
+function resolveFilesFromJson(args) {
+  if (!args.filesJson) {
+    return null;
+  }
+
+  const parsed = JSON.parse(args.filesJson);
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('--files-json must be a non-empty array');
+  }
+
+  return parsed.map((entry) => {
+    if (!entry || typeof entry.path !== 'string') {
+      throw new Error('--files-json entries must include a path field');
+    }
+
+    if (!entry.deleted && typeof entry.content !== 'string') {
+      throw new Error(`files-json entry ${entry.path} is missing content`);
+    }
+
+    return {
+      path: entry.path,
+      content: entry.content,
+      deleted: Boolean(entry.deleted),
+    };
+  });
+}
+
+function resolveFilesFromPaths(args, repoRoot) {
+  if (args.filePaths.length === 0) {
+    return null;
+  }
+
+  const baseDirectory = path.resolve(args.cwd || process.cwd());
+
+  return args.filePaths.map((filePath) => {
+    const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(baseDirectory, filePath);
+    const repoPath = path.relative(repoRoot, absolutePath).split(path.sep).join('/');
+
+    if (repoPath.startsWith('..')) {
+      throw new Error(`file is outside the repository root: ${filePath}`);
+    }
+
+    return {
+      path: repoPath,
+      content: fs.readFileSync(absolutePath, 'utf8'),
+      deleted: false,
+    };
+  });
+}
+
+function assertChangedBranchIsSynced(repoRoot, branch) {
+  fetchOrigin(repoRoot);
+
+  const localRef = `refs/heads/${branch}`;
+  const remoteRef = `refs/remotes/origin/${branch}`;
+
+  if (!refExists(repoRoot, remoteRef)) {
+    throw new Error(
+      `origin/${branch} does not exist. sync the task branch with origin before running task:push --changed.`,
+    );
+  }
+
+  const localSha = getRefSha(repoRoot, localRef);
+  const remoteSha = getRefSha(repoRoot, remoteRef);
+
+  if (localSha !== remoteSha) {
+    throw new Error(
+      `local task branch is not synced with origin/${branch} (local ${localSha.slice(0, 8)} != remote ${remoteSha.slice(0, 8)}). sync the task worktree first, then rerun task:push --changed.`,
+    );
+  }
+}
+
+function resolveChangedFiles(repoRoot) {
+  const changes = getTrackedChanges(repoRoot);
+
+  if (changes.length === 0) {
+    throw new Error('no tracked changes detected in the current task worktree');
+  }
+
+  return changes.map((change) => {
+    if (change.deleted) {
+      return {
+        path: change.path,
+        deleted: true,
+      };
+    }
+
+    return {
+      path: change.path,
+      content: fs.readFileSync(path.join(repoRoot, change.path), 'utf8'),
+      deleted: false,
+    };
+  });
+}
+
+function resolveFiles(args, repoRoot) {
+  const fromJson = resolveFilesFromJson(args);
+  if (fromJson) {
+    return fromJson;
+  }
+
+  const fromPaths = resolveFilesFromPaths(args, repoRoot);
+  if (fromPaths) {
+    return fromPaths;
+  }
+
+  if (args.changed) {
+    return resolveChangedFiles(repoRoot);
+  }
+
+  throw new Error('provide --changed, --files, or --files-json');
+}
+
+function printPlan(branch, files, useJson) {
+  if (useJson) {
+    return;
+  }
+
+  writeStdout(`target branch: ${branch}`);
+  writeStdout('files:');
+  for (const file of files) {
+    writeStdout(`  - ${file.path}${file.deleted ? ' (delete)' : ''}`);
+  }
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+
+  if (args.help) {
+    printHelp();
+    return;
+  }
+
+  if (!args.message) {
+    throw new Error('missing required --message');
+  }
+
+  assertCommitMessageFormat(args.message);
+
+  const { branch, repoRoot } = getTaskContext(args);
+
+  if (args.changed) {
+    assertChangedBranchIsSynced(repoRoot, branch);
+  }
+
+  const token = getToken();
+  const files = resolveFiles(args, repoRoot);
+
+  if (files.length === 0) {
+    throw new Error('no files to push');
+  }
+
+  printPlan(branch, files, args.json);
+
+  const branchRef = await getBranchRef({ token, repository: args.repo, branch });
+
+  if (!branchRef) {
+    throw new Error(`remote branch not found: ${branch}`);
+  }
+
+  const headCommit = await getCommit({
+    token,
+    repository: args.repo,
+    sha: branchRef.object.sha,
+  });
+
+  const treeItems = [];
+
+  for (const file of files) {
+    if (file.deleted) {
+      treeItems.push({
+        path: file.path,
+        sha: null,
+      });
+      continue;
+    }
+
+    const blob = await createBlob({
+      token,
+      repository: args.repo,
+      content: Buffer.from(file.content).toString('base64'),
+      encoding: 'base64',
+    });
+
+    treeItems.push({
+      path: file.path,
+      mode: '100644',
+      type: 'blob',
+      sha: blob.sha,
+    });
+  }
+
+  const tree = await createTree({
+    token,
+    repository: args.repo,
+    baseTree: headCommit.tree.sha,
+    tree: treeItems,
+  });
+
+  const timestamp = new Date().toISOString();
+  const commit = await createCommit({
+    token,
+    repository: args.repo,
+    message: args.message,
+    tree: tree.sha,
+    parents: [branchRef.object.sha],
+    author: { ...AUTHOR, date: timestamp },
+    committer: { ...COMMITTER, date: timestamp },
+  });
+
+  await updateBranchRef({
+    token,
+    repository: args.repo,
+    branch,
+    sha: commit.sha,
+  });
+
+  const result = {
+    repo: args.repo,
+    branch,
+    sha: commit.sha,
+    message: args.message,
+    files: files.map((file) => ({ path: file.path, deleted: Boolean(file.deleted) })),
+  };
+
+  if (args.json) {
+    writeStdout(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  writeStdout(`pushed ${commit.sha.slice(0, 8)} to ${branch}`);
+}
+
+main().catch((error) => {
+  writeStderr(error instanceof Error ? error.message : 'unknown error');
+  process.exit(1);
+});
