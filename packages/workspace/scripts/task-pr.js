@@ -255,7 +255,7 @@ function updateTaskMetaIfPresent(taskMetaRecord, updates) {
     return;
   }
 
-  writeTaskMeta(taskMetaRecord.directory, {
+  writeTaskMeta(taskMetaRecord.dir, {
     ...taskMetaRecord.data,
     ...updates,
   });

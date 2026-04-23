@@ -1,9 +1,8 @@
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 function runGit(args, options = {}) {
   const cwd = options.cwd || process.cwd();
-  const cmd = `git ${args.join(' ')}`;
-  return execSync(cmd, { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
 }
 
 function runGitMaybe(args, options = {}) {
