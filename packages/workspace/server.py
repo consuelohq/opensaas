@@ -12,9 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
-from tools import agents as agents_mod
 from tools import brain as brain_mod
-from tools import github as github_mod
 from tools import handoff as handoff_mod
 from tools import sandbox as sandbox_mod
 from tools import slack as slack_mod
@@ -157,48 +155,6 @@ def sandbox_write_file(path: str, content: str) -> str:
 def sandbox_list_files(path: str = '') -> str:
     """list files in a directory on the host. defaults to the configured workspace."""
     return sandbox_mod.list_files(path)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='github_get_file', run_type='tool')
-def github_get_file(path: str, ref: str = 'main') -> str:
-    """read a file from the configured github repository."""
-    return github_mod.get_file(path, ref)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='github_get_pr', run_type='tool')
-def github_get_pr(pr_number: int) -> str:
-    """get a pull request by number."""
-    return github_mod.get_pr(pr_number)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='github_list_prs', run_type='tool')
-def github_list_prs(state: str = 'open', limit: int = 10) -> str:
-    """list pull requests."""
-    return github_mod.list_prs(state, limit)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='github_push_files', run_type='tool')
-def github_push_files(branch: str, files: str, message: str) -> str:
-    """push file changes to a branch in the configured github repository."""
-    return github_mod.push_files(branch, files, message)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='invoke_opencode', run_type='tool')
-def invoke_opencode(prompt: str, cwd: str = '') -> str:
-    """spawn an opencode coding agent in tmux."""
-    return agents_mod.invoke_opencode(prompt, cwd)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='invoke_kiro', run_type='tool')
-def invoke_kiro(prompt: str, cwd: str = '') -> str:
-    """spawn a kiro coding agent in tmux."""
-    return agents_mod.invoke_kiro(prompt, cwd)
 
 
 @mcp.tool(annotations=RO)
