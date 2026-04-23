@@ -33,7 +33,7 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
-const { saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
 
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
@@ -327,6 +327,15 @@ async function main() {
   let createdWorktree = false;
   const desiredWorktreePath = path.join(worktreeRoot, toWorktreeDirectoryName(taskBranch));
 
+  // guard 1: reject if worktree path already exists
+  if (fs.existsSync(desiredWorktreePath) && !worktree) {
+    throw new Error(
+      `worktree path already exists: ${desiredWorktreePath}\n` +
+      'run: bun run task:cleanup\n' +
+      'or pick a different --title to generate a new branch slug.',
+    );
+  }
+
   if (!worktree) {
     writeStderr(`creating worktree ${desiredWorktreePath}...`);
     createWorktree(repoRoot, desiredWorktreePath, taskBranch);
@@ -381,6 +390,15 @@ async function main() {
     createdPr = true;
   }
 
+  // guard 3: verify PR targets stream, not main
+  if (pullRequest.base.ref !== stream) {
+    throw new Error(
+      `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\n` +
+      'the draft pr must target the stream branch, not main.\n' +
+      'close the incorrect pr on github and rerun task:start.',
+    );
+  }
+
   const taskMeta = {
     area,
     stream,
@@ -395,6 +413,16 @@ async function main() {
   };
 
   writeTaskMeta(worktreePath, taskMeta);
+
+  // guard 2: verify .task-meta.json was written correctly
+  const verifyMeta = readTaskMeta(worktreePath);
+  if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
+    throw new Error(
+      `.task-meta.json verification failed in ${worktreePath}.\n` +
+      'the file was not written correctly. check disk permissions.',
+    );
+  }
+
   await saveTaskMetaMemory(taskMeta);
 
   printResult(
@@ -414,6 +442,16 @@ async function main() {
     },
     args.json,
   );
+
+  // guard 4: print next steps
+  if (!args.json) {
+    writeStderr('');
+    writeStderr('next steps:');
+    writeStderr(`  cd ${worktreePath}`);
+    writeStderr('  # make your changes');
+    writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
+    writeStderr('  bun run task:pr');
+  }
 }
 
 main().catch((error) => {
