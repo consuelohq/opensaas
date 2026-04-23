@@ -9,7 +9,8 @@
     "task:finish": "bun ./scripts/task-finish.js",
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
-    "stream:list": "bun ./scripts/stream-list.js"
+    "stream:list": "bun ./scripts/stream-list.js",
+    "railway:logs": "bun ./scripts/railway-logs.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
