@@ -232,7 +232,9 @@
     "docs:rebrand": "tsx packages/consuelo-docs/scripts/rebrand-docs-content.ts --mode=apply && yarn docs:generate-navigation-template && yarn docs:generate",
     "docs:rebrand:audit": "tsx packages/consuelo-docs/scripts/rebrand-docs-content.ts --mode=audit",
     "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",
-    "prepare": "husky"
+    "prepare": "husky",
+    "railway:logs": "bun packages/workspace/scripts/railway-logs.js",
+    "browser": "bun packages/workspace/scripts/browser.js"
   },
   "workspaces": {
     "packages": [

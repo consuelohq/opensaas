@@ -32,7 +32,8 @@ function printHelp() {
     '  fill <ref> <text>    fill input by ref',
     '  login <name>         run saved auth login',
     '  eval <js>            run javascript on current page',
-    '  raw <...args>        pass args directly to agent-browser',
+    '  close                close the browser
+    raw <...args>        pass args directly to agent-browser',
     '',
     'options:',
     '  --headed             show browser window (visible to ko)',
@@ -221,6 +222,8 @@ function main() {
     case 'eval':
       cmdEval(args.slice(1).join(' '));
       break;
+    case 'close':
+      run(['close']); writeStdout('browser closed'); break;
     case 'raw':
       cmdRaw(args.slice(1));
       break;
