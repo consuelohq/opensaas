@@ -23,7 +23,7 @@ function printHelp() {
     'screenshots go to /tmp/opensaas-screenshots/.',
     '',
     'commands:',
-    '  test <url>           open url, wait for load, snapshot, screenshot',
+    '  open <url>           open url, wait for load, snapshot, screenshot',
     '  consuelo             open consuelo.consuelohq.com (internal CRM)',
     '  app                  open app.consuelohq.com (production)',
     '  screenshot [name]    take screenshot of current page',
@@ -41,7 +41,7 @@ function printHelp() {
     '  --help               show this help',
     '',
     'examples:',
-    '  bun run browser -- test https://consuelo.consuelohq.com',
+    '  bun run browser -- open https://example.com',
     '  bun run browser -- consuelo --headed',
     '  bun run browser -- snap',
     '  bun run browser -- click @e5',
@@ -77,7 +77,7 @@ function screenshotPath(name) {
   return path.join(SCREENSHOT_DIR, `${slug}-${ts}.png`);
 }
 
-function cmdTest(url, opts) {
+function cmdOpen(url, opts) {
   const openArgs = ['open', url];
   if (opts.headed) openArgs.push('--headed');
 
@@ -191,14 +191,15 @@ function main() {
   const command = args[0];
 
   switch (command) {
-    case 'test':
-      cmdTest(args[1] || CONSUELO_URL, opts);
+    case 'open':
+      if (!args[1]) { writeStdout('error: url required. usage: bun run browser -- open <url>'); return; }
+      cmdOpen(args[1], opts);
       break;
     case 'consuelo':
-      cmdTest(CONSUELO_URL, opts);
+      cmdOpen(CONSUELO_URL, opts);
       break;
     case 'app':
-      cmdTest(APP_URL, opts);
+      cmdOpen(APP_URL, opts);
       break;
     case 'screenshot':
     case 'ss':
