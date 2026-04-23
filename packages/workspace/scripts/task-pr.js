@@ -52,7 +52,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --branch <name>          task branch (default: infer from .task-meta.json or current branch)');
-  writeStdout('  --title <value>          final review pr title (required when creating stream/* -> main)');
+  writeStdout('  --title <value>          final review pr title (default: Stream/<area>)');
   writeStdout(`  --base <branch>          final review base branch (default: ${DEFAULT_REVIEW_BASE})`);
   writeStdout('  --body <text>            final review pr body text');
   writeStdout('  --body-file <path>       final review pr body markdown file');
@@ -581,12 +581,16 @@ async function main() {
     taskPr: taskPrDetails.pullRequest,
   });
 
+  const reviewTitle =
+    args.title ||
+    `Stream/${context.area}`;
+
   const reviewPrDetails = await ensurePullRequest({
     token,
     repository: args.repo,
     branch: context.streamBranch,
     base: context.reviewBase,
-    title: args.title,
+    title: reviewTitle,
     body: reviewBody,
     draft: args.draft,
   });
