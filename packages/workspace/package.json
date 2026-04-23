@@ -10,7 +10,8 @@
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
-    "railway:logs": "bun ./scripts/railway-logs.js"
+    "railway:logs": "bun ./scripts/railway-logs.js",
+    "browser": "bun ./scripts/browser.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
