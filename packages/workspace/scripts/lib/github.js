@@ -303,6 +303,22 @@ async function markPullRequestReadyForReview({ token, repository, prNumber }) {
   });
 }
 
+async function mergePullRequest({ token, repository, prNumber, commitTitle, mergeMethod = 'merge' }) {
+  const { owner, name } = parseRepository(repository);
+  const body = { merge_method: mergeMethod };
+
+  if (commitTitle) {
+    body.commit_title = commitTitle;
+  }
+
+  return githubRequest({
+    token,
+    method: 'PUT',
+    endpoint: `/repos/${owner}/${name}/pulls/${prNumber}/merge`,
+    body,
+  });
+}
+
 module.exports = {
   GitHubRequestError,
   createBlob,
@@ -318,6 +334,7 @@ module.exports = {
   githubRequest,
   listPullRequests,
   markPullRequestReadyForReview,
+  mergePullRequest,
   parseRepository,
   updateBranchRef,
   updatePullRequest,
