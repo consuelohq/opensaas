@@ -138,9 +138,10 @@ function getLatestDeploy(service) {
   } catch { return { status: 'unknown', meta: null }; }
 }
 
-function fetchLogs(service, { filter, lines } = {}) {
+function fetchLogs(service, { filter, lines, deploymentId } = {}) {
   try {
     let cmd = `railway logs --service ${service}`;
+    if (deploymentId) cmd += ` ${deploymentId}`;
     if (filter) cmd += ` --filter ${JSON.stringify(filter)}`;
     if (lines) cmd += ` --lines ${lines}`;
     else cmd += ' --lines 200';
@@ -302,10 +303,14 @@ function main() {
   // runtime logs
   err(`fetching runtime logs for ${args.service}...`);
   const filter = args.errorsOnly ? '@level:error' : args.filter || null;
-  const rawLines = fetchLogs(args.service, { filter, lines: args.lines });
+  const deploy = getLatestDeploy(args.service);
+  const deployId = deploy.meta ? getDeploymentId(args.service) : null;
+  if (deploy.meta) {
+    err(`deploy: ${deploy.meta.commit} — ${deploy.meta.message}`);
+  }
+  const rawLines = fetchLogs(args.service, { filter, lines: args.lines, deploymentId: deployId });
 
   // http logs
-  const deployId = getDeploymentId(args.service);
   let httpLogs = fetchHttpLogs(deployId, { filter, lines: args.lines ? Math.min(args.lines, 50) : 50 });
 
   // --raw mode
