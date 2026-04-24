@@ -26,3 +26,6 @@
 *.ttf binary
 *.eot binary
 
+
+# Task metadata — keep local version during merges to prevent cross-task overwrites
+.task/current.json merge=ours

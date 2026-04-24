@@ -34,7 +34,7 @@ function printHelp() {
   writeStdout('usage: bun run task:finish -- [options]');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --branch <name>        task branch (default: infer from .task-meta.json or current branch)');
+  writeStdout('  --branch <name>        task branch (default: infer from .task/current.json or current branch)');
   writeStdout('  --stream <branch>      stream target to verify merge against (default: infer from task metadata or area)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --json                 output json');

@@ -89,3 +89,6 @@ xfs-*/
 .nx/polygraph
 .claude/worktrees
 .claude/settings.local.jsonesbuild-*
+
+# Legacy task metadata (replaced by .task/)
+.task-meta.json

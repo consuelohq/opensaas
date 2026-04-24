@@ -106,7 +106,8 @@ function isBranchMerged(repoRoot, branch, into) {
 }
 
 function getTrackedChanges(repoRoot) {
-  const output = runGit(['status', '--porcelain'], { cwd: repoRoot });
+  // -uall shows individual files inside untracked directories instead of just the directory name
+  const output = runGit(['status', '--porcelain', '-uall'], { cwd: repoRoot });
   if (!output) return [];
 
   return output.split('\n').filter(Boolean).map((line) => {
