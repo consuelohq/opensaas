@@ -1,76 +1,69 @@
-# fix deployed parallel phone payload
+# fix queue call start audio ringing
 
-branch: `task/dialer/fix-deployed-parallel-phone-payload`
+branch: `task/dialer/fix-queue-call-start-audio-ringing`
 stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/188
+pr: https://github.com/consuelohq/opensaas/pull/190
 started: 2026-04-24
 
 ## acceptance criteria
 
-- [x] start a fresh task from `stream/dialer` using the task-start skill loop.
-- [x] read `AGENTS.md` and the full `CODING-STANDARDS.md` before editing.
+- [x] start a fresh task from `stream/dialer` using `task-start`.
+- [x] read `/Users/kokayi/Dev/opensaas/AGENTS.md` and `CODING-STANDARDS.md` before editing.
 - [x] copy these acceptance criteria into `.task/workpad.md` before coding.
-- [x] reproduce the production `/api/v1/calls/parallel` 500 with an isolated HAR or controlled browser `fetch`.
-- [x] prove whether the browser is running stale frontend code, stale `@consuelo/contacts` browser output, or a source-level bypass path.
-- [x] inspect the deployed frontend bundle or source maps enough to confirm what `toE164()` implementation is actually shipped.
+- [x] reproduce the current production issue with a fresh HAR: queue progresses, backend creates a group, but the user gets no audible sound and/or no visible/real ringing.
+- [x] capture the `POST /api/v1/calls/parallel` response body or equivalent status object, including `groupId`, `conferenceName`, `profileId`, and `callSid` values. captured equivalent status body for existing production group; the post body was not available for the stale start because the blocked retry did not create a fresh group.
+- [x] capture several `GET /api/v1/calls/parallel/:groupId` response bodies and determine whether calls ever move from `dialing` to `ringing`, `in-progress`, `completed`, `failed`, `busy`, or `no-answer`. group `pg_316ec7f32b6c` stayed `dialing` across captured polls.
+- [x] determine whether Twilio status callbacks are reaching `/api/v1/calls/parallel/status-callback` and whether `/api/v1/calls/parallel/customer-twiml` is requested. railway filters showed no callback/twiml route activity for the captured group; the confirmed code fix here is the frontend retry guard that prevented a fresh post/retry.
+- [x] determine whether the missing local sound is caused by `notificationSounds.ts`, browser autoplay/Web Audio state, `soundsEnabled`, missing user gesture linkage, or the queue path not calling the sound helper. confirmed the queue path was not reaching `playDialingStartedSound()` when `startParallelBatch()` returned early against stale recoil queue state.
+- [x] determine whether the visible `Grant microphone access` state is related to the failure. `queueRunnerReady` is `queueUsesParallelDialing || deviceReady`, so mic permission is not the parallel auto-start blocker.
 - [x] fix the confirmed cause only.
-- [x] after fix, prove `customerNumbers` no longer includes `+1584143861603` in browser network output.
-- [x] backend must return `400 Invalid customer phone number` if an invalid value reaches `/api/v1/calls/parallel`, not 500.
-- [ ] confirm valid numbers still create a parallel group with `groupId`, `conferenceName`, `profileId`, and real twilio `callSid` values.
-- [x] document the Apollo `OpportunitiesGroupByAggregates` warning separately; fix it only if investigation proves it blocks the dialer path.
+- [x] add focused tests for the fixed call-start/audio/ringing behavior.
+- [ ] validate production after deploy: queue progression creates calls, status advances correctly, no unexpected 500s, and sound/ringing behavior is proven or explicitly measured.
 - [ ] publish with `bun run task:push`, `bun run task:pr`, and `bun run task:finish`.
 
 ## plan
 
-1. verify production state from railway and browser before changing code.
-2. capture isolated `/api/v1/calls/parallel` evidence via har or current browser network history.
-3. inspect deployed frontend assets and local build/package wiring to identify the executed `toE164()` implementation.
-4. change only the confirmed broken runtime path.
-5. run focused tests, review, and typecheck where feasible.
-6. publish through task:push, task:pr, and task:finish.
+1. reproduce the production queue-start path using browser and railway scripts before changing code.
+2. capture network bodies for parallel create and polling, plus console/page errors and railway callback/twiml evidence.
+3. trace frontend queue/parallel dialer/audio/device readiness paths and backend parallel twiml/status callback paths.
+4. patch only the confirmed root cause.
+5. add focused tests at the narrowest useful layer.
+6. run review/typecheck/focused tests, publish with task-publish, and verify production after deploy.
+
+## production evidence
+
+- prior handoff proved `POST /api/v1/calls/parallel` now returns 201 for a valid batch and creates group `pg_9588af6e91c9`.
+- remaining reported failures are downstream of group creation: audible local sounds, real call ringing/status progression, twiml/status callbacks, or queue ui device state.
 
 ## files changed
 
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
+- `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
+- `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
+- `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
 
 ## key decisions
 
-- production bundle `/assets/index-GQQedWUZ.js` contains the fixed runtime implementation: `normalizePhone` returns only valid parsed values and `toE164` returns `null` when validation fails. this disproves the stale frontend-bundle hypothesis for the currently served bundle.
-- browser network history still has the old `+1584143861603` request from 2026-04-24 09:11:13 GMT, but isolated HAR after current deploy did not reproduce that bad number.
-- isolated HAR after skip/no-answer reproduced a current 500 with `customerNumbers` `+17876240936` and `+12674638435`; railway logs show twilio denied the first destination by geo permissions.
-- fix maps provider-denied/invalid customer-number failures to `400 Invalid customer phone number` instead of returning a generic 500.
-
-## validation
-
-- `yarn jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` passed: 15 tests.
-- `npx tsc -p packages/contacts/tsconfig.json` passed.
-- `yarn jest packages/contacts/src/utils.spec.ts --config=packages/contacts/jest.config.mjs --runInBand` passed: 22 tests.
-- `yarn jest packages/twenty-front/src/modules/dialer/utils/__tests__/phoneFormat.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand` passed: 3 tests.
+- `startParallelBatch()` now returns `true` only after a parallel batch is actually posted and polling starts.
+- the opportunity queue auto-start guard now clears itself when `startParallelBatch()` returns `false` or throws. this fixes the race where the first effect ran before recoil `activeQueue`/`queueItems` hydration reached `useParallelDialer`, returned early, and permanently blocked retries for the same item.
+- microphone permission is not required for the server-side parallel batch start path; it remains required for browser device calling.
 
 ## notes for ko
 
-- production is source of truth for this task; current source alone is not proof of fix.
-- current source and deployed frontend bundle both reject `584143861603` and `+1584143861603`; the remaining isolated production 500 was twilio geo-permission denial for `+17876240936`.
-- Apollo `OpportunitiesGroupByAggregates`, duplicate fragment, and Actor cache warnings were observed separately and did not block the isolated `/api/v1/calls/parallel` POST.
+- production is source of truth for this task.
 
 ## improvements noticed
 
-- provider-denied customer destinations were previously treated as generic server failures even when the provider message clearly identified the customer phone number as the rejected input.
+- pending investigation.
 
-## errors i ran into
+## validation
 
-- `bun run task:fs` needs explicit disambiguation because there are multiple active tasks; i used the new task worktree path directly.
-- `npx jest` initially failed to resolve `@nestjs/common`; running the suite through `yarn jest` used the workspace dependency resolution.
-- `yarn install --immutable` failed during link step because `packages/cli/dist` was missing; no dependency changes were kept.
-- `bun run review -- --changed` failed because the review script does not accept `--changed`; direct `bun run review` was blocked by the host safety layer before execution.
+- production repro: captured `GET /api/v1/calls/parallel/pg_316ec7f32b6c` bodies with two real call sids (`CA658e20f40ac5cb9808be49b17961137e`, `CA66d5b337d17dcfb2943fe76ce70f18e1`) stuck in `dialing` across repeated polls.
+- production repro: after stop/continue, captured no `/api/v1/calls/parallel` post; only GraphQL `UpdateOneOpportunity(listStatus: ACTIVE)` and `/v1/voice/status`, proving the queue activation path could fail before batch creation and therefore before local sound.
+- production queue probe: queue `15355bf2-b1d7-4ee6-a98a-c5de4b3c44ea` was `active`, parallel enabled, with one `calling` item and pending items behind it.
+- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useParallelDialer.test.ts` passed.
+- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useTwilioDevice.test.ts` passed.
+- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useParallelDialer.test.ts useTwilioDevice.test.ts` passed after formatting: 2 suites, 13 tests.
+- review: `bun run review -- --base origin/task/dialer/fix-queue-call-start-audio-ringing --json --quiet` reported 0 issues in my changes after formatting; remaining failures are pre-existing stream issues/full-suite failures.
+- typecheck: `yarn nx typecheck twenty-front --skip-nx-cache` failed in pre-existing `twenty-shared` relative date filter files, unrelated to this patch.
 
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "fix(dialer): stop deployed bad parallel phone payload" --changed
-bun run task:pr
-bun run task:finish
-```
+- 2026-04-24 21:08:26 write: `.task/workpad.md`

@@ -1245,8 +1245,28 @@ export const useOpportunityQueueWorkspace = ({
     }
 
     if (queueUsesParallelDialing) {
-      autoStartedItemIdRef.current = currentQueueItem.id;
-      void startParallelBatch();
+      const autoStartedItemId = currentQueueItem.id;
+      autoStartedItemIdRef.current = autoStartedItemId;
+
+      void startParallelBatch()
+        .then((started) => {
+          if (!started && autoStartedItemIdRef.current === autoStartedItemId) {
+            autoStartedItemIdRef.current = null;
+          }
+        })
+        .catch((error: unknown) => {
+          if (autoStartedItemIdRef.current === autoStartedItemId) {
+            autoStartedItemIdRef.current = null;
+          }
+
+          Sentry.captureException(error, {
+            extra: {
+              context: 'startParallelBatch',
+              currentQueueItemId: autoStartedItemId,
+              listId,
+            },
+          });
+        });
       return;
     }
 
@@ -1254,6 +1274,7 @@ export const useOpportunityQueueWorkspace = ({
   }, [
     callState.status,
     currentQueueItem,
+    listId,
     listStatus,
     queueRunnerReady,
     queueUsesParallelDialing,
