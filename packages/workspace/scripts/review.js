@@ -446,6 +446,24 @@ async function main() {
   if (!root) throw new Error('not in a git repository');
   process.chdir(root);
 
+  // ensure node_modules exists — symlink from main worktree if in a task worktree
+  const nodeModulesPath = path.join(root, 'node_modules');
+  if (!fs.existsSync(nodeModulesPath)) {
+    const mainRoot = run('git', ['worktree', 'list', '--porcelain']).split('\n')
+      .filter((l) => l.startsWith('worktree '))
+      .map((l) => l.replace('worktree ', ''))[0];
+    if (mainRoot && mainRoot !== root) {
+      const mainNodeModules = path.join(mainRoot, 'node_modules');
+      if (fs.existsSync(mainNodeModules)) {
+        fs.symlinkSync(mainNodeModules, nodeModulesPath);
+        if (!args.quiet) writeStdout('symlinked node_modules from main worktree');
+      }
+    }
+    if (!fs.existsSync(nodeModulesPath)) {
+      writeStderr('node_modules not found — run yarn install or check main worktree');
+    }
+  }
+
   const base = args.base || detectBase();
   const branch = currentBranch();
 
