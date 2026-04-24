@@ -84,6 +84,60 @@ function parseArgs(argv) {
   return args;
 }
 
+function loadEnv() {
+  const envPaths = [
+    path.join(__dirname, '..', '.env'),
+    path.join(__dirname, '..', '..', '.env'),
+  ];
+  for (const p of envPaths) {
+    if (fs.existsSync(p)) {
+      const content = fs.readFileSync(p, 'utf8');
+      const url = (content.match(/SUPABASE_URL=(.+)/) || [])[1];
+      const key = (content.match(/SUPABASE_KEY=(.+)/) || [])[1];
+      if (url && key) return { url: url.trim(), key: key.trim() };
+    }
+  }
+  return {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY,
+  };
+}
+
+async function getRecentWorkpads(area, limit = 3) {
+  const env = loadEnv();
+  if (!env.url || !env.key) {
+    return { skipped: true, reason: 'missing supabase credentials', workpads: [] };
+  }
+
+  const url = new URL(`${env.url}/rest/v1/memories`);
+  url.searchParams.set('select', 'title,content,created_at');
+  url.searchParams.set('category', 'eq.workpad');
+  url.searchParams.set('title', `ilike.*${area}*`);
+  url.searchParams.set('order', 'created_at.desc');
+  url.searchParams.set('limit', String(limit));
+
+  try {
+    const resp = await fetch(url.toString(), {
+      headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
+    });
+    if (!resp.ok) {
+      return { skipped: true, reason: `supabase ${resp.status}`, workpads: [] };
+    }
+    const rows = await resp.json();
+    return {
+      skipped: false,
+      reason: null,
+      workpads: rows.map((row) => ({
+        title: row.title,
+        date: row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '',
+        preview: (row.content || '').replace(/\n/g, ' ').slice(0, 500),
+      })),
+    };
+  } catch (err) {
+    return { skipped: true, reason: err instanceof Error ? err.message : 'fetch failed', workpads: [] };
+  }
+}
+
 function listAreaDocs(repoRoot, area) {
   const areaDirectory = path.join(repoRoot, 'areas', area);
 
@@ -232,6 +286,18 @@ function printResult(result, useJson) {
     }
   }
 
+  writeStdout('recent workpads:');
+  if (result.recentWorkpads.skipped) {
+    writeStdout(`  - skipped (${result.recentWorkpads.reason})`);
+  } else if (result.recentWorkpads.workpads.length === 0) {
+    writeStdout('  - none');
+  } else {
+    for (const workpad of result.recentWorkpads.workpads) {
+      writeStdout(`  - ${workpad.title}  (${workpad.date})`);
+      writeStdout(`    ${workpad.preview}${workpad.preview.length >= 500 ? '...' : ''}`);
+    }
+  }
+
   writeStdout('recent commits:');
   if (result.recentCommits.length === 0) {
     writeStdout('  - none');
@@ -267,6 +333,7 @@ async function main() {
     docs: listAreaDocs(repoRoot, area),
     openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
     recentCommits: getRecentCommits(repoRoot, streamBranch),
+    recentWorkpads: await getRecentWorkpads(area),
     aheadBehind: getAheadBehind(repoRoot, streamBranch),
     worktrees: getAreaWorktrees(repoRoot, area),
   };
