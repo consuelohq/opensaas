@@ -138,7 +138,7 @@ async function getRecentWorkpads(area, limit = 3) {
             title: row.title,
             category: row.category,
             date: row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '',
-            preview: row.content || '',
+            content: row.content || '',
           })),
         };
       }
@@ -264,20 +264,16 @@ function printResult(result, useJson) {
   writeStdout(`stream: ${result.stream}`);
 
   if (result.aheadBehind) {
-    writeStdout(`ahead/behind vs origin: ${result.aheadBehind.ahead}/${result.aheadBehind.behind}`);
+    const { ahead, behind } = result.aheadBehind;
+    writeStdout(`ahead/behind vs origin: ${ahead}/${behind}`);
+    if (behind > 0) {
+      writeStdout(`  ⚠ ${behind} commits behind origin. run: bun run stream:sync -- --area ${result.area}`);
+    }
   } else {
     writeStdout('ahead/behind vs origin: unavailable');
   }
 
-  writeStdout('docs:');
-  if (result.docs.length === 0) {
-    writeStdout('  - none found');
-  } else {
-    for (const doc of result.docs) {
-      writeStdout(`  - ${doc}`);
-    }
-  }
-
+  writeStdout('');
   writeStdout('local worktrees:');
   if (result.worktrees.length === 0) {
     writeStdout('  - none');
@@ -287,6 +283,7 @@ function printResult(result, useJson) {
     }
   }
 
+  writeStdout('');
   writeStdout('open task prs:');
   if (result.openTaskPullRequests.skipped) {
     writeStdout(`  - skipped (${result.openTaskPullRequests.reason})`);
@@ -298,20 +295,30 @@ function printResult(result, useJson) {
     }
   }
 
-  writeStdout('recent workpads:');
+  writeStdout('');
+  writeStdout(`recent workpads (${result.recentWorkpads.workpads.length}):`);
   if (result.recentWorkpads.skipped) {
     writeStdout(`  - skipped (${result.recentWorkpads.reason})`);
   } else if (result.recentWorkpads.workpads.length === 0) {
     writeStdout('  - none');
+    writeStdout('  tip: workpads are saved automatically by task:push. complete a task to see them here.');
   } else {
-    for (const workpad of result.recentWorkpads.workpads) {
-      writeStdout(`  --- [${workpad.category}] ${workpad.title}  (${workpad.date}) ---`);
-      writeStdout(workpad.preview);
+    for (let i = 0; i < result.recentWorkpads.workpads.length; i++) {
+      const workpad = result.recentWorkpads.workpads[i];
+      writeStdout('  ┌──────────────────────────────────────────────────────────────');
+      writeStdout(`  │ workpad ${i + 1}/${result.recentWorkpads.workpads.length}: [${workpad.category}] ${workpad.title}`);
+      writeStdout(`  │ saved: ${workpad.date}`);
+      writeStdout('  ├──────────────────────────────────────────────────────────────');
+      const lines = workpad.content.split('\n');
+      for (const line of lines) {
+        writeStdout(`  │ ${line}`);
+      }
+      writeStdout('  └──────────────────────────────────────────────────────────────');
       writeStdout('');
     }
   }
 
-  writeStdout('recent commits:');
+  writeStdout(`recent commits (${result.recentCommits.length}):`);
   if (result.recentCommits.length === 0) {
     writeStdout('  - none');
   } else {
@@ -343,7 +350,6 @@ async function main() {
   const result = {
     area,
     stream: streamBranch,
-    docs: listAreaDocs(repoRoot, area),
     openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
     recentCommits: getRecentCommits(repoRoot, streamBranch),
     recentWorkpads: await getRecentWorkpads(area),
