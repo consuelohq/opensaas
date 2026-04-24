@@ -71,10 +71,12 @@ past decisions, patterns, skills, architecture knowledge, repo details. search A
   bun run browser -- screenshot after-login                      # take screenshot                               
   bun run browser -- close                                       # close the browser                             
                                                                                                                  
-  ### railway — production logs and status                                                                       
+  ### railway — production logs and status 
+  **USE THIS OFTEN especially bun run railway:logs -- --filter "twilio OR queue"**
+  this is how you get truth
                                                                                                                  
   bun run railway:logs -- --errors                               # errors and warnings only                      
-  bun run railway:logs -- --grep "twilio|queue"                  # search logs by pattern                        
+  bun run railway:logs -- --filter "twilio OR queue"             # search logs by pattern                        
   bun run railway:logs -- --status                               # service health + last deploy                  
   bun run railway:logs -- --env TWILIO_ACCOUNT_SID               # check if env var is set                       
   bun run railway:logs -- --service twenty-worker --errors       # worker service logs                           
