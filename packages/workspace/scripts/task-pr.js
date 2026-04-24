@@ -58,9 +58,9 @@ function printHelp() {
   writeStdout('  --body-file <path>       final review pr body markdown file');
   writeStdout('  --body-template area     generate an area-context body template for the final review pr');
   writeStdout('  --task-only              stop after creating or refreshing the task/* -> stream/* pr');
-  writeStdout('  --draft                  create or keep the final review pr as draft (default)');
-  writeStdout('  --no-draft               create the final review pr as ready-for-review');
-  writeStdout('  --ready                  create as ready-for-review or convert an existing draft final review pr');
+  writeStdout('  --draft                  create or keep the final review pr as draft');
+  writeStdout('  --no-draft               create the final review pr as ready-for-review (default)');
+  writeStdout('  --ready                  convert an existing draft final review pr to ready');
   writeStdout(`  --repo <owner/name>      github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --json                   output json');
   writeStdout('  --help                   show this help');
@@ -298,6 +298,15 @@ async function ensurePullRequest({ token, repository, branch, base, title, body,
         title: nextTitle,
         body: nextBody,
         base,
+      });
+    }
+
+    // if the existing PR is draft but we want ready, mark it ready
+    if (pullRequest.draft && !draft) {
+      pullRequest = await markPullRequestReadyForReview({
+        token,
+        repository,
+        prNumber: pullRequest.number,
       });
     }
 
