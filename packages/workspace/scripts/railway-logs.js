@@ -198,6 +198,64 @@ function formatHttpLog(h) {
   return `${ts} ${h.method} ${h.path} → ${h.status} (${h.duration}ms)`;
 }
 
+function fetchNetworkSummary(deployId) {
+  if (!deployId) return null;
+  const PROJECT_ID = 'a3e618e2-9685-401f-b924-a125b0fb9123';
+  const SERVICE_ID = '85b58812-5bc2-4a99-a1ca-aa64a0a213b5';
+  const ENV_ID = '6de4fa99-b047-4587-b003-69f78b650aa1';
+  const url = `https://railway.com/project/${PROJECT_ID}/service/${SERVICE_ID}?environmentId=${ENV_ID}&id=${deployId}#network`;
+  try {
+    execSync('agent-browser open ' + JSON.stringify(url), { encoding: 'utf8', timeout: 15000, stdio: 'pipe' });
+    try { execSync('agent-browser wait --text "TCP" --timeout 8000', { encoding: 'utf8', timeout: 12000, stdio: 'pipe' }); }
+    catch { /* might already be loaded */ }
+    const tabSnap = execSync('agent-browser snapshot -i', { encoding: 'utf8', timeout: 10000, stdio: 'pipe' });
+    const tabMatch = tabSnap.match(/tab "Network Flow\s+Logs".*?\[ref=(e\d+)\]/);
+    if (tabMatch) {
+      execSync(`agent-browser click @${tabMatch[1]}`, { encoding: 'utf8', timeout: 5000, stdio: 'pipe' });
+      try { execSync('agent-browser wait --text "TCP" --timeout 5000', { encoding: 'utf8', timeout: 8000, stdio: 'pipe' }); }
+      catch { /* data might already be there */ }
+    }
+    const snap = execSync('agent-browser snapshot', { encoding: 'utf8', timeout: 10000, stdio: 'pipe' });
+    const rows = [];
+    const lines = snap.split('\n');
+    let i = 0;
+    while (i < lines.length) {
+      if (/- row\b/.test(lines[i]) && lines[i].includes('clickable')) {
+        const cells = [];
+        i++;
+        while (i < lines.length && !/- row\b/.test(lines[i])) {
+          const m = lines[i].match(/- cell "([^"]*)"/);
+          if (m) cells.push(m[1]);
+          else if (/- cell\s*$/.test(lines[i].trim())) cells.push('');
+          i++;
+        }
+        if (cells.length >= 9) rows.push({ proto: cells[2], peer: cells[5], latency: parseInt(cells[7]) || 0, status: cells[8] });
+      } else { i++; }
+    }
+    if (!rows.length) return null;
+    const groups = {};
+    for (const r of rows) {
+      const key = r.peer || 'unknown';
+      if (!groups[key]) groups[key] = { count: 0, totalLatency: 0, errors: 0 };
+      groups[key].count++;
+      groups[key].totalLatency += r.latency;
+      if (r.status !== 'OK') groups[key].errors++;
+    }
+    return { total: rows.length, groups };
+  } catch { return null; }
+}
+
+function formatNetworkSummary(summary) {
+  if (!summary) return [];
+  const lines = [`--- network (${summary.total} flows) ---`];
+  for (const [peer, g] of Object.entries(summary.groups)) {
+    const avg = Math.round(g.totalLatency / g.count);
+    const err = g.errors > 0 ? `, ${g.errors} errors` : '';
+    lines.push(`  ${peer}: ${g.count} connections, avg ${avg}ms${err}`);
+  }
+  return lines;
+}
+
 function detectBootHealth(parsed) {
   const hasStart = parsed.some((p) => p && /Nest application successfully started/.test(p.raw));
   const hasError = parsed.some((p) => p && classify(p) === 'error');
@@ -285,6 +343,8 @@ function main() {
       if (m.author) out(`author: ${m.author}`);
       if (m.createdAt) out(`deployed: ${new Date(m.createdAt).toLocaleString()}`);
     }
+    const netSummary = fetchNetworkSummary(getDeploymentId(args.service));
+    if (netSummary) { out(''); formatNetworkSummary(netSummary).forEach((l) => out(l)); }
     return;
   }
 
@@ -451,6 +511,10 @@ function main() {
       recentHttp.forEach((h) => out(formatHttpLog(h)));
     }
   }
+
+  // network summary (always shown)
+  const netSummary = fetchNetworkSummary(deployId);
+  if (netSummary) { out(''); formatNetworkSummary(netSummary).forEach((l) => out(l)); }
 }
 
 main();
