@@ -231,8 +231,14 @@ function checkImportSafety(file, lines) {
 function checkCatchTyping(file, lines) {
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
-    if (/catch\s*\(\s*\w+\s*\)/.test(lines[i]) && !/catch\s*\(\s*\w+\s*:\s*unknown\s*\)/.test(lines[i])) {
-      findings.push({ line: i + 1, rule: 'CATCH_TYPING', msg: 'catch without : unknown type annotation' });
+    // catch(err: any) — explicit any
+    if (/catch\s*\(.*:\s*any\s*\)/.test(lines[i])) {
+      if (/HACK/.test(lines[i])) continue;
+      findings.push({ line: i + 1, rule: 'CATCH_TYPING', msg: 'catch(err: any) — use catch(err: unknown) with type guards' });
+    }
+    // bare catch(err) — no type annotation
+    else if (/catch\s*\(\s*\w+\s*\)/.test(lines[i]) && !/catch\s*\(\s*\w+\s*:\s*(unknown|any)\s*\)/.test(lines[i])) {
+      findings.push({ line: i + 1, rule: 'CATCH_TYPING', msg: 'bare catch(err) — use catch(err: unknown) with type guards' });
     }
   }
   return findings;
@@ -266,21 +272,48 @@ function checkStubHandler(file, lines) {
   if (!file.includes('/routes/')) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
-    if (/res\s*\.\s*(?:status\s*\(\s*200\s*\)\s*\.)?json\s*\(\s*\{/.test(lines[i])) {
-      // check if it looks like a stub (hardcoded object with no variable references)
-      const window = lines.slice(i, Math.min(i + 3, lines.length)).join(' ');
-      if (/status:\s*['"]/.test(window) && !/STUB:/.test(window) && !/await|\.find|\.query|\.get/.test(window)) {
-        findings.push({ line: i + 1, rule: 'STUB_HANDLER', msg: 'possible stub handler — return real data or 501' });
-      }
+    if (/handler:\s*async|handler:\s*\(/.test(lines[i])) {
+      const body = lines.slice(i, Math.min(i + 15, lines.length)).join('\n');
+      // skip if handler has real logic
+      if (/await |if \(|try \{|\.call\(|\.get\(|\.post\(|\.query\(/.test(body)) continue;
+      // skip if marked as stub
+      if (/STUB|TODO|FIXME|placeholder|health/i.test(body)) continue;
+      findings.push({ line: i + 1, rule: 'STUB_HANDLER', msg: 'handler with no real logic — implement or mark with // STUB:' });
     }
   }
   return findings;
 }
 
+function checkRouteOrder(file, lines) {
+  if (!file.includes('/routes/')) return [];
+  const findings = [];
+  let prevWasParam = '';
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/path:\s*'([^']+)'/);
+    if (!m) continue;
+    const routePath = m[1];
+    const prefix = routePath.replace(/\/[^/]*$/, '');
+    if (/:/.test(routePath)) {
+      prevWasParam = prefix;
+    } else if (prevWasParam === prefix) {
+      findings.push({ line: i + 1, rule: 'ROUTE_ORDER', msg: `'${routePath}' after param route — may be shadowed by /:param` });
+    }
+  }
+  return findings;
+}
+
+function checkSpecCompliance() {
+  const promptFile = '/tmp/kiro-last-prompt.txt';
+  const confirmFile = '/tmp/kiro-spec-confirmed';
+  if (!fs.existsSync(promptFile)) return [];
+  if (fs.existsSync(confirmFile) && fs.statSync(confirmFile).mtimeMs > fs.statSync(promptFile).mtimeMs) return [];
+  return [{ line: 0, rule: 'SPEC_COMPLIANCE', msg: 'spec prompt exists but not confirmed — echo "confirmed" > /tmp/kiro-spec-confirmed' }];
+}
+
 const ALL_CHECKS = [
   checkLogging, checkSentry, checkPhoneNorm, checkSqlParam,
   checkErrorHandling, checkTypeSafety, checkSecrets, checkTodoFixme,
-  checkImportSafety, checkCatchTyping, checkOptionalImport, checkStubHandler,
+  checkImportSafety, checkRouteOrder, checkCatchTyping, checkOptionalImport, checkStubHandler,
 ];
 
 // --- eslint ---
@@ -288,33 +321,49 @@ const ALL_CHECKS = [
 function runEslint(files, fix) {
   if (files.length === 0) return [];
   const root = gitRoot();
-  const args = ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern'];
-  if (fix) args.push('--fix');
-  args.push(...files);
 
-  try {
-    execFileSync('npx', args, { encoding: 'utf8', cwd: root, maxBuffer: 10 * 1024 * 1024 });
-    return [];
-  } catch (err) {
-    try {
-      const results = JSON.parse(err.stdout || '[]');
-      const findings = [];
-      for (const result of results) {
-        const relPath = path.relative(root, result.filePath);
-        for (const msg of result.messages || []) {
-          findings.push({
-            file: relPath,
-            line: msg.line || 0,
-            rule: 'ESLINT',
-            msg: `${msg.ruleId || 'parse-error'}: ${msg.message}`,
-          });
-        }
-      }
-      return findings;
-    } catch {
-      return [{ file: '', line: 0, rule: 'ESLINT', msg: 'eslint failed to run' }];
+  // group files by package
+  const byPkg = {};
+  for (const f of files) {
+    const m = f.match(/^packages\/([^/]+)\//);
+    if (m) {
+      if (!byPkg[m[1]]) byPkg[m[1]] = [];
+      byPkg[m[1]].push(f);
     }
   }
+
+  const findings = [];
+  for (const [pkg, pkgFiles] of Object.entries(byPkg)) {
+    const config = `packages/${pkg}/eslint.config.mjs`;
+    if (!fs.existsSync(config)) continue;
+
+    const args = ['eslint', '--config', config, '--format', 'json', '--no-error-on-unmatched-pattern'];
+    if (fix) args.push('--fix');
+    args.push(...pkgFiles.filter((f) => fs.existsSync(f)));
+
+    try {
+      execFileSync('npx', args, { encoding: 'utf8', cwd: root, maxBuffer: 10 * 1024 * 1024 });
+    } catch (err) {
+      try {
+        const results = JSON.parse(err.stdout || '[]');
+        for (const result of results) {
+          const relPath = path.relative(root, result.filePath);
+          for (const msg of result.messages || []) {
+            findings.push({
+              file: relPath,
+              line: msg.line || 0,
+              rule: 'ESLINT',
+              msg: `${msg.ruleId || 'parse-error'}: ${msg.message}`,
+            });
+          }
+        }
+      } catch {
+        findings.push({ file: '', line: 0, rule: 'ESLINT', msg: `eslint failed for ${pkg}` });
+      }
+    }
+  }
+
+  return findings;
 }
 
 // --- typecheck ---
@@ -509,6 +558,10 @@ async function main() {
   const typecheckFindings = runTypecheck(files);
   allFindings.push(...typecheckFindings);
 
+  // spec compliance (not per-file)
+  const specFindings = checkSpecCompliance();
+  allFindings.push(...specFindings.map((f) => ({ ...f, file: '' })));
+
   // classify
   const { yours, preExisting } = classifyFindings(allFindings, changedLines, base);
 
@@ -528,10 +581,8 @@ async function main() {
     writeStdout('✓ all checks passed');
   } else {
     writeStdout(`${total} total issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);
-    if (yours.length > 0) {
-      writeStdout('fix your issues before pushing.');
-    }
-    process.exit(yours.length > 0 ? 1 : 0);
+    writeStdout('fix all issues before pushing.');
+    process.exit(1);
   }
 }
 
