@@ -95,6 +95,29 @@ task:pr squash-merges the task PR into the stream branch, then creates or refres
 
 ---
 
+## task:exec — run commands inside the task worktree
+
+no need to know the worktree path. auto-detects the active task from `.task/current.json`.
+
+`bun run task:exec -- bun run review` — run review in the task worktree
+`bun run task:exec -- npx nx typecheck twenty-front` — typecheck from the worktree
+`bun run task:exec -- git diff` — see changes in the worktree
+`bun run task:exec -- --area dialer git status` — select task by area (when multiple active)
+
+---
+
+## task:fs — file operations inside the task worktree
+
+same as `bun run fs` but paths resolve relative to the task worktree, not the repo root.
+
+`bun run task:fs -- read packages/contacts/package.json` — read a file in the worktree
+`bun run task:fs -- search "Sentry" packages/twenty-front/src/` — search in the worktree
+`bun run task:fs -- patch packages/twenty-front/vite.config.ts --from 250 --to 260` — patch in the worktree
+`bun run task:fs -- write packages/contacts/src/new.ts --content "export const x = 1;"` — write in the worktree
+`bun run task:fs -- --area clean-up list packages/ --tree` — select task by area
+
+---
+
 ## stream management
 
 streams are long-lived branches per area (dialer, workspace-agents, analytics, etc.) that collect task PRs before going to main.
@@ -288,6 +311,8 @@ packages/workspace/scripts/
 ├── task-prs.js          # task:prs
 ├── task-merge.js        # task:merge
 ├── task-finish.js       # task:finish
+├── task-exec.js         # task:exec
+├── task-fs.js           # task:fs
 ├── task-cleanup.js      # task:cleanup
 ├── stream-list.js       # stream:list
 ├── stream-sync.js       # stream:sync
