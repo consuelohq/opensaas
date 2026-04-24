@@ -7,70 +7,284 @@ jest.mock('@sentry/node', () => ({
 
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
 
-describe('ParallelService posterior updates', () => {
-  const buildGroup = (): ParallelGroup => ({
-    groupId: 'group-1',
-    conferenceName: 'conf-1',
-    status: 'connected',
-    winnerSid: 'CA_WINNER',
-    calls: [
-      {
-        callSid: 'CA_WINNER',
-        customerNumber: '+15550001111',
-        fromNumber: '+15550002222',
-        position: 0,
-        status: 'in-progress',
-        amdResult: 'human',
-        dialStartedAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
-      },
-    ],
-    queueId: 'queue-1',
-    userId: 'user-1',
-    createdAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
-    connectedAt: new Date('2026-01-01T00:00:10.000Z').toISOString(),
-    profile: {
-      id: 'balanced',
-      fanout: 3,
-      staggerMs: 500,
-      amdPolicy: 'human-or-unknown',
-      terminationPolicy: 'winner-take-all',
+const buildGroup = (): ParallelGroup => ({
+  groupId: 'group-1',
+  conferenceName: 'conf-1',
+  status: 'connected',
+  winnerSid: 'CA_WINNER',
+  calls: [
+    {
+      callSid: 'CA_WINNER',
+      customerNumber: '+15550001111',
+      fromNumber: '+15550002222',
+      position: 0,
+      status: 'in-progress',
+      amdResult: 'human',
+      contactId: 'contact-1',
+      dialStartedAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
     },
-    resolverReason: 'thompson-sampling-global',
-  });
+    {
+      callSid: 'CA_LOSER',
+      customerNumber: '+15550003333',
+      fromNumber: '+15550004444',
+      position: 1,
+      status: 'completed',
+      amdResult: 'machine',
+      contactId: 'contact-2',
+      dialStartedAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
+    },
+  ],
+  queueId: 'queue-1',
+  userId: 'user-1',
+  createdAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
+  connectedAt: new Date('2026-01-01T00:00:10.000Z').toISOString(),
+  profile: {
+    id: 'balanced',
+    fanout: 2,
+    staggerMs: 500,
+    amdPolicy: 'human-or-unknown',
+    terminationPolicy: 'winner-take-all',
+  },
+  resolverReason: 'thompson-sampling-global',
+});
 
-  const createService = () => {
-    const group = buildGroup();
+const buildStrategy = () => ({
+  profile: {
+    id: 'conservative' as const,
+    fanout: 2,
+    staggerMs: 900,
+    amdPolicy: 'human-or-unknown' as const,
+    terminationPolicy: 'winner-take-all' as const,
+  },
+  reason: 'explicit-profile-id',
+});
 
-    const mockDialer = {
-      parallel: {
-        handleStatusCallback: jest.fn().mockResolvedValue(undefined),
-        getGroupIdForCall: jest.fn().mockResolvedValue(group.groupId),
-        getGroup: jest.fn().mockResolvedValue(group),
-        markTelemetryEmittedIfAbsent: jest.fn().mockResolvedValue(true),
-        computeTelemetry: jest.fn().mockReturnValue({
-          winnerRate: 1,
-          wastedLegs: 2,
-          connectLatencyMs: 1000,
-        }),
-      },
-    };
-
-    const mockLegacyDialerService = {
-      getDialer: jest.fn().mockReturnValue(mockDialer),
-    };
-
-    const mockParallelPosteriorStore = {
-      updatePosterior: jest.fn().mockResolvedValue(undefined),
-    };
-
-    const service = new ParallelService(
-      mockLegacyDialerService as never,
-      mockParallelPosteriorStore as never,
-    );
-
-    return { service, group, mockDialer, mockParallelPosteriorStore };
+const createService = () => {
+  const group = buildGroup();
+  const strategy = buildStrategy();
+  const mockLockService = {
+    acquireLock: jest.fn().mockResolvedValue(true),
+    releaseLockByNumber: jest.fn().mockResolvedValue(undefined),
+  };
+  const mockDialer = {
+    listNumbers: jest
+      .fn()
+      .mockResolvedValue(['+15550002222', '+15550004444', '+15550005555']),
+    resolveCallerId: jest
+      .fn()
+      .mockResolvedValueOnce({ callerIdNumber: '+15550002222' })
+      .mockResolvedValueOnce({ callerIdNumber: '+15550004444' }),
+    parallel: {
+      initiateGroup: jest.fn().mockResolvedValue({
+        groupId: group.groupId,
+        conferenceName: group.conferenceName,
+        profileId: strategy.profile.id,
+        calls: group.calls.map((call) => ({
+          callSid: call.callSid,
+          customerNumber: call.customerNumber,
+          fromNumber: call.fromNumber,
+          position: call.position,
+          status: 'dialing',
+        })),
+      }),
+      validateRequirements: jest.fn().mockReturnValue({
+        valid: true,
+        required: 2,
+        current: 3,
+      }),
+      handleStatusCallback: jest.fn().mockResolvedValue(undefined),
+      getGroupIdForCall: jest.fn().mockResolvedValue(group.groupId),
+      getGroup: jest.fn().mockResolvedValue(group),
+      getReleasableNumbers: jest.fn().mockReturnValue(['+15550004444']),
+      markTelemetryEmittedIfAbsent: jest.fn().mockResolvedValue(true),
+      computeTelemetry: jest.fn().mockReturnValue({
+        winnerRate: 1,
+        wastedLegs: 1,
+        connectLatencyMs: 1000,
+      }),
+      generateCustomerTwiml: jest
+        .fn()
+        .mockResolvedValue('<?xml version="1.0"?><Response />'),
+      terminateGroup: jest.fn().mockResolvedValue(undefined),
+    },
   };
 
+  const mockLegacyDialerService = {
+    getDialer: jest.fn().mockReturnValue(mockDialer),
+    getCallerIdLockService: jest.fn().mockReturnValue(mockLockService),
+  };
+
+  const mockParallelPosteriorStore = {
+    updatePosterior: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockParallelStrategyResolver = {
+    resolve: jest.fn().mockResolvedValue(strategy),
+  };
+
+  const service = new ParallelService(
+    mockLegacyDialerService as never,
+    mockParallelPosteriorStore as never,
+    mockParallelStrategyResolver as never,
+  );
+
+  return {
+    service,
+    group,
+    mockDialer,
+    mockLockService,
+    mockParallelPosteriorStore,
+    mockParallelStrategyResolver,
+  };
+};
+
+describe('ParallelService initiateParallelDial', () => {
+  it('should create a real parallel group through the legacy dialer bridge', async () => {
+    const { service, group, mockDialer, mockParallelStrategyResolver } =
+      createService();
+
+    const result = await service.initiateParallelDial({
+      userId: 'user-1',
+      workspaceId: 'workspace-1',
+      body: {
+        queueId: group.queueId,
+        customerNumbers: ['+15550001111', '+15550003333'],
+        contactIds: ['contact-1', 'contact-2'],
+        profileId: 'conservative',
+      },
+    });
+
+    expect(mockParallelStrategyResolver.resolve).toHaveBeenCalledWith({
+      queueId: group.queueId,
+      workspaceId: 'workspace-1',
+      campaignSegment: undefined,
+      recentAnswerRate: undefined,
+      profileId: 'conservative',
+    });
+    expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queueId: group.queueId,
+        customerNumbers: ['+15550001111', '+15550003333'],
+        contactIds: ['contact-1', 'contact-2'],
+        userId: 'user-1',
+        statusCallbackUrl: '/api/v1/calls/parallel/status-callback',
+        customerTwimlUrl: '/api/v1/calls/parallel/customer-twiml',
+      }),
+    );
+    expect(result.groupId).toBe(group.groupId);
+  });
+
+  it('should reject batches that do not match the resolved fanout', async () => {
+    const { service, group, mockDialer } = createService();
+
+    await expect(
+      service.initiateParallelDial({
+        userId: 'user-1',
+        workspaceId: 'workspace-1',
+        body: {
+          queueId: group.queueId,
+          customerNumbers: ['+15550001111'],
+          profileId: 'conservative',
+        },
+      }),
+    ).rejects.toThrow('requires exactly 2 customerNumbers');
+
+    expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
+  });
+
+  it('should release caller-id locks when group creation fails', async () => {
+    const { service, group, mockDialer, mockLockService } = createService();
+
+    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(
+      new Error('twilio unavailable'),
+    );
+
+    await expect(
+      service.initiateParallelDial({
+        userId: 'user-1',
+        workspaceId: 'workspace-1',
+        body: {
+          queueId: group.queueId,
+          customerNumbers: ['+15550001111', '+15550003333'],
+          profileId: 'conservative',
+        },
+      }),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ message: 'twilio unavailable' }),
+    });
+
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+15550002222',
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+15550004444',
+    );
+  });
+});
+
+describe('ParallelService validateParallelDial', () => {
+  it('should validate the resolved profile without throwing not implemented', async () => {
+    const { service, mockDialer } = createService();
+
+    const result = await service.validateParallelDial({
+      workspaceId: 'workspace-1',
+      query: { queueId: 'queue-1', profileId: 'conservative' },
+    });
+
+    expect(mockDialer.parallel.validateRequirements).toHaveBeenCalledWith(3, 2);
+    expect(result).toEqual(
+      expect.objectContaining({
+        valid: true,
+        required: 2,
+        current: 3,
+        strategyReason: 'explicit-profile-id',
+      }),
+    );
+  });
+});
+
+describe('ParallelService group lifecycle', () => {
+  it('should include winner for frontend polling compatibility', async () => {
+    const { service, group } = createService();
+
+    const result = await service.getGroupStatus({
+      groupId: group.groupId,
+      workspaceId: 'workspace-1',
+    });
+
+    expect(result.winnerSid).toBe('CA_WINNER');
+    expect(result.winner?.callSid).toBe('CA_WINNER');
+  });
+
+  it('should return customer twiml from the migrated route', async () => {
+    const { service } = createService();
+
+    await expect(service.customerTwiml({ CallSid: 'CA_WINNER' })).resolves.toBe(
+      '<?xml version="1.0"?><Response />',
+    );
+  });
+
+  it('should terminate the group and release caller-id locks', async () => {
+    const { service, group, mockDialer, mockLockService } = createService();
+
+    const result = await service.terminateGroup({
+      groupId: group.groupId,
+      userId: 'user-1',
+      workspaceId: 'workspace-1',
+    });
+
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+15550002222',
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+15550004444',
+    );
+    expect(mockDialer.parallel.terminateGroup).toHaveBeenCalledWith(group.groupId);
+    expect(result).toEqual({ groupId: group.groupId, status: 'completed' });
+  });
+});
+
+describe('ParallelService posterior updates', () => {
   it('should increment alpha when success=true', async () => {
     const { service, mockParallelPosteriorStore } = createService();
 
