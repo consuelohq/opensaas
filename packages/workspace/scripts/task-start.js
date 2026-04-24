@@ -345,6 +345,16 @@ async function main() {
 
   const worktreePath = worktree.path;
 
+  // symlink node_modules from main worktree so tests/lint/typecheck work
+  const worktreeNodeModules = path.join(worktreePath, 'node_modules');
+  if (!fs.existsSync(worktreeNodeModules)) {
+    const mainNodeModules = path.join(repoRoot, 'node_modules');
+    if (fs.existsSync(mainNodeModules)) {
+      fs.symlinkSync(mainNodeModules, worktreeNodeModules);
+      writeStderr('symlinked node_modules from main worktree');
+    }
+  }
+
   let localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
   let remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
   let pullRequest = await findOpenPullRequest({
