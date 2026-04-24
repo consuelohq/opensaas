@@ -4,12 +4,72 @@ agent toolkit for the opensaas monorepo. all commands run from repo root via `bu
 
 every script supports `--help` and `--json`.
 
+
+---
+## fs — safe file operations
+
+wraps bat (read), rg (search), eza/fd (list). provides stdin-based write and line-range patch. no heredocs, no quoting bugs.
+
+### read a file with line numbers (bat-powered, syntax highlighted)
+bun run fs -- read packages/dialer/src/services/queue.ts
+
+### read specific line range
+bun run fs -- read packages/dialer/src/services/queue.ts --from 120 --to 180
+
+### read multiple files in one call
+bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150
+
+### plain output (no decoration) or json
+bun run fs -- read src/foo.ts --from 1 --to 20 --plain
+bun run fs -- read src/foo.ts --from 1 --to 20 --json
+
+### search files (wraps rg, excludes node_modules/.git/dist by default)
+bun run fs -- search "startBackendQueueSession" packages/twenty-front/src
+bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --context 4
+
+### search + immediately read bounded ranges around matches
+bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --then-read
+
+### filenames only
+bun run fs -- search "normalizePhone" packages/ --files
+
+### list files and directories (wraps eza and fd)
+bun run fs -- list packages/workspace/scripts/ # list directory (eza -la)
+bun run fs -- list packages/workspace/ --tree # tree view
+bun run fs -- list packages/workspace/ --tree --depth 2 # tree with max depth
+bun run fs -- list packages/ --dirs --depth 1 # directories only
+bun run fs -- list packages/dialer/src/ --ext ts # find by extension (fd)
+bun run fs -- list packages/workspace/scripts/ --find task # find files matching "task" (fd)
+bun run fs -- list . --find "\.test\.ts$" --depth 3 # regex find
+bun run fs -- list packages/ --git # show git status column
+
+### write a file from stdin (no heredocs needed)
+cat /tmp/new-service.ts | bun run fs -- write packages/dialer/src/services/new.ts
+
+### overwrite existing file
+cat /tmp/fixed.ts | bun run fs -- write packages/dialer/src/services/queue.ts --force
+
+### append to a file
+echo "// TODO: DEV-1500" | bun run fs -- write src/foo.ts --append
+
+### write with inline content
+bun run fs -- write src/constants.ts --content "export const VERSION = '1.0.0';" --mkdirs
+
+### patch a line range (replace lines 20-35 with stdin content)
+cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35
+
+### preview a patch without applying
+cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run
+
+### patch with inline content
+bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;"
 ---
 
 ## task workflow — start, push, promote, clean up
 
 the full lifecycle of a coding task: create a branch → work → push → promote to stream → clean up.
 
+bun run stream:context -- --area dialer # show stream context (recent PRs, divergence)
 bun run task:start -- --area dialer --title "queue runner" # create task branch + worktree + PR
 bun run task:push -- --message "fix(dialer): desc" --changed # push changes to remote via github api
 bun run task:pr # merge task→stream, create stream→main PR
@@ -38,41 +98,7 @@ bun run stream:context -- --area dialer # show stream context (recent PRs, diver
 
 ---
 
-## fs — safe file operations
 
-wraps bat (read) and rg (search). provides stdin-based write and line-range patch. no heredocs, no quoting bugs.
-
-### read
-
-bun run fs -- read src/foo.ts # full file with line numbers (bat-powered)
-bun run fs -- read src/foo.ts --from 120 --to 180 # specific line range
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts # multiple files in one call
-bun run fs -- read src/foo.ts --plain # no decoration
-bun run fs -- read src/foo.ts --json # json output
-
-### search
-
-bun run fs -- search "normalizePhone" packages/ # search files (wraps rg)
-bun run fs -- search "pattern" src/ --context 4 # with context lines
-bun run fs -- search "pattern" src/ --then-read # search + read bounded ranges around matches
-bun run fs -- search "pattern" src/ --files # filenames only
-
-### write
-
-cat /tmp/new.ts | bun run fs -- write src/new.ts # write from stdin
-cat /tmp/fix.ts | bun run fs -- write src/old.ts --force # overwrite existing
-echo "// note" | bun run fs -- write src/foo.ts --append # append
-bun run fs -- write src/const.ts --content "export const V = 1;" --mkdirs # inline content
-
-### patch
-
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 # replace line range
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run # preview
-bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;" # inline
-
-write and patch log touched files to .task/workpad.md automatically.
-
----
 
 ## context — search and save project memories
 

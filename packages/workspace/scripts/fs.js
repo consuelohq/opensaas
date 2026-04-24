@@ -4,7 +4,7 @@
 // wraps bat (read), rg (search), and provides stdin-based write/patch
 // usage: bun run fs -- <read|search|write|patch> [options]
 
-const { execSync, spawnSync } = require('child_process');
+const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -95,6 +95,7 @@ function mainHelp() {
   out('commands:');
   out('  read    read files with line numbers and ranges');
   out('  search  search files (wraps rg)');
+  out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
   out('  patch   replace a line range from stdin');
   out('');
@@ -273,6 +274,107 @@ function cmdSearch(argv) {
   }
 }
 
+// ── list ──
+
+function cmdList(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- list [path] [options]');
+    out('');
+    out('list files and directories. wraps eza (list) and fd (find).');
+    out('');
+    out('modes:');
+    out('  list [path]                list directory contents (eza)');
+    out('  list [path] --tree         tree view (eza --tree)');
+    out('  list [path] --find <name>  find files by name (fd)');
+    out('');
+    out('options:');
+    out('  --tree                     show as tree');
+    out('  --depth N                  max depth for tree/find (default: 3)');
+    out('  --find <pattern>           find files matching pattern (uses fd)');
+    out('  --dirs                     directories only');
+    out('  --files                    files only');
+    out('  --ext <ext>                filter by extension (fd mode)');
+    out('  --hidden                   include hidden files');
+    out('  --git                      show git status column');
+    out('  --all                      include ignored files');
+    out('  --json                     json output (fd mode)');
+    return;
+  }
+
+  const args = [];
+  let path = '.';
+  let mode = 'eza'; // eza or fd
+  let depth = null;
+  let findPattern = null;
+  let dirsOnly = false;
+  let filesOnly = false;
+  let ext = null;
+  let hidden = false;
+  let gitStatus = false;
+  let showAll = false;
+  let tree = false;
+  let jsonOut = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--tree') tree = true;
+    else if (a === '--depth') depth = parseInt(argv[++i], 10);
+    else if (a === '--find') { mode = 'fd'; findPattern = argv[++i]; }
+    else if (a === '--dirs') dirsOnly = true;
+    else if (a === '--files') filesOnly = true;
+    else if (a === '--ext') ext = argv[++i];
+    else if (a === '--hidden') hidden = true;
+    else if (a === '--git') gitStatus = true;
+    else if (a === '--all') showAll = true;
+    else if (a === '--json') jsonOut = true;
+    else if (!a.startsWith('-')) path = a;
+  }
+
+  if (mode === 'fd' || ext) {
+    // fd mode — find files by name/pattern
+    const cmd = ['fd'];
+    if (findPattern) cmd.push(findPattern);
+    else cmd.push('.'); // match everything
+    cmd.push(path);
+    if (depth) cmd.push('--max-depth', String(depth));
+    else if (!depth) cmd.push('--max-depth', '3');
+    if (dirsOnly) cmd.push('--type', 'd');
+    if (filesOnly) cmd.push('--type', 'f');
+    if (ext) cmd.push('--extension', ext);
+    if (hidden) cmd.push('--hidden');
+    if (jsonOut) cmd.push('--json');
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('fd failed: ' + (e.message || ''));
+    }
+  } else {
+    // eza mode — list directory
+    const cmd = ['eza'];
+    if (tree) {
+      cmd.push('--tree');
+      cmd.push('--level', String(depth || 3));
+    } else {
+      cmd.push('-la');
+    }
+    if (gitStatus) cmd.push('--git');
+    if (hidden) cmd.push('-a');
+    if (dirsOnly) cmd.push('--only-dirs');
+    if (filesOnly) cmd.push('--only-files');
+    cmd.push('--git-ignore');
+    cmd.push(path);
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('eza failed: ' + (e.message || ''));
+    }
+  }
+}
+
 // ── write ──
 
 function cmdWrite(argv) {
@@ -405,6 +507,7 @@ function main() {
   switch (command) {
     case 'read': cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
+    case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
     default:
