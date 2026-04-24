@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/test-metadata-isolation-a",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 155,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/155",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-test-metadata-isolation-a",
+  "createdAt": "2026-04-24T00:08:43.903Z"
+}
