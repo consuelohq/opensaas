@@ -29,6 +29,10 @@ jest.mock('@sentry/node', () => ({
 
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 const buildGroup = (): ParallelGroup => ({
   groupId: 'group-1',
   conferenceName: 'conf-1',

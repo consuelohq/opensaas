@@ -63,8 +63,11 @@ describe('isValidPhone', () => {
     expect(isValidPhone('')).toBe(false);
   });
 
-  it('should reject number without + when it cannot be parsed as a valid US number', () => {
+  it('should accept parseable US numbers without +', () => {
     expect(isValidPhone('14155551234')).toBe(true);
+  });
+
+  it('should reject non-US numbers without +', () => {
     expect(isValidPhone('44207123456')).toBe(false);
   });
 
@@ -90,6 +93,7 @@ describe('isValidPhone', () => {
 
   it('should reject long NANP-shaped numbers that Twilio rejects', () => {
     expect(normalizePhone('584143861603')).toBe('');
+    expect(normalizePhone('+1584143861603')).toBe('');
     expect(isValidPhone('584143861603')).toBe(false);
     expect(isValidPhone('+1584143861603')).toBe(false);
   });
