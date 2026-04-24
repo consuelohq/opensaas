@@ -202,6 +202,41 @@ same as `bun run fs` but paths resolve relative to the task worktree, not the re
 `bun run task:fs -- write packages/contacts/src/new.ts --content "export const x = 1;"` — write in the worktree
 `bun run task:fs -- --area clean-up list packages/ --tree` — select task by area
 
+### when multiple tasks are active
+
+if two or more task worktrees exist, `--area` is required. the error message lists available areas.
+
+```
+# check what's active
+bun run task:fs -- list .task/                          # fails: "multiple active tasks (dialer, workspace-agents)"
+bun run task:fs -- --area dialer list .task/            # works
+bun run task:fs -- --area workspace-agents list .task/  # works
+```
+
+### common task:fs patterns
+
+```
+# read the task workpad (acceptance criteria, progress)
+bun run task:fs -- --area dialer read .task/workpad.md
+
+# read the task metadata
+bun run task:fs -- --area dialer read .task/current.json
+
+# list what's in the task worktree
+bun run task:fs -- --area dialer list packages/ --tree --depth 2
+
+# search for something in the worktree
+bun run task:fs -- --area dialer search "TODO" packages/ --files
+
+# read a specific file
+bun run task:fs -- --area dialer read packages/dialer/src/services/queue.ts
+
+# write to the workpad
+bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed the thing"
+```
+
+never bypass the scripts to read raw worktree paths. always use `--area`.
+
 ---
 
 ## stream management
