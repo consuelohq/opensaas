@@ -38,6 +38,7 @@ function printHelp() {
     'commands:',
     '  search <keyword>       search memories by content (one keyword, simple)',
     '  find <keyword>         search by title',
+    '  get <n> <keyword>      get full content of result #n from a search',
     '  list [category]        list recent memories, optionally filtered by category',
     '  save <title> <file>    save a file as a memory',
     '  save <title> --text    save inline text from stdin',
@@ -69,6 +70,7 @@ function parseArgs(argv) {
       case '--limit': args.limit = parseInt(argv[++i], 10); break;
       case '--json': args.json = true; break;
       case '--text': args.text = true; break;
+      case '--by-title': args.byTitle = true; break;
       case '--help': args.help = true; break;
       default:
         if (argv[i].startsWith('--')) throw new Error(`unknown flag: ${argv[i]}`);
@@ -108,8 +110,8 @@ function formatRow(row, idx) {
   const cat = row.category ? `[${row.category}]` : '';
   const title = row.title || '(untitled)';
   const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
-  const preview = (row.content || '').replace(/\n/g, ' ').slice(0, 300);
-  return `${idx + 1}. ${cat} ${title}  (${date})\n   ${preview}${preview.length >= 300 ? '...' : ''}`;
+  const preview = (row.content || '').replace(/\n/g, ' ').slice(0, 500);
+  return `${idx + 1}. ${cat} ${title}  (${date})\n   ${preview}${preview.length >= 500 ? '...' : ''}`;
 }
 
 function printHeader(label) {
@@ -138,7 +140,7 @@ async function cmdSearch(env, keyword, args) {
   printHeader(`${rows.length} result(s) for "${keyword}"`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
   writeStdout('');
-  writeStdout(`run: bun run context -- search ${keyword} --json  to get full content`);
+  writeStdout(`tip: bun run context -- get <number> ${keyword}  to read full content of a result`);
 }
 
 async function cmdFind(env, keyword, args) {
@@ -162,7 +164,7 @@ async function cmdFind(env, keyword, args) {
   writeStdout(`${rows.length} result(s) for title "${keyword}":\n`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
   writeStdout('');
-  writeStdout(`run: bun run context -- find ${keyword} --json  to get full content`);
+  writeStdout(`tip: bun run context -- get <number> ${keyword} --by-title  to read full content of a result`);
 }
 
 async function cmdList(env, category, args) {
@@ -209,6 +211,35 @@ async function cmdSave(env, title, source, args) {
   writeStdout(`saved: "${title}" [${category}] (${content.length} chars)`);
 }
 
+
+async function cmdGet(env, num, keyword, args) {
+  const byTitle = args.byTitle;
+  const params = {
+    select: 'title,content,category,created_at',
+    'order': 'created_at.desc',
+    'limit': String(num),
+  };
+  if (byTitle) {
+    params['title'] = `ilike.*${keyword}*`;
+  } else {
+    params['content'] = `ilike.*${keyword}*`;
+  }
+  if (args.category) params['category'] = `eq.${args.category}`;
+
+  const rows = await supabaseGet(env, params);
+  const row = rows[num - 1];
+
+  if (!row) {
+    writeStdout(`no result #${num} for "${keyword}"`);
+    return;
+  }
+
+  const cat = row.category ? `[${row.category}]` : '';
+  const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
+  writeStdout(`${cat} ${row.title}  (${date})\n`);
+  writeStdout(row.content || '(empty)');
+}
+
 async function cmdCategories(env) {
   const rows = await supabaseGet(env, {
     select: 'category',
@@ -238,6 +269,10 @@ async function main() {
     case 'find':
       if (!args.positional[1]) throw new Error('usage: bun run context -- find <keyword>');
       await cmdFind(env, args.positional[1], args);
+      break;
+    case 'get':
+      if (!args.positional[1] || !args.positional[2]) throw new Error('usage: bun run context -- get <number> <keyword>');
+      await cmdGet(env, parseInt(args.positional[1], 10), args.positional[2], args);
       break;
     case 'list':
       await cmdList(env, args.positional[1], args);
