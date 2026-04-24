@@ -71,19 +71,21 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 
 ## task workflow — context, start, push, promote, clean up
 
-the full lifecycle of a coding task: create a branch → work → push → promote to stream → clean up.
+the full loop of a coding task: mandatory order
 
 `bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
 `bun run stream:sync -- --area dialer` — sync stream/dialer with latest main
 `bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
-`bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api
-`bun run task:pr` — merge task→stream, create stream→main PR
-`bun run task:prs` — show both PR links for the current task
-`bun run task:merge -- --pr 173` — merge a specific PR
-`bun run task:merge -- --pr 173 --wait` — merge + wait for railway deploy
+`bun run review` — run review on changed files
+`bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api 
+`bun run task:pr` — merge task→stream, create stream→main PR 
+`bun run task:prs` — show both PR links for the current task (human review pr before merge steps)
+`bun run task:merge -- --pr 173 --wait` — merge + wait for railway deploy 
+`bun run browser -- consuelo` — open testing CRM (internal & testing)
 `bun run task:finish` — verify merge, remove worktree, delete branch
-`bun run task:cleanup -- --preview` — preview stale worktree cleanup
-`bun run task:cleanup -- --merged --stale-days 3` — remove merged tasks older than 3 days
+`compaction skill`
+`bun run tmp -- save handoffs "dialer queue investigation"` — save temp file to supabase memories (after human approval after cavas collaboration for next agent)
+(if theres confusion skills take precedence however each skill is progressivly disclosing this flow. all automated other than human review)
 
 task:start creates the branch, worktree at /tmp/opensaas-worktrees/, draft PR targeting the stream, and symlinks node_modules from main so tests/lint work.
 
