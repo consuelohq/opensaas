@@ -425,6 +425,56 @@ async function main() {
 
   await saveTaskMetaMemory(taskMeta);
 
+  // create workpad
+  const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+  if (!fs.existsSync(workpadPath)) {
+    const slug = taskBranch.split('/').pop();
+    const workpad = [
+      `# ${args.title}`,
+      '',
+      `branch: \`${taskBranch}\``,
+      `stream: \`${stream}\``,
+      `pr: ${pullRequest.html_url}`,
+      `started: ${new Date().toISOString().slice(0, 10)}`,
+      '',
+      '## acceptance criteria',
+      '',
+      '- [ ] ',
+      '',
+      '## plan',
+      '',
+      '1. ',
+      '',
+      '## files changed',
+      '',
+      '- ',
+      '',
+      '## key decisions',
+      '',
+      '- ',
+      '',
+      '## notes for ko',
+      '',
+      '- ',
+      '',
+      '## improvements noticed',
+      '',
+      '- ',
+      '',
+      '---',
+      '',
+      '## publish checklist',
+      '',
+      '```bash',
+      `bun run task:push -- --message "type(${area}): description" --changed`,
+      'bun run task:pr',
+      'bun run task:finish',
+      '```',
+      '',
+    ].join('\n');
+    fs.writeFileSync(workpadPath, workpad, 'utf8');
+  }
+
   printResult(
     {
       area,

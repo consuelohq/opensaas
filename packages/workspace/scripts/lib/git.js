@@ -106,9 +106,12 @@ function isBranchMerged(repoRoot, branch, into) {
 }
 
 function getTrackedChanges(repoRoot) {
-  // -uall shows individual files inside untracked directories instead of just the directory name
-  const output = runGit(['status', '--porcelain', '-uall'], { cwd: repoRoot });
-  if (!output) return [];
+  // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing
+  const { execFileSync } = require('child_process');
+  const output = execFileSync('git', ['status', '--porcelain', '-uall'], {
+    cwd: repoRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  if (!output || !output.trim()) return [];
 
   return output.split('\n').filter(Boolean).map((line) => {
     const status = line.slice(0, 2).trim();
