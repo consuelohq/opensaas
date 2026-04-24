@@ -23,6 +23,8 @@ function printHelp() {
     '  --base <ref>         compare against ref (default: auto-detect stream or origin/main)',
     '  --json               json output',
     '  --quiet              only show failures',
+    '  --no-tests           skip test suite',
+    '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
     '  --help               show this help',
   ];
   lines.forEach((l) => writeStdout(l));
@@ -37,6 +39,8 @@ function parseArgs(argv) {
       case '--base': args.base = argv[++i]; break;
       case '--json': args.json = true; break;
       case '--quiet': args.quiet = true; break;
+      case '--no-tests': args.noTests = true; break;
+      case '--strict': args.strict = true; break;
       case '--help': args.help = true; break;
       default:
         if (argv[i].startsWith('--')) throw new Error(`unknown flag: ${argv[i]}`);
@@ -441,6 +445,83 @@ function runTypecheck(files) {
 
 // --- main ---
 
+// --- tests ---
+
+function runTests(files) {
+  const root = gitRoot();
+
+  // detect affected packages from changed files, or run all known test packages
+  let packages;
+  if (files.length > 0) {
+    packages = [...new Set(files.map((f) => {
+      const m = f.match(/^packages\/([^/]+)\//);
+      return m ? m[1] : null;
+    }).filter(Boolean))];
+  } else {
+    packages = ['api', 'dialer', 'twenty-server'];
+  }
+
+  // map to packages that have jest configs
+  const testablePackages = packages.filter((pkg) =>
+    fs.existsSync(path.join(root, 'packages', pkg, 'jest.config.mjs'))
+  );
+
+  const results = [];
+
+  for (const pkg of testablePackages) {
+    const configPath = `packages/${pkg}/jest.config.mjs`;
+    const startTime = Date.now();
+
+    try {
+      const output = execFileSync('npx', [
+        'jest', '--config', configPath, '--no-coverage', '--forceExit',
+      ], {
+        encoding: 'utf8',
+        cwd: root,
+        maxBuffer: 10 * 1024 * 1024,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 300000, // 5 min max per package
+      });
+
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      // parse summary from output
+      const suitesMatch = output.match(/Test Suites:\s*(.*)/);
+      const testsMatch = output.match(/Tests:\s*(.*)/);
+      results.push({
+        pkg,
+        passed: true,
+        elapsed,
+        suites: suitesMatch ? suitesMatch[1].trim() : 'unknown',
+        tests: testsMatch ? testsMatch[1].trim() : 'unknown',
+        failures: [],
+      });
+    } catch (err) {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      const output = (err.stdout || '') + (err.stderr || '');
+      const suitesMatch = output.match(/Test Suites:\s*(.*)/);
+      const testsMatch = output.match(/Tests:\s*(.*)/);
+
+      // extract failing test names
+      const failures = [];
+      const failMatches = output.matchAll(/FAIL\s+(.*\.(?:spec|test)\.tsx?)/g);
+      for (const m of failMatches) {
+        failures.push(m[1].trim());
+      }
+
+      results.push({
+        pkg,
+        passed: false,
+        elapsed,
+        suites: suitesMatch ? suitesMatch[1].trim() : 'unknown',
+        tests: testsMatch ? testsMatch[1].trim() : 'unknown',
+        failures,
+      });
+    }
+  }
+
+  return results;
+}
+
 function classifyFindings(allFindings, changedLines, base) {
   const yours = [];
   const preExisting = [];
@@ -592,11 +673,44 @@ async function main() {
     writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
   }
 
+  // run tests — default on, skip with --no-tests
+  let testResults = [];
+  if (!args.noTests) {
+    if (!args.quiet) writeStdout('running tests...');
+    testResults = runTests(files);
+    if (!args.quiet && !args.json) {
+      let totalPassed = 0;
+      let totalFailed = 0;
+      for (const r of testResults) {
+        const icon = r.passed ? '✓' : '✗';
+        const status = r.passed ? 'PASS' : 'FAIL';
+        writeStdout(`  TESTS:${r.pkg.padEnd(16)} ${icon} ${status} (${r.elapsed}s) ${r.tests}`);
+        if (!r.passed && r.failures.length > 0) {
+          for (const f of r.failures.slice(0, 5)) {
+            writeStdout(`    FAIL ${f}`);
+          }
+          if (r.failures.length > 5) writeStdout(`    ... and ${r.failures.length - 5} more`);
+        }
+        if (r.passed) totalPassed++; else totalFailed++;
+      }
+      if (testResults.length > 0) {
+        writeStdout(`  ${'TESTS' + ' '.repeat(13)} ${totalFailed === 0 ? `✓ PASS (${totalPassed} suites)` : `✗ FAIL (${totalFailed}/${testResults.length} suites failed)`}`);
+      }
+    }
+  } else {
+    if (!args.quiet && !args.json) {
+      writeStdout(`  ${'TESTS' + ' '.repeat(13)} ⊘ SKIPPED (--no-tests)`);
+    }
+  }
+
   // classify
   const { yours, preExisting } = classifyFindings(allFindings, changedLines, base);
 
+  // include test failures in exit code
+  const testsFailed = testResults.some((r) => !r.passed);
+
   if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, yours, preExisting }, null, 2));
+    writeStdout(JSON.stringify({ base, branch, files: files.length, yours, preExisting, testResults }, null, 2));
     return;
   }
 
@@ -607,10 +721,16 @@ async function main() {
 
   writeStdout('');
   const total = yours.length + preExisting.length;
-  if (total === 0) {
+  if (total === 0 && !testsFailed) {
     writeStdout('✓ all checks passed');
   } else {
-    writeStdout(`${total} total issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);
+    if (total > 0) {
+      writeStdout(`${total} lint/type issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);
+    }
+    if (testsFailed) {
+      const failedSuites = testResults.filter((r) => !r.passed).map((r) => r.pkg);
+      writeStdout(`test failures in: ${failedSuites.join(', ')}`);
+    }
     writeStdout('fix all issues before pushing.');
     process.exit(1);
   }
