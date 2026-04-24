@@ -238,6 +238,20 @@ async function cmdGet(env, num, keyword, args) {
   const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
   writeStdout(`${cat} ${row.title}  (${date})\n`);
   writeStdout(row.content || '(empty)');
+
+  // detect chunks and hint how to get the rest
+  const chunkMatch = (row.title || '').match(/\(chunk (\d+)\/(\d+)\)/);
+  if (chunkMatch) {
+    const current = parseInt(chunkMatch[1], 10);
+    const total = parseInt(chunkMatch[2], 10);
+    const baseName = row.title.replace(/\s*\(chunk \d+\/\d+\)/, '');
+    writeStdout('');
+    writeStdout(`--- chunk ${current} of ${total} ---`);
+    writeStdout(`tip: bun run context -- find "${baseName}" --limit ${total}  to see all ${total} chunks`);
+  } else {
+    writeStdout('');
+    writeStdout(`tip: bun run context -- get <number> ${keyword}  to read another result`);
+  }
 }
 
 async function cmdCategories(env) {
