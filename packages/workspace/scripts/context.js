@@ -107,8 +107,14 @@ async function supabaseInsert(env, data) {
 function formatRow(row, idx) {
   const cat = row.category ? `[${row.category}]` : '';
   const title = row.title || '(untitled)';
-  const preview = (row.content || '').replace(/\n/g, ' ').slice(0, 120);
-  return `${idx + 1}. ${cat} ${title}\n   ${preview}${preview.length >= 120 ? '...' : ''}`;
+  const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
+  const preview = (row.content || '').replace(/\n/g, ' ').slice(0, 300);
+  return `${idx + 1}. ${cat} ${title}  (${date})\n   ${preview}${preview.length >= 300 ? '...' : ''}`;
+}
+
+function printHeader(label) {
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  writeStdout(`${label}  (now: ${now})\n`);
 }
 
 async function cmdSearch(env, keyword, args) {
@@ -129,8 +135,10 @@ async function cmdSearch(env, keyword, args) {
     return;
   }
 
-  writeStdout(`${rows.length} result(s) for "${keyword}":\n`);
+  printHeader(`${rows.length} result(s) for "${keyword}"`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
+  writeStdout('');
+  writeStdout(`run: bun run context -- search ${keyword} --json  to get full content`);
 }
 
 async function cmdFind(env, keyword, args) {
@@ -153,6 +161,8 @@ async function cmdFind(env, keyword, args) {
 
   writeStdout(`${rows.length} result(s) for title "${keyword}":\n`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
+  writeStdout('');
+  writeStdout(`run: bun run context -- find ${keyword} --json  to get full content`);
 }
 
 async function cmdList(env, category, args) {
@@ -173,11 +183,11 @@ async function cmdList(env, category, args) {
   }
 
   const label = category ? `"${category}" memories` : 'recent memories';
-  writeStdout(`${rows.length} ${label}:\n`);
+  printHeader(`${rows.length} ${label}`);
   rows.forEach((row, i) => {
     const cat = row.category ? `[${row.category}]` : '';
-    const date = row.created_at ? row.created_at.slice(0, 10) : '';
-    writeStdout(`${i + 1}. ${cat} ${row.title || '(untitled)'}  ${date}`);
+    const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
+    writeStdout(`${i + 1}. ${cat} ${row.title || '(untitled)'}  (${date})`);
   });
 }
 
