@@ -204,7 +204,7 @@ function cmdSearch(argv) {
   rgArgs.push(pattern);
   if (paths.length > 0) rgArgs.push(...paths);
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
+  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 120000 });
   const output = (r.stdout || '').trimEnd();
 
   if (!output) { out('no matches'); return; }
@@ -231,7 +231,7 @@ function cmdSearch(argv) {
     parseArgs.push(pattern);
     if (paths.length > 0) parseArgs.push(...paths);
 
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
+    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 120000 });
     const parseOutput = (pr.stdout || '').trimEnd();
 
     const seen = new Map();

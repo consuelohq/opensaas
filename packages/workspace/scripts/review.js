@@ -435,7 +435,7 @@ function runTypecheck(files) {
         }
       }
       if (errorLines.length === 0 && output.includes('error')) {
-        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project}: ${output.slice(0, 200)}` });
+        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project}: ${output}` });
       }
     }
   }
@@ -558,7 +558,7 @@ function printFindings(label, findings, quiet) {
 
   for (const [rule, items] of Object.entries(byRule)) {
     writeStdout(`  ${rule} (${items.length}):`);
-    for (const item of items.slice(0, 10)) {
+    for (const item of items) {
       const loc = item.file ? `${item.file}:${item.line}` : '(project)';
       writeStdout(`    ${loc} — ${item.msg}`);
     }
@@ -686,7 +686,7 @@ async function main() {
         const status = r.passed ? 'PASS' : 'FAIL';
         writeStdout(`  TESTS:${r.pkg.padEnd(16)} ${icon} ${status} (${r.elapsed}s) ${r.tests}`);
         if (!r.passed && r.failures.length > 0) {
-          for (const f of r.failures.slice(0, 5)) {
+          for (const f of r.failures) {
             writeStdout(`    FAIL ${f}`);
           }
           if (r.failures.length > 5) writeStdout(`    ... and ${r.failures.length - 5} more`);
