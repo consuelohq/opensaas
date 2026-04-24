@@ -222,6 +222,39 @@ runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 
 ---
 
+## pr-review — fetch all review comments from a PR
+
+pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans.
+writes a structured file to `.task/reviews/<pr-number>.md` with file attention map, action items, and task loop reminder.
+
+`bun run pr-review -- 173` — fetch reviews for PR #173
+`bun run pr-review` — auto-detect PR from .task/current.json
+`bun run pr-review -- 173 --stdout` — print to stdout instead of file
+`bun run pr-review -- 173 --json` — json output
+
+---
+
+## gh — common one-off github commands
+
+wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output.
+
+`bun run gh -- prs` — list open PRs
+`bun run gh -- prs --mine` — list ko's PRs
+`bun run gh -- checks 173` — show CI status for PR #173
+`bun run gh -- diff 173` — file list + stats for a PR
+`bun run gh -- diff 173 --full` — full diff
+`bun run gh -- files 173` — list changed files
+`bun run gh -- view 173` — show PR details
+`bun run gh -- reviews 173` — show who approved/requested changes
+`bun run gh -- comment 173 "looks good"` — post a comment
+`bun run gh -- read src/foo.ts --ref stream/dialer` — read file from a branch (no checkout)
+`bun run gh -- blame src/foo.ts` — get blame URL
+`bun run gh -- branches` — list remote branches
+`bun run gh -- branches --stream` — list stream/* branches
+`bun run gh -- branches --task` — list task/* branches
+
+---
+
 ## website:deploy — deploy consuelo website
 
 `bun run website:deploy` — build and deploy to cloudflare pages
@@ -325,6 +358,8 @@ packages/workspace/scripts/
 ├── railway-logs.js      # railway:logs
 ├── wait.js              # wait
 ├── review.js            # review
+├── pr-review.js         # pr-review
+├── gh.js                # gh
 ├── website-deploy.js    # website:deploy
 ├── server.js            # server (restart/status/stop/start/logs)
 └── lib/
