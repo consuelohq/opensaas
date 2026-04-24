@@ -12,7 +12,7 @@ const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
 
 function out(s = '') { process.stdout.write(s + '\n'); }
-function err(s = '') { process.stderr.write(s + '\n'); }
+function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
 
 function readStdin() {
   try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
@@ -298,7 +298,6 @@ function cmdList(argv) {
     out('  --hidden                   include hidden files');
     out('  --git                      show git status column');
     out('  --all                      include ignored files');
-    out('  --json                     json output (fd mode)');
     return;
   }
 
@@ -314,7 +313,6 @@ function cmdList(argv) {
   let gitStatus = false;
   let showAll = false;
   let tree = false;
-  let jsonOut = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -327,7 +325,6 @@ function cmdList(argv) {
     else if (a === '--hidden') hidden = true;
     else if (a === '--git') gitStatus = true;
     else if (a === '--all') showAll = true;
-    else if (a === '--json') jsonOut = true;
     else if (!a.startsWith('-')) path = a;
   }
 
@@ -343,7 +340,6 @@ function cmdList(argv) {
     if (filesOnly) cmd.push('--type', 'f');
     if (ext) cmd.push('--extension', ext);
     if (hidden) cmd.push('--hidden');
-    if (jsonOut) cmd.push('--json');
     try {
       const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       process.stdout.write(result);

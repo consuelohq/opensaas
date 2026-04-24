@@ -8,33 +8,25 @@ every script supports `--help` and `--json`.
 ---
 ## fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list). provides stdin-based write and line-range patch. no heredocs, no quoting bugs.
+wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs.
 
-### read a file with line numbers (bat-powered, syntax highlighted)
-bun run fs -- read packages/dialer/src/services/queue.ts
+### read
+bun run fs -- read src/foo.ts # full file, syntax highlighted, line numbers
+bun run fs -- read src/foo.ts --from 120 --to 180 # specific line range
+bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts # multiple files, each with own range
+bun run fs -- read src/foo.ts --plain # no syntax highlighting or decoration
+bun run fs -- read src/foo.ts --json # structured json output (automation-safe)
 
-### read specific line range
-bun run fs -- read packages/dialer/src/services/queue.ts --from 120 --to 180
+### search
+bun run fs -- search "pattern" packages/ # search files (wraps rg, excludes node_modules/.git/dist)
+bun run fs -- search "pattern" src/ --context 4 # with context lines around matches
+bun run fs -- search "pattern" src/ --then-read # search + read bounded ranges (human output only)
+bun run fs -- search "pattern" packages/ --files # filenames only
+bun run fs -- search "pattern" packages/ --json # structured json (automation-safe)
+bun run fs -- search "pattern" packages/ --max-results 5 # cap number of matches
 
-### read multiple files in one call
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150
-
-### plain output (no decoration) or json
-bun run fs -- read src/foo.ts --from 1 --to 20 --plain
-bun run fs -- read src/foo.ts --from 1 --to 20 --json
-
-### search files (wraps rg, excludes node_modules/.git/dist by default)
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --context 4
-
-### search + immediately read bounded ranges around matches
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --then-read
-
-### filenames only
-bun run fs -- search "normalizePhone" packages/ --files
-
-### list files and directories (wraps eza and fd)
-bun run fs -- list packages/workspace/scripts/ # list directory (eza -la)
+### list
+bun run fs -- list packages/workspace/scripts/ # directory listing (eza -la)
 bun run fs -- list packages/workspace/ --tree # tree view
 bun run fs -- list packages/workspace/ --tree --depth 2 # tree with max depth
 bun run fs -- list packages/ --dirs --depth 1 # directories only
@@ -43,43 +35,37 @@ bun run fs -- list packages/workspace/scripts/ --find task # find files matching
 bun run fs -- list . --find "\.test\.ts$" --depth 3 # regex find
 bun run fs -- list packages/ --git # show git status column
 
-### write a file from stdin (no heredocs needed)
-cat /tmp/new-service.ts | bun run fs -- write packages/dialer/src/services/new.ts
+### write
+cat /tmp/new.ts | bun run fs -- write src/new.ts # write from stdin (fails if file exists)
+cat /tmp/fix.ts | bun run fs -- write src/old.ts --force # overwrite existing file
+echo "// note" | bun run fs -- write src/foo.ts --append # append (exact — include \n yourself)
+bun run fs -- write src/const.ts --content "export const V = 1;" # inline content
+bun run fs -- write src/deep/dir/file.ts --content "x" --mkdirs # create parent directories
 
-### overwrite existing file
-cat /tmp/fixed.ts | bun run fs -- write packages/dialer/src/services/queue.ts --force
+### patch
+cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 # replace lines 20-35 inclusive
+cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run # preview only
+bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;" # replace single line
 
-### append to a file
-echo "// TODO: DEV-1500" | bun run fs -- write src/foo.ts --append
-
-### write with inline content
-bun run fs -- write src/constants.ts --content "export const VERSION = '1.0.0';" --mkdirs
-
-### patch a line range (replace lines 20-35 with stdin content)
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35
-
-### preview a patch without applying
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run
-
-### patch with inline content
-bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;"
-
-### http (wraps xh)
-bun run fs -- http get https://api.github.com # GET request
+### http
+bun run fs -- http get https://api.github.com # GET request (wraps xh)
 bun run fs -- http post https://api.example.com key=val # POST json
 bun run fs -- http get https://api.example.com Authorization:"Bearer $TOKEN" # with headers
 
-### trash (safe delete — moves to trash, not rm)
-bun run fs -- trash old-file.ts # single file
+### trash
+bun run fs -- trash old-file.ts # move to trash (not permanent delete)
 bun run fs -- trash old-dir/ # directory
 bun run fs -- trash a.ts b.ts c.ts # multiple files
 
 ### tips
-- prefer `bun run fs` over raw bat/rg/eza/fd for repo file operations unless debugging the script itself
-- before `write --force` or `patch`, read the target range first
-- `write` does NOT create parent directories by default — use `--mkdirs`
-- `patch --from 42 --to 42` replaces line 42 (not insert)
-- json output for automation: `bun run fs -- search "foo" packages/ --then-read --json`
+- prefer `bun run fs` over raw bat/rg/eza/fd for repo work
+- before `write --force` or `patch`, always read the target first
+- `write` does NOT create parent dirs by default — use `--mkdirs`
+- `write --append` is exact — include `\n` yourself
+- `patch --from N --to N` replaces line N. always read the range first — patch does not validate bounds
+- `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
+- errors exit 1. check exit code or stderr for failures
+- write and patch log touched files to `.task/workpad.md`
 
 ---
 
@@ -227,11 +213,11 @@ bun run server -- logs # tail /tmp/workspace.log
 
 ---
 
-## CLI tools — modern replacements
+## CLI tools — mostly fallbacks for scipts
 
 installed globally. use directly — no bun run needed.
 
-### search & find
+### search & find (fallback prefer bun script)
 
 rg "TODO" . # search file contents everywhere
 rg "normalizePhone" packages/contacts/ # search in a package
@@ -239,13 +225,13 @@ rg "TODO" --type ts # only typescript files
 rg "pattern" -l # filenames only
 rg "pattern" -C 3 # 3 lines of context
 
-fd config # find files by name
+fd config # find files by name (fallback prefer bun script)
 fd "\.test\.ts$" # regex: all test files
 fd config packages/dialer/ # search within a directory
 fd -e ts -e tsx # by extension
 fd -t d src # directories only
 
-### read & list
+### read & list (fallback prefer bun script)
 
 bat file.ts # syntax highlighted + line numbers
 bat file.ts -r 50:80 # line range
@@ -256,7 +242,7 @@ eza -la --git # with git status column
 eza --tree src # tree view
 eza --tree src -L 2 # tree, max depth 2
 
-### http
+### http (fallback prefer bun script)
 
 xh get https://api.github.com # GET request
 xh post https://api.example.com key=val # POST json
@@ -269,7 +255,7 @@ procs # list processes
 procs node # filter by name
 btm # interactive system monitor
 
-### safety
+### safety (fallback prefer bun script)
 
 trash file.txt # move to trash (not permanent delete)
 trash old-dir/ # directory too — ALWAYS prefer over rm
