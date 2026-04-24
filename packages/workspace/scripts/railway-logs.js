@@ -119,12 +119,23 @@ function getServiceStatus(service) {
 
 function getLatestDeploy(service) {
   try {
-    const out = execSync(`railway logs --service ${service} --build 2>&1 | tail -20`, { encoding: 'utf8', timeout: 15000 });
-    const lines = stripAnsi(out).split('\n').filter(Boolean);
-    const success = lines.some((l) => /successfully|done|complete/i.test(l));
-    const failed = lines.some((l) => /error|failed|exit code/i.test(l));
-    return { status: failed ? 'failed' : success ? 'success' : 'unknown', lastLines: lines.slice(-5) };
-  } catch { return { status: 'unknown', lastLines: [] }; }
+    const raw = execSync(`railway deployment list --service ${service} --json 2>&1`, { encoding: 'utf8', timeout: 15000 });
+    const deploys = JSON.parse(raw);
+    if (!deploys.length) return { status: 'unknown', meta: null };
+    const d = deploys[0];
+    const status = d.status === 'SUCCESS' ? 'success' : d.status === 'BUILDING' ? 'building' : d.status === 'DEPLOYING' ? 'deploying' : d.status === 'REMOVED' ? 'removed' : 'failed';
+    return {
+      status,
+      meta: {
+        commit: d.meta?.commitHash?.slice(0, 8) || null,
+        message: d.meta?.commitMessage?.split('\n')[0] || null,
+        author: d.meta?.commitAuthor || null,
+        branch: d.meta?.branch || null,
+        repo: d.meta?.repo || null,
+        createdAt: d.createdAt || null,
+      },
+    };
+  } catch { return { status: 'unknown', meta: null }; }
 }
 
 function fetchLogs(service) {
@@ -215,9 +226,12 @@ function main() {
     const deploy = getLatestDeploy(args.service);
     out(`service: ${args.service}`);
     out(`last build: ${deploy.status}`);
-    if (deploy.lastLines.length) {
-      out('');
-      deploy.lastLines.forEach((l) => out('  ' + l));
+    if (deploy.meta) {
+      const m = deploy.meta;
+      if (m.commit) out(`commit: ${m.commit} (${m.branch || 'unknown'})`);
+      if (m.message) out(`message: ${m.message}`);
+      if (m.author) out(`author: ${m.author}`);
+      if (m.createdAt) out(`deployed: ${new Date(m.createdAt).toLocaleString()}`);
     }
     return;
   }
@@ -227,8 +241,12 @@ function main() {
     err(`fetching build logs for ${args.service}...`);
     const deploy = getLatestDeploy(args.service);
     out(`build: ${deploy.status}`);
+    if (deploy.meta?.commit) out(`commit: ${deploy.meta.commit} — ${deploy.meta.message || ''}`);
     out('');
-    deploy.lastLines.forEach((l) => out(l));
+    try {
+      const raw = execSync(`railway logs --service ${args.service} --build 2>&1 | tail -20`, { encoding: 'utf8', timeout: 15000 });
+      stripAnsi(raw).split('\n').filter(Boolean).forEach((l) => out(l));
+    } catch { /* no build logs available */ }
     return;
   }
 
