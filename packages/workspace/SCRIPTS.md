@@ -74,6 +74,7 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 the full lifecycle of a coding task: create a branch → work → push → promote to stream → clean up.
 
 `bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
+`bun run stream:sync -- --area dialer` — sync stream/dialer with latest main
 `bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
 `bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api
 `bun run task:pr` — merge task→stream, create stream→main PR
