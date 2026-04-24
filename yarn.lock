@@ -20738,11 +20738,11 @@ __metadata:
   linkType: hard
 
 "@tiptap/extension-image@npm:^3.14.0":
-  version: 3.19.0
-  resolution: "@tiptap/extension-image@npm:3.19.0"
+  version: 3.22.4
+  resolution: "@tiptap/extension-image@npm:3.22.4"
   peerDependencies:
-    "@tiptap/core": ^3.19.0
-  checksum: 10c0/44d7c4027cafb1657ee89feba2f2896a98d1597afbfa2beae96735e4512546563b8062a70e7b776d0aa85bd13ccf8f25085e9db35ac9073860f65a43400b1a0d
+    "@tiptap/core": 3.22.4
+  checksum: 10c0/fcdf69066c0828ed8196ab3e42ce99ead7bd75c0f32ab3de0b69a563852a9844dc4f9db37e2c05a20bfc8085e5bd2b3f4ea8cfddf62f6b46e89030412155b092
   languageName: node
   linkType: hard
 
