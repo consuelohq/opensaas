@@ -8,6 +8,9 @@ const { execFileSync, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+const { getTrackedChanges } = require('./lib/git');
+const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
+
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
@@ -80,22 +83,44 @@ function detectBase() {
   return 'origin/main';
 }
 
-function getChangedFiles(base) {
-  // try diff against base
-  let files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
-  if (!files) {
-    files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
-  }
-  if (!files) {
-    files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
-  }
-  return files.split('\n').filter((f) => f && /\.tsx?$/.test(f) && f.startsWith('packages/'));
+function normalizeRepoPath(root, filePath) {
+  const value = path.isAbsolute(filePath)
+    ? path.relative(root, filePath)
+    : filePath;
+
+  return value.split(path.sep).join('/');
 }
 
-function getChangedLineNumbers(base, file) {
-  // get line numbers that YOU changed
-  const diff = run('git', ['diff', '-U0', `${base}...HEAD`, '--', file]);
-  const lines = new Set();
+function isReviewableFile(filePath) {
+  return filePath.startsWith('packages/') && /\.(tsx?|jsx?|mjs|cjs)$/.test(filePath);
+}
+
+function addChangedFiles(files, args) {
+  const output = run('git', args);
+  for (const file of output.split('\n').filter(Boolean)) {
+    files.add(file);
+  }
+}
+
+function getChangedFiles(base) {
+  const files = new Set();
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
+
+  try {
+    for (const change of getTrackedChanges(gitRoot())) {
+      files.add(change.path);
+    }
+  } catch {
+    // status output is advisory; diff output above covers committed ranges.
+  }
+
+  return [...files].filter(isReviewableFile).sort();
+}
+
+function addChangedLineNumbers(lines, args) {
+  const diff = run('git', args);
   for (const line of diff.split('\n')) {
     const m = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
     if (m) {
@@ -104,13 +129,31 @@ function getChangedLineNumbers(base, file) {
       for (let i = start; i < start + count; i++) lines.add(i);
     }
   }
+}
+
+function getChangedLineNumbers(base, file) {
+  const lines = new Set();
+  addChangedLineNumbers(lines, ['diff', '-U0', `${base}...HEAD`, '--', file]);
+  addChangedLineNumbers(lines, ['diff', '-U0', 'HEAD', '--', file]);
+  addChangedLineNumbers(lines, ['diff', '-U0', '--staged', '--', file]);
   return lines;
 }
 
 function getAllTsFiles(root) {
-  return run('find', [root, '-path', '*/node_modules', '-prune', '-o', '-path', '*/dist', '-prune', '-o', '-name', '*.ts', '-print', '-o', '-name', '*.tsx', '-print'])
+  return run('find', [
+    root,
+    '-path', '*/node_modules', '-prune',
+    '-o', '-path', '*/dist', '-prune',
+    '-o', '-name', '*.ts', '-print',
+    '-o', '-name', '*.tsx', '-print',
+    '-o', '-name', '*.js', '-print',
+    '-o', '-name', '*.mjs', '-print',
+    '-o', '-name', '*.cjs', '-print',
+  ])
     .split('\n')
-    .filter((f) => f && f.startsWith('packages/'));
+    .filter(Boolean)
+    .map((file) => normalizeRepoPath(root, file))
+    .filter(isReviewableFile);
 }
 
 // --- checks ---
@@ -126,6 +169,10 @@ function isTestFile(f) {
 
 function isLoggerFile(f) {
   return f.includes('packages/cli/src/output.ts') || f.includes('packages/logger/src/');
+}
+
+function isReviewSelfFile(f) {
+  return f === 'packages/workspace/scripts/review.js';
 }
 
 function checkLogging(file, lines) {
@@ -175,7 +222,7 @@ function checkSqlParam(file, lines) {
 }
 
 function checkErrorHandling(file, lines) {
-  if (isTestFile(file)) return [];
+  if (isTestFile(file) || isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/async\s+\w+|async\s*\(/.test(lines[i])) {
@@ -190,6 +237,7 @@ function checkErrorHandling(file, lines) {
 }
 
 function checkTypeSafety(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/:\s*any\b|as\s+any\b|<any>/.test(lines[i])) {
@@ -213,6 +261,7 @@ function checkSecrets(file, lines) {
 }
 
 function checkTodoFixme(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/\bTODO\b|\bFIXME\b/.test(lines[i])) {
@@ -235,6 +284,7 @@ function checkImportSafety(file, lines) {
 }
 
 function checkCatchTyping(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     // catch(err: any) — explicit any
@@ -376,43 +426,19 @@ function runEslint(files, fix) {
 
 function runTypecheck(files) {
   const root = gitRoot();
-  // detect affected packages
-  const packages = [...new Set(files.map((f) => {
-    const m = f.match(/^packages\/([^/]+)\//);
-    return m ? m[1] : null;
-  }).filter(Boolean))];
-
-  // map package dirs to nx project names
-  const projectMap = {
-    'twenty-front': 'twenty-front',
-    'twenty-server': 'twenty-server',
-    'twenty-shared': 'twenty-shared',
-    'api': '@consuelo/api',
-    'dialer': '@consuelo/dialer',
-    'coaching': '@consuelo/coaching',
-    'contacts': '@consuelo/contacts',
-    'analytics': '@consuelo/analytics',
-    'cli': '@consuelo/cli',
-    'sdk': '@consuelo/sdk',
-    'metering': '@consuelo/metering',
-    'logger': '@consuelo/logger',
-  };
-
   const findings = [];
+  const nxPath = getNxBinary(root);
 
-  // check if nx is available
-  const nxPath = path.join(root, 'node_modules', '.bin', 'nx');
-  if (!fs.existsSync(nxPath)) {
+  if (!nxPath) {
     findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: 'nx not found — run yarn install or symlink node_modules' });
     return findings;
   }
 
-  for (const pkg of packages) {
-    const project = projectMap[pkg];
-    if (!project) continue;
+  const projects = getProjectsWithTarget(root, files, 'typecheck');
 
+  for (const project of projects) {
     try {
-      execFileSync('npx', ['nx', 'typecheck', project], {
+      execFileSync(nxPath, ['typecheck', project.name], {
         encoding: 'utf8',
         cwd: root,
         maxBuffer: 10 * 1024 * 1024,
@@ -420,24 +446,24 @@ function runTypecheck(files) {
       });
     } catch (err) {
       const output = (err.stdout || '') + (err.stderr || '');
-      // parse tsc errors: file(line,col): error TS1234: message
-      const errorLines = output.split('\n').filter((l) => /error TS\d+/.test(l));
+      const errorLines = output.split('\n').filter((line) => /error TS\d+/.test(line));
+
       for (const errLine of errorLines) {
         const m = errLine.match(/([^(]+)\((\d+),\d+\):\s*error\s+(TS\d+):\s*(.*)/);
         if (m) {
-          const relFile = path.relative(root, m[1].trim());
+          const relFile = path.relative(root, m[1].trim()).split(path.sep).join('/');
           findings.push({ file: relFile, line: parseInt(m[2], 10), rule: 'TYPECHECK', msg: `${m[3]}: ${m[4]}` });
         } else {
-          // try alternative format: file:line:col - error TS1234: message
           const m2 = errLine.match(/([^:]+):(\d+):\d+\s*-\s*error\s+(TS\d+):\s*(.*)/);
           if (m2) {
-            const relFile = path.relative(root, m2[1].trim());
+            const relFile = path.relative(root, m2[1].trim()).split(path.sep).join('/');
             findings.push({ file: relFile, line: parseInt(m2[2], 10), rule: 'TYPECHECK', msg: `${m2[3]}: ${m2[4]}` });
           }
         }
       }
+
       if (errorLines.length === 0 && output.includes('error')) {
-        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project}: ${output}` });
+        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project.name}: ${output}` });
       }
     }
   }
@@ -634,7 +660,16 @@ async function main() {
   // get files
   const files = args.all ? getAllTsFiles(root) : getChangedFiles(base);
 
+  const affectedProjects = getProjectsForFiles(root, files).map((project) => ({
+    name: project.name,
+    root: project.root,
+    files: project.files,
+  }));
+
   if (!args.quiet) writeStdout(`checking ${files.length} changed file(s)...`);
+  if (!args.quiet && affectedProjects.length > 0) {
+    writeStdout(`affected projects: ${affectedProjects.map((project) => project.name).join(', ')}`);
+  }
 
   // get changed line numbers for yours/not-yours split
   const changedLines = new Map();
@@ -739,7 +774,7 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, yours, preExisting, testResults }, null, 2));
+    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults }, null, 2));
     return;
   }
 

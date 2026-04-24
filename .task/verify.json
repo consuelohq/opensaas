@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/doctor-status-script-audit",
+  "base": "origin/task/workspace-agents/doctor-status-script-audit",
+  "headSha": "5f4e56144dfd52d5ec82c42e3d4af3003288878e",
+  "changeHash": "e881c79a3a87950786b19fc8d8e501b536abb31091da855cb2b5d6d5d8e6748d",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/scripts/lib/db-guards.js",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/lib/nx-projects.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "verifiedAt": "2026-04-24T17:05:00.554Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
