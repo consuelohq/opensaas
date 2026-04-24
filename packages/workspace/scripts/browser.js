@@ -29,13 +29,60 @@ function printHelp() {
     '  screenshot [name]    take screenshot of current page',
     '  snap                 snapshot current page (accessibility tree)',
     '  click <ref>          click element by ref (@e1, @e2, etc.)',
+    '  dblclick <ref>       double-click element',
     '  fill <ref> <text>    fill input by ref',
+    '  type <ref> <text>    type into element (no clear)',
+    '  hover <ref>          hover element',
+    '  select <ref> <val>   select dropdown option',
+    '  check <ref>          check checkbox',
+    '  uncheck <ref>        uncheck checkbox',
+    '  scroll <dir> [px]    scroll up/down/left/right',
     '  login <name>         run saved auth login',
     '  eval <js>            run javascript on current page',
     '  close                close the browser',
-    '  network requests     list network requests (--filter <pattern>)',
-    '  network har start <f> start recording HAR to file',
-    '  network har stop <f>  stop recording HAR',
+    '',
+    '  wait <sel|ms>        wait for element, time, or condition',
+    '    --text "str"       wait for text to appear',
+    '    --url "pattern"    wait for url match',
+    '    --load networkidle wait for network idle',
+    '    --fn "js expr"     wait for js condition',
+    '',
+    '  find <by> <val> <action> [text]  semantic locator',
+    '    by: role, text, label, placeholder, alt, title, testid',
+    '    action: click, fill, type, hover, focus, check, text',
+    '    e.g. find role button click --name "Submit"',
+    '    e.g. find label "Email" fill "test@test.com"',
+    '',
+    '  tab                  list tabs',
+    '  tab new [url]        new tab (--label <name>)',
+    '  tab <id|label>       switch tab',
+    '  tab close [id]       close tab',
+    '',
+    '  cookies              list cookies',
+    '  cookies set <n> <v>  set cookie',
+    '  cookies clear        clear cookies',
+    '  storage local        list localStorage',
+    '  storage local <key>  get key',
+    '',
+    '  network requests     list network requests (--filter, --type, --method, --status)',
+    '  network har start    start HAR recording',
+    '  network har stop [f] stop and save HAR',
+    '',
+    '  console              view console messages',
+    '  errors               view page errors',
+    '  download <ref> <path> click to download',
+    '  clipboard read       read clipboard',
+    '  clipboard write <t>  write to clipboard',
+    '',
+    '  set viewport <w> <h> set viewport size',
+    '  set device <name>    emulate device ("iPhone 14")',
+    '  set media dark|light color scheme',
+    '',
+    '  dialog accept [text] accept dialog',
+    '  dialog dismiss       dismiss dialog',
+    '',
+    '  batch "cmd1" "cmd2"  run multiple commands (--bail to stop on error)',
+    '',
     '  raw <...args>        pass args directly to agent-browser',
     '',
     'options:',
@@ -43,15 +90,6 @@ function printHelp() {
     '  --full               full page screenshot',
     '  --json               json output',
     '  --help               show this help',
-    '',
-    'examples:',
-    '  bun run browser -- open https://example.com',
-    '  bun run browser -- consuelo --headed',
-    '  bun run browser -- snap',
-    '  bun run browser -- click @e5',
-    '  bun run browser -- fill @e3 "search query"',
-    '  bun run browser -- screenshot after-login',
-    '  bun run browser -- eval "document.title"',
   ];
   lines.forEach((l) => writeStdout(l));
 }
@@ -176,6 +214,55 @@ function cmdRaw(args) {
   if (result.stderr && !result.ok) writeStdout(`error: ${result.stderr}`);
 }
 
+// simple passthrough commands that just forward args to agent-browser
+function cmdPassthrough(abCommand, args) {
+  const result = run([abCommand, ...args]);
+  if (result.stdout) writeStdout(result.stdout);
+  if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
+}
+
+// interaction commands that auto-snapshot after
+function cmdInteract(abCommand, args) {
+  const result = run([abCommand, ...args]);
+  if (result.ok) {
+    writeStdout(`${abCommand} ${args.join(' ')}: ok`);
+    run(['wait', '500'], { silent: true });
+    const snap = run(['snapshot', '-i'], { silent: true });
+    writeStdout('');
+    writeStdout('--- updated elements ---');
+    writeStdout(snap.stdout);
+  } else {
+    writeStdout(`error: ${result.stderr}`);
+  }
+}
+
+function cmdWait(argv) {
+  // pass everything after 'wait' straight through
+  const args = argv.slice(1);
+  const result = run(['wait', ...args]);
+  if (result.ok) {
+    writeStdout('wait complete');
+  } else {
+    writeStdout(`error: ${result.stderr}`);
+  }
+}
+
+function cmdFind(argv) {
+  // pass everything after 'find' straight through
+  const args = argv.slice(1);
+  const result = run(['find', ...args]);
+  if (result.stdout) writeStdout(result.stdout);
+  if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
+}
+
+function cmdBatch(argv) {
+  // pass everything after 'batch' straight through
+  const args = argv.slice(1);
+  const result = run(['batch', ...args], { silent: false });
+  if (result.stdout) writeStdout(result.stdout);
+  if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
+}
+
 function main() {
   const argv = process.argv.slice(2);
 
@@ -239,8 +326,29 @@ function main() {
     case 'click':
       cmdClick(args[1]);
       break;
+    case 'dblclick':
+      cmdInteract('dblclick', [args[1]]);
+      break;
     case 'fill':
       cmdFill(args[1], args.slice(2).join(' '));
+      break;
+    case 'type':
+      cmdPassthrough('type', [args[1], args.slice(2).join(' ')]);
+      break;
+    case 'hover':
+      cmdPassthrough('hover', [args[1]]);
+      break;
+    case 'select':
+      cmdInteract('select', [args[1], args[2]]);
+      break;
+    case 'check':
+      cmdInteract('check', [args[1]]);
+      break;
+    case 'uncheck':
+      cmdInteract('uncheck', [args[1]]);
+      break;
+    case 'scroll':
+      cmdPassthrough('scroll', args.slice(1));
       break;
     case 'login':
       cmdLogin(args[1]);
@@ -250,6 +358,57 @@ function main() {
       break;
     case 'close':
       run(['close']); writeStdout('browser closed'); break;
+
+    // wait / find / batch — pass full argv for flag handling
+    case 'wait':
+      cmdWait(argv);
+      break;
+    case 'find':
+      cmdFind(argv);
+      break;
+    case 'batch':
+      cmdBatch(argv);
+      break;
+
+    // tab management
+    case 'tab':
+      cmdRaw(argv);
+      break;
+
+    // cookies / storage
+    case 'cookies':
+      cmdRaw(argv);
+      break;
+    case 'storage':
+      cmdRaw(argv);
+      break;
+
+    // debug
+    case 'console':
+      cmdRaw(argv);
+      break;
+    case 'errors':
+      cmdRaw(argv);
+      break;
+
+    // download / clipboard
+    case 'download':
+      cmdRaw(argv);
+      break;
+    case 'clipboard':
+      cmdRaw(argv);
+      break;
+
+    // settings
+    case 'set':
+      cmdRaw(argv);
+      break;
+
+    // dialogs
+    case 'dialog':
+      cmdRaw(argv);
+      break;
+
     default:
       // pass through to agent-browser directly
       cmdRaw(argv);
