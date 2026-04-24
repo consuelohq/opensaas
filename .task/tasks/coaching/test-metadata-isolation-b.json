@@ -1,0 +1,12 @@
+{
+  "area": "coaching",
+  "stream": "stream/coaching",
+  "taskBranch": "task/coaching/test-metadata-isolation-b",
+  "baseBranch": "stream/coaching",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 156,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/156",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-coaching-test-metadata-isolation-b",
+  "createdAt": "2026-04-24T00:08:56.388Z"
+}
