@@ -523,12 +523,8 @@ async function main() {
 
   // get files
   const files = args.all ? getAllTsFiles(root) : getChangedFiles(base);
-  if (files.length === 0) {
-    writeStdout('no changed .ts/.tsx files to review');
-    return;
-  }
 
-  if (!args.quiet) writeStdout(`checking ${files.length} file(s)...`);
+  if (!args.quiet) writeStdout(`checking ${files.length} changed file(s)...`);
 
   // get changed line numbers for yours/not-yours split
   const changedLines = new Map();
@@ -536,7 +532,7 @@ async function main() {
     changedLines.set(file, getChangedLineNumbers(base, file));
   }
 
-  // run static checks
+  // run static checks on changed files
   const allFindings = [];
   for (const file of files) {
     const lines = readFileLines(file);
@@ -548,14 +544,16 @@ async function main() {
     }
   }
 
-  // run eslint
+  // run eslint — always, on changed files or all
   if (!args.quiet) writeStdout('running eslint...');
-  const eslintFindings = runEslint(files, args.fix);
+  const eslintFiles = files.length > 0 ? files : getAllTsFiles(root);
+  const eslintFindings = runEslint(eslintFiles, args.fix);
   allFindings.push(...eslintFindings);
 
-  // run typecheck
+  // run typecheck — always, on affected packages
   if (!args.quiet) writeStdout('running typecheck...');
-  const typecheckFindings = runTypecheck(files);
+  const typecheckFiles = files.length > 0 ? files : getAllTsFiles(root);
+  const typecheckFindings = runTypecheck(typecheckFiles);
   allFindings.push(...typecheckFindings);
 
   // spec compliance (not per-file)
