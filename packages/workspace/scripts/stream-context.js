@@ -138,7 +138,7 @@ async function getRecentWorkpads(area, limit = 3) {
             title: row.title,
             category: row.category,
             date: row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '',
-            preview: (row.content || '').replace(/\n/g, ' ').slice(0, 500),
+            preview: row.content || '',
           })),
         };
       }
@@ -305,8 +305,9 @@ function printResult(result, useJson) {
     writeStdout('  - none');
   } else {
     for (const workpad of result.recentWorkpads.workpads) {
-      writeStdout(`  - [${workpad.category}] ${workpad.title}  (${workpad.date})`);
-      writeStdout(`    ${workpad.preview}${workpad.preview.length >= 500 ? '...' : ''}`);
+      writeStdout(`  --- [${workpad.category}] ${workpad.title}  (${workpad.date}) ---`);
+      writeStdout(workpad.preview);
+      writeStdout('');
     }
   }
 
