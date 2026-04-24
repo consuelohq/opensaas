@@ -8,7 +8,6 @@ const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_CAP = 200;
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
 
