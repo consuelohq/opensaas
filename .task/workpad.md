@@ -25,7 +25,17 @@ started: 2026-04-24
 
 ## files changed
 
-- 
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/scripts/lib/db-guards.js`
+- `packages/workspace/scripts/lib/git.js`
+- `packages/workspace/scripts/lib/nx-projects.js`
+- `packages/workspace/scripts/lib/verification.js`
+- `packages/workspace/scripts/lib/task-meta.js`
+- `packages/workspace/scripts/review.js`
+- `packages/workspace/scripts/stream-sync.js`
+- `packages/workspace/scripts/task-push.js`
+- `packages/workspace/scripts/verify.js`
+
 
 ## key decisions
 

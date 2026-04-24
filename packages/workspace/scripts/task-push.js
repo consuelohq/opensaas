@@ -373,7 +373,8 @@ async function main() {
 
   // auto-include .task/ metadata files — scoped to current task area only
   const currentArea = taskMeta && taskMeta.data && taskMeta.data.area;
-  const metaFiles = collectTaskMetaFiles(repoRoot, currentArea);
+  const currentTaskBranch = taskMeta && taskMeta.data && taskMeta.data.taskBranch;
+  const metaFiles = collectTaskMetaFiles(repoRoot, currentArea, currentTaskBranch, { includeVerify: args.verify });
   const seenPaths = new Set(userFiles.map((f) => f.path));
   const files = [...userFiles];
   for (const mf of metaFiles) {
