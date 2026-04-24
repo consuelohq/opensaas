@@ -21,12 +21,12 @@ function normalizeFiles(files) {
 }
 
 function isEntityFile(file) {
-  return /[.]entity[.]tsx?$/.test(file) || /[/]entities[/].*[.]tsx?$/.test(file);
+  return /[.]entity[.]tsx?$/.test(file)
+    || /^packages[/][^/]*server[^/]*[/].*[/]entities[/].*[.]tsx?$/.test(file);
 }
 
 function isMigrationFile(file) {
-  return /[/]migrations?[/]/i.test(file)
-    || (/migration/i.test(file) && /[.](ts|tsx|js|sql)$/.test(file));
+  return /[/]migrations?[/].*[.](ts|tsx|js|sql)$/.test(file);
 }
 
 function isGraphqlSchemaFile(file) {
@@ -38,6 +38,10 @@ function isGraphqlSchemaFile(file) {
 }
 
 function isGraphqlCodegenFile(file) {
+  if (isGraphqlSchemaFile(file)) {
+    return false;
+  }
+
   return /codegen/i.test(file)
     || /__generated__/i.test(file)
     || /generated[/]graphql/i.test(file)

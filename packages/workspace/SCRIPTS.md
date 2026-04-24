@@ -222,6 +222,19 @@ runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 
 ---
 
+## verify — full task safety gate
+
+coordinates review plus db/migration/graphql guardrails and writes `.task/verify.json` when the gate passes.
+
+`bun run verify` — run the default task gate and write a verify stamp
+`bun run verify -- --json` — structured output for other scripts
+`bun run verify -- --no-review` — run verify guardrails without invoking review
+`bun run verify -- --no-db` — skip db/migration/graphql guardrails
+`bun run verify -- --db-warn-only` — report db guard failures as warnings
+`bun run verify -- --no-stamp` — avoid writing `.task/verify.json`
+
+---
+
 ## pr-review — fetch all review comments from a PR
 
 pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans.
@@ -358,6 +371,7 @@ packages/workspace/scripts/
 ├── railway-logs.js      # railway:logs
 ├── wait.js              # wait
 ├── review.js            # review
+├── verify.js            # verify
 ├── pr-review.js         # pr-review
 ├── gh.js                # gh
 ├── website-deploy.js    # website:deploy
@@ -365,6 +379,9 @@ packages/workspace/scripts/
 └── lib/
 `    ├── git.js          ` — git operations (execFileSync, no shell)
 `    ├── github.js       ` — github api (PRs, blobs, trees, commits)
+`    ├── db-guards.js    ` — verify db/migration/graphql risk detection
+`    ├── nx-projects.js  ` — nx project graph helpers for review/verify
 `    ├── paths.js        ` — repo paths, worktree root, git root
 `    ├── task-meta.js    ` — .task/current.json + .task/tasks/ read/write
+`    ├── verification.js ` — .task/verify.json stamp helpers
 `    └── validation.js   ` — branch naming, commit format validation

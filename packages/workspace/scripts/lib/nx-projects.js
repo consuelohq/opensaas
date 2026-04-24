@@ -3,7 +3,8 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 function getNxBinary(repoRoot) {
-  const nxPath = path.join(repoRoot, 'node_modules', '.bin', 'nx');
+  const binaryName = process.platform === 'win32' ? 'nx.cmd' : 'nx';
+  const nxPath = path.join(repoRoot, 'node_modules', '.bin', binaryName);
   return fs.existsSync(nxPath) ? nxPath : null;
 }
 
@@ -59,11 +60,20 @@ function readPackageProjects(repoRoot) {
     });
 }
 
+const projectCache = new Map();
+
 function readNxProjects(repoRoot) {
+  const cachedProjects = projectCache.get(repoRoot);
+  if (cachedProjects) {
+    return cachedProjects;
+  }
+
   const projectNames = runNxJson(repoRoot, ['show', 'projects', '--json']);
 
   if (!Array.isArray(projectNames)) {
-    return readPackageProjects(repoRoot);
+    const packageProjects = readPackageProjects(repoRoot);
+    projectCache.set(repoRoot, packageProjects);
+    return packageProjects;
   }
 
   const projects = [];
@@ -83,7 +93,9 @@ function readNxProjects(repoRoot) {
     });
   }
 
-  return projects.sort((a, b) => b.root.length - a.root.length);
+  const sortedProjects = projects.sort((a, b) => b.root.length - a.root.length);
+  projectCache.set(repoRoot, sortedProjects);
+  return sortedProjects;
 }
 
 function normalizeRepoPath(filePath) {
@@ -119,7 +131,7 @@ function getProjectsWithTarget(repoRoot, files, target) {
 
 module.exports = {
   getNxBinary,
+  readNxProjects,
   getProjectsForFiles,
   getProjectsWithTarget,
-  readNxProjects,
 };
