@@ -1,8 +1,8 @@
-# fix-frontend-sentry-browser-bundle
+# fix-contacts-node-exports
 
-branch: `task/clean-up/fix-frontend-sentry-browser-bundle`
+branch: `task/clean-up/fix-contacts-node-exports`
 stream: `stream/clean-up`
-pr: https://github.com/consuelohq/opensaas/pull/178
+pr: https://github.com/consuelohq/opensaas/pull/180
 started: 2026-04-24
 
 ## acceptance criteria
@@ -16,7 +16,6 @@ started: 2026-04-24
 ## files changed
 
 - `packages/contacts/package.json`
-- `packages/contacts/src/browser.ts`
 - `packages/twenty-front/vite.config.ts`
 
 
@@ -45,3 +44,5 @@ bun run task:push -- --message "type(clean-up): description" --changed
 bun run task:pr
 bun run task:finish
 ```
+
+- 2026-04-24 15:36:23 patch lines 278-278: `packages/twenty-front/vite.config.ts`
