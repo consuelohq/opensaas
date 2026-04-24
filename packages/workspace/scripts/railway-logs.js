@@ -138,9 +138,13 @@ function getLatestDeploy(service) {
   } catch { return { status: 'unknown', meta: null }; }
 }
 
-function fetchLogs(service) {
+function fetchLogs(service, { filter, lines } = {}) {
   try {
-    const out = execSync(`railway logs --service ${service} 2>&1`, {
+    let cmd = `railway logs --service ${service}`;
+    if (filter) cmd += ` --filter ${JSON.stringify(filter)}`;
+    if (lines) cmd += ` --lines ${lines}`;
+    else cmd += ' --lines 200';
+    const out = execSync(`${cmd} 2>&1`, {
       encoding: 'utf8', timeout: 30000, maxBuffer: 10 * 1024 * 1024,
     });
     return out.split('\n');
@@ -148,6 +152,49 @@ function fetchLogs(service) {
     if (err.stdout) return err.stdout.split('\n');
     throw new Error(`railway logs failed: ${err.message}`);
   }
+}
+
+function getRailwayToken() {
+  try {
+    const cfg = require('fs').readFileSync(require('os').homedir() + '/.railway/config.json', 'utf8');
+    return JSON.parse(cfg).user?.token || null;
+  } catch { return null; }
+}
+
+function getDeploymentId(service) {
+  try {
+    const raw = execSync(`railway deployment list --service ${service} --json 2>&1`, { encoding: 'utf8', timeout: 15000 });
+    const deploys = JSON.parse(raw);
+    const active = deploys.find((d) => d.status === 'SUCCESS') || deploys[0];
+    return active?.id || null;
+  } catch { return null; }
+}
+
+function fetchHttpLogs(deploymentId, { filter, lines } = {}) {
+  const token = getRailwayToken();
+  if (!token || !deploymentId) return [];
+  try {
+    const limit = lines || 50;
+    const filterArg = filter ? `, filter: ${JSON.stringify(filter)}` : '';
+    const query = `{ httpLogs(deploymentId: "${deploymentId}", limit: ${limit}${filterArg}) { timestamp method path httpStatus totalDuration } }`;
+    const resp = execSync(
+      `curl -s https://backboard.railway.com/graphql/v2 -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" -d ${JSON.stringify(JSON.stringify({ query }))}`,
+      { encoding: 'utf8', timeout: 15000 },
+    );
+    const data = JSON.parse(resp);
+    return (data.data?.httpLogs || []).map((h) => ({
+      time: h.timestamp,
+      method: h.method,
+      path: h.path,
+      status: h.httpStatus,
+      duration: h.totalDuration,
+    }));
+  } catch { return []; }
+}
+
+function formatHttpLog(h) {
+  const ts = h.time ? new Date(h.time).toLocaleTimeString() : '';
+  return `${ts} ${h.method} ${h.path} → ${h.status} (${h.duration}ms)`;
 }
 
 function detectBootHealth(parsed) {
@@ -168,8 +215,9 @@ function printHelp() {
     '',
     'options:',
     `  --service <name>     railway service (default: ${DEFAULT_SERVICE})`,
-    '  --errors             only show errors/warnings section',
-    '  --grep <pattern>     filter to lines matching pattern',
+    '  --errors             only show errors (uses @level:error server-side)',
+    '  --filter <query>     railway filter query (e.g. "@level:error", "twilio OR queue")',
+    '  --lines <n>          number of log lines to fetch (default: 200)',
     '  --build              show build logs instead of runtime',
     '  --raw                no filtering or formatting',
     '  --status             just show service status + deploy info',
@@ -186,7 +234,8 @@ function parseArgs(argv) {
     switch (argv[i]) {
       case '--service': args.service = argv[++i]; break;
       case '--errors': args.errorsOnly = true; break;
-      case '--grep': args.grep = argv[++i]; break;
+      case '--filter': args.filter = argv[++i]; break;
+      case '--lines': args.lines = parseInt(argv[++i], 10); break;
       case '--build': args.build = true; break;
       case '--raw': args.raw = true; break;
       case '--status': args.statusOnly = true; break;
@@ -252,11 +301,20 @@ function main() {
 
   // runtime logs
   err(`fetching runtime logs for ${args.service}...`);
-  const rawLines = fetchLogs(args.service);
+  const filter = args.errorsOnly ? '@level:error' : args.filter || null;
+  const rawLines = fetchLogs(args.service, { filter, lines: args.lines });
+
+  // http logs
+  const deployId = getDeploymentId(args.service);
+  let httpLogs = fetchHttpLogs(deployId, { filter, lines: args.lines ? Math.min(args.lines, 50) : 50 });
 
   // --raw mode
   if (args.raw) {
     rawLines.forEach((l) => out(stripAnsi(l)));
+    if (httpLogs.length) {
+      out('');
+      httpLogs.forEach((h) => out(formatHttpLog(h)));
+    }
     return;
   }
 
@@ -266,27 +324,25 @@ function main() {
   const errors = errorGroups.filter((g) => g.type === 'error');
   const warnings = errorGroups.filter((g) => g.type === 'warn');
 
+  // http errors (4xx/5xx)
+  const httpErrors = httpLogs.filter((h) => h.status >= 400);
+
   // filter out noise for activity section
   let activity = parsed
     .filter((p) => classify(p) !== 'noise' && classify(p) !== 'query')
     .map(formatLine);
 
-  if (args.grep) {
-    const pattern = new RegExp(args.grep, 'i');
-    activity = activity.filter((l) => pattern.test(l));
-  }
-
   activity = dedup(activity);
 
   if (args.json) {
-    out(JSON.stringify({ service: args.service, boot, errors: errors.length, warnings: warnings.length, errorGroups, activity }, null, 2));
+    out(JSON.stringify({ service: args.service, boot, errors: errors.length, warnings: warnings.length, errorGroups, httpLogs, httpErrors: httpErrors.length, activity }, null, 2));
     return;
   }
 
   // header
   out(`service: ${args.service}`);
   out(`boot: ${boot}`);
-  out(`errors: ${errors.length}, warnings: ${warnings.length}`);
+  out(`errors: ${errors.length}, warnings: ${warnings.length}, http errors: ${httpErrors.length}`);
 
   // errors section
   if (errors.length > 0) {
@@ -296,6 +352,13 @@ function main() {
       out('');
       dedup(group.lines).forEach((l) => out(l));
     }
+  }
+
+  // http errors section
+  if (httpErrors.length > 0) {
+    out('');
+    out(`--- http errors (${httpErrors.length}) ---`);
+    httpErrors.forEach((h) => out(formatHttpLog(h)));
   }
 
   // warnings section
@@ -315,6 +378,14 @@ function main() {
       out('');
       out(`--- recent activity (${tail.length} lines) ---`);
       tail.forEach((l) => out(l));
+    }
+
+    // recent http traffic
+    const recentHttp = httpLogs.slice(-20);
+    if (recentHttp.length > 0) {
+      out('');
+      out(`--- recent http (${recentHttp.length} requests) ---`);
+      recentHttp.forEach((h) => out(formatHttpLog(h)));
     }
   }
 }
