@@ -1,75 +1,106 @@
-# fix parallel customer phone normalization
+# fix parallel dial create 500
+
+branch: `task/dialer/fix-parallel-dial-create-500`
+stream: `stream/dialer`
+pr: https://github.com/consuelohq/opensaas/pull/172
+started: 2026-04-24
 
 ## acceptance criteria
 
-- [x] start a fresh task from `stream/dialer` using `task-start`.
-- [x] read `AGENTS.md` and full `CODING-STANDARDS.md` before editing.
-- [x] copy this checklist into `.task/workpad.md` before coding.
-- [x] reproduce once with agent-browser on list 18 and confirm railway still shows invalid customer number at `stage: 'initiate-group'`.
-- [x] inspect the exact frontend helper used by `useParallelDialer.ts`: `toE164()` and `isValidE164Phone()`.
-- [x] identify where `item.contact.phone` is sourced from for queue/list contacts and whether it contains raw phone number, formatted display phone, or already-normalized phone.
-- [x] fix phone normalization so parallel customer destinations are twilio-valid, not just regex-shaped.
-- [x] prefer `@consuelo/contacts` `normalizePhone()` / `isValidPhone()` or libphonenumber-backed validation over hand-rolled `+1` prefix logic.
-- [x] add frontend tests proving invalid long nanp-ish numbers like `584143861603` do not become `+1584143861603` and are filtered/rejected.
-- [x] add backend tests so nest `ParallelService` rejects twilio-invalid customer numbers before `dialer.parallel.initiateGroup()` when possible.
-- [x] decide whether the api should return 400 invalid customer number instead of current 409 conflict/provider-derived failure; document the decision in workpad.
-- [x] verify valid us numbers still dial normally.
-- [x] verify the invalid item is skipped or surfaced in ui without an infinite retry loop.
-- [ ] after fix deploys, reproduce from list 18 and confirm railway no longer logs `The phone number you are attempting to call, +1584143861603, is not valid.`
-- [ ] confirm successful create response includes `groupId`, `conferenceName`, `profileId`, and at least one real twilio `callSid`.
-- [ ] confirm group polling `/api/v1/calls/parallel/:groupId` returns json.
-- [x] run targeted tests and typecheck where possible; document toolchain blockers exactly.
-- [ ] publish with `bun run task:push`, `bun run task:pr`, and `bun run task:finish`.
+- [x] start from `stream/dialer` with `bun run task:start -- --area dialer --title "fix parallel dial create 500" --start-from stream --json`.
+- [x] read `AGENTS.md` and `CODING-STANDARDS.md` in the new task worktree before editing.
+- [x] fill out `.task/workpad.md` before coding with this checklist, the current railway evidence, and the intended first fix.
+- [x] re-run railway truth commands before code changes: `bun run railway:logs -- --errors`, `bun run railway:logs -- --grep "twilio OR queue"`, `bun run railway:logs -- --grep "ParallelService OR PARALLEL_DIAL_FAILED OR Twilio not configured OR CALLER_ID_LOCKED OR initiateGroup"`, `bun run railway:logs -- --status`, and twilio env checks.
+- [ ] confirm the deployed frontend is posting to `/api/v1/calls/parallel`, and capture status code, content type, and response body for the failed request.
+- [ ] confirm railway shows `ParallelService` receiving `queueId` and `workspaceId` for the failed request.
+- [x] add stage-specific safe error logging inside `ParallelService.initiateParallelDial()` so railway prints error `name`, `message`, `stack`, and failing stage without leaking tokens or customer phone numbers.
+- [x] instrument the likely stages separately: strategy resolution, `legacyDialerService.getDialer()`, `dialer.listNumbers()`, caller-id resolution, caller-id lock acquisition, and `dialer.parallel.initiateGroup()`.
+- [ ] deploy/publish the logging-only diagnostic change if the root exception is still hidden locally.
+- [ ] reproduce the failed start-call flow once after diagnostic logging lands, then pull railway logs again and copy the root exception into the workpad.
+- [ ] fix the concrete create-group failure revealed by logs. candidate areas: nest `LegacyDialerService` credential/workspace handling, twilio number availability, `API_BASE_URL`, callback URL construction, missing DB relations, or caller-id locks.
+- [x] keep the frontend on `/api/v1/calls/parallel`; do not revert to legacy `/v1/calls/parallel` unless railway proves the nest route cannot own this flow.
+- [x] preserve authenticated workspace/user context through `ParallelController` into `ParallelService`.
+- [x] confirm twilio env vars are set in railway and do not print their values.
+- [ ] confirm a successful create response includes `groupId`, `conferenceName`, `profileId`, and at least one call object with a real twilio `callSid`.
+- [ ] confirm the browser receives json from `/api/v1/calls/parallel`, not html or an unrelated catch-all response.
+- [ ] confirm the frontend plays the dialing-start sound and stores `parallelGroupId` / `parallelActiveCalls` after a successful create response.
+- [ ] confirm group polling `/api/v1/calls/parallel/:groupId` returns `calls`, `winnerSid`, and `winner` when applicable.
+- [ ] confirm terminate `/api/v1/calls/parallel/:groupId/terminate` returns json and releases caller-id locks for the group.
+- [ ] confirm twilio callback urls point at `/api/v1/calls/parallel/status-callback` and `/api/v1/calls/parallel/customer-twiml` with the correct public base url.
+- [x] add or update focused tests around the revealed failure path in `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`.
+- [ ] add/update frontend tests only if endpoint handling or failure behavior changes.
+- [x] run the strongest available targeted checks. at minimum attempt the backend parallel service spec and the frontend endpoint helper spec; document dependency/bootstrap blockers exactly.
+- [ ] re-check railway after the fix: no `ParallelService parallel dial failed` for the reproduced call, and a real `callSid` appears in response/log evidence.
+- [ ] only after create succeeds, resume queue/list drift investigation for list 18 and duplicate backend queues.
+- [ ] publish through `bun run task:push`, `bun run task:pr`, and `bun run task:finish`; use explicit `--files` if `task:push --changed` mis-parses `.task/current.json`.
 
 ## plan
 
-1. reproduce list 18 once with agent-browser and check railway logs for the current invalid destination failure.
-2. trace `item.contact.phone` from list/queue contact mapping into `useParallelDialer.ts`.
-3. replace frontend hand-rolled e.164 normalization on the parallel path with the shared contacts phone validation path.
-4. harden `ParallelService` validation so invalid destinations return a deliberate 400 before twilio initiation.
-5. add focused frontend and backend tests for the bad long nanp-ish number and valid us number path.
-6. run targeted checks, update this workpad with decisions and blockers, then publish through task workflow.
+1. collect fresh railway truth with this checkout's supported `--grep` flag, since `--filter` is not accepted by `packages/workspace/scripts/railway-logs.js` here.
+2. inspect the nest parallel controller/service and related spec to understand the current create path and logger conventions.
+3. add safe stage-specific error logging around each create step in `ParallelService.initiateParallelDial()`.
+4. add focused backend spec coverage proving the logger emits stage/name/message/stack metadata without phone-number lists when a create stage fails.
+5. run targeted checks, then publish via `task:push -> task:pr -> task:finish`.
+6. if railway logs after diagnostic publish reveal the concrete root failure inside this same loop, fix that failure and republish before finishing.
 
-## key decisions
+## current railway evidence
 
-- Use `@consuelo/contacts` as the single normalization boundary for this path, backed by `libphonenumber-js`.
-- Non-`+` phone inputs are treated as US/NANP only and must be 10 digits or 11 digits beginning with `1`; ambiguous international-looking inputs without `+` are rejected instead of being converted into fake `+1` destinations.
-- `/api/v1/calls/parallel` now rejects invalid customer destinations with `400 BadRequestException('Invalid customer phone number')` before strategy resolution or Twilio initiation. This is preferred over surfacing a provider-derived 409/500-like failure.
-- Valid US numbers are normalized to E.164 before initiating a parallel group; explicit valid international E.164 numbers with `+` remain supported by the shared validator.
+- `bun run railway:logs -- --errors` ran before coding. it reported `service: opensaas`, `boot: crashed or failing`, `errors: 5`, but the returned entries were cron registration logs rather than the root parallel exception.
+- this task worktree's railway helper rejects `--filter`; use `--grep` in this checkout.
+- `bun run railway:logs -- --grep "twilio OR queue"` returned no matching errors/warnings in the current log window.
+- `bun run railway:logs -- --grep "ParallelService OR PARALLEL_DIAL_FAILED OR Twilio not configured OR CALLER_ID_LOCKED OR initiateGroup"` returned no matching errors/warnings in the current log window.
+- `bun run railway:logs -- --status` reported `last build: failed`, with healthcheck failing twice and later succeeding.
+- `bun run railway:logs -- --env TWILIO_ACCOUNT_SID` returned `set`; `bun run railway:logs -- --env TWILIO_AUTH_TOKEN` returned `set`. no env values were printed.
+- prior handoff evidence says railway already showed `ParallelService` receiving `queueId` and `workspaceId`, then logging `parallel dial failed`, while twilio sid/token env vars are set.
 
-## notes for ko
+## intended first fix
 
-- starting from the handoff root cause: `+1584143861603` is regex-shaped e.164 but not a twilio-valid nanp destination.
-- Reproduced on production list 18 with agent-browser and confirmed Railway still logs `stage: 'initiate-group'` with Twilio rejecting `+1584143861603`.
-- `item.contact.phone` comes from list member/person phone extraction in `useOpportunityQueueWorkspace.ts`, then flows into `useParallelDialer.ts` where the old `toE164()` helper prefixed `1` onto arbitrary digit strings.
-- Frontend now filters invalid numbers at list-member extraction and again before the parallel POST, preventing the bad item from being included in a batch and avoiding a retry loop from a fabricated destination.
-
-## improvements noticed
-
-- `packages/contacts` should remain the single phone normalization source. The previous broad E.164 regex in multiple layers allowed provider-invalid numbers through.
-- Local task worktrees can resolve some package imports from the root checkout; focused tests may need explicit package mocks when validating changed workspace packages before they are linked from the task worktree.
-
-## verification
-
-- PASS: `npx tsc -p packages/contacts/tsconfig.json`
-- PASS: `npx jest packages/contacts/src/utils.spec.ts --config=packages/contacts/jest.config.mjs --runInBand`
-- PASS: `npx jest packages/twenty-front/src/modules/dialer/utils/__tests__/phoneFormat.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand`
-- BLOCKED: `yarn jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` fails before running tests because the task worktree cannot resolve `@nestjs/common`.
-- BLOCKED: `yarn nx typecheck twenty-front` fails in upstream `twenty-shared` date-filter utilities before checking dialer changes: `resolveRelativeDateFilter.ts`, `resolveRelativeDateFilterStringified.ts`, and `resolveRelativeDateTimeFilterStringified.ts` have existing nullable type errors.
-- BLOCKED: `yarn nx typecheck twenty-server` fails at the same upstream `twenty-shared` build step before checking server changes.
-- PASS with warnings: `yarn install --mode=update-lockfile` completed and updated `yarn.lock`; warnings are existing peer dependency warnings.
+add stage-specific safe logging to `ParallelService.initiateParallelDial()` so the next railway reproduction shows exactly which stage failed and the thrown error `name`, `message`, and `stack`, while only logging safe metadata: queue id, workspace id, profile id, customer count, from-number count, and no twilio credentials or customer phone numbers.
 
 ## files changed
 
-- packages/contacts/package.json
-- packages/contacts/src/utils.ts
-- packages/contacts/src/utils.spec.ts
-- packages/twenty-front/src/modules/dialer/components/TransferModal.tsx
-- packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts
-- packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts
-- packages/twenty-front/src/modules/dialer/utils/phoneFormat.ts
-- packages/twenty-front/src/modules/dialer/utils/**tests**/phoneFormat.test.ts
-- packages/twenty-server/package.json
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts
-- yarn.lock
+- `.task/workpad.md`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
+
+## key decisions
+
+- using `--grep` instead of `--filter` because the local railway helper in this task worktree errors on `--filter`.
+- first change should be observability, not speculative functional changes, because production currently hides the actual exception before twilio creates a call sid.
+
+## notes for ko
+
+- initial task draft pr: https://github.com/consuelohq/opensaas/pull/172
+- added diagnostic logging only; the current railway window did not include the root exception, so this patch should expose the failing create stage after deploy/reproduction.
+- validation attempted:
+  - `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` failed before tests because `@swc/jest` is unavailable.
+  - `npx jest packages/twenty-front/src/modules/dialer/utils/__tests__/parallel-dialer-endpoint.test.ts --runInBand` failed before tests because the test runner could not parse ts/esm imports without project config.
+  - `npx nx typecheck twenty-server` failed because nx modules are not installed in this disposable worktree.
+  - `bun run review` failed because this checkout has no `review` script.
+  - `git diff --check` passed.
+
+## improvements noticed
+
+- the handoff and current helper disagree on railway log flag spelling (`--filter` vs `--grep`). the script should probably accept both aliases to avoid wasting task time.
+
+## errors i ran into
+
+- `bun run railway:logs -- --filter "twilio OR queue"` failed with `unknown flag: --filter`; rerunning with `--grep`.
+
+---
+
+## publish checklist
+
+```bash
+bun run task:push -- --message "fix(dialer): description" --changed
+bun run task:pr
+bun run task:finish
+```
+
+- 2026-04-24 10:35:43 write: `/tmp/fs-test-write.txt`
+- 2026-04-24 10:35:43 write: `/tmp/fs-test-write.txt`
+- 2026-04-24 10:35:43 append: `/tmp/fs-test-write.txt`
+- 2026-04-24 10:35:43 write: `/tmp/fs-test-inline.txt`
+- 2026-04-24 10:35:43 write: `/tmp/fs-test-deep/nested/file.txt`
+- 2026-04-24 10:35:59 patch lines 3-5: `/tmp/fs-test-patch.txt`
+- 2026-04-24 10:35:59 patch lines 7-7: `/tmp/fs-test-patch.txt`

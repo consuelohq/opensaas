@@ -35,7 +35,6 @@ function readHelp() {
   out('options:');
   out('  --from N       start line (1-based)');
   out('  --to M         end line (1-based)');
-  out('  --all          no line cap (default: 200 lines per file)');
   out('  --plain        no line numbers or decoration');
   out('  --json         json output: { path, from, to, lines: [...] }');
   out('');
@@ -140,12 +139,11 @@ function cmdRead(argv) {
     const content = fs.readFileSync(fp, 'utf8');
     const allLines = content.split('\n');
     const from = seg.from || 1;
-    const to = seg.to || (all ? allLines.length : Math.min(from + DEFAULT_CAP - 1, allLines.length));
+    const to = seg.to || allLines.length;
     const slice = allLines.slice(from - 1, to);
-    const capped = !all && !seg.to && allLines.length > DEFAULT_CAP;
 
     if (json) {
-      results.push({ path: seg.path, from, to, total: allLines.length, capped, lines: slice });
+      results.push({ path: seg.path, from, to, total: allLines.length, lines: slice });
       continue;
     }
 
@@ -163,10 +161,6 @@ function cmdRead(argv) {
         const lineNum = from + idx;
         out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
       });
-    }
-
-    if (capped) {
-      err(`(showing ${DEFAULT_CAP} of ${allLines.length} lines — use --all or --to ${allLines.length} for full file)`);
     }
   }
 
