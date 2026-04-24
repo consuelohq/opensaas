@@ -157,7 +157,12 @@ export const TransferModal = ({
 
   const handleTransfer = useCallback(() => {
     if (isTransferring) return;
-    onTransfer(toE164(phoneNumber), transferType);
+
+    const normalizedPhoneNumber = toE164(phoneNumber);
+
+    if (normalizedPhoneNumber === null) return;
+
+    onTransfer(normalizedPhoneNumber, transferType);
   }, [phoneNumber, transferType, isTransferring, onTransfer]);
 
   const handleKeyDown = useCallback(
