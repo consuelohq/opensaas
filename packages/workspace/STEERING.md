@@ -810,8 +810,11 @@ examples:
 * codemode write + verify: `npx mcporter call 'codemode.execute_code(code: "await writeFile(\"../../../../tmp/demo.txt\",\"hello\"); return await readFile(\"../../../../tmp/demo.txt\")")'`
 
   
-## handoff protocol
+## compact transfer protocol
 
+When handed a handoff/compaction, assume that you are starting a fresh task. so don't ask. co to start. the handoff document is telling you what to do. kicking off the loop: task start skill (stream:list then stream:contex then task:start) & task-publish skill (task:push → task:pr → task:finish)
+
+## compact protocol
 when a conversation is getting long or ko says "save this" / "pick up later":
 
 use handoff_save to store the key context
