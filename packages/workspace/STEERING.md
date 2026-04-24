@@ -74,15 +74,15 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 
 the full loop of a coding task: mandatory order
 
-1. `bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
-2.  `bun run stream:sync -- --area dialer` — sync stream/dialer with latest main
+1.  `bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
+2.  `bun run stream:sync -- --area dialer` — sync stream/dialer with latest main 
 3   `bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
 4.  `bun run review` — run review on changed files
 5.  `bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api 
 6.  `bun run task:pr` — merge task→stream, create stream→main PR 
 7.  `bun run task:prs` — show both PR links for the current task (human review pr before merge steps)
 8.  `bun run task:merge -- --pr 173 --wait` — merge + wait for railway deploy 
-9. ` bun run browser -- consuelo` — open testing CRM (internal & testing)
+9.  `bun run browser -- consuelo` — open testing CRM (internal & testing)
 10. `bun run task:finish` — verify merge, remove worktree, delete branch
 11. `compaction skill`
 12. `bun run tmp -- save handoffs "dialer queue investigation"` — save temp file to supabase memories (after human approval after cavas collaboration for next agent)
