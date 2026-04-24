@@ -36,6 +36,8 @@ try {
   Sentry.captureException(err);
 }
 ```
+### useEffect
+**no useeffect as an escape hatch for syncing with things outside react: timers, subscriptions, dom APIs, network connections, third-party widgets. if you’re not syncing with an external system, react says you probably don’t need an effect.**
 
 ### decision tree
 
