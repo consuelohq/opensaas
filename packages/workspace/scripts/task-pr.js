@@ -69,7 +69,7 @@ function printHelp() {
 function parseArgs(argv) {
   const args = {
     repo: DEFAULT_REPO,
-    draft: true,
+    draft: false,
     json: false,
     taskOnly: false,
   };

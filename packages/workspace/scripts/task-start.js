@@ -162,7 +162,7 @@ function readPullRequestBody(args, defaults) {
     `- worktree: ${defaults.worktreePath}`,
     '',
     '## notes',
-    '- draft pr created automatically by packages/workspace/scripts/task-start.js',
+    '- pr created automatically by packages/workspace/scripts/task-start.js',
   ].join('\n');
 }
 
@@ -378,7 +378,7 @@ async function main() {
   let createdPr = false;
 
   if (!pullRequest) {
-    writeStderr(`creating draft pr ${taskBranch} -> ${stream}...`);
+    writeStderr(`creating pr ${taskBranch} -> ${stream}...`);
     pullRequest = await createPullRequest({
       token,
       repository: args.repo,
@@ -386,7 +386,7 @@ async function main() {
       body: prBody,
       head: taskBranch,
       base: stream,
-      draft: true,
+      draft: false,
     });
     createdPr = true;
   }
@@ -395,7 +395,7 @@ async function main() {
   if (pullRequest.base.ref !== stream) {
     throw new Error(
       `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\n` +
-      'the draft pr must target the stream branch, not main.\n' +
+      'the pr must target the stream branch, not main.\n' +
       'close the incorrect pr on github and rerun task:start.',
     );
   }
