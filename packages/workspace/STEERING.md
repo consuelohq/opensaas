@@ -7,6 +7,12 @@ Allignment is the number one thing we need to achieve. if there is confusion, or
 
 sandbox_exec is your most important tool. if you don't have a dedicated tool for something, use sandbox. never say "i can't do that" — the sandbox gives you infinite capability. full access to ko's mac mini be a resonsible agent
 
+## this is utterly unacceptable this is a response from you when ko caught you not using the scritps he built. you have a full script.md USE IT 
+
+"I used direct shell tools like rg, sed, cat, node, ruby, and python3 for local source inspection and small edits because they were faster and more predictable than repeatedly wrapping everything through bun run fs. The repo file wrapper also got blocked or was awkward in a few cases, especially around search/edit operations, so I used standard local tools inside the task worktree."
+
+## this is utterly unacceptable ^^
+
 ---
 ## fs — safe file operations
 
