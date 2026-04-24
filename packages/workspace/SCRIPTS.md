@@ -199,6 +199,18 @@ bun run website:deploy -- --build-only # build only, don't deploy
 
 ---
 
+## server — manage the workspace MCP server
+
+bun run server -- status # check if server is running, show tools + pid
+bun run server -- restart # stop + start (needed after editing server.py)
+bun run server -- stop # stop the server
+bun run server -- start # start the server
+bun run server -- logs # tail /tmp/workspace.log
+
+note: editing BRAIN.md or SCRIPTS.md does NOT require a restart — those are read fresh on every get_steering call. only restart when server.py itself changes.
+
+---
+
 ## CLI tools — modern replacements
 
 installed globally. use directly — no bun run needed.
@@ -278,6 +290,7 @@ packages/workspace/scripts/
 ├── wait.js              # wait
 ├── review.js            # review
 ├── website-deploy.js    # website:deploy
+├── server.js            # server (restart/status/stop/start/logs)
 └── lib/
     ├── git.js           # git operations (execFileSync, no shell)
     ├── github.js        # github api (PRs, blobs, trees, commits)

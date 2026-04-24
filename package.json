@@ -242,7 +242,8 @@
     "tmp": "bun packages/workspace/scripts/tmp.js",
     "review": "bun packages/workspace/scripts/review.js",
     "fs": "bun packages/workspace/scripts/fs.js",
-    "wait": "bun packages/workspace/scripts/wait.js"
+    "wait": "bun packages/workspace/scripts/wait.js",
+    "server": "bun packages/workspace/scripts/server.js"
   },
   "workspaces": {
     "packages": [
