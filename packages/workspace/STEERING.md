@@ -62,171 +62,96 @@ before touching code for a task, read in this order:
 that is how we stop repeating mistakes from two days ago while working on today’s change.
 
 ## script ladder — use the smallest tool that matches the job
-
-### 1. `task:start`
-
-use this when starting new work.
-**ALWAYS STOP ASK KO for stream, if he didnt tell you, you can suggest but never decide without approval**
+1. invoke skill start task
+stream:list answers: “what streams exist?”
+stream:context answers: “what do i need to know about this stream before i work?”
+task:start answers: “set me up to start one task inside that stream”
+use this when starting new work. ALWAYS STOP ASK KO for stream, if he didnt tell you, you can suggest but never decide without approval
 
 this is the entrypoint. it creates or refreshes the local task environment from the stream branch.
 
 it should:
 
-* make sure `main` is current with `origin/main`
-* make sure `stream/<area>` exists and is current
-* create `task/<area>/<slug>` from the stream
-* create one worktree for that task
-* create or verify the remote task branch
-* open a draft PR into the stream branch
-* write a local task manifest like `.task-meta.json`
-
+make sure main is current with origin/main
+make sure stream/<area> exists and is current
+create task/<area>/<slug> from the stream
+create one worktree for that task
+create or verify the remote task branch
+open a draft PR into the stream branch
+write a local task manifest like .task-meta.json
 use it when:
 
-* you are beginning a new task
-* you need a clean task worktree
-* you need a draft PR opened early
-
+you are beginning a new task
+you need a clean task worktree
+you need a draft PR opened early
 why:
 
 because task setup needs to be mechanical. branch naming, worktree naming, base branch selection, and PR base should all be consistent.
 
 example:
 
-```bash
 bun run task:start -- --area dialer --title "queue tuning" --json
 
 **Availble streams**
 -dialer (all telephony)
 -clean-up
-```
+2. invoke skill task-publish
+task:push → task:pr → task:finish
+every step requires .task-meta.json in the worktree (created by task:start). if it's missing, the scripts reject with a clear error telling you to start over with task:start.
 
-### 2. `task:push`
+run all three from inside the task worktree.
 
-use this when you already have an active task and want to publish code to the task branch.
+this should happen automatically when youre done, ko cant see it if theres not a pr, youre not done until theres a pr link.
 
-this is the safe publish step. it should infer branch and area from `.task-meta.json` when possible, verify the current worktree matches the task metadata, and push changed files to the correct remote task branch.
-
-use it when:
-
-* code is ready to publish to the task branch
-* you want github to have the latest snapshot of task work
-* you want a reliable push path without relying on fuzzy local git state
-
-why:
-
-because pushing to the wrong branch or from the wrong worktree is one of the easiest ways to create branch confusion. `task:push` should validate the task context before it writes anything.
-
-example:
-
-```bash
-bun run task:push -- --message "fix(dialer): tune queue scoring" --changed
-```
-
-### 3. `task:pr`
-
-use this when you need to create or refresh the PR for the current task branch.
-
-this script should default the PR base to the stream branch, not `main`. if the PR already exists, it should return it cleanly.
-
-use it when:
-
-* the task branch exists on github
-* you want review visibility
-* you want to check or restore the PR state for a task
-
-why:
-
-because task work should land in the stream first. review at the stream level keeps area context together.
-
-example:
-
-```bash
-bun run task:pr -- --title "fix(dialer): queue tuning"
-```
-
-### 4. `task:cleanup`
-
-use this to clean up old task worktrees and local task branches.
-
-cleanup should be explicit and safe. preview first, then remove merged or stale task worktrees. preserve `main`, preserve `stream/*`, preserve snapshot branches, preserve the current worktree.
-
-use it when:
-
-* merged task branches are piling up
-* local worktrees are getting out of hand
-* you want to reduce branch/worktree clutter without touching stream branches
-
-why:
-
-because cleanup is part of the workflow, not a side quest. stale worktrees and forgotten local branches are how branch state gets confusing.
-
-example:
-
-```bash
-bun run task:cleanup -- --preview
-bun run task:cleanup -- --merged --stale-days 3
-```
-
-### 5. `task:finish`
-
-use this after a task has been reviewed and merged into the stream branch.
-
-it should verify the task PR exists, verify the task branch is merged into the stream, then remove the local worktree and local task branch.
-
-use it when:
-
-* the task is complete
-* the branch is already merged into the stream
-* the local worktree should be retired
-
-why:
-
-because task branches are temporary. they should leave a clear trail and then disappear.
-
-### 6. `stream:sync`
-
+(health ko will ask). stream:sync
 use this to keep a long-running stream healthy.
 
-it should fetch origin, update the local stream branch, and merge `origin/main` into the stream branch. later it can run stream-level tests too.
+it should fetch origin, update the local stream branch, and merge origin/main into the stream branch. later it can run stream-level tests too.
 
 use it when:
 
-* starting work in an active stream
-* bringing the stream up to date with company truth
-* preparing the stream for promotion back to `main`
-
+starting work in an active stream
+bringing the stream up to date with company truth
+preparing the stream for promotion back to main
 why:
 
-because long-running branches need a heartbeat. the stream needs regular contact with `main` so drift stays small.
+because long-running branches need a heartbeat. the stream needs regular contact with main so drift stays small.
 
 example:
 
-```bash
 bun run stream:sync -- --area dialer
-```
 
-### 7. `stream:context`
-
-use this before beginning work in an area when you need the latest local context.
-
-it should show:
-
-* current stream branch
-* area docs
-* recent stream commits
-* open task PRs into that stream
-* local worktrees tied to that stream
-* ahead/behind state
-
-use it when:
-
-* starting a task in a stream you have not touched today
-* handing work from one agent to another
-* checking stream health before new changes
-
-why:
-
-because agents need fast area context without manually piecing it together every time.
+ ## task lifecycle — always start fresh                                                                         
+                                                                                                                 
+  **every task is disposable. when a task is done (merged or abandoned), its branch, worktree, and PR are gone. do 
+  not reuse, reopen, or reference old task branches or PRs.**                                                      
+                                                                                                                 
+  rules:                                                                                                         
+  - always use `bun run task:start` to begin work. never manually create branches, worktrees, or PRs.            
+  - never reopen a closed PR. if a PR was closed or merged, start a new task.                                    
+  - never push to an old task branch. if the branch was deleted, start a new task.                               
+  - never look for or reference old PRs/branches from previous attempts. the system auto-deletes task branches on
+  merge. they are gone by design.                                                                                
+  - if something went wrong with a previous task, do not try to recover it. run `bun run task:start` with a new  
+  title and redo the work and make sure to clean up.                                                                                       
+                                                                                                                 
+  the full command sequence, every time, no exceptions:                                                          
+                                                                                                                 
+    `bun run task:start -- --area <area> --title "<title>"`                                                        
+    cd <worktree path from output>                                                                               
+    # do the work                                                                                                
+    `bun run task:push -- --message "type(area): description" --changed`                                           
+    `bun run task:pr`                                                                                              
+    `bun run task:finish`                                                                                        
+                                                                                                                 
+  **do not skip steps. do not substitute your own git commands. do not create PRs with `gh pr create`. the scripts 
+  handle branch creation, metadata, PR targeting (task→stream→main), and cleanup. if you bypass them, the        
+  metadata breaks and downstream scripts reject your work.**                                                       
+                                                                                                                 
+  github protections enforce this:                                                                               
+  - main and stream/* branches cannot be deleted or force-pushed                                                 
+  - task branches are auto-deleted by github when their PR merges                                                
+  - .task/current.json tracks which branch owns the worktree — scripts reject mismatched metadata
 
 ## operating rules
 
