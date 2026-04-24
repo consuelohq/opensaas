@@ -112,7 +112,7 @@ async function getRecentWorkpads(area, limit = 3) {
   // try workpad category first, fall back to any category matching the area
   const queries = [
     { category: 'eq.workpad', title: `ilike.*${area}*` },
-    { title: `ilike.*${area}*` },
+    { category: 'not.eq.stream-decision', title: `ilike.*${area}*` },
   ];
 
   for (const filters of queries) {
@@ -148,6 +148,33 @@ async function getRecentWorkpads(area, limit = 3) {
   }
 
   return { skipped: false, reason: null, workpads: [] };
+}
+
+async function getStreamDecisions(area, limit = 10) {
+  const env = loadEnv();
+  if (!env.url || !env.key) {
+    return [];
+  }
+
+  const url = new URL(`${env.url}/rest/v1/memories`);
+  url.searchParams.set('select', 'title,created_at');
+  url.searchParams.set('category', 'eq.stream-decision');
+  url.searchParams.set('title', `ilike.*${area}*`);
+  url.searchParams.set('order', 'created_at.desc');
+  url.searchParams.set('limit', String(limit));
+
+  try {
+    const resp = await fetch(url.toString(), {
+      headers: { apikey: env.key, Authorization: `Bearer ${env.key}` },
+    });
+    if (!resp.ok) return [];
+    return (await resp.json()).map((row) => ({
+      title: row.title,
+      date: row.created_at ? row.created_at.slice(0, 10) : '',
+    }));
+  } catch {
+    return [];
+  }
 }
 
 function listAreaDocs(repoRoot, area) {
@@ -274,6 +301,18 @@ function printResult(result, useJson) {
   }
 
   writeStdout('');
+  writeStdout('stream decisions:');
+  if (result.decisions.length === 0) {
+    writeStdout('  - none yet');
+    writeStdout(`  tip: bun run context -- save "dialer: description" --text --category stream-decision`);
+  } else {
+    for (const d of result.decisions) {
+      writeStdout(`  - ${d.title}  (${d.date})`);
+    }
+    writeStdout(`  tip: bun run context -- save "${result.area}: new decision" --text --category stream-decision`);
+  }
+
+  writeStdout('');
   writeStdout('local worktrees:');
   if (result.worktrees.length === 0) {
     writeStdout('  - none');
@@ -305,15 +344,16 @@ function printResult(result, useJson) {
   } else {
     for (let i = 0; i < result.recentWorkpads.workpads.length; i++) {
       const workpad = result.recentWorkpads.workpads[i];
-      writeStdout('  ┌──────────────────────────────────────────────────────────────');
+      const bar = '──────────────────────────────────────────────────────────────';
+      writeStdout(`  ┌${bar}┐`);
       writeStdout(`  │ workpad ${i + 1}/${result.recentWorkpads.workpads.length}: [${workpad.category}] ${workpad.title}`);
       writeStdout(`  │ saved: ${workpad.date}`);
-      writeStdout('  ├──────────────────────────────────────────────────────────────');
+      writeStdout(`  ├${bar}┤`);
       const lines = workpad.content.split('\n');
       for (const line of lines) {
         writeStdout(`  │ ${line}`);
       }
-      writeStdout('  └──────────────────────────────────────────────────────────────');
+      writeStdout(`  └${bar}┘`);
       writeStdout('');
     }
   }
@@ -350,6 +390,7 @@ async function main() {
   const result = {
     area,
     stream: streamBranch,
+    decisions: await getStreamDecisions(area),
     openTaskPullRequests: await getOpenTaskPullRequests(args, area, streamBranch),
     recentCommits: getRecentCommits(repoRoot, streamBranch),
     recentWorkpads: await getRecentWorkpads(area),
