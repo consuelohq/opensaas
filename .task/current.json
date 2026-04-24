@@ -1,12 +1,12 @@
 {
   "area": "dialer",
   "stream": "stream/dialer",
-  "taskBranch": "task/dialer/test-metadata-isolation-a",
+  "taskBranch": "task/dialer/normalize-predictive-queue-numbers",
   "baseBranch": "stream/dialer",
-  "sourceBranch": "main",
-  "startFrom": "main",
-  "prNumber": 155,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/155",
-  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-test-metadata-isolation-a",
-  "createdAt": "2026-04-24T00:08:43.903Z"
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 159,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/159",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-queue-real-call-lifecycle",
+  "createdAt": "2026-04-23T23:45:25.885Z"
 }

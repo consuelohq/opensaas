@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
-
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
+import { toE164 } from '@/dialer/utils/phoneFormat';
 import {
   activeQueueState,
   currentQueueIndexState,
@@ -16,7 +16,16 @@ import {
   playErrorSound,
 } from '@/dialer/utils/notificationSounds';
 
-const getParallelProfileId = (maxLines: number): 'conservative' | 'balanced' | 'aggressive' => {
+const MIN_SUPPORTED_PARALLEL_LINES = 2;
+const MAX_SUPPORTED_PARALLEL_LINES = 4;
+const E164_REGEX = /^\+[1-9]\d{6,14}$/;
+
+const isValidE164Phone = (phoneNumber: string): boolean =>
+  E164_REGEX.test(phoneNumber);
+
+const getParallelProfileId = (
+  maxLines: number,
+): 'conservative' | 'balanced' | 'aggressive' => {
   if (maxLines <= 2) {
     return 'conservative';
   }
@@ -36,14 +45,16 @@ export const useParallelDialer = () => {
   );
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [pollInterval, setPollInterval] = useState<ReturnType<
+    typeof setInterval
+  > | null>(null);
 
   const clearPoll = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
+    if (pollInterval !== null) {
+      clearInterval(pollInterval);
+      setPollInterval(null);
     }
-  }, []);
+  }, [pollInterval]);
 
   const handleWinner = useCallback(
     (winner: ParallelCall, allCalls: ParallelCall[]) => {
@@ -69,7 +80,7 @@ export const useParallelDialer = () => {
       );
 
       setActiveQueue((prev) =>
-        prev
+        prev !== null
           ? {
               ...prev,
               parallelDialingActive: false,
@@ -100,7 +111,7 @@ export const useParallelDialer = () => {
       );
 
       setActiveQueue((prev) =>
-        prev
+        prev !== null
           ? {
               ...prev,
               parallelDialingActive: false,
@@ -121,13 +132,14 @@ export const useParallelDialer = () => {
       activeQueue?.settings.parallelDialingCooldown,
       currentQueueIndex,
       setQueueItems,
+      setActiveQueue,
       setCurrentQueueIndex,
     ],
   );
 
   const startPolling = useCallback(
     (groupId: string) => {
-      pollRef.current = setInterval(async () => {
+      const interval = setInterval(async () => {
         try {
           const res = await authenticatedFetch(
             `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}`,
@@ -141,7 +153,7 @@ export const useParallelDialer = () => {
 
           setActiveCalls(calls);
 
-          if (winner) {
+          if (winner !== null) {
             clearPoll();
             handleWinner(winner, calls);
             return;
@@ -163,6 +175,7 @@ export const useParallelDialer = () => {
           });
         }
       }, 500);
+      setPollInterval(interval);
     },
     [clearPoll, handleWinner, handleAllFailed],
   );
@@ -170,18 +183,28 @@ export const useParallelDialer = () => {
   const startParallelBatch = useCallback(async () => {
     if (!activeQueue?.parallelDialingEnabled || isDialing) return;
 
-    const maxLines = activeQueue.settings.parallelDialingMaxLines;
+    const maxLines = Math.min(
+      activeQueue.settings.parallelDialingMaxLines,
+      MAX_SUPPORTED_PARALLEL_LINES,
+    );
     const batchItems = queueItems
       .slice(currentQueueIndex, currentQueueIndex + maxLines)
       .filter((item) => item.status === 'pending' || item.status === 'calling');
+    const dialableBatchItems = batchItems
+      .map((item) => ({
+        item,
+        customerNumber: toE164(item.contact.phone),
+      }))
+      .filter(({ customerNumber }) => isValidE164Phone(customerNumber));
+    const dialingItems = dialableBatchItems.map(({ item }) => item);
 
-    if (batchItems.length === 0) return;
+    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return;
 
     setIsDialing(true);
 
     setQueueItems((prev) =>
       prev.map((item) =>
-        batchItems.find((b) => b.id === item.id)
+        dialingItems.find((dialingItem) => dialingItem.id === item.id)
           ? {
               ...item,
               status: 'calling' as const,
@@ -202,9 +225,11 @@ export const useParallelDialer = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             queueId: activeQueue.id,
-            customerNumbers: batchItems.map((item) => item.contact.phone),
-            contactIds: batchItems.map((item) => item.contactId),
-            profileId: getParallelProfileId(maxLines),
+            customerNumbers: dialableBatchItems.map(
+              ({ customerNumber }) => customerNumber,
+            ),
+            contactIds: dialingItems.map((item) => item.contactId),
+            profileId: getParallelProfileId(dialableBatchItems.length),
           }),
         },
       );
@@ -216,7 +241,7 @@ export const useParallelDialer = () => {
       const { groupId, calls } = await res.json();
 
       setActiveQueue((prev) =>
-        prev
+        prev !== null
           ? {
               ...prev,
               parallelDialingActive: true,
@@ -237,7 +262,7 @@ export const useParallelDialer = () => {
       // revert queueItems to pending on failure
       setQueueItems((prev) =>
         prev.map((item) =>
-          batchItems.find((b) => b.id === item.id)
+          dialingItems.find((dialingItem) => dialingItem.id === item.id)
             ? { ...item, status: 'pending' as const }
             : item,
         ),
@@ -256,7 +281,7 @@ export const useParallelDialer = () => {
   const cancelParallelDial = useCallback(async () => {
     clearPoll();
     const groupId = activeQueue?.parallelGroupId;
-    if (groupId) {
+    if (typeof groupId === 'string' && groupId.length > 0) {
       try {
         await authenticatedFetch(
           `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`,
@@ -274,7 +299,7 @@ export const useParallelDialer = () => {
     setIsDialing(false);
     setActiveCalls([]);
     setActiveQueue((prev) =>
-      prev
+      prev !== null
         ? {
             ...prev,
             parallelDialingActive: false,
