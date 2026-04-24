@@ -76,7 +76,7 @@ the full loop of a coding task: mandatory order
 
 1.  `bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
 2.  `bun run stream:sync -- --area dialer` — sync stream/dialer with latest main 
-3   `bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
+3.  `bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
 4.  `bun run review` — run review on changed files
 5.  `bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api 
 6.  `bun run task:pr` — merge task→stream, create stream→main PR 
