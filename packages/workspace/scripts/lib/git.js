@@ -121,7 +121,7 @@ function getTrackedChanges(repoRoot) {
       status,
       deleted: status === 'D',
     };
-  });
+  }).filter((change) => change.path !== 'node_modules' && !change.path.startsWith('node_modules/'));
 }
 
 module.exports = {

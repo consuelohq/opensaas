@@ -322,7 +322,7 @@ async function main() {
 
   assertCommitMessageFormat(args.message);
 
-  const { branch, repoRoot } = getTaskContext(args);
+  const { branch, repoRoot, taskMeta } = getTaskContext(args);
 
   if (args.changed) {
     assertChangedBranchIsSynced(repoRoot, branch);
