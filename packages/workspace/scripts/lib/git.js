@@ -106,9 +106,17 @@ function isBranchMerged(repoRoot, branch, into) {
 }
 
 function getTrackedChanges(repoRoot) {
-  // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing
+  // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing.
+  // exclude node_modules because task:start symlinks it into worktrees for local checks.
   const { execFileSync } = require('child_process');
-  const output = execFileSync('git', ['status', '--porcelain', '-uall'], {
+  const output = execFileSync('git', [
+    'status',
+    '--porcelain',
+    '-uall',
+    '--',
+    '.',
+    ':!node_modules',
+  ], {
     cwd: repoRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
   });
   if (!output || !output.trim()) return [];
@@ -121,7 +129,7 @@ function getTrackedChanges(repoRoot) {
       status,
       deleted: status === 'D',
     };
-  });
+  }).filter((change) => change.path !== 'node_modules' && !change.path.startsWith('node_modules/'));
 }
 
 module.exports = {

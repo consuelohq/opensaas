@@ -1,0 +1,30 @@
+{
+  "result": "pass",
+  "branch": "task/workspace-agents/verify-review-graph-db-guard",
+  "base": "origin/task/workspace-agents/verify-review-graph-db-guard",
+  "headSha": "d1e30f209b60016bd8637e944d0f00c2843fa7c9",
+  "changeHash": "95ffd4a9f15307a2af6cee1ac4cd6fb3e8aff341ab24a93b66caaa22e72cd176",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/scripts/lib/db-guards.js",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/lib/nx-projects.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "verifiedAt": "2026-04-24T16:49:15.491Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
