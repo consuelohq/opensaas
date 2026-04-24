@@ -534,31 +534,63 @@ async function main() {
 
   // run static checks on changed files
   const allFindings = [];
+  const checkResults = {};
   for (const file of files) {
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);
+      const name = check.name.replace('check', '').replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '');
+      if (!checkResults[name]) checkResults[name] = [];
       for (const r of results) {
         allFindings.push({ ...r, file });
+        checkResults[name].push({ ...r, file });
       }
     }
   }
 
+  // ensure all check names appear even if no files
+  const checkNames = ['LOGGING', 'SENTRY', 'PHONE_NORM', 'SQL_PARAM', 'ERROR_HANDLING',
+    'TYPE_SAFETY', 'SECRETS', 'TODO_FIXME', 'IMPORT_SAFETY', 'ROUTE_ORDER',
+    'CATCH_TYPING', 'OPTIONAL_IMPORT', 'STUB_HANDLER'];
+  for (const name of checkNames) {
+    if (!checkResults[name]) checkResults[name] = [];
+  }
+
+  // print static check results
+  if (!args.quiet && !args.json) {
+    writeStdout('');
+    for (const name of checkNames) {
+      const pad = name + ' '.repeat(Math.max(0, 18 - name.length));
+      const count = checkResults[name].length;
+      writeStdout(`  ${pad} ${count === 0 ? '✓ PASS' : `✗ FAIL (${count})`}`);
+    }
+  }
+
   // run eslint — always, on changed files or all
+  if (!args.quiet) writeStdout('');
   if (!args.quiet) writeStdout('running eslint...');
   const eslintFiles = files.length > 0 ? files : getAllTsFiles(root);
   const eslintFindings = runEslint(eslintFiles, args.fix);
   allFindings.push(...eslintFindings);
+  if (!args.quiet && !args.json) {
+    writeStdout(`  ${'ESLINT' + ' '.repeat(13)} ${eslintFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${eslintFindings.length})`}`);
+  }
 
   // run typecheck — always, on affected packages
   if (!args.quiet) writeStdout('running typecheck...');
   const typecheckFiles = files.length > 0 ? files : getAllTsFiles(root);
   const typecheckFindings = runTypecheck(typecheckFiles);
   allFindings.push(...typecheckFindings);
+  if (!args.quiet && !args.json) {
+    writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
+  }
 
   // spec compliance (not per-file)
   const specFindings = checkSpecCompliance();
   allFindings.push(...specFindings.map((f) => ({ ...f, file: '' })));
+  if (!args.quiet && !args.json) {
+    writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
+  }
 
   // classify
   const { yours, preExisting } = classifyFindings(allFindings, changedLines, base);
