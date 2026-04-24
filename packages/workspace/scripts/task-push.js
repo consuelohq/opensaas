@@ -425,6 +425,44 @@ async function main() {
     sha: commit.sha,
   });
 
+  // save workpad to supabase memories for future agent context
+  const workpadFile = path.join(repoRoot, '.task', 'workpad.md');
+  if (fs.existsSync(workpadFile)) {
+    try {
+      const dotenvPath = path.join(__dirname, '..', '..', '.env');
+      let supabaseUrl, supabaseKey;
+      if (fs.existsSync(dotenvPath)) {
+        const envContent = fs.readFileSync(dotenvPath, 'utf8');
+        supabaseUrl = (envContent.match(/SUPABASE_URL=(.+)/) || [])[1];
+        supabaseKey = (envContent.match(/SUPABASE_KEY=(.+)/) || [])[1];
+      }
+      supabaseUrl = supabaseUrl || process.env.SUPABASE_URL;
+      supabaseKey = supabaseKey || process.env.SUPABASE_KEY;
+
+      if (supabaseUrl && supabaseKey) {
+        const workpadContent = fs.readFileSync(workpadFile, 'utf8');
+        const resp = await fetch(`${supabaseUrl}/rest/v1/memories`, {
+          method: 'POST',
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: `workpad: ${branch}`,
+            category: 'workpad',
+            content: workpadContent,
+          }),
+        });
+        if (!resp.ok) {
+          writeStderr(`workpad save warning: ${resp.status}`);
+        }
+      }
+    } catch {
+      // non-critical — don't fail the push if memory save fails
+    }
+  }
+
   const result = {
     repo: args.repo,
     branch,
