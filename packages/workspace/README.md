@@ -128,7 +128,7 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 | `sandbox_write_file` | write a file to disk |
 | `sandbox_list_files` | list files from disk |
 | `github_get_file` | read a file from the configured github repo |
-| `github_get_pr` | fetch a pull request |
+| `gh pr view` | fetch a pull request (CLI, not a workspace tool) |
 | `github_list_prs` | list pull requests |
 | `github_push_files` | push files to a branch via the git database api |
 | `invoke_opencode` | spawn an opencode tmux session |

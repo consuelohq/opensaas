@@ -4,6 +4,7 @@
   "scripts": {
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
+    "task:prs": "bun ./scripts/task-prs.js",
     "task:push": "bun ./scripts/task-push.js",
     "task:cleanup": "bun ./scripts/task-cleanup.js",
     "task:finish": "bun ./scripts/task-finish.js",

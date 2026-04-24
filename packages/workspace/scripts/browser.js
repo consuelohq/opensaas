@@ -214,6 +214,59 @@ function cmdRaw(args) {
   if (result.stderr && !result.ok) writeStdout(`error: ${result.stderr}`);
 }
 
+// noise patterns to filter from network request output
+const NETWORK_NOISE = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)(\?|$)|^data:|\/webpack|\/hot-update|\/socket\.io|\/ws$|__nextjs|_next\/static|chrome-extension/i;
+
+function cmdNetwork(argv) {
+  // "network requests" gets special filtering; everything else passes through
+  const sub = argv[1];
+  if (sub !== 'requests') {
+    cmdRaw(argv);
+    return;
+  }
+
+  // bump timeout for network requests — can be slow
+  const result = spawnSync('agent-browser', argv, {
+    encoding: 'utf8',
+    timeout: 15000,
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  const stdout = (result.stdout || '').trim();
+
+  if (!stdout) {
+    writeStdout('no network requests captured');
+    return;
+  }
+
+  // if --json flag was passed, try to parse and filter as json
+  if (argv.includes('--json')) {
+    try {
+      const requests = JSON.parse(stdout);
+      const filtered = requests.filter((r) => !NETWORK_NOISE.test(r.url || r.path || ''));
+      writeStdout(JSON.stringify(filtered, null, 2));
+      return;
+    } catch {
+      // not valid json, fall through to line filtering
+    }
+  }
+
+  // line-by-line filtering for text output
+  const lines = stdout.split('\n').filter((l) => {
+    if (!l.trim()) return false;
+    // keep header/separator lines
+    if (l.startsWith('─') || l.startsWith('│') || l.startsWith('┌') || l.startsWith('└') || l.startsWith('├')) return true;
+    // filter noise urls
+    return !NETWORK_NOISE.test(l);
+  });
+
+  if (lines.length === 0) {
+    writeStdout('no meaningful network requests (all filtered as static assets)');
+    return;
+  }
+
+  writeStdout(lines.join('\n'));
+}
+
 // simple passthrough commands that just forward args to agent-browser
 function cmdPassthrough(abCommand, args) {
   const result = run([abCommand, ...args]);
@@ -286,7 +339,7 @@ function main() {
   }
 
   if (command === 'network') {
-    cmdRaw(argv); // pass "network requests --filter ..." straight through
+    cmdNetwork(argv);
     return;
   }
 
