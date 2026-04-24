@@ -12,7 +12,8 @@
     "stream:list": "bun ./scripts/stream-list.js",
     "railway:logs": "bun ./scripts/railway-logs.js",
     "browser": "bun ./scripts/browser.js",
-    "website:deploy": "bun ./scripts/website-deploy.js"
+    "website:deploy": "bun ./scripts/website-deploy.js",
+    "context": "bun ./scripts/context.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
