@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/doctor-status-script-audit",
-  "base": "origin/task/workspace-agents/doctor-status-script-audit",
-  "headSha": "5f4e56144dfd52d5ec82c42e3d4af3003288878e",
-  "changeHash": "e881c79a3a87950786b19fc8d8e501b536abb31091da855cb2b5d6d5d8e6748d",
+  "branch": "task/workspace-agents/verify-review-graph-db-guard",
+  "base": "origin/task/workspace-agents/verify-review-graph-db-guard",
+  "headSha": "d1e30f209b60016bd8637e944d0f00c2843fa7c9",
+  "changeHash": "95ffd4a9f15307a2af6cee1ac4cd6fb3e8aff341ab24a93b66caaa22e72cd176",
   "changedFiles": [
     "package.json",
     "packages/workspace/scripts/lib/db-guards.js",
@@ -15,9 +15,9 @@
     "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/verify.js"
   ],
-  "verifiedAt": "2026-04-24T17:05:00.554Z",
+  "verifiedAt": "2026-04-24T16:49:15.491Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
