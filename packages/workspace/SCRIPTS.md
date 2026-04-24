@@ -106,7 +106,7 @@ streams are long-lived branches per area (dialer, workspace-agents, analytics, e
 
 ## context — search and save project memories
 
-backed by supabase. stores decisions, workpads, investigation notes, patterns.
+past decisions, patterns, skills, architecture knowledge, repo details. search AGGRESSIVELY. if you're about to say something about the codebase, search first. try multiple queries. the memories table in supabase has detailed knowledge about packages, architecture decisions, and past conversations.
 
 `bun run context -- search dialer` — search memory content
 `bun run context -- search queue --category workpad` — search within a category
@@ -210,6 +210,11 @@ runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 `bun run server -- stop` — stop the server
 `bun run server -- start` — start the server
 `bun run server -- logs` — tail /tmp/workspace.log
+
+---
+
+## help  
+bun run <script> -- --help                                     # any script supports --help
 
 ---
 
