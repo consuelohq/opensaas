@@ -68,6 +68,12 @@ function getToken() {
   }
 
   if (!token) {
+    try {
+      token = require('child_process').execSync('gh auth token', { encoding: 'utf8', timeout: 5000 }).trim();
+    } catch { /* gh cli not available or not logged in */ }
+  }
+
+  if (!token) {
     throw new Error(
       `missing github token: set GITHUB_TOKEN or GH_TOKEN, or add GITHUB_TOKEN to ${path.join(getPackageRoot(), '.env')}`,
     );
