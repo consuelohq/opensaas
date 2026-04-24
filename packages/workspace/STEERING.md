@@ -583,7 +583,6 @@ Allignment is the number one thing we need to achieve. if there is confusion, or
   think about whether one should exist. you don't have to write it unprompted, but flag it: "this
   doesn't have test coverage — want me to add one?"
 
-  ## the loop: task start skill (stream:list then stream:contex then task:start) & task-publish skill (task:push → task:pr → task:finish)
   
 
 for command construction:
