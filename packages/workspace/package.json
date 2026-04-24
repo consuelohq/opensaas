@@ -7,6 +7,7 @@
     "task:push": "bun ./scripts/task-push.js",
     "task:cleanup": "bun ./scripts/task-cleanup.js",
     "task:finish": "bun ./scripts/task-finish.js",
+    "task:merge": "bun ./scripts/task-merge.js",
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
