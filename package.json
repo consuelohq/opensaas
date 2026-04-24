@@ -236,7 +236,8 @@
     "railway:logs": "bun packages/workspace/scripts/railway-logs.js",
     "browser": "bun packages/workspace/scripts/browser.js",
     "website:deploy": "bun packages/workspace/scripts/website-deploy.js",
-    "context": "bun packages/workspace/scripts/context.js"
+    "context": "bun packages/workspace/scripts/context.js",
+    "tmp": "bun packages/workspace/scripts/tmp.js"
   },
   "workspaces": {
     "packages": [

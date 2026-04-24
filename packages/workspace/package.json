@@ -13,7 +13,8 @@
     "railway:logs": "bun ./scripts/railway-logs.js",
     "browser": "bun ./scripts/browser.js",
     "website:deploy": "bun ./scripts/website-deploy.js",
-    "context": "bun ./scripts/context.js"
+    "context": "bun ./scripts/context.js",
+    "tmp": "bun ./scripts/tmp.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"
