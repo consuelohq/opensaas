@@ -436,6 +436,16 @@ function runTypecheck(files) {
 
   const projects = getProjectsWithTarget(root, files, 'typecheck');
 
+  if (files.length > 0 && projects.length === 0) {
+    findings.push({
+      file: '',
+      line: 0,
+      rule: 'TYPECHECK',
+      msg: "no projects with 'typecheck' target found (nx available)",
+    });
+    return findings;
+  }
+
   for (const project of projects) {
     try {
       execFileSync(nxPath, ['typecheck', project.name], {

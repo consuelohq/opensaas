@@ -183,14 +183,30 @@ function readChangedFiles(repoRoot, base) {
   addGitOutput(repoRoot, files, ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
 
   try {
-    const statusOutput = execFileSync('git', ['status', '--porcelain', '-uall', '--', '.', ':!node_modules'], {
+    const statusOutput = execFileSync('git', [
+      '-c',
+      'core.quotePath=false',
+      'status',
+      '--porcelain',
+      '-z',
+      '-uall',
+      '--',
+      '.',
+      ':!node_modules',
+    ], {
       cwd: repoRoot,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    for (const line of statusOutput.split('\n').filter(Boolean)) {
-      const file = line.slice(3);
+    for (const entry of statusOutput.split('\0').filter(Boolean)) {
+      const status = entry.slice(0, 2).trim();
+      let file = entry.slice(3);
+
+      if ((status.startsWith('R') || status.startsWith('C')) && file.includes(' -> ')) {
+        file = file.split(' -> ').pop();
+      }
+
       if (file && !file.startsWith('.task/')) {
         files.add(file);
       }
@@ -229,7 +245,7 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--json', ...args.reviewArgs];
+  const reviewArgs = ['run', 'review', '--', '--base', base, '--json', '--quiet', ...args.reviewArgs];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -376,6 +392,7 @@ async function main() {
         passed: result.review.passed,
         status: result.review.status,
         data: result.review.data,
+        stderr: result.review.stderr,
       },
       db: result.db,
       passed: result.passed,
