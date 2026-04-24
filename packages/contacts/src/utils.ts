@@ -28,7 +28,7 @@ const parsePhoneNumber = (phone: string) => {
 export const normalizePhone = (phone: string): string => {
   const parsedPhoneNumber = parsePhoneNumber(phone);
 
-  return parsedPhoneNumber?.number ?? '';
+  return parsedPhoneNumber?.isValid() === true ? parsedPhoneNumber.number : '';
 };
 
 export const isValidPhone = (phone: string): boolean => {
