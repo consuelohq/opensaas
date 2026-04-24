@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import { isValidPhone, normalizePhone } from '@consuelo/contacts';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 
@@ -289,11 +290,23 @@ const mapRecordToDialerContact = (
   };
 };
 
+const extractValidPhoneNumber = (value: unknown): string | null => {
+  const phoneNumber = extractPhoneNumber(value);
+
+  if (phoneNumber === null) {
+    return null;
+  }
+
+  const normalizedPhoneNumber = normalizePhone(phoneNumber);
+
+  return isValidPhone(normalizedPhoneNumber) ? normalizedPhoneNumber : null;
+};
+
 const getListMemberPhoneNumber = (record: ListMemberWorkspaceRecord) => {
   return (
-    extractPhoneNumber(record.phoneNumber) ??
-    extractPhoneNumber(record.person?.phones) ??
-    extractPhoneNumber(record.person?.phone) ??
+    extractValidPhoneNumber(record.phoneNumber) ??
+    extractValidPhoneNumber(record.person?.phones) ??
+    extractValidPhoneNumber(record.person?.phone) ??
     null
   );
 };
