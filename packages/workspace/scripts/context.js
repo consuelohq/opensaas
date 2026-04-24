@@ -140,7 +140,7 @@ async function cmdSearch(env, keyword, args) {
   printHeader(`${rows.length} result(s) for "${keyword}"`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
   writeStdout('');
-  writeStdout(`tip: bun run context -- get <number> ${keyword}  to read full content of a result`);
+  writeStdout(`tip: bun run context -- get <number> ${keyword}  next tool call to read full content of a result`);
 }
 
 async function cmdFind(env, keyword, args) {
@@ -164,7 +164,7 @@ async function cmdFind(env, keyword, args) {
   writeStdout(`${rows.length} result(s) for title "${keyword}":\n`);
   rows.forEach((row, i) => writeStdout(formatRow(row, i)));
   writeStdout('');
-  writeStdout(`tip: bun run context -- get <number> ${keyword} --by-title  to read full content of a result`);
+  writeStdout(`tip: bun run context -- get <number> ${keyword} --by-title  next tool call to read full content of a result`);
 }
 
 async function cmdList(env, category, args) {
@@ -247,10 +247,10 @@ async function cmdGet(env, num, keyword, args) {
     const baseName = row.title.replace(/\s*\(chunk \d+\/\d+\)/, '');
     writeStdout('');
     writeStdout(`--- chunk ${current} of ${total} ---`);
-    writeStdout(`tip: bun run context -- find "${baseName}" --limit ${total}  to see all ${total} chunks`);
+    writeStdout(`tip: bun run context -- find "${baseName}" --limit ${total}  next tool call to see all ${total} chunks`);
   } else {
     writeStdout('');
-    writeStdout(`tip: bun run context -- get <number> ${keyword}  to read another result`);
+    writeStdout(`tip: bun run context -- get <number> ${keyword}  next tool call to read another result`);
   }
 }
 
