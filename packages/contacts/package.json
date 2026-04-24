@@ -28,5 +28,15 @@
   },
   "dependencies": {
     "libphonenumber-js": "^1.10.26"
+  },
+  "exports": {
+    ".": {
+      "browser": {
+        "types": "./dist/browser.d.ts",
+        "import": "./dist/browser.js"
+      },
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }
