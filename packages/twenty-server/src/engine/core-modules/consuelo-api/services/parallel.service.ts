@@ -202,6 +202,10 @@ export class ParallelService {
         throw err;
       }
 
+      if (this.isProviderCustomerPhoneFailure(err)) {
+        throw new BadRequestException('Invalid customer phone number');
+      }
+
       const safeError = this.getSafeErrorDetails(err);
 
       this.logger.error('parallel dial failed', {
@@ -505,6 +509,17 @@ export class ParallelService {
       name: 'NonError',
       message: String(err),
     };
+  }
+
+  private isProviderCustomerPhoneFailure(err: unknown): boolean {
+    const message = getErrorMessage(err, '').toLowerCase();
+
+    return (
+      message.includes('account not authorized to call') ||
+      message.includes('geo-permissions') ||
+      message.includes('not a valid phone number') ||
+      message.includes('invalid phone number')
+    );
   }
 
   private readCustomerNumbers(value: unknown): string[] {
