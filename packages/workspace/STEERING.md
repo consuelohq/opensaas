@@ -363,7 +363,7 @@ when in doubt, start from the stream, isolate the task, push early, and clean up
   sandbox_exec("cd /Users/kokayi/Dev/opensaas && npx nx typecheck twenty-front")
   sandbox_exec("cd /Users/kokayi/Dev/opensaas && npx jest
   packages/dialer/src/services/local-presence.spec.ts")
-  `bash scripts/code-review.sh` runs these. all must pass before you commit:
+  bun run review runs these. all must pass before you commit:
 
 **ALWAYS USE THIS FLOW EVEN IF IT SEEMS TINY**
 
@@ -932,10 +932,7 @@ Allignment is the number one thing we need to achieve. if there is confusion, or
 
   - every change gets verified. how depends on what you changed:
 
- - code changes — run the relevant check. typecheck (npx nx typecheck <package>), lint (npx nx
-  lint:diff-with-main <package>), or the test suite (npx jest path/to/test.ts). if there's a
-  pre-existing test for what you touched, run it. if the code-review script applies, run it
-  (scripts/code-review.sh).
+ - code changes — bun run review
 
  - deployed changes — sleep, then check. after merging or deploying, sleep 300 (5 min for railway),
   then verify it's actually live. use sandbox_exec("curl -s <https://the-endpoint>") or agent-browser
