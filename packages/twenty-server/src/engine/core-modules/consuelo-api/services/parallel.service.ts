@@ -61,6 +61,23 @@ type TerminateGroupInput = {
   workspaceId: string;
 };
 
+type ParallelDialCreateStage =
+  | 'request-validation'
+  | 'legacy-dialer'
+  | 'strategy-resolution'
+  | 'fanout-validation'
+  | 'list-numbers'
+  | 'caller-id-resolution'
+  | 'caller-id-lock-acquisition'
+  | 'callback-url-construction'
+  | 'initiate-group';
+
+type SafeErrorDetails = {
+  name: string;
+  message: string;
+  stack?: string;
+};
+
 type GroupStatusResponse = {
   groupId: string;
   status: string;
@@ -105,8 +122,15 @@ export class ParallelService {
 
     this.validateCustomerNumbers(customerNumbers);
 
+    let createStage: ParallelDialCreateStage = 'request-validation';
+    let resolvedProfileId = profileId;
+    let fromNumberCount = 0;
+
     try {
+      createStage = 'legacy-dialer';
       const dialer = this.legacyDialerService.getDialer();
+
+      createStage = 'strategy-resolution';
       const strategy = await this.parallelStrategyResolver.resolve({
         queueId,
         workspaceId: input.workspaceId,
@@ -114,19 +138,27 @@ export class ParallelService {
         recentAnswerRate,
         profileId,
       });
+      resolvedProfileId = strategy.profile.id;
 
+      createStage = 'fanout-validation';
       if (customerNumbers.length !== strategy.profile.fanout) {
         throw new BadRequestException(
           `Profile ${strategy.profile.id} requires exactly ${strategy.profile.fanout} customerNumbers`,
         );
       }
 
+      createStage = 'list-numbers';
       const accountNumbers = await dialer.listNumbers();
       const pool: NumberPool = {
         numbers: accountNumbers,
         primaryNumber: accountNumbers[0],
       };
+
+      createStage = 'caller-id-resolution';
       const fromNumbers = await this.resolveCallerIds(customerNumbers, pool);
+      fromNumberCount = fromNumbers.length;
+
+      createStage = 'caller-id-lock-acquisition';
       const acquiredFromNumbers = await this.acquireCallerIdLocks({
         fromNumbers,
         queueId,
@@ -134,16 +166,20 @@ export class ParallelService {
       });
 
       try {
+        createStage = 'callback-url-construction';
         const baseUrl = process.env.API_BASE_URL ?? '';
+        const statusCallbackUrl = `${baseUrl}/api/v1/calls/parallel/status-callback`;
+        const customerTwimlUrl = `${baseUrl}/api/v1/calls/parallel/customer-twiml`;
 
+        createStage = 'initiate-group';
         const result = await dialer.parallel.initiateGroup({
           customerNumbers,
           queueId,
           contactIds,
           userId: input.userId,
           fromNumbers,
-          statusCallbackUrl: `${baseUrl}/api/v1/calls/parallel/status-callback`,
-          customerTwimlUrl: `${baseUrl}/api/v1/calls/parallel/customer-twiml`,
+          statusCallbackUrl,
+          customerTwimlUrl,
           profile: strategy.profile,
           campaignSegment,
         });
@@ -165,15 +201,31 @@ export class ParallelService {
         throw err;
       }
 
+      const safeError = this.getSafeErrorDetails(err);
+
       this.logger.error('parallel dial failed', {
         queueId,
         workspaceId: input.workspaceId,
+        profileId: resolvedProfileId,
+        stage: createStage,
+        customerNumberCount: customerNumbers.length,
+        fromNumberCount,
+        errorName: safeError.name,
+        errorMessage: safeError.message,
+        errorStack: safeError.stack,
       });
       Sentry.captureException(err, {
         extra: {
           context: 'nest_parallel_dial',
           queueId,
           workspaceId: input.workspaceId,
+          profileId: resolvedProfileId,
+          stage: createStage,
+          customerNumberCount: customerNumbers.length,
+          fromNumberCount,
+          errorName: safeError.name,
+          errorMessage: safeError.message,
+          errorStack: safeError.stack,
         },
       });
 
@@ -434,6 +486,21 @@ export class ParallelService {
         message: getErrorMessage(err, 'Terminate failed'),
       });
     }
+  }
+
+  private getSafeErrorDetails(err: unknown): SafeErrorDetails {
+    if (err instanceof Error) {
+      return {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+      };
+    }
+
+    return {
+      name: 'NonError',
+      message: String(err),
+    };
   }
 
   private readCustomerNumbers(value: unknown): string[] {

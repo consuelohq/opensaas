@@ -1,79 +1,98 @@
-# fix queue state drift call start
+# fix parallel dial create 500
 
-branch: `task/dialer/fix-queue-state-drift-call-start`
+branch: `task/dialer/fix-parallel-dial-create-500`
 stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/170
+pr: https://github.com/consuelohq/opensaas/pull/172
 started: 2026-04-24
 
 ## acceptance criteria
 
-- [x] start from `stream/dialer` with `task:start` and fill out `.task/workpad.md` before coding.
-- [x] ingest ko's browser logs if provided and cross-check them against fresh browser/network evidence.
-- [x] prove which server owns production dialer routes: nest `twenty-server` consuelo-api controllers, legacy `packages/api`, or both.
-- [x] prove the route contract end-to-end for parallel dialing: frontend request path, backend mounted path, status code, content type, and response body.
-- [x] fix the parallel route path mismatch so the frontend hits the real nest controller, not the spa/static catch-all. current repo evidence: frontend calls `/v1/calls/parallel`; nest controller is mounted at `/api/v1/calls/parallel`.
-- [x] after path alignment, prove `post /calls/parallel` reaches `ParallelController.initiateParallelDial()` with authenticated workspace context.
-- [x] replace or bridge the `ParallelService.initiateParallelDial()` `NotImplementedException` so a real parallel dial group can be created, or explicitly route the frontend to the legacy implementation if that is the chosen migration path.
-- [x] cover all parallel endpoints in the chosen route namespace: create group, validate, group status polling, terminate, twilio status callback, and customer twiml.
-- [x] add focused backend/controller tests that fail on the old path mismatch and fail on the `NotImplementedException` create-group path.
-- [x] add or update frontend tests/helpers so `useParallelDialer` targets the chosen namespace consistently.
-- [x] verify the browser no longer receives spa html or unrelated middleware responses for parallel api calls; response must be json with the expected schema.
-- [ ] only after route + implementation is proven, investigate the remaining list/queue drift: list 18 renders `completed` while backend queues are `active` with stuck `calling` items.
-- [ ] explain why multiple backend queues exist for the same list/source id and whether that is a cause or aftermath of the route failure.
-- [x] fix the first proven blocker only, with tests.
-- [ ] verify the fix with a safe browser/network reproduction or explicit ko-provided reproduction logs.
-- [x] run the strongest available local checks and document any repo/tooling blockers honestly.
-- [ ] publish with `bun run task:push`, `bun run task:pr`, and `bun run task:finish`.
+- [x] start from `stream/dialer` with `bun run task:start -- --area dialer --title "fix parallel dial create 500" --start-from stream --json`.
+- [x] read `AGENTS.md` and `CODING-STANDARDS.md` in the new task worktree before editing.
+- [x] fill out `.task/workpad.md` before coding with this checklist, the current railway evidence, and the intended first fix.
+- [x] re-run railway truth commands before code changes: `bun run railway:logs -- --errors`, `bun run railway:logs -- --grep "twilio OR queue"`, `bun run railway:logs -- --grep "ParallelService OR PARALLEL_DIAL_FAILED OR Twilio not configured OR CALLER_ID_LOCKED OR initiateGroup"`, `bun run railway:logs -- --status`, and twilio env checks.
+- [ ] confirm the deployed frontend is posting to `/api/v1/calls/parallel`, and capture status code, content type, and response body for the failed request.
+- [ ] confirm railway shows `ParallelService` receiving `queueId` and `workspaceId` for the failed request.
+- [x] add stage-specific safe error logging inside `ParallelService.initiateParallelDial()` so railway prints error `name`, `message`, `stack`, and failing stage without leaking tokens or customer phone numbers.
+- [x] instrument the likely stages separately: strategy resolution, `legacyDialerService.getDialer()`, `dialer.listNumbers()`, caller-id resolution, caller-id lock acquisition, and `dialer.parallel.initiateGroup()`.
+- [ ] deploy/publish the logging-only diagnostic change if the root exception is still hidden locally.
+- [ ] reproduce the failed start-call flow once after diagnostic logging lands, then pull railway logs again and copy the root exception into the workpad.
+- [ ] fix the concrete create-group failure revealed by logs. candidate areas: nest `LegacyDialerService` credential/workspace handling, twilio number availability, `API_BASE_URL`, callback URL construction, missing DB relations, or caller-id locks.
+- [x] keep the frontend on `/api/v1/calls/parallel`; do not revert to legacy `/v1/calls/parallel` unless railway proves the nest route cannot own this flow.
+- [x] preserve authenticated workspace/user context through `ParallelController` into `ParallelService`.
+- [x] confirm twilio env vars are set in railway and do not print their values.
+- [ ] confirm a successful create response includes `groupId`, `conferenceName`, `profileId`, and at least one call object with a real twilio `callSid`.
+- [ ] confirm the browser receives json from `/api/v1/calls/parallel`, not html or an unrelated catch-all response.
+- [ ] confirm the frontend plays the dialing-start sound and stores `parallelGroupId` / `parallelActiveCalls` after a successful create response.
+- [ ] confirm group polling `/api/v1/calls/parallel/:groupId` returns `calls`, `winnerSid`, and `winner` when applicable.
+- [ ] confirm terminate `/api/v1/calls/parallel/:groupId/terminate` returns json and releases caller-id locks for the group.
+- [ ] confirm twilio callback urls point at `/api/v1/calls/parallel/status-callback` and `/api/v1/calls/parallel/customer-twiml` with the correct public base url.
+- [x] add or update focused tests around the revealed failure path in `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`.
+- [ ] add/update frontend tests only if endpoint handling or failure behavior changes.
+- [x] run the strongest available targeted checks. at minimum attempt the backend parallel service spec and the frontend endpoint helper spec; document dependency/bootstrap blockers exactly.
+- [ ] re-check railway after the fix: no `ParallelService parallel dial failed` for the reproduced call, and a real `callSid` appears in response/log evidence.
+- [ ] only after create succeeds, resume queue/list drift investigation for list 18 and duplicate backend queues.
+- [ ] publish through `bun run task:push`, `bun run task:pr`, and `bun run task:finish`; use explicit `--files` if `task:push --changed` mis-parses `.task/current.json`.
 
 ## plan
 
-1. verify the current stream/repo state and capture deploy/runtime evidence without starting live calls.
-2. prove the parallel route ownership and namespace from code first, then from browser/network/runtime evidence.
-3. inspect the legacy parallel implementation and nest consuelo-api parallel controller/service to choose the least-risk route owner.
-4. patch the first proven blocker: align frontend/backend namespace and bridge the nest service to the existing dialer implementation.
-5. add focused tests for the route/implementation failure path.
-6. run targeted checks, update this workpad with results, publish through the task workflow.
+1. collect fresh railway truth with this checkout's supported `--grep` flag, since `--filter` is not accepted by `packages/workspace/scripts/railway-logs.js` here.
+2. inspect the nest parallel controller/service and related spec to understand the current create path and logger conventions.
+3. add safe stage-specific error logging around each create step in `ParallelService.initiateParallelDial()`.
+4. add focused backend spec coverage proving the logger emits stage/name/message/stack metadata without phone-number lists when a create stage fails.
+5. run targeted checks, then publish via `task:push -> task:pr -> task:finish`.
+6. if railway logs after diagnostic publish reveal the concrete root failure inside this same loop, fix that failure and republish before finishing.
+
+## current railway evidence
+
+- `bun run railway:logs -- --errors` ran before coding. it reported `service: opensaas`, `boot: crashed or failing`, `errors: 5`, but the returned entries were cron registration logs rather than the root parallel exception.
+- this task worktree's railway helper rejects `--filter`; use `--grep` in this checkout.
+- `bun run railway:logs -- --grep "twilio OR queue"` returned no matching errors/warnings in the current log window.
+- `bun run railway:logs -- --grep "ParallelService OR PARALLEL_DIAL_FAILED OR Twilio not configured OR CALLER_ID_LOCKED OR initiateGroup"` returned no matching errors/warnings in the current log window.
+- `bun run railway:logs -- --status` reported `last build: failed`, with healthcheck failing twice and later succeeding.
+- `bun run railway:logs -- --env TWILIO_ACCOUNT_SID` returned `set`; `bun run railway:logs -- --env TWILIO_AUTH_TOKEN` returned `set`. no env values were printed.
+- prior handoff evidence says railway already showed `ParallelService` receiving `queueId` and `workspaceId`, then logging `parallel dial failed`, while twilio sid/token env vars are set.
+
+## intended first fix
+
+add stage-specific safe logging to `ParallelService.initiateParallelDial()` so the next railway reproduction shows exactly which stage failed and the thrown error `name`, `message`, and `stack`, while only logging safe metadata: queue id, workspace id, profile id, customer count, from-number count, and no twilio credentials or customer phone numbers.
 
 ## files changed
 
-- `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- `packages/twenty-front/src/modules/dialer/utils/parallel-dialer-endpoint.ts`
-- `packages/twenty-front/src/modules/dialer/utils/__tests__/parallel-dialer-endpoint.test.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts`
+- `.task/workpad.md`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
 
 ## key decisions
 
-- production currently has both owners live: legacy `/v1/calls/parallel/validate` returns json 200, while nest `/api/v1/calls/parallel/validate` reaches `ParallelController` and returns the current dev-1459 501.
-- because the stream decision says api routes are migrating to native nest controllers, this patch moves the frontend to `/api/v1/calls/parallel` and wires the nest service rather than routing around it.
-- the nest service now bridges to the existing dialer/parallel/lock primitives, resolves the strategy with authenticated workspace context, and returns `winner` plus `winnerSid` for frontend polling compatibility.
-- queue/list drift investigation remains intentionally deferred until the parallel create path is no longer a proven not-implemented blocker.
+- using `--grep` instead of `--filter` because the local railway helper in this task worktree errors on `--filter`.
+- first change should be observability, not speculative functional changes, because production currently hides the actual exception before twilio creates a call sid.
 
 ## notes for ko
 
-- task created as pr #170 from `stream/dialer`.
-- passive browser evidence showed list 18 rendered as completed in the list table; no call-start controls were clicked.
-- safe browser route probe, using the authenticated browser context without printing tokens, showed `/v1/calls/parallel/validate` returning legacy json and `/api/v1/calls/parallel/validate` returning the nest dev-1459 501 before this patch.
-- this patch does not attempt queue dedupe yet; it fixes the first proven route/implementation blocker.
+- initial task draft pr: https://github.com/consuelohq/opensaas/pull/172
+- added diagnostic logging only; the current railway window did not include the root exception, so this patch should expose the failing create stage after deploy/reproduction.
+- validation attempted:
+  - `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` failed before tests because `@swc/jest` is unavailable.
+  - `npx jest packages/twenty-front/src/modules/dialer/utils/__tests__/parallel-dialer-endpoint.test.ts --runInBand` failed before tests because the test runner could not parse ts/esm imports without project config.
+  - `npx nx typecheck twenty-server` failed because nx modules are not installed in this disposable worktree.
+  - `bun run review` failed because this checkout has no `review` script.
+  - `git diff --check` passed.
 
 ## improvements noticed
 
-- `ParallelController` had been ignoring request bodies and route params on create/status/terminate paths. the controller now passes body, group id, user id, and workspace id to the service.
-- the legacy group status shape returned `winnerSid` but the frontend expected `winner`. the migrated nest group status returns both.
+- the handoff and current helper disagree on railway log flag spelling (`--filter` vs `--grep`). the script should probably accept both aliases to avoid wasting task time.
 
 ## errors i ran into
 
-- `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` could not execute because `@swc/jest` was not installed in the worktree.
-- the worktree had no `node_modules` or pnp artifacts. `yarn install --immutable --mode=skip-build` failed because the install would modify the lockfile, so i did not mutate the lockfile for this dialer task.
-- `yarn install --immutable --mode=skip-builds` was a typo; yarn 4 expects `skip-build`.
+- `bun run railway:logs -- --filter "twilio OR queue"` failed with `unknown flag: --filter`; rerunning with `--grep`.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "fix(dialer): repair queue state drift" --changed
+bun run task:push -- --message "fix(dialer): description" --changed
 bun run task:pr
 bun run task:finish
 ```

@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import type { ParallelGroup } from '@consuelo/dialer';
 
 jest.mock('@consuelo/dialer', () => ({}), { virtual: true });
@@ -219,6 +221,58 @@ describe('ParallelService initiateParallelDial', () => {
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
       '+15550004444',
     );
+  });
+
+  it('should log the safe create stage and error details when group creation fails', async () => {
+    const { service, group, mockDialer } = createService();
+    const err = new Error('twilio unavailable');
+
+    err.stack = 'Error: twilio unavailable';
+    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(err);
+
+    const loggerErrorSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+
+    try {
+      await expect(
+        service.initiateParallelDial({
+          userId: 'user-1',
+          workspaceId: 'workspace-1',
+          body: {
+            queueId: group.queueId,
+            customerNumbers: ['+15550001111', '+15550003333'],
+            profileId: 'conservative',
+          },
+        }),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({ message: 'twilio unavailable' }),
+      });
+
+      expect(loggerErrorSpy).toHaveBeenCalledWith(
+        'parallel dial failed',
+        expect.objectContaining({
+          queueId: group.queueId,
+          workspaceId: 'workspace-1',
+          profileId: 'conservative',
+          stage: 'initiate-group',
+          customerNumberCount: 2,
+          fromNumberCount: 2,
+          errorName: 'Error',
+          errorMessage: 'twilio unavailable',
+          errorStack: 'Error: twilio unavailable',
+        }),
+      );
+
+      const parallelFailureCall = loggerErrorSpy.mock.calls.find(
+        ([message]) => message === 'parallel dial failed',
+      );
+
+      expect(parallelFailureCall?.[1]).not.toHaveProperty('customerNumbers');
+      expect(parallelFailureCall?.[1]).not.toHaveProperty('fromNumbers');
+    } finally {
+      loggerErrorSpy.mockRestore();
+    }
   });
 });
 
