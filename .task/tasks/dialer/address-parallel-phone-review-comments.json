@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/address-parallel-phone-review-comments",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 176,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/176",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-address-parallel-phone-review-comments",
+  "createdAt": "2026-04-24T10:30:02.716Z"
+}

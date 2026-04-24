@@ -1,0 +1,12 @@
+{
+  "area": "clean-up",
+  "stream": "stream/clean-up",
+  "taskBranch": "task/clean-up/fix-frontend-sentry-browser-bundle",
+  "baseBranch": "stream/clean-up",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 178,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/178",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-clean-up-fix-frontend-sentry-browser-bundle",
+  "createdAt": "2026-04-24T14:06:13.067Z"
+}

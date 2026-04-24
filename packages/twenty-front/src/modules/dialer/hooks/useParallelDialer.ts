@@ -11,6 +11,7 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import type { ParallelCall } from '@/dialer/types/dialer';
+import type { QueueItem } from '@/dialer/types/queue';
 import {
   playCallConnectedSound,
   playDialingStartedSound,
@@ -19,10 +20,11 @@ import {
 
 const MIN_SUPPORTED_PARALLEL_LINES = 2;
 const MAX_SUPPORTED_PARALLEL_LINES = 4;
-const E164_REGEX = /^\+[1-9]\d{6,14}$/;
 
-const isValidE164Phone = (phoneNumber: string): boolean =>
-  E164_REGEX.test(phoneNumber);
+type DialableBatchItem = {
+  item: QueueItem;
+  customerNumber: string;
+};
 
 const getParallelProfileId = (
   maxLines: number,
@@ -191,12 +193,18 @@ export const useParallelDialer = () => {
     const batchItems = queueItems
       .slice(currentQueueIndex, currentQueueIndex + maxLines)
       .filter((item) => item.status === 'pending' || item.status === 'calling');
-    const dialableBatchItems = batchItems
-      .map((item) => ({
-        item,
-        customerNumber: toE164(item.contact.phone),
-      }))
-      .filter(({ customerNumber }) => isValidE164Phone(customerNumber));
+    const dialableBatchItems = batchItems.reduce<DialableBatchItem[]>(
+      (items, item) => {
+        const customerNumber = toE164(item.contact.phone);
+
+        if (customerNumber === null) {
+          return items;
+        }
+
+        return [...items, { item, customerNumber }];
+      },
+      [],
+    );
     const dialingItems = dialableBatchItems.map(({ item }) => item);
 
     if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return;

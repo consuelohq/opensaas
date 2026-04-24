@@ -24,6 +24,7 @@ function parseArgs(argv) {
     switch (argv[i]) {
       case '--pr': args.prNumber = parseInt(argv[++i], 10); break;
       case '--wait': args.wait = true; break;
+      case '--timeout': { const t = argv[++i]; args.timeoutMs = (parseInt(t, 10) || 30) * 60 * 1000; break; }
       case '--squash': args.mergeMethod = 'squash'; break;
       case '--repo': args.repo = argv[++i]; break;
       case '--service': args.service = argv[++i]; break;
@@ -68,11 +69,11 @@ function findDeployByCommit(deploys, sha) {
 
 function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-async function waitForDeploy(service, mergeSha, prNumber) {
+async function waitForDeploy(service, mergeSha, prNumber, timeoutMs) {
   writeStdout(`waiting for deploy of PR #${prNumber} (${mergeSha.slice(0, 8)})...`);
 
   const start = Date.now();
-  const TIMEOUT = 30 * 60 * 1000;
+  const TIMEOUT = timeoutMs || 30 * 60 * 1000;
   let deployId = null;
 
   while (Date.now() - start < TIMEOUT) {
@@ -136,7 +137,7 @@ async function main() {
     const mergeSha = pr.merge_commit_sha;
     if (args.wait && mergeSha) {
       writeStdout(`merge commit: ${mergeSha.slice(0, 8)}`);
-      const result = await waitForDeploy(args.service, mergeSha, prNumber);
+      const result = await waitForDeploy(args.service, mergeSha, prNumber, args.timeoutMs);
       if (args.json) writeStdout(JSON.stringify({ prNumber, merged: true, alreadyMerged: true, mergeSha, deploy: result }, null, 2));
       return;
     }

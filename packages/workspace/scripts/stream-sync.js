@@ -108,6 +108,50 @@ function getConflictFiles(repoRoot, worktreePath) {
   return output ? output.split('\n').filter(Boolean) : [];
 }
 
+function parseJsonOutput(output) {
+  const start = output.indexOf('{');
+  const end = output.lastIndexOf('}');
+
+  if (start === -1 || end === -1 || end <= start) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(output.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+}
+
+function runStreamChecks(worktreePath) {
+  const command = 'bun run verify -- --base origin/main --no-review --no-stamp --db-warn-only --json';
+  const result = spawnSync('bun', [
+    'run',
+    'verify',
+    '--',
+    '--base',
+    `origin/${DEFAULT_MAIN_BRANCH}`,
+    '--no-review',
+    '--no-stamp',
+    '--db-warn-only',
+    '--json',
+  ], {
+    cwd: worktreePath,
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  return {
+    skipped: false,
+    command,
+    status: result.status === 0 ? 'pass' : 'fail',
+    exitCode: result.status,
+    data: parseJsonOutput(result.stdout || ''),
+    stderr: result.stderr || '',
+  };
+}
+
 function printResult(result, useJson) {
   if (useJson) {
     writeStdout(JSON.stringify(result, null, 2));
@@ -127,6 +171,8 @@ function printResult(result, useJson) {
 
   if (result.checks && result.checks.skipped) {
     writeStdout(`checks: skipped (${result.checks.reason})`);
+  } else if (result.checks) {
+    writeStdout(`checks: ${result.checks.status} (${result.checks.command})`);
   }
 }
 
@@ -174,10 +220,7 @@ async function main() {
 
   const mergeResult = runMerge(worktreePath, DEFAULT_MAIN_BRANCH);
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();
-  const checks = {
-    skipped: true,
-    reason: 'stream-level test hook not implemented yet',
-  };
+  const checks = runStreamChecks(worktreePath);
 
   if (mergeResult.status === 0) {
     if (createdTemporaryWorktree) {
