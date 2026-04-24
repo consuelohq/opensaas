@@ -8,7 +8,11 @@ import {
 import { errorHandler } from '../middleware/error-handler.js';
 import type { RouteDefinition } from './index.js';
 import * as Sentry from '@sentry/node';
-import { sharedDialer, sharedCallerIdLockService, getDialerForWorkspace } from '../shared/dialer.js';
+import {
+  sharedDialer,
+  sharedCallerIdLockService,
+  getDialerForWorkspace,
+} from '../shared/dialer.js';
 // lazy-loaded logger (matches other route files)
 let _logger: {
   info: (message: string, meta?: Record<string, unknown>) => void;
@@ -134,44 +138,60 @@ export const parallelRoutes = (): RouteDefinition[] => [
             pool,
           );
           fromNumbers.push(
-            resolution.callerIdNumber ?? process.env.TWILIO_DEFAULT_NUMBER ?? '',
+            resolution.callerIdNumber ??
+              process.env.TWILIO_DEFAULT_NUMBER ??
+              '',
           );
         }
 
-        for (let i = 0; i < fromNumbers.length; i++) {
-          if (fromNumbers[i]) {
-            const locked = await getLockService().acquireLock(
-              fromNumbers[i],
-              userId,
-              `parallel-${i}`,
-            );
-            if (!locked) {
-              for (let j = 0; j < i; j++) {
-                await getLockService().releaseLockByNumber(fromNumbers[j]);
-              }
-              res.status(409).json({
-                error: {
-                  code: 'CALLER_ID_LOCKED',
-                  message: `Caller ID ${fromNumbers[i]} is in use`,
-                },
-              });
-              return;
+        const lockableFromNumbers = Array.from(
+          new Set(fromNumbers.filter((fromNumber) => fromNumber.length > 0)),
+        );
+        const acquiredFromNumbers: string[] = [];
+
+        for (const [index, fromNumber] of lockableFromNumbers.entries()) {
+          const locked = await getLockService().acquireLock(
+            fromNumber,
+            userId,
+            `parallel-${body.queueId}-${index}`,
+          );
+
+          if (!locked) {
+            for (const acquiredFromNumber of acquiredFromNumbers) {
+              await getLockService().releaseLockByNumber(acquiredFromNumber);
             }
+            res.status(409).json({
+              error: {
+                code: 'CALLER_ID_LOCKED',
+                message: `Caller ID ${fromNumber} is in use`,
+              },
+            });
+            return;
           }
+
+          acquiredFromNumbers.push(fromNumber);
         }
 
         const baseUrl = process.env.API_BASE_URL ?? '';
-        const result = await dialer.parallel.initiateGroup({
-          customerNumbers: body.customerNumbers,
-          queueId: body.queueId,
-          contactIds: body.contactIds,
-          userId,
-          fromNumbers,
-          statusCallbackUrl: `${baseUrl}/v1/calls/parallel/status-callback`,
-          customerTwimlUrl: `${baseUrl}/v1/calls/parallel/customer-twiml`,
-          profile: strategy.profile,
-          campaignSegment: body.campaignSegment,
-        });
+        let result: ParallelGroup;
+        try {
+          result = await dialer.parallel.initiateGroup({
+            customerNumbers: body.customerNumbers,
+            queueId: body.queueId,
+            contactIds: body.contactIds,
+            userId,
+            fromNumbers,
+            statusCallbackUrl: `${baseUrl}/v1/calls/parallel/status-callback`,
+            customerTwimlUrl: `${baseUrl}/v1/calls/parallel/customer-twiml`,
+            profile: strategy.profile,
+            campaignSegment: body.campaignSegment,
+          });
+        } catch (err: unknown) {
+          for (const acquiredFromNumber of acquiredFromNumbers) {
+            await getLockService().releaseLockByNumber(acquiredFromNumber);
+          }
+          throw err;
+        }
 
         res.status(201).json(result);
         (await getLogger())?.info('parallel.dial', {
@@ -289,20 +309,23 @@ export const parallelRoutes = (): RouteDefinition[] => [
           answeredBy,
         );
 
-        const groupId = await getLegacyDialer().parallel.getGroupIdForCall(callSid);
+        const groupId =
+          await getLegacyDialer().parallel.getGroupIdForCall(callSid);
         if (groupId) {
           const group = await getLegacyDialer().parallel.getGroup(groupId);
           if (
             group &&
             (group.status === 'connected' || group.status === 'completed')
           ) {
-            const releasable = getLegacyDialer().parallel.getReleasableNumbers(group);
+            const releasable =
+              getLegacyDialer().parallel.getReleasableNumbers(group);
             for (const num of releasable) {
               await getLockService().releaseLockByNumber(num);
             }
 
             if (!group.telemetryEmittedAt) {
-              const telemetry = getLegacyDialer().parallel.computeTelemetry(group);
+              const telemetry =
+                getLegacyDialer().parallel.computeTelemetry(group);
               (await getLogger())?.info('parallel.telemetry', {
                 action: 'parallel.telemetry',
                 groupId,
@@ -348,7 +371,8 @@ export const parallelRoutes = (): RouteDefinition[] => [
       }
 
       try {
-        const twiml = await getLegacyDialer().parallel.generateCustomerTwiml(callSid);
+        const twiml =
+          await getLegacyDialer().parallel.generateCustomerTwiml(callSid);
         if (!twiml) {
           res.status(404).json({
             error: {
