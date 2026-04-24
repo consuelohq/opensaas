@@ -69,7 +69,7 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 
 ---
 
-## task workflow — start, push, promote, clean up
+## task workflow — context, start, push, promote, clean up
 
 the full lifecycle of a coding task: create a branch → work → push → promote to stream → clean up.
 
