@@ -1,5 +1,6 @@
 import {
   ParallelStrategyResolver,
+  type ParallelDialResult,
   type ParallelGroup,
   type NumberPool,
   type PosteriorStore,
@@ -173,7 +174,7 @@ export const parallelRoutes = (): RouteDefinition[] => [
         }
 
         const baseUrl = process.env.API_BASE_URL ?? '';
-        let result: ParallelGroup;
+        let result: ParallelDialResult;
         try {
           result = await dialer.parallel.initiateGroup({
             customerNumbers: body.customerNumbers,
