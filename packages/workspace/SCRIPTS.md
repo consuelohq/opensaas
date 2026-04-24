@@ -215,6 +215,7 @@ wraps agent-browser with ko's authenticated profile. already logged into consuel
 runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 
 `bun run review` — run review on changed files
+`bun run review -- --mine` — scope to active task worktree only
 `bun run review -- --fix` — auto-fix eslint issues
 `bun run review -- --all` — check all files
 `bun run review -- --json` — json output

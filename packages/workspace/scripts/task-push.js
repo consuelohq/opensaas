@@ -346,8 +346,9 @@ async function main() {
     }
   }
 
-  // auto-include .task/ metadata files in every push
-  const metaFiles = collectTaskMetaFiles(repoRoot);
+  // auto-include .task/ metadata files — scoped to current task area only
+  const currentArea = taskMeta && taskMeta.data && taskMeta.data.area;
+  const metaFiles = collectTaskMetaFiles(repoRoot, currentArea);
   const seenPaths = new Set(userFiles.map((f) => f.path));
   const files = [...userFiles];
   for (const mf of metaFiles) {

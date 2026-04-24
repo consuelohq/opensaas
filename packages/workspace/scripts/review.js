@@ -25,6 +25,7 @@ function printHelp() {
     '  --quiet              only show failures',
     '  --no-tests           skip test suite',
     '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
+    '  --mine               scope to active task worktree (auto-detects from .task/current.json)',
     '  --help               show this help',
   ];
   lines.forEach((l) => writeStdout(l));
@@ -41,6 +42,7 @@ function parseArgs(argv) {
       case '--quiet': args.quiet = true; break;
       case '--no-tests': args.noTests = true; break;
       case '--strict': args.strict = true; break;
+      case '--mine': args.mine = true; break;
       case '--help': args.help = true; break;
       default:
         if (argv[i].startsWith('--')) throw new Error(`unknown flag: ${argv[i]}`);
@@ -497,6 +499,9 @@ function runTests(files) {
       });
     } catch (err) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      if (err.killed) {
+        writeStderr(`⚠ jest timed out for ${pkg} after ${elapsed}s — partial output below`);
+      }
       const output = (err.stdout || '') + (err.stderr || '');
       const suitesMatch = output.match(/Test Suites:\s*(.*)/);
       const testsMatch = output.match(/Tests:\s*(.*)/);
@@ -571,6 +576,30 @@ function printFindings(label, findings, quiet) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return; }
+
+  // --mine: re-run review from the active task worktree
+  if (args.mine) {
+    const { listWorktrees } = require('./lib/git');
+    const { readTaskMeta } = require('./lib/task-meta');
+    const { resolveGitRoot } = require('./lib/paths');
+    const repoRoot = resolveGitRoot(process.cwd());
+    const worktrees = listWorktrees(repoRoot);
+    const tasks = [];
+    for (const wt of worktrees) {
+      if (wt.path === repoRoot) continue;
+      const meta = readTaskMeta(wt.path);
+      if (meta) tasks.push({ path: wt.path, meta });
+    }
+    if (tasks.length === 0) { writeStderr('no active task worktree found'); process.exitCode = 1; return; }
+    if (tasks.length > 1) { writeStderr('multiple active tasks — run from inside the task worktree or use task:exec'); process.exitCode = 1; return; }
+    const taskRoot = tasks[0].path;
+    writeStderr(`→ review scoped to: ${taskRoot}`);
+    const passthrough = process.argv.slice(2).filter(a => a !== '--mine');
+    try {
+      execSync(`node ${__filename} ${passthrough.join(' ')}`, { cwd: taskRoot, stdio: 'inherit' });
+    } catch (e) { process.exitCode = e.status || 1; }
+    return;
+  }
 
   const root = gitRoot();
   if (!root) throw new Error('not in a git repository');

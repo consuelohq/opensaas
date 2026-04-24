@@ -206,7 +206,7 @@ function cmdSearch(argv) {
   rgArgs.push(pattern);
   if (paths.length > 0) rgArgs.push(...paths);
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 120000 });
+  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   const output = (r.stdout || '').trimEnd();
 
   if (!output) { out('no matches'); return; }
@@ -233,7 +233,7 @@ function cmdSearch(argv) {
     parseArgs.push(pattern);
     if (paths.length > 0) parseArgs.push(...paths);
 
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 120000 });
+    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
     const parseOutput = (pr.stdout || '').trimEnd();
 
     const seen = new Map();
@@ -518,7 +518,7 @@ function cmdHttp(argv) {
   }
   const cmd = ['xh', ...argv];
   try {
-    const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, timeout: 30000 });
+    const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
     process.stdout.write(result);
   } catch (e) {
     if (e.stdout) process.stdout.write(e.stdout);
@@ -544,7 +544,7 @@ function cmdTrash(argv) {
   for (const target of argv) {
     if (target.startsWith('-')) continue;
     try {
-      execFileSync('trash', [target], { encoding: 'utf8', timeout: 10000 });
+      execFileSync('trash', [target], { encoding: 'utf8' });
       out(`trashed: ${target}`);
     } catch (e) {
       err(`failed to trash ${target}: ${e.message}`);

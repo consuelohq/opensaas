@@ -72,7 +72,7 @@ function validateBranchMatch(taskMeta, currentBranch) {
 }
 
 // collect all .task/ files in the worktree for auto-include in pushes
-function collectTaskMetaFiles(worktreePath) {
+function collectTaskMetaFiles(worktreePath, area) {
   const taskDir = path.join(worktreePath, TASK_DIR);
   if (!fs.existsSync(taskDir)) return [];
 
@@ -82,6 +82,11 @@ function collectTaskMetaFiles(worktreePath) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
+        // skip other areas' task history when area is specified
+        const rel = path.relative(taskDir, fullPath).split(path.sep).join('/');
+        if (area && rel.startsWith(TASKS_DIR + '/') && !rel.startsWith(TASKS_DIR + '/' + area)) {
+          continue;
+        }
         walk(fullPath);
       } else {
         const repoPath = path.relative(worktreePath, fullPath).split(path.sep).join('/');
