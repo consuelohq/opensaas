@@ -33,6 +33,9 @@ function printHelp() {
     '  login <name>         run saved auth login',
     '  eval <js>            run javascript on current page',
     '  close                close the browser',
+    '  network requests     list network requests (--filter <pattern>)',
+    '  network har start <f> start recording HAR to file',
+    '  network har stop <f>  stop recording HAR',
     '  raw <...args>        pass args directly to agent-browser',
     '',
     'options:',
@@ -176,7 +179,32 @@ function cmdRaw(args) {
 function main() {
   const argv = process.argv.slice(2);
 
-  if (argv.length === 0 || argv.includes('--help')) {
+  if (argv.length === 0) {
+    printHelp();
+    return;
+  }
+
+  const command = argv[0];
+
+  // raw and network get the full argv (including flags) passed through
+  if (command === 'raw') {
+    const rawArgs = argv.slice(1);
+    if (rawArgs.length === 0 || (rawArgs.length === 1 && rawArgs[0] === '--help')) {
+      // pass --help to agent-browser itself
+      cmdRaw(rawArgs.length === 0 ? ['--help'] : rawArgs);
+      return;
+    }
+    cmdRaw(rawArgs);
+    return;
+  }
+
+  if (command === 'network') {
+    cmdRaw(argv); // pass "network requests --filter ..." straight through
+    return;
+  }
+
+  // for everything else, check --help and extract opts
+  if (argv.includes('--help')) {
     printHelp();
     return;
   }
@@ -188,8 +216,6 @@ function main() {
     json: argv.includes('--json'),
   };
   const args = argv.filter((a) => !a.startsWith('--'));
-
-  const command = args[0];
 
   switch (command) {
     case 'open':
@@ -224,12 +250,9 @@ function main() {
       break;
     case 'close':
       run(['close']); writeStdout('browser closed'); break;
-    case 'raw':
-      cmdRaw(args.slice(1));
-      break;
     default:
       // pass through to agent-browser directly
-      cmdRaw(args);
+      cmdRaw(argv);
       break;
   }
 }
