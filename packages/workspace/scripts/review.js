@@ -731,7 +731,7 @@ async function main() {
       const failedSuites = testResults.filter((r) => !r.passed).map((r) => r.pkg);
       writeStdout(`test failures in: ${failedSuites.join(', ')}`);
     }
-    writeStdout('fix all issues before pushing.');
+    writeStdout('fix all issues in your stream before pushing.');
     process.exit(1);
   }
 }
