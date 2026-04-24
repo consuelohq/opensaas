@@ -377,7 +377,7 @@ wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output.
 
 ---
 
-## CLI tools — mostly fallbacks for scipts
+## CLI tools — mostly fallbacks for scipts if we are using these that is a failure mode. Do not default to these after one fail. Do not contonue to use these get help from the scripts
 
 installed globally. use directly — no bun run needed.
 
