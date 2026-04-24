@@ -327,6 +327,112 @@ bun run website:deploy -- --build-only
 
 ---
 
+## CLI tools — modern replacements
+
+these are installed globally. use them directly — no `bun run` needed.
+
+### search & find
+
+```bash
+# search file contents (better grep)
+rg "TODO" .                              # search everywhere
+rg "normalizePhone" packages/contacts/   # search in a package
+rg "TODO" --type ts                      # only typescript files
+rg "pattern" -l                          # filenames only
+rg "pattern" -c                          # count matches per file
+rg "pattern" -C 3                        # 3 lines of context
+
+# find files by name (better find)
+fd config                                # find files matching "config"
+fd "\.test\.ts$"                         # regex: all test files
+fd config packages/dialer/               # search within a directory
+fd -e ts -e tsx                          # by extension
+fd -t d src                              # directories only
+fd -t f --hidden .env                    # include hidden files
+```
+
+### read & list
+
+```bash
+# read files (better cat)
+bat file.ts                              # syntax highlighted + line numbers
+bat file.ts -r 50:80                     # line range
+bat file.ts -p                           # plain (no decoration)
+bat -l json < data.json                  # force language for stdin
+
+# list files (better ls)
+eza -la                                  # long listing with hidden files
+eza -la --git                            # with git status column
+eza --tree src                           # tree view
+eza --tree src -L 2                      # tree, max depth 2
+eza --tree --git-ignore                  # respect .gitignore
+```
+
+### http & api
+
+```bash
+# http requests (better curl)
+xh get https://api.github.com            # GET request
+xh post https://api.example.com key=val  # POST json
+xh get https://api.example.com Authorization:"Bearer $TOKEN"
+```
+
+### system
+
+```bash
+# disk usage (better du)
+dust .                                   # what's taking space in cwd
+dust packages/                           # specific directory
+
+# disk free (better df)
+duf                                      # all mounted filesystems
+
+# processes (better ps)
+procs                                    # all processes, readable
+procs --tree                             # process tree
+procs node                               # filter by name
+
+# system monitor (better top)
+btm                                      # interactive TUI
+```
+
+### safety
+
+```bash
+# safe delete (moves to trash, not permanent)
+trash file.txt                           # single file
+trash old-dir/                           # directory
+# ALWAYS prefer trash over rm
+```
+
+### git diffs
+
+```bash
+# pretty diffs (better diff)
+git diff | delta                         # piped through delta
+git log -p | delta                       # log with diffs
+delta file-a.ts file-b.ts               # compare two files
+```
+
+### old → new mapping
+
+| old command | new command | what it does |
+|-------------|-------------|--------------|
+| `grep` | `rg` | search file contents |
+| `find` | `fd` | find files by name |
+| `ls` | `eza` | list files |
+| `tree` | `eza --tree` | directory tree |
+| `cat` | `bat` | read files |
+| `diff` | `delta` | compare files |
+| `curl` | `xh` | http requests |
+| `du` | `dust` | disk usage |
+| `df` | `duf` | disk free |
+| `ps` | `procs` | processes |
+| `top` | `btm` | system monitor |
+| `rm` | `trash` | delete (safely) |
+
+---
+
 ## script file paths
 
 ```
