@@ -71,20 +71,37 @@ function validateBranchMatch(taskMeta, currentBranch) {
   }
 }
 
-// collect all .task/ files in the worktree for auto-include in pushes
-function collectTaskMetaFiles(worktreePath) {
+// collect current-task .task/ files in the worktree for auto-include in pushes
+function collectTaskMetaFiles(worktreePath, area, taskBranch, options = {}) {
   const taskDir = path.join(worktreePath, TASK_DIR);
   if (!fs.existsSync(taskDir)) return [];
 
   const files = [];
+  const taskSlug = taskBranch ? taskBranch.split('/').pop() : null;
+  const includeVerify = options.includeVerify !== false;
 
   function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
+        // skip other areas' task history when area is specified
+        const rel = path.relative(taskDir, fullPath).split(path.sep).join('/');
+        if (area && rel.startsWith(TASKS_DIR + '/') && !rel.startsWith(TASKS_DIR + '/' + area)) {
+          continue;
+        }
         walk(fullPath);
       } else {
         const repoPath = path.relative(worktreePath, fullPath).split(path.sep).join('/');
+        const taskHistoryPrefix = area ? `${TASK_DIR}/${TASKS_DIR}/${area}/` : null;
+
+        if (taskHistoryPrefix && taskSlug && repoPath.startsWith(taskHistoryPrefix) && repoPath !== `${taskHistoryPrefix}${taskSlug}.json`) {
+          continue;
+        }
+
+        if (!includeVerify && repoPath === `${TASK_DIR}/verify.json`) {
+          continue;
+        }
+
         files.push({
           path: repoPath,
           content: fs.readFileSync(fullPath, 'utf8'),

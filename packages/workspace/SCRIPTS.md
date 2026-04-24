@@ -4,48 +4,203 @@ agent toolkit for the opensaas monorepo. all commands run from repo root via `bu
 
 every script supports `--help` and `--json`.
 
+
+---
+## fs — safe file operations
+
+wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs.
+
+### read
+`bun run fs -- read src/foo.ts` — full file, syntax highlighted, line numbers
+`bun run fs -- read src/foo.ts --from 120 --to 180` — specific line range
+`bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts` — multiple files, each with own range
+`bun run fs -- read src/foo.ts --plain` — no syntax highlighting or decoration
+`bun run fs -- read src/foo.ts --json` — structured json output (automation-safe)
+
+### search
+`bun run fs -- search "pattern" packages/` — search files (wraps rg, excludes node_modules/.git/dist)
+`bun run fs -- search "pattern" src/ --context 4` — with context lines around matches
+`bun run fs -- search "pattern" src/ --then-read` — search + read bounded ranges (human output only)
+`bun run fs -- search "pattern" packages/ --files` — filenames only
+`bun run fs -- search "pattern" packages/ --json` — structured json (automation-safe)
+`bun run fs -- search "pattern" packages/ --max-results 5` — cap number of matches
+
+### list
+`bun run fs -- list packages/workspace/scripts/` — directory listing (eza -la)
+`bun run fs -- list packages/workspace/ --tree` — tree view
+`bun run fs -- list packages/workspace/ --tree --depth 2` — tree with max depth
+`bun run fs -- list packages/ --dirs --depth 1` — directories only
+`bun run fs -- list packages/dialer/src/ --ext ts` — find by extension (fd)
+`bun run fs -- list packages/workspace/scripts/ --find task` — find files matching "task" (fd)
+`bun run fs -- list . --find "\.test\.ts$" --depth 3` — regex find
+`bun run fs -- list packages/ --git` — show git status column
+
+### write
+`cat /tmp/new.ts | bun run fs -- write src/new.ts` — write from stdin (fails if file exists)
+`cat /tmp/fix.ts | bun run fs -- write src/old.ts --force` — overwrite existing file
+`echo "// note" | bun run fs -- write src/foo.ts --append` — append (exact — include \n yourself)
+`bun run fs -- write src/const.ts --content "export const V = 1;"` — inline content
+`bun run fs -- write src/deep/dir/file.ts --content "x" --mkdirs` — create parent directories
+
+### patch
+`cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35` — replace lines 20-35 inclusive
+`cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run` — preview only
+`bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;"` — replace single line
+
+### http
+`bun run fs -- http get https://api.github.com` — GET request (wraps xh)
+`bun run fs -- http post https://api.example.com key=val` — POST json
+`bun run fs -- http get https://api.example.com Authorization:"Bearer $TOKEN"` — with headers
+
+### trash
+`bun run fs -- trash old-file.ts` — move to trash (not permanent delete)
+`bun run fs -- trash old-dir/` — directory
+`bun run fs -- trash a.ts b.ts c.ts` — multiple files
+
+- ### tips to remember
+- prefer `bun run fs` over raw bat/rg/eza/fd for repo work
+- before `write --force` or `patch`, always read the target first
+- `write` does NOT create parent dirs by default — use `--mkdirs`
+- `write --append` is exact — include `\n` yourself
+- `patch --from N --to N` replaces line N. always read the range first — patch does not validate bounds
+- `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
+- errors exit 1. check exit code or stderr for failures
+- write and patch log touched files to `.task/workpad.md`
+
+
+bun run fs -- read is strong. Best use is targeted line ranges after an initial full read. It catches bad replacements before validation.
+
+After any generated replacement, immediately run:
+git status --porcelain -uall -- . ':!node_modules'
+node --check <touched-js-file>
+bun run fs -- read <changed-range> --plain
+
+Future agents should mentally model the tool as: workspace sandbox_exec is the real command runner. api_tool.call_tool is just ChatGPT’s wrapper to reach workspace, not the thing to reason about.
+
+bun run fs -- write should be used less often than patch for existing files. Better for new files or exact generated content.
+
+
+
+Always reread `SCRIPTS.md` when adding/changing scripts. Missing docs are part of the fix, not cleanup.
+
+When resolving stream conflicts stop and ask ko unless its metadata (need to fix in the workspace logic but we need everything on GitHub)
+
+- Use Python for multi-file or multi-block edits.
+Do not use huge python3 -c "..." commands.
+Do not base64-encode scripts unless there is no other option.
+Prefer a quoted heredoc or write a temp script, then run it.
+Always make the Python script fail loudly if the expected text is not found.
+Always reread changed ranges after the script runs.
+Always run node --check for touched .js scripts.
+Always run git status --porcelain -uall -- . ':!node_modules' after large edits to catch weird artifacts.
+
+Safe pattern:
+python3 <<'PY'
+from pathlib import Path
+
+path = Path("packages/workspace/scripts/task-push.js")
+text = path.read_text()
+
+old = """const oldThing = true;
+const anotherOldThing = false;
+"""
+
+new = """const oldThing = true;
+const anotherOldThing = true;
+"""
+
+if old not in text:
+    raise SystemExit(f"expected block not found in {path}")
+
+path.write_text(text.replace(old, new))
+PY
+
+bun run fs -- read packages/workspace/scripts/task-push.js --from 80 --to 120 --plain
+node --check packages/workspace/scripts/task-push.js
+git status --porcelain -uall -- . ':!node_modules'
+
+Better pattern for many edits:
+cat > /tmp/workspace-edit.py <<'PY'
+from pathlib import Path
+
+def replace_exact(file_path: str, old: str, new: str) -> None:
+    path = Path(file_path)
+    text = path.read_text()
+
+    if old not in text:
+        raise SystemExit(f"expected block not found in {file_path}")
+
+    path.write_text(text.replace(old, new))
+
+replace_exact(
+    "packages/workspace/scripts/task-push.js",
+    """const isBooleanFlag = flag === '--json' || flag === '--help';""",
+    """const isBooleanFlag = BOOLEAN_FLAGS.has(flag);""",
+)
+
+replace_exact(
+    "packages/workspace/scripts/lib/verification.js",
+    """return filePath === VERIFY_STAMP_PATH || filePath.startsWith('.task/');""",
+    """return filePath.startsWith('.task/');""",
+)
+PY
+
+python3 /tmp/workspace-edit.py
+
+node --check packages/workspace/scripts/task-push.js
+node --check packages/workspace/scripts/lib/verification.js
+git diff -- packages/workspace/scripts/task-push.js packages/workspace/scripts/lib/verification.js
+git status --porcelain -uall -- . ':!node_modules'
+
+
 ---
 
-## task workflow — start, push, promote, clean up
+## task workflow — context, start, push, promote, clean up
 
-the full lifecycle of a coding task: create a branch → work → push → promote to stream → clean up.
+the full loop of a coding task: mandatory order
 
-```bash
-# create a task branch + worktree + PR targeting the stream
-bun run task:start -- --area dialer --title "queue runner"
-# creates: branch task/dialer/queue-runner, worktree at /tmp/opensaas-worktrees/task-dialer-queue-runner
-# creates: PR task/dialer/queue-runner → stream/dialer
-# symlinks node_modules from main worktree so tests/lint work
+`bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
+`bun run stream:sync -- --area dialer` — sync stream/dialer with latest main
+`bun run task:start -- --area dialer --title "queue runner"` — create task branch + worktree + PR
+`bun run review` — run review on changed files
+`bun run task:push -- --message "fix(dialer): desc" --changed` — push changes to remote via github api 
+`bun run task:pr` — merge task→stream, create stream→main PR 
+`bun run task:prs` — show both PR links for the current task (human review pr before merge steps)
+`bun run task:merge -- --pr 173 --wait` — merge + wait for railway deploy 
+`bun run browser -- consuelo` — open testing CRM (internal & testing)
+`bun run task:finish` — verify merge, remove worktree, delete branch
+`compaction skill`
+`bun run tmp -- save handoffs "dialer queue investigation"` — save temp file to supabase memories (after human approval after cavas collaboration for next agent)
+(if theres confusion skills take precedence however each skill is progressivly disclosing this flow. all automated other than human review)
 
-# push changes to remote via github api (no local git push needed)
-bun run task:push -- --message "fix(dialer): queue runner handoff" --changed
-# reads changed files from the worktree, creates blobs → tree → commit → updates ref
-# ko stays as author, suelo-kiro[bot] as committer
+task:start creates the branch, worktree at /tmp/opensaas-worktrees/, draft PR targeting the stream, and symlinks node_modules from main so tests/lint work.
 
-# merge task→stream, then create or refresh the stream→main review PR
-bun run task:pr
-# squash-merges the task PR into the stream branch
-# creates (or updates) the review PR: stream/dialer → main
-# marks the review PR as ready-for-review by default (--draft to keep as draft)
+task:push reads changed files from the worktree, creates blobs → tree → commit → updates ref via github api. ko stays as author, suelo-kiro[bot] as committer. no local git push needed.
 
-# show both PR links for the current task
-bun run task:prs
-# output: task pr #172 https://github.com/consuelohq/opensaas/pull/172
-#         review pr #173 https://github.com/consuelohq/opensaas/pull/173
+task:pr squash-merges the task PR into the stream branch, then creates or refreshes the review PR (stream → main). ready-for-review by default, use --draft to keep as draft.
 
-# merge a specific PR (used by ship workflow)
-bun run task:merge -- --pr 173
-bun run task:merge -- --pr 173 --wait    # merge + wait for railway deploy
+---
 
-# verify the task PR was merged, remove worktree, delete local branch
-bun run task:finish
+## task:exec — run commands inside the task worktree
 
-# preview what would be cleaned up
-bun run task:cleanup -- --preview
+no need to know the worktree path. auto-detects the active task from `.task/current.json`.
 
-# remove merged task branches and worktrees older than 3 days
-bun run task:cleanup -- --merged --stale-days 3
-```
+`bun run task:exec -- bun run review` — run review in the task worktree
+`bun run task:exec -- npx nx typecheck twenty-front` — typecheck from the worktree
+`bun run task:exec -- git diff` — see changes in the worktree
+`bun run task:exec -- --area dialer git status` — select task by area (when multiple active)
+
+---
+
+## task:fs — file operations inside the task worktree
+
+same as `bun run fs` but paths resolve relative to the task worktree, not the repo root.
+
+`bun run task:fs -- read packages/contacts/package.json` — read a file in the worktree
+`bun run task:fs -- search "Sentry" packages/twenty-front/src/` — search in the worktree
+`bun run task:fs -- patch packages/twenty-front/vite.config.ts --from 250 --to 260` — patch in the worktree
+`bun run task:fs -- write packages/contacts/src/new.ts --content "export const x = 1;"` — write in the worktree
+`bun run task:fs -- --area clean-up list packages/ --tree` — select task by area
 
 ---
 
@@ -53,242 +208,91 @@ bun run task:cleanup -- --merged --stale-days 3
 
 streams are long-lived branches per area (dialer, workspace-agents, analytics, etc.) that collect task PRs before going to main.
 
-```bash
-# list all stream branches with status (ahead/behind main, open PRs)
-bun run stream:list
-
-# sync stream/dialer with latest main (fast-forward merge)
-bun run stream:sync -- --area dialer
-
-# show stream context — recent PRs, merge status, divergence
-bun run stream:context -- --area dialer
-```
+`bun run stream:list` — list all stream branches with status
+`bun run stream:sync -- --area dialer` — sync stream/dialer with latest main
+`bun run stream:context -- --area dialer` — show stream context (recent PRs, divergence)
 
 ---
 
-## fs — safe file operations
 
-wraps `bat` (read) and `rg` (search). provides stdin-based write and line-range patch. no heredocs, no quoting bugs.
-
-```bash
-# read a file with line numbers (bat-powered, syntax highlighted)
-bun run fs -- read packages/dialer/src/services/queue.ts
-
-# read specific line range
-bun run fs -- read packages/dialer/src/services/queue.ts --from 120 --to 180
-
-# read multiple files in one call
-bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150
-
-# plain output (no decoration) or json
-bun run fs -- read src/foo.ts --from 1 --to 20 --plain
-bun run fs -- read src/foo.ts --from 1 --to 20 --json
-
-# search files (wraps rg, excludes node_modules/.git/dist by default)
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --context 4
-
-# search + immediately read bounded ranges around matches
-bun run fs -- search "startBackendQueueSession" packages/twenty-front/src --then-read
-
-# filenames only
-bun run fs -- search "normalizePhone" packages/ --files
-
-# write a file from stdin (no heredocs needed)
-cat /tmp/new-service.ts | bun run fs -- write packages/dialer/src/services/new.ts
-
-# overwrite existing file
-cat /tmp/fixed.ts | bun run fs -- write packages/dialer/src/services/queue.ts --force
-
-# append to a file
-echo "// TODO: DEV-1500" | bun run fs -- write src/foo.ts --append
-
-# write with inline content
-bun run fs -- write src/constants.ts --content "export const VERSION = '1.0.0';" --mkdirs
-
-# patch a line range (replace lines 20-35 with stdin content)
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35
-
-# preview a patch without applying
-cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry-run
-
-# patch with inline content
-bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;"
-```
-
----
 
 ## context — search and save project memories
 
-backed by supabase. stores decisions, workpads, investigation notes, patterns.
+past decisions, patterns, skills, architecture knowledge, repo details. search AGGRESSIVELY. if you're about to say something about the codebase, search first. try multiple queries. the memories table in supabase has detailed knowledge about packages, architecture decisions, and past conversations.
 
-```bash
-# search memory content
-bun run context -- search dialer
-
-# search within a category
-bun run context -- search queue --category workpad
-
-# search by title
-bun run context -- find "queue handoff"
-
-# read full content of result #1 from a search
-bun run context -- get 1 dialer
-
-# list recent workpads
-bun run context -- list workpad
-
-# list recent memories (more results)
-bun run context -- list --limit 20
-
-# save a file as memory
-bun run context -- save "dialer notes" ./notes.md
-
-# save from stdin
-echo "decided to use conference-based transfers" | bun run context -- save "transfer decision" --text
-
-# list available categories
-bun run context -- categories
-```
+`bun run context -- search dialer` — search memory content
+`bun run context -- search queue --category workpad` — search within a category
+`bun run context -- find "queue handoff"` — search by title
+`bun run context -- get 1 dialer` — read full content of result #1
+`bun run context -- list workpad` — list recent workpads
+`bun run context -- list --limit 20` — list recent memories
+`bun run context -- save "dialer notes" ./notes.md` — save a file as memory
+`echo "text" | bun run context -- save "note" --text` — save from stdin
+`bun run context -- categories` — list available categories
 
 ---
 
 ## tmp — exact temp file handling
 
-write exact content to temp files. no trimming, no reformatting. best for handoffs between agents and long content that shouldn't go through shell quoting.
+write exact content to temp files. no trimming, no reformatting. files go to opensaas-handoffs/.
 
-```bash
-# write content to notes.md
-bun run tmp -- write notes "# my notes here"
-
-# write from stdin (best for long content)
-cat draft.md | bun run tmp -- write review --stdin
-
-# read a temp file
-bun run tmp -- read notes
-
-# print full path (for passing to other tools)
-bun run tmp -- path notes
-
-# save temp file to supabase memories
-bun run tmp -- save handoffs "dialer queue investigation"
-
-# list temp files with size and age
-bun run tmp -- list
-
-# remove all temp files
-bun run tmp -- clean
-```
+`bun run tmp -- write notes "# my notes here"` — write content to notes.md
+`cat draft.md | bun run tmp -- write review --stdin` — write from stdin (best for long content)
+`bun run tmp -- read notes` — read a temp file
+`bun run tmp -- path notes` — print full path
+`bun run tmp -- save handoffs "dialer queue investigation"` — save temp file to supabase memories
+`bun run tmp -- list` — list temp files with size and age
+`bun run tmp -- clean` — remove all temp files
 
 ---
 
 ## browser — test and interact with web pages
 
-wraps agent-browser with ko's authenticated profile. already logged into consuelo, railway, github, etc.
+wraps agent-browser with ko's authenticated profile. already logged into consuelo, railway, github.
 
-```bash
-# open consuelo CRM (internal, for testing)
-bun run browser -- consuelo
-
-# open production
-bun run browser -- app
-
-# open any url (waits for load, snapshots, screenshots)
-bun run browser -- open https://example.com
-
-# show ko the browser window
-bun run browser -- consuelo --headed
-
-# snapshot current page (accessibility tree with element refs)
-bun run browser -- snap
-
-# interact with elements by ref (@e1, @e2, etc.)
-bun run browser -- click @e5
-bun run browser -- fill @e3 "search query"
-bun run browser -- hover @e2
-bun run browser -- select @e4 "option-value"
-bun run browser -- check @e6
-
-# take screenshot
-bun run browser -- screenshot after-login
-bun run browser -- screenshot --full          # full page
-
-# wait for conditions
-bun run browser -- wait --text "Welcome"      # wait for text
-bun run browser -- wait --load networkidle    # wait for network idle
-bun run browser -- wait 3000                  # wait 3 seconds
-
-# find elements by semantic locator (no snapshot needed)
-bun run browser -- find role button click --name "Submit"
-bun run browser -- find label "Email" fill "test@test.com"
-
-# tabs
-bun run browser -- tab                        # list tabs
-bun run browser -- tab new https://github.com # new tab
-bun run browser -- tab t2                     # switch to tab
-
-# inspect page state
-bun run browser -- console                    # js console messages
-bun run browser -- errors                     # page errors
-bun run browser -- cookies                    # list cookies
-bun run browser -- network requests           # API calls (static assets filtered)
-
-# run javascript
-bun run browser -- eval "document.title"
-
-# batch multiple commands
-bun run browser -- batch "open https://example.com" "wait --load networkidle" "screenshot"
-
-# login if session expired
-bun run browser -- login consuelo
-
-# close the browser
-bun run browser -- close
-```
+`bun run browser -- consuelo` — open consuelo CRM (internal)
+`bun run browser -- app` — open production (app.consuelohq.com)
+`bun run browser -- open https://example.com` — open any url
+`bun run browser -- consuelo --headed` — show ko the browser window
+`bun run browser -- snap` — snapshot current page (accessibility tree)
+`bun run browser -- click @e5` — click element by ref
+`bun run browser -- fill @e3 "search query"` — fill input
+`bun run browser -- hover @e2` — hover element
+`bun run browser -- select @e4 "option-value"` — select dropdown
+`bun run browser -- check @e6` — check checkbox
+`bun run browser -- screenshot after-login` — take screenshot
+`bun run browser -- screenshot --full` — full page screenshot
+`bun run browser -- wait --text "Welcome"` — wait for text
+`bun run browser -- wait --load networkidle` — wait for network idle
+`bun run browser -- find role button click --name "Submit"` — semantic locator
+`bun run browser -- tab` — list tabs
+`bun run browser -- tab new https://github.com` — new tab
+`bun run browser -- console` — js console messages
+`bun run browser -- errors` — page errors
+`bun run browser -- network requests` — API calls (static assets filtered)
+`bun run browser -- batch "open https://x.com" "wait --load networkidle" "screenshot"` — batch
+`bun run browser -- close` — close the browser
 
 ---
 
 ## railway — deploy observability
 
-```bash
-# default view — status + recent logs + http logs + network summary
-bun run railway:logs
-
-# just status and deploy info
-bun run railway:logs -- --status
-
-# errors only
-bun run railway:logs -- --errors
-
-# filter logs
-bun run railway:logs -- --filter "twilio OR queue"
-
-# build logs
-bun run railway:logs -- --build
-
-# network flow logs (TCP/UDP connections)
-bun run railway:logs -- --network
-
-# check if an env var is set (shows set/missing, not the value)
-bun run railway:logs -- --env TWILIO_ACCOUNT_SID
-```
+`bun run railway:logs` — status + recent logs + http logs
+`bun run railway:logs -- --status` — just status and deploy info
+`bun run railway:logs -- --errors` — errors only
+`bun run railway:logs -- --filter "twilio OR queue"` — filter logs
+`bun run railway:logs -- --build` — build logs
+`bun run railway:logs -- --network` — network flow logs
+`bun run railway:logs -- --env TWILIO_ACCOUNT_SID` — check if env var is set
 
 ---
 
 ## wait — sleep or wait for deploy
 
-```bash
-# timed sleep (default 5 minutes)
-bun run wait -- 5m
-bun run wait -- 30          # 30 seconds
-bun run wait -- 2m          # 2 minutes
-
-# wait for a deploy matching local HEAD
-bun run wait -- --deploy
-
-# wait for a specific commit to deploy
-bun run wait -- --deploy abc123
-```
+`bun run wait -- 5m` — sleep 5 minutes
+`bun run wait -- 30` — sleep 30 seconds
+`bun run wait -- --deploy` — wait for deploy matching local HEAD
+`bun run wait -- --deploy abc123` — wait for specific commit
 
 ---
 
@@ -296,40 +300,143 @@ bun run wait -- --deploy abc123
 
 runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 
-```bash
-# run review on changed files
-bun run review
+`bun run review` — run review on changed files
+`bun run review -- --mine` — scope to active task worktree only
+`bun run review -- --fix` — auto-fix eslint issues
+`bun run review -- --all` — check all files
+`bun run review -- --json` — json output
 
-# auto-fix eslint issues
-bun run review -- --fix
+---
 
-# check all files (not just changed)
-bun run review -- --all
+## verify — full task safety gate
 
-# json output
-bun run review -- --json
-```
+coordinates review plus db/migration/graphql guardrails and writes `.task/verify.json` when the gate passes.
+
+`bun run verify` — run the default task gate and write a verify stamp
+`bun run verify -- --json` — structured output for other scripts
+`bun run verify -- --no-review` — run verify guardrails without invoking review
+`bun run verify -- --no-db` — skip db/migration/graphql guardrails
+`bun run verify -- --db-warn-only` — report db guard failures as warnings
+`bun run verify -- --no-stamp` — avoid writing `.task/verify.json`
+
+---
+
+## pr-review — fetch all review comments from a PR
+
+pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans.
+writes a structured file to `.task/reviews/<pr-number>.md` with file attention map, action items, and task loop reminder.
+
+`bun run pr-review -- 173` — fetch reviews for PR #173
+`bun run pr-review` — auto-detect PR from .task/current.json
+`bun run pr-review -- 173 --stdout` — print to stdout instead of file
+`bun run pr-review -- 173 --json` — json output
+
+---
+
+## gh — common one-off github commands
+
+wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output.
+
+`bun run gh -- prs` — list open PRs
+`bun run gh -- prs --mine` — list ko's PRs
+`bun run gh -- checks 173` — show CI status for PR #173
+`bun run gh -- diff 173` — file list + stats for a PR
+`bun run gh -- diff 173 --full` — full diff
+`bun run gh -- files 173` — list changed files
+`bun run gh -- view 173` — show PR details
+`bun run gh -- reviews 173` — show who approved/requested changes
+`bun run gh -- comment 173 "looks good"` — post a comment
+`bun run gh -- read src/foo.ts --ref stream/dialer` — read file from a branch (no checkout)
+`bun run gh -- blame src/foo.ts` — get blame URL
+`bun run gh -- branches` — list remote branches
+`bun run gh -- branches --stream` — list stream/* branches
+`bun run gh -- branches --task` — list task/* branches
 
 ---
 
 ## website:deploy — deploy consuelo website
 
-```bash
-# build and deploy to cloudflare pages
-bun run website:deploy
+`bun run website:deploy` — build and deploy to cloudflare pages
+`bun run website:deploy -- --preview` — preview deploy (non-production url)
+`bun run website:deploy -- --build-only` — build only, don't deploy
 
-# preview deploy (non-production url)
-bun run website:deploy -- --preview
+---
 
-# build only, don't deploy
-bun run website:deploy -- --build-only
-```
+## server — manage the workspace MCP server
+
+`bun run server -- status` — check if server is running, show tools + pid
+`bun run server -- restart` — stop + start (needed after editing server.py)
+`bun run server -- stop` — stop the server
+`bun run server -- start` — start the server
+`bun run server -- logs` — tail /tmp/workspace.log
+
+---
+
+## help  
+`bun run <script> -- --help` — any script supports --help
+
+---
+
+## CLI tools — mostly fallbacks for scipts
+
+installed globally. use directly — no bun run needed.
+
+### search & find (fallback prefer bun script)
+
+`rg "TODO" .` — search file contents everywhere
+`rg "normalizePhone" packages/contacts/` — search in a package
+`rg "TODO" --type ts` — only typescript files
+`rg "pattern" -l` — filenames only
+`rg "pattern" -C 3` — 3 lines of context
+
+`fd config` — find files by name (fallback prefer bun script)
+`fd "\.test\.ts$"` — regex: all test files
+`fd config packages/dialer/` — search within a directory
+`fd -e ts -e tsx` — by extension
+`fd -t d src` — directories only
+
+### read & list (fallback prefer bun script)
+
+`bat file.ts` — syntax highlighted + line numbers
+`bat file.ts -r 50:80` — line range
+`bat file.ts -p` — plain (no decoration)
+
+`eza -la` — long listing with hidden files
+`eza -la --git` — with git status column
+`eza --tree src` — tree view
+`eza --tree src -L 2` — tree, max depth 2
+
+### http (fallback prefer bun script)
+
+`xh get https://api.github.com` — GET request
+`xh post https://api.example.com key=val` — POST json
+
+### system
+
+`dust .` — what's taking disk space
+`duf` — disk free space
+`procs` — list processes
+`procs node` — filter by name
+`btm` — interactive system monitor
+
+### safety (fallback prefer bun script)
+
+`trash file.txt` — move to trash (not permanent delete)
+`trash old-dir/` — directory too — ALWAYS prefer over rm
+
+### git diffs
+
+`git diff | delta` — pretty diffs
+`delta file-a.ts file-b.ts` — compare two files
+
+### old → new
+
+grep → rg, find → fd, ls → eza, tree → eza --tree, cat → bat, diff → delta, curl → xh, du → dust, df → duf, ps → procs, top → btm, rm → trash
 
 ---
 
 ## script file paths
 
-```
 packages/workspace/scripts/
 ├── task-start.js        # task:start
 ├── task-push.js         # task:push
@@ -337,6 +444,8 @@ packages/workspace/scripts/
 ├── task-prs.js          # task:prs
 ├── task-merge.js        # task:merge
 ├── task-finish.js       # task:finish
+├── task-exec.js         # task:exec
+├── task-fs.js           # task:fs
 ├── task-cleanup.js      # task:cleanup
 ├── stream-list.js       # stream:list
 ├── stream-sync.js       # stream:sync
@@ -348,11 +457,17 @@ packages/workspace/scripts/
 ├── railway-logs.js      # railway:logs
 ├── wait.js              # wait
 ├── review.js            # review
+├── verify.js            # verify
+├── pr-review.js         # pr-review
+├── gh.js                # gh
 ├── website-deploy.js    # website:deploy
+├── server.js            # server (restart/status/stop/start/logs)
 └── lib/
-    ├── git.js           # git operations (execFileSync, no shell)
-    ├── github.js        # github api (PRs, blobs, trees, commits)
-    ├── paths.js         # repo paths, worktree root, git root
-    ├── task-meta.js     # .task/current.json + .task/tasks/ read/write
-    └── validation.js    # branch naming, commit format validation
-```
+`    ├── git.js          ` — git operations (execFileSync, no shell)
+`    ├── github.js       ` — github api (PRs, blobs, trees, commits)
+`    ├── db-guards.js    ` — verify db/migration/graphql risk detection
+`    ├── nx-projects.js  ` — nx project graph helpers for review/verify
+`    ├── paths.js        ` — repo paths, worktree root, git root
+`    ├── task-meta.js    ` — .task/current.json + .task/tasks/ read/write
+`    ├── verification.js ` — .task/verify.json stamp helpers
+`    └── validation.js   ` — branch naming, commit format validation

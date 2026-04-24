@@ -4,16 +4,15 @@
 // wraps bat (read), rg (search), and provides stdin-based write/patch
 // usage: bun run fs -- <read|search|write|patch> [options]
 
-const { execSync, spawnSync } = require('child_process');
+const { execSync, execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULT_CAP = 200;
 const DEFAULT_CONTEXT = 3;
 const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
 
 function out(s = '') { process.stdout.write(s + '\n'); }
-function err(s = '') { process.stderr.write(s + '\n'); }
+function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
 
 function readStdin() {
   try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
@@ -95,8 +94,11 @@ function mainHelp() {
   out('commands:');
   out('  read    read files with line numbers and ranges');
   out('  search  search files (wraps rg)');
+  out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
   out('  patch   replace a line range from stdin');
+  out('  http    make http requests (wraps xh)');
+  out('  trash   safe delete (moves to trash, not rm)');
   out('');
   out('run any command with --help for details.');
 }
@@ -204,7 +206,7 @@ function cmdSearch(argv) {
   rgArgs.push(pattern);
   if (paths.length > 0) rgArgs.push(...paths);
 
-  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
+  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   const output = (r.stdout || '').trimEnd();
 
   if (!output) { out('no matches'); return; }
@@ -231,7 +233,7 @@ function cmdSearch(argv) {
     parseArgs.push(pattern);
     if (paths.length > 0) parseArgs.push(...paths);
 
-    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 });
+    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
     const parseOutput = (pr.stdout || '').trimEnd();
 
     const seen = new Map();
@@ -269,6 +271,103 @@ function cmdSearch(argv) {
           out(`${String(i).padStart(4)}: ${content[i - 1]}`);
         }
       }
+    }
+  }
+}
+
+// ── list ──
+
+function cmdList(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- list [path] [options]');
+    out('');
+    out('list files and directories. wraps eza (list) and fd (find).');
+    out('');
+    out('modes:');
+    out('  list [path]                list directory contents (eza)');
+    out('  list [path] --tree         tree view (eza --tree)');
+    out('  list [path] --find <name>  find files by name (fd)');
+    out('');
+    out('options:');
+    out('  --tree                     show as tree');
+    out('  --depth N                  max depth for tree/find (default: 3)');
+    out('  --find <pattern>           find files matching pattern (uses fd)');
+    out('  --dirs                     directories only');
+    out('  --files                    files only');
+    out('  --ext <ext>                filter by extension (fd mode)');
+    out('  --hidden                   include hidden files');
+    out('  --git                      show git status column');
+    out('  --all                      include ignored files');
+    return;
+  }
+
+  const args = [];
+  let path = '.';
+  let mode = 'eza'; // eza or fd
+  let depth = null;
+  let findPattern = null;
+  let dirsOnly = false;
+  let filesOnly = false;
+  let ext = null;
+  let hidden = false;
+  let gitStatus = false;
+  let showAll = false;
+  let tree = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--tree') tree = true;
+    else if (a === '--depth') depth = parseInt(argv[++i], 10);
+    else if (a === '--find') { mode = 'fd'; findPattern = argv[++i]; }
+    else if (a === '--dirs') dirsOnly = true;
+    else if (a === '--files') filesOnly = true;
+    else if (a === '--ext') ext = argv[++i];
+    else if (a === '--hidden') hidden = true;
+    else if (a === '--git') gitStatus = true;
+    else if (a === '--all') showAll = true;
+    else if (!a.startsWith('-')) path = a;
+  }
+
+  if (mode === 'fd' || ext) {
+    // fd mode — find files by name/pattern
+    const cmd = ['fd'];
+    if (findPattern) cmd.push(findPattern);
+    else cmd.push('.'); // match everything
+    cmd.push(path);
+    if (depth) cmd.push('--max-depth', String(depth));
+    else if (!depth) cmd.push('--max-depth', '3');
+    if (dirsOnly) cmd.push('--type', 'd');
+    if (filesOnly) cmd.push('--type', 'f');
+    if (ext) cmd.push('--extension', ext);
+    if (hidden) cmd.push('--hidden');
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('fd failed: ' + (e.message || ''));
+    }
+  } else {
+    // eza mode — list directory
+    const cmd = ['eza'];
+    if (tree) {
+      cmd.push('--tree');
+      cmd.push('--level', String(depth || 3));
+    } else {
+      cmd.push('-la');
+    }
+    if (gitStatus) cmd.push('--git');
+    if (hidden) cmd.push('-a');
+    if (dirsOnly) cmd.push('--only-dirs');
+    if (filesOnly) cmd.push('--only-files');
+    cmd.push('--git-ignore');
+    cmd.push(path);
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('eza failed: ' + (e.message || ''));
     }
   }
 }
@@ -402,11 +501,67 @@ function main() {
   const command = argv[0];
   const rest = argv.slice(1);
 
+// ── http ──
+
+function cmdHttp(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- http <method> <url> [args...]');
+    out('');
+    out('make http requests. wraps xh.');
+    out('');
+    out('examples:');
+    out('  http get https://api.github.com');
+    out('  http post https://api.example.com key=val');
+    out('  http get https://api.example.com Authorization:"Bearer $TOKEN"');
+    out('  http get https://api.example.com --json');
+    return;
+  }
+  const cmd = ['xh', ...argv];
+  try {
+    const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    process.stdout.write(result);
+  } catch (e) {
+    if (e.stdout) process.stdout.write(e.stdout);
+    if (e.stderr) process.stderr.write(e.stderr);
+    process.exit(e.status || 1);
+  }
+}
+
+// ── trash ──
+
+function cmdTrash(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- trash <path> [path...]');
+    out('');
+    out('move files/directories to trash. safer than rm.');
+    out('');
+    out('examples:');
+    out('  trash old-file.ts');
+    out('  trash old-dir/');
+    out('  trash a.ts b.ts c.ts');
+    return;
+  }
+  for (const target of argv) {
+    if (target.startsWith('-')) continue;
+    try {
+      execFileSync('trash', [target], { encoding: 'utf8' });
+      out(`trashed: ${target}`);
+    } catch (e) {
+      err(`failed to trash ${target}: ${e.message}`);
+    }
+  }
+}
+
+// ── main ──
+
   switch (command) {
     case 'read': cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
+    case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
+    case 'http': cmdHttp(rest); break;
+    case 'trash': cmdTrash(rest); break;
     default:
       err(`unknown command: ${command}`);
       mainHelp();

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/doctor-status-script-audit",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 183,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/183",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-doctor-status-script-audit",
+  "createdAt": "2026-04-24T16:25:20.085Z"
+}
