@@ -1,13 +1,13 @@
 #!/usr/bin/env bun
 
-// wait.js — timed sleep or wait for railway deploy to complete
+// wait.js — timed sleep or wait for a specific railway deploy
 //
 // usage:
-//   bun run wait                          # default 5m sleep
-//   bun run wait -- 30                    # sleep 30 seconds
-//   bun run wait -- 2m                    # sleep 2 minutes
-//   bun run wait -- --deploy              # wait until current deploy succeeds or fails
-//   bun run wait -- --deploy --timeout 10m # deploy wait with 10m max
+//   bun run wait                              # sleep 5m
+//   bun run wait -- 30                        # sleep 30 seconds
+//   bun run wait -- 2m                        # sleep 2 minutes
+//   bun run wait -- --deploy                  # wait for deploy matching local HEAD
+//   bun run wait -- --deploy <commit>         # wait for deploy matching specific commit
 
 const { execSync } = require('child_process');
 
@@ -22,71 +22,119 @@ function parseTime(s) {
   return n;
 }
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-function getLatestDeploy(service) {
+function getLocalHead() {
   try {
-    const raw = execSync(`railway deployment list --service ${service} --json 2>&1`, { encoding: 'utf8', timeout: 15000 });
-    const deploys = JSON.parse(raw);
-    if (!deploys.length) return null;
-    return { id: deploys[0].id, status: deploys[0].status, message: deploys[0].meta?.commitMessage?.split('\n')[0] || '', commit: deploys[0].meta?.commitHash?.slice(0, 8) || '' };
+    return execSync('git rev-parse HEAD', { encoding: 'utf8', timeout: 5000 }).trim();
   } catch { return null; }
 }
 
-async function waitForDeploy(service, timeoutSec) {
-  const initial = getLatestDeploy(service);
-  if (!initial) { console.error('could not get deployment info'); process.exit(1); }
+function getDeploys(service) {
+  try {
+    const raw = execSync(`railway deployment list --service ${service} --json 2>&1`, { encoding: 'utf8', timeout: 15000 });
+    return JSON.parse(raw).map((d) => ({
+      id: d.id,
+      status: d.status,
+      commit: d.meta?.commitHash || '',
+      message: (d.meta?.commitMessage || '').split('\n')[0],
+      created: d.createdAt,
+    }));
+  } catch { return []; }
+}
 
-  console.log(`waiting for deploy: ${initial.commit} — ${initial.message}`);
-  console.log(`status: ${initial.status}, timeout: ${timeoutSec}s`);
+function findDeploy(deploys, commitPrefix) {
+  return deploys.find((d) => d.commit.startsWith(commitPrefix) || commitPrefix.startsWith(d.commit.slice(0, 8)));
+}
 
-  const start = Date.now();
-  const deadline = start + timeoutSec * 1000;
+function printDeploys(deploys) {
+  console.log('recent deploys:');
+  deploys.slice(0, 6).forEach((d, i) => {
+    const age = Math.round((Date.now() - new Date(d.created).getTime()) / 60000);
+    console.log(`  ${i + 1}. ${d.commit.slice(0, 8)} ${d.status.padEnd(10)} ${age}m ago  ${d.message.slice(0, 60)}`);
+  });
+}
 
-  while (Date.now() < deadline) {
-    const d = getLatestDeploy(service);
-    if (!d) { await sleep(5000); continue; }
+async function waitForDeploy(service, commitPrefix) {
+  const deploys = getDeploys(service);
+  if (!deploys.length) { console.error('no deploys found'); process.exit(1); }
 
-    if (d.id === initial.id) {
-      if (d.status === 'SUCCESS') {
-        const elapsed = Math.round((Date.now() - start) / 1000);
-        console.log(`✓ deploy succeeded in ${elapsed}s`);
-        return true;
-      }
-      if (d.status === 'FAILED' || d.status === 'CRASHED') {
-        const elapsed = Math.round((Date.now() - start) / 1000);
-        console.error(`✗ deploy ${d.status.toLowerCase()} after ${elapsed}s`);
-        process.exit(1);
-      }
-      if (d.status === 'REMOVED') {
-        console.log('deploy was superseded by a newer deploy');
-        return true;
-      }
-    } else {
-      // a newer deploy appeared — switch to tracking that one
-      console.log(`new deploy detected: ${d.commit} — ${d.message}`);
-      initial.id = d.id;
-    }
+  let target = commitPrefix ? findDeploy(deploys, commitPrefix) : null;
 
-    const remaining = Math.round((deadline - Date.now()) / 1000);
-    process.stdout.write(`\r  ${d.status.toLowerCase()}... ${remaining}s remaining`);
-    await sleep(10000);
+  if (!target && commitPrefix) {
+    console.error(`no deploy found for commit ${commitPrefix.slice(0, 8)}`);
+    printDeploys(deploys);
+    process.exit(1);
   }
 
-  console.error(`\ntimeout: deploy did not complete within ${timeoutSec}s`);
+  if (!target) {
+    // no commit specified — match local HEAD
+    const head = getLocalHead();
+    if (head) target = findDeploy(deploys, head);
+    if (!target) {
+      // HEAD not deployed yet — show list, wait for most recent
+      console.log(`local HEAD ${(head || '?').slice(0, 8)} not found in deploys, using most recent:`);
+      target = deploys[0];
+    }
+  }
+
+  console.log(`tracking: ${target.commit.slice(0, 8)} — ${target.message}`);
+  console.log(`status: ${target.status}`);
+
+  if (target.status === 'SUCCESS') { console.log('✓ already succeeded'); return; }
+  if (target.status === 'FAILED' || target.status === 'CRASHED') {
+    console.error(`✗ already ${target.status.toLowerCase()}`);
+    process.exit(1);
+  }
+
+  const start = Date.now();
+  const TIMEOUT = 30 * 60 * 1000; // 30m hard cap
+
+  while (Date.now() - start < TIMEOUT) {
+    await sleep(15000);
+    const fresh = getDeploys(service);
+    const current = fresh.find((d) => d.id === target.id);
+
+    if (!current) {
+      // deploy disappeared (superseded)
+      const replacement = fresh.find((d) => d.status === 'SUCCESS' || d.status === 'BUILDING' || d.status === 'DEPLOYING');
+      if (replacement) {
+        console.log(`\ndeploy superseded, now tracking: ${replacement.commit.slice(0, 8)} — ${replacement.message}`);
+        target = replacement;
+        continue;
+      }
+      console.log('\ndeploy removed');
+      return;
+    }
+
+    if (current.status === 'SUCCESS') {
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      console.log(`\n✓ deploy succeeded in ${elapsed}s`);
+      return;
+    }
+    if (current.status === 'FAILED' || current.status === 'CRASHED') {
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      console.error(`\n✗ deploy ${current.status.toLowerCase()} after ${elapsed}s`);
+      process.exit(1);
+    }
+    if (current.status === 'REMOVED') {
+      console.log('\ndeploy was superseded');
+      return;
+    }
+
+    const elapsed = Math.round((Date.now() - start) / 1000);
+    process.stdout.write(`\r  ${current.status.toLowerCase()}... ${elapsed}s elapsed`);
+  }
+
+  console.error('\ntimeout: deploy did not complete within 30m');
   process.exit(1);
 }
 
 async function timedSleep(seconds) {
   console.log(`sleeping ${seconds}s...`);
-  const start = Date.now();
-  const end = start + seconds * 1000;
-
+  const end = Date.now() + seconds * 1000;
   while (Date.now() < end) {
-    const remaining = Math.round((end - Date.now()) / 1000);
-    process.stdout.write(`\r  ${remaining}s remaining   `);
+    process.stdout.write(`\r  ${Math.round((end - Date.now()) / 1000)}s remaining   `);
     await sleep(1000);
   }
   process.stdout.write('\r');
@@ -97,34 +145,31 @@ async function main() {
   const argv = process.argv.slice(2);
   let deployMode = false;
   let service = 'opensaas';
-  let time = null;
+  let commitOrTime = null;
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
       case '--deploy': deployMode = true; break;
       case '--service': service = argv[++i]; break;
-      case '--timeout': time = argv[++i]; break;
       case '--help':
-        console.log('usage: bun run wait -- [time|--deploy] [--timeout time] [--service name]');
+        console.log('usage: bun run wait -- [time|--deploy [commit]] [--service name]');
         console.log('');
-        console.log('  bun run wait                    sleep 5m (default)');
-        console.log('  bun run wait -- 30              sleep 30 seconds');
-        console.log('  bun run wait -- 2m              sleep 2 minutes');
-        console.log('  bun run wait -- --deploy        wait for railway deploy');
-        console.log('  bun run wait -- --deploy --timeout 10m');
+        console.log('  bun run wait                       sleep 5m (default)');
+        console.log('  bun run wait -- 30                 sleep 30 seconds');
+        console.log('  bun run wait -- 2m                 sleep 2 minutes');
+        console.log('  bun run wait -- --deploy           wait for deploy matching local HEAD');
+        console.log('  bun run wait -- --deploy abc123    wait for deploy matching commit');
         return;
       default:
-        if (!argv[i].startsWith('-')) time = argv[i];
+        if (!argv[i].startsWith('-')) commitOrTime = argv[i];
         break;
     }
   }
 
   if (deployMode) {
-    const timeout = parseTime(time || '15m');
-    await waitForDeploy(service, timeout);
+    await waitForDeploy(service, commitOrTime);
   } else {
-    const seconds = parseTime(time || '5m');
-    await timedSleep(seconds);
+    await timedSleep(parseTime(commitOrTime || '5m'));
   }
 }
 
