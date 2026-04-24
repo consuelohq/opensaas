@@ -220,6 +220,7 @@ function printHelp() {
     '  --filter <query>     railway filter query (e.g. "@level:error", "twilio OR queue")',
     '  --lines <n>          number of log lines to fetch (default: 200)',
     '  --build              show build logs instead of runtime',
+    '  --network            show network flow logs (TCP/UDP connections)',
     '  --raw                no filtering or formatting',
     '  --status             just show service status + deploy info',
     '  --env <key>          check if env var is set (shows set/missing, not value)',
@@ -238,6 +239,7 @@ function parseArgs(argv) {
       case '--filter': args.filter = argv[++i]; break;
       case '--lines': args.lines = parseInt(argv[++i], 10); break;
       case '--build': args.build = true; break;
+      case '--network': args.network = true; break;
       case '--raw': args.raw = true; break;
       case '--status': args.statusOnly = true; break;
       case '--env': args.envCheck = argv[++i]; break;
@@ -297,6 +299,62 @@ function main() {
       const raw = execSync(`railway logs --service ${args.service} --build 2>&1 | tail -20`, { encoding: 'utf8', timeout: 15000 });
       stripAnsi(raw).split('\n').filter(Boolean).forEach((l) => out(l));
     } catch { /* no build logs available */ }
+    return;
+  }
+
+  // --network flow logs (scraped from railway dashboard via agent-browser)
+  if (args.network) {
+    err(`fetching network flow logs for ${args.service}...`);
+    const deploy = getLatestDeploy(args.service);
+    if (deploy.meta) out(`deploy: ${deploy.meta.commit} — ${deploy.meta.message || ''}`);
+    const deployId = getDeploymentId(args.service);
+    if (!deployId) { out('no active deployment found'); return; }
+    const PROJECT_ID = 'a3e618e2-9685-401f-b924-a125b0fb9123';
+    const SERVICE_ID = '85b58812-5bc2-4a99-a1ca-aa64a0a213b5';
+    const ENV_ID = '6de4fa99-b047-4587-b003-69f78b650aa1';
+    const url = `https://railway.com/project/${PROJECT_ID}/service/${SERVICE_ID}?environmentId=${ENV_ID}&id=${deployId}#network`;
+    try {
+      execSync('agent-browser open ' + JSON.stringify(url), { encoding: 'utf8', timeout: 15000, stdio: 'pipe' });
+      // wait for the network tab to load with data
+      try { execSync('agent-browser wait --text "TCP" --timeout 8000', { encoding: 'utf8', timeout: 12000, stdio: 'pipe' }); }
+      catch { /* might already be loaded */ }
+      // click the Network Flow Logs tab to ensure it's active
+      const tabSnap = execSync('agent-browser snapshot -i', { encoding: 'utf8', timeout: 10000, stdio: 'pipe' });
+      const tabMatch = tabSnap.match(/tab "Network Flow\s+Logs".*?\[ref=(e\d+)\]/);
+      if (tabMatch) {
+        execSync(`agent-browser click @${tabMatch[1]}`, { encoding: 'utf8', timeout: 5000, stdio: 'pipe' });
+        try { execSync('agent-browser wait --text "TCP" --timeout 5000', { encoding: 'utf8', timeout: 8000, stdio: 'pipe' }); }
+        catch { /* data might already be there */ }
+      }
+      const snap = execSync('agent-browser snapshot', { encoding: 'utf8', timeout: 10000, stdio: 'pipe' });
+      const rows = [];
+      const lines = snap.split('\n');
+      let i = 0;
+      while (i < lines.length) {
+        if (/- row\b/.test(lines[i]) && lines[i].includes('clickable')) {
+          const cells = [];
+          i++;
+          // collect cells until next row or end of indentation
+          while (i < lines.length && !/- row\b/.test(lines[i])) {
+            const m = lines[i].match(/- cell "([^"]*)"/);
+            if (m) cells.push(m[1]);
+            else if (/- cell\s*$/.test(lines[i].trim())) cells.push(''); // empty cell (Dir column)
+            i++;
+          }
+          // columns: time, dir(empty), proto, source, dest, peer, traffic, latency, status, settings(empty)
+          if (cells.length >= 9) rows.push({ time: cells[0], proto: cells[2], src: cells[3], dst: cells[4], peer: cells[5], traffic: cells[6], latency: cells[7], status: cells[8] });
+        } else { i++; }
+      }
+      if (rows.length === 0) { out('no network flow logs found'); return; }
+      out(`\n--- network flow logs (${rows.length} entries) ---`);
+      for (const r of rows) {
+        const ts = r.time.replace(/^Apr \d+ \d{4} /, '');
+        out(`${ts}  ${r.proto.padEnd(5)} ${r.src.padEnd(28)} → ${r.dst.padEnd(28)} ${r.peer.padEnd(12)} ${r.traffic.padEnd(8)} ${r.latency.padEnd(6)} ${r.status}`);
+      }
+    } catch (e) {
+      out('failed to fetch network logs (is agent-browser running with ko\'s profile?)');
+      out('start with: agent-browser --profile ~/.agent-browser-ko --headed open https://railway.com');
+    }
     return;
   }
 
