@@ -331,6 +331,21 @@ async function main() {
   const token = getToken();
   const userFiles = resolveFiles(args, repoRoot);
 
+  // update workpad "files changed" section with the actual files being pushed
+  const workpadPath = path.join(repoRoot, '.task', 'workpad.md');
+  if (fs.existsSync(workpadPath)) {
+    const nonMetaFiles = userFiles.filter((f) => !f.path.startsWith('.task/'));
+    if (nonMetaFiles.length > 0) {
+      let workpad = fs.readFileSync(workpadPath, 'utf8');
+      const filesList = nonMetaFiles.map((f) => `- \`${f.path}\`${f.deleted ? ' (deleted)' : ''}`).join('\n');
+      workpad = workpad.replace(
+        /## files changed\n\n[\s\S]*?(?=\n## )/,
+        `## files changed\n\n${filesList}\n\n`,
+      );
+      fs.writeFileSync(workpadPath, workpad, 'utf8');
+    }
+  }
+
   // auto-include .task/ metadata files in every push
   const metaFiles = collectTaskMetaFiles(repoRoot);
   const seenPaths = new Set(userFiles.map((f) => f.path));
