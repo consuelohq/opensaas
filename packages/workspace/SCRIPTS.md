@@ -324,3 +324,35 @@ bun run website:deploy -- --preview
 # build only, don't deploy
 bun run website:deploy -- --build-only
 ```
+
+---
+
+## script file paths
+
+```
+packages/workspace/scripts/
+├── task-start.js        # task:start
+├── task-push.js         # task:push
+├── task-pr.js           # task:pr
+├── task-prs.js          # task:prs
+├── task-merge.js        # task:merge
+├── task-finish.js       # task:finish
+├── task-cleanup.js      # task:cleanup
+├── stream-list.js       # stream:list
+├── stream-sync.js       # stream:sync
+├── stream-context.js    # stream:context
+├── fs.js                # fs (read/search/write/patch)
+├── context.js           # context
+├── tmp.js               # tmp
+├── browser.js           # browser
+├── railway-logs.js      # railway:logs
+├── wait.js              # wait
+├── review.js            # review
+├── website-deploy.js    # website:deploy
+└── lib/
+    ├── git.js           # git operations (execFileSync, no shell)
+    ├── github.js        # github api (PRs, blobs, trees, commits)
+    ├── paths.js         # repo paths, worktree root, git root
+    ├── task-meta.js     # .task/current.json + .task/tasks/ read/write
+    └── validation.js    # branch naming, commit format validation
+```
