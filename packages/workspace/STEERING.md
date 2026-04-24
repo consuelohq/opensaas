@@ -59,7 +59,7 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 `bun run fs -- trash old-dir/` — directory
 `bun run fs -- trash a.ts b.ts c.ts` — multiple files
 
-### tips
+### tips to remember
 - prefer `bun run fs` over raw bat/rg/eza/fd for repo work
 - before `write --force` or `patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
@@ -68,6 +68,91 @@ wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no here
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
 - errors exit 1. check exit code or stderr for failures
 - write and patch log touched files to `.task/workpad.md`
+
+
+bun run fs -- read is strong. Best use is targeted line ranges after an initial full read. It catches bad replacements before validation.
+
+After any generated replacement, immediately run:
+git status --porcelain -uall -- . ':!node_modules'
+node --check <touched-js-file>
+bun run fs -- read <changed-range> --plain
+
+Future agents should mentally model the tool as: workspace sandbox_exec is the real command runner. api_tool.call_tool is just ChatGPT’s wrapper to reach workspace, not the thing to reason about.
+
+bun run fs -- write should be used less often than patch for existing files. Better for new files or exact generated content.
+
+
+
+Always reread `SCRIPTS.md` when adding/changing scripts. Missing docs are part of the fix, not cleanup.
+
+When resolving stream conflicts stop and ask ko unless its metadata (need to fix in the workspace logic but we need everything on GitHub)
+
+- Use Python for multi-file or multi-block edits.
+Do not use huge python3 -c "..." commands.
+Do not base64-encode scripts unless there is no other option.
+Prefer a quoted heredoc or write a temp script, then run it.
+Always make the Python script fail loudly if the expected text is not found.
+Always reread changed ranges after the script runs.
+Always run node --check for touched .js scripts.
+Always run git status --porcelain -uall -- . ':!node_modules' after large edits to catch weird artifacts.
+
+Safe pattern:
+python3 <<'PY'
+from pathlib import Path
+
+path = Path("packages/workspace/scripts/task-push.js")
+text = path.read_text()
+
+old = """const oldThing = true;
+const anotherOldThing = false;
+"""
+
+new = """const oldThing = true;
+const anotherOldThing = true;
+"""
+
+if old not in text:
+    raise SystemExit(f"expected block not found in {path}")
+
+path.write_text(text.replace(old, new))
+PY
+
+bun run fs -- read packages/workspace/scripts/task-push.js --from 80 --to 120 --plain
+node --check packages/workspace/scripts/task-push.js
+git status --porcelain -uall -- . ':!node_modules'
+
+Better pattern for many edits:
+cat > /tmp/workspace-edit.py <<'PY'
+from pathlib import Path
+
+def replace_exact(file_path: str, old: str, new: str) -> None:
+    path = Path(file_path)
+    text = path.read_text()
+
+    if old not in text:
+        raise SystemExit(f"expected block not found in {file_path}")
+
+    path.write_text(text.replace(old, new))
+
+replace_exact(
+    "packages/workspace/scripts/task-push.js",
+    """const isBooleanFlag = flag === '--json' || flag === '--help';""",
+    """const isBooleanFlag = BOOLEAN_FLAGS.has(flag);""",
+)
+
+replace_exact(
+    "packages/workspace/scripts/lib/verification.js",
+    """return filePath === VERIFY_STAMP_PATH || filePath.startsWith('.task/');""",
+    """return filePath.startsWith('.task/');""",
+)
+PY
+
+python3 /tmp/workspace-edit.py
+
+node --check packages/workspace/scripts/task-push.js
+node --check packages/workspace/scripts/lib/verification.js
+git diff -- packages/workspace/scripts/task-push.js packages/workspace/scripts/lib/verification.js
+git status --porcelain -uall -- . ':!node_modules'
 
 ---
 ## task workflow — context, start, push, promote, clean up
