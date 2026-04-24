@@ -63,6 +63,24 @@ cat /tmp/replacement.ts | bun run fs -- patch src/foo.ts --from 20 --to 35 --dry
 
 ### patch with inline content
 bun run fs -- patch src/foo.ts --from 42 --to 42 --content "const x = newValue;"
+
+### http (wraps xh)
+bun run fs -- http get https://api.github.com # GET request
+bun run fs -- http post https://api.example.com key=val # POST json
+bun run fs -- http get https://api.example.com Authorization:"Bearer $TOKEN" # with headers
+
+### trash (safe delete — moves to trash, not rm)
+bun run fs -- trash old-file.ts # single file
+bun run fs -- trash old-dir/ # directory
+bun run fs -- trash a.ts b.ts c.ts # multiple files
+
+### tips
+- prefer `bun run fs` over raw bat/rg/eza/fd for repo file operations unless debugging the script itself
+- before `write --force` or `patch`, read the target range first
+- `write` does NOT create parent directories by default — use `--mkdirs`
+- `patch --from 42 --to 42` replaces line 42 (not insert)
+- json output for automation: `bun run fs -- search "foo" packages/ --then-read --json`
+
 ---
 
 ## task workflow — start, push, promote, clean up

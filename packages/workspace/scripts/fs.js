@@ -97,6 +97,8 @@ function mainHelp() {
   out('  list    list/find files (wraps eza and fd)');
   out('  write   write files from stdin (no heredocs)');
   out('  patch   replace a line range from stdin');
+  out('  http    make http requests (wraps xh)');
+  out('  trash   safe delete (moves to trash, not rm)');
   out('');
   out('run any command with --help for details.');
 }
@@ -503,12 +505,67 @@ function main() {
   const command = argv[0];
   const rest = argv.slice(1);
 
+// ── http ──
+
+function cmdHttp(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- http <method> <url> [args...]');
+    out('');
+    out('make http requests. wraps xh.');
+    out('');
+    out('examples:');
+    out('  http get https://api.github.com');
+    out('  http post https://api.example.com key=val');
+    out('  http get https://api.example.com Authorization:"Bearer $TOKEN"');
+    out('  http get https://api.example.com --json');
+    return;
+  }
+  const cmd = ['xh', ...argv];
+  try {
+    const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, timeout: 30000 });
+    process.stdout.write(result);
+  } catch (e) {
+    if (e.stdout) process.stdout.write(e.stdout);
+    if (e.stderr) process.stderr.write(e.stderr);
+    process.exit(e.status || 1);
+  }
+}
+
+// ── trash ──
+
+function cmdTrash(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- trash <path> [path...]');
+    out('');
+    out('move files/directories to trash. safer than rm.');
+    out('');
+    out('examples:');
+    out('  trash old-file.ts');
+    out('  trash old-dir/');
+    out('  trash a.ts b.ts c.ts');
+    return;
+  }
+  for (const target of argv) {
+    if (target.startsWith('-')) continue;
+    try {
+      execFileSync('trash', [target], { encoding: 'utf8', timeout: 10000 });
+      out(`trashed: ${target}`);
+    } catch (e) {
+      err(`failed to trash ${target}: ${e.message}`);
+    }
+  }
+}
+
+// ── main ──
+
   switch (command) {
     case 'read': cmdRead(rest); break;
     case 'search': cmdSearch(rest); break;
     case 'list': cmdList(rest); break;
     case 'write': cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
+    case 'http': cmdHttp(rest); break;
+    case 'trash': cmdTrash(rest); break;
     default:
       err(`unknown command: ${command}`);
       mainHelp();
