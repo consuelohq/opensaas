@@ -414,11 +414,11 @@ async function main() {
 
   writeTaskMeta(worktreePath, taskMeta);
 
-  // guard 2: verify .task-meta.json was written correctly
+  // guard 2: verify .task/current.json was written correctly
   const verifyMeta = readTaskMeta(worktreePath);
   if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
     throw new Error(
-      `.task-meta.json verification failed in ${worktreePath}.\n` +
+      `.task/current.json verification failed in ${worktreePath}.\n` +
       'the file was not written correctly. check disk permissions.',
     );
   }

@@ -32,7 +32,7 @@ const {
   assertTaskBranchName,
   isStreamBranchName,
 } = require('./lib/validation');
-const { findTaskMeta } = require('./lib/task-meta');
+const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -50,7 +50,7 @@ function printHelp() {
   writeStdout('  --changed              push tracked changed files from the current task worktree');
   writeStdout('  --files <paths...>     explicit file paths to read from disk');
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
-  writeStdout('  --branch <name>        override task branch (normally inferred from .task-meta.json)');
+  writeStdout('  --branch <name>        override task branch (normally inferred from .task/current.json)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
   writeStdout('  --json                 output json');
@@ -138,11 +138,13 @@ function getTaskContext(args) {
 
   if (!taskMeta) {
     throw new Error(
-      'no .task-meta.json found. this worktree was not created by task:start.\n' +
+      'no .task/current.json found. this worktree was not created by task:start.\n' +
       'run: bun run task:start -- --area <area> --title "<title>"\n' +
       'then work in the new worktree it creates.',
     );
   }
+
+  validateBranchMatch(taskMeta, currentBranch);
 
   const branch = args.branch || taskMeta.data.taskBranch;
 
@@ -327,7 +329,17 @@ async function main() {
   }
 
   const token = getToken();
-  const files = resolveFiles(args, repoRoot);
+  const userFiles = resolveFiles(args, repoRoot);
+
+  // auto-include .task/ metadata files in every push
+  const metaFiles = collectTaskMetaFiles(repoRoot);
+  const seenPaths = new Set(userFiles.map((f) => f.path));
+  const files = [...userFiles];
+  for (const mf of metaFiles) {
+    if (!seenPaths.has(mf.path)) {
+      files.push(mf);
+    }
+  }
 
   if (files.length === 0) {
     throw new Error('no files to push');

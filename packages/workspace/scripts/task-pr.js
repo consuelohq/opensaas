@@ -32,7 +32,7 @@ const {
   getDefaultStreamBranch,
   isStreamBranchName,
 } = require('./lib/validation');
-const { findTaskMeta, writeTaskMeta } = require('./lib/task-meta');
+const { findTaskMeta, validateBranchMatch, writeTaskMeta } = require('./lib/task-meta');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -51,7 +51,7 @@ function printHelp() {
   writeStdout('  3. create or refresh the review pr for stream/* -> main');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --branch <name>          task branch (default: infer from .task-meta.json or current branch)');
+  writeStdout('  --branch <name>          task branch (default: infer from .task/current.json or current branch)');
   writeStdout('  --title <value>          final review pr title (default: Stream/<area>)');
   writeStdout(`  --base <branch>          final review base branch (default: ${DEFAULT_REVIEW_BASE})`);
   writeStdout('  --body <text>            final review pr body text');
@@ -212,11 +212,13 @@ function getPrContext(args) {
 
   if (!taskMeta) {
     throw new Error(
-      'no .task-meta.json found. this worktree was not created by task:start.\n' +
+      'no .task/current.json found. this worktree was not created by task:start.\n' +
       'run: bun run task:start -- --area <area> --title "<title>"\n' +
       'then work in the new worktree it creates.',
     );
   }
+
+  validateBranchMatch(taskMeta, currentBranch);
 
   const taskBranch = args.branch || taskMeta.data.taskBranch;
 
