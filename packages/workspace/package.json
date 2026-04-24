@@ -14,7 +14,8 @@
     "browser": "bun ./scripts/browser.js",
     "website:deploy": "bun ./scripts/website-deploy.js",
     "context": "bun ./scripts/context.js",
-    "tmp": "bun ./scripts/tmp.js"
+    "tmp": "bun ./scripts/tmp.js",
+    "review": "bun ./scripts/review.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"

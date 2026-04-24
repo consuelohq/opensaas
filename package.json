@@ -237,7 +237,8 @@
     "browser": "bun packages/workspace/scripts/browser.js",
     "website:deploy": "bun packages/workspace/scripts/website-deploy.js",
     "context": "bun packages/workspace/scripts/context.js",
-    "tmp": "bun packages/workspace/scripts/tmp.js"
+    "tmp": "bun packages/workspace/scripts/tmp.js",
+    "review": "bun packages/workspace/scripts/review.js"
   },
   "workspaces": {
     "packages": [

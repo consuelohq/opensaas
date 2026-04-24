@@ -344,6 +344,15 @@ async function main() {
   }
 
   const worktreePath = worktree.path;
+
+  // symlink node_modules from main worktree — zero disk cost, enables tsc/nx/jest
+  const worktreeNodeModules = path.join(worktreePath, 'node_modules');
+  const mainNodeModules = path.join(repoRoot, 'node_modules');
+  if (!fs.existsSync(worktreeNodeModules) && fs.existsSync(mainNodeModules)) {
+    fs.symlinkSync(mainNodeModules, worktreeNodeModules);
+    writeStderr('symlinked node_modules from main worktree');
+  }
+
   let localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
   let remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
   let pullRequest = await findOpenPullRequest({
