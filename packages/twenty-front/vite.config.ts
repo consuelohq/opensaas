@@ -275,6 +275,7 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: {
         path: 'rollup-plugin-node-polyfills/polyfills/path',
+        '@consuelo/contacts': path.resolve(__dirname, '../contacts/src/browser.ts'),
         // https://github.com/twentyhq/twenty/pull/10782/files
         // This will likely be migrated to twenty-ui package when built separately
         '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs',
