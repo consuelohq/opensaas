@@ -48,7 +48,17 @@ past decisions, patterns, skills, architecture knowledge, repo details. search A
   bun run context -- list --limit 20                             # list recent memories                          
   bun run context -- save "dialer notes" ./notes.md              # save a file as memory                         
   echo "text" | bun run context -- save "note" --text            # save from stdin                               
-  bun run context -- categories                                  # list categories                               
+  bun run context -- categories                                  # list categories   
+
+  ### tmp — exact temp file handling                                                                             
+                                                                                                                 
+  bun run tmp -- write notes "# my notes here"                   # write content to notes.md                     
+  cat draft.md | bun run tmp -- write review --stdin             # write from stdin (best for long content and handoffs for exact files)      
+  bun run tmp -- read notes                                      # read a temp file                              
+  bun run tmp -- path notes                                      # print full path                               
+  bun run tmp -- save handoffs "dialer queue investigation"         # save temp file to supabase memories           
+  bun run tmp -- list                                            # list temp files with size and age             
+  bun run tmp -- clean                                           # remove all temp files
                                                                                                                  
   ### browser — test and interact with web pages                                                                 
                                                                                                                  
@@ -796,19 +806,15 @@ decision rule:
 
 `/tmp` is a standard sandbox workspace for disposable artifacts: prompts, review bodies, generated scripts, screenshots, exported data, and verification outputs. use it deliberately.
 
-rules of thumb:
-* use `/tmp` for artifacts that should not live in the repo
-* use repo-relative paths for anything that should be committed
-* when a workflow says "write a tmp file", actually write it under `/tmp/` and verify it before using it
-* before posting or sending content from a temp file, read it back once so you know exactly what is leaving the machine
-* when codemode needs to touch `/tmp`, remember its file helpers are usually relative to the repo root; use a relative escape like `../../../../tmp/file.txt` or use `bash(...)` inside codemode
-
-examples:
-* write a review body: `cat > /tmp/pr-review.md <<'EOF' ... EOF`
-* inspect a temp artifact: `sed -n '1,80p' /tmp/pr-review.md`
-* pass a temp file to another tool: `gh pr comment 98 --body-file /tmp/pr-review.md`
-* codemode write + verify: `npx mcporter call 'codemode.execute_code(code: "await writeFile(\"../../../../tmp/demo.txt\",\"hello\"); return await readFile(\"../../../../tmp/demo.txt\")")'`
-
+### tmp scripts                                                                             
+                                                                                                                 
+  bun run tmp -- write notes "# my notes here"                   # write content to notes.md                     
+  cat draft.md | bun run tmp -- write review --stdin             # write from stdin (best for long content)      
+  bun run tmp -- read notes                                      # read a temp file                              
+  bun run tmp -- path notes                                      # print full path                               
+  bun run tmp -- save notes "dialer queue investigation"         # save temp file to supabase memories           
+  bun run tmp -- list                                            # list temp files with size and age             
+  bun run tmp -- clean                                           # remove all temp files
   
 ## compact transfer protocol
 
