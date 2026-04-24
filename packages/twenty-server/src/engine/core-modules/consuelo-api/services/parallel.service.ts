@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
+import { isValidPhone, normalizePhone } from '@consuelo/contacts';
 
 import type {
   NumberPool,
@@ -19,7 +20,6 @@ import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/servic
 import { ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
 import { ParallelStrategyResolverService } from 'src/engine/core-modules/consuelo-api/services/parallel-strategy-resolver.service';
 
-const E164_REGEX = /^\+[1-9]\d{1,14}$/;
 const MIN_SUCCESS_DURATION_SECONDS = 30;
 
 const TERMINAL_STATUSES = new Set([
@@ -120,8 +120,6 @@ export class ParallelService {
     const recentAnswerRate = this.readOptionalNumber(body.recentAnswerRate);
     const profileId = isProfileKey(body.profileId) ? body.profileId : undefined;
 
-    this.validateCustomerNumbers(customerNumbers);
-
     let createStage: ParallelDialCreateStage = 'request-validation';
     let resolvedProfileId = profileId;
     let fromNumberCount = 0;
@@ -197,7 +195,10 @@ export class ParallelService {
         throw err;
       }
     } catch (err: unknown) {
-      if (err instanceof BadRequestException || err instanceof ConflictException) {
+      if (
+        err instanceof BadRequestException ||
+        err instanceof ConflictException
+      ) {
         throw err;
       }
 
@@ -269,7 +270,10 @@ export class ParallelService {
         workspaceId: input.workspaceId,
       });
       Sentry.captureException(err, {
-        extra: { context: 'nest_parallel_validate', workspaceId: input.workspaceId },
+        extra: {
+          context: 'nest_parallel_validate',
+          workspaceId: input.workspaceId,
+        },
       });
 
       throw new InternalServerErrorException({
@@ -311,7 +315,8 @@ export class ParallelService {
     const groupHasWinner = group.winnerSid !== null;
 
     if (isTerminalCallback && isWinnerCallback && groupHasWinner) {
-      const claimed = await dialer.parallel.markTelemetryEmittedIfAbsent(groupId);
+      const claimed =
+        await dialer.parallel.markTelemetryEmittedIfAbsent(groupId);
 
       if (claimed) {
         const telemetry = dialer.parallel.computeTelemetry(group);
@@ -363,10 +368,9 @@ export class ParallelService {
     }
 
     try {
-      const twiml =
-        await this.legacyDialerService.getDialer().parallel.generateCustomerTwiml(
-          callSid,
-        );
+      const twiml = await this.legacyDialerService
+        .getDialer()
+        .parallel.generateCustomerTwiml(callSid);
 
       if (!twiml) {
         throw new NotFoundException('No parallel group for this call');
@@ -401,7 +405,7 @@ export class ParallelService {
       }
 
       const winner = group.winnerSid
-        ? group.calls.find((call) => call.callSid === group.winnerSid) ?? null
+        ? (group.calls.find((call) => call.callSid === group.winnerSid) ?? null)
         : null;
 
       return {
@@ -508,7 +512,19 @@ export class ParallelService {
       throw new BadRequestException('Requires customerNumbers and a queueId');
     }
 
-    return value.map((customerNumber) => String(customerNumber));
+    return value.map((customerNumber) =>
+      this.readValidCustomerNumber(customerNumber),
+    );
+  }
+
+  private readValidCustomerNumber(value: unknown): string {
+    const normalizedPhoneNumber = normalizePhone(String(value));
+
+    if (!isValidPhone(normalizedPhoneNumber)) {
+      throw new BadRequestException('Invalid customer phone number');
+    }
+
+    return normalizedPhoneNumber;
   }
 
   private readRequiredString(value: unknown, fieldName: string): string {
@@ -541,16 +557,6 @@ export class ParallelService {
     const parsed = Number(value);
 
     return Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  private validateCustomerNumbers(customerNumbers: string[]) {
-    const hasInvalidNumber = customerNumbers.some(
-      (customerNumber) => !E164_REGEX.test(customerNumber),
-    );
-
-    if (hasInvalidNumber) {
-      throw new BadRequestException('Invalid E.164 customer numbers');
-    }
   }
 
   private async resolveCallerIds(
@@ -591,7 +597,11 @@ export class ParallelService {
     for (const [index, fromNumber] of lockableFromNumbers.entries()) {
       const locked = await this.legacyDialerService
         .getCallerIdLockService()
-        .acquireLock(fromNumber, input.userId, `parallel-${input.queueId}-${index}`);
+        .acquireLock(
+          fromNumber,
+          input.userId,
+          `parallel-${input.queueId}-${index}`,
+        );
 
       if (!locked) {
         await this.releaseCallerIdLocks(acquiredFromNumbers);

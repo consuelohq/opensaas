@@ -29,21 +29,22 @@ describe('normalizePhone', () => {
     expect(normalizePhone('abc')).toBe('');
   });
 
-  it('should handle international numbers (non-US)', () => {
+  it('should handle international numbers with explicit country code', () => {
     expect(normalizePhone('+442071234567')).toBe('+442071234567');
   });
 
-  it('should handle short numbers by prepending +', () => {
-    expect(normalizePhone('12345')).toBe('+12345');
+  it('should reject invalid local-looking numbers', () => {
+    expect(normalizePhone('12345')).toBe('');
+    expect(isValidPhone(normalizePhone('12345'))).toBe(false);
   });
 
   it('should handle number with leading +1 and 10 digits', () => {
     expect(normalizePhone('+1 (415) 555-1234')).toBe('+14155551234');
   });
 
-  it('should handle 11-digit non-US number', () => {
-    // 11 digits starting with 4 (not 1) — treated as international
-    expect(normalizePhone('44207123456')).toBe('+44207123456');
+  it('should reject ambiguous international-looking numbers without +', () => {
+    expect(normalizePhone('44207123456')).toBe('');
+    expect(isValidPhone(normalizePhone('44207123456'))).toBe(false);
   });
 
   it('should handle number with dashes only', () => {
@@ -52,17 +53,19 @@ describe('normalizePhone', () => {
 });
 
 describe('isValidPhone', () => {
-  it('should validate correct E.164 numbers', () => {
+  it('should validate correct phone numbers', () => {
     expect(isValidPhone('+14155551234')).toBe(true);
     expect(isValidPhone('+442071234567')).toBe(true);
+    expect(isValidPhone('8178447395')).toBe(true);
   });
 
   it('should reject empty string', () => {
     expect(isValidPhone('')).toBe(false);
   });
 
-  it('should reject number without +', () => {
-    expect(isValidPhone('14155551234')).toBe(false);
+  it('should reject number without + when it cannot be parsed as a valid US number', () => {
+    expect(isValidPhone('14155551234')).toBe(true);
+    expect(isValidPhone('44207123456')).toBe(false);
   });
 
   it('should reject number starting with +0', () => {
@@ -77,11 +80,17 @@ describe('isValidPhone', () => {
     expect(isValidPhone('+1234567890123456')).toBe(false);
   });
 
-  it('should accept minimum valid length (7 digits)', () => {
-    expect(isValidPhone('+1234567')).toBe(true);
+  it('should reject invalid minimum-length E.164-shaped numbers', () => {
+    expect(isValidPhone('+1234567')).toBe(false);
   });
 
-  it('should accept maximum valid length (15 digits)', () => {
-    expect(isValidPhone('+123456789012345')).toBe(true);
+  it('should reject invalid maximum-length E.164-shaped numbers', () => {
+    expect(isValidPhone('+123456789012345')).toBe(false);
+  });
+
+  it('should reject long NANP-shaped numbers that Twilio rejects', () => {
+    expect(normalizePhone('584143861603')).toBe('');
+    expect(isValidPhone('584143861603')).toBe(false);
+    expect(isValidPhone('+1584143861603')).toBe(false);
   });
 });

@@ -25,5 +25,8 @@
   },
   "devDependencies": {
     "groq-sdk": "^0.37.0"
+  },
+  "dependencies": {
+    "libphonenumber-js": "^1.10.26"
   }
 }
