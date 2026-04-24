@@ -70,7 +70,7 @@ past decisions, patterns, skills, architecture knowledge, repo details. search A
   bun run railway:logs -- --service twenty-worker --errors       # worker service logs                           
   bun run railway:logs -- --build                                # build/deploy logs                             
                                                                                                                  
-  ### website — build and deploy                                                                                 
+  ### marketing website (packages/consuelo-website)— build and deploy                                                                                 
                                                                                                                  
   bun run website:deploy                                         # build + deploy to cloudflare pages            
   bun run website:deploy -- --build-only                         # build without deploying                       
