@@ -1,12 +1,12 @@
 {
   "area": "dialer",
   "stream": "stream/dialer",
-  "taskBranch": "task/dialer/queue-real-call-lifecycle",
+  "taskBranch": "task/dialer/normalize-predictive-queue-numbers",
   "baseBranch": "stream/dialer",
   "sourceBranch": "stream/dialer",
   "startFrom": "stream",
-  "prNumber": 154,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/154",
+  "prNumber": null,
+  "prUrl": null,
   "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-queue-real-call-lifecycle",
   "createdAt": "2026-04-23T23:45:25.885Z"
 }
