@@ -11,7 +11,7 @@ function sha256(value) {
 }
 
 function isVerificationIgnored(filePath) {
-  return filePath === VERIFY_STAMP_PATH || filePath.startsWith('.task/');
+  return filePath.startsWith('.task/');
 }
 
 function getFileDigest(repoRoot, change) {

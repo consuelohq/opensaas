@@ -109,6 +109,12 @@ function getConflictFiles(repoRoot, worktreePath) {
 }
 
 function parseJsonOutput(output) {
+  try {
+    return JSON.parse(output.trim());
+  } catch {
+    // fall through to heuristic extraction for noisy stdout.
+  }
+
   const start = output.indexOf('{');
   const end = output.lastIndexOf('}');
 
@@ -124,13 +130,14 @@ function parseJsonOutput(output) {
 }
 
 function runStreamChecks(worktreePath) {
-  const command = 'bun run verify -- --base origin/main --no-review --no-stamp --db-warn-only --json';
+  const verifyBase = `origin/${DEFAULT_MAIN_BRANCH}`;
+  const command = `bun run verify -- --base ${verifyBase} --no-review --no-stamp --db-warn-only --json`;
   const result = spawnSync('bun', [
     'run',
     'verify',
     '--',
     '--base',
-    `origin/${DEFAULT_MAIN_BRANCH}`,
+    verifyBase,
     '--no-review',
     '--no-stamp',
     '--db-warn-only',
@@ -220,9 +227,9 @@ async function main() {
 
   const mergeResult = runMerge(worktreePath, DEFAULT_MAIN_BRANCH);
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();
-  const checks = runStreamChecks(worktreePath);
 
   if (mergeResult.status === 0) {
+    const checks = runStreamChecks(worktreePath);
     if (createdTemporaryWorktree) {
       removeWorktree(repoRoot, worktreePath, true);
     }
@@ -242,6 +249,11 @@ async function main() {
     return;
   }
 
+  const checks = {
+    skipped: true,
+    status: 'skipped',
+    reason: 'merge failed before stream checks could run',
+  };
   const conflictFiles = getConflictFiles(repoRoot, worktreePath);
 
   if (conflictFiles.length === 0) {

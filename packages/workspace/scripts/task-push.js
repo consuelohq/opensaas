@@ -35,6 +35,8 @@ const {
 const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
 const { getVerifyStampMismatch } = require('./lib/verification');
 
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
+
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
 }
@@ -88,7 +90,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--changed' || flag === '--verify' || flag === '--no-verify';
+    const isBooleanFlag = BOOLEAN_FLAGS.has(flag);
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -334,10 +336,6 @@ async function main() {
 
   const { branch, repoRoot, taskMeta } = getTaskContext(args);
 
-  if (args.changed) {
-    assertChangedBranchIsSynced(repoRoot, branch);
-  }
-
   if (args.verify) {
     const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
     if (verifyMismatch) {
@@ -349,6 +347,10 @@ async function main() {
     }
   } else {
     writeStderr('warning: task:push bypassing verify because --no-verify was provided');
+  }
+
+  if (args.changed) {
+    assertChangedBranchIsSynced(repoRoot, branch);
   }
 
   const token = getToken();
