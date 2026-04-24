@@ -3,6 +3,7 @@ import { useRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
+import { getParallelDialerEndpoint } from '@/dialer/utils/parallel-dialer-endpoint';
 import { toE164 } from '@/dialer/utils/phoneFormat';
 import {
   activeQueueState,
@@ -142,7 +143,7 @@ export const useParallelDialer = () => {
       const interval = setInterval(async () => {
         try {
           const res = await authenticatedFetch(
-            `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}`,
+            getParallelDialerEndpoint(REACT_APP_SERVER_BASE_URL, groupId),
             {
               headers: { 'Content-Type': 'application/json' },
             },
@@ -219,7 +220,7 @@ export const useParallelDialer = () => {
       playDialingStartedSound();
 
       const res = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel`,
+        getParallelDialerEndpoint(REACT_APP_SERVER_BASE_URL),
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -284,7 +285,10 @@ export const useParallelDialer = () => {
     if (typeof groupId === 'string' && groupId.length > 0) {
       try {
         await authenticatedFetch(
-          `${REACT_APP_SERVER_BASE_URL}/v1/calls/parallel/${groupId}/terminate`,
+          getParallelDialerEndpoint(
+            REACT_APP_SERVER_BASE_URL,
+            `${groupId}/terminate`,
+          ),
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
