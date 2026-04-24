@@ -207,8 +207,6 @@ bun run server -- stop # stop the server
 bun run server -- start # start the server
 bun run server -- logs # tail /tmp/workspace.log
 
-note: editing BRAIN.md or SCRIPTS.md does NOT require a restart — those are read fresh on every get_steering call. only restart when server.py itself changes.
-
 ---
 
 ## CLI tools — modern replacements
