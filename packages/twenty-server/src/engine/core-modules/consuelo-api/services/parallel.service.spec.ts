@@ -2,7 +2,13 @@ import { Logger } from '@nestjs/common';
 
 import type { ParallelGroup } from '@consuelo/dialer';
 
-jest.mock('@consuelo/dialer', () => ({}), { virtual: true });
+jest.mock(
+  '@consuelo/dialer',
+  () => ({
+    ParallelStrategyResolver: class {},
+  }),
+  { virtual: true },
+);
 jest.mock('@consuelo/contacts', () => ({
   isValidPhone: jest.fn((phoneNumber: string) =>
     [
@@ -238,6 +244,33 @@ describe('ParallelService initiateParallelDial', () => {
 
     expect(mockParallelStrategyResolver.resolve).not.toHaveBeenCalled();
     expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
+  });
+
+  it('should reject provider-denied customer numbers before returning a generic 500', async () => {
+    const { service, group, mockDialer, mockLockService } = createService();
+
+    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(
+      new Error('Account not authorized to call +17876240936. geo-permissions'),
+    );
+
+    await expect(
+      service.initiateParallelDial({
+        userId: 'user-1',
+        workspaceId: 'workspace-1',
+        body: {
+          queueId: group.queueId,
+          customerNumbers: ['+14155552671', '+16505551234'],
+          profileId: 'conservative',
+        },
+      }),
+    ).rejects.toThrow('Invalid customer phone number');
+
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12025550123',
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12125550123',
+    );
   });
 
   it('should reject batches that do not match the resolved fanout', async () => {
