@@ -217,7 +217,7 @@ runs all 16 mandatory checks from CODING-STANDARDS.md against changed files.
 ---
 
 ## help  
-bun run <script> -- --help                                     # any script supports --help
+`bun run <script> -- --help` — any script supports --help
 
 ---
 
