@@ -30,6 +30,7 @@ jest.mock('@consuelo/contacts', () => ({
 }));
 
 jest.mock('@sentry/node', () => ({
+  addBreadcrumb: jest.fn(),
   captureException: jest.fn(),
 }));
 
@@ -249,9 +250,16 @@ describe('ParallelService initiateParallelDial', () => {
   it('should reject provider-denied customer numbers before returning a generic 500', async () => {
     const { service, group, mockDialer, mockLockService } = createService();
 
-    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(
-      new Error('Account not authorized to call +17876240936. geo-permissions'),
-    );
+    const providerError = new Error(
+      'Account not authorized to call +17876240936. geo-permissions',
+    ) as Error & { code: number };
+
+    providerError.code = 21215;
+    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(providerError);
+
+    const loggerWarnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
 
     await expect(
       service.initiateParallelDial({
@@ -270,6 +278,13 @@ describe('ParallelService initiateParallelDial', () => {
     );
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
       '+12125550123',
+    );
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      'parallel dial rejected customer number',
+      expect.objectContaining({
+        errorCode: '21215',
+        errorMessage: 'Account not authorized to call ***0936. geo-permissions',
+      }),
     );
   });
 
