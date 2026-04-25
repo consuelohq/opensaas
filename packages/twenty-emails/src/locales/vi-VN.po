@@ -109,26 +109,6 @@ msgid "Verify Email"
 msgstr "Xác minh Email"
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
-msgstr "Mật khẩu đã được cập nhật"
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
-msgstr "Đây là xác nhận rằng mật khẩu cho tài khoản của bạn ({email}) đã được thay đổi thành công vào {formattedDate}."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
-msgstr "Nếu bạn không khởi xướng việc thay đổi này, vui lòng liên hệ ngay với chủ sở hữu của không gian làm việc của bạn."
-
-#. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
-msgstr ""
-
-#. js-lingui-explicit-id
 #: src/emails/password-reset-link.email.tsx
 msgid "Reset your password 🗝"
 msgstr "Đặt lại mật khẩu của bạn 🗝"
@@ -152,6 +132,26 @@ msgstr "Thiết lập"
 #: src/emails/password-reset-link.email.tsx
 msgid "This link is only valid for the next {duration}. If the link does not work, you can use the login verification link directly:"
 msgstr "Liên kết này chỉ có hiệu lực trong thời gian {duration} kế tiếp. Nếu liên kết không hoạt động, bạn có thể sử dụng liên kết xác minh đăng nhập trực tiếp:"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
+msgstr "Mật khẩu đã được cập nhật"
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+msgstr "Đây là xác nhận rằng mật khẩu cho tài khoản của bạn ({email}) đã được thay đổi thành công vào {formattedDate}."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
+msgstr "Nếu bạn không khởi xướng việc thay đổi này, vui lòng liên hệ ngay với chủ sở hữu của không gian làm việc của bạn."
+
+#. js-lingui-explicit-id
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
