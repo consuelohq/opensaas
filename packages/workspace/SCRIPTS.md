@@ -147,18 +147,33 @@ bad:  bun run fs -- write src/deep/nested/new.ts --content "..."
 bad:  cd /private/tmp/opensaas-worktrees/task-dialer && bun run fs -- read src/foo.ts
       → error: Script not found "fs"
       (use task:fs from repo root instead)
+
+bad:  bun run fs -- write src/foo.ts --append "new line"
+      → appended without a leading newline, content jammed onto the last line
+      (write --append is exact — include \n yourself)
 ```
 
-**rules:**
+#### tips to remember
+
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
 - before `write --force` or `patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
 - `write --append` is exact — include `\n` yourself
-- `patch --from N --to N` replaces line N. always read the range first
-- `read --json` and `search --json` are automation-safe
+- `patch --from N --to N` replaces line N. always read the range first — patch does not validate bounds
+- `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
 - errors exit 1. check exit code or stderr for failures
 - write and patch log touched files to `.task/workpad.md`
-- after any write or patch, verify with: `bun run fs -- read <file> --from <changed-range> --plain`
+- `bun run fs -- read` is strong. best use is targeted line ranges after an initial full read. it catches bad replacements before validation
+- `bun run fs -- write` should be used less often than `patch` for existing files. better for new files or exact generated content
+- after any write or patch, immediately verify:
+
+```
+bun run fs -- read <file> --from <changed-range> --plain
+git status --porcelain -uall -- . ':!node_modules'
+node --check <touched-js-file>
+```
+
+- always reread SCRIPTS.md when adding or changing scripts. missing docs are part of the fix, not cleanup
 
 ---
 
@@ -544,10 +559,56 @@ bun run browser -- snapshot                       # get accessibility tree
 
 ### railway — deploy observability
 
+**USE THIS OFTEN.** this is how you get truth about what's happening in production. don't guess — read the logs.
+
 ```
-bun run railway:logs                              # runtime logs for opensaas service
-bun run railway:logs -- --build                   # build logs
-bun run railway:logs -- --service twenty-worker   # worker logs
+# default view — deploy logs + http traffic in one place
+bun run railway:logs
+
+# errors only — deploy errors + http 4xx/5xx
+bun run railway:logs -- --errors
+
+# search across deploy, http logs, & network
+bun run railway:logs -- --filter "voice"
+bun run railway:logs -- --filter "twilio OR queue"
+bun run railway:logs -- --filter "@level:error"
+bun run railway:logs -- --filter "@level:warn AND rate limit"
+
+# network logs
+bun run railway:logs -- --network
+
+# control how many lines (default: 200 deploy, 50 http)
+bun run railway:logs -- --filter "voice" --lines 50
+
+# build logs — did the docker build succeed?
+bun run railway:logs -- --build
+
+# raw output — no formatting, no noise filtering
+bun run railway:logs -- --raw
+
+# json output — for piping to other tools
+bun run railway:logs -- --json
+
+# check if an env var is set (doesn't show the value)
+bun run railway:logs -- --env TWILIO_ACCOUNT_SID
+
+# quick health check — is the service up? what commit is deployed?
+bun run railway:logs -- --status
+
+# different service (default: opensaas)
+bun run railway:logs -- --service twenty-worker --errors
+```
+
+#### railway failure modes
+
+```
+bad:  "i think the deploy is broken" (guessing without checking)
+      → run: bun run railway:logs -- --errors
+      (always check logs before claiming something is broken)
+
+bad:  railway logs --service opensaas (raw CLI)
+      → use: bun run railway:logs
+      (the script adds noise filtering, formatting, and http log merging)
 ```
 
 ---
@@ -600,6 +661,91 @@ bun run website:deploy -- --build-only            # build only, don't deploy
 
 ---
 
+---
+
+## python edit patterns
+
+use python for multi-file or multi-block edits. do not use huge `python3 -c "..."` commands. do not base64-encode scripts unless there is no other option. prefer a quoted heredoc or write a temp script, then run it.
+
+**always:** make the python script fail loudly if the expected text is not found. always reread changed ranges after the script runs. always run `node --check` for touched .js scripts. always run `git status --porcelain -uall -- . ':!node_modules'` after large edits.
+
+#### safe pattern — single edit
+
+```bash
+python3 <<'PY'
+from pathlib import Path
+
+path = Path("packages/workspace/scripts/task-push.js")
+text = path.read_text()
+
+old = """const oldThing = true;
+const anotherOldThing = false;
+"""
+
+new = """const oldThing = true;
+const anotherOldThing = true;
+"""
+
+if old not in text:
+    raise SystemExit(f"expected block not found in {path}")
+
+path.write_text(text.replace(old, new))
+PY
+
+bun run fs -- read packages/workspace/scripts/task-push.js --from 80 --to 120 --plain
+node --check packages/workspace/scripts/task-push.js
+git status --porcelain -uall -- . ':!node_modules'
+```
+
+#### better pattern — many edits across files
+
+```bash
+cat > /tmp/workspace-edit.py <<'PY'
+from pathlib import Path
+
+def replace_exact(file_path: str, old: str, new: str) -> None:
+    path = Path(file_path)
+    text = path.read_text()
+    if old not in text:
+        raise SystemExit(f"expected block not found in {file_path}")
+    path.write_text(text.replace(old, new))
+
+replace_exact(
+    "packages/workspace/scripts/task-push.js",
+    """const isBooleanFlag = flag === '--json' || flag === '--help';""",
+    """const isBooleanFlag = BOOLEAN_FLAGS.has(flag);""",
+)
+
+replace_exact(
+    "packages/workspace/scripts/lib/verification.js",
+    """return filePath === VERIFY_STAMP_PATH || filePath.startsWith('.task/');""",
+    """return filePath.startsWith('.task/');""",
+)
+PY
+
+python3 /tmp/workspace-edit.py
+
+# verify every touched file
+node --check packages/workspace/scripts/task-push.js
+node --check packages/workspace/scripts/lib/verification.js
+git diff -- packages/workspace/scripts/task-push.js packages/workspace/scripts/lib/verification.js
+git status --porcelain -uall -- . ':!node_modules'
+```
+
+---
+
+## rules that apply everywhere
+
+### stream conflicts
+
+when resolving stream merge conflicts, **stop and ask ko** unless the conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata conflicts can be resolved automatically — code conflicts need human judgment.
+
+### SCRIPTS.md is part of the fix
+
+always reread SCRIPTS.md when adding or changing scripts. if you add a new script or change behavior, update SCRIPTS.md in the same commit. missing docs are part of the fix, not cleanup for later.
+
+---
+
 ## CLI tools — fallbacks only
 
 these are installed globally. **do not use them if a `bun run` script exists for the same operation.** if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.
@@ -638,34 +784,4 @@ bad:  cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
       → use: bun run task:fs -- --area dialer search "TODO" packages/
 ```
 
----
 
-## script file paths
-
-```
-packages/workspace/scripts/
-├── fs.js                # fs
-├── task-start.js        # task:start
-├── task-push.js         # task:push
-├── task-pr.js           # task:pr
-├── task-prs.js          # task:prs
-├── task-merge.js        # task:merge
-├── task-cleanup.js      # task:cleanup
-├── task-finish.js       # task:finish
-├── task-exec.js         # task:exec
-├── task-fs.js           # task:fs
-├── stream-list.js       # stream:list
-├── stream-sync.js       # stream:sync
-├── stream-context.js    # stream:context
-├── review.js            # review
-├── verify.js            # verify
-├── pr-review.js         # pr-review
-├── gh.js                # gh
-├── context.js           # context
-├── browser.js           # browser
-├── wait.js              # wait
-├── tmp.js               # tmp
-├── server.js            # server
-├── website-deploy.js    # website:deploy
-└── lib/                 # shared libraries (github.js, task-meta.js, nx-projects.js, etc.)
-```
