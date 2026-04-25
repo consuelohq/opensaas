@@ -771,7 +771,52 @@ bad: python replace script says "expected block not found"
    bun run fs -- read <file> --from <N> --to <M> --plain and copy it character-for-character.
    watch for trailing newlines, tab/space mismatches, and invisible unicode characters.
  (always read the target range with --plain before writing the old string in your script)
+
 ```
+"agent": "cd /Users/kokayi/Dev/pi-proxy && bun run agent"
+
+For packages/workspace/SCRIPTS.md, I’d place this right before ## scripts reference:
+
+## sub-agents
+use the local pi proxy for small, bounded sub-agent calls from scripts. this is for one-shot help: cleanup, summarization, classification, drafting, or asking a narrow question. it is not a replacement for the task lifecycle, repo search, or verification.
+run from repo root:
+
+bun run agent – “say hello world”
+bun run agent – –google/gemma-4-31b-it “summarize this error in one sentence: …”
+cat /tmp/input.txt | bun run agent – “clean this transcript”
+
+**rules**
+- keep prompts narrow and explicit
+- pass the model as `--provider/model` only when you need to override the default
+- use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
+- treat sub-agent output as a draft until verified against files, tests, or logs
+- never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
+- do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `task:exec`) and verify after writes
+**good vs bad**
+
+good: bun run agent – “turn this raw error into a concise summary: ”
+→ bounded, no secrets, human can verify
+
+good: bun run agent – –google/gemma-4-31b-it “clean this transcript but preserve meaning: ”
+→ explicit model override and explicit transformation
+
+bad: bun run agent – “fix the repo”
+→ too broad. no area, files, command, or acceptance criteria
+
+bad: bun run agent – “here is the production api key: … now debug this”
+→ never send secrets to a model
+
+bad: bun run agent – “edit packages/foo/src/bar.ts to make tests pass”
+→ sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+
+**failure modes**
+| symptom | fix |
+|---------|-----|
+| `Script not found "agent"` | you're not in `/Users/kokayi/Dev/opensaas`, or `package.json` is missing this script |
+| request is slow | retry once; nvidia free api can land on slower capacity |
+| model output is too formal | tighten the prompt: "preserve casual tone, do not formalize" |
+| model hallucinates repo facts | ignore it and read files/logs; sub-agents do not replace evidence |
+---
 
 ---
 
