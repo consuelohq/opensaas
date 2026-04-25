@@ -219,6 +219,7 @@
   "nx": {},
   "scripts": {
     "task:start": "bun packages/workspace/scripts/task-start.js",
+    "task:init": "bun packages/workspace/scripts/task-init.js",
     "task:push": "bun packages/workspace/scripts/task-push.js",
     "task:pr": "bun packages/workspace/scripts/task-pr.js",
     "task:prs": "bun packages/workspace/scripts/task-prs.js",
@@ -240,6 +241,7 @@
     "start": "npx concurrently --kill-others 'npx nx run-many -t start -p twenty-server twenty-front' 'npx wait-on tcp:3000 && npx nx run twenty-server:worker'",
     "prepare": "husky",
     "railway:logs": "bun packages/workspace/scripts/railway-logs.js",
+    "railway:redeploy": "bun packages/workspace/scripts/railway-redeploy.js",
     "browser": "bun packages/workspace/scripts/browser.js",
     "website:deploy": "bun packages/workspace/scripts/website-deploy.js",
     "context": "bun packages/workspace/scripts/context.js",
@@ -250,8 +252,7 @@
     "gh": "bun packages/workspace/scripts/gh.js",
     "fs": "bun packages/workspace/scripts/fs.js",
     "wait": "bun packages/workspace/scripts/wait.js",
-    "server": "bun packages/workspace/scripts/server.js",
-    "agent": "bun packages/workspace/scripts/agent.js"
+    "server": "bun packages/workspace/scripts/server.js"
   },
   "workspaces": {
     "packages": [
