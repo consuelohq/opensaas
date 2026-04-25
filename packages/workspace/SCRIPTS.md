@@ -416,8 +416,22 @@ bun run task:finish -- --json                 # json output
 ```
 bad:  bun run task:finish (from repo root with stale .task/current.json)
       → runs against stale metadata. may report "finished" for an old task.
-      (check .task/current.json first — if it's from a previous task, run task:start for the new one)
+      (fix the metadata first: bun run task:init -- --area <area> --branch <branch> --pr <N>)
 ```
+
+---
+
+### task:init — fix stale or missing .task/current.json
+
+writes a fresh `.task/current.json` for an existing worktree. does NOT create branches or worktrees — use `task:start` for that. use this when metadata is stale, wrong, or missing.
+
+```
+bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173
+bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173 --worktree /private/tmp/opensaas-worktrees/task-dialer-fix-thing
+bun run task:init -- --json
+```
+
+auto-detects the worktree path from `git worktree list` if `--worktree` is not passed.
 
 ---
 

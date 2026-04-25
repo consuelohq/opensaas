@@ -219,6 +219,7 @@
   "nx": {},
   "scripts": {
     "task:start": "bun packages/workspace/scripts/task-start.js",
+    "task:init": "bun packages/workspace/scripts/task-init.js",
     "task:push": "bun packages/workspace/scripts/task-push.js",
     "task:pr": "bun packages/workspace/scripts/task-pr.js",
     "task:prs": "bun packages/workspace/scripts/task-prs.js",
