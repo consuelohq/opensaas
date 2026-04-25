@@ -146,6 +146,52 @@ past decisions, patterns, skills, architecture knowledge, repo details. search A
 
 ---
 
+## agent — portable sub-agent calls
+
+calls any openai-compatible chat completions endpoint. defaults to the local pi-proxy endpoint, but stays portable by using env vars instead of a machine-specific path.
+
+`bun run agent -- "say hello world"` — call the default local agent
+`bun run agent -- --google/gemma-4-31b-it "say hello world"` — override model with the short flag pattern
+`bun run agent -- --model google/gemma-4-31b-it "say hello world"` — override model explicitly
+`cat /tmp/input.txt | bun run agent -- "clean this transcript"` — combine prompt args with stdin
+`bun run agent -- --json "say hello world"` — structured output
+
+**env vars**
+
+`AGENT_BASE_URL` — openai-compatible base url, default `http://127.0.0.1:11434/v1`
+`AGENT_MODEL` — model, default `pi-proxy`
+`AGENT_API_KEY` — bearer token, default `anything`
+`AGENT_SYSTEM_PROMPT` — optional system prompt
+`AGENT_TIMEOUT_MS` — request timeout, default `120000`
+`AGENT_MAX_TOKENS` — max response tokens, default `4096`
+
+**good vs bad**
+
+```
+good: bun run agent -- "summarize this error in one sentence: <error>"
+ → bounded, portable, easy to verify
+
+good: AGENT_BASE_URL=https://api.openai.com/v1 AGENT_MODEL=gpt-5.1 bun run agent -- "draft release notes"
+ → same script can target another provider without code changes
+
+bad: cd /Users/kokayi/Dev/pi-proxy && bun run agent "prompt"
+ → machine-specific path, fails on railway and other agents
+
+bad: bun run agent -- "fix the repo"
+ → too broad. read files and use task scripts instead
+```
+
+**failure modes**
+
+| symptom | fix |
+|---------|-----|
+| `connection refused` | local pi-proxy is not running; start `com.kokayi.pi-proxy` or set `AGENT_BASE_URL` to another provider |
+| request is slow | retry once or switch providers/models; free nvidia capacity can vary |
+| unauthorized | set `AGENT_API_KEY` for real providers; local pi-proxy ignores the inbound key |
+| hallucinated repo facts | ignore it and read files/logs; sub-agent output is draft text, not evidence |
+
+---
+
 ## tmp — exact temp file handling
 
 write exact content to temp files. no trimming, no reformatting. files go to opensaas-handoffs/.

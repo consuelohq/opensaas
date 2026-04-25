@@ -1,76 +1,66 @@
-# fix pr 184 review findings
+# portable pi proxy agent client
 
-branch: `task/workspace-agents/fix-pr-184-review-findings`
+branch: `task/workspace-agents/portable-pi-proxy-agent-client`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/186
-started: 2026-04-24
+pr: https://github.com/consuelohq/opensaas/pull/193
+started: 2026-04-25
 
 ## acceptance criteria
 
-- [x] verify each coderabbit code finding from pr #184 against the merged code
-- [x] ignore `.task/current.json` and `.task/workpad.md` comments per ko
-- [x] tighten db guard entity/migration/graphql codegen heuristics
-- [x] make stream sync only run checks after a successful merge
-- [x] harden verify/review json handling and include review stderr
-- [x] harden git status parsing for rename/copy paths
-- [x] add missing verify docs to packages/workspace/SCRIPTS.md
+- [x] add a portable root `bun run agent` script that does not reference `/Users/kokayi/Dev/pi-proxy`
+- [x] script calls any openai-compatible endpoint using env/config, defaulting to local pi-proxy
+- [x] support prompt via args and stdin
+- [x] support model override with `--model <model>` and ergonomic `--provider/model` syntax
+- [x] support `--json`, `--quiet`, and `--help`
+- [x] document the script in `packages/workspace/SCRIPTS.md`
+- [x] smoke test against local `pi-proxy` with `hello world`
+- [x] run syntax checks and review/verify before publish
 
 ## plan
 
-1. inspect pr #184 and coderabbit findings
-2. patch only confirmed code findings, ignoring task metadata comments
-3. update packages/workspace/SCRIPTS.md for verify and new helper files
-4. run syntax checks and verify/review commands
-5. publish as a fresh follow-up pr
+1. inspect workspace script style and docs placement
+2. add `packages/workspace/scripts/agent.js` as a portable openai-compatible client
+3. wire root `package.json` to `bun packages/workspace/scripts/agent.js`
+4. document usage, env vars, model overrides, and failure modes in `SCRIPTS.md`
+5. smoke test local pi-proxy and run checks
+6. publish with task scripts
 
 ## files changed
 
+- `package.json`
 - `packages/workspace/SCRIPTS.md`
-- `packages/workspace/scripts/lib/db-guards.js`
-- `packages/workspace/scripts/lib/git.js`
-- `packages/workspace/scripts/lib/nx-projects.js`
-- `packages/workspace/scripts/lib/verification.js`
-- `packages/workspace/scripts/lib/task-meta.js`
-- `packages/workspace/scripts/review.js`
-- `packages/workspace/scripts/stream-sync.js`
-- `packages/workspace/scripts/task-push.js`
-- `packages/workspace/scripts/verify.js`
-
+- `packages/workspace/scripts/agent.js`
 
 ## key decisions
 
-- pr #184 is already merged, so this branch is a follow-up fix instead of an update to that pr.
-- the `.task/current.json` and `.task/workpad.md` review comments were intentionally skipped because ko asked to disregard the workpad stuff.
-- `bun run verify` now fails on workspace script changes because review intentionally reports that `openworkspace` has no `typecheck` target. that is the behavior requested by the review comment, so this follow-up uses the explicit `task:push --no-verify` bypass rather than writing a misleading verify stamp.
+- `bun run agent` is a portable openai-compatible client, not a wrapper around `/Users/kokayi/Dev/pi-proxy`.
+- defaults target local pi-proxy: `AGENT_BASE_URL=http://127.0.0.1:11434/v1`, `AGENT_MODEL=pi-proxy`, `AGENT_API_KEY=anything`.
+- real providers can be used by setting env vars instead of changing code.
+- sub-agent output is treated as draft text, not repo evidence.
 
 ## notes for ko
 
-- syntax checks pass for all touched workspace scripts.
-- `bun run verify -- --no-review --no-stamp --json` passes db guardrails.
-- `bun run review -- --json --quiet` reports only the intentional/pre-existing `TYPECHECK` finding: no `typecheck` target for `openworkspace`.
+- smoke test returned `hello world` through local pi-proxy.
+- mock endpoint test confirmed `--provider/model` maps to the request model without needing nvidia latency.
+- full `bun run review` reports `YOUR CHANGES: clean`; it still exits 1 because the stream has the known pre-existing `openworkspace` missing typecheck target.
+- `bun run verify -- --no-review --json` passed db guardrails and wrote `.task/verify.json`.
 
 ## improvements noticed
 
-- `packages/workspace/package.json` exposes many workspace scripts locally but still does not expose `verify`; root `package.json` does expose `verify`. decide later whether package-local script aliases should mirror root aliases.
+- `task:exec` treats `--help` anywhere in raw args as its own help, so `bun run task:exec -- --area workspace-agents bun run agent -- --help` does not pass help through to the child command. use `node packages/workspace/scripts/agent.js --help` or a direct command when testing nested help output.
 
 ## errors i ran into
 
-- one failed shell quoting attempt created a stray untracked file with a newline-heavy name; it was moved to trash safely before publish.
-- full `bun run verify -- --json` fails because this task intentionally makes missing typecheck targets fail loudly for affected projects.
+- stale `.task/current.json` inside `/private/tmp/opensaas-worktrees/stream-workspace-agents-sync-GXiVPA` made task scripts select the wrong workspace-agents worktree. renamed that stale file with `.stale-before-pi-proxy-agent-client`; did not delete it.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --no-verify --message "fix(workspace-agents): address pr 184 review findings" --changed
+bun run task:push -- --message "feat(workspace): add portable agent script" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-- 2026-04-24 18:09:29 patch lines 228-232: `packages/workspace/scripts/stream-sync.js`
-- 2026-04-24 18:10:31 patch lines 223-223: `packages/workspace/SCRIPTS.md`
-- 2026-04-24 18:10:43 patch lines 340-340: `packages/workspace/SCRIPTS.md`
-- 2026-04-24 18:10:43 patch lines 344-348: `packages/workspace/SCRIPTS.md`
-- 2026-04-24 18:10:56 patch lines 343-352: `packages/workspace/SCRIPTS.md`
-- 2026-04-24 18:13:22 patch lines 22-29: `packages/workspace/scripts/lib/db-guards.js`
+- 2026-04-25 23:01:30 write: `.task/workpad.md`

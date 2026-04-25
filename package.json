@@ -250,7 +250,8 @@
     "gh": "bun packages/workspace/scripts/gh.js",
     "fs": "bun packages/workspace/scripts/fs.js",
     "wait": "bun packages/workspace/scripts/wait.js",
-    "server": "bun packages/workspace/scripts/server.js"
+    "server": "bun packages/workspace/scripts/server.js",
+    "agent": "bun packages/workspace/scripts/agent.js"
   },
   "workspaces": {
     "packages": [
