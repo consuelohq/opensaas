@@ -635,6 +635,16 @@ bun run tmp -- path notes                                  # print full path
 bun run tmp -- list                                        # list temp files
 bun run tmp -- save notes "dialer queue investigation"     # save to supabase memories
 bun run tmp -- clean                                       # remove all temp files
+bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # create checklist
+```
+
+#### checklist
+
+creates a temp file with markdown checkboxes. add items and check them off as you go. when every box is checked, you are done.
+
+```
+bun run tmp -- checklist my-task "step one" "step two" "step three"
+bun run tmp -- read my-task                                # read it back
 ```
 
 ---

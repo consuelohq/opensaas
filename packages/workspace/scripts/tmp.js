@@ -32,6 +32,7 @@ function printHelp() {
     '  path <name>                print full path to a temp file',
     '  clean                      remove all temp files',
     '  save <name> <title>        write temp file to supabase memories',
+    '  checklist <name> [items]   create a checklist. add items and check off as you go.',
     '',
     'options:',
     '  --ext <ext>                file extension (default: md)',
@@ -160,6 +161,21 @@ async function cmdSave(name, title, args) {
   writeStdout(result.trim());
 }
 
+function cmdChecklist(name, items, args) {
+  ensureDir();
+  const dest = filePath(name, args.ext);
+  const lines = [`# ${name.replace(/-/g, ' ')}`, '', 'add to this list and check off as you go. when every box is checked, you are done.', ''];
+  for (const item of items) {
+    lines.push(`- [ ] ${item}`);
+  }
+  if (items.length === 0) {
+    lines.push('- [ ] ');
+  }
+  lines.push('');
+  const result = atomicWrite(dest, lines.join('\n'));
+  writeStdout(`${result.path}  (${result.bytes} bytes)`);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || args.positional.length === 0) { printHelp(); return; }
@@ -189,6 +205,10 @@ async function main() {
     case 'save':
       if (!args.positional[1] || !args.positional[2]) throw new Error('usage: bun run tmp -- save <name> <title>');
       await cmdSave(args.positional[1], args.positional[2], args);
+      break;
+    case 'checklist':
+      if (!args.positional[1]) throw new Error('usage: bun run tmp -- checklist <name> [item1] [item2] ...');
+      cmdChecklist(args.positional[1], args.positional.slice(2), args);
       break;
     default:
       throw new Error(`unknown command: ${command}. run --help for usage.`);
