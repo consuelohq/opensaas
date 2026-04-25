@@ -55,6 +55,15 @@ every change — even tiny ones — follows this flow. no exceptions.
 
 **always use this flow even if the change seems tiny.** when in doubt, start from the stream, isolate the task, push early, clean up after merge.
 
+### things to remember
+
+- **stale .task/current.json is the #1 cause of script failures.** if task:pr, task:finish, task:push, or task:prs give wrong results, the metadata is stale. fix it with `bun run task:init -- --area <area> --branch <branch> --pr <N>`. do NOT create a whole new worktree just to fix metadata.
+- **never cd into a worktree.** all `bun run` commands fail from inside worktrees (no package.json). use `task:fs` and `task:exec` from repo root.
+- **when resolving stream conflicts, stop and ask ko** unless it's metadata files (.task/current.json, .task/workpad.md).
+- **after any write or patch, verify immediately:** `bun run fs -- read <file> --from <range> --plain` + `node --check` + `git status --porcelain`
+- **railway logs are truth.** don't guess about production — run `bun run railway:logs -- --errors` or `--filter "keyword"`.
+- **SCRIPTS.md is part of the fix.** if you add or change a script, update SCRIPTS.md in the same commit.
+
 ---
 
 ## scripts reference
@@ -377,7 +386,7 @@ bun run task:pr -- --json                          # json output
 ```
 bad:  bun run task:pr (from repo root with stale .task/current.json)
       → error: .task/current.json belongs to branch X, but current branch is main
-      (this metadata was merged from another task. run task:start to create a fresh task)
+      (fix the metadata: bun run task:init -- --area <area> --branch <branch> --pr <N>)
 ```
 
 ---
