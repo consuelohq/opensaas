@@ -1,69 +1,58 @@
-# fix queue call start audio ringing
+# address queue autostart review comments
 
-branch: `task/dialer/fix-queue-call-start-audio-ringing`
+branch: `task/dialer/address-queue-autostart-review-comments`
 stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/190
-started: 2026-04-24
+task pr: https://github.com/consuelohq/opensaas/pull/192
+review pr: https://github.com/consuelohq/opensaas/pull/191
+started: 2026-04-25
 
 ## acceptance criteria
 
-- [x] start a fresh task from `stream/dialer` using `task-start`.
-- [x] read `/Users/kokayi/Dev/opensaas/AGENTS.md` and `CODING-STANDARDS.md` before editing.
-- [x] copy these acceptance criteria into `.task/workpad.md` before coding.
-- [x] reproduce the current production issue with a fresh HAR: queue progresses, backend creates a group, but the user gets no audible sound and/or no visible/real ringing.
-- [x] capture the `POST /api/v1/calls/parallel` response body or equivalent status object, including `groupId`, `conferenceName`, `profileId`, and `callSid` values. captured equivalent status body for existing production group; the post body was not available for the stale start because the blocked retry did not create a fresh group.
-- [x] capture several `GET /api/v1/calls/parallel/:groupId` response bodies and determine whether calls ever move from `dialing` to `ringing`, `in-progress`, `completed`, `failed`, `busy`, or `no-answer`. group `pg_316ec7f32b6c` stayed `dialing` across captured polls.
-- [x] determine whether Twilio status callbacks are reaching `/api/v1/calls/parallel/status-callback` and whether `/api/v1/calls/parallel/customer-twiml` is requested. railway filters showed no callback/twiml route activity for the captured group; the confirmed code fix here is the frontend retry guard that prevented a fresh post/retry.
-- [x] determine whether the missing local sound is caused by `notificationSounds.ts`, browser autoplay/Web Audio state, `soundsEnabled`, missing user gesture linkage, or the queue path not calling the sound helper. confirmed the queue path was not reaching `playDialingStartedSound()` when `startParallelBatch()` returned early against stale recoil queue state.
-- [x] determine whether the visible `Grant microphone access` state is related to the failure. `queueRunnerReady` is `queueUsesParallelDialing || deviceReady`, so mic permission is not the parallel auto-start blocker.
-- [x] fix the confirmed cause only.
-- [x] add focused tests for the fixed call-start/audio/ringing behavior.
-- [ ] validate production after deploy: queue progression creates calls, status advances correctly, no unexpected 500s, and sound/ringing behavior is proven or explicitly measured.
-- [ ] publish with `bun run task:push`, `bun run task:pr`, and `bun run task:finish`.
+- [x] fetch CodeRabbit reviews for PR #191 with `pr-review`.
+- [x] start a fresh task from `stream/dialer`.
+- [x] read `AGENTS.md` and `CODING-STANDARDS.md` before editing.
+- [x] repair metadata conflict that blocked task scripts.
+- [x] verify CodeRabbit findings against current code.
+- [x] tighten provider customer-phone failure classification to prefer provider error codes.
+- [x] add observability before converting provider customer-phone failures to 400.
+- [x] avoid logging full phone numbers in provider error messages.
+- [x] add/update focused test coverage.
+- [ ] publish with `task:push`, `task:pr`, and `task:finish`.
+- [ ] ship review PR #191, wait for deploy, and test production queue walkthrough.
+- [ ] bootstrap plan mode for the next agent if the 5-contact skip/retry/exhaust walkthrough still fails.
 
 ## plan
 
-1. reproduce the production queue-start path using browser and railway scripts before changing code.
-2. capture network bodies for parallel create and polling, plus console/page errors and railway callback/twiml evidence.
-3. trace frontend queue/parallel dialer/audio/device readiness paths and backend parallel twiml/status callback paths.
-4. patch only the confirmed root cause.
-5. add focused tests at the narrowest useful layer.
-6. run review/typecheck/focused tests, publish with task-publish, and verify production after deploy.
-
-## production evidence
-
-- prior handoff proved `POST /api/v1/calls/parallel` now returns 201 for a valid batch and creates group `pg_9588af6e91c9`.
-- remaining reported failures are downstream of group creation: audible local sounds, real call ringing/status progression, twiml/status callbacks, or queue ui device state.
+1. fix CodeRabbit actionable comment on `parallel.service.ts`.
+2. run focused validation and review.
+3. publish the review-fix task into `stream/dialer`, which updates PR #191.
+4. update PR #191 title/body if CodeRabbit pre-merge checks still object.
+5. merge PR #191, wait for railway deploy, and test the queue walkthrough.
+6. if the walkthrough fails, create a plan-mode handoff with exact next-agent instructions.
 
 ## files changed
 
-- `packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts`
-- `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts`
-- `packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
 
 ## key decisions
 
-- `startParallelBatch()` now returns `true` only after a parallel batch is actually posted and polling starts.
-- the opportunity queue auto-start guard now clears itself when `startParallelBatch()` returns `false` or throws. this fixes the race where the first effect ran before recoil `activeQueue`/`queueItems` hydration reached `useParallelDialer`, returned early, and permanently blocked retries for the same item.
-- microphone permission is not required for the server-side parallel batch start path; it remains required for browser device calling.
-
-## notes for ko
-
-- production is source of truth for this task.
-
-## improvements noticed
-
-- pending investigation.
+- provider customer-phone failures now prefer known Twilio customer-number related codes: `21211`, `21215`, and `13227`.
+- substring matching is now a fallback only for explicit invalid-phone wording.
+- customer-provider rejections emit `logger.warn` and a Sentry breadcrumb before throwing `BadRequestException`.
+- provider error messages are phone-redacted before logs and user-safe error details.
 
 ## validation
 
-- production repro: captured `GET /api/v1/calls/parallel/pg_316ec7f32b6c` bodies with two real call sids (`CA658e20f40ac5cb9808be49b17961137e`, `CA66d5b337d17dcfb2943fe76ce70f18e1`) stuck in `dialing` across repeated polls.
-- production repro: after stop/continue, captured no `/api/v1/calls/parallel` post; only GraphQL `UpdateOneOpportunity(listStatus: ACTIVE)` and `/v1/voice/status`, proving the queue activation path could fail before batch creation and therefore before local sound.
-- production queue probe: queue `15355bf2-b1d7-4ee6-a98a-c5de4b3c44ea` was `active`, parallel enabled, with one `calling` item and pending items behind it.
-- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useParallelDialer.test.ts` passed.
-- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useTwilioDevice.test.ts` passed.
-- tests: `yarn jest --runInBand --config=packages/twenty-front/jest.config.mjs useParallelDialer.test.ts useTwilioDevice.test.ts` passed after formatting: 2 suites, 13 tests.
-- review: `bun run review -- --base origin/task/dialer/fix-queue-call-start-audio-ringing --json --quiet` reported 0 issues in my changes after formatting; remaining failures are pre-existing stream issues/full-suite failures.
-- typecheck: `yarn nx typecheck twenty-front --skip-nx-cache` failed in pre-existing `twenty-shared` relative date filter files, unrelated to this patch.
+- `yarn prettier --write packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts` passed.
+- `bun run review -- --base origin/task/dialer/address-queue-autostart-review-comments --no-tests --json --quiet` reported 0 issues in my changes; remaining issues are pre-existing stream issues.
+- `git diff --check` passed after replacing placeholder workpad content.
+- focused server jest is blocked locally because `node_modules/@nestjs/common` is missing in the linked dependency tree; this matches the existing server-test blocker documented in prior dialer workpads.
 
-- 2026-04-24 21:08:26 write: `.task/workpad.md`
+## notes for ko
+
+- the malformed metadata was in `/private/tmp/opensaas-worktrees/stream-workspace-agents-sync-GXiVPA/.task/current.json`, containing conflict markers. i resolved it to the workspace-agents side so dialer task scripts stop crashing while scanning active worktrees.
+
+## improvements noticed
+
+- task scripts should tolerate malformed `.task/current.json` in unrelated worktrees instead of crashing before area filtering.
