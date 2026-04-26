@@ -698,6 +698,22 @@ bun run server -- logs                # tail /tmp/workspace.log
 
 ---
 
+### tracing — inspect LangSmith workspace traces
+
+```
+bun run tracing -- status             # check LangSmith env, SDK, and recent runs
+bun run tracing -- runs --limit 20     # list recent tool traces with thread/token metadata
+bun run tracing -- runs --thread-id <id>  # list runs for one LangSmith thread
+bun run tracing -- tokens --file packages/workspace/STEERING.md  # estimate prompt/file tokens
+bun run tracing -- tokens --text "hello"  # estimate text tokens
+bun run tracing -- smoke               # call workspace tool functions and verify LangSmith metadata
+bun run tracing -- smoke --json        # structured smoke result
+```
+
+`tracing smoke` is the supported validation path for workspace tracing changes. it imports the workspace MCP server with the workspace python environment, calls `get_steering` and `sandbox_exec`, waits for LangSmith ingestion, then verifies both runs share a thread id and include estimated token metadata.
+
+---
+
 ### website:deploy — deploy consuelo website
 
 ```

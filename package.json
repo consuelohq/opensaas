@@ -251,7 +251,8 @@
     "gh": "bun packages/workspace/scripts/gh.js",
     "fs": "bun packages/workspace/scripts/fs.js",
     "wait": "bun packages/workspace/scripts/wait.js",
-    "server": "bun packages/workspace/scripts/server.js"
+    "server": "bun packages/workspace/scripts/server.js",
+    "tracing": "bun packages/workspace/scripts/tracing.js"
   },
   "workspaces": {
     "packages": [

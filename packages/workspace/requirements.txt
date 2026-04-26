@@ -6,3 +6,4 @@ supabase
 pandas
 numpy
 scikit-learn
+langsmith>=0.7.30
