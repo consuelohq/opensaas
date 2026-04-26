@@ -271,6 +271,25 @@ describe('ParallelDialerService', () => {
       expect(mockCallUpdate).toHaveBeenCalledTimes(2);
     });
 
+    it('should complete stale dialing groups on lookup', async () => {
+      const result = await service.initiateGroup(baseOpts);
+      const raw = await store.getGroup(result.groupId);
+      expect(raw).not.toBeNull();
+
+      const group = JSON.parse(raw!);
+      group.createdAt = new Date(Date.now() - 61_000).toISOString();
+      await store.setGroup(result.groupId, JSON.stringify(group), 300);
+      mockCallUpdate.mockClear();
+
+      const refreshedGroup = await service.getGroup(result.groupId);
+
+      expect(refreshedGroup!.status).toBe('completed');
+      expect(
+        refreshedGroup!.calls.every((call) => call.status === 'completed'),
+      ).toBe(true);
+      expect(mockCallUpdate).toHaveBeenCalledTimes(3);
+    });
+
     it('should handle non-existent group gracefully', async () => {
       await expect(
         service.terminateGroup('pg_nonexistent'),

@@ -183,4 +183,40 @@ describe('useParallelDialer', () => {
       profileId: 'conservative',
     });
   });
+
+  it('terminates and clears an active parallel group when canceled', async () => {
+    mockAuthenticatedFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+
+    const { result } = renderUseParallelDialer((snap) => {
+      snap.set(activeQueueState, {
+        ...activeParallelQueue,
+        parallelDialingActive: true,
+        parallelGroupId: 'pg_test',
+        parallelActiveCalls: [
+          {
+            callSid: 'CA1',
+            customerNumber: '+13472030054',
+            position: 1,
+            status: 'dialing',
+          },
+        ],
+      });
+      snap.set(queueItemsState, queueItems);
+      snap.set(currentQueueIndexState, 0);
+    });
+
+    await act(async () => {
+      await result.current.cancelParallelDial();
+    });
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      'https://app.example.test/api/v1/calls/parallel/pg_test/terminate',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+    expect(result.current.activeCalls).toEqual([]);
+    expect(result.current.isDialing).toBe(false);
+  });
 });
