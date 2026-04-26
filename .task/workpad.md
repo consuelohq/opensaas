@@ -1,58 +1,61 @@
-# address queue autostart review comments
+# fix queue walkthrough lifecycle
 
-branch: `task/dialer/address-queue-autostart-review-comments`
-stream: `stream/dialer`
-task pr: https://github.com/consuelohq/opensaas/pull/192
-review pr: https://github.com/consuelohq/opensaas/pull/191
+branch: task/dialer/fix-queue-walkthrough-lifecycle
+stream: stream/dialer
+pr: 197
 started: 2026-04-25
 
 ## acceptance criteria
 
-- [x] fetch CodeRabbit reviews for PR #191 with `pr-review`.
-- [x] start a fresh task from `stream/dialer`.
-- [x] read `AGENTS.md` and `CODING-STANDARDS.md` before editing.
-- [x] repair metadata conflict that blocked task scripts.
-- [x] verify CodeRabbit findings against current code.
-- [x] tighten provider customer-phone failure classification to prefer provider error codes.
-- [x] add observability before converting provider customer-phone failures to 400.
-- [x] avoid logging full phone numbers in provider error messages.
-- [x] add/update focused test coverage.
-- [ ] publish with `task:push`, `task:pr`, and `task:finish`.
-- [ ] ship review PR #191, wait for deploy, and test production queue walkthrough.
-- [ ] bootstrap plan mode for the next agent if the 5-contact skip/retry/exhaust walkthrough still fails.
-
-## plan
-
-1. fix CodeRabbit actionable comment on `parallel.service.ts`.
-2. run focused validation and review.
-3. publish the review-fix task into `stream/dialer`, which updates PR #191.
-4. update PR #191 title/body if CodeRabbit pre-merge checks still object.
-5. merge PR #191, wait for railway deploy, and test the queue walkthrough.
-6. if the walkthrough fails, create a plan-mode handoff with exact next-agent instructions.
+- [x] start a fresh task from stream/dialer.
+- [x] read AGENTS.md and CODING-STANDARDS.md before editing.
+- [x] copy the handoff acceptance criteria into .task/workpad.md before coding.
+- [x] inspect frontend queue skip, active parallel group termination, polling cleanup, and backend queue state machine.
+- [x] inspect backend parallel group status/termination and stuck-dialing behavior.
+- [x] make skip terminate any active parallel group immediately when parallelGroupId exists.
+- [x] stop polling when a group is skipped, terminated, or terminal.
+- [x] clear frontend active calls and active queue parallelGroupId before advancing the queue.
+- [x] ensure backend queue item skip/advance/exhaust behavior remains terminal and idempotent.
+- [x] add frontend timeout for groups stuck in dialing.
+- [x] add backend timeout/failsafe for stale dialing groups.
+- [x] provider-denied classification was already shipped in PR 191; this task did not reopen it because the active failure was stale lifecycle after skip.
+- [x] add focused tests for the fixed lifecycle path.
+- [x] run focused validation and document review blocker.
+- [ ] publish with task:push, task:pr, and task:finish.
+- [ ] if merged/deployed during this session, verify clean 5-contact production walkthrough; otherwise leave exact production verification steps and evidence.
 
 ## files changed
 
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
+- packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts
+- packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts
+- packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts
+- packages/dialer/src/services/parallel-dialer.ts
+- packages/dialer/src/services/parallel-dialer.spec.ts
+- packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts
 
 ## key decisions
 
-- provider customer-phone failures now prefer known Twilio customer-number related codes: `21211`, `21215`, and `13227`.
-- substring matching is now a fallback only for explicit invalid-phone wording.
-- customer-provider rejections emit `logger.warn` and a Sentry breadcrumb before throwing `BadRequestException`.
-- provider error messages are phone-redacted before logs and user-safe error details.
+- skip now calls cancelParallelDial before queue skip so active parallel groups are terminated and local polling is cleared first.
+- polling state moved from React state to refs so clearPoll can always stop the live interval.
+- client polling treats completed/failed group status and terminal call statuses as terminal and also terminates groups that remain dialing for 60 seconds.
+- backend parallel group lookup now completes stale dialing groups after 60 seconds as a failsafe.
+- queue skip now completes the backend queue if skip exhausts all callable work with no suppression.
 
 ## validation
 
-- `yarn prettier --write packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts` passed.
-- `bun run review -- --base origin/task/dialer/address-queue-autostart-review-comments --no-tests --json --quiet` reported 0 issues in my changes; remaining issues are pre-existing stream issues.
-- `git diff --check` passed after replacing placeholder workpad content.
-- focused server jest is blocked locally because `node_modules/@nestjs/common` is missing in the linked dependency tree; this matches the existing server-test blocker documented in prior dialer workpads.
+- passed: bun run task:exec -- --area dialer git diff --check
+- passed: bun run task:exec -- --area dialer yarn jest --config packages/twenty-front/jest.config.mjs useParallelDialer.test.ts --runInBand --no-coverage
+- passed: bun run task:exec -- --area dialer yarn jest --config packages/dialer/jest.config.mjs parallel-dialer.spec.ts --runInBand --no-coverage
+- blocked: bun run review -- --base origin/stream/dialer --no-tests --quiet timed out twice in the tool window; bun run task:exec -- --area dialer bun run review -- --mine --json --quiet failed with the existing multiple active tasks detector.
 
-## notes for ko
+## production proof
 
-- the malformed metadata was in `/private/tmp/opensaas-worktrees/stream-workspace-agents-sync-GXiVPA/.task/current.json`, containing conflict markers. i resolved it to the workspace-agents side so dialer task scripts stop crashing while scanning active worktrees.
+- not run yet. after publish/merge/deploy, use a clean 5-contact queue fixture, not List 18, and capture HAR plus Railway logs for start, skip, retry, exhaust, queue id, and group ids.
 
-## improvements noticed
+## errors i ran into
 
-- task scripts should tolerate malformed `.task/current.json` in unrelated worktrees instead of crashing before area filtering.
+- initial large workpad write command was blocked by tool safety, so i rewrote the workpad with a smaller command.
+- a test insertion initially landed in helper objects; corrected by reconstructing the focused test file.
+- node_modules symlink is required for focused Jest inside the worktree, but removed before publish so it is not committed.
+
+- 2026-04-25 23:59:37 write: `.task/workpad.md`

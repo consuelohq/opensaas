@@ -359,7 +359,7 @@ export const useOpportunityQueueWorkspace = ({
 
   const { status: twilioConfigStatus } = useTwilioConfigStatus();
   const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
-  const { startParallelBatch } = useParallelDialer();
+  const { startParallelBatch, cancelParallelDial } = useParallelDialer();
   const { recordResult } = useQueueOperations();
 
   const [wrapUpState, setWrapUpState] = useState<OpportunityWrapUpState | null>(
@@ -1498,6 +1498,7 @@ export const useOpportunityQueueWorkspace = ({
           return;
         }
 
+        await cancelParallelDial();
         disconnect();
 
         const response = await authenticatedFetch(
@@ -1551,6 +1552,7 @@ export const useOpportunityQueueWorkspace = ({
     },
     [
       backendQueue?.id,
+      cancelParallelDial,
       callState.callSid,
       callState.duration,
       currentQueueItem,
