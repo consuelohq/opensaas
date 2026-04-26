@@ -1,61 +1,65 @@
-# fix queue walkthrough lifecycle
+# fix pr 198 review findings
 
-branch: task/dialer/fix-queue-walkthrough-lifecycle
+branch: task/dialer/fix-pr-198-review-findings
 stream: stream/dialer
-pr: 197
-started: 2026-04-25
+pr: 200
+review pr: 198
+started: 2026-04-26
 
 ## acceptance criteria
 
 - [x] start a fresh task from stream/dialer.
 - [x] read AGENTS.md and CODING-STANDARDS.md before editing.
-- [x] copy the handoff acceptance criteria into .task/workpad.md before coding.
-- [x] inspect frontend queue skip, active parallel group termination, polling cleanup, and backend queue state machine.
-- [x] inspect backend parallel group status/termination and stuck-dialing behavior.
-- [x] make skip terminate any active parallel group immediately when parallelGroupId exists.
-- [x] stop polling when a group is skipped, terminated, or terminal.
-- [x] clear frontend active calls and active queue parallelGroupId before advancing the queue.
-- [x] ensure backend queue item skip/advance/exhaust behavior remains terminal and idempotent.
-- [x] add frontend timeout for groups stuck in dialing.
-- [x] add backend timeout/failsafe for stale dialing groups.
-- [x] provider-denied classification was already shipped in PR 191; this task did not reopen it because the active failure was stale lifecycle after skip.
-- [x] add focused tests for the fixed lifecycle path.
-- [x] run focused validation and document review blocker.
-- [ ] publish with task:push, task:pr, and task:finish.
-- [ ] if merged/deployed during this session, verify clean 5-contact production walkthrough; otherwise leave exact production verification steps and evidence.
+- [x] fetch codex review comments for PR #198 with pr-review.
+- [x] fix frontend polling so non-ok status responses stop polling and fail/clear dial state instead of looping forever.
+- [x] fix provider-denied customer call classification so message-only Twilio geo/account authorization failures still map to 400.
+- [x] add or update focused tests for both review findings.
+- [x] run focused validation and review/typecheck where available.
+- [ ] publish with task:push, task:pr, task:prs, and task:finish.
+- [ ] ship review PR #198 to main, wait for deploy, check railway, test production, then compact.
+
+## plan
+
+1. inspect current frontend polling and backend provider classification code on stream/dialer.
+2. patch only the two codex p1 review findings.
+3. add/update focused tests around non-ok polling and message-only provider denial.
+4. run focused tests plus review/typecheck as far as the branch allows.
+5. publish into stream/dialer and ship review PR #198.
+6. wait for deploy, check railway status/logs, run browser verification, and draft compact.
 
 ## files changed
 
 - packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts
-- packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts
 - packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts
-- packages/dialer/src/services/parallel-dialer.ts
-- packages/dialer/src/services/parallel-dialer.spec.ts
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts
+- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts
+- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts
 
 ## key decisions
 
-- skip now calls cancelParallelDial before queue skip so active parallel groups are terminated and local polling is cleared first.
-- polling state moved from React state to refs so clearPoll can always stop the live interval.
-- client polling treats completed/failed group status and terminal call statuses as terminal and also terminates groups that remain dialing for 60 seconds.
-- backend parallel group lookup now completes stale dialing groups after 60 seconds as a failsafe.
-- queue skip now completes the backend queue if skip exhausts all callable work with no suppression.
+- frontend non-ok status polling now clears the poll interval, terminates the remote group, and fails the current batch using a local polling-closure copy of the last known calls.
+- avoided useRef for last-known active calls because review enforces twenty/no-state-useref.
+- backend provider-denied fallback now recognizes message-only geo/account authorization denials when the dialer layer drops Twilio error code metadata.
 
 ## validation
 
-- passed: bun run task:exec -- --area dialer git diff --check
-- passed: bun run task:exec -- --area dialer yarn jest --config packages/twenty-front/jest.config.mjs useParallelDialer.test.ts --runInBand --no-coverage
-- passed: bun run task:exec -- --area dialer yarn jest --config packages/dialer/jest.config.mjs parallel-dialer.spec.ts --runInBand --no-coverage
-- blocked: bun run review -- --base origin/stream/dialer --no-tests --quiet timed out twice in the tool window; bun run task:exec -- --area dialer bun run review -- --mine --json --quiet failed with the existing multiple active tasks detector.
+- passed: yarn prettier --write on all changed files.
+- passed: git diff --check.
+- passed: yarn jest --config packages/twenty-front/jest.config.mjs useParallelDialer.test.ts --runInBand --no-coverage.
+- blocked: yarn jest --config packages/twenty-server/jest.config.mjs parallel.service.spec.ts --runInBand --no-coverage cannot resolve @nestjs/common in the linked local server test environment.
+- passed for my changes: bun run review -- --base origin/stream/dialer --no-tests --json --quiet returned yours: [].
+- blocked/pre-existing: review/typecheck still reports older stream issues in twenty-front/twenty-server and twenty-shared relative-date utilities.
 
-## production proof
+## notes for ko
 
-- not run yet. after publish/merge/deploy, use a clean 5-contact queue fixture, not List 18, and capture HAR plus Railway logs for start, skip, retry, exhaust, queue id, and group ids.
+- stream:sync with main currently has a code conflict in useParallelDialer.test.ts; this task is patching current stream/dialer review findings without resolving the main-sync conflict.
+
+## improvements noticed
+
+- task scripts still break when unrelated worktrees contain malformed .task/current.json from sync conflicts.
 
 ## errors i ran into
 
-- initial large workpad write command was blocked by tool safety, so i rewrote the workpad with a smaller command.
-- a test insertion initially landed in helper objects; corrected by reconstructing the focused test file.
-- node_modules symlink is required for focused Jest inside the worktree, but removed before publish so it is not committed.
+- stream:sync hit conflicts in .task/current.json, .task/workpad.md, and useParallelDialer.test.ts.
+- repaired only malformed metadata in the sync-conflict worktree so task scripts could locate the active dialer task.
 
-- 2026-04-25 23:59:37 write: `.task/workpad.md`
+- 2026-04-26 22:35:17 write: `.task/workpad.md`

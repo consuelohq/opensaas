@@ -176,6 +176,7 @@ export const useParallelDialer = () => {
             }
           : null,
       );
+      setActiveCalls([]);
 
       const cooldown = activeQueue?.settings.parallelDialingCooldown ?? 2000;
       setTimeout(() => {
@@ -194,9 +195,10 @@ export const useParallelDialer = () => {
   );
 
   const startPolling = useCallback(
-    (groupId: string) => {
+    (groupId: string, initialCalls: ParallelCall[] = []) => {
       clearPoll();
       pollStartedAtRef.current = Date.now();
+      let latestCalls = initialCalls;
 
       const interval = setInterval(async () => {
         try {
@@ -208,7 +210,13 @@ export const useParallelDialer = () => {
           );
 
           if (!res.ok) {
-            throw new Error(`Parallel status failed: ${res.status}`);
+            clearPoll();
+            await terminateParallelGroup(
+              groupId,
+              'pollParallelCalls.nonOkStatus',
+            );
+            handleAllFailed(latestCalls);
+            return;
           }
 
           const data = (await res.json()) as {
@@ -219,6 +227,7 @@ export const useParallelDialer = () => {
           const calls = data.calls ?? [];
           const winner = data.winner ?? null;
 
+          latestCalls = calls;
           setActiveCalls(calls);
 
           if (winner !== null) {
@@ -348,7 +357,7 @@ export const useParallelDialer = () => {
       );
 
       setActiveCalls(calls);
-      startPolling(groupId);
+      startPolling(groupId, calls);
 
       return true;
     } catch (err: unknown) {
