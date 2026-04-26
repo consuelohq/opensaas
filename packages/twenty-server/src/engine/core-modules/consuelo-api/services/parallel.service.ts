@@ -578,7 +578,9 @@ export class ParallelService {
 
     return (
       message.includes('not a valid phone number') ||
-      message.includes('invalid phone number')
+      message.includes('invalid phone number') ||
+      message.includes('not authorized to call') ||
+      message.includes('geo-permissions')
     );
   }
 

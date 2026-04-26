@@ -11,6 +11,14 @@ import type {
 import type TwilioClient from 'twilio';
 
 const GROUP_TTL_SECONDS = 300;
+const GROUP_DIALING_TIMEOUT_MS = 60_000;
+const TERMINAL_CALL_STATUSES = new Set([
+  'completed',
+  'failed',
+  'busy',
+  'no-answer',
+  'canceled',
+]);
 
 const delay = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -181,15 +189,13 @@ export class ParallelDialerService {
         call.status = 'completed';
         call.terminatedAt = new Date().toISOString();
       } else if (
-        ['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(callStatus)
+        TERMINAL_CALL_STATUSES.has(callStatus)
       ) {
         call.terminatedAt = new Date().toISOString();
       }
 
       const allResolved = group.calls.every((item) =>
-        ['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
-          item.status,
-        ),
+        TERMINAL_CALL_STATUSES.has(item.status),
       );
       if (allResolved && !group.winnerSid) {
         group.status = 'completed';
@@ -208,7 +214,17 @@ export class ParallelDialerService {
     try {
       const raw = await this.store.getGroup(groupId);
       if (!raw) return null;
-      return JSON.parse(raw) as ParallelGroup;
+
+      const group = JSON.parse(raw) as ParallelGroup;
+
+      if (this.isStaleDialingGroup(group, new Date())) {
+        await this.terminateGroup(groupId);
+
+        const refreshedRaw = await this.store.getGroup(groupId);
+        return refreshedRaw ? (JSON.parse(refreshedRaw) as ParallelGroup) : null;
+      }
+
+      return group;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Group lookup failed';
       throw new Error(message);
@@ -223,9 +239,7 @@ export class ParallelDialerService {
       const group: ParallelGroup = JSON.parse(raw);
       for (const call of group.calls) {
         if (
-          !['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
-            call.status,
-          )
+          !TERMINAL_CALL_STATUSES.has(call.status)
         ) {
           await this.terminateCall(call.callSid);
           call.status = 'completed';
@@ -338,6 +352,19 @@ export class ParallelDialerService {
   }
 
 
+  private isStaleDialingGroup(group: ParallelGroup, now: Date): boolean {
+    if (group.status !== 'dialing') {
+      return false;
+    }
+
+    const createdAtMs = new Date(group.createdAt).getTime();
+
+    return (
+      Number.isFinite(createdAtMs) &&
+      now.getTime() - createdAtMs >= GROUP_DIALING_TIMEOUT_MS
+    );
+  }
+
   private async terminateLosingCalls(
     group: ParallelGroup,
     winnerSid: string,
@@ -346,9 +373,7 @@ export class ParallelDialerService {
       for (const call of group.calls) {
         if (
           call.callSid !== winnerSid &&
-          !['completed', 'failed', 'busy', 'no-answer', 'canceled'].includes(
-            call.status,
-          )
+          !TERMINAL_CALL_STATUSES.has(call.status)
         ) {
           await this.terminateCall(call.callSid);
           call.status = 'completed';
