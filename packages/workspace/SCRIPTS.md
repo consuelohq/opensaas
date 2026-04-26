@@ -18,7 +18,7 @@ these three rules apply to every script, every task, every session. read them fi
 
 always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd into a worktree and run `bun run`. worktrees are created by `task:start` and accessed through `task:fs` and `task:exec`.
 
-```
+```bash
 bad: cd /private/tmp/opensaas-worktrees/task-dialer-queue && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
 
@@ -42,7 +42,7 @@ do not answer architecture questions from memory. search memory, read files, the
 
 every change — even tiny ones — follows this flow. no exceptions.
 
-```
+```bash
  1. bun run stream:context -- --area <area>              # understand the stream state
  2. bun run stream:sync -- --area <area>                 # sync stream with latest main
  3. bun run task:start -- --area <area> --title "x"      # create task branch + worktree + PR
@@ -59,7 +59,7 @@ every change — even tiny ones — follows this flow. no exceptions.
 ```
 
 the verify → push dependency:
-```
+```text
 verify ✓ → writes .task/verify.json stamp → task:push reads stamp → push succeeds
 no verify → no stamp → task:push rejects (unless --no-verify)
 ```
@@ -72,7 +72,7 @@ always use this flow even if the change seems tiny. when in doubt, start from th
 
 **stale .task/current.json is the #1 cause of script failures.** if `task:pr`, `task:finish`, `task:push`, or `task:prs` give wrong results, the metadata is stale. fix it:
 
-```
+```bash
 bun run task:init -- --area <area> --branch <branch> --pr <N>
 ```
 
@@ -83,7 +83,7 @@ do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.
 **when resolving stream conflicts,** stop and ask ko unless it's metadata files (`.task/current.json`, `.task/workpad.md`).
 
 **after any write or patch, verify immediately:**
-```
+```bash
 bun run fs -- read <file> --from <range> --plain
 node --check <touched-js-file>
 git status --porcelain -uall -- . ':!node_modules'
@@ -124,7 +124,7 @@ check for:
 - unnecessary emoji in code comments
 - verbose variable names that don't match the codebase conventions
 
-```
+```bash
 bun run task:exec -- --area <area> git diff   # review your changes
 ```
 
@@ -159,7 +159,7 @@ every script below follows this format: purpose → usage → helpers → failur
 wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
-```
+```bash
 bun run fs -- read src/foo.ts                          # full file, syntax highlighted, line numbers
 bun run fs -- read src/foo.ts --from 120 --to 180      # specific line range
 bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts  # multiple files
@@ -168,7 +168,7 @@ bun run fs -- read src/foo.ts --json                    # structured json (autom
 ```
 
 **search**
-```
+```bash
 bun run fs -- search "pattern" packages/               # search files (excludes node_modules/.git/dist)
 bun run fs -- search "pattern" src/ --context 4        # with context lines
 bun run fs -- search "pattern" src/ --then-read        # search + read bounded ranges
@@ -178,7 +178,7 @@ bun run fs -- search "pattern" packages/ --max-results 5  # cap matches
 ```
 
 **list**
-```
+```bash
 bun run fs -- list packages/workspace/scripts/         # directory listing
 bun run fs -- list packages/workspace/ --tree          # tree view
 bun run fs -- list packages/workspace/ --tree --depth 2  # tree with max depth
@@ -188,7 +188,7 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 ```
 
 **write**
-```
+```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
 bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
 bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
@@ -196,25 +196,25 @@ bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to f
 ```
 
 **patch**
-```
+```bash
 bun run fs -- patch src/foo.ts --from 10 --to 15 --content "new lines here"  # replace line range
 ```
 
 **http**
-```
+```bash
 bun run fs -- http get https://api.github.com          # GET request (wraps xh)
 bun run fs -- http post https://api.example.com key=val  # POST json
 ```
 
 **trash**
-```
+```bash
 bun run fs -- trash old-file.ts                        # move to trash (not permanent delete)
 bun run fs -- trash old-dir/                           # directory
 bun run fs -- trash a.ts b.ts c.ts                     # multiple files
 ```
 
 **fs failure modes**
-```
+```bash
 bad: bun run fs -- write src/foo.ts --content "..."
  → error: file exists. use --force to overwrite
  (always read the file first, then decide: --force to overwrite, or patch for targeted edits)
@@ -252,7 +252,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 proxies all arguments to `bun run fs` with cwd set to the task worktree. paths resolve relative to the worktree root. this is how you read and write files in a task — not by cd-ing into the worktree.
 
-```
+```bash
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --area dialer search "TODO" packages/ --files
@@ -262,7 +262,7 @@ bun run task:fs -- --area dialer patch src/foo.ts --from 10 --to 15 --content "n
 ```
 
 **common task:fs patterns**
-```
+```bash
 bun run task:fs -- --area dialer read .task/workpad.md          # acceptance criteria, progress
 bun run task:fs -- --area dialer read .task/current.json        # task metadata
 bun run task:fs -- --area dialer list .task/                    # task directory
@@ -271,7 +271,7 @@ bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed 
 ```
 
 **task:fs failure modes**
-```
+```bash
 bad: bun run task:fs -- read .task/current.json
  → error: multiple active tasks found (workspace-agents, dialer). use --area <name>
  (always pass --area when multiple tasks exist)
@@ -291,7 +291,7 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 runs any command with cwd set to the task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree.
 
-```
+```bash
 bun run task:exec -- --area dialer git diff
 bun run task:exec -- --area dialer git status --short
 bun run task:exec -- --area dialer yarn jest --runInBand packages/dialer/src/queue.test.ts
@@ -302,7 +302,7 @@ bun run task:exec -- --area dialer git diff --check
 ```
 
 **task:exec failure modes**
-```
+```bash
 bad: bun run task:exec -- git status
  → error: multiple active tasks found (workspace-agents, dialer). use --area <name>
  (always pass --area when multiple tasks exist)
@@ -318,7 +318,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
 
 runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite.
 
-```
+```bash
 bun run review                        # review changed files (main vs origin/main)
 bun run review -- --mine              # scope to active task worktree only
 bun run review -- --fix               # auto-fix eslint issues
@@ -331,7 +331,7 @@ bun run review -- --strict            # enable strictPropertyInitialization
 ```
 
 **review failure modes**
-```
+```bash
 bad: bun run review (from repo root, no task)
  → reviews main vs origin/main. shows 0 changed files if main is up to date.
  (use --mine to scope to the active task worktree, or --base to compare against a specific ref)
@@ -347,7 +347,7 @@ bad: review fails on a file you didn't touch
 
 runs `bun run review` + db/migration/graphql guardrails. writes `.task/verify.json` stamp on success. `task:push` requires this stamp by default.
 
-```
+```bash
 bun run verify                        # full verify (review + db guards + stamp)
 bun run verify -- --no-review         # skip review, only run db guardrails
 bun run verify -- --no-db             # skip db guardrails
@@ -358,7 +358,7 @@ bun run verify -- --base stream/dialer  # compare against specific ref
 ```
 
 **verify failure modes**
-```
+```text
 bad: verify fails on a package with no typecheck target
  → this is the harness being stricter, not broken code. the package was never typechecked.
  (check if the package has a project.json with a typecheck target. if not, that's a gap to fix)
@@ -374,7 +374,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 reads changed files from the task worktree and pushes them as a commit to the task branch via github api. never touches the local git state.
 
-```
+```bash
 bun run task:push -- --message "fix(dialer): normalize phone numbers" --changed
 bun run task:push -- --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
 bun run task:push -- --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
@@ -382,7 +382,7 @@ bun run task:push -- --json
 ```
 
 **task:push failure modes**
-```
+```bash
 bad: bun run task:push -- --changed
  → error: missing required --message
  (commit message is always required, in conventional format: type(scope): description)
@@ -398,7 +398,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 creates a new task branch, git worktree, and draft PR. the worktree is created in `/private/tmp/opensaas-worktrees/`.
 
-```
+```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
 bun run task:start -- --area dialer --title "queue runner" --start-from stream  # branch from stream
 bun run task:start -- --area dialer --title "fix" --body-file /tmp/pr-body.md  # PR body from file
@@ -406,7 +406,7 @@ bun run task:start -- --json
 ```
 
 **task:start failure modes**
-```
+```bash
 bad: bun run task:start
  → error: missing required --area
  (--area and --title are both required)
@@ -423,7 +423,7 @@ bad: bun run task:start -- --area dialer --title "fix thing"
 
 default behavior: (1) ensure task PR exists for task/* → stream/, (2) merge that task PR into the stream branch, (3) create or refresh the review PR for stream/ → main.
 
-```
+```bash
 bun run task:pr                       # full flow: task→stream merge + stream→main PR
 bun run task:pr -- --task-only        # only create/refresh the task→stream PR, don't merge
 bun run task:pr -- --draft            # create stream→main PR as draft
@@ -433,7 +433,7 @@ bun run task:pr -- --json
 ```
 
 **task:pr failure modes**
-```
+```bash
 bad: bun run task:pr (with stale .task/current.json)
  → error: .task/current.json belongs to branch X, but current branch is main
  (fix the metadata: bun run task:init -- --area <area> --branch <branch> --pr <N>)
@@ -445,7 +445,7 @@ bad: bun run task:pr (with stale .task/current.json)
 
 shows both the task PR (task/* → stream/) and the review PR (stream/ → main).
 
-```
+```bash
 bun run task:prs                      # show PR links from .task/current.json
 bun run task:prs -- --json
 ```
@@ -454,7 +454,7 @@ bun run task:prs -- --json
 
 ### task:merge — merge a PR
 
-```
+```bash
 bun run task:merge -- --pr 173        # merge PR #173
 bun run task:merge -- --pr 173 --wait  # merge + wait for railway deploy
 bun run task:merge -- --pr 173 --squash  # squash merge
@@ -465,13 +465,13 @@ bun run task:merge -- --json
 
 ### task:finish — verify merge, remove worktree, delete branch
 
-```
+```bash
 bun run task:finish                   # finish current task
 bun run task:finish -- --json
 ```
 
 **task:finish failure modes**
-```
+```bash
 bad: bun run task:finish (with stale .task/current.json)
  → runs against stale metadata. may report "finished" for an old task.
  (fix the metadata first: bun run task:init -- --area <area> --branch <branch> --pr <N>)
@@ -483,7 +483,7 @@ bad: bun run task:finish (with stale .task/current.json)
 
 writes a fresh `.task/current.json` for an existing worktree. does NOT create branches or worktrees — use `task:start` for that. use this when metadata is stale, wrong, or missing.
 
-```
+```bash
 bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173
 bun run task:init -- --area dialer --branch task/dialer/fix-thing --pr 173 --worktree /private/tmp/opensaas-worktrees/task-dialer-fix-thing
 bun run task:init -- --json
@@ -495,7 +495,7 @@ auto-detects the worktree path from `git worktree list` if `--worktree` is not p
 
 ### task:cleanup — remove stale worktrees and branches
 
-```
+```bash
 bun run task:cleanup -- --preview     # preview what would be removed
 bun run task:cleanup -- --merged      # remove branches already merged
 bun run task:cleanup -- --stale-days 7  # remove worktrees older than 7 days
@@ -507,7 +507,7 @@ bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 
 ### stream:list — list all stream branches
 
-```
+```bash
 bun run stream:list                   # show all streams with status, divergence, warnings
 ```
 
@@ -515,14 +515,14 @@ bun run stream:list                   # show all streams with status, divergence
 
 ### stream:sync — sync stream with latest main
 
-```
+```bash
 bun run stream:sync -- --area dialer  # sync stream/dialer with main
 bun run stream:sync -- --area workspace-agents
 bun run stream:sync -- --json
 ```
 
 **stream:sync failure modes**
-```
+```bash
 bad: bun run stream:sync
  → error: missing required --area
  (--area is always required for stream commands)
@@ -534,7 +534,7 @@ bad: bun run stream:sync
 
 shows recent PRs, divergence from main, and current state of a stream.
 
-```
+```bash
 bun run stream:context -- --area dialer
 bun run stream:context -- --json
 ```
@@ -545,7 +545,7 @@ bun run stream:context -- --json
 
 pulls inline comments, issue comments, and reviews from qodo, coderabbit, codex, ko, and humans. writes a structured file to `.task/reviews/<pr>.md` with file attention map, action items, and task loop reminder.
 
-```
+```bash
 bun run pr-review -- 173              # fetch reviews for PR #173
 bun run pr-review                     # auto-detect PR from .task/current.json
 bun run pr-review -- 173 --stdout     # print to stdout instead of file
@@ -553,7 +553,7 @@ bun run pr-review -- 173 --json
 ```
 
 **pr-review helpers — full review-fix flow**
-```
+```bash
 bun run pr-review -- <pr>             # 1. fetch reviews
 bun run gh -- diff <pr>               # 2. see what changed
 bun run gh -- files <pr>              # 3. list changed files
@@ -569,7 +569,7 @@ bun run task:push -- --message "fix(scope): address review" --changed  # 7. push
 
 wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. all commands auto-detect PR from `.task/current.json` when no PR number given.
 
-```
+```bash
 bun run gh -- prs                     # list open PRs
 bun run gh -- prs --mine              # list ko's PRs
 bun run gh -- prs --bot               # list bot PRs
@@ -593,7 +593,7 @@ bun run gh -- branches --task         # task/* branches only
 
 search and save context from supabase memories. use this to find past decisions, architecture notes, and investigation results.
 
-```
+```bash
 bun run context -- search dialer      # search memories by content
 bun run context -- search queue --category workpad  # filter by category
 bun run context -- find "queue handoff"  # search by title
@@ -604,7 +604,7 @@ bun run context -- categories         # list available categories
 ```
 
 **context failure modes**
-```
+```text
 bad: answering "what did we decide about X?" from memory alone
  → search first: bun run context -- search "X"
  (never answer architecture or decision questions without checking context first)
@@ -616,7 +616,7 @@ bad: answering "what did we decide about X?" from memory alone
 
 opens agent-browser with ko's authenticated profile. use for production verification after deploys.
 
-```
+```bash
 bun run browser -- consuelo           # open consuelo CRM (internal)
 bun run browser -- app                # open app.consuelohq.com
 bun run browser -- url https://example.com  # open any URL
@@ -630,7 +630,7 @@ bun run browser -- snapshot           # get accessibility tree
 
 USE THIS OFTEN. this is how you get truth about what's happening in production. don't guess — read the logs.
 
-```
+```bash
 bun run railway:logs                  # deploy logs + http traffic in one place
 bun run railway:logs -- --errors      # errors only — deploy errors + http 4xx/5xx
 bun run railway:logs -- --filter "voice"  # search across deploy, http, & network
@@ -650,7 +650,7 @@ bun run railway:redeploy -- --all --wait  # redeploy opensaas + twenty-worker an
 ```
 
 **railway failure modes**
-```
+```text
 bad: "i think the deploy is broken" (guessing without checking)
  → run: bun run railway:logs -- --errors
  (always check logs before claiming something is broken)
@@ -664,7 +664,7 @@ bad: railway logs --service opensaas (raw CLI)
 
 ### wait — sleep or wait for deploy
 
-```
+```bash
 bun run wait -- 300                   # sleep 300 seconds (5 min)
 bun run wait -- --deploy              # wait for railway deploy to complete
 bun run wait -- --pr 173              # wait for PR checks to pass
@@ -676,7 +676,7 @@ bun run wait -- --pr 173              # wait for PR checks to pass
 
 writes exact content to temp files in opensaas-handoffs/. no trimming, no reformatting.
 
-```
+```bash
 bun run tmp -- write notes "# my notes here"  # write content to notes.md
 cat draft.md | bun run tmp -- write review --stdin  # write from stdin
 bun run tmp -- read notes             # read a temp file
@@ -691,7 +691,7 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ### server — manage the workspace MCP server
 
-```
+```bash
 bun run server -- status              # check if running, show tools + pid
 bun run server -- restart             # stop + start
 bun run server -- stop
@@ -703,7 +703,7 @@ bun run server -- logs                # tail /tmp/workspace.log
 
 ### website:deploy — deploy consuelo website
 
-```
+```bash
 bun run website:deploy                # build and deploy to cloudflare pages
 bun run website:deploy -- --preview   # preview deploy (non-production url)
 bun run website:deploy -- --build-only  # build only, don't deploy
@@ -768,25 +768,25 @@ git status --porcelain -uall -- . ':!node_modules'
 ```
 
 **python edit failure modes**
-```
+```text
 bad: python replace script says "expected block not found"
  → the old string has different whitespace than the file. read the exact range with
    bun run fs -- read <file> --from <N> --to <M> --plain and copy it character-for-character.
    watch for trailing newlines, tab/space mismatches, and invisible unicode characters.
  (always read the target range with --plain before writing the old string in your script)
-
 ```
-"agent": "cd /Users/kokayi/Dev/pi-proxy && bun run agent"
-
-For packages/workspace/SCRIPTS.md, I’d place this right before ## scripts reference:
 
 ## sub-agents
+
 use the local pi proxy for small, bounded sub-agent calls from scripts. this is for one-shot help: cleanup, summarization, classification, drafting, or asking a narrow question. it is not a replacement for the task lifecycle, repo search, or verification.
+
 run from repo root:
 
-bun run agent – “say hello world”
-bun run agent – –google/gemma-4-31b-it “summarize this error in one sentence: …”
-cat /tmp/input.txt | bun run agent – “clean this transcript”
+```bash
+bun run agent -- "say hello world"
+bun run agent -- --google/gemma-4-31b-it "summarize this error in one sentence: ..."
+cat /tmp/input.txt | bun run agent -- "clean this transcript"
+```
 
 **rules**
 - keep prompts narrow and explicit
@@ -795,31 +795,34 @@ cat /tmp/input.txt | bun run agent – “clean this transcript”
 - treat sub-agent output as a draft until verified against files, tests, or logs
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
 - do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `task:exec`) and verify after writes
+
 **good vs bad**
 
-good: bun run agent – “turn this raw error into a concise summary: ”
-→ bounded, no secrets, human can verify
+```text
+good: bun run agent -- "turn this raw error into a concise summary: "
+-> bounded, no secrets, human can verify
 
-good: bun run agent – –google/gemma-4-31b-it “clean this transcript but preserve meaning: ”
-→ explicit model override and explicit transformation
+good: bun run agent -- --google/gemma-4-31b-it "clean this transcript but preserve meaning: "
+-> explicit model override and explicit transformation
 
-bad: bun run agent – “fix the repo”
-→ too broad. no area, files, command, or acceptance criteria
+bad: bun run agent -- "fix the repo"
+-> too broad. no area, files, command, or acceptance criteria
 
-bad: bun run agent – “here is the production api key: … now debug this”
-→ never send secrets to a model
+bad: bun run agent -- "here is the production api key: ... now debug this"
+-> never send secrets to a model
 
-bad: bun run agent – “edit packages/foo/src/bar.ts to make tests pass”
-→ sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
+-> sub-agent output is text only. use task:fs/task:exec for repo mutations and verify the diff
+```
 
 **failure modes**
+
 | symptom | fix |
 |---------|-----|
 | `Script not found "agent"` | you're not in `/Users/kokayi/Dev/opensaas`, or `package.json` is missing this script |
 | request is slow | retry once; nvidia free api can land on slower capacity |
 | model output is too formal | tighten the prompt: "preserve casual tone, do not formalize" |
 | model hallucinates repo facts | ignore it and read files/logs; sub-agents do not replace evidence |
----
 
 ---
 
@@ -862,7 +865,7 @@ the scripts wrap these tools with sane defaults, exclusions, and logging. using 
 - running commands in a worktree (use `task:exec`)
 - github operations (use `gh` script or `pr-review`)
 
-```
+```text
 bad: rg "pattern" packages/
  → use: bun run fs -- search "pattern" packages/
 

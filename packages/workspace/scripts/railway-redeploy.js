@@ -16,10 +16,10 @@ function writeStderr(message = '') {
 }
 
 function parseTime(value) {
-  if (!value) return 30 * 60 * 1000;
-
-  const match = value.match(/^(\d+)(s|m|h)?$/);
-  if (!match) return (parseInt(value, 10) || 1800) * 1000;
+  const match = String(value).match(/^(\d+)(s|m|h)?$/);
+  if (!match) {
+    throw new Error(`invalid timeout: ${value} (expected: 90, 90s, 10m, or 1h)`);
+  }
 
   const count = parseInt(match[1], 10);
   const unit = match[2] || 's';
@@ -28,6 +28,15 @@ function parseTime(value) {
   if (unit === 'm') return count * 60 * 1000;
 
   return count * 1000;
+}
+
+function readOptionValue(argv, index, option) {
+  const value = argv[index + 1];
+  if (!value || value.startsWith('-')) {
+    throw new Error(`${option} requires a value`);
+  }
+
+  return value;
 }
 
 function parseArgs(argv) {
@@ -43,18 +52,24 @@ function parseArgs(argv) {
     const arg = argv[index];
 
     switch (arg) {
-      case '--service':
-        args.services.push(argv[++index]);
+      case '--service': {
+        const value = readOptionValue(argv, index, '--service');
+        args.services.push(value);
+        index += 1;
         break;
+      }
       case '--all':
         args.services.push(...ALL_SERVICES);
         break;
       case '--wait':
         args.wait = true;
         break;
-      case '--timeout':
-        args.timeoutMs = parseTime(argv[++index]);
+      case '--timeout': {
+        const value = readOptionValue(argv, index, '--timeout');
+        args.timeoutMs = parseTime(value);
+        index += 1;
         break;
+      }
       case '--json':
         args.json = true;
         break;
@@ -64,7 +79,6 @@ function parseArgs(argv) {
       case '--help':
         printHelp();
         process.exit(0);
-        break;
       default:
         if (!arg.startsWith('-')) {
           args.services.push(arg);
@@ -137,9 +151,7 @@ function runRedeploy(service) {
 
 function findNewDeployment(beforeDeploys, afterDeploys) {
   const beforeIds = new Set(beforeDeploys.map((deployment) => deployment.id));
-  const newDeploy = afterDeploys.find((deployment) => !beforeIds.has(deployment.id));
-
-  return newDeploy ?? afterDeploys[0] ?? null;
+  return afterDeploys.find((deployment) => !beforeIds.has(deployment.id)) ?? null;
 }
 
 function sleep(ms) {
@@ -151,81 +163,91 @@ function isFailedStatus(status) {
 }
 
 async function waitForDeployment(service, deployment, timeoutMs, quiet) {
-  try {
-    if (!deployment) {
-      throw new Error(`no deployment found for ${service}`);
-    }
-
-    const start = Date.now();
-
-    while (Date.now() - start < timeoutMs) {
-      const deploys = getDeploys(service);
-      const current = deploys.find((item) => item.id === deployment.id) ?? deploys[0];
-
-      if (!current) {
-        throw new Error(`no deployments found while waiting for ${service}`);
-      }
-
-      if (current.status === 'SUCCESS') {
-        if (!quiet) writeStdout(`✓ ${service} redeployed: ${current.commit.slice(0, 8) || current.id}`);
-        return current;
-      }
-
-      if (isFailedStatus(current.status)) {
-        throw new Error(`${service} redeploy ${current.status.toLowerCase()}`);
-      }
-
-      if (!quiet) {
-        const elapsed = Math.round((Date.now() - start) / 1000);
-        process.stdout.write(`\r  ${service}: ${current.status.toLowerCase()}... ${elapsed}s elapsed`);
-      }
-
-      await sleep(15000);
-    }
-
-    throw new Error(`${service} redeploy timed out after ${Math.round(timeoutMs / 1000)}s`);
-  } catch (error /* unknown */) {
-    throw error;
+  if (!deployment) {
+    throw new Error(`no deployment found for ${service}`);
   }
+
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    const deploys = getDeploys(service);
+    const current = deploys.find((item) => item.id === deployment.id) ?? deploys[0];
+
+    if (!current) {
+      throw new Error(`no deployments found while waiting for ${service}`);
+    }
+
+    if (current.status === 'SUCCESS') {
+      if (!quiet) writeStdout(`✓ ${service} redeployed: ${current.commit.slice(0, 8) || current.id}`);
+      return current;
+    }
+
+    if (isFailedStatus(current.status)) {
+      throw new Error(`${service} redeploy ${current.status.toLowerCase()}`);
+    }
+
+    if (!quiet) {
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      process.stdout.write(`\r  ${service}: ${current.status.toLowerCase()}... ${elapsed}s elapsed`);
+    }
+
+    await sleep(15000);
+  }
+
+  throw new Error(`${service} redeploy timed out after ${Math.round(timeoutMs / 1000)}s`);
 }
 
 async function redeployService(service, args) {
-  try {
-    const beforeDeploys = getDeploys(service);
+  const beforeDeploys = getDeploys(service);
 
-    if (!args.quiet) writeStdout(`redeploying ${service}...`);
-    const output = runRedeploy(service);
+  if (!args.quiet) writeStdout(`redeploying ${service}...`);
+  const output = runRedeploy(service);
 
-    await sleep(3000);
+  await sleep(3000);
 
-    const afterDeploys = getDeploys(service);
-    const deployment = findNewDeployment(beforeDeploys, afterDeploys);
-    const result = {
-      service,
-      deployment,
-      output,
-      waited: false,
-      finalDeployment: deployment,
-    };
-
-    if (!args.wait) {
-      if (!args.quiet && deployment) {
-        writeStdout(`${service}: ${deployment.status} ${deployment.commit.slice(0, 8) || deployment.id}`);
-      }
-      return result;
-    }
-
-    result.waited = true;
-    result.finalDeployment = await waitForDeployment(service, deployment, args.timeoutMs, args.quiet);
-
-    return result;
-  } catch (error /* unknown */) {
-    throw error;
+  const afterDeploys = getDeploys(service);
+  const deployment = findNewDeployment(beforeDeploys, afterDeploys);
+  if (!deployment) {
+    throw new Error(`no new deployment detected for ${service}`);
   }
+
+  const result = {
+    service,
+    deployment,
+    output,
+    waited: false,
+    finalDeployment: deployment,
+  };
+
+  if (!args.wait) {
+    if (!args.quiet) {
+      writeStdout(`${service}: ${deployment.status} ${deployment.commit.slice(0, 8) || deployment.id}`);
+    }
+    return result;
+  }
+
+  result.waited = true;
+  result.finalDeployment = await waitForDeployment(service, deployment, args.timeoutMs, args.quiet);
+
+  return result;
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  const wantsJson = process.argv.slice(2).includes('--json');
+  let args;
+
+  try {
+    args = parseArgs(process.argv.slice(2));
+  } catch (error /* unknown */) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (wantsJson) {
+      writeStdout(JSON.stringify({ ok: false, error: message, results: [] }, null, 2));
+    } else {
+      writeStderr(message);
+    }
+    process.exit(1);
+  }
+
   const results = [];
 
   try {

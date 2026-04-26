@@ -78,6 +78,16 @@ type SafeErrorDetails = {
   stack?: string;
 };
 
+type ProviderErrorDetails = SafeErrorDetails & {
+  code: string | null;
+};
+
+const CUSTOMER_PHONE_PROVIDER_ERROR_CODES = new Set([
+  '21211',
+  '21215',
+  '13227',
+]);
+
 type GroupStatusResponse = {
   groupId: string;
   status: string;
@@ -202,7 +212,37 @@ export class ParallelService {
         throw err;
       }
 
-      const safeError = this.getSafeErrorDetails(err);
+      const providerError = this.getProviderErrorDetails(err);
+
+      if (this.isProviderCustomerPhoneFailure(providerError)) {
+        this.logger.warn('parallel dial rejected customer number', {
+          queueId,
+          workspaceId: input.workspaceId,
+          profileId: resolvedProfileId,
+          stage: createStage,
+          customerNumberCount: customerNumbers.length,
+          fromNumberCount,
+          errorCode: providerError.code,
+          errorName: providerError.name,
+          errorMessage: providerError.message,
+        });
+        Sentry.addBreadcrumb({
+          category: 'parallel-dial',
+          level: 'warning',
+          message: 'provider rejected customer number',
+          data: {
+            queueId,
+            workspaceId: input.workspaceId,
+            profileId: resolvedProfileId,
+            stage: createStage,
+            errorCode: providerError.code,
+            errorName: providerError.name,
+          },
+        });
+        throw new BadRequestException('Invalid customer phone number');
+      }
+
+      const safeError = providerError;
 
       this.logger.error('parallel dial failed', {
         queueId,
@@ -496,15 +536,56 @@ export class ParallelService {
     if (err instanceof Error) {
       return {
         name: err.name,
-        message: err.message,
+        message: this.redactPhoneNumbers(err.message),
         stack: err.stack,
       };
     }
 
     return {
       name: 'NonError',
-      message: String(err),
+      message: this.redactPhoneNumbers(String(err)),
     };
+  }
+
+  private getProviderErrorDetails(err: unknown): ProviderErrorDetails {
+    const safeError = this.getSafeErrorDetails(err);
+    const code = this.getProviderErrorCode(err);
+
+    return { ...safeError, code };
+  }
+
+  private getProviderErrorCode(err: unknown): string | null {
+    if (err === null || typeof err !== 'object') {
+      return null;
+    }
+
+    const code = (err as { code?: unknown }).code;
+
+    return typeof code === 'string' || typeof code === 'number'
+      ? String(code)
+      : null;
+  }
+
+  private isProviderCustomerPhoneFailure(error: ProviderErrorDetails): boolean {
+    if (
+      error.code !== null &&
+      CUSTOMER_PHONE_PROVIDER_ERROR_CODES.has(error.code)
+    ) {
+      return true;
+    }
+
+    const message = error.message.toLowerCase();
+
+    return (
+      message.includes('not a valid phone number') ||
+      message.includes('invalid phone number')
+    );
+  }
+
+  private redactPhoneNumbers(message: string): string {
+    return message.replace(/\+\d{7,15}/g, (match) => {
+      return `***${match.slice(-4)}`;
+    });
   }
 
   private readCustomerNumbers(value: unknown): string[] {

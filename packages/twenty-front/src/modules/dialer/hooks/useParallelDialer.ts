@@ -183,8 +183,8 @@ export const useParallelDialer = () => {
     [clearPoll, handleWinner, handleAllFailed],
   );
 
-  const startParallelBatch = useCallback(async () => {
-    if (!activeQueue?.parallelDialingEnabled || isDialing) return;
+  const startParallelBatch = useCallback(async (): Promise<boolean> => {
+    if (!activeQueue?.parallelDialingEnabled || isDialing) return false;
 
     const maxLines = Math.min(
       activeQueue.settings.parallelDialingMaxLines,
@@ -207,7 +207,7 @@ export const useParallelDialer = () => {
     );
     const dialingItems = dialableBatchItems.map(({ item }) => item);
 
-    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return;
+    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return false;
 
     setIsDialing(true);
 
@@ -263,6 +263,8 @@ export const useParallelDialer = () => {
 
       setActiveCalls(calls);
       startPolling(groupId);
+
+      return true;
     } catch (err: unknown) {
       captureException(err, {
         extra: { context: 'startParallelBatch', queueId: activeQueue?.id },
@@ -276,6 +278,8 @@ export const useParallelDialer = () => {
             : item,
         ),
       );
+
+      return false;
     }
   }, [
     activeQueue,
