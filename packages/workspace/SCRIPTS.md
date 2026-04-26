@@ -889,3 +889,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
 ---
 
 ## script file paths section removed — run `bun run fs -- list packages/workspace/scripts/` to see current files.
+
+### task:push files-json deletion note
+
+`--files-json` supports entries with `deleted: true`; deleted entries are pushed as null tree blobs so cleanup commits can remove stale files through the GitHub API path.
