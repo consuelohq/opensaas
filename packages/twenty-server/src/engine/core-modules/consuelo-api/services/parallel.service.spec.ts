@@ -288,6 +288,38 @@ describe('ParallelService initiateParallelDial', () => {
     );
   });
 
+  it('should reject message-only provider-denied customer numbers as bad requests', async () => {
+    const { service, group, mockDialer } = createService();
+
+    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(
+      new Error('Account not authorized to call +17876240936. geo-permissions'),
+    );
+
+    const loggerWarnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    await expect(
+      service.initiateParallelDial({
+        userId: 'user-1',
+        workspaceId: 'workspace-1',
+        body: {
+          queueId: group.queueId,
+          customerNumbers: ['+14155552671', '+16505551234'],
+          profileId: 'conservative',
+        },
+      }),
+    ).rejects.toThrow('Invalid customer phone number');
+
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      'parallel dial rejected customer number',
+      expect.objectContaining({
+        errorCode: null,
+        errorMessage: 'Account not authorized to call ***0936. geo-permissions',
+      }),
+    );
+  });
+
   it('should reject batches that do not match the resolved fanout', async () => {
     const { service, group, mockDialer } = createService();
 

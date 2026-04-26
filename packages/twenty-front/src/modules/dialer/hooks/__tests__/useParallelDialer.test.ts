@@ -16,6 +16,7 @@ import {
 
 const mockAuthenticatedFetch = jest.fn();
 const mockPlayDialingStartedSound = jest.fn();
+const mockPlayErrorSound = jest.fn();
 
 jest.mock('@/dialer/utils/authenticatedFetch', () => ({
   authenticatedFetch: (...args: unknown[]) => mockAuthenticatedFetch(...args),
@@ -24,7 +25,7 @@ jest.mock('@/dialer/utils/authenticatedFetch', () => ({
 jest.mock('@/dialer/utils/notificationSounds', () => ({
   playCallConnectedSound: jest.fn(),
   playDialingStartedSound: () => mockPlayDialingStartedSound(),
-  playErrorSound: jest.fn(),
+  playErrorSound: () => mockPlayErrorSound(),
 }));
 
 jest.mock('@sentry/react', () => ({
@@ -110,6 +111,7 @@ describe('useParallelDialer', () => {
     jest.useFakeTimers();
     mockAuthenticatedFetch.mockReset();
     mockPlayDialingStartedSound.mockReset();
+    mockPlayErrorSound.mockReset();
   });
 
   afterEach(() => {
@@ -184,8 +186,70 @@ describe('useParallelDialer', () => {
     });
   });
 
+  it('stops polling and fails the active batch when status lookup returns non-ok', async () => {
+    mockAuthenticatedFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          groupId: 'pg_test',
+          calls: [
+            {
+              callSid: 'CA1',
+              customerNumber: '+13472030054',
+              position: 1,
+              status: 'dialing',
+              contactId: 'item-1-contact',
+            },
+            {
+              callSid: 'CA2',
+              customerNumber: '+18054259549',
+              position: 2,
+              status: 'dialing',
+              contactId: 'item-2-contact',
+            },
+          ],
+        }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 404 })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    const { result } = renderUseParallelDialer((snap) => {
+      snap.set(activeQueueState, activeParallelQueue);
+      snap.set(queueItemsState, queueItems);
+      snap.set(currentQueueIndexState, 0);
+    });
+
+    await act(async () => {
+      await result.current.startParallelBatch();
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledWith(
+      'https://app.example.test/api/v1/calls/parallel/pg_test/terminate',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+    expect(mockPlayErrorSound).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(3);
+  });
+
   it('terminates and clears an active parallel group when canceled', async () => {
-    mockAuthenticatedFetch.mockResolvedValue({ ok: true, json: async () => ({}) });
+    mockAuthenticatedFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    });
 
     const { result } = renderUseParallelDialer((snap) => {
       snap.set(activeQueueState, {
