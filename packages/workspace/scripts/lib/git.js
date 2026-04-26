@@ -106,37 +106,22 @@ function isBranchMerged(repoRoot, branch, into) {
 }
 
 function getTrackedChanges(repoRoot) {
-  // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing.
-  // exclude node_modules because task:start symlinks it into worktrees for local checks.
-  const output = execFileSync('git', [
-    '-c',
-    'core.quotePath=false',
-    'status',
-    '--porcelain',
-    '-z',
-    '-uall',
-    '--',
-    '.',
-    ':!node_modules',
-  ], {
+  // use execFileSync directly — runGit trims leading spaces which breaks porcelain parsing
+  const { execFileSync } = require('child_process');
+  const output = execFileSync('git', ['status', '--porcelain', '-uall'], {
     cwd: repoRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
   });
   if (!output || !output.trim()) return [];
 
-  return output.split('\0').filter(Boolean).map((entry) => {
-    const status = entry.slice(0, 2).trim();
-    let filePath = entry.slice(3);
-
-    if ((status.startsWith('R') || status.startsWith('C')) && filePath.includes(' -> ')) {
-      filePath = filePath.split(' -> ').pop();
-    }
-
+  return output.split('\n').filter(Boolean).map((line) => {
+    const status = line.slice(0, 2).trim();
+    const filePath = line.slice(3);
     return {
       path: filePath,
       status,
       deleted: status === 'D',
     };
-  }).filter((change) => change.path !== 'node_modules' && !change.path.startsWith('node_modules/'));
+  });
 }
 
 module.exports = {

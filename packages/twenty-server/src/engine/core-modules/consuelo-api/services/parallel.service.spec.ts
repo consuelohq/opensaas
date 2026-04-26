@@ -2,43 +2,12 @@ import { Logger } from '@nestjs/common';
 
 import type { ParallelGroup } from '@consuelo/dialer';
 
-jest.mock(
-  '@consuelo/dialer',
-  () => ({
-    ParallelStrategyResolver: class {},
-  }),
-  { virtual: true },
-);
-jest.mock('@consuelo/contacts', () => ({
-  isValidPhone: jest.fn((phoneNumber: string) =>
-    [
-      '+14155552671',
-      '+16505551234',
-      '+12025550123',
-      '+12125550123',
-      '+18178447395',
-    ].includes(phoneNumber),
-  ),
-  normalizePhone: jest.fn((phoneNumber: string) => {
-    const normalizedPhonesByRawPhone: Record<string, string> = {
-      '(415) 555-2671': '+14155552671',
-      '650-555-1234': '+16505551234',
-    };
-
-    return normalizedPhonesByRawPhone[phoneNumber] ?? phoneNumber;
-  }),
-}));
-
+jest.mock('@consuelo/dialer', () => ({}), { virtual: true });
 jest.mock('@sentry/node', () => ({
-  addBreadcrumb: jest.fn(),
   captureException: jest.fn(),
 }));
 
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
 
 const buildGroup = (): ParallelGroup => ({
   groupId: 'group-1',
@@ -48,8 +17,8 @@ const buildGroup = (): ParallelGroup => ({
   calls: [
     {
       callSid: 'CA_WINNER',
-      customerNumber: '+14155552671',
-      fromNumber: '+12025550123',
+      customerNumber: '+15550001111',
+      fromNumber: '+15550002222',
       position: 0,
       status: 'in-progress',
       amdResult: 'human',
@@ -58,8 +27,8 @@ const buildGroup = (): ParallelGroup => ({
     },
     {
       callSid: 'CA_LOSER',
-      customerNumber: '+16505551234',
-      fromNumber: '+12125550123',
+      customerNumber: '+15550003333',
+      fromNumber: '+15550004444',
       position: 1,
       status: 'completed',
       amdResult: 'machine',
@@ -102,11 +71,11 @@ const createService = () => {
   const mockDialer = {
     listNumbers: jest
       .fn()
-      .mockResolvedValue(['+12025550123', '+12125550123', '+18178447395']),
+      .mockResolvedValue(['+15550002222', '+15550004444', '+15550005555']),
     resolveCallerId: jest
       .fn()
-      .mockResolvedValueOnce({ callerIdNumber: '+12025550123' })
-      .mockResolvedValueOnce({ callerIdNumber: '+12125550123' }),
+      .mockResolvedValueOnce({ callerIdNumber: '+15550002222' })
+      .mockResolvedValueOnce({ callerIdNumber: '+15550004444' }),
     parallel: {
       initiateGroup: jest.fn().mockResolvedValue({
         groupId: group.groupId,
@@ -128,7 +97,7 @@ const createService = () => {
       handleStatusCallback: jest.fn().mockResolvedValue(undefined),
       getGroupIdForCall: jest.fn().mockResolvedValue(group.groupId),
       getGroup: jest.fn().mockResolvedValue(group),
-      getReleasableNumbers: jest.fn().mockReturnValue(['+12125550123']),
+      getReleasableNumbers: jest.fn().mockReturnValue(['+15550004444']),
       markTelemetryEmittedIfAbsent: jest.fn().mockResolvedValue(true),
       computeTelemetry: jest.fn().mockReturnValue({
         winnerRate: 1,
@@ -181,7 +150,7 @@ describe('ParallelService initiateParallelDial', () => {
       workspaceId: 'workspace-1',
       body: {
         queueId: group.queueId,
-        customerNumbers: ['+14155552671', '+16505551234'],
+        customerNumbers: ['+15550001111', '+15550003333'],
         contactIds: ['contact-1', 'contact-2'],
         profileId: 'conservative',
       },
@@ -197,7 +166,7 @@ describe('ParallelService initiateParallelDial', () => {
     expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
       expect.objectContaining({
         queueId: group.queueId,
-        customerNumbers: ['+14155552671', '+16505551234'],
+        customerNumbers: ['+15550001111', '+15550003333'],
         contactIds: ['contact-1', 'contact-2'],
         userId: 'user-1',
         statusCallbackUrl: '/api/v1/calls/parallel/status-callback',
@@ -205,87 +174,6 @@ describe('ParallelService initiateParallelDial', () => {
       }),
     );
     expect(result.groupId).toBe(group.groupId);
-  });
-
-  it('should normalize valid customer numbers before initiating the group', async () => {
-    const { service, group, mockDialer } = createService();
-
-    await service.initiateParallelDial({
-      userId: 'user-1',
-      workspaceId: 'workspace-1',
-      body: {
-        queueId: group.queueId,
-        customerNumbers: ['(415) 555-2671', '650-555-1234'],
-        profileId: 'conservative',
-      },
-    });
-
-    expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
-      expect.objectContaining({
-        customerNumbers: ['+14155552671', '+16505551234'],
-      }),
-    );
-  });
-
-  it('should reject Twilio-invalid customer numbers before initiating the group', async () => {
-    const { service, group, mockDialer, mockParallelStrategyResolver } =
-      createService();
-
-    await expect(
-      service.initiateParallelDial({
-        userId: 'user-1',
-        workspaceId: 'workspace-1',
-        body: {
-          queueId: group.queueId,
-          customerNumbers: ['584143861603', '+14155552671'],
-          profileId: 'conservative',
-        },
-      }),
-    ).rejects.toThrow('Invalid customer phone number');
-
-    expect(mockParallelStrategyResolver.resolve).not.toHaveBeenCalled();
-    expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
-  });
-
-  it('should reject provider-denied customer numbers before returning a generic 500', async () => {
-    const { service, group, mockDialer, mockLockService } = createService();
-
-    const providerError = new Error(
-      'Account not authorized to call +17876240936. geo-permissions',
-    ) as Error & { code: number };
-
-    providerError.code = 21215;
-    mockDialer.parallel.initiateGroup.mockRejectedValueOnce(providerError);
-
-    const loggerWarnSpy = jest
-      .spyOn(Logger.prototype, 'warn')
-      .mockImplementation(() => undefined);
-
-    await expect(
-      service.initiateParallelDial({
-        userId: 'user-1',
-        workspaceId: 'workspace-1',
-        body: {
-          queueId: group.queueId,
-          customerNumbers: ['+14155552671', '+16505551234'],
-          profileId: 'conservative',
-        },
-      }),
-    ).rejects.toThrow('Invalid customer phone number');
-
-    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12025550123',
-    );
-    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12125550123',
-    );
-    expect(loggerWarnSpy).toHaveBeenCalledWith(
-      'parallel dial rejected customer number',
-      expect.objectContaining({
-        errorCode: '21215',
-        errorMessage: 'Account not authorized to call ***0936. geo-permissions',
-      }),
-    );
   });
 
   it('should reject batches that do not match the resolved fanout', async () => {
@@ -297,7 +185,7 @@ describe('ParallelService initiateParallelDial', () => {
         workspaceId: 'workspace-1',
         body: {
           queueId: group.queueId,
-          customerNumbers: ['+14155552671'],
+          customerNumbers: ['+15550001111'],
           profileId: 'conservative',
         },
       }),
@@ -319,7 +207,7 @@ describe('ParallelService initiateParallelDial', () => {
         workspaceId: 'workspace-1',
         body: {
           queueId: group.queueId,
-          customerNumbers: ['+14155552671', '+16505551234'],
+          customerNumbers: ['+15550001111', '+15550003333'],
           profileId: 'conservative',
         },
       }),
@@ -328,10 +216,10 @@ describe('ParallelService initiateParallelDial', () => {
     });
 
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12025550123',
+      '+15550002222',
     );
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12125550123',
+      '+15550004444',
     );
   });
 
@@ -353,7 +241,7 @@ describe('ParallelService initiateParallelDial', () => {
           workspaceId: 'workspace-1',
           body: {
             queueId: group.queueId,
-            customerNumbers: ['+14155552671', '+16505551234'],
+            customerNumbers: ['+15550001111', '+15550003333'],
             profileId: 'conservative',
           },
         }),
@@ -440,14 +328,12 @@ describe('ParallelService group lifecycle', () => {
     });
 
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12025550123',
+      '+15550002222',
     );
     expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
-      '+12125550123',
+      '+15550004444',
     );
-    expect(mockDialer.parallel.terminateGroup).toHaveBeenCalledWith(
-      group.groupId,
-    );
+    expect(mockDialer.parallel.terminateGroup).toHaveBeenCalledWith(group.groupId);
     expect(result).toEqual({ groupId: group.groupId, status: 'completed' });
   });
 });
@@ -492,9 +378,7 @@ describe('ParallelService posterior updates', () => {
       CallDuration: '45',
     });
 
-    mockDialer.parallel.markTelemetryEmittedIfAbsent.mockResolvedValueOnce(
-      false,
-    );
+    mockDialer.parallel.markTelemetryEmittedIfAbsent.mockResolvedValueOnce(false);
 
     await service.statusCallback({
       CallSid: 'CA_WINNER',

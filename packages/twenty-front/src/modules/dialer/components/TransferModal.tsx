@@ -2,6 +2,7 @@ import styled from '@emotion/styled';
 import { useLingui } from '@lingui/react/macro';
 import { msg } from '@lingui/core/macro';
 import { useCallback, useState } from 'react';
+import { IconPhone, IconX } from 'twenty-ui/display';
 
 import { type TransferType } from '@/dialer/types/dialer';
 import {
@@ -52,11 +53,6 @@ const StyledCloseButton = styled.button`
   &:hover {
     color: ${({ theme }) => theme.font.color.primary};
   }
-`;
-
-const StyledCloseGlyph = styled.span`
-  font-size: 18px;
-  line-height: 1;
 `;
 
 const StyledInput = styled.input`
@@ -146,31 +142,23 @@ export const TransferModal = ({
   const { t } = useLingui();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [transferType, setTransferType] = useState<TransferType>('warm');
-  const [transferError, setTransferError] = useState<string | null>(null);
 
   const handleInputChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const digits = stripNonDigits(event.target.value);
       setPhoneNumber(formatPhone(digits));
-      setTransferError(null);
     },
     [],
   );
 
+  const handleClearError = useCallback(() => {
+    setPhoneNumber('');
+  }, []);
+
   const handleTransfer = useCallback(() => {
     if (isTransferring) return;
-
-    const normalizedPhoneNumber = toE164(phoneNumber);
-
-    if (normalizedPhoneNumber === null) {
-      setTransferError(t`Enter a valid phone number to transfer.`);
-
-      return;
-    }
-
-    setTransferError(null);
-    onTransfer(normalizedPhoneNumber, transferType);
-  }, [phoneNumber, transferType, isTransferring, onTransfer, t]);
+    onTransfer(toE164(phoneNumber), transferType);
+  }, [phoneNumber, transferType, isTransferring, onTransfer]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -182,14 +170,13 @@ export const TransferModal = ({
 
   const digits = stripNonDigits(phoneNumber);
   const canTransfer = digits.length >= 10 && !isTransferring;
-  const displayedError = transferError ?? error;
 
   return (
     <StyledOverlay>
       <StyledHeader>
         <StyledTitle>{t`Transfer Call`}</StyledTitle>
         <StyledCloseButton onClick={onClose} aria-label={t`Close transfer`}>
-          <StyledCloseGlyph aria-hidden="true">×</StyledCloseGlyph>
+          <IconX size={18} />
         </StyledCloseButton>
       </StyledHeader>
 
@@ -202,7 +189,7 @@ export const TransferModal = ({
         autoFocus
       />
 
-      {displayedError && <StyledError>{displayedError}</StyledError>}
+      {error && <StyledError>{error}</StyledError>}
 
       <StyledToggle>
         <StyledToggleOption
@@ -222,11 +209,11 @@ export const TransferModal = ({
       <StyledDescription>{t(DESCRIPTIONS[transferType])}</StyledDescription>
 
       <StyledTransferButton
-        disabled={!canTransfer}
         isDisabled={!canTransfer}
         onClick={handleTransfer}
         aria-label={t`Start transfer`}
       >
+        <IconPhone size={16} />
         {isTransferring ? t`Transferring...` : t`Transfer`}
       </StyledTransferButton>
     </StyledOverlay>

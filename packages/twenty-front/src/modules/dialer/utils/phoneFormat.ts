@@ -1,5 +1,3 @@
-import { isValidPhone, normalizePhone } from '@consuelo/contacts';
-
 /** Strip non-digit characters from a phone string */
 export const stripNonDigits = (value: string): string =>
   value.replace(/\D/g, '');
@@ -21,10 +19,12 @@ export const formatPhone = (raw: string): string => {
 };
 
 /** Format as E.164: +15551234567 */
-export const toE164 = (raw: string): string | null => {
-  const normalizedPhone = normalizePhone(raw);
+export const toE164 = (raw: string): string => {
+  const digits = stripNonDigits(raw);
+  const national =
+    digits.length === 11 && digits[0] === '1' ? digits : `1${digits}`;
 
-  return isValidPhone(normalizedPhone) ? normalizedPhone : null;
+  return `+${national}`;
 };
 
 /** Extract 3-digit area code from a phone string */

@@ -55,7 +55,7 @@ function printDeploys(deploys) {
   });
 }
 
-async function waitForDeploy(service, commitPrefix, timeoutMs) {
+async function waitForDeploy(service, commitPrefix) {
   const deploys = getDeploys(service);
   if (!deploys.length) { console.error('no deploys found'); process.exit(1); }
 
@@ -88,7 +88,7 @@ async function waitForDeploy(service, commitPrefix, timeoutMs) {
   }
 
   const start = Date.now();
-  const TIMEOUT = timeoutMs || 30 * 60 * 1000;
+  const TIMEOUT = 30 * 60 * 1000; // 30m hard cap
 
   while (Date.now() - start < TIMEOUT) {
     await sleep(15000);
@@ -145,14 +145,12 @@ async function main() {
   const argv = process.argv.slice(2);
   let deployMode = false;
   let service = 'opensaas';
-  let timeoutMs = null;
   let commitOrTime = null;
 
   for (let i = 0; i < argv.length; i++) {
     switch (argv[i]) {
       case '--deploy': deployMode = true; break;
       case '--service': service = argv[++i]; break;
-      case '--timeout': timeoutMs = parseTime(argv[++i]) * 1000; break;
       case '--help':
         console.log('usage: bun run wait -- [time|--deploy [commit]] [--service name]');
         console.log('');
@@ -161,10 +159,6 @@ async function main() {
         console.log('  bun run wait -- 2m                 sleep 2 minutes');
         console.log('  bun run wait -- --deploy           wait for deploy matching local HEAD');
         console.log('  bun run wait -- --deploy abc123    wait for deploy matching commit');
-        console.log('');
-        console.log('options:');
-        console.log('  --service <name>   railway service (default: opensaas)');
-        console.log('  --timeout <time>   deploy wait timeout (default: 30m)');
         return;
       default:
         if (!argv[i].startsWith('-')) commitOrTime = argv[i];
@@ -173,7 +167,7 @@ async function main() {
   }
 
   if (deployMode) {
-    await waitForDeploy(service, commitOrTime, timeoutMs);
+    await waitForDeploy(service, commitOrTime);
   } else {
     await timedSleep(parseTime(commitOrTime || '5m'));
   }

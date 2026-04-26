@@ -11,7 +11,6 @@ import {
   queueItemsState,
 } from '@/dialer/states/queueState';
 import type { ParallelCall } from '@/dialer/types/dialer';
-import type { QueueItem } from '@/dialer/types/queue';
 import {
   playCallConnectedSound,
   playDialingStartedSound,
@@ -20,11 +19,10 @@ import {
 
 const MIN_SUPPORTED_PARALLEL_LINES = 2;
 const MAX_SUPPORTED_PARALLEL_LINES = 4;
+const E164_REGEX = /^\+[1-9]\d{6,14}$/;
 
-type DialableBatchItem = {
-  item: QueueItem;
-  customerNumber: string;
-};
+const isValidE164Phone = (phoneNumber: string): boolean =>
+  E164_REGEX.test(phoneNumber);
 
 const getParallelProfileId = (
   maxLines: number,
@@ -183,8 +181,8 @@ export const useParallelDialer = () => {
     [clearPoll, handleWinner, handleAllFailed],
   );
 
-  const startParallelBatch = useCallback(async (): Promise<boolean> => {
-    if (!activeQueue?.parallelDialingEnabled || isDialing) return false;
+  const startParallelBatch = useCallback(async () => {
+    if (!activeQueue?.parallelDialingEnabled || isDialing) return;
 
     const maxLines = Math.min(
       activeQueue.settings.parallelDialingMaxLines,
@@ -193,21 +191,15 @@ export const useParallelDialer = () => {
     const batchItems = queueItems
       .slice(currentQueueIndex, currentQueueIndex + maxLines)
       .filter((item) => item.status === 'pending' || item.status === 'calling');
-    const dialableBatchItems = batchItems.reduce<DialableBatchItem[]>(
-      (items, item) => {
-        const customerNumber = toE164(item.contact.phone);
-
-        if (customerNumber === null) {
-          return items;
-        }
-
-        return [...items, { item, customerNumber }];
-      },
-      [],
-    );
+    const dialableBatchItems = batchItems
+      .map((item) => ({
+        item,
+        customerNumber: toE164(item.contact.phone),
+      }))
+      .filter(({ customerNumber }) => isValidE164Phone(customerNumber));
     const dialingItems = dialableBatchItems.map(({ item }) => item);
 
-    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return false;
+    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return;
 
     setIsDialing(true);
 
@@ -263,8 +255,6 @@ export const useParallelDialer = () => {
 
       setActiveCalls(calls);
       startPolling(groupId);
-
-      return true;
     } catch (err: unknown) {
       captureException(err, {
         extra: { context: 'startParallelBatch', queueId: activeQueue?.id },
@@ -278,8 +268,6 @@ export const useParallelDialer = () => {
             : item,
         ),
       );
-
-      return false;
     }
   }, [
     activeQueue,
