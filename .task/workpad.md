@@ -1,66 +1,58 @@
-# portable pi proxy agent client
+# address queue autostart review comments
 
-branch: `task/workspace-agents/portable-pi-proxy-agent-client`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/193
+branch: `task/dialer/address-queue-autostart-review-comments`
+stream: `stream/dialer`
+task pr: https://github.com/consuelohq/opensaas/pull/192
+review pr: https://github.com/consuelohq/opensaas/pull/191
 started: 2026-04-25
 
 ## acceptance criteria
 
-- [x] add a portable root `bun run agent` script that does not reference `/Users/kokayi/Dev/pi-proxy`
-- [x] script calls any openai-compatible endpoint using env/config, defaulting to local pi-proxy
-- [x] support prompt via args and stdin
-- [x] support model override with `--model <model>` and ergonomic `--provider/model` syntax
-- [x] support `--json`, `--quiet`, and `--help`
-- [x] document the script in `packages/workspace/SCRIPTS.md`
-- [x] smoke test against local `pi-proxy` with `hello world`
-- [x] run syntax checks and review/verify before publish
+- [x] fetch CodeRabbit reviews for PR #191 with `pr-review`.
+- [x] start a fresh task from `stream/dialer`.
+- [x] read `AGENTS.md` and `CODING-STANDARDS.md` before editing.
+- [x] repair metadata conflict that blocked task scripts.
+- [x] verify CodeRabbit findings against current code.
+- [x] tighten provider customer-phone failure classification to prefer provider error codes.
+- [x] add observability before converting provider customer-phone failures to 400.
+- [x] avoid logging full phone numbers in provider error messages.
+- [x] add/update focused test coverage.
+- [ ] publish with `task:push`, `task:pr`, and `task:finish`.
+- [ ] ship review PR #191, wait for deploy, and test production queue walkthrough.
+- [ ] bootstrap plan mode for the next agent if the 5-contact skip/retry/exhaust walkthrough still fails.
 
 ## plan
 
-1. inspect workspace script style and docs placement
-2. add `packages/workspace/scripts/agent.js` as a portable openai-compatible client
-3. wire root `package.json` to `bun packages/workspace/scripts/agent.js`
-4. document usage, env vars, model overrides, and failure modes in `SCRIPTS.md`
-5. smoke test local pi-proxy and run checks
-6. publish with task scripts
+1. fix CodeRabbit actionable comment on `parallel.service.ts`.
+2. run focused validation and review.
+3. publish the review-fix task into `stream/dialer`, which updates PR #191.
+4. update PR #191 title/body if CodeRabbit pre-merge checks still object.
+5. merge PR #191, wait for railway deploy, and test the queue walkthrough.
+6. if the walkthrough fails, create a plan-mode handoff with exact next-agent instructions.
 
 ## files changed
 
-- `package.json`
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/scripts/agent.js`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts`
 
 ## key decisions
 
-- `bun run agent` is a portable openai-compatible client, not a wrapper around `/Users/kokayi/Dev/pi-proxy`.
-- defaults target local pi-proxy: `AGENT_BASE_URL=http://127.0.0.1:11434/v1`, `AGENT_MODEL=pi-proxy`, `AGENT_API_KEY=anything`.
-- real providers can be used by setting env vars instead of changing code.
-- sub-agent output is treated as draft text, not repo evidence.
+- provider customer-phone failures now prefer known Twilio customer-number related codes: `21211`, `21215`, and `13227`.
+- substring matching is now a fallback only for explicit invalid-phone wording.
+- customer-provider rejections emit `logger.warn` and a Sentry breadcrumb before throwing `BadRequestException`.
+- provider error messages are phone-redacted before logs and user-safe error details.
+
+## validation
+
+- `yarn prettier --write packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts` passed.
+- `bun run review -- --base origin/task/dialer/address-queue-autostart-review-comments --no-tests --json --quiet` reported 0 issues in my changes; remaining issues are pre-existing stream issues.
+- `git diff --check` passed after replacing placeholder workpad content.
+- focused server jest is blocked locally because `node_modules/@nestjs/common` is missing in the linked dependency tree; this matches the existing server-test blocker documented in prior dialer workpads.
 
 ## notes for ko
 
-- smoke test returned `hello world` through local pi-proxy.
-- mock endpoint test confirmed `--provider/model` maps to the request model without needing nvidia latency.
-- full `bun run review` reports `YOUR CHANGES: clean`; it still exits 1 because the stream has the known pre-existing `openworkspace` missing typecheck target.
-- `bun run verify -- --no-review --json` passed db guardrails and wrote `.task/verify.json`.
+- the malformed metadata was in `/private/tmp/opensaas-worktrees/stream-workspace-agents-sync-GXiVPA/.task/current.json`, containing conflict markers. i resolved it to the workspace-agents side so dialer task scripts stop crashing while scanning active worktrees.
 
 ## improvements noticed
 
-- `task:exec` treats `--help` anywhere in raw args as its own help, so `bun run task:exec -- --area workspace-agents bun run agent -- --help` does not pass help through to the child command. use `node packages/workspace/scripts/agent.js --help` or a direct command when testing nested help output.
-
-## errors i ran into
-
-- stale `.task/current.json` inside `/private/tmp/opensaas-worktrees/stream-workspace-agents-sync-GXiVPA` made task scripts select the wrong workspace-agents worktree. renamed that stale file with `.stale-before-pi-proxy-agent-client`; did not delete it.
-
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "feat(workspace): add portable agent script" --changed
-bun run task:pr
-bun run task:finish
-```
-
-- 2026-04-25 23:01:30 write: `.task/workpad.md`
+- task scripts should tolerate malformed `.task/current.json` in unrelated worktrees instead of crashing before area filtering.
