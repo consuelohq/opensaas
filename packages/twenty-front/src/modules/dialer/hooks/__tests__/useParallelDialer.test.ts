@@ -125,13 +125,15 @@ describe('useParallelDialer', () => {
       snap.set(currentQueueIndexState, 0);
     });
 
-    let started = true;
+    let startResult: Awaited<
+      ReturnType<typeof result.current.startParallelBatch>
+    > | null = null;
 
     await act(async () => {
-      started = await result.current.startParallelBatch();
+      startResult = await result.current.startParallelBatch();
     });
 
-    expect(started).toBe(false);
+    expect(startResult).toEqual({ status: 'skipped', reason: 'disabled' });
     expect(mockPlayDialingStartedSound).not.toHaveBeenCalled();
     expect(mockAuthenticatedFetch).not.toHaveBeenCalled();
   });
@@ -164,13 +166,15 @@ describe('useParallelDialer', () => {
       snap.set(currentQueueIndexState, 0);
     });
 
-    let started = false;
+    let startResult: Awaited<
+      ReturnType<typeof result.current.startParallelBatch>
+    > | null = null;
 
     await act(async () => {
-      started = await result.current.startParallelBatch();
+      startResult = await result.current.startParallelBatch();
     });
 
-    expect(started).toBe(true);
+    expect(startResult).toEqual({ status: 'started', groupId: 'pg_test' });
     expect(mockPlayDialingStartedSound).toHaveBeenCalledTimes(1);
     expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
     expect(mockAuthenticatedFetch.mock.calls[0][0]).toBe(
@@ -184,6 +188,48 @@ describe('useParallelDialer', () => {
       contactIds: ['item-1-contact', 'item-2-contact'],
       profileId: 'conservative',
     });
+  });
+
+  it('returns blocked without audio or polling when caller ID is locked', async () => {
+    mockAuthenticatedFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 409,
+      json: async () => ({
+        error: { code: 'CALLER_ID_LOCKED', retryAfterMs: 5000 },
+      }),
+    });
+
+    const { result } = renderUseParallelDialer((snap) => {
+      snap.set(activeQueueState, activeParallelQueue);
+      snap.set(queueItemsState, queueItems);
+      snap.set(currentQueueIndexState, 0);
+    });
+
+    let startResult: Awaited<
+      ReturnType<typeof result.current.startParallelBatch>
+    > | null = null;
+
+    await act(async () => {
+      startResult = await result.current.startParallelBatch();
+    });
+
+    expect(startResult).toEqual({
+      status: 'blocked',
+      reason: 'caller-id-locked',
+      responseStatus: 409,
+      retryAfterMs: 5000,
+    });
+    expect(mockPlayDialingStartedSound).not.toHaveBeenCalled();
+    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
+    expect(result.current.isDialing).toBe(false);
+    expect(result.current.activeCalls).toEqual([]);
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+      await Promise.resolve();
+    });
+
+    expect(mockAuthenticatedFetch).toHaveBeenCalledTimes(1);
   });
 
   it('stops polling and fails the active batch when status lookup returns non-ok', async () => {

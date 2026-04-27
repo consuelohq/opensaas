@@ -338,6 +338,55 @@ describe('ParallelService initiateParallelDial', () => {
     expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
   });
 
+  it('should reject and log when a caller-id lock cannot be acquired', async () => {
+    const { service, group, mockDialer, mockLockService } = createService();
+    const loggerWarnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+
+    mockLockService.acquireLock
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+
+    try {
+      await expect(
+        service.initiateParallelDial({
+          userId: 'user-1',
+          workspaceId: 'workspace-1',
+          body: {
+            queueId: group.queueId,
+            customerNumbers: ['+14155552671', '+16505551234'],
+            profileId: 'conservative',
+          },
+        }),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({
+          code: 'CALLER_ID_LOCKED',
+          message: 'Caller ID is in use',
+          retryAfterMs: 5000,
+        }),
+      });
+
+      expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+        '+12025550123',
+      );
+      expect(mockLockService.releaseLockByNumber).not.toHaveBeenCalledWith(
+        '+12125550123',
+      );
+      expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
+        'parallel dial blocked by caller id lock',
+        expect.objectContaining({
+          queueId: group.queueId,
+          userId: 'user-1',
+          lockedFromNumberSuffix: '0123',
+        }),
+      );
+    } finally {
+      loggerWarnSpy.mockRestore();
+    }
+  });
+
   it('should release caller-id locks when group creation fails', async () => {
     const { service, group, mockDialer, mockLockService } = createService();
 
