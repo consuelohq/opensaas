@@ -688,9 +688,15 @@ export class ParallelService {
 
       if (!locked) {
         await this.releaseCallerIdLocks(acquiredFromNumbers);
+        this.logger.warn('parallel dial blocked by caller id lock', {
+          queueId: input.queueId,
+          userId: input.userId,
+          lockedFromNumberSuffix: fromNumber.slice(-4),
+        });
         throw new ConflictException({
           code: 'CALLER_ID_LOCKED',
           message: 'Caller ID is in use',
+          retryAfterMs: 5000,
         });
       }
 

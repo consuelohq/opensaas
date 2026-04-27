@@ -1,44 +1,23 @@
-# verify root publish commands
-
-branch: `task/workspace-agents/verify-root-publish-commands`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/215
-started: 2026-04-27
+# fix railway docker chown build timeout
 
 ## acceptance criteria
-
-- [x] start from synced stream/workspace-agents after root publish selection landed on main.
-- [x] make a validation-only workpad change using root task:fs --branch.
-- [ ] run verify from root using task:exec --branch.
-- [ ] push using root task:push --branch.
-- [ ] inspect prs using root task:prs --branch.
-- [ ] promote using root task:pr --branch.
-- [ ] merge stream review pr to main, update local main, and finish using root task:finish --branch.
+- [x] start from stream/dialer task branch.
+- [ ] inspect docker build path and identify why final chown layer is slow/canceling.
+- [ ] avoid recursive chown over all of /app if not needed.
+- [ ] keep runtime writable directories owned by app user.
+- [ ] validate dockerfile syntax/build-relevant diff.
+- [ ] publish through task workflow.
+- [ ] redeploy and confirm railway build no longer spends 20m on final chown.
 
 ## plan
+1. inspect dockerfiles and dockerignore.
+2. find exact final stage file ownership requirements.
+3. patch smallest safe dockerfile change.
+4. validate with dockerfile parse/build-target if feasible and review diff.
+5. push pr, merge stream, redeploy, inspect build logs.
 
-1. use only repo-root task commands for the publish/promote loop.
-2. verify the branch selector works without cd or bun --cwd.
-3. merge the validation stream pr to main and fast-forward local main.
+## notes
+- current observed failure: final layer  ran about 20 minutes then build canceled.
 
-## files changed
-
-- .task/workpad.md
-
-## key decisions
-
-- this task intentionally changes only task metadata/workpad content to validate the workflow.
-
-## notes for ko
-
-- this is the command-shape validation task for root-level task:push/task:pr/task:prs/task:finish.
-
-## improvements noticed
-
-- 
-
-## errors i ran into
-
-- 
-
-- 2026-04-27 06:33:46 write: `.task/workpad.md`
+- 2026-04-27 20:26:08 write: `.task/workpad.md`
+- 2026-04-27 20:26:49 patch lines 87-88: `packages/twenty-docker/twenty/Dockerfile`
