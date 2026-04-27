@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { resolveGitRoot } = require('./lib/paths');
-const { readTaskMeta } = require('./lib/task-meta');
-const { listWorktrees } = require('./lib/git');
+const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
-function writeStdout(msg) { process.stdout.write(msg + '\n'); }
-function writeStderr(msg) { process.stderr.write(msg + '\n'); }
+function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
+function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
 function showHelp() {
   writeStdout('task:exec — run a command inside the active task worktree');
@@ -15,45 +14,18 @@ function showHelp() {
   writeStdout('usage:');
   writeStdout('  bun run task:exec -- <command...>');
   writeStdout('  bun run task:exec -- --area dialer <command...>');
+  writeStdout('  bun run task:exec -- --branch task/dialer/fix-thing <command...>');
+  writeStdout('  bun run task:exec -- --pr 209 <command...>');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --area <name>    select task by area (required if multiple active tasks)');
-  writeStdout('  --help           show this help');
+  writeStdout('  --area <name>        select task by area');
+  writeStdout('  --branch <branch>    select exact task branch');
+  writeStdout('  --pr <number>        select task by pr number');
+  writeStdout('  --help               show this help');
   writeStdout('');
   writeStdout('examples:');
-  writeStdout('  bun run task:exec -- bun run review');
-  writeStdout('  bun run task:exec -- npx nx typecheck twenty-front');
-  writeStdout('  bun run task:exec -- --area dialer git diff');
-}
-
-function findActiveTask(repoRoot, area) {
-  const worktrees = listWorktrees(repoRoot);
-  const tasks = [];
-
-  for (const wt of worktrees) {
-    // skip the main worktree
-    if (wt.path === repoRoot) continue;
-    const meta = readTaskMeta(wt.path);
-    if (!meta) continue;
-    if (area && meta.area !== area) continue;
-    tasks.push({ worktreePath: wt.path, meta, branch: wt.branch });
-  }
-
-  if (tasks.length === 0) {
-    const msg = area
-      ? `no active task found for area "${area}". run task:start first.`
-      : 'no active task found. run task:start first.';
-    throw new Error(msg);
-  }
-
-  if (tasks.length > 1 && !area) {
-    const areas = tasks.map(t => t.meta.area).join(', ');
-    throw new Error(
-      `multiple active tasks found (${areas}). use --area <name> to select one.`
-    );
-  }
-
-  return tasks[0];
+  writeStdout('  bun run task:exec -- --branch task/workspace-agents/tighten-exact-task-command-selection git diff');
+  writeStdout('  bun run task:exec -- --pr 210 npx nx typecheck twenty-front');
 }
 
 function main() {
@@ -64,21 +36,16 @@ function main() {
     return;
   }
 
-  let area = null;
-  const commandArgs = [];
-  let i = 0;
-
-  while (i < rawArgs.length) {
-    if (rawArgs[i] === '--area' && i + 1 < rawArgs.length) {
-      area = rawArgs[i + 1];
-      i += 2;
-    } else {
-      // everything from here on is the command
-      commandArgs.push(...rawArgs.slice(i));
-      break;
-    }
+  let parsed;
+  try {
+    parsed = parseTaskSelectorPrefix(rawArgs);
+  } catch {
+    writeStderr('error: invalid task selector');
+    process.exitCode = 1;
+    return;
   }
 
+  const commandArgs = parsed.remainingArgs;
   if (commandArgs.length === 0) {
     writeStderr('error: no command provided');
     writeStderr('usage: bun run task:exec -- <command...>');
@@ -87,22 +54,25 @@ function main() {
   }
 
   const repoRoot = resolveGitRoot(process.cwd());
-  const task = findActiveTask(repoRoot, area);
-  const cmd = commandArgs.join(' ');
+  const selected = findActiveTaskResult(repoRoot, parsed.selector);
+  if (selected.error) {
+    writeStderr(`error: ${selected.error}`);
+    process.exitCode = 1;
+    return;
+  }
 
+  const task = selected.task;
   writeStderr(`→ task: ${task.meta.area}/${task.meta.taskBranch.split('/').pop()}`);
   writeStderr(`→ cwd: ${task.worktreePath}`);
-  writeStderr(`→ running: ${cmd}`);
+  writeStderr(`→ running: ${commandArgs.join(' ')}`);
 
-  try {
-    execSync(cmd, {
-      cwd: task.worktreePath,
-      stdio: 'inherit',
-      env: { ...process.env, TASK_WORKTREE: task.worktreePath },
-    });
-  } catch (err) {
-    process.exitCode = err.status || 1;
-  }
+  const result = spawnSync(commandArgs[0], commandArgs.slice(1), {
+    cwd: task.worktreePath,
+    stdio: 'inherit',
+    env: { ...process.env, TASK_WORKTREE: task.worktreePath },
+  });
+
+  process.exitCode = result.status || (result.error ? 1 : 0);
 }
 
 main();

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/address-workspace-agents-review-comments",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 211,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/211",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-address-workspace-agents-review-comments",
+  "createdAt": "2026-04-27T05:19:32.790Z"
+}

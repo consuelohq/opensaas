@@ -19,10 +19,15 @@ function gh(args) {
 }
 
 function findTaskMeta() {
+  const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
   let dir = process.cwd();
   while (dir !== '/') {
     const p = path.join(dir, '.task', 'current.json');
-    if (fs.existsSync(p)) return { data: JSON.parse(fs.readFileSync(p, 'utf8')), root: dir };
+    if (fs.existsSync(p)) {
+      const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (data.taskBranch && currentBranch && data.taskBranch !== currentBranch) return null;
+      return { data, root: dir };
+    }
     dir = path.dirname(dir);
   }
   return null;

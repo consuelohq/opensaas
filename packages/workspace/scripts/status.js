@@ -184,7 +184,8 @@ async function main() {
   fetchOrigin(repoRoot);
 
   const currentBranch = getCurrentBranch(cwd);
-  const taskMeta = findTaskMetaRecord(cwd);
+  const taskMetaRecord = findTaskMetaRecord(cwd, { currentBranch, includeStale: true });
+  const taskMeta = taskMetaRecord?.stale ? null : taskMetaRecord;
   const stream = getStreamFromContext({ branch: currentBranch, taskMeta });
   const taskBranch = taskMeta?.data?.taskBranch || (parseTaskBranch(currentBranch) ? currentBranch : null);
   const changedFiles = getChangedFiles(cwd).filter((file) => file.path !== 'node_modules');
@@ -201,6 +202,11 @@ async function main() {
     repoRoot,
     branch: currentBranch,
     task: taskMeta?.data || null,
+    staleTask: taskMetaRecord?.stale ? {
+      path: taskMetaRecord.path,
+      data: taskMetaRecord.data,
+      mismatch: taskMetaRecord.mismatch,
+    } : null,
     stream,
     sync: { branch: branchSync, stream: streamSync },
     pullRequests: prs,
@@ -219,6 +225,9 @@ async function main() {
   writeLine(`repo: ${repoRoot}`);
   writeLine(`branch: ${currentBranch || 'unknown'}`);
   if (stream) writeLine(`stream: ${stream}`);
+  if (taskMetaRecord?.stale) {
+    writeLine(`stale task metadata: ${taskMetaRecord.mismatch.expectedBranch} (current branch: ${taskMetaRecord.mismatch.currentBranch})`);
+  }
   writeLine(`task: ${taskBranch || 'none'}`);
 
   if (taskMeta?.data?.prNumber && taskMeta?.data?.prUrl) {

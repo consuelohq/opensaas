@@ -22,8 +22,8 @@ always run scripts from `/Users/kokayi/Dev/opensaas` (the repo root). never cd i
 bad: cd /private/tmp/opensaas-worktrees/task-dialer-queue && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
 
-good: bun run task:fs -- --area dialer read src/foo.ts
- → reads from the dialer worktree without leaving repo root
+good: bun run task:fs -- --branch task/dialer/queue read src/foo.ts
+ → reads from the exact task worktree without leaving repo root
 ```
 
 ### rule 1 — response contract
@@ -70,17 +70,17 @@ always use this flow even if the change seems tiny. when in doubt, start from th
 
 ## things to remember
 
-**stale .task/current.json is the #1 cause of script failures.** if `task:pr`, `task:finish`, `task:push`, or `task:prs` give wrong results, the metadata is stale. fix it:
+**stale .task/current.json is the #1 cause of script failures.** branch-aware task scripts now ignore metadata when `taskBranch` does not match the actual worktree branch. if `task:pr`, `task:finish`, `task:push`, or `task:prs` still need explicit repair, fix the known worktree only:
 
 ```bash
 bun run task:init -- --area <area> --branch <branch> --pr <N>
 ```
 
-do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs.
+do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
 **never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
 
-**when resolving stream conflicts,** stop and ask ko unless it's metadata files (`.task/current.json`, `.task/workpad.md`).
+**when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
 **after any write or patch, verify immediately:**
 ```bash
@@ -101,11 +101,11 @@ recovery patterns for common failures. don't panic — diagnose first.
 
 | symptom | fix |
 |---------|-----|
-| stale metadata — scripts reference wrong branch/PR | `bun run task:init -- --area <area> --branch <branch> --pr <N>` |
+| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area <area> --branch <branch> --pr <N>` |
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
-| stream conflict on merge | stop and ask ko (unless metadata files) |
-| "Script not found" | you're in a worktree. run `cd /Users/kokayi/Dev/opensaas` first |
+| stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
+| "Script not found" | you're in a worktree. run scripts from repo root; use `task:fs` / `task:exec` with `--branch` or `--pr` |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
 | review fails on a file you didn't touch | fix it anyway. there is no "not mine" — if it's on the branch and broken, it's yours |
@@ -125,7 +125,7 @@ check for:
 - verbose variable names that don't match the codebase conventions
 
 ```bash
-bun run task:exec -- --area <area> git diff   # review your changes
+bun run task:exec -- --branch <task-branch> git diff   # review your changes
 ```
 
 if you see slop, fix it before pushing. a clean diff is a fast review.
@@ -250,15 +250,15 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 
 ### task:fs — file operations inside the task worktree
 
-proxies all arguments to `bun run fs` with cwd set to the task worktree. paths resolve relative to the worktree root. this is how you read and write files in a task — not by cd-ing into the worktree.
+proxies all arguments to `bun run fs` with cwd set to the selected task worktree. paths resolve relative to the worktree root. this is how you read and write files in a task — not by cd-ing into the worktree.
 
 ```bash
 bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
-bun run task:fs -- --area dialer read packages/dialer/src/queue.ts --from 1 --to 80 --plain
-bun run task:fs -- --area dialer search "TODO" packages/ --files
+bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
+bun run task:fs -- --pr 210 search "TODO" packages/ --files
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
-bun run task:fs -- --area dialer write src/new.ts --content "export const x = 1;"
-bun run task:fs -- --area dialer patch src/foo.ts --from 10 --to 15 --content "new code"
+bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
+bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
 ```
 
 **common task:fs patterns**
@@ -270,11 +270,13 @@ bun run task:fs -- --area dialer search "transferCall" packages/dialer/src/
 bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed the thing"
 ```
 
+task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch <task-branch>` or `--pr <number>`.
+
 **task:fs failure modes**
 ```bash
-bad: bun run task:fs -- read .task/current.json
- → error: multiple active tasks found (workspace-agents, dialer). use --area <name>
- (always pass --area when multiple tasks exist)
+bad: bun run task:fs -- --area workspace-agents read .task/current.json
+ → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
+ (area is not enough when multiple tasks exist in the same stream. use --branch or --pr)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run task:fs -- read src/foo.ts
  → error: Script not found "task:fs"
@@ -282,34 +284,34 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run task:fs -- read s
 
 bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.ts
  → works but bypasses the script system. never read raw worktree paths.
- (use: bun run task:fs -- --area dialer read packages/dialer/src/queue.ts)
+ (use: bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts)
 ```
 
 ---
 
 ### task:exec — run commands inside the task worktree
 
-runs any command with cwd set to the task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree.
+runs any command with cwd set to the selected task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch. when more than one task exists in an area, select with `--branch` or `--pr`; `--area` is intentionally not enough.
 
 ```bash
 bun run task:exec -- --area dialer git diff
-bun run task:exec -- --area dialer git status --short
-bun run task:exec -- --area dialer yarn jest --runInBand packages/dialer/src/queue.test.ts
-bun run task:exec -- --area dialer yarn prettier --write packages/twenty-front/src/foo.ts
-bun run task:exec -- --area dialer npx nx typecheck twenty-front
-bun run task:exec -- --area dialer bun run review
-bun run task:exec -- --area dialer git diff --check
+bun run task:exec -- --branch task/dialer/fix-thing git status --short
+bun run task:exec -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
+bun run task:exec -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
+bun run task:exec -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
+bun run task:exec -- --branch task/dialer/fix-thing bun run review
+bun run task:exec -- --branch task/dialer/fix-thing git diff --check
 ```
 
 **task:exec failure modes**
 ```bash
-bad: bun run task:exec -- git status
- → error: multiple active tasks found (workspace-agents, dialer). use --area <name>
- (always pass --area when multiple tasks exist)
+bad: bun run task:exec -- --area workspace-agents git status
+ → error: multiple active tasks found (...). use --branch <task-branch> or --pr <number> to select one.
+ (always use --branch or --pr when the same area has multiple active tasks)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
  → works but you left the repo root. now bun run <anything> will fail.
- (use: bun run task:exec -- --area dialer git diff)
+ (use: bun run task:exec -- --branch task/dialer/fix-thing git diff)
 ```
 
 ---
@@ -375,10 +377,10 @@ bad: bun run task:push -- --message "fix: thing" --changed
 reads changed files from the task worktree and pushes them as a commit to the task branch via github api. never touches the local git state.
 
 ```bash
-bun run task:push -- --message "fix(dialer): normalize phone numbers" --changed
-bun run task:push -- --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
-bun run task:push -- --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
-bun run task:push -- --json
+bun run task:push -- --branch task/dialer/fix-thing --message "fix(dialer): normalize phone numbers" --changed
+bun run task:push -- --pr 213 --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
+bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
+bun run task:push -- --branch task/dialer/fix-thing --json
 ```
 
 **task:push failure modes**
@@ -413,7 +415,7 @@ bad: bun run task:start
 
 bad: bun run task:start -- --area dialer --title "fix thing"
  → error: worktree already exists at /private/tmp/opensaas-worktrees/task-dialer-fix-thing
- (check if the old task is still needed: bun run task:fs -- --area dialer read .task/current.json
+ (check if the old task is still needed: bun run task:fs -- --branch task/dialer/fix-thing read .task/current.json
   if not needed: bun run task:finish or bun run task:cleanup -- --preview first)
 ```
 
@@ -424,8 +426,8 @@ bad: bun run task:start -- --area dialer --title "fix thing"
 default behavior: (1) ensure task PR exists for task/* → stream/, (2) merge that task PR into the stream branch, (3) create or refresh the review PR for stream/ → main.
 
 ```bash
-bun run task:pr                       # full flow: task→stream merge + stream→main PR
-bun run task:pr -- --task-only        # only create/refresh the task→stream PR, don't merge
+bun run task:pr -- --branch task/dialer/fix-thing  # full flow: task→stream merge + stream→main PR
+bun run task:pr -- --pr 213 --task-only        # only create/refresh the task→stream PR, don't merge
 bun run task:pr -- --draft            # create stream→main PR as draft
 bun run task:pr -- --ready            # convert existing draft to ready
 bun run task:pr -- --body-template area  # generate area-context body template
@@ -446,8 +448,8 @@ bad: bun run task:pr (with stale .task/current.json)
 shows both the task PR (task/* → stream/) and the review PR (stream/ → main).
 
 ```bash
-bun run task:prs                      # show PR links from .task/current.json
-bun run task:prs -- --json
+bun run task:prs -- --branch task/dialer/fix-thing  # show PR links for exact task
+bun run task:prs -- --pr 213 --json
 ```
 
 ---
@@ -466,8 +468,8 @@ bun run task:merge -- --json
 ### task:finish — verify merge, remove worktree, delete branch
 
 ```bash
-bun run task:finish                   # finish current task
-bun run task:finish -- --json
+bun run task:finish -- --branch task/dialer/fix-thing  # finish exact task
+bun run task:finish -- --pr 213 --json
 ```
 
 **task:finish failure modes**
@@ -514,6 +516,8 @@ bun run stream:list                   # show all streams with status, divergence
 ---
 
 ### stream:sync — sync stream with latest main
+
+syncs the stream branch with latest main, runs stream checks, and pushes the stream branch when checks pass.
 
 ```bash
 bun run stream:sync -- --area dialer  # sync stream/dialer with main
@@ -830,7 +834,17 @@ bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
 
 ### stream conflicts
 
-when resolving stream merge conflicts, stop and ask ko unless the conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata conflicts can be resolved automatically — code conflicts need human judgment.
+when resolving stream merge conflicts, stop and ask ko unless every conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are resolved by choosing the metadata for the current stream/task when possible, then the newest valid task metadata. the matching workpad follows the selected task branch. code/docs conflicts still need human judgment.
+
+### task metadata smoke check
+
+run this after changing task metadata selection or conflict behavior:
+
+```bash
+bun run task-meta:smoke
+```
+
+it verifies stale metadata is ignored, metadata-only conflicts are resolvable, and mixed metadata + real file conflicts still block.
 
 ### SCRIPTS.md is part of the fix
 
@@ -873,7 +887,7 @@ bad: cat packages/dialer/src/queue.ts
  → use: bun run fs -- read packages/dialer/src/queue.ts
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
- → use: bun run task:fs -- --area dialer search "TODO" packages/
+ → use: bun run task:fs -- --branch task/dialer/fix-thing search "TODO" packages/
 ```
 
 ---

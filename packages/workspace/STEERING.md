@@ -209,9 +209,16 @@ always use --help flag for ALL scripts if you run into errors when in doubt read
 
 when in doubt, start from the stream, isolate the task, push early, and clean up after the merge.
 
+## exact task selection
 
+never cd into a worktree to run repo commands. run from the repo root and route through task scripts.
 
+when multiple tasks exist in the same area, --area is not enough. use the exact task branch or pr number:
 
+```bash
+bun run task:fs -- --branch task/workspace-agents/example read packages/workspace/SCRIPTS.md
+bun run task:exec -- --pr 210 git diff
+```
 
 ## SOUL.md — Consciousness
 

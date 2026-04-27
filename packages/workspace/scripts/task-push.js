@@ -33,6 +33,7 @@ const {
   isStreamBranchName,
 } = require('./lib/validation');
 const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
+const { findActiveTaskResult } = require('./lib/task-selection');
 const { getVerifyStampMismatch } = require('./lib/verification');
 
 const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
@@ -53,7 +54,9 @@ function printHelp() {
   writeStdout('  --changed              push tracked changed files from the current task worktree');
   writeStdout('  --files <paths...>     explicit file paths to read from disk');
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
-  writeStdout('  --branch <name>        override task branch (normally inferred from .task/current.json)');
+  writeStdout('  --area <name>          select task by area');
+  writeStdout('  --branch <name>        select exact task branch');
+  writeStdout('  --pr <number>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
   writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
@@ -108,8 +111,14 @@ function parseArgs(argv) {
       case '--files-json':
         args.filesJson = value;
         break;
+      case '--area':
+        args.area = value;
+        break;
       case '--branch':
         args.branch = value;
+        break;
+      case '--pr':
+        args.prNumber = Number.parseInt(value, 10);
         break;
       case '--cwd':
         args.cwd = value;
@@ -139,11 +148,48 @@ function parseArgs(argv) {
     index += 1;
   }
 
+  if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
+    throw new Error('invalid --pr value');
+  }
+
   return args;
+}
+
+function hasExplicitTaskSelector(args) {
+  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+}
+
+function getSelectedTaskContext(args, startDirectory) {
+  const repoRoot = resolveGitRoot(startDirectory);
+  const selected = findActiveTaskResult(repoRoot, {
+    area: args.area || null,
+    branch: args.branch || null,
+    prNumber: args.prNumber === undefined ? null : args.prNumber,
+  });
+
+  if (selected.error) {
+    throw new Error(selected.error);
+  }
+
+  return {
+    branch: selected.task.meta.taskBranch,
+    currentBranch: selected.task.branch,
+    repoRoot: selected.task.worktreePath,
+    taskMeta: {
+      dir: selected.task.worktreePath,
+      data: selected.task.meta,
+      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+    },
+  };
 }
 
 function getTaskContext(args) {
   const startDirectory = path.resolve(args.cwd || process.cwd());
+
+  if (hasExplicitTaskSelector(args)) {
+    return getSelectedTaskContext(args, startDirectory);
+  }
+
   const repoRoot = resolveGitRoot(startDirectory);
   const currentBranch = getCurrentBranch(startDirectory);
   const taskMeta = findTaskMeta(startDirectory);
@@ -407,6 +453,8 @@ async function main() {
     if (file.deleted) {
       treeItems.push({
         path: file.path,
+        mode: '100644',
+        type: 'blob',
         sha: null,
       });
       continue;

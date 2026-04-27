@@ -22,6 +22,7 @@ const {
   toWorktreeDirectoryName,
 } = require('./lib/paths');
 const { assertStreamBranchName, getDefaultStreamBranch, normalizeArea } = require('./lib/validation');
+const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./lib/task-meta');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -159,6 +160,15 @@ function runStreamChecks(worktreePath) {
   };
 }
 
+function pushStreamBranch(repoRoot, worktreePath, streamBranch, checks) {
+  if (!checks || checks.status !== 'pass') {
+    return false;
+  }
+
+  runGit(['-C', worktreePath, 'push', 'origin', streamBranch], { cwd: repoRoot });
+  return true;
+}
+
 function printResult(result, useJson) {
   if (useJson) {
     writeStdout(JSON.stringify(result, null, 2));
@@ -229,9 +239,15 @@ async function main() {
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();
 
   if (mergeResult.status === 0) {
-    const checks = runStreamChecks(worktreePath);
-    if (createdTemporaryWorktree) {
-      removeWorktree(repoRoot, worktreePath, true);
+    let checks;
+    let pushed = false;
+    try {
+      checks = runStreamChecks(worktreePath);
+      pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
+    } finally {
+      if (createdTemporaryWorktree) {
+        removeWorktree(repoRoot, worktreePath, true);
+      }
     }
 
     printResult(
@@ -243,10 +259,53 @@ async function main() {
         mergeOutput,
         conflictFiles: [],
         checks,
+        pushed,
       },
       args.json,
     );
     return;
+  }
+
+  const conflictFiles = getConflictFiles(repoRoot, worktreePath);
+
+  if (conflictFiles.length === 0) {
+    throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
+  }
+
+  if (isOnlyTaskMetadataConflict(conflictFiles)) {
+    const resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
+      currentBranch: streamBranch,
+    });
+
+    if (resolution.resolved) {
+      let checks;
+      let pushed = false;
+      try {
+        runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
+        checks = runStreamChecks(worktreePath);
+        pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
+      } finally {
+        if (createdTemporaryWorktree) {
+          removeWorktree(repoRoot, worktreePath, true);
+        }
+      }
+
+      printResult(
+        {
+          stream: streamBranch,
+          status: 'success',
+          worktreePath,
+          temporaryWorktree: createdTemporaryWorktree,
+          mergeOutput,
+          conflictFiles: [],
+          autoResolvedMetadata: resolution,
+          checks,
+          pushed,
+        },
+        args.json,
+      );
+      return;
+    }
   }
 
   const checks = {
@@ -254,11 +313,6 @@ async function main() {
     status: 'skipped',
     reason: 'merge failed before stream checks could run',
   };
-  const conflictFiles = getConflictFiles(repoRoot, worktreePath);
-
-  if (conflictFiles.length === 0) {
-    throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
-  }
 
   printResult(
     {

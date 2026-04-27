@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/verify-root-publish-commands",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 215,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/215",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-verify-root-publish-commands",
+  "createdAt": "2026-04-27T06:30:54.026Z"
+}

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/root-task-publish-selection",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 213,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/213",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-root-task-publish-selection",
+  "createdAt": "2026-04-27T06:25:07.764Z"
+}
