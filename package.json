@@ -219,10 +219,17 @@
   "nx": {},
   "scripts": {
     "task:start": "bun packages/workspace/scripts/task-start.js",
+    "task:init": "bun packages/workspace/scripts/task-init.js",
     "task:push": "bun packages/workspace/scripts/task-push.js",
     "task:pr": "bun packages/workspace/scripts/task-pr.js",
+    "task:prs": "bun packages/workspace/scripts/task-prs.js",
+    "task:merge": "bun packages/workspace/scripts/task-merge.js",
     "task:cleanup": "bun packages/workspace/scripts/task-cleanup.js",
     "task:finish": "bun packages/workspace/scripts/task-finish.js",
+    "task:exec": "bun packages/workspace/scripts/task-exec.js",
+    "task:fs": "bun packages/workspace/scripts/task-fs.js",
+    "doctor": "bun packages/workspace/scripts/doctor.js",
+    "status": "bun packages/workspace/scripts/status.js",
     "stream:list": "bun packages/workspace/scripts/stream-list.js",
     "stream:sync": "bun packages/workspace/scripts/stream-sync.js",
     "stream:context": "bun packages/workspace/scripts/stream-context.js",
@@ -238,7 +245,14 @@
     "website:deploy": "bun packages/workspace/scripts/website-deploy.js",
     "context": "bun packages/workspace/scripts/context.js",
     "tmp": "bun packages/workspace/scripts/tmp.js",
-    "review": "bun packages/workspace/scripts/review.js"
+    "review": "bun packages/workspace/scripts/review.js",
+    "verify": "bun packages/workspace/scripts/verify.js",
+    "pr-review": "bun packages/workspace/scripts/pr-review.js",
+    "gh": "bun packages/workspace/scripts/gh.js",
+    "fs": "bun packages/workspace/scripts/fs.js",
+    "wait": "bun packages/workspace/scripts/wait.js",
+    "server": "bun packages/workspace/scripts/server.js",
+    "tracing": "bun packages/workspace/scripts/tracing.js"
   },
   "workspaces": {
     "packages": [

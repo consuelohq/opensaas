@@ -33,6 +33,9 @@ const {
   isStreamBranchName,
 } = require('./lib/validation');
 const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
+const { getVerifyStampMismatch } = require('./lib/verification');
+
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -53,6 +56,8 @@ function printHelp() {
   writeStdout('  --branch <name>        override task branch (normally inferred from .task/current.json)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
+  writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
+  writeStdout('  --no-verify            visibly bypass the verify stamp check');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -63,6 +68,7 @@ function parseArgs(argv) {
     filePaths: [],
     json: false,
     changed: false,
+    verify: true,
   };
 
   let index = 0;
@@ -84,7 +90,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--changed';
+    const isBooleanFlag = BOOLEAN_FLAGS.has(flag);
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -113,6 +119,12 @@ function parseArgs(argv) {
         break;
       case '--changed':
         args.changed = true;
+        break;
+      case '--verify':
+        args.verify = true;
+        break;
+      case '--no-verify':
+        args.verify = false;
         break;
       case '--json':
         args.json = true;
@@ -322,7 +334,20 @@ async function main() {
 
   assertCommitMessageFormat(args.message);
 
-  const { branch, repoRoot } = getTaskContext(args);
+  const { branch, repoRoot, taskMeta } = getTaskContext(args);
+
+  if (args.verify) {
+    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
+    if (verifyMismatch) {
+      throw new Error(
+        `verify required before task:push: ${verifyMismatch}.\n` +
+        'run: bun run verify\n' +
+        'or explicitly bypass with: bun run task:push -- --no-verify --message "fix(area): summary" --changed',
+      );
+    }
+  } else {
+    writeStderr('warning: task:push bypassing verify because --no-verify was provided');
+  }
 
   if (args.changed) {
     assertChangedBranchIsSynced(repoRoot, branch);
@@ -346,8 +371,10 @@ async function main() {
     }
   }
 
-  // auto-include .task/ metadata files in every push
-  const metaFiles = collectTaskMetaFiles(repoRoot);
+  // auto-include .task/ metadata files — scoped to current task area only
+  const currentArea = taskMeta && taskMeta.data && taskMeta.data.area;
+  const currentTaskBranch = taskMeta && taskMeta.data && taskMeta.data.taskBranch;
+  const metaFiles = collectTaskMetaFiles(repoRoot, currentArea, currentTaskBranch, { includeVerify: args.verify });
   const seenPaths = new Set(userFiles.map((f) => f.path));
   const files = [...userFiles];
   for (const mf of metaFiles) {
@@ -380,6 +407,8 @@ async function main() {
     if (file.deleted) {
       treeItems.push({
         path: file.path,
+        mode: '100644',
+        type: 'blob',
         sha: null,
       });
       continue;

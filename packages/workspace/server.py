@@ -1,7 +1,9 @@
 """openworkspace MCP server — local workspace tools with optional memory and observability."""
 
 import contextlib
+from contextvars import ContextVar
 import json
+import math
 import os
 
 import uvicorn
@@ -12,10 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
-from tools import brain as brain_mod
-from tools import handoff as handoff_mod
 from tools import sandbox as sandbox_mod
-from tools import slack as slack_mod
 
 try:
     from langsmith import Client as LSClient
@@ -37,10 +36,111 @@ PORT = int(os.environ.get('PORT', 8000))
 SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
-REPO_TREE_FILE = os.environ.get('REPO_TREE_FILE', '')
+SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+REQUEST_TRACE_METADATA: ContextVar[dict] = ContextVar('request_trace_metadata', default={})
+
+
+def _stringify_for_trace(value) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value, sort_keys=True, default=str)
+    except Exception:
+        return str(value)
+
+
+def _estimate_tokens(value) -> int:
+    text = _stringify_for_trace(value)
+    if not text:
+        return 0
+    return max(1, math.ceil(len(text) / 4))
+
+
+def _request_thread_metadata(request) -> dict:
+    headers = request.headers
+    candidates = (
+        ('x-langsmith-thread-id', 'header:x-langsmith-thread-id'),
+        ('x-thread-id', 'header:x-thread-id'),
+        ('x-conversation-id', 'header:x-conversation-id'),
+        ('x-session-id', 'header:x-session-id'),
+        ('mcp-session-id', 'header:mcp-session-id'),
+    )
+
+    for header, source in candidates:
+        value = headers.get(header)
+        if value:
+            return {'thread_id': value, 'thread_source': source}
+
+    return {}
+
+
+def _workspace_thread_metadata() -> dict:
+    request_metadata = REQUEST_TRACE_METADATA.get({})
+    if request_metadata.get('thread_id'):
+        return request_metadata
+
+    for key in ('WORKSPACE_LANGSMITH_THREAD_ID', 'LANGSMITH_THREAD_ID', 'LANGCHAIN_THREAD_ID'):
+        value = os.environ.get(key)
+        if value:
+            return {'thread_id': value, 'thread_source': f'env:{key}'}
+
+    return {}
+
+
+def _sandbox_output_metadata(output) -> dict:
+    if not isinstance(output, str):
+        return {}
+
+    try:
+        parsed = json.loads(output)
+    except Exception:
+        return {}
+
+    if not isinstance(parsed, dict):
+        return {}
+
+    stdout = parsed.get('stdout') if isinstance(parsed.get('stdout'), str) else ''
+    stderr = parsed.get('stderr') if isinstance(parsed.get('stderr'), str) else ''
+    return {
+        'workspace_stdout_chars': len(stdout),
+        'workspace_stdout_tokens_estimated': _estimate_tokens(stdout),
+        'workspace_stderr_chars': len(stderr),
+        'workspace_stderr_tokens_estimated': _estimate_tokens(stderr),
+        'workspace_exit_code': parsed.get('exitCode'),
+    }
+
+
+def _annotate_current_run(tool_name: str, inputs, output) -> None:
+    try:
+        from langsmith.run_helpers import get_current_run_tree
+
+        run = get_current_run_tree()
+        if not run:
+            return
+
+        metadata = {
+            'workspace_tool_name': tool_name,
+            'workspace_input_chars': len(_stringify_for_trace(inputs)),
+            'workspace_input_tokens_estimated': _estimate_tokens(inputs),
+            'workspace_output_chars': len(_stringify_for_trace(output)),
+            'workspace_output_tokens_estimated': _estimate_tokens(output),
+            'workspace_token_estimator': 'chars_div_4_ceil',
+        }
+        metadata.update(_sandbox_output_metadata(output))
+
+        thread_metadata = _workspace_thread_metadata()
+        if thread_metadata.get('thread_id'):
+            metadata['thread_id'] = thread_metadata['thread_id']
+            metadata['workspace_thread_source'] = thread_metadata.get('thread_source', 'unknown')
+
+        run.metadata.update(metadata)
+    except Exception:
+        return
 
 
 def _resolve_steering_file() -> str:
@@ -51,9 +151,7 @@ def _resolve_steering_file() -> str:
 
 
 def _read_optional_file(path: str) -> str:
-    if not path:
-        return ''
-    if not os.path.exists(path):
+    if not path or not os.path.exists(path):
         return ''
     with open(path, 'r', encoding='utf-8') as handle:
         return handle.read()
@@ -64,147 +162,51 @@ def _read_steering() -> str:
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
 
-    tree_content = _read_optional_file(REPO_TREE_FILE)
-    if tree_content:
-        content += '\n\n## optional repo tree\n' + tree_content
+    scripts = _read_optional_file(SCRIPTS_FILE)
+    if scripts:
+        content += '\n\n' + scripts
 
-    skills = brain_mod.list_skills()
-    try:
-        skill_list = json.loads(skills)
-        if isinstance(skill_list, list) and skill_list:
-            content += '\n\n## available skills (call brain_get_skill(name) for full docs)\n'
-            for skill in skill_list:
-                content += f"- **{skill['name']}** — {skill.get('description', '')}\n"
-    except Exception:
-        content += '\n\n## available skills\n' + skills
     return content
 
 
 @mcp.tool(annotations=RO)
 @traceable(name='get_steering', run_type='tool')
 def get_steering() -> str:
-    """mandatory first call. returns the steering file and compact skill index."""
-    return _read_steering()
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_search', run_type='tool')
-def brain_search(query: str, limit: int = 10) -> str:
-    """search memories by keyword. searches title and content."""
-    return brain_mod.search(query, limit)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_vector_search', run_type='tool')
-def brain_vector_search(query: str, limit: int = 10) -> str:
-    """semantic search over memories and chat history using vector embeddings."""
-    return brain_mod.vector_search(query, limit)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_remember', run_type='tool')
-def brain_remember(content: str, category: str = 'observation', title: str = '') -> str:
-    """save a new memory. categories: observation, decision, pattern, rule, context, skill."""
-    return brain_mod.remember(content, category, title=title)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_get_memory', run_type='tool')
-def brain_get_memory(memory_id: str) -> str:
-    """retrieve a specific memory by id."""
-    return brain_mod.get_memory(memory_id)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_list_skills', run_type='tool')
-def brain_list_skills() -> str:
-    """list available skill docs stored in memory."""
-    return brain_mod.list_skills()
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='brain_get_skill', run_type='tool')
-def brain_get_skill(skill_name: str) -> str:
-    """load a skill doc by name."""
-    return brain_mod.get_skill(skill_name)
+    """mandatory first call. returns the steering file and workspace scripts reference."""
+    content = _read_steering()
+    _annotate_current_run('get_steering', {}, content)
+    return content
 
 
 @mcp.tool(annotations=RO)
 @traceable(name='sandbox_exec', run_type='tool')
 def sandbox_exec(command: str, timeout: int = 120) -> str:
     """run a bash command on the host machine inside the configured workspace."""
-    return sandbox_mod.exec(command, timeout)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='sandbox_read_file', run_type='tool')
-def sandbox_read_file(path: str) -> str:
-    """read a file from the host filesystem."""
-    return sandbox_mod.read_file(path)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='sandbox_write_file', run_type='tool')
-def sandbox_write_file(path: str, content: str) -> str:
-    """write content to a file on the host filesystem."""
-    return sandbox_mod.write_file(path, content)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='sandbox_list_files', run_type='tool')
-def sandbox_list_files(path: str = '') -> str:
-    """list files in a directory on the host. defaults to the configured workspace."""
-    return sandbox_mod.list_files(path)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='slack_post', run_type='tool')
-def slack_post(message: str) -> str:
-    """post a message to a slack webhook."""
-    return slack_mod.post(message)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='handoff_save', run_type='tool')
-def handoff_save(context: str, session_id: str = '', tags: str = '') -> str:
-    """save conversation context for later continuation."""
-    return handoff_mod.save(context, session_id, tags)
-
-
-@mcp.tool(annotations=RO)
-@traceable(name='handoff_load', run_type='tool')
-def handoff_load(session_id: str = '', query: str = '') -> str:
-    """load previous conversation context by session id or keyword."""
-    return handoff_mod.load(session_id, query)
+    output = sandbox_mod.exec(command, timeout)
+    _annotate_current_run('sandbox_exec', {'command': command, 'timeout': timeout}, output)
+    return output
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        if request.url.path == '/health':
+        token = REQUEST_TRACE_METADATA.set(_request_thread_metadata(request))
+        try:
+            skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
+            if request.url.path in skip:
+                return await call_next(request)
+            if bearer_token:
+                auth = request.headers.get('authorization', '')
+                if auth != f'Bearer {bearer_token}':
+                    return JSONResponse({'error': 'unauthorized'}, status_code=401)
             return await call_next(request)
-        if bearer_token:
-            auth = request.headers.get('authorization', '')
-            if auth != f'Bearer {bearer_token}':
-                return JSONResponse({'error': 'unauthorized'}, status_code=401)
-        return await call_next(request)
-
-
-class AuthMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
-        if request.url.path in skip:
-            return await call_next(request)
-        if bearer_token:
-            auth = request.headers.get('authorization', '')
-            if auth != f'Bearer {bearer_token}':
-                return JSONResponse({'error': 'unauthorized'}, status_code=401)
-        return await call_next(request)
+        finally:
+            REQUEST_TRACE_METADATA.reset(token)
 
 
 # --- oauth (for chatgpt connector auth) ---
 OAUTH_CLIENT_ID = os.environ.get('OAUTH_CLIENT_ID', 'openworkspace')
 OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET', '')
-_pending_codes = {}  # code -> redirect_uri (short-lived, in-memory)
+_pending_codes = {}
 
 
 async def oauth_metadata(request):
@@ -252,7 +254,7 @@ async def oauth_token(request):
 
 
 async def health(request):
-    return JSONResponse({'status': 'ok', 'tools': 20, 'name': SERVER_NAME})
+    return JSONResponse({'status': 'ok', 'tools': 2, 'name': SERVER_NAME})
 
 
 @contextlib.asynccontextmanager

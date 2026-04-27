@@ -4,6 +4,8 @@
   "scripts": {
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
+    "task:prs": "bun ./scripts/task-prs.js",
+    "fs": "bun ./scripts/fs.js",
     "task:push": "bun ./scripts/task-push.js",
     "task:cleanup": "bun ./scripts/task-cleanup.js",
     "task:finish": "bun ./scripts/task-finish.js",
@@ -17,7 +19,8 @@
     "website:deploy": "bun ./scripts/website-deploy.js",
     "context": "bun ./scripts/context.js",
     "tmp": "bun ./scripts/tmp.js",
-    "review": "bun ./scripts/review.js"
+    "review": "bun ./scripts/review.js",
+    "tracing": "bun ./scripts/tracing.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest"

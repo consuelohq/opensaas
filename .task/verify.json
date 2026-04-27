@@ -1,0 +1,27 @@
+{
+  "result": "pass",
+  "branch": "task/workspace/langsmith-tracing-helper",
+  "base": "origin/task/workspace/langsmith-tracing-helper",
+  "headSha": "d34ecdda12e2b615015f9ce7d0a81a1746db18ce",
+  "changeHash": "fb687858bd9f449439ea23adb45fad542bbb4379a11c838049214967a2267539",
+  "changedFiles": [
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/package.json",
+    "packages/workspace/requirements.txt",
+    "packages/workspace/scripts/tracing.js",
+    "packages/workspace/server.py"
+  ],
+  "verifiedAt": "2026-04-25T23:45:41.964Z",
+  "review": {
+    "skipped": true,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}
