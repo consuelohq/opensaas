@@ -1249,16 +1249,19 @@ export const useOpportunityQueueWorkspace = ({
       autoStartedItemIdRef.current = autoStartedItemId;
 
       void startParallelBatch()
-        .then((started) => {
-          if (!started && autoStartedItemIdRef.current === autoStartedItemId) {
+        .then((result) => {
+          if (result.status === 'blocked' || result.status === 'failed') {
+            return;
+          }
+
+          if (
+            result.status === 'skipped' &&
+            autoStartedItemIdRef.current === autoStartedItemId
+          ) {
             autoStartedItemIdRef.current = null;
           }
         })
         .catch((error: unknown) => {
-          if (autoStartedItemIdRef.current === autoStartedItemId) {
-            autoStartedItemIdRef.current = null;
-          }
-
           Sentry.captureException(error, {
             extra: {
               context: 'startParallelBatch',
