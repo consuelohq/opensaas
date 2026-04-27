@@ -8,6 +8,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const {
+  findTaskMeta,
   isOnlyTaskMetadataConflict,
   readValidTaskMetaForWorktree,
   resolveTaskMetadataConflicts,
@@ -48,7 +49,8 @@ function writeWorkpad(repoPath, taskBranch, started) {
 
 function initRepo() {
   const repoPath = fs.mkdtempSync(path.join(os.tmpdir(), 'task-meta-smoke-'));
-  git(repoPath, ['init', '-b', 'stream/workspace-agents']);
+  git(repoPath, ['init']);
+  git(repoPath, ['checkout', '-b', 'stream/workspace-agents']);
   git(repoPath, ['config', 'user.name', 'task-meta-smoke']);
   git(repoPath, ['config', 'user.email', 'task-meta-smoke@example.com']);
   return repoPath;
@@ -78,6 +80,18 @@ function runStaleMetadataSmoke() {
     readValidTaskMetaForWorktree(repoPath, 'task/dialer/stale-task').taskBranch,
     'task/dialer/stale-task',
   );
+
+  assert.equal(findTaskMeta(repoPath, { currentBranch: 'stream/workspace-agents' }), null);
+  const staleRecord = findTaskMeta(repoPath, {
+    currentBranch: 'stream/workspace-agents',
+    includeStale: true,
+  });
+  assert.equal(staleRecord.stale, true);
+  assert.equal(staleRecord.mismatch.expectedBranch, 'task/dialer/stale-task');
+
+  const activeRecord = findTaskMeta(repoPath, { currentBranch: 'task/dialer/stale-task' });
+  assert.equal(activeRecord.stale, false);
+  assert.equal(activeRecord.data.taskBranch, 'task/dialer/stale-task');
 }
 
 function runMetadataConflictSmoke() {
@@ -126,6 +140,7 @@ function runMetadataConflictSmoke() {
 
   const resolution = resolveTaskMetadataConflicts(repoPath, conflictFiles, {
     currentBranch: 'stream/workspace-agents',
+    taskBranch: workspaceTask,
   });
 
   assert.equal(resolution.resolved, true);

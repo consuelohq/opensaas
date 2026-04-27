@@ -230,9 +230,13 @@ async function main() {
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();
 
   if (mergeResult.status === 0) {
-    const checks = runStreamChecks(worktreePath);
-    if (createdTemporaryWorktree) {
-      removeWorktree(repoRoot, worktreePath, true);
+    let checks;
+    try {
+      checks = runStreamChecks(worktreePath);
+    } finally {
+      if (createdTemporaryWorktree) {
+        removeWorktree(repoRoot, worktreePath, true);
+      }
     }
 
     printResult(
@@ -262,10 +266,14 @@ async function main() {
     });
 
     if (resolution.resolved) {
-      runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
-      const checks = runStreamChecks(worktreePath);
-      if (createdTemporaryWorktree) {
-        removeWorktree(repoRoot, worktreePath, true);
+      let checks;
+      try {
+        runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
+        checks = runStreamChecks(worktreePath);
+      } finally {
+        if (createdTemporaryWorktree) {
+          removeWorktree(repoRoot, worktreePath, true);
+        }
       }
 
       printResult(

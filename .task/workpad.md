@@ -1,70 +1,70 @@
-# tighten exact task command selection
+# address workspace agents review comments
 
-branch: `task/workspace-agents/tighten-exact-task-command-selection`
+branch: `task/workspace-agents/address-workspace-agents-review-comments`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/210
+pr: https://github.com/consuelohq/opensaas/pull/211
 started: 2026-04-27
 
 ## acceptance criteria
 
-- [x] start from stream/workspace-agents using a fresh task branch.
-- [x] read AGENTS.md, CODING-STANDARDS.md, and SCRIPTS.md before editing.
-- [x] add exact --branch and --pr selection to task:fs.
-- [x] add exact --branch and --pr selection to task:exec.
-- [x] make same-area ambiguity fail instead of selecting the first matching task.
-- [x] document the exact-task selection rule in SCRIPTS.md and STEERING.md.
-- [x] cover selector behavior in the metadata smoke script.
-- [x] verify without cd-ing into a worktree.
+- [x] fetch PR #207 review comments and identify five actionable items.
+- [x] start fresh task from stream/workspace-agents.
+- [x] fix stream-sync temporary worktree cleanup on post-resolution failure.
+- [x] make task-meta smoke compatible with older git init behavior.
+- [x] cover findTaskMeta stale/includeStale behavior in smoke tests.
+- [x] pass taskBranch into metadata conflict smoke resolution.
+- [x] preserve original GitHub merge errors and only attempt metadata recovery for merge-conflict failures.
+- [x] fix pre-existing task-pr review harness error-handling findings.
+- [x] add an openworkspace typecheck target backed by script syntax checks.
+- [ ] verify, push, merge task into stream, then merge stream PR to main.
+
 
 ## plan
 
-1. add shared task selection helper for area/branch/pr filters.
-2. wire task:fs and task:exec to the helper.
-3. update smoke coverage and docs.
-4. run node checks, smoke, review/verify, and push to stream.
+1. read AGENTS/CODING/SCRIPTS and relevant workspace scripts.
+2. patch stream-sync, task-meta-smoke, and task-pr.
+3. run node checks and task-meta smoke.
+4. review/verify, push to task PR, promote into stream PR #207.
+5. merge #207 to main, update local main, test workflow, fix any fallout.
+
 
 ## files changed
 
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/STEERING.md`
-- `packages/workspace/scripts/lib/task-selection.js`
-- `packages/workspace/scripts/task-exec.js`
-- `packages/workspace/scripts/task-fs.js`
-- `packages/workspace/scripts/task-meta-smoke.js`
+- packages/workspace/scripts/stream-sync.js
+- packages/workspace/scripts/task-meta-smoke.js
+- packages/workspace/scripts/task-pr.js
+- packages/workspace/project.json
+- packages/workspace/scripts/check-syntax.js
+- .task/workpad.md
+
 
 ## key decisions
 
-- `--area` remains supported, but if it matches more than one active task it now fails and asks for `--branch` or `--pr`.
-- `--branch` is the preferred selector for exact worktree targeting because it cannot collide across tasks.
-- the selector lives in `lib/task-selection.js` so task:fs and task:exec do not drift.
-- task:exec/task:fs now use `spawnSync` instead of shell-joined command strings to avoid quoting bugs.
+- GitHub merge recovery should be narrow: only run metadata-recovery for 405 merge-conflict failures, and preserve original error details.
+- stream-sync temporary worktrees should be cleaned in finally blocks after successful merge/check paths.
+- openworkspace typecheck should be explicit; node syntax checks are the right target for the JS workspace scripts package.
+
 
 ## notes for ko
 
-- no `cd` into the task worktree was needed for verification; commands used exact `--branch` or `--pr` selection.
-- `task:fs -- --area workspace-agents ...` now fails when multiple workspace-agent tasks are active and tells the agent to use `--branch` or `--pr`.
-- `task:fs -- --branch task/workspace-agents/tighten-exact-task-command-selection ...` resolves this task exactly.
-- `task:exec -- --pr 210 git branch --show-current` resolves this task exactly.
-- `node packages/workspace/scripts/review.js` reports YOUR CHANGES clean; the remaining nonzero exit is the known/pre-existing `openworkspace` no-typecheck-target issue.
-- `node packages/workspace/scripts/verify.js --no-review --no-stamp --json` passed db guardrails.
+- 
 
 ## improvements noticed
 
-- future alignment task: replace python edit examples with a bun-powered multi-file edit helper.
+- 
 
 ## errors i ran into
 
-- the prior task #209 was accidentally merged empty after a bad shell command substitution expanded markdown backticks; this task #210 contains the actual implementation.
-- root `stream:sync` is still stale until workspace-agents lands on main; i used the already-merged stream version of `stream-sync` to auto-resolve metadata-only stream sync before starting #210.
+- 
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "fix(workspace-agents): tighten exact task command selection" --changed
+bun run task:push -- --message "type(workspace-agents): description" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-- 2026-04-27 04:31:37 write: `.task/workpad.md`
+- 2026-04-27 05:29:17 write: `packages/workspace/scripts/check-syntax.js`
