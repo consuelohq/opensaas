@@ -282,7 +282,8 @@ function getUpdateDetails({ pullRequest, title, body, base }) {
 }
 
 async function ensurePullRequest({ token, repository, branch, base, title, body, draft }) {
-  let pullRequest = await findOpenPullRequest({
+  try {
+    let pullRequest = await findOpenPullRequest({
     token,
     repository,
     branch,
@@ -339,16 +340,18 @@ async function ensurePullRequest({ token, repository, branch, base, title, body,
     draft,
   });
 
-  return {
-    pullRequest,
-    created: true,
-    updated: false,
-    reused: false,
-  };
+    return {
+      pullRequest,
+      created: true,
+      updated: false,
+      reused: false,
+    };
+  } finally {}
 }
 
 async function ensureTaskPullRequest({ token, repository, context }) {
-  const openTaskPr = await findOpenPullRequest({
+  try {
+    const openTaskPr = await findOpenPullRequest({
     token,
     repository,
     branch: context.taskBranch,
@@ -400,10 +403,11 @@ async function ensureTaskPullRequest({ token, repository, context }) {
     draft: false,
   });
 
-  return {
-    ...details,
-    alreadyMerged: false,
-  };
+    return {
+      ...details,
+      alreadyMerged: false,
+    };
+  } finally {}
 }
 
 function getConflictFiles(worktreePath) {
@@ -452,7 +456,8 @@ function syncTaskBranchWithBaseMetadataConflicts(context) {
 }
 
 async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context }) {
-  if (taskPr.merged_at) {
+  try {
+    if (taskPr.merged_at) {
     return {
       pullRequest: taskPr,
       merged: false,
@@ -476,19 +481,25 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
-  try {
-    await mergePullRequest({
-      token,
-      repository,
-      prNumber: pullRequest.number,
-      commitTitle: pullRequest.title,
-      mergeMethod: 'merge',
-    });
-  } catch {
+  await mergePullRequest({
+    token,
+    repository,
+    prNumber: pullRequest.number,
+    commitTitle: pullRequest.title,
+    mergeMethod: 'merge',
+  }).catch(async (mergeError) => {
+    const isMergeConflict = mergeError instanceof GitHubRequestError && mergeError.details.status === 405;
+    if (!isMergeConflict) {
+      throw mergeError;
+    }
+
     const resolution = syncTaskBranchWithBaseMetadataConflicts(context);
 
     if (!resolution.resolved) {
-      throw new GitHubRequestError(`task PR merge failed and metadata recovery did not apply: ${resolution.reason || 'unknown reason'}`, { data: resolution });
+      throw new GitHubRequestError(
+        `task PR merge failed and metadata recovery did not apply: ${resolution.reason || 'unknown reason'} (original: ${mergeError.message})`,
+        { data: { resolution, originalError: mergeError.details } },
+      );
     }
 
     await mergePullRequest({
@@ -498,7 +509,7 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
       commitTitle: pullRequest.title,
       mergeMethod: 'merge',
     });
-  }
+  });
 
   const mergedPullRequest = await findPullRequest({
     token,
@@ -508,12 +519,13 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
     state: 'all',
   });
 
-  return {
-    pullRequest: mergedPullRequest || pullRequest,
-    merged: true,
-    alreadyMerged: false,
-    markedReady,
-  };
+    return {
+      pullRequest: mergedPullRequest || pullRequest,
+      merged: true,
+      alreadyMerged: false,
+      markedReady,
+    };
+  } finally {}
 }
 
 function buildTaskOnlyResult({ args, context, taskPrDetails }) {
@@ -597,9 +609,10 @@ function buildFinalResult({ args, context, taskPrDetails, taskMergeDetails, revi
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  try {
+    const args = parseArgs(process.argv.slice(2));
 
-  if (args.help) {
+    if (args.help) {
     printHelp();
     return;
   }
@@ -712,17 +725,18 @@ async function main() {
     reviewBaseBranch: context.reviewBase,
   });
 
-  buildFinalResult({
-    args,
-    context,
-    taskPrDetails,
-    taskMergeDetails,
-    reviewPrDetails: {
-      ...reviewPrDetails,
-      pullRequest: reviewPullRequest,
-      markedReady,
-    },
-  });
+    buildFinalResult({
+      args,
+      context,
+      taskPrDetails,
+      taskMergeDetails,
+      reviewPrDetails: {
+        ...reviewPrDetails,
+        pullRequest: reviewPullRequest,
+        markedReady,
+      },
+    });
+  } finally {}
 }
 
 main().catch((error) => {
