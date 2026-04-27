@@ -1,17 +1,14 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/address-workspace-agents-review-comments",
-  "base": "origin/task/workspace-agents/address-workspace-agents-review-comments",
-  "headSha": "7979286f62bc5dc8dcf3ca6d3c8755e08dc02f7c",
-  "changeHash": "29c74f29dfb209b4892cf456e1a87ae0c331fb052fabd48e931323c1dcb9cbe1",
+  "branch": "task/workspace-agents/push-stream-sync-results",
+  "base": "origin/task/workspace-agents/push-stream-sync-results",
+  "headSha": "c0439deb318b00576a6fd924d9f6492c800eb9d9",
+  "changeHash": "2891b8f70dd0e7ed530867d3cfc23932f0f8650816c518b174ca100dbcfa4a4c",
   "changedFiles": [
-    "packages/workspace/project.json",
-    "packages/workspace/scripts/check-syntax.js",
-    "packages/workspace/scripts/stream-sync.js",
-    "packages/workspace/scripts/task-meta-smoke.js",
-    "packages/workspace/scripts/task-pr.js"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/stream-sync.js"
   ],
-  "verifiedAt": "2026-04-27T05:29:54.967Z",
+  "verifiedAt": "2026-04-27T05:34:08.254Z",
   "review": {
     "skipped": false,
     "passed": true
