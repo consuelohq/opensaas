@@ -159,6 +159,10 @@ function collectTaskMetaFiles(worktreePath, area, taskBranch, options = {}) {
           continue;
         }
 
+        if (repoPath.startsWith(`${TASK_DIR}/reviews/`)) {
+          continue;
+        }
+
         files.push({
           path: repoPath,
           content: fs.readFileSync(fullPath, 'utf8'),

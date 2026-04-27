@@ -30,7 +30,8 @@ started: 2026-04-27
 
 ## files changed
 
-- 
+- `packages/workspace/scripts/lib/task-meta.js`
+
 
 ## key decisions
 
