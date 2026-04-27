@@ -228,6 +228,7 @@
     "task:finish": "bun packages/workspace/scripts/task-finish.js",
     "task:exec": "bun packages/workspace/scripts/task-exec.js",
     "task:fs": "bun packages/workspace/scripts/task-fs.js",
+    "task-meta:smoke": "node packages/workspace/scripts/task-meta-smoke.js",
     "doctor": "bun packages/workspace/scripts/doctor.js",
     "status": "bun packages/workspace/scripts/status.js",
     "stream:list": "bun packages/workspace/scripts/stream-list.js",

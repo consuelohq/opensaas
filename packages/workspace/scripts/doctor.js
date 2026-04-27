@@ -189,24 +189,25 @@ async function main() {
   const currentBranch = getCurrentBranch(cwd);
   makeCheck(checks, 'branch', currentBranch ? 'ok' : 'warn', currentBranch ? `current branch: ${currentBranch}` : 'unable to determine branch', { currentBranch });
 
-  const taskMeta = findTaskMetaRecord(cwd);
+  const taskMeta = findTaskMetaRecord(cwd, { currentBranch, includeStale: true });
   if (taskMeta?.data) {
-    makeCheck(checks, 'task metadata', 'ok', '.task/current.json found', {
+    makeCheck(checks, 'task metadata', taskMeta.stale ? 'warn' : 'ok', taskMeta.stale ? 'stale .task/current.json found and ignored for active task selection' : '.task/current.json found', {
       path: path.relative(repoRoot, taskMeta.path).split(path.sep).join('/'),
       area: taskMeta.data.area || null,
       taskBranch: taskMeta.data.taskBranch || null,
       stream: taskMeta.data.stream || taskMeta.data.baseBranch || null,
+      stale: Boolean(taskMeta.stale),
     });
 
     const expectedBranch = taskMeta.data.taskBranch;
     makeCheck(
       checks,
       'metadata branch',
-      expectedBranch === currentBranch ? 'ok' : 'fail',
-      expectedBranch === currentBranch
-        ? 'branch matches task metadata'
-        : `metadata branch mismatch: expected ${expectedBranch}, got ${currentBranch}`,
-      { expectedBranch, currentBranch },
+      taskMeta.mismatch ? 'warn' : 'ok',
+      taskMeta.mismatch
+        ? `metadata branch mismatch: expected ${taskMeta.mismatch.expectedBranch}, got ${taskMeta.mismatch.currentBranch}`
+        : 'branch matches task metadata',
+      { expectedBranch, currentBranch, mismatch: taskMeta.mismatch || null },
     );
   } else {
     const isTaskBranch = Boolean(parseTaskBranch(currentBranch));
