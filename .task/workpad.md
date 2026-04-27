@@ -31,6 +31,7 @@ started: 2026-04-27
 ## files changed
 
 - `packages/workspace/scripts/lib/task-meta.js`
+- `packages/workspace/scripts/task-push.js`
 
 
 ## key decisions
