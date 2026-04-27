@@ -517,6 +517,8 @@ bun run stream:list                   # show all streams with status, divergence
 
 ### stream:sync — sync stream with latest main
 
+syncs the stream branch with latest main, runs stream checks, and pushes the stream branch when checks pass.
+
 ```bash
 bun run stream:sync -- --area dialer  # sync stream/dialer with main
 bun run stream:sync -- --area workspace-agents

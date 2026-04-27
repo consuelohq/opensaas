@@ -160,6 +160,15 @@ function runStreamChecks(worktreePath) {
   };
 }
 
+function pushStreamBranch(repoRoot, worktreePath, streamBranch, checks) {
+  if (!checks || checks.status !== 'pass') {
+    return false;
+  }
+
+  runGit(['-C', worktreePath, 'push', 'origin', streamBranch], { cwd: repoRoot });
+  return true;
+}
+
 function printResult(result, useJson) {
   if (useJson) {
     writeStdout(JSON.stringify(result, null, 2));
@@ -231,8 +240,10 @@ async function main() {
 
   if (mergeResult.status === 0) {
     let checks;
+    let pushed = false;
     try {
       checks = runStreamChecks(worktreePath);
+      pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
     } finally {
       if (createdTemporaryWorktree) {
         removeWorktree(repoRoot, worktreePath, true);
@@ -248,6 +259,7 @@ async function main() {
         mergeOutput,
         conflictFiles: [],
         checks,
+        pushed,
       },
       args.json,
     );
@@ -267,9 +279,11 @@ async function main() {
 
     if (resolution.resolved) {
       let checks;
+      let pushed = false;
       try {
         runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
         checks = runStreamChecks(worktreePath);
+        pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
       } finally {
         if (createdTemporaryWorktree) {
           removeWorktree(repoRoot, worktreePath, true);
@@ -286,6 +300,7 @@ async function main() {
           conflictFiles: [],
           autoResolvedMetadata: resolution,
           checks,
+          pushed,
         },
         args.json,
       );
