@@ -4,7 +4,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
-const { readTaskMeta } = require('./lib/task-meta');
+const { readValidTaskMetaForWorktree } = require('./lib/task-meta');
 const { listWorktrees } = require('./lib/git');
 
 function writeStdout(msg) { process.stdout.write(msg + '\n'); }
@@ -34,7 +34,7 @@ function findActiveTask(repoRoot, area) {
 
   for (const wt of worktrees) {
     if (wt.path === repoRoot) continue;
-    const meta = readTaskMeta(wt.path);
+    const meta = readValidTaskMetaForWorktree(wt.path, wt.branch);
     if (!meta) continue;
     if (area && meta.area !== area) continue;
     tasks.push({ worktreePath: wt.path, meta, branch: wt.branch });

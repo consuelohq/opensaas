@@ -22,6 +22,7 @@ const {
   toWorktreeDirectoryName,
 } = require('./lib/paths');
 const { assertStreamBranchName, getDefaultStreamBranch, normalizeArea } = require('./lib/validation');
+const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./lib/task-meta');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -249,16 +250,46 @@ async function main() {
     return;
   }
 
-  const checks = {
-    skipped: true,
-    status: 'skipped',
-    reason: 'merge failed before stream checks could run',
-  };
   const conflictFiles = getConflictFiles(repoRoot, worktreePath);
 
   if (conflictFiles.length === 0) {
     throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
   }
+
+  if (isOnlyTaskMetadataConflict(conflictFiles)) {
+    const resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
+      currentBranch: streamBranch,
+    });
+
+    if (resolution.resolved) {
+      runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
+      const checks = runStreamChecks(worktreePath);
+      if (createdTemporaryWorktree) {
+        removeWorktree(repoRoot, worktreePath, true);
+      }
+
+      printResult(
+        {
+          stream: streamBranch,
+          status: 'success',
+          worktreePath,
+          temporaryWorktree: createdTemporaryWorktree,
+          mergeOutput,
+          conflictFiles: [],
+          autoResolvedMetadata: resolution,
+          checks,
+        },
+        args.json,
+      );
+      return;
+    }
+  }
+
+  const checks = {
+    skipped: true,
+    status: 'skipped',
+    reason: 'merge failed before stream checks could run',
+  };
 
   printResult(
     {

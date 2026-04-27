@@ -70,17 +70,17 @@ always use this flow even if the change seems tiny. when in doubt, start from th
 
 ## things to remember
 
-**stale .task/current.json is the #1 cause of script failures.** if `task:pr`, `task:finish`, `task:push`, or `task:prs` give wrong results, the metadata is stale. fix it:
+**stale .task/current.json is the #1 cause of script failures.** branch-aware task scripts now ignore metadata when `taskBranch` does not match the actual worktree branch. if `task:pr`, `task:finish`, `task:push`, or `task:prs` still need explicit repair, fix the known worktree only:
 
 ```bash
 bun run task:init -- --area <area> --branch <branch> --pr <N>
 ```
 
-do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs.
+do NOT create a whole new worktree just to fix metadata. `task:init` rewrites `.task/current.json` for an existing worktree without creating branches or PRs. it is manual repair, not the automatic merge-conflict resolver.
 
 **never cd into a worktree.** all `bun run` commands fail from inside worktrees (no `package.json`). use `task:fs` and `task:exec` from repo root.
 
-**when resolving stream conflicts,** stop and ask ko unless it's metadata files (`.task/current.json`, `.task/workpad.md`).
+**when resolving stream conflicts,** stop and ask ko unless all conflicts are metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are auto-resolved; mixed metadata + real file conflicts still stop.
 
 **after any write or patch, verify immediately:**
 ```bash
@@ -101,10 +101,10 @@ recovery patterns for common failures. don't panic — diagnose first.
 
 | symptom | fix |
 |---------|-----|
-| stale metadata — scripts reference wrong branch/PR | `bun run task:init -- --area <area> --branch <branch> --pr <N>` |
+| stale metadata — scripts reference wrong branch/PR | branch-aware scripts ignore mismatched metadata; for a known worktree run `bun run task:init -- --area <area> --branch <branch> --pr <N>` |
 | worktree exists but task is done | `bun run task:finish` or `bun run task:cleanup -- --merged` |
 | pushed but forgot to verify | run `bun run verify`, then push again (stamp updates) |
-| stream conflict on merge | stop and ask ko (unless metadata files) |
+| stream conflict on merge | metadata-only conflicts auto-resolve; mixed/code/doc conflicts stop and ask ko |
 | "Script not found" | you're in a worktree. run `cd /Users/kokayi/Dev/opensaas` first |
 | task:start fails — worktree already exists | check if old task is needed: `bun run task:fs -- --area <area> read .task/current.json`. if not, `bun run task:finish` or `bun run task:cleanup -- --preview` first |
 | task:push rejects — no verify stamp | run `bun run verify` first. or `--no-verify` to bypass (visible and logged) |
@@ -270,6 +270,8 @@ bun run task:fs -- --area dialer search "transferCall" packages/dialer/src/
 bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed the thing"
 ```
 
+task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored.
+
 **task:fs failure modes**
 ```bash
 bad: bun run task:fs -- read .task/current.json
@@ -289,7 +291,7 @@ bad: cat /private/tmp/opensaas-worktrees/task-dialer/packages/dialer/src/queue.t
 
 ### task:exec — run commands inside the task worktree
 
-runs any command with cwd set to the task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree.
+runs any command with cwd set to the task worktree. use for git, prettier, jest, nx, or anything that needs to run "inside" the worktree. like `task:fs`, it ignores stale metadata whose `taskBranch` does not match the worktree branch.
 
 ```bash
 bun run task:exec -- --area dialer git diff
@@ -830,7 +832,17 @@ bad: bun run agent -- "edit packages/foo/src/bar.ts to make tests pass"
 
 ### stream conflicts
 
-when resolving stream merge conflicts, stop and ask ko unless the conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata conflicts can be resolved automatically — code conflicts need human judgment.
+when resolving stream merge conflicts, stop and ask ko unless every conflict is in metadata files (`.task/current.json`, `.task/workpad.md`). metadata-only conflicts are resolved by choosing the metadata for the current stream/task when possible, then the newest valid task metadata. the matching workpad follows the selected task branch. code/docs conflicts still need human judgment.
+
+### task metadata smoke check
+
+run this after changing task metadata selection or conflict behavior:
+
+```bash
+bun run task-meta:smoke
+```
+
+it verifies stale metadata is ignored, metadata-only conflicts are resolvable, and mixed metadata + real file conflicts still block.
 
 ### SCRIPTS.md is part of the fix
 

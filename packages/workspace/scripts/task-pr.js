@@ -15,6 +15,7 @@ const AREA_DOCS = [
 ];
 
 const {
+  GitHubRequestError,
   createPullRequest,
   findOpenPullRequest,
   findPullRequest,
@@ -24,7 +25,7 @@ const {
   mergePullRequest,
   updatePullRequest,
 } = require('./lib/github');
-const { getCurrentBranch } = require('./lib/git');
+const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
 const {
   assertTaskBranchName,
@@ -32,7 +33,13 @@ const {
   getDefaultStreamBranch,
   isStreamBranchName,
 } = require('./lib/validation');
-const { findTaskMeta, validateBranchMatch, writeTaskMeta } = require('./lib/task-meta');
+const {
+  findTaskMeta,
+  isOnlyTaskMetadataConflict,
+  resolveTaskMetadataConflicts,
+  validateBranchMatch,
+  writeTaskMeta,
+} = require('./lib/task-meta');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -399,7 +406,52 @@ async function ensureTaskPullRequest({ token, repository, context }) {
   };
 }
 
-async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr }) {
+function getConflictFiles(worktreePath) {
+  const output = runGit(['-C', worktreePath, 'diff', '--name-only', '--diff-filter=U'], { cwd: worktreePath });
+  return output ? output.split('\n').filter(Boolean) : [];
+}
+
+function syncTaskBranchWithBaseMetadataConflicts(context) {
+  if (!context.taskMeta || !context.taskMeta.dir) {
+    return { resolved: false, reason: 'no local task metadata record' };
+  }
+
+  const worktreePath = context.taskMeta.dir;
+  fetchOrigin(worktreePath);
+
+  try {
+    runGit(['-C', worktreePath, 'merge', '--no-ff', '--no-edit', `origin/${context.streamBranch}`], { cwd: worktreePath });
+    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
+    return { resolved: true, conflictFiles: [], alreadyMergedCleanly: true };
+  } catch {
+    const conflictFiles = getConflictFiles(worktreePath);
+    if (!isOnlyTaskMetadataConflict(conflictFiles)) {
+      try { runGit(['-C', worktreePath, 'merge', '--abort'], { cwd: worktreePath }); } catch { /* merge may not be active */ }
+      return {
+        resolved: false,
+        reason: 'non-metadata conflicts present',
+        conflictFiles,
+        message: 'merge failed',
+      };
+    }
+
+    const resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
+      currentBranch: context.taskBranch,
+      taskBranch: context.taskBranch,
+    });
+
+    if (!resolution.resolved) {
+      try { runGit(['-C', worktreePath, 'merge', '--abort'], { cwd: worktreePath }); } catch { /* merge may not be active */ }
+      return resolution;
+    }
+
+    runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: worktreePath });
+    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
+    return resolution;
+  }
+}
+
+async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context }) {
   if (taskPr.merged_at) {
     return {
       pullRequest: taskPr,
@@ -424,13 +476,29 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr }) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
-  await mergePullRequest({
-    token,
-    repository,
-    prNumber: pullRequest.number,
-    commitTitle: pullRequest.title,
-    mergeMethod: 'merge',
-  });
+  try {
+    await mergePullRequest({
+      token,
+      repository,
+      prNumber: pullRequest.number,
+      commitTitle: pullRequest.title,
+      mergeMethod: 'merge',
+    });
+  } catch {
+    const resolution = syncTaskBranchWithBaseMetadataConflicts(context);
+
+    if (!resolution.resolved) {
+      throw new GitHubRequestError(`task PR merge failed and metadata recovery did not apply: ${resolution.reason || 'unknown reason'}`, { data: resolution });
+    }
+
+    await mergePullRequest({
+      token,
+      repository,
+      prNumber: pullRequest.number,
+      commitTitle: pullRequest.title,
+      mergeMethod: 'merge',
+    });
+  }
 
   const mergedPullRequest = await findPullRequest({
     token,
@@ -602,6 +670,7 @@ async function main() {
     token,
     repository: args.repo,
     taskPr: taskPrDetails.pullRequest,
+    context,
   });
 
   const reviewTitle =
