@@ -1,21 +1,23 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/portable-pi-proxy-agent-client",
-  "base": "origin/task/workspace-agents/portable-pi-proxy-agent-client",
-  "headSha": "321eb39516109ab28a7d38618172fc1849e41c7f",
-  "changeHash": "05418a4dd7b1c77f735d6f0010a7e80af18f53564fa7278b5faec72b5a7c812b",
+  "branch": "task/dialer/fix-parallel-dial-caller-id-conflict-loop",
+  "base": "origin/stream/dialer",
+  "headSha": "83b56f1136abb35577cc87d7ac9dc6db56da94aa",
+  "changeHash": "f214ab27d9c671d423e07b2e0269937a7ab71093a290ed4946d6113a2c702cdf",
   "changedFiles": [
-    "package.json",
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/agent.js"
+    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
   ],
-  "verifiedAt": "2026-04-25T23:01:20.269Z",
+  "verifiedAt": "2026-04-27T02:21:53.393Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

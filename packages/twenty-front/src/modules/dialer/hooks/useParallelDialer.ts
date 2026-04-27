@@ -41,6 +41,54 @@ type DialableBatchItem = {
   customerNumber: string;
 };
 
+type StartParallelBatchResult =
+  | { status: 'started'; groupId: string }
+  | {
+      status: 'skipped';
+      reason: 'disabled' | 'already-dialing' | 'insufficient-dialable-items';
+    }
+  | {
+      status: 'blocked';
+      reason: 'caller-id-locked';
+      responseStatus: 409;
+      retryAfterMs?: number;
+    }
+  | { status: 'failed'; responseStatus?: number };
+
+type ParallelErrorResponse = {
+  error?: {
+    code?: string;
+    message?: string;
+    retryAfterMs?: number;
+  };
+  code?: string;
+  message?:
+    | string
+    | {
+        code?: string;
+        message?: string;
+        retryAfterMs?: number;
+      };
+  retryAfterMs?: number;
+};
+
+const readParallelError = async (
+  response: Response,
+): Promise<{ code?: string; retryAfterMs?: number }> => {
+  try {
+    const body = (await response.json()) as ParallelErrorResponse;
+    const message = typeof body.message === 'object' ? body.message : undefined;
+
+    return {
+      code: body.error?.code ?? message?.code ?? body.code,
+      retryAfterMs:
+        body.error?.retryAfterMs ?? message?.retryAfterMs ?? body.retryAfterMs,
+    };
+  } catch {
+    return {};
+  }
+};
+
 const getParallelProfileId = (
   maxLines: number,
 ): 'conservative' | 'balanced' | 'aggressive' => {
@@ -277,115 +325,143 @@ export const useParallelDialer = () => {
     [clearPoll, handleWinner, handleAllFailed, terminateParallelGroup],
   );
 
-  const startParallelBatch = useCallback(async (): Promise<boolean> => {
-    if (!activeQueue?.parallelDialingEnabled || isDialing) return false;
-
-    const maxLines = Math.min(
-      activeQueue.settings.parallelDialingMaxLines,
-      MAX_SUPPORTED_PARALLEL_LINES,
-    );
-    const batchItems = queueItems
-      .slice(currentQueueIndex, currentQueueIndex + maxLines)
-      .filter((item) => item.status === 'pending' || item.status === 'calling');
-    const dialableBatchItems = batchItems.reduce<DialableBatchItem[]>(
-      (items, item) => {
-        const customerNumber = toE164(item.contact.phone);
-
-        if (customerNumber === null) {
-          return items;
-        }
-
-        return [...items, { item, customerNumber }];
-      },
-      [],
-    );
-    const dialingItems = dialableBatchItems.map(({ item }) => item);
-
-    if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return false;
-
-    clearPoll();
-    setIsDialing(true);
-
-    setQueueItems((prev) =>
-      prev.map((item) =>
-        dialingItems.find((dialingItem) => dialingItem.id === item.id)
-          ? {
-              ...item,
-              status: 'calling' as const,
-              lastAttemptAt: new Date().toISOString(),
-              attempts: item.attempts + 1,
-            }
-          : item,
-      ),
-    );
-
-    try {
-      playDialingStartedSound();
-
-      const res = await authenticatedFetch(
-        getParallelDialerEndpoint(REACT_APP_SERVER_BASE_URL),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            queueId: activeQueue.id,
-            customerNumbers: dialableBatchItems.map(
-              ({ customerNumber }) => customerNumber,
-            ),
-            contactIds: dialingItems.map((item) => item.contactId),
-            profileId: getParallelProfileId(dialableBatchItems.length),
-          }),
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error(`Parallel dial failed: ${res.status}`);
+  const startParallelBatch =
+    useCallback(async (): Promise<StartParallelBatchResult> => {
+      if (!activeQueue?.parallelDialingEnabled) {
+        return { status: 'skipped', reason: 'disabled' };
       }
 
-      const { groupId, calls } = await res.json();
+      if (isDialing) {
+        return { status: 'skipped', reason: 'already-dialing' };
+      }
 
-      setActiveQueue((prev) =>
-        prev !== null
-          ? {
-              ...prev,
-              parallelDialingActive: true,
-              parallelGroupId: groupId,
-              parallelActiveCalls: calls,
-              parallelCurrentBatch: prev.parallelCurrentBatch + 1,
-            }
-          : null,
+      const maxLines = Math.min(
+        activeQueue.settings.parallelDialingMaxLines,
+        MAX_SUPPORTED_PARALLEL_LINES,
       );
+      const batchItems = queueItems
+        .slice(currentQueueIndex, currentQueueIndex + maxLines)
+        .filter(
+          (item) => item.status === 'pending' || item.status === 'calling',
+        );
+      const dialableBatchItems = batchItems.reduce<DialableBatchItem[]>(
+        (items, item) => {
+          const customerNumber = toE164(item.contact.phone);
 
-      setActiveCalls(calls);
-      startPolling(groupId, calls);
+          if (customerNumber === null) {
+            return items;
+          }
 
-      return true;
-    } catch (err: unknown) {
-      captureException(err, {
-        extra: { context: 'startParallelBatch', queueId: activeQueue?.id },
-      });
-      setIsDialing(false);
-      // revert queueItems to pending on failure
+          return [...items, { item, customerNumber }];
+        },
+        [],
+      );
+      const dialingItems = dialableBatchItems.map(({ item }) => item);
+
+      if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) {
+        return { status: 'skipped', reason: 'insufficient-dialable-items' };
+      }
+
+      clearPoll();
+      setIsDialing(true);
+
       setQueueItems((prev) =>
         prev.map((item) =>
           dialingItems.find((dialingItem) => dialingItem.id === item.id)
-            ? { ...item, status: 'pending' as const }
+            ? {
+                ...item,
+                status: 'calling' as const,
+                lastAttemptAt: new Date().toISOString(),
+                attempts: item.attempts + 1,
+              }
             : item,
         ),
       );
 
-      return false;
-    }
-  }, [
-    activeQueue,
-    isDialing,
-    queueItems,
-    currentQueueIndex,
-    clearPoll,
-    setQueueItems,
-    setActiveQueue,
-    startPolling,
-  ]);
+      try {
+        const res = await authenticatedFetch(
+          getParallelDialerEndpoint(REACT_APP_SERVER_BASE_URL),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              queueId: activeQueue.id,
+              customerNumbers: dialableBatchItems.map(
+                ({ customerNumber }) => customerNumber,
+              ),
+              contactIds: dialingItems.map((item) => item.contactId),
+              profileId: getParallelProfileId(dialableBatchItems.length),
+            }),
+          },
+        );
+
+        if (!res.ok) {
+          const parallelError = await readParallelError(res);
+
+          if (res.status === 409 && parallelError.code === 'CALLER_ID_LOCKED') {
+            clearParallelState();
+
+            return {
+              status: 'blocked',
+              reason: 'caller-id-locked',
+              responseStatus: 409,
+              retryAfterMs: parallelError.retryAfterMs,
+            };
+          }
+
+          throw new Error(`Parallel dial failed: ${res.status}`);
+        }
+
+        const { groupId, calls } = (await res.json()) as {
+          groupId: string;
+          calls: ParallelCall[];
+        };
+
+        playDialingStartedSound();
+
+        setActiveQueue((prev) =>
+          prev !== null
+            ? {
+                ...prev,
+                parallelDialingActive: true,
+                parallelGroupId: groupId,
+                parallelActiveCalls: calls,
+                parallelCurrentBatch: prev.parallelCurrentBatch + 1,
+              }
+            : null,
+        );
+
+        setActiveCalls(calls);
+        startPolling(groupId, calls);
+
+        return { status: 'started', groupId };
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'startParallelBatch', queueId: activeQueue?.id },
+        });
+        setIsDialing(false);
+        // revert queueItems to pending on failure
+        setQueueItems((prev) =>
+          prev.map((item) =>
+            dialingItems.find((dialingItem) => dialingItem.id === item.id)
+              ? { ...item, status: 'pending' as const }
+              : item,
+          ),
+        );
+
+        return { status: 'failed' };
+      }
+    }, [
+      activeQueue,
+      isDialing,
+      queueItems,
+      currentQueueIndex,
+      clearPoll,
+      clearParallelState,
+      setQueueItems,
+      setActiveQueue,
+      startPolling,
+    ]);
 
   const cancelParallelDial = useCallback(async () => {
     const groupId = activeQueue?.parallelGroupId;
