@@ -11,10 +11,15 @@ function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
 function findTaskMeta() {
+  const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
   let dir = process.cwd();
   while (dir !== '/') {
     const p = path.join(dir, '.task', 'current.json');
-    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
+    if (fs.existsSync(p)) {
+      const data = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (data.taskBranch && currentBranch && data.taskBranch !== currentBranch) return null;
+      return data;
+    }
     dir = path.dirname(dir);
   }
   return null;

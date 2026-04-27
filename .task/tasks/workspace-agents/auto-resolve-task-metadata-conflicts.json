@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/auto-resolve-task-metadata-conflicts",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 206,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/206",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-auto-resolve-task-metadata-conflicts",
+  "createdAt": "2026-04-27T03:29:23.696Z"
+}

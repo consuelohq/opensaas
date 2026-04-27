@@ -407,6 +407,8 @@ async function main() {
     if (file.deleted) {
       treeItems.push({
         path: file.path,
+        mode: '100644',
+        type: 'blob',
         sha: null,
       });
       continue;

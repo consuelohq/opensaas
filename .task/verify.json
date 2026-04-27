@@ -1,17 +1,16 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/portable-pi-proxy-agent-client",
-  "base": "origin/task/workspace-agents/portable-pi-proxy-agent-client",
-  "headSha": "321eb39516109ab28a7d38618172fc1849e41c7f",
-  "changeHash": "05418a4dd7b1c77f735d6f0010a7e80af18f53564fa7278b5faec72b5a7c812b",
+  "branch": "task/workspace-agents/push-stream-sync-results",
+  "base": "origin/task/workspace-agents/push-stream-sync-results",
+  "headSha": "c0439deb318b00576a6fd924d9f6492c800eb9d9",
+  "changeHash": "2891b8f70dd0e7ed530867d3cfc23932f0f8650816c518b174ca100dbcfa4a4c",
   "changedFiles": [
-    "package.json",
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/agent.js"
+    "packages/workspace/scripts/stream-sync.js"
   ],
-  "verifiedAt": "2026-04-25T23:01:20.269Z",
+  "verifiedAt": "2026-04-27T05:34:08.254Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
