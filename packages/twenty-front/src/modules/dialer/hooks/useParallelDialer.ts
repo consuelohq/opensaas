@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { captureException } from '@sentry/react';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
@@ -20,6 +20,21 @@ import {
 
 const MIN_SUPPORTED_PARALLEL_LINES = 2;
 const MAX_SUPPORTED_PARALLEL_LINES = 4;
+const PARALLEL_DIAL_POLL_INTERVAL_MS = 500;
+const PARALLEL_DIAL_STUCK_TIMEOUT_MS = 60_000;
+const PARALLEL_TERMINAL_CALL_STATUSES = new Set<string>([
+  'completed',
+  'failed',
+  'terminated',
+  'busy',
+  'no-answer',
+  'canceled',
+  'voicemail',
+]);
+const PARALLEL_TERMINAL_GROUP_STATUSES = new Set<string>([
+  'completed',
+  'failed',
+]);
 
 type DialableBatchItem = {
   item: QueueItem;
@@ -48,16 +63,54 @@ export const useParallelDialer = () => {
   );
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
-  const [pollInterval, setPollInterval] = useState<ReturnType<
-    typeof setInterval
-  > | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartedAtRef = useRef<number | null>(null);
 
   const clearPoll = useCallback(() => {
-    if (pollInterval !== null) {
-      clearInterval(pollInterval);
-      setPollInterval(null);
+    if (pollIntervalRef.current !== null) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
     }
-  }, [pollInterval]);
+
+    pollStartedAtRef.current = null;
+  }, []);
+
+  const clearParallelState = useCallback(() => {
+    setIsDialing(false);
+    setActiveCalls([]);
+    setActiveQueue((prev) =>
+      prev !== null
+        ? {
+            ...prev,
+            parallelDialingActive: false,
+            parallelActiveCalls: [],
+            parallelGroupId: null,
+          }
+        : null,
+    );
+  }, [setActiveQueue]);
+
+  const terminateParallelGroup = useCallback(
+    async (groupId: string, context: string) => {
+      try {
+        await authenticatedFetch(
+          getParallelDialerEndpoint(
+            REACT_APP_SERVER_BASE_URL,
+            `${groupId}/terminate`,
+          ),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          },
+        );
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context, groupId },
+        });
+      }
+    },
+    [],
+  );
 
   const handleWinner = useCallback(
     (winner: ParallelCall, allCalls: ParallelCall[]) => {
@@ -123,6 +176,7 @@ export const useParallelDialer = () => {
             }
           : null,
       );
+      setActiveCalls([]);
 
       const cooldown = activeQueue?.settings.parallelDialingCooldown ?? 2000;
       setTimeout(() => {
@@ -141,7 +195,11 @@ export const useParallelDialer = () => {
   );
 
   const startPolling = useCallback(
-    (groupId: string) => {
+    (groupId: string, initialCalls: ParallelCall[] = []) => {
+      clearPoll();
+      pollStartedAtRef.current = Date.now();
+      let latestCalls = initialCalls;
+
       const interval = setInterval(async () => {
         try {
           const res = await authenticatedFetch(
@@ -150,10 +208,26 @@ export const useParallelDialer = () => {
               headers: { 'Content-Type': 'application/json' },
             },
           );
-          const data = await res.json();
-          const calls: ParallelCall[] = data.calls ?? [];
-          const winner: ParallelCall | null = data.winner ?? null;
 
+          if (!res.ok) {
+            clearPoll();
+            await terminateParallelGroup(
+              groupId,
+              'pollParallelCalls.nonOkStatus',
+            );
+            handleAllFailed(latestCalls);
+            return;
+          }
+
+          const data = (await res.json()) as {
+            status?: string;
+            calls?: ParallelCall[];
+            winner?: ParallelCall | null;
+          };
+          const calls = data.calls ?? [];
+          const winner = data.winner ?? null;
+
+          latestCalls = calls;
           setActiveCalls(calls);
 
           if (winner !== null) {
@@ -162,13 +236,32 @@ export const useParallelDialer = () => {
             return;
           }
 
-          const allDone = calls.every(
-            (c: ParallelCall) =>
-              c.status === 'completed' ||
-              c.status === 'failed' ||
-              c.status === 'terminated',
-          );
-          if (allDone) {
+          const pollStartedAt = pollStartedAtRef.current;
+          const stuckDialing =
+            data.status === 'dialing' &&
+            pollStartedAt !== null &&
+            Date.now() - pollStartedAt >= PARALLEL_DIAL_STUCK_TIMEOUT_MS;
+
+          if (stuckDialing) {
+            clearPoll();
+            await terminateParallelGroup(
+              groupId,
+              'pollParallelCalls.stuckDialing',
+            );
+            handleAllFailed(calls);
+            return;
+          }
+
+          const groupDone =
+            typeof data.status === 'string' &&
+            PARALLEL_TERMINAL_GROUP_STATUSES.has(data.status);
+          const allDone =
+            calls.length > 0 &&
+            calls.every((call) =>
+              PARALLEL_TERMINAL_CALL_STATUSES.has(call.status),
+            );
+
+          if (groupDone || allDone) {
             clearPoll();
             handleAllFailed(calls);
           }
@@ -177,10 +270,11 @@ export const useParallelDialer = () => {
             extra: { context: 'pollParallelCalls', groupId },
           });
         }
-      }, 500);
-      setPollInterval(interval);
+      }, PARALLEL_DIAL_POLL_INTERVAL_MS);
+
+      pollIntervalRef.current = interval;
     },
-    [clearPoll, handleWinner, handleAllFailed],
+    [clearPoll, handleWinner, handleAllFailed, terminateParallelGroup],
   );
 
   const startParallelBatch = useCallback(async (): Promise<boolean> => {
@@ -209,6 +303,7 @@ export const useParallelDialer = () => {
 
     if (dialableBatchItems.length < MIN_SUPPORTED_PARALLEL_LINES) return false;
 
+    clearPoll();
     setIsDialing(true);
 
     setQueueItems((prev) =>
@@ -262,7 +357,7 @@ export const useParallelDialer = () => {
       );
 
       setActiveCalls(calls);
-      startPolling(groupId);
+      startPolling(groupId, calls);
 
       return true;
     } catch (err: unknown) {
@@ -286,45 +381,26 @@ export const useParallelDialer = () => {
     isDialing,
     queueItems,
     currentQueueIndex,
+    clearPoll,
     setQueueItems,
     setActiveQueue,
     startPolling,
   ]);
 
   const cancelParallelDial = useCallback(async () => {
-    clearPoll();
     const groupId = activeQueue?.parallelGroupId;
+    clearPoll();
+    clearParallelState();
+
     if (typeof groupId === 'string' && groupId.length > 0) {
-      try {
-        await authenticatedFetch(
-          getParallelDialerEndpoint(
-            REACT_APP_SERVER_BASE_URL,
-            `${groupId}/terminate`,
-          ),
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          },
-        );
-      } catch (err: unknown) {
-        captureException(err, {
-          extra: { context: 'cancelParallelDial', groupId },
-        });
-      }
+      await terminateParallelGroup(groupId, 'cancelParallelDial');
     }
-    setIsDialing(false);
-    setActiveCalls([]);
-    setActiveQueue((prev) =>
-      prev !== null
-        ? {
-            ...prev,
-            parallelDialingActive: false,
-            parallelActiveCalls: [],
-            parallelGroupId: null,
-          }
-        : null,
-    );
-  }, [clearPoll, activeQueue?.parallelGroupId, setActiveQueue]);
+  }, [
+    activeQueue?.parallelGroupId,
+    clearPoll,
+    clearParallelState,
+    terminateParallelGroup,
+  ]);
 
   // cleanup on unmount
   useEffect(() => {

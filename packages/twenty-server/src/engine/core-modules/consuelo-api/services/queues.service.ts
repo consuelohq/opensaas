@@ -252,6 +252,11 @@ export class QueuesService {
           params.queueId,
           params.workspaceId,
         );
+        const queueCompleted = !selection.nextItem && !selection.suppression;
+
+        if (queueCompleted) {
+          await this.completeQueue(params.queueId, params.workspaceId);
+        }
 
         return {
           skipped: false,
@@ -259,6 +264,7 @@ export class QueuesService {
           nextItem: this.unwrapRow(selection.nextItem),
           suppression: selection.suppression,
           ranking: selection.ranking,
+          queueCompleted,
         };
       }
 
@@ -277,12 +283,19 @@ export class QueuesService {
         params.workspaceId,
       );
 
+      const queueCompleted = !selection.nextItem && !selection.suppression;
+
+      if (queueCompleted) {
+        await this.completeQueue(params.queueId, params.workspaceId);
+      }
+
       return {
         skipped: true,
         current: this.unwrapRow(updatedRows[0]),
         nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
         ranking: selection.ranking,
+        queueCompleted,
       };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -442,10 +455,7 @@ export class QueuesService {
         };
       }
 
-      await this.dataSource.query(
-        "UPDATE call_queues SET status = $1, completed_at = NOW(), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
-        ["completed", params.queueId, params.workspaceId],
-      );
+      await this.completeQueue(params.queueId, params.workspaceId);
 
       return {
         current: this.unwrapRow(updatedRows[0]),
@@ -663,6 +673,13 @@ export class QueuesService {
       });
       throw err;
     }
+  }
+
+  private async completeQueue(queueId: string, workspaceId: string) {
+    await this.dataSource.query(
+      "UPDATE call_queues SET status = $1, completed_at = COALESCE(completed_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *",
+      ["completed", queueId, workspaceId],
+    );
   }
 
   private async selectNextCallableItem(
