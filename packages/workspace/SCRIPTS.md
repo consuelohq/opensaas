@@ -377,10 +377,10 @@ bad: bun run task:push -- --message "fix: thing" --changed
 reads changed files from the task worktree and pushes them as a commit to the task branch via github api. never touches the local git state.
 
 ```bash
-bun run task:push -- --message "fix(dialer): normalize phone numbers" --changed
-bun run task:push -- --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
-bun run task:push -- --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
-bun run task:push -- --json
+bun run task:push -- --branch task/dialer/fix-thing --message "fix(dialer): normalize phone numbers" --changed
+bun run task:push -- --pr 213 --message "feat(dialer): add queue runner" --files packages/dialer/src/queue.ts packages/dialer/src/runner.ts
+bun run task:push -- --branch task/dialer/fix-thing --message "fix: thing" --changed --no-verify  # bypass verify stamp (visible)
+bun run task:push -- --branch task/dialer/fix-thing --json
 ```
 
 **task:push failure modes**
@@ -426,8 +426,8 @@ bad: bun run task:start -- --area dialer --title "fix thing"
 default behavior: (1) ensure task PR exists for task/* → stream/, (2) merge that task PR into the stream branch, (3) create or refresh the review PR for stream/ → main.
 
 ```bash
-bun run task:pr                       # full flow: task→stream merge + stream→main PR
-bun run task:pr -- --task-only        # only create/refresh the task→stream PR, don't merge
+bun run task:pr -- --branch task/dialer/fix-thing  # full flow: task→stream merge + stream→main PR
+bun run task:pr -- --pr 213 --task-only        # only create/refresh the task→stream PR, don't merge
 bun run task:pr -- --draft            # create stream→main PR as draft
 bun run task:pr -- --ready            # convert existing draft to ready
 bun run task:pr -- --body-template area  # generate area-context body template
@@ -448,8 +448,8 @@ bad: bun run task:pr (with stale .task/current.json)
 shows both the task PR (task/* → stream/) and the review PR (stream/ → main).
 
 ```bash
-bun run task:prs                      # show PR links from .task/current.json
-bun run task:prs -- --json
+bun run task:prs -- --branch task/dialer/fix-thing  # show PR links for exact task
+bun run task:prs -- --pr 213 --json
 ```
 
 ---
@@ -468,8 +468,8 @@ bun run task:merge -- --json
 ### task:finish — verify merge, remove worktree, delete branch
 
 ```bash
-bun run task:finish                   # finish current task
-bun run task:finish -- --json
+bun run task:finish -- --branch task/dialer/fix-thing  # finish exact task
+bun run task:finish -- --pr 213 --json
 ```
 
 **task:finish failure modes**

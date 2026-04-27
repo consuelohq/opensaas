@@ -27,6 +27,7 @@ const {
 } = require('./lib/github');
 const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
+const { findActiveTaskResult } = require('./lib/task-selection');
 const {
   assertTaskBranchName,
   assertStreamBranchName,
@@ -58,7 +59,9 @@ function printHelp() {
   writeStdout('  3. create or refresh the review pr for stream/* -> main');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --branch <name>          task branch (default: infer from .task/current.json or current branch)');
+  writeStdout('  --area <name>            select task by area');
+  writeStdout('  --branch <name>          select exact task branch');
+  writeStdout('  --pr <number>            select task by pr number');
   writeStdout('  --title <value>          final review pr title (default: Stream/<area>)');
   writeStdout(`  --base <branch>          final review base branch (default: ${DEFAULT_REVIEW_BASE})`);
   writeStdout('  --body <text>            final review pr body text');
@@ -107,8 +110,14 @@ function parseArgs(argv) {
     }
 
     switch (flag) {
+      case '--area':
+        args.area = value;
+        break;
       case '--branch':
         args.branch = value;
+        break;
+      case '--pr':
+        args.prNumber = Number.parseInt(value, 10);
         break;
       case '--title':
         args.title = value;
@@ -149,6 +158,10 @@ function parseArgs(argv) {
       default:
         throw new Error(`unknown flag: ${flag}`);
     }
+  }
+
+  if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
+    throw new Error('invalid --pr value');
   }
 
   if (args.body && args.bodyFile) {
@@ -212,7 +225,53 @@ function readReviewBody(args, context) {
   return '';
 }
 
+function hasExplicitTaskSelector(args) {
+  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+}
+
+function getSelectedPrContext(args) {
+  const repoRoot = resolveGitRoot(process.cwd());
+  const selected = findActiveTaskResult(repoRoot, {
+    area: args.area || null,
+    branch: args.branch || null,
+    prNumber: args.prNumber === undefined ? null : args.prNumber,
+  });
+
+  if (selected.error) {
+    throw new Error(selected.error);
+  }
+
+  const parsedTaskBranch = assertTaskBranchName(selected.task.meta.taskBranch);
+  const streamCandidates = [
+    selected.task.meta.stream,
+    isStreamBranchName(selected.task.meta.baseBranch) ? selected.task.meta.baseBranch : null,
+    getDefaultStreamBranch(parsedTaskBranch.area),
+  ].filter(Boolean);
+  const streamBranch = streamCandidates[0];
+
+  assertStreamBranchName(streamBranch, parsedTaskBranch.area);
+
+  return {
+    area: parsedTaskBranch.area,
+    slug: parsedTaskBranch.slug,
+    taskBranch: selected.task.meta.taskBranch,
+    streamBranch,
+    reviewBase: args.base || DEFAULT_REVIEW_BASE,
+    currentBranch: selected.task.branch,
+    repoRoot: selected.task.worktreePath,
+    taskMeta: {
+      dir: selected.task.worktreePath,
+      data: selected.task.meta,
+      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+    },
+  };
+}
+
 function getPrContext(args) {
+  if (hasExplicitTaskSelector(args)) {
+    return getSelectedPrContext(args);
+  }
+
   const repoRoot = resolveGitRoot(process.cwd());
   const taskMeta = findTaskMeta(process.cwd());
   const currentBranch = getCurrentBranch(process.cwd());
