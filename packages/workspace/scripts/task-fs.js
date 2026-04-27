@@ -1,60 +1,35 @@
 #!/usr/bin/env node
 'use strict';
 
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
-const { readValidTaskMetaForWorktree } = require('./lib/task-meta');
-const { listWorktrees } = require('./lib/git');
+const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
-function writeStdout(msg) { process.stdout.write(msg + '\n'); }
-function writeStderr(msg) { process.stderr.write(msg + '\n'); }
+function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
+function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
 function showHelp() {
   writeStdout('task:fs — file operations inside the active task worktree');
   writeStdout('');
-  writeStdout('proxies all arguments to `bun run fs` with cwd set to the task worktree.');
+  writeStdout('proxies all arguments to `bun run fs` with cwd set to the selected task worktree.');
   writeStdout('paths are relative to the worktree root, same as `bun run fs` from repo root.');
   writeStdout('');
   writeStdout('usage:');
   writeStdout('  bun run task:fs -- <fs-command> [args...]');
   writeStdout('  bun run task:fs -- --area dialer <fs-command> [args...]');
+  writeStdout('  bun run task:fs -- --branch task/dialer/fix-thing <fs-command> [args...]');
+  writeStdout('  bun run task:fs -- --pr 209 <fs-command> [args...]');
+  writeStdout('');
+  writeStdout('options:');
+  writeStdout('  --area <name>        select task by area');
+  writeStdout('  --branch <branch>    select exact task branch');
+  writeStdout('  --pr <number>        select task by pr number');
+  writeStdout('  --help               show this help');
   writeStdout('');
   writeStdout('examples:');
-  writeStdout('  bun run task:fs -- read packages/contacts/package.json');
-  writeStdout('  bun run task:fs -- search "Sentry" packages/twenty-front/src/');
-  writeStdout('  bun run task:fs -- patch packages/twenty-front/vite.config.ts --from 250 --to 260');
-  writeStdout('  bun run task:fs -- write packages/contacts/src/new.ts --content "export const x = 1;"');
-  writeStdout('  bun run task:fs -- --area clean-up list packages/ --tree');
-}
-
-function findActiveTask(repoRoot, area) {
-  const worktrees = listWorktrees(repoRoot);
-  const tasks = [];
-
-  for (const wt of worktrees) {
-    if (wt.path === repoRoot) continue;
-    const meta = readValidTaskMetaForWorktree(wt.path, wt.branch);
-    if (!meta) continue;
-    if (area && meta.area !== area) continue;
-    tasks.push({ worktreePath: wt.path, meta, branch: wt.branch });
-  }
-
-  if (tasks.length === 0) {
-    const msg = area
-      ? `no active task found for area "${area}". run task:start first.`
-      : 'no active task found. run task:start first.';
-    throw new Error(msg);
-  }
-
-  if (tasks.length > 1 && !area) {
-    const areas = tasks.map(t => t.meta.area).join(', ');
-    throw new Error(
-      `multiple active tasks found (${areas}). use --area <name> to select one.`
-    );
-  }
-
-  return tasks[0];
+  writeStdout('  bun run task:fs -- --branch task/workspace-agents/tighten-exact-task-command-selection read packages/workspace/SCRIPTS.md');
+  writeStdout('  bun run task:fs -- --pr 210 search "task:exec" packages/workspace/scripts');
 }
 
 function main() {
@@ -65,20 +40,16 @@ function main() {
     return;
   }
 
-  let area = null;
-  let fsArgs = [];
-  let i = 0;
-
-  while (i < rawArgs.length) {
-    if (rawArgs[i] === '--area' && i + 1 < rawArgs.length) {
-      area = rawArgs[i + 1];
-      i += 2;
-    } else {
-      fsArgs = rawArgs.slice(i);
-      break;
-    }
+  let parsed;
+  try {
+    parsed = parseTaskSelectorPrefix(rawArgs);
+  } catch {
+    writeStderr('error: invalid task selector');
+    process.exitCode = 1;
+    return;
   }
 
+  const fsArgs = parsed.remainingArgs;
   if (fsArgs.length === 0) {
     writeStderr('error: no fs command provided');
     writeStderr('usage: bun run task:fs -- read <file>');
@@ -86,32 +57,32 @@ function main() {
     return;
   }
 
-  // pass --help through to fs.js
   if (fsArgs.includes('--help') || fsArgs.includes('-h')) {
     showHelp();
     return;
   }
 
   const repoRoot = resolveGitRoot(process.cwd());
-  const task = findActiveTask(repoRoot, area);
+  const selected = findActiveTaskResult(repoRoot, parsed.selector);
+  if (selected.error) {
+    writeStderr(`error: ${selected.error}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const task = selected.task;
   const fsScript = path.join(repoRoot, 'packages/workspace/scripts/fs.js');
 
   writeStderr(`→ task: ${task.meta.area}/${task.meta.taskBranch.split('/').pop()}`);
   writeStderr(`→ cwd: ${task.worktreePath}`);
 
-  // build the fs.js command with the worktree as cwd
-  const escaped = fsArgs.map(a => a.includes(' ') ? `"${a}"` : a).join(' ');
-  const cmd = `node ${fsScript} ${escaped}`;
+  const result = spawnSync(process.execPath, [fsScript, ...fsArgs], {
+    cwd: task.worktreePath,
+    stdio: 'inherit',
+    env: { ...process.env, TASK_WORKTREE: task.worktreePath },
+  });
 
-  try {
-    execSync(cmd, {
-      cwd: task.worktreePath,
-      stdio: 'inherit',
-      env: { ...process.env, TASK_WORKTREE: task.worktreePath },
-    });
-  } catch (err) {
-    process.exitCode = err.status || 1;
-  }
+  process.exitCode = result.status || (result.error ? 1 : 0);
 }
 
 main();
