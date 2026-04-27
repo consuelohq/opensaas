@@ -1,17 +1,13 @@
 {
   "result": "pass",
-  "branch": "task/dialer/fix-parallel-dial-caller-id-conflict-loop",
+  "branch": "task/dialer/fix-railway-docker-chown-build-timeout",
   "base": "origin/stream/dialer",
-  "headSha": "83b56f1136abb35577cc87d7ac9dc6db56da94aa",
-  "changeHash": "f214ab27d9c671d423e07b2e0269937a7ab71093a290ed4946d6113a2c702cdf",
+  "headSha": "0c1adc41725dc35f1c456db390a10c0b9f955eeb",
+  "changeHash": "046d7d2b6971198a64a9a7d7bfb2fec503323f304e63074af1c348568171835b",
   "changedFiles": [
-    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
-    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
-    "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
-    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
-    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+    "packages/twenty-docker/twenty/Dockerfile"
   ],
-  "verifiedAt": "2026-04-27T02:21:53.393Z",
+  "verifiedAt": "2026-04-27T20:33:03.376Z",
   "review": {
     "skipped": true,
     "passed": true
