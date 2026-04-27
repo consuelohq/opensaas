@@ -1,14 +1,17 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/push-stream-sync-results",
-  "base": "origin/task/workspace-agents/push-stream-sync-results",
-  "headSha": "c0439deb318b00576a6fd924d9f6492c800eb9d9",
-  "changeHash": "2891b8f70dd0e7ed530867d3cfc23932f0f8650816c518b174ca100dbcfa4a4c",
+  "branch": "task/workspace-agents/root-task-publish-selection",
+  "base": "origin/task/workspace-agents/root-task-publish-selection",
+  "headSha": "feb691232029f7448e513ba7bf5b9b7100b74f18",
+  "changeHash": "0a388cc2d0868b9c383e9e060ca4c75f7ad47fd18d2d081c0eccbe1a044baee6",
   "changedFiles": [
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/stream-sync.js"
+    "packages/workspace/scripts/task-finish.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-prs.js",
+    "packages/workspace/scripts/task-push.js"
   ],
-  "verifiedAt": "2026-04-27T05:34:08.254Z",
+  "verifiedAt": "2026-04-27T06:29:31.490Z",
   "review": {
     "skipped": false,
     "passed": true

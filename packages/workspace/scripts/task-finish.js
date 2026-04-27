@@ -15,6 +15,7 @@ const {
 } = require('./lib/git');
 const { DEFAULT_REPO, resolveGitRoot } = require('./lib/paths');
 const { findTaskMeta } = require('./lib/task-meta');
+const { findActiveTaskResult } = require('./lib/task-selection');
 const {
   assertStreamBranchName,
   assertTaskBranchName,
@@ -34,7 +35,9 @@ function printHelp() {
   writeStdout('usage: bun run task:finish -- [options]');
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --branch <name>        task branch (default: infer from .task/current.json or current branch)');
+  writeStdout('  --area <name>          select task by area');
+  writeStdout('  --branch <name>        select exact task branch');
+  writeStdout('  --pr <number>          select task by pr number');
   writeStdout('  --stream <branch>      stream target to verify merge against (default: infer from task metadata or area)');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --json                 output json');
@@ -67,8 +70,14 @@ function parseArgs(argv) {
     }
 
     switch (flag) {
+      case '--area':
+        args.area = value;
+        break;
       case '--branch':
         args.branch = value;
+        break;
+      case '--pr':
+        args.prNumber = Number.parseInt(value, 10);
         break;
       case '--stream':
         args.stream = value;
@@ -87,10 +96,44 @@ function parseArgs(argv) {
     }
   }
 
+  if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
+    throw new Error('invalid --pr value');
+  }
+
   return args;
 }
 
+function hasExplicitTaskSelector(args) {
+  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+}
+
+function getSelectedTaskContext(args) {
+  const repoRoot = resolveGitRoot(process.cwd());
+  const selected = findActiveTaskResult(repoRoot, {
+    area: args.area || null,
+    branch: args.branch || null,
+    prNumber: args.prNumber === undefined ? null : args.prNumber,
+  });
+
+  if (selected.error) {
+    throw new Error(selected.error);
+  }
+
+  const parsedTaskBranch = assertTaskBranchName(selected.task.meta.taskBranch);
+
+  return {
+    repoRoot,
+    taskMeta: { data: selected.task.meta, dir: selected.task.worktreePath },
+    branch: selected.task.meta.taskBranch,
+    area: parsedTaskBranch.area,
+  };
+}
+
 function getTaskContext(args) {
+  if (hasExplicitTaskSelector(args)) {
+    return getSelectedTaskContext(args);
+  }
+
   const repoRoot = resolveGitRoot(process.cwd());
   const taskMeta = findTaskMeta(process.cwd());
   const currentBranch = getCurrentBranch(process.cwd());
@@ -166,7 +209,8 @@ function printResult(result, useJson) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  try {
+    const args = parseArgs(process.argv.slice(2));
 
   if (args.help) {
     printHelp();
@@ -240,6 +284,7 @@ async function main() {
     },
     args.json,
   );
+  } finally {}
 }
 
 main().catch((error) => {
