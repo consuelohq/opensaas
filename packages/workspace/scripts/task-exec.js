@@ -31,7 +31,7 @@ function showHelp() {
 function main() {
   const rawArgs = process.argv.slice(2);
 
-  if (rawArgs.includes('--help') || rawArgs.includes('-h')) {
+  if (rawArgs.length === 0 || (rawArgs.length === 1 && (rawArgs[0] === '--help' || rawArgs[0] === '-h'))) {
     showHelp();
     return;
   }
