@@ -1,19 +1,39 @@
 {
   "result": "pass",
-  "branch": "task/dialer/fix-railway-docker-chown-build-timeout",
-  "base": "origin/stream/dialer",
-  "headSha": "0c1adc41725dc35f1c456db390a10c0b9f955eeb",
-  "changeHash": "046d7d2b6971198a64a9a7d7bfb2fec503323f304e63074af1c348568171835b",
+  "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
+  "base": "origin/task/workspace-agents/workspace-explore-decision-confidence-system",
+  "headSha": "5b4ff67e2c764c8cad3dd44002063532bce4a7b2",
+  "changeHash": "adbba521c2a782f744a43209a595c1901f6e2216caccd667405fe2716a2ec6a1",
   "changedFiles": [
-    "packages/twenty-docker/twenty/Dockerfile"
+    "package.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/bun.lock",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/audit.js",
+    "packages/workspace/scripts/confidence-score.js",
+    "packages/workspace/scripts/confirm.js",
+    "packages/workspace/scripts/decide-next.js",
+    "packages/workspace/scripts/exploit.js",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/index/chunker.js",
+    "packages/workspace/scripts/lib/index/embedder.js",
+    "packages/workspace/scripts/lib/index/graph-builder.js",
+    "packages/workspace/scripts/lib/index/indexer.js",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/scripts/lib/search/ranker.js",
+    "packages/workspace/scripts/lib/search/retriever.js",
+    "packages/workspace/scripts/lib/state/evidence-log.js",
+    "packages/workspace/scripts/lib/state/explore-state.js",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/scripts/task-fs.js"
   ],
-  "verifiedAt": "2026-04-27T20:33:03.376Z",
+  "verifiedAt": "2026-04-28T12:17:45.170Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

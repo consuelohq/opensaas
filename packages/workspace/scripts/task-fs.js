@@ -4,10 +4,24 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 const { resolveGitRoot } = require('./lib/paths');
+const { markFileRead } = require('./lib/state/evidence-log');
 const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
+
+function getReadTargets(fsArgs) {
+  if (fsArgs[0] !== 'read') return [];
+
+  const targets = [];
+  for (const argument of fsArgs.slice(1)) {
+    if (argument.startsWith('--')) break;
+    if (argument === '.task/evidence-log.json' || argument === '.task/read-log.json') continue;
+    targets.push(argument);
+  }
+
+  return targets;
+}
 
 function showHelp() {
   writeStdout('task:fs — file operations inside the active task worktree');
@@ -81,6 +95,19 @@ function main() {
     stdio: 'inherit',
     env: { ...process.env, TASK_WORKTREE: task.worktreePath },
   });
+
+  if (result.status === 0) {
+    for (const filePath of getReadTargets(fsArgs)) {
+      try {
+        markFileRead(task.worktreePath, filePath, {
+          source: 'task:fs',
+          task_branch: task.meta.taskBranch,
+        });
+      } catch {
+        writeStderr(`warning: read evidence not recorded for ${filePath}`);
+      }
+    }
+  }
 
   process.exitCode = result.status || (result.error ? 1 : 0);
 }
