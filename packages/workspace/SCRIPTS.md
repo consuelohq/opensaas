@@ -800,6 +800,87 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ---
 
+### tool:run — run one typed workspace tool
+
+runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
+
+```bash
+bun run tool:run -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool:run -- context.categories '{}'
+bun run tool:run -- mac.list '{"path":"/tmp","depth":1}'
+```
+
+---
+
+### tool:batch — run typed workspace tools in sequence
+
+runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+
+```bash
+bun run tool:batch -- '[{"tool":"fs.read","args":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool:batch -- --file /tmp/workspace-batch.json
+```
+
+---
+
+### generate:docs — generate typed tool documentation
+
+generates `packages/workspace/TOOLS.md` from `packages/workspace/tooling/tool-manifest.json`.
+
+```bash
+bun run generate:docs
+```
+
+---
+
+### generate:types — generate typed tool stubs
+
+generates `packages/workspace/src/generated/workspace.d.ts` and `packages/workspace/src/generated/tool-client.ts` from the tool manifest.
+
+```bash
+bun run generate:types
+```
+
+---
+
+### check-files — batch syntax check
+
+runs `node --check` for each provided file through `task:exec`, returning structured per-file results.
+
+```bash
+bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/fs.js --json
+bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/a.js packages/workspace/scripts/b.js --stop-on-first-error --json
+```
+
+---
+
+### edit-flow — composed search-read-patch flow
+
+runs a real script for search -> read -> patch -> read verification. this keeps multi-step editing orchestration outside the facade.
+
+```bash
+bun run edit-flow -- --branch task/workspace-agents/example --search-pattern "oldFn" --search-paths packages/workspace/scripts --from 10 --to 12 --content-file /tmp/new.ts --json
+bun run edit-flow -- --branch task/workspace-agents/example --search-pattern "oldFn" --search-paths packages/workspace/scripts --from 10 --to 12 --content-file /tmp/new.ts --dry-run --json
+```
+
+---
+
+### mac — non-repo mac operations
+
+operates outside repo context. it does not do task branch resolution. use for local file, process, command, and port operations that are not scoped to opensaas.
+
+```bash
+bun run mac -- exec "pwd" --json
+bun run mac -- read /tmp/some-file.txt --json
+bun run mac -- write /tmp/output.txt --content "hello" --json
+bun run mac -- search "pattern" /tmp --include "*.ts" --json
+bun run mac -- list /tmp --depth 1 --json
+bun run mac -- process list --json
+bun run mac -- port find --json
+```
+
+---
+
 ### server — manage the workspace MCP server
 
 ```bash
