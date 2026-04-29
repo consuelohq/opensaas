@@ -45,9 +45,15 @@ function parseArgs(argv) {
       case '--runtime':
         args.runtime = true;
         break;
-      case '--test':
-        args.tests.push(argv[++index]);
+      case '--test': {
+        const next = argv[index + 1];
+        if (!next || next.startsWith('-')) {
+          throw new Error('--test requires a test pattern');
+        }
+        args.tests.push(next);
+        index += 1;
         break;
+      }
       case '--json':
         args.json = true;
         break;
@@ -96,7 +102,7 @@ function runVerify(repoRoot) {
   const data = parseJson(result.stdout);
 
   return {
-    passed: result.passed && data?.passed !== false,
+    passed: result.passed && data !== null && data.passed !== false,
     status: result.status,
     failed_checks: data
       ? [
@@ -261,7 +267,7 @@ function main() {
 
 try {
   main();
-} catch {
-  writeStderr('unknown error');
+} catch (err /* unknown */) {
+  writeStderr(err instanceof Error ? err.message : String(err));
   process.exit(1);
 }

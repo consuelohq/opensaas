@@ -411,7 +411,7 @@ bun run decide-next -- --json
 
 ### confidence-score — evidence confidence
 
-scores the current path from evidence events: explored files, reads, connected tests, verify/test/runtime results, and contradictions. cold start confidence stays low because Qwen results are only a retrieval prior.
+scores the current path from evidence events: reads, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
 
 ```bash
 bun run confidence-score
@@ -447,7 +447,7 @@ bun run confirm -- --test packages/workspace/scripts/__tests__/example.test.js
 
 ### audit — script/docs/index drift
 
-checks whether documented workspace scripts exist, markdown path references are still real, and the local exploration index is stale.
+checks whether documented workspace scripts exist, whether undocumented workspace scripts have drifted in, whether markdown path references are still real, and whether the local exploration index is stale.
 
 ```bash
 bun run audit

@@ -91,22 +91,27 @@ function computeConfidence(repoRoot, state) {
 
   const evidenceFor = [];
   const evidenceAgainst = [];
+  const startingState = [];
   const uncertainties = [];
 
   if (results.length > 0) {
-    evidenceFor.push(`Qwen prior found ${results.length} candidate files`);
+    startingState.push(`Qwen prior found ${results.length} candidate files`);
   }
 
-  if (topResults.length > 0) {
+  if (filesRead > 0 && topResults.length > 0) {
     evidenceFor.push(`read ${filesRead}/${topResults.length} top files`);
   }
 
   if (graphConnections.length > 0) {
+    startingState.push(`graph expansion found ${graphConnections.length} connected files`);
+  }
+
+  if (graphVisited > 0 && graphConnections.length > 0) {
     evidenceFor.push(`visited ${graphVisited}/${graphConnections.length} graph-connected files`);
   }
 
   if (hasTestCoverage) {
-    evidenceFor.push(`connected tests found (${testFiles.length})`);
+    startingState.push(`connected tests found (${testFiles.length})`);
   } else {
     uncertainties.push('no connected test file found yet');
   }
@@ -150,6 +155,7 @@ function computeConfidence(repoRoot, state) {
 
   return {
     score: Number(score.toFixed(2)),
+    starting_state: startingState,
     evidence_for: evidenceFor,
     evidence_against: evidenceAgainst,
     uncertainties,
@@ -167,9 +173,22 @@ function computeConfidence(repoRoot, state) {
 function printHuman(result) {
   writeStdout(`confidence-score: ${result.score}`);
   writeStdout('');
+  writeStdout('  starting state:');
+  if (result.starting_state.length === 0) {
+    writeStdout('    - none recorded');
+  } else {
+    for (const item of result.starting_state) {
+      writeStdout(`    - ${item}`);
+    }
+  }
+  writeStdout('');
   writeStdout('  evidence for:');
-  for (const item of result.evidence_for) {
-    writeStdout(`    - ${item}`);
+  if (result.evidence_for.length === 0) {
+    writeStdout('    - none recorded');
+  } else {
+    for (const item of result.evidence_for) {
+      writeStdout(`    - ${item}`);
+    }
   }
   writeStdout('');
   writeStdout('  evidence against:');

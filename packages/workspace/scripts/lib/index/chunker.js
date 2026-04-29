@@ -4,11 +4,21 @@ const path = require('path');
 // Bun's tree-sitter package path expects bundled prebuilds. The native build
 // created by node-gyp-build is valid, so load through that path instead.
 const bunVersion = process.versions.bun;
-process.versions.bun = undefined;
-const Parser = require('tree-sitter');
-const JavaScript = require('tree-sitter-javascript');
-const TypeScript = require('tree-sitter-typescript');
-process.versions.bun = bunVersion;
+let Parser;
+let JavaScript;
+let TypeScript;
+try {
+  process.versions.bun = undefined;
+  Parser = require('tree-sitter');
+  JavaScript = require('tree-sitter-javascript');
+  TypeScript = require('tree-sitter-typescript');
+} finally {
+  if (bunVersion === undefined) {
+    delete process.versions.bun;
+  } else {
+    process.versions.bun = bunVersion;
+  }
+}
 
 const MAX_BLOCK_LINES = 150;
 const MAX_CHUNK_LINES = 150;

@@ -33,6 +33,10 @@ function getRemoteUrl(repoRoot) {
   }
 }
 
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function emptyLog(worktreeId) {
   return {
     version: EVIDENCE_LOG_VERSION,
@@ -87,9 +91,18 @@ function writeEvidenceLog(repoRoot, log) {
 }
 
 function mirrorEventToStore(repoRoot, event) {
-  const store = createStore(repoRoot, getRemoteUrl(repoRoot));
-  store.insertEvidenceEvent(event);
-  return store.dbPath;
+  let store = null;
+  try {
+    store = createStore(repoRoot, getRemoteUrl(repoRoot));
+    store.insertEvidenceEvent(event);
+    return store.dbPath;
+  } catch (error /* unknown */) {
+    throw new Error(`mirrorEventToStore failed: ${getErrorMessage(error)}`);
+  } finally {
+    if (store?.db) {
+      store.db.close();
+    }
+  }
 }
 
 function appendEvidenceEvent(repoRoot, event, options = {}) {
@@ -112,10 +125,10 @@ function appendEvidenceEvent(repoRoot, event, options = {}) {
   if (options.mirror !== false) {
     try {
       mirroredTo = mirrorEventToStore(repoRoot, normalized);
-    } catch {
-      mirrorError = 'unknown error';
+    } catch (error /* unknown */) {
+      mirrorError = getErrorMessage(error);
       if (options.requireMirror) {
-        throw new Error(mirrorError);
+        throw error;
       }
     }
   }

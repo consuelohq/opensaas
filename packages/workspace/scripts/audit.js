@@ -86,7 +86,7 @@ function auditScripts(repoRoot) {
     actual_count: actualScripts.size,
     missing,
     undocumented,
-    passed: missing.length === 0,
+    passed: missing.length === 0 && undocumented.length === 0,
   };
 }
 
@@ -205,8 +205,11 @@ function main() {
 }
 
 try {
-  main();
-} catch {
-  writeStderr('unknown error');
+  Promise.resolve(main()).catch((err) => {
+    writeStderr(err instanceof Error ? (err.stack || err.message) : String(err));
+    process.exit(1);
+  });
+} catch (err /* unknown */) {
+  writeStderr(err instanceof Error ? (err.stack || err.message) : String(err));
   process.exit(1);
 }

@@ -38,12 +38,26 @@ function parseArgs(argv) {
     const argument = argv[index];
 
     switch (argument) {
-      case '--context':
-        args.context = argv[++index];
+      case '--context': {
+        const value = argv[index + 1];
+        if (!value || value.startsWith('-')) {
+          printHelp();
+          process.exit(1);
+        }
+        args.context = value;
+        index += 1;
         break;
-      case '--mark-read':
-        args.markRead.push(argv[++index]);
+      }
+      case '--mark-read': {
+        const value = argv[index + 1];
+        if (!value || value.startsWith('-')) {
+          printHelp();
+          process.exit(1);
+        }
+        args.markRead.push(value);
+        index += 1;
         break;
+      }
       case '--json':
         args.json = true;
         break;

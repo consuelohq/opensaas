@@ -6,7 +6,9 @@ const { scoreCandidate, getReason } = require('./ranker');
 function distanceToSimilarity(distance) {
   const parsed = Number(distance);
   if (!Number.isFinite(parsed)) return 0;
-  return 1 / (1 + Math.max(0, parsed));
+  const normalizedDistance = Math.max(0, parsed);
+  const cosine = Math.max(-1, Math.min(1, 1 - ((normalizedDistance * normalizedDistance) / 2)));
+  return (cosine + 1) / 2;
 }
 
 function buildRecencyLookup(repoRoot) {
@@ -57,7 +59,7 @@ function mergeSearchRows(rows) {
     const similarity = distanceToSimilarity(row.distance);
     const existing = candidates.get(row.filePath);
 
-    if (!existing || similarity > existing.embeddingSimilarity) {
+    if (!existing || shouldReplaceBestChunk(row, similarity, existing)) {
       candidates.set(row.filePath, {
         path: row.filePath,
         embeddingSimilarity: similarity,
@@ -75,11 +77,37 @@ function mergeSearchRows(rows) {
   return candidates;
 }
 
+function getChunkTypePriority(chunkType) {
+  switch (chunkType) {
+    case 'class':
+    case 'method':
+    case 'function':
+      return 4;
+    case 'type':
+    case 'export':
+      return 3;
+    case 'import':
+      return 2;
+    case 'block':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function shouldReplaceBestChunk(row, similarity, existing) {
+  if (similarity > existing.embeddingSimilarity) return true;
+  if (similarity < existing.embeddingSimilarity - 0.03) return false;
+
+  return getChunkTypePriority(row.chunkType) > getChunkTypePriority(existing.bestChunkType);
+}
+
 function expandGraph(store, candidates, depth, limit) {
   const queue = Array.from(candidates.keys()).map((filePath) => ({ filePath, depth: 0 }));
   const seen = new Set(candidates.keys());
+  let addedCount = 0;
 
-  while (queue.length > 0 && seen.size < limit) {
+  while (queue.length > 0) {
     const current = queue.shift();
     if (!current || current.depth >= depth) continue;
 
@@ -93,8 +121,10 @@ function expandGraph(store, candidates, depth, limit) {
 
     for (const connection of connections) {
       if (seen.has(connection.path)) continue;
+      if (addedCount >= limit) break;
 
       seen.add(connection.path);
+      addedCount += 1;
       candidates.set(connection.path, {
         path: connection.path,
         embeddingSimilarity: Math.max(0, (currentCandidate?.embeddingSimilarity || 0) * 0.85),
@@ -107,8 +137,6 @@ function expandGraph(store, candidates, depth, limit) {
         includedBy: connection.edgeType,
       });
       queue.push({ filePath: connection.path, depth: current.depth + 1 });
-
-      if (seen.size >= limit) break;
     }
   }
 }

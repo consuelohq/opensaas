@@ -4,120 +4,193 @@
   "results": [
     {
       "path": "packages/dialer/src/types.ts",
-      "score": 0.6539,
+      "score": 0.8098,
       "reason": "semantic match: block chunk",
       "preview": "/** Dialer configuration */",
-      "graph_connections": [],
+      "graph_connections": [
+        "packages/dialer/src/dialer.spec.ts",
+        "packages/dialer/src/dialer.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/services/cadence-optimizer.spec.ts",
+        "packages/dialer/src/services/call-timing-model.spec.ts",
+        "packages/dialer/src/services/local-presence.spec.ts",
+        "packages/dialer/src/services/parallel-dialer.spec.ts",
+        "packages/dialer/src/services/parallel-strategy-resolver.spec.ts"
+      ],
       "lines": {
         "start": 10,
         "end": 10
       }
     },
     {
+      "path": "packages/dialer/src/index.ts",
+      "score": 0.7532,
+      "reason": "semantic match: sibling chunk",
+      "preview": "// Core",
+      "graph_connections": [
+        "packages/api/src/routes/local-presence.ts",
+        "packages/api/src/routes/parallel.ts",
+        "packages/api/src/routes/voice.ts",
+        "packages/api/src/services/phone-number-recommendations.ts",
+        "packages/api/src/services/workspace-phone-numbers.spec.ts",
+        "packages/api/src/services/workspace-phone-numbers.ts",
+        "packages/api/src/shared/dialer.ts",
+        "packages/cli/src/commands/call.ts"
+      ],
+      "lines": {
+        "start": 1,
+        "end": 1
+      }
+    },
+    {
       "path": "packages/dialer/src/dialer.ts",
-      "score": 0.5658,
-      "reason": "semantic match: Dialer",
+      "score": 0.7244,
+      "reason": "semantic match: class Dialer",
       "preview": "export class Dialer {",
-      "graph_connections": [],
+      "graph_connections": [
+        "packages/dialer/src/dialer.spec.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/types.ts"
+      ],
       "lines": {
         "start": 46,
         "end": 46
       }
     },
     {
-      "path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
-      "score": 0.5556,
-      "reason": "semantic match: DialableBatchItem",
-      "preview": "type DialableBatchItem = { item: QueueItem; customerNumber: string;",
-      "graph_connections": [],
+      "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "score": 0.7207,
+      "reason": "semantic match: block chunk",
+      "preview": "const { result } = renderUseParallelDialer((snap) => { snap.set(activeQueueState, { ...activeParallelQueue,",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useCallTransfer.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useDialerHotkeys.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useTwilioDevice.test.ts",
+        "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts"
+      ],
       "lines": {
-        "start": 39,
-        "end": 42
+        "start": 300,
+        "end": 316
       }
     },
     {
       "path": "packages/dialer/src/services/parallel-dialer.ts",
-      "score": 0.5549,
-      "reason": "semantic match: ParallelDialerService",
+      "score": 0.7112,
+      "reason": "semantic match: class ParallelDialerService",
       "preview": "export class ParallelDialerService {",
-      "graph_connections": [],
+      "graph_connections": [
+        "packages/dialer/src/services/cadence-optimizer.service.ts",
+        "packages/dialer/src/services/cadence-optimizer.spec.ts",
+        "packages/dialer/src/services/call-timing-model.service.ts",
+        "packages/dialer/src/services/parallel-dialer.spec.ts"
+      ],
       "lines": {
         "start": 26,
         "end": 26
       }
     },
     {
-      "path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
-      "score": 0.554,
-      "reason": "semantic match: imports",
-      "preview": "import * as Sentry from '@sentry/react'; import { isValidPhone, normalizePhone } from '@consuelo/contacts'; import { useCallback, useEffect, useMemo, useRef, useState } from 'react';",
-      "graph_connections": [],
-      "lines": {
-        "start": 1,
-        "end": 38
-      }
-    },
-    {
       "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
-      "score": 0.5458,
+      "score": 0.7023,
       "reason": "semantic match: block chunk",
       "preview": "/** Parallel dialing — outcome per call leg */",
-      "graph_connections": [],
+      "graph_connections": [
+        "packages/twenty-front/src/modules/dialer/types/coaching.ts",
+        "packages/twenty-front/src/modules/dialer/types/coachingScript.ts",
+        "packages/twenty-front/src/modules/dialer/types/history.ts",
+        "packages/twenty-front/src/modules/dialer/types/queue.ts"
+      ],
       "lines": {
         "start": 147,
         "end": 147
       }
     },
     {
-      "path": "packages/api/src/routes/queues.ts",
-      "score": 0.527,
-      "reason": "semantic match: block chunk",
-      "preview": "const selectNextCallableItem = async ( client: { query: (text: string, values?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> }, queueId: string,",
-      "graph_connections": [],
+      "path": "packages/api/src/routes/assistant.ts",
+      "score": 0.6942,
+      "reason": "semantic match: sibling chunk",
+      "preview": "// eslint-disable-next-line @nx/enforce-module-boundaries",
+      "graph_connections": [
+        "packages/api/src/routes/analytics.ts",
+        "packages/api/src/routes/calls.ts",
+        "packages/api/src/routes/coaching.ts",
+        "packages/logger/src/index.ts",
+        "packages/api/src/routes/contacts.ts",
+        "packages/api/src/routes/discord-auth.ts",
+        "packages/api/src/routes/files.ts",
+        "packages/api/src/routes/ghl.ts"
+      ],
       "lines": {
-        "start": 238,
-        "end": 271
+        "start": 1,
+        "end": 1
       }
     },
     {
-      "path": "packages/api/src/routes/parallel.ts",
-      "score": 0.526,
-      "reason": "semantic match: ParallelDialBody",
-      "preview": "interface ParallelDialBody { customerNumbers: string[]; queueId: string;",
-      "graph_connections": [],
+      "path": "packages/api/src/routes/calls.ts",
+      "score": 0.6942,
+      "reason": "semantic match: sibling imports",
+      "preview": "import { randomUUID } from 'node:crypto'; import { errorHandler } from '../middleware/error-handler.js'; import { requireAuth } from '../middleware/requireAuth.js';",
+      "graph_connections": [
+        "packages/api/src/routes/analytics.ts",
+        "packages/api/src/routes/assistant.ts",
+        "packages/api/src/routes/coaching.ts",
+        "packages/api/src/routes/contacts.ts",
+        "packages/api/src/routes/discord-auth.ts",
+        "packages/api/src/routes/files.ts",
+        "packages/api/src/routes/ghl.ts",
+        "packages/api/src/routes/index.ts"
+      ],
       "lines": {
-        "start": 52,
-        "end": 59
+        "start": 1,
+        "end": 37
       }
     },
     {
-      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
-      "score": 0.5061,
-      "reason": "semantic match: dialer",
-      "preview": "private dialer: Dialer | null = null;",
-      "graph_connections": [],
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
+      "score": 0.6933,
+      "reason": "semantic match: sibling imports",
+      "preview": "import { Injectable, Logger } from \"@nestjs/common\"; import { InjectDataSource } from \"@nestjs/typeorm\"; import * as Sentry from \"@sentry/node\";",
+      "graph_connections": [
+        "packages/dialer/src/index.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-model.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-store.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/calls.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-posterior.store.ts"
+      ],
       "lines": {
-        "start": 12,
-        "end": 12
+        "start": 1,
+        "end": 14
       }
     },
     {
-      "path": "packages/chat-bot/src/queue-dialer.ts",
-      "score": 0.4629,
-      "reason": "semantic match: QueueDialer",
-      "preview": "export class QueueDialer {",
-      "graph_connections": [],
+      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-model.service.ts",
+      "score": 0.6933,
+      "reason": "semantic match: sibling imports",
+      "preview": "import { Injectable } from '@nestjs/common'; import { CallTimingModel } from '@consuelo/dialer'; import { CallTimingStore } from 'src/engine/core-modules/consuelo-api/services/call-timing-store';",
+      "graph_connections": [
+        "packages/dialer/src/index.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-store.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/calls.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-posterior.store.ts"
+      ],
       "lines": {
-        "start": 70,
-        "end": 70
+        "start": 1,
+        "end": 5
       }
     }
   ],
   "index_stats": {
     "total_files": 14538,
-    "total_chunks": 69609,
-    "last_indexed": "2026-04-28T06:24:42.117Z",
-    "last_full_index": "2026-04-28T00:35:05.967Z",
+    "total_chunks": 59144,
+    "last_indexed": "2026-04-28T16:55:26.269Z",
+    "last_full_index": "2026-04-29T01:40:26.658Z",
     "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
     "files_indexed": 0,
     "chunks_embedded": 0
@@ -125,7 +198,7 @@
   "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
   "mode": "exploiting",
   "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
-  "updated_at": "2026-04-28T12:16:20.046Z",
+  "updated_at": "2026-04-29T01:43:46.736Z",
   "exploitation": {
     "target": "packages/dialer/src/types.ts",
     "lines": {
@@ -133,14 +206,14 @@
       "end": 10
     },
     "context_files": [
+      "packages/dialer/src/dialer.spec.ts",
       "packages/dialer/src/dialer.ts",
-      "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
-      "packages/dialer/src/services/parallel-dialer.ts",
-      "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
-      "packages/twenty-front/src/modules/dialer/types/dialer.ts"
+      "packages/dialer/src/index.ts",
+      "packages/dialer/src/services/cadence-optimizer.spec.ts",
+      "packages/dialer/src/services/call-timing-model.spec.ts"
     ],
     "approach": "modify packages/dialer/src/types.ts for \"how does the dialer queue work?\" using semantic match: block chunk",
-    "previous_state": "exploiting",
+    "previous_state": "exploring",
     "state": "exploiting"
   },
   "confirmation": {
@@ -228,7 +301,7 @@
     },
     "runtime": null,
     "tests": [],
-    "updated_at": "2026-04-28T12:16:20.008Z",
+    "updated_at": "2026-04-29T01:43:46.697Z",
     "verdict": "CONFIRMED"
   }
 }

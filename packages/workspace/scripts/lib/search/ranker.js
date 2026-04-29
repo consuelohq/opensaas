@@ -63,7 +63,7 @@ function scoreCandidate(candidate, context) {
 
 function getReason(candidate) {
   if (candidate.bestChunkName) {
-    return `semantic match: ${candidate.bestChunkName}`;
+    return `semantic match: ${candidate.bestChunkType || 'chunk'} ${candidate.bestChunkName}`;
   }
 
   if (candidate.bestChunkType) {

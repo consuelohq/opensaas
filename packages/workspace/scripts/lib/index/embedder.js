@@ -8,9 +8,13 @@ const DEFAULT_MODEL_PATH = path.join(os.homedir(), '.cache', 'qmd', 'models', 'Q
 const DOCUMENT_INSTRUCTION = 'Instruct: Represent this code for retrieval\nQuery: ';
 const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: ';
 
-let embeddingContexts = null;
-let embeddingContextsPromise = null;
-let embeddingContextCursor = 0;
+const embeddingContextsByPath = new Map();
+const embeddingContextsPromiseByPath = new Map();
+const embeddingContextCursorByPath = new Map();
+
+function getErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function normalizeVector(vector) {
   let magnitude = 0;
@@ -42,7 +46,7 @@ function getEmbeddingContextCount() {
   const parsed = Number.parseInt(process.env.WORKSPACE_EMBEDDING_CONTEXTS || '2', 10);
   if (!Number.isFinite(parsed) || parsed < 1) return 1;
 
-  return Math.min(parsed, 4);
+  return Math.min(parsed, 2);
 }
 
 async function createEmbeddingContexts(modelPath) {
@@ -83,28 +87,34 @@ async function createEmbeddingContexts(modelPath) {
 }
 
 async function getEmbeddingContext(modelPath = DEFAULT_MODEL_PATH) {
-  if (embeddingContexts) {
-    const context = embeddingContexts[embeddingContextCursor % embeddingContexts.length];
-    embeddingContextCursor += 1;
+  const resolvedModelPath = modelPath || DEFAULT_MODEL_PATH;
+  const existingContexts = embeddingContextsByPath.get(resolvedModelPath);
+  if (existingContexts) {
+    const cursor = embeddingContextCursorByPath.get(resolvedModelPath) || 0;
+    const context = existingContexts[cursor % existingContexts.length];
+    embeddingContextCursorByPath.set(resolvedModelPath, cursor + 1);
     return context;
   }
 
-  if (!fs.existsSync(modelPath)) {
-    throw new Error(`embedding model not found: ${modelPath}`);
+  if (!fs.existsSync(resolvedModelPath)) {
+    throw new Error(`embedding model not found: ${resolvedModelPath}`);
   }
 
-  if (!embeddingContextsPromise) {
-    embeddingContextsPromise = createEmbeddingContexts(modelPath);
+  if (!embeddingContextsPromiseByPath.has(resolvedModelPath)) {
+    embeddingContextsPromiseByPath.set(resolvedModelPath, createEmbeddingContexts(resolvedModelPath));
   }
 
+  let embeddingContexts;
   try {
-    embeddingContexts = await embeddingContextsPromise;
-  } catch {
-    embeddingContextsPromise = null;
-    throw new Error('embedding context initialization failed');
+    embeddingContexts = await embeddingContextsPromiseByPath.get(resolvedModelPath);
+  } catch (error /* unknown */) {
+    embeddingContextsPromiseByPath.delete(resolvedModelPath);
+    throw new Error(`embedding context initialization failed: ${getErrorMessage(error)}`);
   }
-  const context = embeddingContexts[embeddingContextCursor % embeddingContexts.length];
-  embeddingContextCursor += 1;
+  embeddingContextsByPath.set(resolvedModelPath, embeddingContexts);
+  const cursor = embeddingContextCursorByPath.get(resolvedModelPath) || 0;
+  const context = embeddingContexts[cursor % embeddingContexts.length];
+  embeddingContextCursorByPath.set(resolvedModelPath, cursor + 1);
   return context;
 }
 
@@ -114,8 +124,8 @@ async function embedText(text, options = {}) {
     const prefix = options.kind === 'query' ? QUERY_INSTRUCTION : DOCUMENT_INSTRUCTION;
     const embedding = await context.getEmbeddingFor(`${prefix}${text}`);
     return truncateVector(embedding.vector);
-  } catch {
-    throw new Error('embedding failed');
+  } catch (error /* unknown */) {
+    throw new Error(`embedding failed: ${getErrorMessage(error)}`);
   }
 }
 

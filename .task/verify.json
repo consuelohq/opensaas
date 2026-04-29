@@ -3,7 +3,7 @@
   "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
   "base": "origin/task/workspace-agents/workspace-explore-decision-confidence-system",
   "headSha": "5b4ff67e2c764c8cad3dd44002063532bce4a7b2",
-  "changeHash": "adbba521c2a782f744a43209a595c1901f6e2216caccd667405fe2716a2ec6a1",
+  "changeHash": "f384403f28d1f60809a663528ffcbe826573fead0ebfbf233d2ab0ae8f5f84e0",
   "changedFiles": [
     "package.json",
     "packages/workspace/SCRIPTS.md",
@@ -27,7 +27,7 @@
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js"
   ],
-  "verifiedAt": "2026-04-28T12:17:45.170Z",
+  "verifiedAt": "2026-04-29T01:45:59.223Z",
   "review": {
     "skipped": false,
     "passed": true

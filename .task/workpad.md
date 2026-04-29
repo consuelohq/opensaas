@@ -29,20 +29,27 @@ started: 2026-04-27
 ## files changed
 
 - `package.json`
-- `packages/workspace/package.json`
 - `packages/workspace/SCRIPTS.md`
-- `packages/workspace/scripts/explore.js`
-- `packages/workspace/scripts/decide-next.js`
-- `packages/workspace/scripts/confidence-score.js`
-- `packages/workspace/scripts/exploit.js`
-- `packages/workspace/scripts/confirm.js`
-- `packages/workspace/scripts/audit.js`
-- `packages/workspace/scripts/lib/index/*`
-- `packages/workspace/scripts/lib/search/*`
-- `packages/workspace/scripts/lib/state/*`
+- `packages/workspace/package.json`
 - `packages/workspace/scripts/task-exec.js`
 - `packages/workspace/scripts/task-fs.js`
-- `.task/evidence-log.json`
+- `packages/workspace/bun.lock`
+- `packages/workspace/scripts/audit.js`
+- `packages/workspace/scripts/confidence-score.js`
+- `packages/workspace/scripts/confirm.js`
+- `packages/workspace/scripts/decide-next.js`
+- `packages/workspace/scripts/exploit.js`
+- `packages/workspace/scripts/explore.js`
+- `packages/workspace/scripts/lib/index/chunker.js`
+- `packages/workspace/scripts/lib/index/embedder.js`
+- `packages/workspace/scripts/lib/index/graph-builder.js`
+- `packages/workspace/scripts/lib/index/indexer.js`
+- `packages/workspace/scripts/lib/index/store.js`
+- `packages/workspace/scripts/lib/search/ranker.js`
+- `packages/workspace/scripts/lib/search/retriever.js`
+- `packages/workspace/scripts/lib/state/evidence-log.js`
+- `packages/workspace/scripts/lib/state/explore-state.js`
+
 
 ## key decisions
 
@@ -96,3 +103,38 @@ bun run task:finish
 - [x] bun run verify passes or any failure is fixed before push.
 
 - 2026-04-28 06:15:32 append: `.task/workpad.md`
+
+
+## Apr 28 review fixes / reindex pass
+
+- [x] Verified and patched audit --scripts so undocumented workspace scripts fail audit.
+- [x] Verified and patched audit error reporting to preserve actual thrown errors.
+- [x] Verified and patched confirm --test argument validation.
+- [x] Verified and patched confirm verify parsing so unparseable verify JSON is not a pass.
+- [x] Verified and patched decide-next --context / --mark-read validation.
+- [x] Verified and patched chunker tree-sitter require restoration with try/finally.
+- [x] Verified chunking limits are 150 and no remaining limitChunks=40 path exists.
+- [x] Verified graph_edges table had rows; fixed retriever graph expansion so existing semantic candidates still get graph_connections and expansion can add graph candidates.
+- [x] Verified exploit context_files were already deduped via unique([...]) before output.
+- [x] Moved Qwen prior out of confidence-score evidence_for into starting_state.
+- [x] Patched embedder context cache to key by modelPath and cap stable contexts at 2.
+- [x] Patched evidence-log store mirroring to close short-lived SQLite handles and preserve mirror errors.
+- [x] node --check passed for touched JS.
+- [ ] Delete existing workspace index DB and run full Qwen re-index.
+- [ ] Smoke test explore JSON for dialer results, score > 0.75, structural reasons, non-empty graph_connections, no duplicates.
+- [ ] Run full command chain: decide-next, confidence-score, exploit, confirm --verify, audit --scripts.
+
+- 2026-04-28 16:54:43 append: `.task/workpad.md`
+
+## Apr 29 completion proof
+
+- [x] Deleted existing index DB and completed full Qwen re-index. Final DB count: 59,144 chunks / 59,144 embeddings / 0 missing / 55,419 graph edges.
+- [x] Fixed graph expansion; explore output now has non-empty graph_connections.
+- [x] Smoke test passed: valid JSON, 10 results, 4 packages/dialer results, top score 0.8098, scores in range, structural reasons present, graph connections non-empty, no duplicate paths or duplicate graph connections.
+- [x] Full command chain passed: decide-next --json, confidence-score --json, exploit --json, confirm --verify --json, audit --scripts --json.
+- [x] confirm --verify returned CONFIRMED and direct bun run verify -- --json passed review + DB guards.
+- [x] All six commands support --help and --json.
+- [x] node --check passed for touched JS files.
+- [x] task:fs read tracking verified through branch script: file.read was written to .task/evidence-log.json and mirrored into SQLite evidence_events.
+
+- 2026-04-29 01:45:42 append: `.task/workpad.md`
