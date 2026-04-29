@@ -3,7 +3,11 @@
 const { ensureIndex } = require('./lib/index/indexer');
 const { retrieve } = require('./lib/search/retriever');
 const { appendEvidenceEvent } = require('./lib/state/evidence-log');
-const { writeExploreState } = require('./lib/state/explore-state');
+const {
+  buildBeliefsFromResults,
+  readExploreState,
+  writeExploreState,
+} = require('./lib/state/explore-state');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -80,19 +84,29 @@ function parseArgs(argv) {
 }
 
 function toJsonResult(args, results, indexResult) {
+  const maxRawScore = Math.max(
+    ...results.map((result) => result.scoreParts?.rawScore || result.score || 0),
+    0,
+  );
+
   return {
     query: args.question,
     budget: args.budget,
     results: results.map((result) => ({
       path: result.path,
       score: Number(result.score.toFixed(4)),
+      belief_prior: maxRawScore > 0
+        ? Number((0.30 + (0.45 * ((result.scoreParts?.rawScore || result.score || 0) / maxRawScore))).toFixed(4))
+        : Number(result.score.toFixed(4)),
       reason: result.reason,
       preview: result.preview,
       graph_connections: Array.from(new Set(result.graphConnections || [])),
+      graph_connection_count: result.graphConnectionCount || result.graphConnections?.length || 0,
       lines: {
         start: result.startLine,
         end: result.endLine,
       },
+      score_parts: result.scoreParts || {},
     })),
     index_stats: {
       total_files: indexResult.stats.totalFiles,
@@ -161,9 +175,15 @@ async function main() {
     throw new Error('explore failed');
   }
   const payload = toJsonResult(args, results, indexResult);
+  const previousState = readExploreState(indexResult.repoRoot) || {};
+  const shouldPreserveBeliefs = previousState.query === args.question && previousState.belief_version === 2;
+  const beliefs = buildBeliefsFromResults(payload.results, shouldPreserveBeliefs ? previousState.beliefs : {});
 
   const statePath = writeExploreState(indexResult.repoRoot, {
     ...payload,
+    belief_version: 2,
+    beliefs,
+    belief_event_ids: shouldPreserveBeliefs ? previousState.belief_event_ids || [] : [],
     branch: indexResult.branch,
     mode: 'exploring',
     worktree_id: indexResult.worktreeId,

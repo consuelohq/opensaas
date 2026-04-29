@@ -1070,8 +1070,3042 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/workspace-explore-decision-confidence-system"
       }
+    },
+    {
+      "id": "450f8832-f8e7-4a73-9b1f-a9efeecf91f7",
+      "occurred_at": "2026-04-29T02:42:34.788Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 0.8098,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/dialer/src/index.ts",
+            "score": 0.7532,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.7244,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 0.7207,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 0.7112,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+            "score": 0.7023,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 147,
+              "end": 147
+            }
+          },
+          {
+            "path": "packages/api/src/routes/assistant.ts",
+            "score": 0.6942,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/api/src/routes/calls.ts",
+            "score": 0.6942,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 37
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
+            "score": 0.6933,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-model.service.ts",
+            "score": 0.6933,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 5
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "728643be-c5fa-456e-86a3-4fc93a7f76cf",
+      "occurred_at": "2026-04-29T02:42:50.912Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does authentication work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 0.6519,
+            "reason": "semantic match: method validateRegularAuthentication",
+            "lines": {
+              "start": 659,
+              "end": 667
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+            "score": 0.6177,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller.ts",
+            "score": 0.6077,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 19,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/legacy-calls.controller.ts",
+            "score": 0.6058,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 22,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/calls.controller.ts",
+            "score": 0.6058,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/calendar/calendar-event-import-manager/services/calendar-account-authentication.service.ts",
+            "score": 0.6007,
+            "reason": "semantic match: class CalendarAccountAuthenticationService",
+            "lines": {
+              "start": 24,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+            "score": 0.5934,
+            "reason": "semantic match: imported_by twenty-shared/translations",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-zapier/src/index.ts",
+            "score": 0.5914,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 13
+            }
+          },
+          {
+            "path": "packages/cli/src/commands/analytics.ts",
+            "score": 0.5913,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 6
+            }
+          },
+          {
+            "path": "packages/cli/src/commands/call.ts",
+            "score": 0.5913,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 6
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "ce5cb5ec-040c-4836-9f50-9ad98b9b0b4e",
+      "occurred_at": "2026-04-29T02:42:55.108Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the CSV import process contacts?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/contacts/src/browser.ts",
+            "score": 0.7068,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-apps/community/fireflies/src/historical-importer.ts",
+            "score": 0.694,
+            "reason": "semantic match: type HistoricalImportOptions",
+            "lines": {
+              "start": 15,
+              "end": 20
+            }
+          },
+          {
+            "path": "packages/api/src/routes/assistant.ts",
+            "score": 0.6768,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/api/src/routes/calls.ts",
+            "score": 0.6768,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 37
+            }
+          },
+          {
+            "path": "packages/contacts/src/contacts.ts",
+            "score": 0.6669,
+            "reason": "semantic match: method importDocument",
+            "lines": {
+              "start": 40,
+              "end": 56
+            }
+          },
+          {
+            "path": "packages/contacts/src/index.ts",
+            "score": 0.6668,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.spec.ts",
+            "score": 0.6468,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.ts",
+            "score": 0.6468,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/parser.ts",
+            "score": 0.6132,
+            "reason": "semantic match: type ParseResult",
+            "lines": {
+              "start": 10,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/contacts/package.json",
+            "score": 0.6117,
+            "reason": "semantic match: block description",
+            "lines": {
+              "start": 1,
+              "end": 3
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "8dc2a532-7e30-4126-9c9b-f6f8f152fbae",
+      "occurred_at": "2026-04-29T02:42:55.500Z",
+      "type": "decision.taken",
+      "source": "decide-next",
+      "question": "how does the CSV import process contacts?",
+      "action": "inspect failed validation evidence",
+      "file_path": null,
+      "status": "recommended",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "reason": "a verification, test, runtime, or contradiction event is already recorded",
+        "alternative": "read packages/contacts/src/browser.ts",
+        "confidence": 0.25,
+        "evidence_counts": {
+          "events": 27,
+          "read_top_files": 0,
+          "top_files": 5,
+          "read_graph_files": 0,
+          "graph_files": 27
+        }
+      }
+    },
+    {
+      "id": "5e01ee2c-717f-4f64-b611-2fcd7a797d53",
+      "occurred_at": "2026-04-29T02:42:55.594Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does the CSV import process contacts?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.15,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 27 connected files",
+          "connected tests found (2)"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [
+          "verify.fail: verify failed",
+          "top-3 explore results share no graph edges"
+        ],
+        "uncertainties": [
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 28,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 27,
+          "read_graph_files": 0
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "5beebd8f-af3a-43fe-a957-01df23029c62",
+      "occurred_at": "2026-04-29T02:43:05.404Z",
+      "type": "decision.taken",
+      "source": "exploit",
+      "question": "how does the CSV import process contacts?",
+      "action": "exploit packages/contacts/src/browser.ts",
+      "file_path": "packages/contacts/src/browser.ts",
+      "status": "exploiting",
+      "confidence_delta": 0.05,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "target": "packages/contacts/src/browser.ts",
+        "lines": {
+          "start": 1,
+          "end": 1
+        },
+        "context_files": [
+          "packages/contacts/src/contacts.ts",
+          "packages/contacts/src/groq-sdk.d.ts",
+          "packages/contacts/src/index.ts",
+          "packages/contacts/src/parser.ts",
+          "packages/contacts/src/queue-stats.ts"
+        ],
+        "approach": "modify packages/contacts/src/browser.ts for \"how does the CSV import process contacts?\" using semantic match: sibling chunk",
+        "previous_state": "exploring",
+        "state": "exploiting"
+      }
+    },
+    {
+      "id": "748bc195-3516-4ee8-8a73-8ac0d892a75c",
+      "occurred_at": "2026-04-29T02:43:12.041Z",
+      "type": "verify.pass",
+      "source": "confirm",
+      "question": "how does the CSV import process contacts?",
+      "action": "bun run verify",
+      "file_path": null,
+      "status": "pass",
+      "confidence_delta": 0.15,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "failed_checks": [],
+        "status": 0,
+        "summary": "verify passed"
+      }
+    },
+    {
+      "id": "2ac5e883-d0bf-4bcc-9ed2-98222bf7d224",
+      "occurred_at": "2026-04-29T02:43:12.314Z",
+      "type": "decision.taken",
+      "source": "exploit",
+      "question": "how does the CSV import process contacts?",
+      "action": "exploit packages/contacts/src/browser.ts",
+      "file_path": "packages/contacts/src/browser.ts",
+      "status": "exploiting",
+      "confidence_delta": 0.05,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "target": "packages/contacts/src/browser.ts",
+        "lines": {
+          "start": 1,
+          "end": 1
+        },
+        "context_files": [
+          "packages/contacts/src/contacts.ts",
+          "packages/contacts/src/groq-sdk.d.ts",
+          "packages/contacts/src/index.ts",
+          "packages/contacts/src/parser.ts",
+          "packages/contacts/src/queue-stats.ts"
+        ],
+        "approach": "modify packages/contacts/src/browser.ts for \"how does the CSV import process contacts?\" using semantic match: sibling chunk",
+        "previous_state": "exploiting",
+        "state": "exploiting"
+      }
+    },
+    {
+      "id": "96b4a646-baf0-4d77-8802-e20cce43904b",
+      "occurred_at": "2026-04-29T02:43:12.419Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does the CSV import process contacts?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.15,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 27 connected files",
+          "connected tests found (2)"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [
+          "verify.fail: verify failed",
+          "top-3 explore results share no graph edges"
+        ],
+        "uncertainties": [
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 32,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 27,
+          "read_graph_files": 0
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "6898f60b-171c-4505-9525-f7483efad4fd",
+      "occurred_at": "2026-04-29T03:07:12.668Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 0.7626,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.7515,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 0.7306,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 0.7193,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/dialer/src/index.ts",
+            "score": 0.7094,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 0.7066,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+            "score": 0.6938,
+            "reason": "semantic match: type DialableBatchItem",
+            "lines": {
+              "start": 39,
+              "end": 42
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+            "score": 0.689,
+            "reason": "semantic match: import imports",
+            "lines": {
+              "start": 1,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.6798,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+            "score": 0.6748,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 147,
+              "end": 147
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "3297c9c5-a5b1-4864-a3c1-fb0b2e7f0208",
+      "occurred_at": "2026-04-29T03:07:18.020Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does authentication work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 0.6911,
+            "reason": "semantic match: method validateRegularAuthentication",
+            "lines": {
+              "start": 659,
+              "end": 667
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/workspace/workspace.resolver.ts",
+            "score": 0.62,
+            "reason": "semantic match: method isPasswordAuthEnabled",
+            "lines": {
+              "start": 357,
+              "end": 362
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/calendar/calendar-event-import-manager/services/calendar-account-authentication.service.ts",
+            "score": 0.6119,
+            "reason": "semantic match: class CalendarAccountAuthenticationService",
+            "lines": {
+              "start": 24,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/twenty-orm/repository/workspace-select-query-builder.ts",
+            "score": 0.6064,
+            "reason": "semantic match: method authContext",
+            "lines": {
+              "start": 38,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+            "score": 0.6055,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts",
+            "score": 0.5976,
+            "reason": "semantic match: method authFailedAt",
+            "lines": {
+              "start": 17,
+              "end": 17
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller.ts",
+            "score": 0.5785,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 19,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+            "score": 0.5774,
+            "reason": "semantic match: imported_by twenty-shared/translations",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/legacy-calls.controller.ts",
+            "score": 0.5765,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 22,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/calls.controller.ts",
+            "score": 0.5765,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 26
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "38a320a2-9ec6-41df-b6e7-546df921b65d",
+      "occurred_at": "2026-04-29T03:07:26.784Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the CSV import process contacts?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-apps/community/fireflies/src/historical-importer.ts",
+            "score": 0.6871,
+            "reason": "semantic match: type HistoricalImportOptions",
+            "lines": {
+              "start": 15,
+              "end": 20
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+            "score": 0.6722,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/contacts/package.json",
+            "score": 0.651,
+            "reason": "semantic match: block description",
+            "lines": {
+              "start": 1,
+              "end": 3
+            }
+          },
+          {
+            "path": "packages/contacts/src/contacts.ts",
+            "score": 0.6488,
+            "reason": "semantic match: method importDocument",
+            "lines": {
+              "start": 40,
+              "end": 56
+            }
+          },
+          {
+            "path": "CODING-STANDARDS.md",
+            "score": 0.6441,
+            "reason": "semantic match: block @consuelo/contacts",
+            "lines": {
+              "start": 377,
+              "end": 383
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.spec.ts",
+            "score": 0.6424,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.ts",
+            "score": 0.6424,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/parser.ts",
+            "score": 0.6321,
+            "reason": "semantic match: type ParseResult",
+            "lines": {
+              "start": 10,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/contacts/src/browser.ts",
+            "score": 0.6227,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/consuelo-docs/docs.json",
+            "score": 0.6184,
+            "reason": "semantic match: block navigation part 14",
+            "lines": {
+              "start": 2097,
+              "end": 2100
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "6fdc83c2-dbf4-44b5-9b47-cd54968c3cc5",
+      "occurred_at": "2026-04-29T03:07:27.698Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does the CSV import process contacts?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.3,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 19 connected files",
+          "connected tests found (2)"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [
+          "top-3 explore results share no graph edges"
+        ],
+        "uncertainties": [
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 36,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 19,
+          "read_graph_files": 0
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "4d41f61c-097d-4f4c-94b7-cd87b3e7445b",
+      "occurred_at": "2026-04-29T03:07:53.317Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 0.7626,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.7515,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 0.7306,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 0.7193,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/dialer/src/index.ts",
+            "score": 0.7094,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 0.7066,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+            "score": 0.6938,
+            "reason": "semantic match: type DialableBatchItem",
+            "lines": {
+              "start": 39,
+              "end": 42
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+            "score": 0.689,
+            "reason": "semantic match: import imports",
+            "lines": {
+              "start": 1,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.6798,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+            "score": 0.6748,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 147,
+              "end": 147
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "06e86ad2-e491-4f53-b60e-be0acc7a28fa",
+      "occurred_at": "2026-04-29T03:07:54.162Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does the dialer queue work?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.51,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 22 connected files",
+          "connected tests found (7)"
+        ],
+        "evidence_for": [
+          "read 1/5 top files",
+          "visited 1/22 graph-connected files",
+          "verify passed"
+        ],
+        "evidence_against": [],
+        "uncertainties": [
+          "read more top-ranked files before exploiting"
+        ],
+        "evidence_counts": {
+          "events": 38,
+          "top_files": 5,
+          "read_top_files": 1,
+          "graph_files": 22,
+          "read_graph_files": 1
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "d9036509-f485-489d-8784-5f064fe4fd6a",
+      "occurred_at": "2026-04-29T03:29:55.498Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 0.7626,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 0.7515,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 0.7306,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 0.7193,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/dialer/src/index.ts",
+            "score": 0.7094,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 0.7066,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+            "score": 0.6938,
+            "reason": "semantic match: type DialableBatchItem",
+            "lines": {
+              "start": 39,
+              "end": 42
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+            "score": 0.689,
+            "reason": "semantic match: import imports",
+            "lines": {
+              "start": 1,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 0.6798,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+            "score": 0.6748,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 147,
+              "end": 147
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "608489b4-165c-4ec8-8b14-d5b823a27b54",
+      "occurred_at": "2026-04-29T03:30:01.547Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does authentication work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 0.6911,
+            "reason": "semantic match: method validateRegularAuthentication",
+            "lines": {
+              "start": 659,
+              "end": 667
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/workspace/workspace.resolver.ts",
+            "score": 0.62,
+            "reason": "semantic match: method isPasswordAuthEnabled",
+            "lines": {
+              "start": 357,
+              "end": 362
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/calendar/calendar-event-import-manager/services/calendar-account-authentication.service.ts",
+            "score": 0.6119,
+            "reason": "semantic match: class CalendarAccountAuthenticationService",
+            "lines": {
+              "start": 24,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/twenty-orm/repository/workspace-select-query-builder.ts",
+            "score": 0.6064,
+            "reason": "semantic match: method authContext",
+            "lines": {
+              "start": 38,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+            "score": 0.6055,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts",
+            "score": 0.5976,
+            "reason": "semantic match: method authFailedAt",
+            "lines": {
+              "start": 17,
+              "end": 17
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller.ts",
+            "score": 0.5785,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 19,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/twenty-shared/src/translations/constants/AppLocales.ts",
+            "score": 0.5774,
+            "reason": "semantic match: imported_by twenty-shared/translations",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/legacy-calls.controller.ts",
+            "score": 0.5765,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 22,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/calls.controller.ts",
+            "score": 0.5765,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 26
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "5b4665f2-41c2-42c7-8327-f047578acb20",
+      "occurred_at": "2026-04-29T03:30:07.424Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the CSV import process contacts?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-apps/community/fireflies/src/historical-importer.ts",
+            "score": 0.6871,
+            "reason": "semantic match: type HistoricalImportOptions",
+            "lines": {
+              "start": 15,
+              "end": 20
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+            "score": 0.6722,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/contacts/package.json",
+            "score": 0.651,
+            "reason": "semantic match: block description",
+            "lines": {
+              "start": 1,
+              "end": 3
+            }
+          },
+          {
+            "path": "packages/contacts/src/contacts.ts",
+            "score": 0.6488,
+            "reason": "semantic match: method importDocument",
+            "lines": {
+              "start": 40,
+              "end": 56
+            }
+          },
+          {
+            "path": "CODING-STANDARDS.md",
+            "score": 0.6441,
+            "reason": "semantic match: block @consuelo/contacts",
+            "lines": {
+              "start": 377,
+              "end": 383
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.spec.ts",
+            "score": 0.6424,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/utils.ts",
+            "score": 0.6424,
+            "reason": "semantic match: sibling imports",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/contacts/src/parser.ts",
+            "score": 0.6321,
+            "reason": "semantic match: type ParseResult",
+            "lines": {
+              "start": 10,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/contacts/src/browser.ts",
+            "score": 0.6227,
+            "reason": "semantic match: sibling chunk",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/consuelo-docs/docs.json",
+            "score": 0.6184,
+            "reason": "semantic match: block navigation part 14",
+            "lines": {
+              "start": 2097,
+              "end": 2100
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "a72b93bd-e30a-4ea1-9a76-b0d6f0b4f29e",
+      "occurred_at": "2026-04-29T03:30:12.132Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does task:start create a worktree?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/task-exec.js",
+            "score": 0.7665,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 31,
+              "end": 76
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-selection.js",
+            "score": 0.7435,
+            "reason": "semantic match: function findActiveTaskCandidates",
+            "lines": {
+              "start": 96,
+              "end": 108
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-start.js",
+            "score": 0.7426,
+            "reason": "semantic match: function main part 2",
+            "lines": {
+              "start": 405,
+              "end": 518
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-init.js",
+            "score": 0.7332,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 71,
+              "end": 125
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-push.js",
+            "score": 0.7329,
+            "reason": "semantic match: function getTaskContext",
+            "lines": {
+              "start": 186,
+              "end": 241
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-meta-smoke.js",
+            "score": 0.7299,
+            "reason": "semantic match: function writeWorkpad",
+            "lines": {
+              "start": 39,
+              "end": 48
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-meta.js",
+            "score": 0.7238,
+            "reason": "semantic match: function readValidTaskMetaForWorktree",
+            "lines": {
+              "start": 81,
+              "end": 86
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-finish.js",
+            "score": 0.7198,
+            "reason": "semantic match: function ensureOutsideWorktree",
+            "lines": {
+              "start": 180,
+              "end": 190
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/git.js",
+            "score": 0.7101,
+            "reason": "semantic match: function createWorktree",
+            "lines": {
+              "start": 81,
+              "end": 83
+            }
+          },
+          {
+            "path": "packages/workspace/SCRIPTS.md",
+            "score": 0.7037,
+            "reason": "semantic match: block task:start — create task branch + worktree + PR",
+            "lines": {
+              "start": 485,
+              "end": 509
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "d1d8da3d-702e-4bce-92c8-c80150f6a756",
+      "occurred_at": "2026-04-29T03:30:16.933Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does stripe billing and subscriptions work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-billing-alert.service.ts",
+            "score": 0.6572,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 17,
+              "end": 29
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-billing-meter.service.ts",
+            "score": 0.655,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 15,
+              "end": 25
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-billing-meter-event.service.ts",
+            "score": 0.655,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 17,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-subscription-schedule.service.ts",
+            "score": 0.647,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 24,
+              "end": 34
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-subscription-item.service.ts",
+            "score": 0.647,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 17,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-checkout.service.ts",
+            "score": 0.6456,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 21,
+              "end": 32
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/services/metered-credit.service.ts",
+            "score": 0.6452,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 27,
+              "end": 35
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-subscription.service.ts",
+            "score": 0.6413,
+            "reason": "semantic match: class StripeSubscriptionService",
+            "lines": {
+              "start": 11,
+              "end": 11
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-webhook.service.ts",
+            "score": 0.637,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 14,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/billing/stripe/services/stripe-product.service.ts",
+            "score": 0.637,
+            "reason": "semantic match: method constructor",
+            "lines": {
+              "start": 15,
+              "end": 25
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "25ebb090-39ef-4a52-82d3-6a6d62eaeaf9",
+      "occurred_at": "2026-04-29T03:30:22.029Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how is the graphql schema built and merged?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/db-guards.js",
+            "score": 0.6883,
+            "reason": "semantic match: function isGraphqlSchemaFile",
+            "lines": {
+              "start": 32,
+              "end": 38
+            }
+          },
+          {
+            "path": "package.json",
+            "score": 0.6762,
+            "reason": "semantic match: block resolutions",
+            "lines": {
+              "start": 1,
+              "end": 15
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema-builder/graphql-type-generators/gql-type.generator.ts",
+            "score": 0.6504,
+            "reason": "semantic match: method buildAndStore",
+            "lines": {
+              "start": 49,
+              "end": 57
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema.factory.ts",
+            "score": 0.6471,
+            "reason": "semantic match: method createGraphQLSchema part 1",
+            "lines": {
+              "start": 39,
+              "end": 171
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema-builder/workspace-graphql-schema.factory.ts",
+            "score": 0.6431,
+            "reason": "semantic match: method generateSchema",
+            "lines": {
+              "start": 20,
+              "end": 33
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema-builder/graphql-type-generators/root-types/root-type.generator.ts",
+            "score": 0.6353,
+            "reason": "semantic match: method buildAndStore",
+            "lines": {
+              "start": 32,
+              "end": 65
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts",
+            "score": 0.6327,
+            "reason": "semantic match: method createGqlOptions",
+            "lines": {
+              "start": 55,
+              "end": 163
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema-builder/graphql-type-generators/root-types/query-type.generator.ts",
+            "score": 0.6246,
+            "reason": "semantic match: method buildAndStore",
+            "lines": {
+              "start": 18,
+              "end": 24
+            }
+          },
+          {
+            "path": "AGENTS.md",
+            "score": 0.6192,
+            "reason": "semantic match: block yoga driver patch (DO NOT MODIFY)",
+            "lines": {
+              "start": 320,
+              "end": 323
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/api/graphql/workspace-schema-builder/graphql-type-generators/root-types/mutation-type.generator.ts",
+            "score": 0.6181,
+            "reason": "semantic match: method buildAndStore",
+            "lines": {
+              "start": 18,
+              "end": 24
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "d4fa9c61-741d-403b-ab3b-f888fd4ee4f7",
+      "occurred_at": "2026-04-29T03:30:22.927Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how is the graphql schema built and merged?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.3,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 16 connected files"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [
+          "top-3 explore results share no graph edges"
+        ],
+        "uncertainties": [
+          "no connected test file found yet",
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 45,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 16,
+          "read_graph_files": 0
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "84ee60c7-be4c-407a-a705-e3dc48b9057a",
+      "occurred_at": "2026-04-29T03:55:24.338Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 1,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/contacts/src/queues.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 6
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/dialer/src/providers/twilio.ts",
+            "score": 1,
+            "reason": "semantic match: method dial",
+            "lines": {
+              "start": 70,
+              "end": 96
+            }
+          },
+          {
+            "path": "packages/logger/src/index.ts",
+            "score": 1,
+            "reason": "semantic match: imported_by @consuelo/logger",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/components/DashboardDemo.tsx",
+            "score": 0.9763,
+            "reason": "semantic match: function DialerPanel",
+            "lines": {
+              "start": 313,
+              "end": 405
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "48ed152d-3213-4640-89ef-6361b0617af6",
+      "occurred_at": "2026-04-29T03:55:33.752Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does authentication work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/microsoft.auth.strategy.ts",
+            "score": 1,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 47,
+              "end": 61
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/google.auth.strategy.ts",
+            "score": 1,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 47,
+              "end": 60
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 1,
+            "reason": "semantic match: method validateRegularAuthentication",
+            "lines": {
+              "start": 659,
+              "end": 667
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/calendar/calendar-event-import-manager/services/calendar-account-authentication.service.ts",
+            "score": 1,
+            "reason": "semantic match: class CalendarAccountAuthenticationService",
+            "lines": {
+              "start": 24,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/google-apis-oauth-request-code.auth.strategy.ts",
+            "score": 1,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 20,
+              "end": 37
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/workspace/workspace.resolver.ts",
+            "score": 1,
+            "reason": "semantic match: method isPasswordAuthEnabled",
+            "lines": {
+              "start": 357,
+              "end": 362
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/twenty-orm/repository/workspace-select-query-builder.ts",
+            "score": 0.9994,
+            "reason": "semantic match: method authContext",
+            "lines": {
+              "start": 38,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts",
+            "score": 0.9819,
+            "reason": "semantic match: method authFailedAt",
+            "lines": {
+              "start": 17,
+              "end": 17
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+            "score": 0.9408,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-zapier/src/authentication.ts",
+            "score": 0.894,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 5,
+              "end": 12
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "6c2bccf3-a7ee-4471-9655-d61728dd445b",
+      "occurred_at": "2026-04-29T03:55:45.001Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the CSV import process contacts?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/contacts/src/contacts.ts",
+            "score": 1,
+            "reason": "semantic match: method importDocument",
+            "lines": {
+              "start": 40,
+              "end": 56
+            }
+          },
+          {
+            "path": "packages/contacts/src/parser.ts",
+            "score": 1,
+            "reason": "semantic match: type ParseResult",
+            "lines": {
+              "start": 10,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/contacts/src/providers/memory.ts",
+            "score": 1,
+            "reason": "semantic match: method contacts",
+            "lines": {
+              "start": 5,
+              "end": 5
+            }
+          },
+          {
+            "path": "packages/twenty-apps/community/fireflies/src/historical-importer.ts",
+            "score": 1,
+            "reason": "semantic match: type HistoricalImportOptions",
+            "lines": {
+              "start": 15,
+              "end": 20
+            }
+          },
+          {
+            "path": "packages/contacts/src/providers/postgres.ts",
+            "score": 1,
+            "reason": "semantic match: method rowToContact",
+            "lines": {
+              "start": 256,
+              "end": 268
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+            "score": 0.9822,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/api/src/services/ghl-sync.ts",
+            "score": 0.9523,
+            "reason": "semantic match: method importContacts",
+            "lines": {
+              "start": 471,
+              "end": 594
+            }
+          },
+          {
+            "path": "packages/contacts/package.json",
+            "score": 0.9498,
+            "reason": "semantic match: block description",
+            "lines": {
+              "start": 1,
+              "end": 3
+            }
+          },
+          {
+            "path": "CODING-STANDARDS.md",
+            "score": 0.9426,
+            "reason": "semantic match: block @consuelo/contacts",
+            "lines": {
+              "start": 377,
+              "end": 383
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/contact-creation-manager/services/create-company-and-contact.service.ts",
+            "score": 0.9263,
+            "reason": "semantic match: import imports",
+            "lines": {
+              "start": 1,
+              "end": 30
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "7dd9bf01-948c-46b3-bd3f-11dbc497a317",
+      "occurred_at": "2026-04-29T03:56:04.525Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does task:start create a worktree?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/workspace/SCRIPTS.md",
+            "score": 1,
+            "reason": "semantic match: block task:start — create task branch + worktree + PR",
+            "lines": {
+              "start": 485,
+              "end": 509
+            }
+          },
+          {
+            "path": "packages/workspace/TASK-WORKFLOW.md",
+            "score": 1,
+            "reason": "semantic match: block from inside the task worktree:",
+            "lines": {
+              "start": 72,
+              "end": 79
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/git.js",
+            "score": 1,
+            "reason": "semantic match: function createWorktree",
+            "lines": {
+              "start": 81,
+              "end": 83
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-selection.js",
+            "score": 1,
+            "reason": "semantic match: function findActiveTaskCandidates",
+            "lines": {
+              "start": 96,
+              "end": 108
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-start.js",
+            "score": 1,
+            "reason": "semantic match: function main part 2",
+            "lines": {
+              "start": 405,
+              "end": 518
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-init.js",
+            "score": 1,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 71,
+              "end": 125
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-push.js",
+            "score": 1,
+            "reason": "semantic match: function getTaskContext",
+            "lines": {
+              "start": 186,
+              "end": 241
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-meta-smoke.js",
+            "score": 1,
+            "reason": "semantic match: function writeWorkpad",
+            "lines": {
+              "start": 39,
+              "end": 48
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-meta.js",
+            "score": 1,
+            "reason": "semantic match: function readValidTaskMetaForWorktree",
+            "lines": {
+              "start": 81,
+              "end": 86
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/stream-sync.js",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 1,
+              "end": 26
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "18fa4a52-81b6-4740-a3b4-b2b7415b15ac",
+      "occurred_at": "2026-04-29T03:56:05.468Z",
+      "type": "decision.taken",
+      "source": "decide-next",
+      "question": "how does task:start create a worktree?",
+      "action": "run exploit --target packages/workspace/SCRIPTS.md",
+      "file_path": null,
+      "status": "recommended",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "reason": "confidence 0.99 - belief concentrated on packages/workspace/SCRIPTS.md. recommend: run exploit to begin editing.",
+        "alternative": "read packages/workspace/scripts/lib/git.js (posterior: 0.99, information value: 0.04)",
+        "confidence": 0.45,
+        "evidence_counts": {
+          "events": 50,
+          "read_top_files": 0,
+          "top_files": 5,
+          "read_graph_files": 0,
+          "graph_files": 12
+        }
+      }
+    },
+    {
+      "id": "0ab17d8b-68d0-428c-8599-db59bccc4aeb",
+      "occurred_at": "2026-04-29T03:56:05.674Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does task:start create a worktree?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.52,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 12 connected files",
+          "top posterior belief 0.99"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [],
+        "uncertainties": [
+          "no connected test file found yet",
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 51,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 12,
+          "read_graph_files": 0,
+          "belief_observations": 4,
+          "top_posterior": 0.99
+        },
+        "recommendation": "continue gathering evidence"
+      }
+    },
+    {
+      "id": "971bed48-6667-4fa0-b56d-b10d12603143",
+      "occurred_at": "2026-04-29T03:57:51.590Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/contacts/src/queues.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 6
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 1,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/dialer/src/providers/twilio.ts",
+            "score": 1,
+            "reason": "semantic match: method dial",
+            "lines": {
+              "start": 70,
+              "end": 96
+            }
+          },
+          {
+            "path": "packages/logger/src/index.ts",
+            "score": 0.9773,
+            "reason": "semantic match: imported_by @consuelo/logger",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/components/DashboardDemo.tsx",
+            "score": 0.9763,
+            "reason": "semantic match: function DialerPanel",
+            "lines": {
+              "start": 313,
+              "end": 405
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "7db4ca48-21ac-42be-9056-91cd757ba1eb",
+      "occurred_at": "2026-04-29T03:59:26.072Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the dialer queue work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/dialer/src/dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class Dialer",
+            "lines": {
+              "start": 46,
+              "end": 46
+            }
+          },
+          {
+            "path": "packages/dialer/src/services/parallel-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class ParallelDialerService",
+            "lines": {
+              "start": 26,
+              "end": 26
+            }
+          },
+          {
+            "path": "packages/chat-bot/src/queue-dialer.ts",
+            "score": 1,
+            "reason": "semantic match: class QueueDialer",
+            "lines": {
+              "start": 70,
+              "end": 70
+            }
+          },
+          {
+            "path": "packages/dialer/src/types.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          {
+            "path": "packages/contacts/src/queues.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 6
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
+            "score": 1,
+            "reason": "semantic match: method dialer",
+            "lines": {
+              "start": 12,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+            "score": 1,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 300,
+              "end": 316
+            }
+          },
+          {
+            "path": "packages/dialer/src/providers/twilio.ts",
+            "score": 1,
+            "reason": "semantic match: method dial",
+            "lines": {
+              "start": 70,
+              "end": 96
+            }
+          },
+          {
+            "path": "packages/logger/src/index.ts",
+            "score": 0.9773,
+            "reason": "semantic match: imported_by @consuelo/logger",
+            "lines": {
+              "start": 1,
+              "end": 1
+            }
+          },
+          {
+            "path": "packages/consuelo-website/src/components/DashboardDemo.tsx",
+            "score": 0.9763,
+            "reason": "semantic match: function DialerPanel",
+            "lines": {
+              "start": 313,
+              "end": 405
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "c3d778ee-30e7-451e-a0b3-12ce9f886afe",
+      "occurred_at": "2026-04-29T03:59:41.388Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does authentication work?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+            "score": 1,
+            "reason": "semantic match: method validateRegularAuthentication",
+            "lines": {
+              "start": 659,
+              "end": 667
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/workspace/workspace.resolver.ts",
+            "score": 1,
+            "reason": "semantic match: method isPasswordAuthEnabled",
+            "lines": {
+              "start": 357,
+              "end": 362
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/calendar/calendar-event-import-manager/services/calendar-account-authentication.service.ts",
+            "score": 1,
+            "reason": "semantic match: class CalendarAccountAuthenticationService",
+            "lines": {
+              "start": 24,
+              "end": 24
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/twenty-orm/repository/workspace-select-query-builder.ts",
+            "score": 0.9994,
+            "reason": "semantic match: method authContext",
+            "lines": {
+              "start": 38,
+              "end": 38
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/connected-account/standard-objects/connected-account.workspace-entity.ts",
+            "score": 0.9819,
+            "reason": "semantic match: method authFailedAt",
+            "lines": {
+              "start": 17,
+              "end": 17
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+            "score": 0.9408,
+            "reason": "semantic match: type AuthRequest",
+            "lines": {
+              "start": 24,
+              "end": 27
+            }
+          },
+          {
+            "path": "packages/twenty-zapier/src/authentication.ts",
+            "score": 0.894,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 5,
+              "end": 12
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/google.auth.strategy.ts",
+            "score": 0.8912,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 47,
+              "end": 60
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/microsoft.auth.strategy.ts",
+            "score": 0.8786,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 47,
+              "end": 61
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/auth/strategies/google-apis-oauth-request-code.auth.strategy.ts",
+            "score": 0.8765,
+            "reason": "semantic match: method authenticate",
+            "lines": {
+              "start": 20,
+              "end": 37
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "c13b75a5-9c00-481b-806e-b8f42f7d1e4a",
+      "occurred_at": "2026-04-29T04:00:00.314Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does the CSV import process contacts?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/contacts/src/contacts.ts",
+            "score": 1,
+            "reason": "semantic match: method importDocument",
+            "lines": {
+              "start": 40,
+              "end": 56
+            }
+          },
+          {
+            "path": "packages/contacts/src/providers/memory.ts",
+            "score": 1,
+            "reason": "semantic match: method contacts",
+            "lines": {
+              "start": 5,
+              "end": 5
+            }
+          },
+          {
+            "path": "packages/contacts/src/providers/postgres.ts",
+            "score": 1,
+            "reason": "semantic match: method rowToContact",
+            "lines": {
+              "start": 256,
+              "end": 268
+            }
+          },
+          {
+            "path": "packages/contacts/src/parser.ts",
+            "score": 1,
+            "reason": "semantic match: type ParseResult",
+            "lines": {
+              "start": 10,
+              "end": 14
+            }
+          },
+          {
+            "path": "packages/twenty-apps/community/fireflies/src/historical-importer.ts",
+            "score": 1,
+            "reason": "semantic match: type HistoricalImportOptions",
+            "lines": {
+              "start": 15,
+              "end": 20
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
+            "score": 0.9822,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 4,
+              "end": 22
+            }
+          },
+          {
+            "path": "packages/api/src/services/ghl-sync.ts",
+            "score": 0.9523,
+            "reason": "semantic match: method importContacts",
+            "lines": {
+              "start": 471,
+              "end": 594
+            }
+          },
+          {
+            "path": "packages/contacts/package.json",
+            "score": 0.9498,
+            "reason": "semantic match: block description",
+            "lines": {
+              "start": 1,
+              "end": 3
+            }
+          },
+          {
+            "path": "CODING-STANDARDS.md",
+            "score": 0.9426,
+            "reason": "semantic match: block @consuelo/contacts",
+            "lines": {
+              "start": 377,
+              "end": 383
+            }
+          },
+          {
+            "path": "packages/twenty-server/src/modules/contact-creation-manager/services/create-company-and-contact.service.ts",
+            "score": 0.9263,
+            "reason": "semantic match: import imports",
+            "lines": {
+              "start": 1,
+              "end": 30
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "9f40f965-03cb-4903-a4b0-55c086b97640",
+      "occurred_at": "2026-04-29T04:00:35.300Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "how does task:start create a worktree?",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "budget": 10,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 10,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/task-exec.js",
+            "score": 1,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 31,
+              "end": 76
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-selection.js",
+            "score": 1,
+            "reason": "semantic match: function findActiveTaskCandidates",
+            "lines": {
+              "start": 96,
+              "end": 108
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-start.js",
+            "score": 1,
+            "reason": "semantic match: function main part 2",
+            "lines": {
+              "start": 405,
+              "end": 518
+            }
+          },
+          {
+            "path": "packages/workspace/SCRIPTS.md",
+            "score": 1,
+            "reason": "semantic match: block task:start — create task branch + worktree + PR",
+            "lines": {
+              "start": 485,
+              "end": 509
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-init.js",
+            "score": 1,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 71,
+              "end": 125
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-push.js",
+            "score": 1,
+            "reason": "semantic match: function getTaskContext",
+            "lines": {
+              "start": 186,
+              "end": 241
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-meta-smoke.js",
+            "score": 1,
+            "reason": "semantic match: function writeWorkpad",
+            "lines": {
+              "start": 39,
+              "end": 48
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/task-meta.js",
+            "score": 1,
+            "reason": "semantic match: function readValidTaskMetaForWorktree",
+            "lines": {
+              "start": 81,
+              "end": 86
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/task-finish.js",
+            "score": 1,
+            "reason": "semantic match: function ensureOutsideWorktree",
+            "lines": {
+              "start": 180,
+              "end": 190
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/git.js",
+            "score": 1,
+            "reason": "semantic match: function createWorktree",
+            "lines": {
+              "start": 81,
+              "end": 83
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14538,
+          "total_chunks": 59144,
+          "last_indexed": "2026-04-28T16:55:26.269Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "1079d110-ac41-41b7-b8ba-b9de315eb1c1",
+      "occurred_at": "2026-04-29T04:00:56.876Z",
+      "type": "decision.taken",
+      "source": "decide-next",
+      "question": "how does task:start create a worktree?",
+      "action": "run exploit --target packages/workspace/scripts/task-exec.js",
+      "file_path": null,
+      "status": "recommended",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "reason": "confidence 0.85 - belief concentrated on packages/workspace/scripts/task-exec.js. recommend: run exploit to begin editing.",
+        "alternative": "read packages/workspace/scripts/lib/git.js (posterior: 0.67, information value: 1.18)",
+        "confidence": 0.45,
+        "evidence_counts": {
+          "events": 57,
+          "read_top_files": 0,
+          "top_files": 5,
+          "read_graph_files": 0,
+          "graph_files": 6
+        }
+      }
+    },
+    {
+      "id": "12cf7940-f746-40a4-b683-c0ee08230ccb",
+      "occurred_at": "2026-04-29T04:00:57.335Z",
+      "type": "hypothesis.updated",
+      "source": "confidence-score",
+      "question": "how does task:start create a worktree?",
+      "action": "score confidence",
+      "file_path": null,
+      "status": "uncertain",
+      "confidence_delta": 0,
+      "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+      "details": {
+        "score": 0.5,
+        "starting_state": [
+          "Qwen prior found 10 candidate files",
+          "graph expansion found 6 connected files",
+          "top posterior belief 0.85"
+        ],
+        "evidence_for": [
+          "verify passed"
+        ],
+        "evidence_against": [],
+        "uncertainties": [
+          "no connected test file found yet",
+          "read more top-ranked files before exploiting",
+          "graph-connected callers/tests/imports are not yet visited"
+        ],
+        "evidence_counts": {
+          "events": 58,
+          "top_files": 5,
+          "read_top_files": 0,
+          "graph_files": 6,
+          "read_graph_files": 0,
+          "belief_observations": 4,
+          "top_posterior": 0.8485
+        },
+        "recommendation": "continue gathering evidence"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-29T01:45:31.215Z"
+  "updated_at": "2026-04-29T04:00:57.357Z"
 }

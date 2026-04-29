@@ -302,6 +302,24 @@ function createStore(repoRoot, remoteUrl) {
     ].join('')).all(...paths);
   }
 
+  function getChunkStatsForFiles(paths) {
+    if (paths.length === 0) return [];
+    const placeholders = paths.map(() => '?').join(',');
+    return db.query([
+      'SELECT',
+      '  file_path,',
+      '  COUNT(*) AS total_chunks,',
+      "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
+      "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      'FROM chunks',
+      'WHERE file_path IN (',
+      placeholders,
+      ')',
+      'GROUP BY file_path',
+    ].join('\n')).all(...paths);
+  }
+
   function getAllChunks() {
     return db.query('SELECT * FROM chunks ORDER BY file_path, seq').all();
   }
@@ -495,6 +513,7 @@ function createStore(repoRoot, remoteUrl) {
     getFiles,
     getChunksForFiles,
     getChunksWithoutEmbeddings,
+    getChunkStatsForFiles,
     getGraphQualityScores,
     getMeta,
     getStats,

@@ -151,3 +151,20 @@ bun run task:finish
 - [x] Validation: dialer query now ranks `packages/dialer/src/services/parallel-dialer.ts` #1 and `packages/dialer/src/dialer.ts` #2, above `packages/dialer/src/types.ts`.
 - [x] Validation: dialer confidence has no stale verify pass/fail conflict and no false top-3 graph penalty.
 - [x] Validation: audit --scripts passes and all six command help surfaces still work.
+
+## Apr 29 round 3 algorithm upgrades
+
+- [x] Kept the completed Qwen/sqlite index intact. No DB delete or re-index was run.
+- [x] Replaced additive retrieval scoring with multiplicative scoring: embedding prior times graph, recency, current-diff, name, implementation, type-heavy, and cluster-coherence multipliers.
+- [x] Added candidate metadata from existing index tables: graph edges by type, type/export chunk ratio, implementation chunk names, and class/function presence.
+- [x] Changed cluster coherence to reward graph-connected top candidates without using the removed binary confidence penalty.
+- [x] Added calibrated `belief_prior` values to explore output/state so clamped retrieval scores do not become fake confidence.
+- [x] Added `beliefs` / posterior update state in `.task/explore-state.json`; evidence events update posteriors without re-indexing.
+- [x] Added manual belief overrides: `decide-next --mark-relevant <path>` and `decide-next --mark-irrelevant <path>`.
+- [x] Updated `decide-next` to use posterior plus information value instead of highest unread score only.
+- [x] Updated `decide-next` to recommend `exploit` when posterior belief is concentrated enough.
+- [x] Removed the `top-3 explore results share no graph edges` confidence penalty.
+- [x] Validation: dialer query ranks `packages/dialer/src/dialer.ts` #1 and `packages/dialer/src/services/parallel-dialer.ts` #2.
+- [x] Validation: confidence-score has no stale pass/fail contradiction and no graph-edge binary penalty.
+- [x] Validation: decide-next JSON includes information-value data and recommends exploit when current posterior is high.
+- [x] Validation: `audit --scripts --json`, all six `--help` surfaces, `node --check`, and `bun run verify -- --json` pass.

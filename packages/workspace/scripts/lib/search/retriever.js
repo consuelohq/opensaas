@@ -176,6 +176,117 @@ function hydrateGraphCandidates(store, candidates) {
   }
 }
 
+function attachCandidateMetadata(store, candidates) {
+  const paths = Array.from(candidates.keys());
+  if (paths.length === 0) return;
+
+  const pathSet = new Set(paths);
+  const edgesByPath = new Map(paths.map((filePath) => [filePath, []]));
+  const chunkStatsByPath = new Map(store.getChunkStatsForFiles(paths).map((row) => [row.file_path, {
+    hasClassOrFunction: Number(row.implementation_chunks || 0) > 0,
+    implementationNames: row.implementation_names || '',
+    totalChunks: Number(row.total_chunks || 0),
+    typeExportChunks: Number(row.type_export_chunks || 0),
+  }]));
+
+  for (const edge of store.getEdgesForFiles(paths)) {
+    const normalizedEdge = {
+      sourcePath: edge.source_path,
+      symbol: edge.symbol || null,
+      targetPath: edge.target_path,
+      type: edge.edge_type,
+    };
+
+    if (pathSet.has(edge.source_path)) {
+      edgesByPath.get(edge.source_path).push(normalizedEdge);
+    }
+
+    if (pathSet.has(edge.target_path)) {
+      edgesByPath.get(edge.target_path).push(normalizedEdge);
+    }
+  }
+
+  for (const candidate of candidates.values()) {
+    const stats = chunkStatsByPath.get(candidate.path) || {
+      hasClassOrFunction: false,
+      implementationNames: '',
+      totalChunks: 0,
+      typeExportChunks: 0,
+    };
+    candidate.edges = edgesByPath.get(candidate.path) || [];
+    candidate.edgeCount = candidate.edges.length;
+    candidate.graphConnectionCount = candidate.graphConnections?.length || candidate.edgeCount;
+    candidate.hasClassOrFunction = stats.hasClassOrFunction;
+    candidate.implementationNames = stats.implementationNames;
+    candidate.typeExportChunkRatio = stats.totalChunks === 0 ? 0 : stats.typeExportChunks / stats.totalChunks;
+  }
+}
+
+function tokenizeQuery(query) {
+  return query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length >= 3);
+}
+
+function pathMatchesQuery(filePath, queryTokens) {
+  const normalizedPath = filePath.toLowerCase();
+  return queryTokens.length === 0 || queryTokens.some((token) => normalizedPath.includes(token));
+}
+
+function getClusterConnectedPaths(scoredCandidates, query) {
+  const queryTokens = tokenizeQuery(query);
+  const topPaths = new Set(scoredCandidates
+    .slice()
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 10)
+    .map((candidate) => candidate.path));
+  const connectedPaths = new Set();
+
+  for (const candidate of scoredCandidates) {
+    if (!topPaths.has(candidate.path)) continue;
+
+    for (const edge of candidate.edges || []) {
+      if (
+        topPaths.has(edge.sourcePath)
+        && topPaths.has(edge.targetPath)
+        && edge.sourcePath !== edge.targetPath
+        && pathMatchesQuery(edge.sourcePath, queryTokens)
+        && pathMatchesQuery(edge.targetPath, queryTokens)
+      ) {
+        connectedPaths.add(edge.sourcePath);
+        connectedPaths.add(edge.targetPath);
+      }
+    }
+  }
+
+  return connectedPaths;
+}
+
+function scoreCandidates(candidates, context) {
+  const initiallyScored = candidates.map((candidate) => {
+    const scored = scoreCandidate(candidate, context);
+    return {
+      ...candidate,
+      rankingScore: scored.rankingScore,
+      score: scored.score,
+      scoreParts: scored.parts,
+    };
+  });
+  const clusterConnectedPaths = getClusterConnectedPaths(initiallyScored, context.query);
+
+  return candidates.map((candidate) => {
+    candidate.connectedToOtherTopResults = clusterConnectedPaths.has(candidate.path);
+    const scored = scoreCandidate(candidate, context);
+    return {
+      ...candidate,
+      rankingScore: scored.rankingScore,
+      score: scored.score,
+      scoreParts: scored.parts,
+    };
+  });
+}
+
 async function retrieve(store, repoRoot, query, options = {}) {
   const budget = options.budget || 10;
   const depth = options.depth ?? 2;
@@ -190,6 +301,7 @@ async function retrieve(store, repoRoot, query, options = {}) {
   const graphCandidateLimit = budget * 2;
   expandGraph(store, candidates, depth, graphCandidateLimit);
   hydrateGraphCandidates(store, candidates);
+  attachCandidateMetadata(store, candidates);
 
   const edgeCounts = store.getEdgeCounts();
   const graphQualityScores = store.getGraphQualityScores();
@@ -205,24 +317,24 @@ async function retrieve(store, repoRoot, query, options = {}) {
     ranked = ranked.filter((candidate) => changedPaths.has(candidate.path));
   }
 
-  ranked = ranked.map((candidate) => {
-    const scored = scoreCandidate(candidate, {
+  ranked = scoreCandidates(ranked, {
       changedPaths,
       edgeCounts,
       graphQualityScores,
       query,
       recentPaths,
       recencyByPath,
-    });
+    })
+    .map((candidate) => {
     const { reasonSimilarity, ...outputCandidate } = candidate;
 
     return {
       ...outputCandidate,
-      score: scored.score,
-      scoreParts: scored.parts,
+      score: candidate.score,
+      scoreParts: candidate.scoreParts,
       reason: getReason(candidate),
     };
-  }).sort((left, right) => right.score - left.score).slice(0, budget);
+  }).sort((left, right) => (right.rankingScore || right.score) - (left.rankingScore || left.score)).slice(0, budget);
 
   return ranked;
 }

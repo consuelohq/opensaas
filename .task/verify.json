@@ -1,9 +1,9 @@
 {
   "result": "pass",
   "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
-  "base": "origin/task/workspace-agents/workspace-explore-decision-confidence-system",
+  "base": "task/workspace-agents/workspace-explore-decision-confidence-system",
   "headSha": "5b4ff67e2c764c8cad3dd44002063532bce4a7b2",
-  "changeHash": "f384403f28d1f60809a663528ffcbe826573fead0ebfbf233d2ab0ae8f5f84e0",
+  "changeHash": "0d20d20b954d07ed84c7d501fb0974ea1fc701a1b4bb72dc6d34bd8d321e6ed7",
   "changedFiles": [
     "package.json",
     "packages/workspace/SCRIPTS.md",
@@ -27,7 +27,7 @@
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js"
   ],
-  "verifiedAt": "2026-04-29T01:45:59.223Z",
+  "verifiedAt": "2026-04-29T04:01:59.234Z",
   "review": {
     "skipped": false,
     "passed": true

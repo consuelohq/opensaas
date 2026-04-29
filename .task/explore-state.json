@@ -1,188 +1,316 @@
 {
-  "query": "how does the dialer queue work?",
+  "query": "how does task:start create a worktree?",
   "budget": 10,
   "results": [
     {
-      "path": "packages/dialer/src/types.ts",
-      "score": 0.8098,
-      "reason": "semantic match: block chunk",
-      "preview": "/** Dialer configuration */",
+      "path": "packages/workspace/scripts/task-exec.js",
+      "score": 1,
+      "belief_prior": 0.75,
+      "reason": "semantic match: function main",
+      "preview": "function main() { const rawArgs = process.argv.slice(2); if (rawArgs.length === 0 || (rawArgs.length === 1 && (rawArgs[0] === '--help' || rawArgs[0] === '-h'))) {",
       "graph_connections": [
-        "packages/dialer/src/dialer.spec.ts",
-        "packages/dialer/src/dialer.ts",
-        "packages/dialer/src/index.ts",
-        "packages/dialer/src/services/cadence-optimizer.spec.ts",
-        "packages/dialer/src/services/call-timing-model.spec.ts",
-        "packages/dialer/src/services/local-presence.spec.ts",
-        "packages/dialer/src/services/parallel-dialer.spec.ts",
-        "packages/dialer/src/services/parallel-strategy-resolver.spec.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 10,
-        "end": 10
+        "start": 31,
+        "end": 76
+      },
+      "score_parts": {
+        "boost": 1.6472000000000004,
+        "embeddingSimilarity": 0.8032931470113303,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.3231844717570636,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/dialer/src/index.ts",
-      "score": 0.7532,
-      "reason": "semantic match: sibling chunk",
-      "preview": "// Core",
+      "path": "packages/workspace/scripts/lib/task-selection.js",
+      "score": 1,
+      "belief_prior": 0.6984,
+      "reason": "semantic match: function findActiveTaskCandidates",
+      "preview": "function findActiveTaskCandidates(repoRoot) { const worktrees = listWorktrees(repoRoot); const tasks = [];",
       "graph_connections": [
-        "packages/api/src/routes/local-presence.ts",
-        "packages/api/src/routes/parallel.ts",
-        "packages/api/src/routes/voice.ts",
-        "packages/api/src/services/phone-number-recommendations.ts",
-        "packages/api/src/services/workspace-phone-numbers.spec.ts",
-        "packages/api/src/services/workspace-phone-numbers.ts",
-        "packages/api/src/shared/dialer.ts",
-        "packages/cli/src/commands/call.ts"
+        "packages/workspace/scripts/lib/db-guards.js",
+        "packages/workspace/scripts/lib/git.js",
+        "packages/workspace/scripts/lib/github.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 1,
-        "end": 1
+        "start": 96,
+        "end": 108
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8483617404310131,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.1715875635352295,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/dialer/src/dialer.ts",
-      "score": 0.7244,
-      "reason": "semantic match: class Dialer",
-      "preview": "export class Dialer {",
+      "path": "packages/workspace/scripts/task-start.js",
+      "score": 1,
+      "belief_prior": 0.6977,
+      "reason": "semantic match: function main part 2",
+      "preview": "if (pullRequest.base.ref !== stream) { throw new Error( `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\\n` +",
       "graph_connections": [
-        "packages/dialer/src/dialer.spec.ts",
-        "packages/dialer/src/index.ts",
-        "packages/dialer/src/types.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 46,
-        "end": 46
+        "start": 405,
+        "end": 518
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8468755226256768,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.16953509674606,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
-      "score": 0.7207,
-      "reason": "semantic match: block chunk",
-      "preview": "const { result } = renderUseParallelDialer((snap) => { snap.set(activeQueueState, { ...activeParallelQueue,",
-      "graph_connections": [
-        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useCallTransfer.test.ts",
-        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useDialerHotkeys.test.ts",
-        "packages/twenty-front/src/modules/dialer/hooks/__tests__/useTwilioDevice.test.ts",
-        "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts"
-      ],
+      "path": "packages/workspace/SCRIPTS.md",
+      "score": 1,
+      "belief_prior": 0.6918,
+      "reason": "semantic match: block task:start — create task branch + worktree + PR",
+      "preview": "### task:start — create task branch + worktree + PR creates a new task branch, git worktree, and draft PR. the worktree is created in `/private/tmp/opensaas-worktrees/`. ```bash",
+      "graph_connections": [],
+      "graph_connection_count": 0,
       "lines": {
-        "start": 300,
-        "end": 316
+        "start": 485,
+        "end": 509
+      },
+      "score_parts": {
+        "boost": 1.32,
+        "embeddingSimilarity": 0.8728357269187086,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 0,
+        "rawScore": 1.1521431595326954,
+        "weightedEdges": 0
       }
     },
     {
-      "path": "packages/dialer/src/services/parallel-dialer.ts",
-      "score": 0.7112,
-      "reason": "semantic match: class ParallelDialerService",
-      "preview": "export class ParallelDialerService {",
+      "path": "packages/workspace/scripts/task-init.js",
+      "score": 1,
+      "belief_prior": 0.6904,
+      "reason": "semantic match: function main",
+      "preview": "function main() { const args = parseArgs(process.argv.slice(2)); if (args.help) { printHelp(); return; }",
       "graph_connections": [
-        "packages/dialer/src/services/cadence-optimizer.service.ts",
-        "packages/dialer/src/services/cadence-optimizer.spec.ts",
-        "packages/dialer/src/services/call-timing-model.service.ts",
-        "packages/dialer/src/services/parallel-dialer.spec.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 26,
-        "end": 26
+        "start": 71,
+        "end": 125
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8311380228651011,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.147801609576705,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/twenty-front/src/modules/dialer/types/dialer.ts",
-      "score": 0.7023,
-      "reason": "semantic match: block chunk",
-      "preview": "/** Parallel dialing — outcome per call leg */",
+      "path": "packages/workspace/scripts/task-push.js",
+      "score": 1,
+      "belief_prior": 0.6901,
+      "reason": "semantic match: function getTaskContext",
+      "preview": "function getTaskContext(args) { const startDirectory = path.resolve(args.cwd || process.cwd()); if (hasExplicitTaskSelector(args)) {",
       "graph_connections": [
-        "packages/twenty-front/src/modules/dialer/types/coaching.ts",
-        "packages/twenty-front/src/modules/dialer/types/coachingScript.ts",
-        "packages/twenty-front/src/modules/dialer/types/history.ts",
-        "packages/twenty-front/src/modules/dialer/types/queue.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 147,
-        "end": 147
+        "start": 186,
+        "end": 241
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8306019556708071,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.147061300781385,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/api/src/routes/assistant.ts",
-      "score": 0.6942,
-      "reason": "semantic match: sibling chunk",
-      "preview": "// eslint-disable-next-line @nx/enforce-module-boundaries",
+      "path": "packages/workspace/scripts/task-meta-smoke.js",
+      "score": 1,
+      "belief_prior": 0.6878,
+      "reason": "semantic match: function writeWorkpad",
+      "preview": "function writeWorkpad(repoPath, taskBranch, started) { writeFile(path.join(repoPath, '.task', 'workpad.md'), [ `# ${taskBranch}`,",
       "graph_connections": [
-        "packages/api/src/routes/analytics.ts",
-        "packages/api/src/routes/calls.ts",
-        "packages/api/src/routes/coaching.ts",
-        "packages/logger/src/index.ts",
-        "packages/api/src/routes/contacts.ts",
-        "packages/api/src/routes/discord-auth.ts",
-        "packages/api/src/routes/files.ts",
-        "packages/api/src/routes/ghl.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 1,
-        "end": 1
+        "start": 39,
+        "end": 48
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8256808434362277,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.140265244785431,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/api/src/routes/calls.ts",
-      "score": 0.6942,
-      "reason": "semantic match: sibling imports",
-      "preview": "import { randomUUID } from 'node:crypto'; import { errorHandler } from '../middleware/error-handler.js'; import { requireAuth } from '../middleware/requireAuth.js';",
+      "path": "packages/workspace/scripts/lib/task-meta.js",
+      "score": 1,
+      "belief_prior": 0.683,
+      "reason": "semantic match: function readValidTaskMetaForWorktree",
+      "preview": "function readValidTaskMetaForWorktree(worktreePath, branch) { const taskMeta = readTaskMeta(worktreePath); if (!taskMeta) return null;",
       "graph_connections": [
-        "packages/api/src/routes/analytics.ts",
-        "packages/api/src/routes/assistant.ts",
-        "packages/api/src/routes/coaching.ts",
-        "packages/api/src/routes/contacts.ts",
-        "packages/api/src/routes/discord-auth.ts",
-        "packages/api/src/routes/files.ts",
-        "packages/api/src/routes/ghl.ts",
-        "packages/api/src/routes/index.ts"
+        "packages/workspace/scripts/lib/db-guards.js",
+        "packages/workspace/scripts/lib/git.js",
+        "packages/workspace/scripts/lib/github.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 1,
-        "end": 37
+        "start": 81,
+        "end": 86
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8154492425314919,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.1261354039359905,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
-      "score": 0.6933,
-      "reason": "semantic match: sibling imports",
-      "preview": "import { Injectable, Logger } from \"@nestjs/common\"; import { InjectDataSource } from \"@nestjs/typeorm\"; import * as Sentry from \"@sentry/node\";",
+      "path": "packages/workspace/scripts/task-finish.js",
+      "score": 1,
+      "belief_prior": 0.6799,
+      "reason": "semantic match: function ensureOutsideWorktree",
+      "preview": "function ensureOutsideWorktree(repoRoot, worktreePath) { const currentDirectory = path.resolve(process.cwd()); const resolvedWorktreePath = path.resolve(worktreePath);",
       "graph_connections": [
-        "packages/dialer/src/index.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-model.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-store.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/calls.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-posterior.store.ts"
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/check-syntax.js"
       ],
+      "graph_connection_count": 3,
       "lines": {
-        "start": 1,
-        "end": 14
+        "start": 180,
+        "end": 190
+      },
+      "score_parts": {
+        "boost": 1.3810000000000004,
+        "embeddingSimilarity": 0.8087796080221912,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.029999999999999995,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 1,
+        "rawScore": 1.1169246386786464,
+        "weightedEdges": 0.8999999999999999
       }
     },
     {
-      "path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-model.service.ts",
-      "score": 0.6933,
-      "reason": "semantic match: sibling imports",
-      "preview": "import { Injectable } from '@nestjs/common'; import { CallTimingModel } from '@consuelo/dialer'; import { CallTimingStore } from 'src/engine/core-modules/consuelo-api/services/call-timing-store';",
+      "path": "packages/workspace/scripts/lib/git.js",
+      "score": 1,
+      "belief_prior": 0.6721,
+      "reason": "semantic match: function createWorktree",
+      "preview": "function createWorktree(repoRoot, worktreePath, branch) { runGit(['worktree', 'add', worktreePath, branch], { cwd: repoRoot }); }",
       "graph_connections": [
-        "packages/dialer/src/index.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/call-timing-store.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/calls.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/csv-mapping.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/legacy-dialer.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service.ts",
-        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel-posterior.store.ts"
+        "packages/workspace/scripts/lib/db-guards.js",
+        "packages/workspace/scripts/lib/github.js",
+        "packages/workspace/scripts/lib/nx-projects.js",
+        "packages/workspace/scripts/lib/paths.js",
+        "packages/workspace/scripts/lib/task-meta.js",
+        "packages/workspace/scripts/lib/task-selection.js",
+        "packages/workspace/scripts/lib/validation.js",
+        "packages/workspace/scripts/lib/verification.js"
       ],
+      "graph_connection_count": 8,
       "lines": {
-        "start": 1,
-        "end": 5
+        "start": 81,
+        "end": 83
+      },
+      "score_parts": {
+        "boost": 1.2817800000000004,
+        "embeddingSimilarity": 0.8535824762924129,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "graphCentrality": 0.11999999999999997,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isTypeHeavy": false,
+        "recency": 0.8,
+        "nameMatch": 0,
+        "rawScore": 1.0941049464620893,
+        "weightedEdges": 3.599999999999999
       }
     }
   ],
@@ -195,113 +323,95 @@
     "files_indexed": 0,
     "chunks_embedded": 0
   },
-  "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
-  "mode": "exploiting",
-  "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
-  "updated_at": "2026-04-29T01:43:46.736Z",
-  "exploitation": {
-    "target": "packages/dialer/src/types.ts",
-    "lines": {
-      "start": 10,
-      "end": 10
+  "belief_version": 2,
+  "beliefs": {
+    "packages/workspace/scripts/task-exec.js": {
+      "prior": 0.75,
+      "posterior": 0.8485125000000002,
+      "observations": [
+        {
+          "event_id": "45566724-03f1-4a8e-ae3e-0667be365c88",
+          "multiplier": 0.85,
+          "reason": "verify failed exploit cluster",
+          "type": "verify.fail"
+        },
+        {
+          "event_id": "adc6a418-7fcc-45e3-97fd-d5ec584355ec",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        },
+        {
+          "event_id": "0a198141-bf85-4780-bea6-cdb010574355",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        },
+        {
+          "event_id": "748bc195-3516-4ee8-8a73-8ac0d892a75c",
+          "multiplier": 1.1,
+          "reason": "verify passed exploit cluster",
+          "type": "verify.pass"
+        }
+      ]
     },
-    "context_files": [
-      "packages/dialer/src/dialer.spec.ts",
-      "packages/dialer/src/dialer.ts",
-      "packages/dialer/src/index.ts",
-      "packages/dialer/src/services/cadence-optimizer.spec.ts",
-      "packages/dialer/src/services/call-timing-model.spec.ts"
-    ],
-    "approach": "modify packages/dialer/src/types.ts for \"how does the dialer queue work?\" using semantic match: block chunk",
-    "previous_state": "exploring",
-    "state": "exploiting"
+    "packages/workspace/scripts/lib/task-selection.js": {
+      "prior": 0.6984,
+      "posterior": 0.6984,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-start.js": {
+      "prior": 0.6977,
+      "posterior": 0.6977,
+      "observations": []
+    },
+    "packages/workspace/SCRIPTS.md": {
+      "prior": 0.6918,
+      "posterior": 0.6918,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-init.js": {
+      "prior": 0.6904,
+      "posterior": 0.6904,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-push.js": {
+      "prior": 0.6901,
+      "posterior": 0.6901,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-meta-smoke.js": {
+      "prior": 0.6878,
+      "posterior": 0.6878,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/task-meta.js": {
+      "prior": 0.683,
+      "posterior": 0.683,
+      "observations": []
+    },
+    "packages/workspace/scripts/task-finish.js": {
+      "prior": 0.6799,
+      "posterior": 0.6799,
+      "observations": []
+    },
+    "packages/workspace/scripts/lib/git.js": {
+      "prior": 0.6721,
+      "posterior": 0.6721,
+      "observations": []
+    }
   },
-  "confirmation": {
-    "verify": {
-      "passed": true,
-      "status": 0,
-      "failed_checks": [],
-      "data": {
-        "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
-        "base": "origin/task/workspace-agents/workspace-explore-decision-confidence-system",
-        "headSha": "5b4ff67e2c764c8cad3dd44002063532bce4a7b2",
-        "files": [
-          "package.json",
-          "packages/workspace/SCRIPTS.md",
-          "packages/workspace/bun.lock",
-          "packages/workspace/package.json",
-          "packages/workspace/scripts/audit.js",
-          "packages/workspace/scripts/confidence-score.js",
-          "packages/workspace/scripts/confirm.js",
-          "packages/workspace/scripts/decide-next.js",
-          "packages/workspace/scripts/exploit.js",
-          "packages/workspace/scripts/explore.js",
-          "packages/workspace/scripts/lib/index/chunker.js",
-          "packages/workspace/scripts/lib/index/embedder.js",
-          "packages/workspace/scripts/lib/index/graph-builder.js",
-          "packages/workspace/scripts/lib/index/indexer.js",
-          "packages/workspace/scripts/lib/index/store.js",
-          "packages/workspace/scripts/lib/search/ranker.js",
-          "packages/workspace/scripts/lib/search/retriever.js",
-          "packages/workspace/scripts/lib/state/evidence-log.js",
-          "packages/workspace/scripts/lib/state/explore-state.js",
-          "packages/workspace/scripts/task-exec.js",
-          "packages/workspace/scripts/task-fs.js"
-        ],
-        "review": {
-          "skipped": false,
-          "passed": true,
-          "status": 0,
-          "data": {
-            "base": "origin/task/workspace-agents/workspace-explore-decision-confidence-system",
-            "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
-            "files": 17,
-            "affectedProjects": [
-              {
-                "name": "openworkspace",
-                "root": "packages/workspace",
-                "files": [
-                  "packages/workspace/scripts/audit.js",
-                  "packages/workspace/scripts/confidence-score.js",
-                  "packages/workspace/scripts/confirm.js",
-                  "packages/workspace/scripts/decide-next.js",
-                  "packages/workspace/scripts/exploit.js",
-                  "packages/workspace/scripts/explore.js",
-                  "packages/workspace/scripts/lib/index/chunker.js",
-                  "packages/workspace/scripts/lib/index/embedder.js",
-                  "packages/workspace/scripts/lib/index/graph-builder.js",
-                  "packages/workspace/scripts/lib/index/indexer.js",
-                  "packages/workspace/scripts/lib/index/store.js",
-                  "packages/workspace/scripts/lib/search/ranker.js",
-                  "packages/workspace/scripts/lib/search/retriever.js",
-                  "packages/workspace/scripts/lib/state/evidence-log.js",
-                  "packages/workspace/scripts/lib/state/explore-state.js",
-                  "packages/workspace/scripts/task-exec.js",
-                  "packages/workspace/scripts/task-fs.js"
-                ]
-              }
-            ],
-            "yours": [],
-            "preExisting": [],
-            "testResults": []
-          },
-          "stderr": "$ bun packages/workspace/scripts/review.js --base origin/task/workspace-agents/workspace-explore-decision-confidence-system --json --quiet\n"
-        },
-        "db": {
-          "skipped": false,
-          "passed": true,
-          "risks": [],
-          "groupedRisks": {},
-          "findings": []
-        },
-        "passed": true,
-        "stampPath": "/private/tmp/opensaas-worktrees/task-workspace-agents-workspace-explore-decision-confidence-system/.task/verify.json"
-      },
-      "stderr": "$ bun packages/workspace/scripts/verify.js --json --quiet"
-    },
-    "runtime": null,
-    "tests": [],
-    "updated_at": "2026-04-29T01:43:46.697Z",
-    "verdict": "CONFIRMED"
-  }
+  "belief_event_ids": [
+    "12c8bdce-07a4-453c-b323-4553aa882024",
+    "45566724-03f1-4a8e-ae3e-0667be365c88",
+    "adc6a418-7fcc-45e3-97fd-d5ec584355ec",
+    "0a198141-bf85-4780-bea6-cdb010574355",
+    "ee1d82b3-c9a1-49ca-822e-6415a6d72323",
+    "748bc195-3516-4ee8-8a73-8ac0d892a75c"
+  ],
+  "branch": "task/workspace-agents/workspace-explore-decision-confidence-system",
+  "mode": "exploring",
+  "worktree_id": "task/workspace-agents/workspace-explore-decision-confidence-system",
+  "updated_at": "2026-04-29T04:00:24.507Z",
+  "beliefs_updated_at": "2026-04-29T04:00:57.201Z"
 }

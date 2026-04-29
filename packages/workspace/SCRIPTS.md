@@ -376,7 +376,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### explore — repo exploration retrieval
 
-builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore writes an `explore.result` evidence event; embeddings are the prior, not proof.
+builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
 
 ```bash
 bun run explore -- "how does the dialer queue work?"
@@ -398,12 +398,14 @@ bad: embedding model not found
 
 ### decide-next — next action from evidence
 
-reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, then recommends the single best next action. it writes a `decision.taken` evidence event.
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
 
 ```bash
 bun run decide-next
 bun run decide-next -- --context .task/workpad.md
 bun run decide-next -- --mark-read packages/dialer/src/queue.ts
+bun run decide-next -- --mark-relevant packages/dialer/src/dialer.ts
+bun run decide-next -- --mark-irrelevant packages/dialer/src/types.ts
 bun run decide-next -- --json
 ```
 
@@ -411,7 +413,7 @@ bun run decide-next -- --json
 
 ### confidence-score — evidence confidence
 
-scores the current path from evidence events: reads, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
+scores the current path from evidence events: reads, posterior belief updates, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
 
 ```bash
 bun run confidence-score

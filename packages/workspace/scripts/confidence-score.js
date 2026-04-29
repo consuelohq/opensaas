@@ -2,16 +2,18 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
 const { resolveGitRoot } = require('./lib/paths');
-const { createStore } = require('./lib/index/store');
 const {
   appendEvidenceEvent,
   getEvidenceEvents,
   getReadFilesFromEvidence,
 } = require('./lib/state/evidence-log');
-const { readExploreState } = require('./lib/state/explore-state');
+const {
+  readExploreState,
+  updateBeliefsWithEvents,
+  writeExploreState,
+} = require('./lib/state/explore-state');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -47,36 +49,6 @@ function isTestPath(filePath) {
   return /\.(spec|test)\.(ts|tsx|js|jsx)$/.test(filePath) || filePath.includes('/__tests__/');
 }
 
-function getRemoteUrl(repoRoot) {
-  try {
-    return execFileSync('git', ['config', '--get', 'remote.origin.url'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim() || repoRoot;
-  } catch {
-    return repoRoot;
-  }
-}
-
-function topResultsShareGraphEdges(repoRoot, results) {
-  const top = results.slice(0, 3);
-  if (top.length < 3) return true;
-  const topPaths = new Set(top.map((result) => result.path));
-  let store = null;
-
-  try {
-    store = createStore(repoRoot, getRemoteUrl(repoRoot));
-    return store.getEdgesForFiles(Array.from(topPaths)).some((edge) => (
-      topPaths.has(edge.source_path) && topPaths.has(edge.target_path)
-    ));
-  } finally {
-    if (store?.db) {
-      store.db.close();
-    }
-  }
-}
-
 function getEventTime(event) {
   const parsed = Date.parse(event.occurred_at || '');
   return Number.isFinite(parsed) ? parsed : 0;
@@ -103,11 +75,17 @@ function getErrorRelatedResult(results) {
   return results.some((result) => /error|exception|fail|test|spec|log/i.test(`${result.path} ${result.reason} ${result.preview}`));
 }
 
-function computeConfidence(repoRoot, state) {
-  const events = getEvidenceEvents(repoRoot);
+function computeConfidence(repoRoot, state, events) {
   const latestValidationEvents = getLatestValidationEvents(events);
   const results = state.results || [];
   const topResults = results.slice(0, 5);
+  const beliefs = state.beliefs || {};
+  const beliefValues = topResults
+    .map((result) => beliefs[result.path]?.posterior ?? result.score ?? 0)
+    .sort((left, right) => right - left);
+  const topPosterior = beliefValues[0] || 0;
+  const beliefObservationCount = Object.values(beliefs)
+    .reduce((sum, belief) => sum + (belief.observations?.length || 0), 0);
   const readFiles = getReadFilesFromEvidence(repoRoot);
   const filesRead = topResults.filter((result) => readFiles.has(result.path)).length;
   const graphConnections = Array.from(new Set(topResults.flatMap((result) => result.graph_connections || [])));
@@ -127,7 +105,6 @@ function computeConfidence(repoRoot, state) {
     runtimeEvent,
     ...events.filter((event) => event.type === 'contradiction.detected'),
   ].filter((event) => event && ['verify.fail', 'test.fail', 'runtime.error', 'contradiction.detected'].includes(event.type));
-  const unrelatedTopResults = !topResultsShareGraphEdges(repoRoot, results);
   const deletedResult = results.some((result) => !fs.existsSync(path.join(repoRoot, result.path)));
   const questionMentionsError = /error|exception|failed|failing|stack|trace|crash/i.test(state.query || '');
   const missingErrorFiles = questionMentionsError && !getErrorRelatedResult(results);
@@ -149,6 +126,10 @@ function computeConfidence(repoRoot, state) {
     startingState.push(`graph expansion found ${graphConnections.length} connected files`);
   }
 
+  if (beliefValues.length > 0) {
+    startingState.push(`top posterior belief ${topPosterior.toFixed(2)}`);
+  }
+
   if (graphVisited > 0 && graphConnections.length > 0) {
     evidenceFor.push(`visited ${graphVisited}/${graphConnections.length} graph-connected files`);
   }
@@ -168,7 +149,6 @@ function computeConfidence(repoRoot, state) {
     evidenceAgainst.push(`${signal.type}: ${signal.details?.summary || signal.status || 'failure recorded'}`);
   }
 
-  if (unrelatedTopResults) evidenceAgainst.push('top-3 explore results share no graph edges');
   if (deletedResult) evidenceAgainst.push('a result was deleted or moved since last index');
   if (missingErrorFiles) evidenceAgainst.push('question mentions error but no error-related files appeared');
 
@@ -187,8 +167,9 @@ function computeConfidence(repoRoot, state) {
   const readCoverage = topResults.length === 0 ? 0 : filesRead / topResults.length;
   const graphCoverage = graphConnections.length === 0 ? 0 : graphVisited / graphConnections.length;
   const validationBonus = (verifyPassed ? 0.15 : 0) + (testPassed ? 0.10 : 0) + (runtimeClean ? 0.05 : 0);
+  const beliefBonus = beliefObservationCount > 0 ? Math.max(0, topPosterior - 0.5) * 0.15 : 0;
   const contradictionPenalty = Math.min(0.30, evidenceAgainst.length * 0.15);
-  const score = Math.max(0, Math.min(1, 0.30 + readCoverage * 0.30 + graphCoverage * 0.10 + validationBonus - contradictionPenalty));
+  const score = Math.max(0, Math.min(1, 0.30 + readCoverage * 0.30 + graphCoverage * 0.10 + validationBonus + beliefBonus - contradictionPenalty));
 
   const recommendation = score >= 0.75
     ? 'safe to exploit or confirm if edits already happened'
@@ -208,6 +189,8 @@ function computeConfidence(repoRoot, state) {
       read_top_files: filesRead,
       graph_files: graphConnections.length,
       read_graph_files: graphVisited,
+      belief_observations: beliefObservationCount,
+      top_posterior: Number(topPosterior.toFixed(4)),
     },
     recommendation,
   };
@@ -263,7 +246,10 @@ function main() {
   const state = readExploreState(repoRoot);
   if (!state) throw new Error('no explore state found; run explore first');
 
-  const result = computeConfidence(repoRoot, state);
+  const events = getEvidenceEvents(repoRoot);
+  const updatedState = updateBeliefsWithEvents(state, events);
+  writeExploreState(repoRoot, updatedState);
+  const result = computeConfidence(repoRoot, updatedState, events);
   appendEvidenceEvent(repoRoot, {
     type: 'hypothesis.updated',
     source: 'confidence-score',
