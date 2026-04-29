@@ -1,0 +1,1244 @@
+[
+  {
+    "name": "fs.read",
+    "methodPath": ["fs", "read"],
+    "description": "read file contents with an optional line range",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> read",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsReadInput",
+    "outputSchema": "FsReadOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "read",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "path", "kind": "value", "required": true },
+        { "source": "from", "flag": "--from", "kind": "value" },
+        { "source": "to", "flag": "--to", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "path": "packages/workspace/package.json" }
+  },
+  {
+    "name": "fs.search",
+    "methodPath": ["fs", "search"],
+    "description": "search files with ripgrep through the workspace script",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> search",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsSearchInput",
+    "outputSchema": "FsSearchOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "search",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "pattern", "kind": "value", "required": true },
+        { "source": "paths", "kind": "array" },
+        { "source": "include", "flag": "--include", "kind": "value" },
+        { "source": "context", "flag": "--context", "kind": "value" },
+        { "source": "maxResults", "flag": "--max-results", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "pattern": "task:fs", "paths": ["packages/workspace/SCRIPTS.md"] }
+  },
+  {
+    "name": "fs.list",
+    "methodPath": ["fs", "list"],
+    "description": "list or find files in a task worktree",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> list",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "list",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "arguments": [
+        { "source": "path", "kind": "value" },
+        { "source": "pattern", "flag": "--find", "kind": "value" },
+        { "source": "depth", "flag": "--depth", "kind": "value" },
+        { "source": "tree", "flag": "--tree", "kind": "boolean" },
+        { "source": "dirs", "flag": "--dirs", "kind": "boolean" },
+        { "source": "files", "flag": "--files", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "path": "packages/workspace/scripts", "depth": 1 }
+  },
+  {
+    "name": "fs.write",
+    "methodPath": ["fs", "write"],
+    "description": "write a file in a task worktree",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> write",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsWriteInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "write",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "arguments": [
+        { "source": "path", "kind": "value", "required": true },
+        { "source": "content", "flag": "--content", "kind": "value", "required": true },
+        { "source": "force", "flag": "--force", "kind": "boolean" },
+        { "source": "append", "flag": "--append", "kind": "boolean" },
+        { "source": "mkdirs", "flag": "--mkdirs", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "path": "tmp/example.txt", "content": "hello", "dryRun": true }
+  },
+  {
+    "name": "fs.patch",
+    "methodPath": ["fs", "patch"],
+    "description": "replace a line range in a task worktree file",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> patch",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsPatchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "patch",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        { "source": "path", "kind": "value", "required": true },
+        { "source": "from", "flag": "--from", "kind": "value", "required": true },
+        { "source": "to", "flag": "--to", "kind": "value", "required": true },
+        { "source": "content", "flag": "--content", "kind": "value", "required": true }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "path": "tmp/example.txt", "from": 1, "to": 1, "content": "hello", "dryRun": true }
+  },
+  {
+    "name": "fs.http",
+    "methodPath": ["fs", "http"],
+    "description": "make an HTTP request through the workspace http wrapper",
+    "category": "filesystem",
+    "underlying": "bun run fs -- http",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "FsHttpInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "fs",
+      "subcommand": "http",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "method", "kind": "value" },
+        { "source": "url", "kind": "value", "required": true },
+        { "source": "headers", "kind": "record" },
+        { "source": "body", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "method": "get", "url": "https://example.com" }
+  },
+  {
+    "name": "fs.trash",
+    "methodPath": ["fs", "trash"],
+    "description": "move a task worktree file to trash",
+    "category": "filesystem",
+    "underlying": "bun run task:fs -- --branch <branch> trash",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 30000,
+    "inputSchema": "FsTrashInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:fs",
+      "subcommand": "trash",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "arguments": [{ "source": "path", "kind": "value", "required": true }]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "path": "tmp/example.txt", "dryRun": true }
+  },
+  {
+    "name": "task.start",
+    "methodPath": ["task", "start"],
+    "description": "create a task branch, worktree, and draft PR",
+    "category": "task lifecycle",
+    "underlying": "bun run task:start",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 60000,
+    "inputSchema": "TaskStartInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:start",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "area", "flag": "--area", "kind": "value" },
+        { "source": "title", "flag": "--title", "kind": "value", "required": true },
+        { "source": "bodyFile", "flag": "--body-file", "kind": "value" },
+        { "source": "startFrom", "flag": "--start-from", "kind": "value" }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "stream": "stream/workspace-agents", "title": "example task", "dryRun": true }
+  },
+  {
+    "name": "task.init",
+    "methodPath": ["task", "init"],
+    "description": "write task metadata for an existing worktree",
+    "category": "task lifecycle",
+    "underlying": "bun run task:init",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 60000,
+    "inputSchema": "TaskInitInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:init",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "area", "flag": "--area", "kind": "value", "required": true },
+        { "source": "branch", "flag": "--branch", "kind": "value", "required": true },
+        { "source": "pr", "flag": "--pr", "kind": "value" },
+        { "source": "worktree", "flag": "--worktree", "kind": "value" }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "area": "workspace-agents", "branch": "task/workspace-agents/example", "dryRun": true }
+  },
+  {
+    "name": "task.push",
+    "methodPath": ["task", "push"],
+    "description": "push changed task files to the task branch through GitHub API",
+    "category": "task lifecycle",
+    "underlying": "bun run task:push",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "TaskPushInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:push",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "arguments": [
+        { "source": "branch", "flag": "--branch", "kind": "value" },
+        { "source": "message", "flag": "--message", "kind": "value", "required": true },
+        { "source": "changed", "flag": "--changed", "kind": "boolean" },
+        { "source": "files", "flag": "--files", "kind": "array" },
+        { "source": "noVerify", "flag": "--no-verify", "kind": "boolean" }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "message": "feat(workspace): example", "changed": true, "dryRun": true }
+  },
+  {
+    "name": "task.pr",
+    "methodPath": ["task", "pr"],
+    "description": "merge task to stream and create or refresh the stream review PR",
+    "category": "task lifecycle",
+    "underlying": "bun run task:pr",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "TaskPrInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:pr",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "arguments": [
+        { "source": "branch", "flag": "--branch", "kind": "value" },
+        { "source": "taskOnly", "flag": "--task-only", "kind": "boolean" },
+        { "source": "draft", "flag": "--draft", "kind": "boolean" },
+        { "source": "ready", "flag": "--ready", "kind": "boolean" },
+        { "source": "bodyTemplate", "flag": "--body-template", "kind": "value" }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "taskOnly": true, "dryRun": true }
+  },
+  {
+    "name": "task.prs",
+    "methodPath": ["task", "prs"],
+    "description": "show task and review PR links",
+    "category": "task lifecycle",
+    "underlying": "bun run task:prs",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "BranchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:prs",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "arguments": [{ "source": "branch", "flag": "--branch", "kind": "value" }],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example" }
+  },
+  {
+    "name": "task.merge",
+    "methodPath": ["task", "merge"],
+    "description": "merge a pull request through the workspace task merge script",
+    "category": "task lifecycle",
+    "underlying": "bun run task:merge",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "TaskMergeInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:merge",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "pr", "flag": "--pr", "kind": "value" },
+        { "source": "wait", "flag": "--wait", "kind": "boolean" },
+        { "source": "squash", "flag": "--squash", "kind": "boolean" }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "pr": 225, "dryRun": true }
+  },
+  {
+    "name": "task.finish",
+    "methodPath": ["task", "finish"],
+    "description": "finish a task branch after merge",
+    "category": "task lifecycle",
+    "underlying": "bun run task:finish",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "BranchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:finish",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "arguments": [{ "source": "branch", "flag": "--branch", "kind": "value" }],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "dryRun": true }
+  },
+  {
+    "name": "task.cleanup",
+    "methodPath": ["task", "cleanup"],
+    "description": "preview or remove stale task worktrees and branches",
+    "category": "task lifecycle",
+    "underlying": "bun run task:cleanup",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "TaskCleanupInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:cleanup",
+      "branchMode": "optional",
+      "branchArgumentStyle": "flag",
+      "arguments": [
+        { "source": "branch", "flag": "--branch", "kind": "value" },
+        { "source": "force", "flag": "--force", "kind": "boolean" },
+        { "source": "preview", "flag": "--preview", "kind": "boolean" },
+        { "source": "merged", "flag": "--merged", "kind": "boolean" },
+        { "source": "staleDays", "flag": "--stale-days", "kind": "value" },
+        { "source": "keep", "flag": "--keep", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "preview": true, "dryRun": true }
+  },
+  {
+    "name": "task.exec",
+    "methodPath": ["task", "exec"],
+    "description": "run a command inside a task worktree",
+    "category": "task lifecycle",
+    "underlying": "bun run task:exec -- --branch <branch>",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "TaskExecInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "task:exec",
+      "branchMode": "required",
+      "branchArgumentStyle": "prefix",
+      "arguments": [{ "source": "command", "kind": "commandArray", "required": true }]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "command": ["git", "status", "--short"], "dryRun": true }
+  },
+  {
+    "name": "task.current",
+    "methodPath": ["task", "current"],
+    "description": "resolve the current task branch without running a mutating command",
+    "category": "task lifecycle",
+    "underlying": "branch resolver",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 30000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "TaskCurrentOutput",
+    "command": { "script": "internal", "internal": "task.current", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "task.pin",
+    "methodPath": ["task", "pin"],
+    "description": "pin a task branch for a programmatic workspace client",
+    "category": "task lifecycle",
+    "underlying": "client session state",
+    "capabilities": { "readOnly": false, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 30000,
+    "inputSchema": "BranchInput",
+    "outputSchema": "TaskPinOutput",
+    "command": { "script": "internal", "internal": "task.pin", "arguments": [] },
+    "exampleInput": { "branch": "task/workspace-agents/example" }
+  },
+  {
+    "name": "task.ensureSynced",
+    "methodPath": ["task", "ensureSynced"],
+    "description": "check whether the task stream appears synced",
+    "category": "task lifecycle",
+    "underlying": "bun run stream:context",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "BranchInput",
+    "outputSchema": "TaskEnsureSyncedOutput",
+    "command": { "script": "internal", "internal": "task.ensureSynced", "arguments": [] },
+    "exampleInput": { "branch": "task/workspace-agents/example" }
+  },
+  {
+    "name": "taskMeta.smoke",
+    "methodPath": ["taskMeta", "smoke"],
+    "description": "run the task metadata smoke suite",
+    "category": "task lifecycle",
+    "underlying": "bun run task-meta:smoke",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "task-meta:smoke", "branchMode": "none", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "context.search",
+    "methodPath": ["context", "search"],
+    "description": "search project memory by content",
+    "category": "context",
+    "underlying": "bun run context -- search",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextSearchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "search",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "keyword", "kind": "value", "required": true },
+        { "source": "limit", "flag": "--limit", "kind": "value" },
+        { "source": "category", "flag": "--category", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "keyword": "workspace", "limit": 3 }
+  },
+  {
+    "name": "context.find",
+    "methodPath": ["context", "find"],
+    "description": "search project memory by title",
+    "category": "context",
+    "underlying": "bun run context -- find",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextFindInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "find",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "keyword", "kind": "value", "required": true },
+        { "source": "limit", "flag": "--limit", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "keyword": "handoff", "limit": 3 }
+  },
+  {
+    "name": "context.get",
+    "methodPath": ["context", "get"],
+    "description": "read a full project memory search result",
+    "category": "context",
+    "underlying": "bun run context -- get",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextGetInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "get",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "index", "kind": "value", "required": true },
+        { "source": "keyword", "kind": "value", "required": true }
+      ]
+    },
+    "exampleInput": { "index": 1, "keyword": "workspace" }
+  },
+  {
+    "name": "context.list",
+    "methodPath": ["context", "list"],
+    "description": "list recent project memories",
+    "category": "context",
+    "underlying": "bun run context -- list",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "list",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "category", "kind": "value" },
+        { "source": "limit", "flag": "--limit", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "category": "workpad", "limit": 3 }
+  },
+  {
+    "name": "context.save",
+    "methodPath": ["context", "save"],
+    "description": "save a file or text into project memory",
+    "category": "context",
+    "underlying": "bun run context -- save",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextSaveInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "save",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "title", "kind": "value", "required": true },
+        { "source": "file", "kind": "value" },
+        { "source": "category", "flag": "--category", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "title": "example memory", "file": "/tmp/example.md", "dryRun": true }
+  },
+  {
+    "name": "context.categories",
+    "methodPath": ["context", "categories"],
+    "description": "list project memory categories",
+    "category": "context",
+    "underlying": "bun run context -- categories",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "context", "subcommand": "categories", "branchMode": "none", "jsonFlag": "--json", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "explore",
+    "methodPath": ["explore"],
+    "description": "run repository exploration retrieval",
+    "category": "decision engine",
+    "underlying": "bun run explore",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "ExploreInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "explore",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "query", "kind": "value", "required": true },
+        { "source": "limit", "flag": "--budget", "kind": "value" },
+        { "source": "changedOnly", "flag": "--changed-only", "kind": "boolean" },
+        { "source": "reindex", "flag": "--reindex", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "query": "workspace facade", "limit": 5 }
+  },
+  {
+    "name": "decideNext",
+    "methodPath": ["decideNext"],
+    "description": "recommend the next action from evidence state",
+    "category": "decision engine",
+    "underlying": "bun run decide-next",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "DecideNextInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "decide-next",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "context", "flag": "--context", "kind": "value" },
+        { "source": "markRead", "flag": "--mark-read", "kind": "value" },
+        { "source": "markRelevant", "flag": "--mark-relevant", "kind": "value" },
+        { "source": "markIrrelevant", "flag": "--mark-irrelevant", "kind": "value" }
+      ]
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "confidenceScore",
+    "methodPath": ["confidenceScore"],
+    "description": "score confidence from evidence state",
+    "category": "decision engine",
+    "underlying": "bun run confidence-score",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "confidence-score", "branchMode": "none", "jsonFlag": "--json", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "exploit",
+    "methodPath": ["exploit"],
+    "description": "select the highest-confidence editing target",
+    "category": "decision engine",
+    "underlying": "bun run exploit",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "ExploitInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "exploit",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "query", "kind": "value" },
+        { "source": "target", "flag": "--target", "kind": "value" }
+      ]
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "confirm",
+    "methodPath": ["confirm"],
+    "description": "run verification or targeted validation through confirm",
+    "category": "decision engine",
+    "underlying": "bun run confirm",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "ConfirmInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "confirm",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "verify", "flag": "--verify", "kind": "boolean" },
+        { "source": "runtime", "flag": "--runtime", "kind": "boolean" },
+        { "source": "test", "flag": "--test", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "verify": true }
+  },
+  {
+    "name": "audit",
+    "methodPath": ["audit"],
+    "description": "audit workspace scripts, docs, or index freshness",
+    "category": "decision engine",
+    "underlying": "bun run audit",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "AuditInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "audit",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "scripts", "flag": "--scripts", "kind": "boolean" },
+        { "source": "docs", "flag": "--docs", "kind": "boolean" },
+        { "source": "index", "flag": "--index", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "scripts": true }
+  },
+  {
+    "name": "stream.context",
+    "methodPath": ["stream", "context"],
+    "description": "show recent stream context",
+    "category": "stream",
+    "underlying": "bun run stream:context",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "StreamInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "stream:context",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "area", "flag": "--area", "kind": "value", "required": true },
+        { "source": "stream", "flag": "--stream", "kind": "value" },
+        { "source": "repo", "flag": "--repo", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "area": "workspace-agents" }
+  },
+  {
+    "name": "stream.list",
+    "methodPath": ["stream", "list"],
+    "description": "list stream branches",
+    "category": "stream",
+    "underlying": "bun run stream:list",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "StreamListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "stream:list",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [{ "source": "repo", "flag": "--repo", "kind": "value" }]
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "stream.sync",
+    "methodPath": ["stream", "sync"],
+    "description": "sync a stream branch with main",
+    "category": "stream",
+    "underlying": "bun run stream:sync",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "StreamInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "stream:sync",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "area", "flag": "--area", "kind": "value", "required": true },
+        { "source": "stream", "flag": "--stream", "kind": "value" },
+        { "source": "repo", "flag": "--repo", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "area": "workspace-agents", "dryRun": true }
+  },
+  {
+    "name": "review.run",
+    "methodPath": ["review", "run"],
+    "description": "run the workspace review checks",
+    "category": "review",
+    "underlying": "bun run review",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "ReviewInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "review",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "fix", "flag": "--fix", "kind": "boolean" },
+        { "source": "all", "flag": "--all", "kind": "boolean" },
+        { "source": "base", "flag": "--base", "kind": "value" },
+        { "source": "strict", "flag": "--strict", "kind": "boolean" },
+        { "source": "mine", "flag": "--mine", "kind": "boolean" },
+        { "source": "noTests", "flag": "--no-tests", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "mine": true, "noTests": true }
+  },
+  {
+    "name": "verify",
+    "methodPath": ["verify"],
+    "description": "run the full task safety gate",
+    "category": "review",
+    "underlying": "bun run verify",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "VerifyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "verify",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "base", "flag": "--base", "kind": "value" },
+        { "source": "noReview", "flag": "--no-review", "kind": "boolean" },
+        { "source": "noDb", "flag": "--no-db", "kind": "boolean" },
+        { "source": "dbWarnOnly", "flag": "--db-warn-only", "kind": "boolean" },
+        { "source": "noStamp", "flag": "--no-stamp", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "noStamp": true, "dryRun": true }
+  },
+  {
+    "name": "prReview",
+    "methodPath": ["prReview"],
+    "description": "fetch review comments for a PR",
+    "category": "review",
+    "underlying": "bun run pr-review",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "PrReviewInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "pr-review",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "pr", "kind": "value" },
+        { "source": "stdout", "flag": "--stdout", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "pr": 225, "stdout": true }
+  },
+  {
+    "name": "aiReview",
+    "methodPath": ["aiReview"],
+    "description": "run the AI PR review helper",
+    "category": "review",
+    "underlying": "bun run ai-review",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "AiReviewInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "ai-review",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "pr", "kind": "value" },
+        { "source": "noPost", "flag": "--no-post", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "pr": 226, "noPost": true }
+  },
+  {
+    "name": "gh",
+    "methodPath": ["gh"],
+    "description": "run the workspace GitHub helper with an explicit action",
+    "category": "github",
+    "underlying": "bun run gh",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "GhInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "gh",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "action", "kind": "value", "required": true },
+        { "source": "args", "kind": "array" }
+      ]
+    },
+    "exampleInput": { "action": "view", "args": ["225"] }
+  },
+  {
+    "name": "browser",
+    "methodPath": ["browser"],
+    "description": "open or inspect a browser target through the workspace browser script",
+    "category": "utilities",
+    "underlying": "bun run browser",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "command", "kind": "value" },
+        { "source": "url", "kind": "value" },
+        { "source": "args", "kind": "array" }
+      ]
+    },
+    "exampleInput": { "command": "url", "url": "https://example.com", "dryRun": true }
+  },
+  {
+    "name": "wait",
+    "methodPath": ["wait"],
+    "description": "sleep or wait for a PR/deploy",
+    "category": "utilities",
+    "underlying": "bun run wait",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "WaitInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "wait",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "seconds", "kind": "value" },
+        { "source": "deploy", "flag": "--deploy", "kind": "boolean" },
+        { "source": "pr", "flag": "--pr", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "seconds": 1 }
+  },
+  {
+    "name": "tmp",
+    "methodPath": ["tmp"],
+    "description": "run the workspace temp-file helper",
+    "category": "utilities",
+    "underlying": "bun run tmp",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 60000,
+    "inputSchema": "TmpInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "tmp",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "action", "kind": "value", "required": true },
+        { "source": "name", "kind": "value" },
+        { "source": "content", "kind": "value" },
+        { "source": "ext", "flag": "--ext", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "action": "write", "name": "example", "content": "hello", "dryRun": true }
+  },
+  {
+    "name": "railway.logs",
+    "methodPath": ["railway", "logs"],
+    "description": "read Railway deploy/runtime logs through the workspace script",
+    "category": "utilities",
+    "underlying": "bun run railway:logs",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 60000,
+    "inputSchema": "RailwayLogsInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "railway:logs",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "service", "flag": "--service", "kind": "value" },
+        { "source": "build", "flag": "--build", "kind": "boolean" },
+        { "source": "errors", "flag": "--errors", "kind": "boolean" },
+        { "source": "network", "flag": "--network", "kind": "boolean" },
+        { "source": "raw", "flag": "--raw", "kind": "boolean" },
+        { "source": "status", "flag": "--status", "kind": "boolean" },
+        { "source": "filter", "flag": "--filter", "kind": "value" },
+        { "source": "lines", "flag": "--lines", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "service": "opensaas", "lines": 10 }
+  },
+  {
+    "name": "railway.redeploy",
+    "methodPath": ["railway", "redeploy"],
+    "description": "trigger a Railway redeploy",
+    "category": "utilities",
+    "underlying": "bun run railway:redeploy",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "RailwayRedeployInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "railway:redeploy",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "service", "flag": "--service", "kind": "value" },
+        { "source": "all", "flag": "--all", "kind": "boolean" },
+        { "source": "wait", "flag": "--wait", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "service": "opensaas", "dryRun": true }
+  },
+  {
+    "name": "website.deploy",
+    "methodPath": ["website", "deploy"],
+    "description": "deploy the Consuelo website",
+    "category": "utilities",
+    "underlying": "bun run website:deploy",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "WebsiteDeployInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "website:deploy",
+      "branchMode": "none",
+      "arguments": [
+        { "source": "preview", "flag": "--preview", "kind": "boolean" },
+        { "source": "buildOnly", "flag": "--build-only", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "buildOnly": true, "dryRun": true }
+  },
+  {
+    "name": "doctor",
+    "methodPath": ["doctor"],
+    "description": "run workspace diagnostics",
+    "category": "utilities",
+    "underlying": "bun run doctor",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "doctor", "branchMode": "none", "jsonFlag": "--json", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "status",
+    "methodPath": ["status"],
+    "description": "show compact workspace status",
+    "category": "utilities",
+    "underlying": "bun run status",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "status", "branchMode": "none", "jsonFlag": "--json", "arguments": [] },
+    "exampleInput": {}
+  },
+  {
+    "name": "server",
+    "methodPath": ["server"],
+    "description": "manage the workspace MCP server",
+    "category": "utilities",
+    "underlying": "bun run server",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "ServerInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "server",
+      "branchMode": "none",
+      "arguments": [{ "source": "action", "kind": "value", "required": true }]
+    },
+    "exampleInput": { "action": "status" }
+  },
+  {
+    "name": "checkFiles",
+    "methodPath": ["checkFiles"],
+    "description": "run syntax checks over a set of files through task:exec",
+    "category": "composed",
+    "underlying": "bun run check-files",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "CheckFilesInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "check-files",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "branch", "flag": "--branch", "kind": "value" },
+        { "source": "files", "flag": "--files", "kind": "array", "required": true },
+        { "source": "stopOnFirstError", "flag": "--stop-on-first-error", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "files": ["packages/workspace/scripts/fs.js"], "stopOnFirstError": true }
+  },
+  {
+    "name": "editFlow",
+    "methodPath": ["editFlow"],
+    "description": "run a search-read-patch-verify flow as a composed script",
+    "category": "composed",
+    "underlying": "bun run edit-flow",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "EditFlowInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "edit-flow",
+      "branchMode": "required",
+      "branchArgumentStyle": "flag",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        { "source": "branch", "flag": "--branch", "kind": "value" },
+        { "source": "searchPattern", "flag": "--search-pattern", "kind": "value", "required": true },
+        { "source": "searchPaths", "flag": "--search-paths", "kind": "array", "required": true },
+        { "source": "from", "flag": "--from", "kind": "value", "required": true },
+        { "source": "to", "flag": "--to", "kind": "value", "required": true },
+        { "source": "contentFile", "flag": "--content-file", "kind": "value", "required": true }
+      ]
+    },
+    "exampleInput": { "branch": "task/workspace-agents/example", "searchPattern": "oldFn", "searchPaths": ["packages/workspace/scripts"], "from": 1, "to": 1, "contentFile": "/tmp/new.ts", "dryRun": true }
+  },
+  {
+    "name": "mac.exec",
+    "methodPath": ["mac", "exec"],
+    "description": "run a non-repo shell command on the Mac",
+    "category": "mac",
+    "underlying": "bun run mac -- exec",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacExecInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "exec",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "command", "kind": "value", "required": true },
+        { "source": "cwd", "flag": "--cwd", "kind": "value" },
+        { "source": "timeout", "flag": "--timeout", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "command": "pwd", "dryRun": true }
+  },
+  {
+    "name": "mac.read",
+    "methodPath": ["mac", "read"],
+    "description": "read a non-repo file on the Mac",
+    "category": "mac",
+    "underlying": "bun run mac -- read",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacReadInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "mac", "subcommand": "read", "branchMode": "none", "jsonFlag": "--json", "arguments": [{ "source": "path", "kind": "value", "required": true }] },
+    "exampleInput": { "path": "/tmp/example.txt" }
+  },
+  {
+    "name": "mac.write",
+    "methodPath": ["mac", "write"],
+    "description": "write a non-repo file on the Mac",
+    "category": "mac",
+    "underlying": "bun run mac -- write",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacWriteInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "write",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "path", "kind": "value", "required": true },
+        { "source": "content", "flag": "--content", "kind": "value" },
+        { "source": "contentFile", "flag": "--content-file", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "path": "/tmp/example.txt", "content": "hello", "dryRun": true }
+  },
+  {
+    "name": "mac.search",
+    "methodPath": ["mac", "search"],
+    "description": "search non-repo files on the Mac",
+    "category": "mac",
+    "underlying": "bun run mac -- search",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacSearchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "search",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "pattern", "kind": "value", "required": true },
+        { "source": "path", "kind": "value" },
+        { "source": "include", "flag": "--include", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "pattern": "hello", "path": "/tmp" }
+  },
+  {
+    "name": "mac.list",
+    "methodPath": ["mac", "list"],
+    "description": "list non-repo files on the Mac",
+    "category": "mac",
+    "underlying": "bun run mac -- list",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "list",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "path", "kind": "value" },
+        { "source": "depth", "flag": "--depth", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "path": "/tmp", "depth": 1 }
+  },
+  {
+    "name": "mac.process",
+    "methodPath": ["mac", "process"],
+    "description": "list or kill local Mac processes",
+    "category": "mac",
+    "underlying": "bun run mac -- process",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacProcessInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "process",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "action", "kind": "value", "required": true },
+        { "source": "pid", "flag": "--pid", "kind": "value" },
+        { "source": "name", "flag": "--name", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "action": "list" }
+  },
+  {
+    "name": "mac.port",
+    "methodPath": ["mac", "port"],
+    "description": "check or find a local port",
+    "category": "mac",
+    "underlying": "bun run mac -- port",
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
+    "defaultTimeout": 300000,
+    "inputSchema": "MacPortInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "mac",
+      "subcommand": "port",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "action", "kind": "value", "required": true },
+        { "source": "port", "kind": "value" }
+      ]
+    },
+    "exampleInput": { "action": "find" }
+  },
+  {
+    "name": "generate.docs",
+    "methodPath": ["generate", "docs"],
+    "description": "generate TOOLS.md from the tool manifest",
+    "category": "generation",
+    "underlying": "bun run generate-docs",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "generate-docs", "branchMode": "none", "arguments": [] },
+    "exampleInput": { "dryRun": true }
+  },
+  {
+    "name": "generate.types",
+    "methodPath": ["generate", "types"],
+    "description": "generate workspace.d.ts from the tool manifest",
+    "category": "generation",
+    "underlying": "bun run generate-types",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
+    "defaultTimeout": 120000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": { "script": "generate-types", "branchMode": "none", "arguments": [] },
+    "exampleInput": { "dryRun": true }
+  }
+]

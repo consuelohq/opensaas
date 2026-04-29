@@ -4104,8 +4104,584 @@
         },
         "recommendation": "continue gathering evidence"
       }
+    },
+    {
+      "id": "c8a642f7-13b8-4774-9f47-c01c7c764f28",
+      "occurred_at": "2026-04-29T08:06:03.860Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "52c0c7e8-e8f3-436f-bd50-097606123566",
+      "occurred_at": "2026-04-29T08:06:49.526Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/fs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "87e9763a-efd6-40f0-848f-13986ca33570",
+      "occurred_at": "2026-04-29T08:06:50.697Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-fs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "65b9a947-9dfd-4c60-8f2e-b01cc9fe8780",
+      "occurred_at": "2026-04-29T08:06:51.857Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-exec.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "54ec59a3-b168-4b9c-9517-1bfc2714a38e",
+      "occurred_at": "2026-04-29T08:07:30.883Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "278cdc77-8e05-4dff-b6c0-5741b35badaf",
+      "occurred_at": "2026-04-29T08:07:39.962Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "9d68ea83-b863-46e2-819b-19a2bfb20162",
+      "occurred_at": "2026-04-29T08:07:41.347Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "74b7a5b0-f93b-496f-8eee-7263cb7bab42",
+      "occurred_at": "2026-04-29T08:07:42.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/audit.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "6980de47-3f0a-4dd8-a270-9fcb36bd2e9f",
+      "occurred_at": "2026-04-29T08:07:43.815Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/project.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "1ae2adf0-94bd-415e-a28c-55f43a19db5d",
+      "occurred_at": "2026-04-29T08:07:52.844Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "751fc23f-9154-4b0b-9e24-ec1e3da0ee8c",
+      "occurred_at": "2026-04-29T08:07:54.430Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/check-syntax.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "136426a2-bd6c-47e1-8504-489a0404674c",
+      "occurred_at": "2026-04-29T08:07:55.445Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "de54dc70-90ab-45d2-8924-11fc324ca7d2",
+      "occurred_at": "2026-04-29T08:07:56.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tmp.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "6dc495cd-167e-498b-ba8c-20fe220ce4a3",
+      "occurred_at": "2026-04-29T08:08:12.652Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "19eed8d7-9c8d-4e62-b8ba-8f6d673cfac2",
+      "occurred_at": "2026-04-29T08:26:32.989Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "92c9028b-69ff-493e-94ad-b9c5b06d7e12",
+      "occurred_at": "2026-04-29T08:31:37.156Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "28cdab6e-fe40-4ed7-a421-492223946130",
+      "occurred_at": "2026-04-29T08:32:00.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "da2612d5-8977-40e2-9e02-4b595ae8a0a0",
+      "occurred_at": "2026-04-29T08:32:21.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "4e28508f-2286-4a52-9efa-009756a8c3f6",
+      "occurred_at": "2026-04-29T08:33:02.787Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "36712b04-f3e3-42ed-8d86-6efeae7076b8",
+      "occurred_at": "2026-04-29T08:33:29.108Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "e5a15c48-603d-4291-9eb9-419a0356155b",
+      "occurred_at": "2026-04-29T08:33:56.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "d16e1ad5-512a-40fb-b422-a12491d31a77",
+      "occurred_at": "2026-04-29T08:36:50.763Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/edit-flow.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "8386e0f3-1e71-4519-8d96-5e94f1c51ef6",
+      "occurred_at": "2026-04-29T08:36:52.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/check-files.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "79cd6c92-a572-4cf6-ac35-4e14799a0fb2",
+      "occurred_at": "2026-04-29T08:38:11.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "0ee8367e-7349-478c-96ea-0258376e9cf8",
+      "occurred_at": "2026-04-29T08:39:16.005Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "a725b05b-f64a-4e3e-ab43-b1636ab7da98",
+      "occurred_at": "2026-04-29T08:42:13.006Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "2acf9bfe-e11c-4f72-8e24-56dd0b5eb0bb",
+      "occurred_at": "2026-04-29T08:43:13.103Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/review.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "33cce7d7-4b44-49c5-98b4-34e29d705335",
+      "occurred_at": "2026-04-29T08:43:25.097Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/edit-flow.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "e5913c44-c192-4dfb-99bd-c01f5f95b35d",
+      "occurred_at": "2026-04-29T08:43:28.671Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/check-files.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "5ba4083e-2be2-461a-98da-ab4f5e8c56f2",
+      "occurred_at": "2026-04-29T08:43:33.694Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/mac.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "7ebda59e-8d58-41cf-b0e4-0f79c90339cc",
+      "occurred_at": "2026-04-29T08:43:51.816Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "1084f669-0e46-4cd0-84a2-afa99717281d",
+      "occurred_at": "2026-04-29T08:43:58.640Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "df0bd1bc-7a4f-4cf0-94ac-2067545e6431",
+      "occurred_at": "2026-04-29T08:46:00.463Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "80fe0aff-8848-4b17-89f1-aee8beac489e",
+      "occurred_at": "2026-04-29T08:46:12.290Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "18575262-b601-4dae-86f7-eb0841fd3bca",
+      "occurred_at": "2026-04-29T08:46:43.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
+    },
+    {
+      "id": "56f8d9ef-399d-4deb-9408-faa8e0dd4904",
+      "occurred_at": "2026-04-29T08:47:59.673Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-29T04:00:57.357Z"
+  "updated_at": "2026-04-29T08:48:00.038Z"
 }

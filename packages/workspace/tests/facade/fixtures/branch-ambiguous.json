@@ -1,0 +1,7 @@
+{
+  "code": "AMBIGUOUS_TASK_SELECTION",
+  "candidates": [
+    "task/workspace-agents/a",
+    "task/workspace-agents/b"
+  ]
+}
