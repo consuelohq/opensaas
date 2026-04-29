@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/dialer/src/dialer.ts",
+    "packages/workspace/scripts/explore.js"
+  ],
+  "updatedAt": "2026-04-29T01:45:31.186Z"
+}
