@@ -1,0 +1,7 @@
+{
+  "path": "packages/workspace/package.json",
+  "from": 1,
+  "to": 3,
+  "total": 3,
+  "lines": ["{", "  \"name\": \"openworkspace\",", "}"]
+}

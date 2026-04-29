@@ -1,7 +1,30 @@
 {
   "files": [
+    ".task/verify.json",
+    ".task/workpad.md",
+    "package.json",
     "packages/dialer/src/dialer.ts",
-    "packages/workspace/scripts/explore.js"
+    "packages/workspace/package.json",
+    "packages/workspace/project.json",
+    "packages/workspace/scripts/audit.js",
+    "packages/workspace/scripts/check-files.js",
+    "packages/workspace/scripts/check-syntax.js",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/edit-flow.js",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/facade/batch.ts",
+    "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+    "packages/workspace/scripts/lib/facade/errors.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/paths.js",
+    "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/mac.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/tmp.js",
+    "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-04-29T01:45:31.186Z"
+  "updatedAt": "2026-04-29T08:47:59.533Z"
 }
