@@ -70,7 +70,7 @@ DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
-DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision-process.md')
+DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
@@ -94,10 +94,6 @@ def _read_steering() -> str:
     steering_path = _resolve_steering_file()
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
-
-    scripts = _read_optional_file(SCRIPTS_FILE)
-    if scripts:
-        content += '\n\n' + scripts
 
     manifest = _read_optional_file(TOOL_MANIFEST_FILE)
     if manifest:
