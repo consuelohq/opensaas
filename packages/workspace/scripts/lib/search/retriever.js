@@ -59,7 +59,7 @@ function mergeSearchRows(rows) {
     const similarity = distanceToSimilarity(row.distance);
     const existing = candidates.get(row.filePath);
 
-    if (!existing || shouldReplaceBestChunk(row, similarity, existing)) {
+    if (!existing) {
       candidates.set(row.filePath, {
         path: row.filePath,
         embeddingSimilarity: similarity,
@@ -70,7 +70,19 @@ function mergeSearchRows(rows) {
         endLine: row.endLine,
         graphConnections: [],
         includedBy: 'semantic',
+        reasonSimilarity: similarity,
       });
+      continue;
+    }
+
+    existing.embeddingSimilarity = Math.max(existing.embeddingSimilarity, similarity);
+    if (shouldReplaceBestChunk(row, similarity, existing)) {
+      existing.bestChunkName = row.name;
+      existing.bestChunkType = row.chunkType;
+      existing.preview = toPreview(row.content);
+      existing.startLine = row.startLine;
+      existing.endLine = row.endLine;
+      existing.reasonSimilarity = similarity;
     }
   }
 
@@ -96,10 +108,15 @@ function getChunkTypePriority(chunkType) {
 }
 
 function shouldReplaceBestChunk(row, similarity, existing) {
-  if (similarity > existing.embeddingSimilarity) return true;
-  if (similarity < existing.embeddingSimilarity - 0.03) return false;
+  const currentReasonSimilarity = existing.reasonSimilarity ?? existing.embeddingSimilarity;
+  if (Math.abs(similarity - currentReasonSimilarity) <= 0.05) {
+    const rowPriority = getChunkTypePriority(row.chunkType);
+    const existingPriority = getChunkTypePriority(existing.bestChunkType);
+    if (rowPriority !== existingPriority) return rowPriority > existingPriority;
+    return similarity > currentReasonSimilarity;
+  }
 
-  return getChunkTypePriority(row.chunkType) > getChunkTypePriority(existing.bestChunkType);
+  return similarity > currentReasonSimilarity;
 }
 
 function expandGraph(store, candidates, depth, limit) {
@@ -175,6 +192,7 @@ async function retrieve(store, repoRoot, query, options = {}) {
   hydrateGraphCandidates(store, candidates);
 
   const edgeCounts = store.getEdgeCounts();
+  const graphQualityScores = store.getGraphQualityScores();
   const recencyByPath = buildRecencyLookup(repoRoot);
   const changedPaths = new Set((options.changedFiles || []).map((change) => change.path || change));
   const recentPaths = new Set(recencyByPath.keys());
@@ -191,13 +209,15 @@ async function retrieve(store, repoRoot, query, options = {}) {
     const scored = scoreCandidate(candidate, {
       changedPaths,
       edgeCounts,
+      graphQualityScores,
       query,
       recentPaths,
       recencyByPath,
     });
+    const { reasonSimilarity, ...outputCandidate } = candidate;
 
     return {
-      ...candidate,
+      ...outputCandidate,
       score: scored.score,
       scoreParts: scored.parts,
       reason: getReason(candidate),

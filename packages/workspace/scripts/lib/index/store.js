@@ -355,6 +355,58 @@ function createStore(repoRoot, remoteUrl) {
     return new Map(rows.map((row) => [row.path, Number(row.count)]));
   }
 
+  function getGraphQualityScores() {
+    const edgeRows = db.query('SELECT source_path, target_path, edge_type FROM graph_edges').all();
+    const chunkRows = db.query([
+      'SELECT',
+      '  file_path,',
+      '  COUNT(*) AS total_chunks,',
+      "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
+      "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      'FROM chunks',
+      'GROUP BY file_path',
+    ].join('\n')).all();
+    const chunkStats = new Map(chunkRows.map((row) => [row.file_path, {
+      implementationChunks: Number(row.implementation_chunks || 0),
+      implementationNames: row.implementation_names || '',
+      totalChunks: Number(row.total_chunks || 0),
+      typeExportChunks: Number(row.type_export_chunks || 0),
+    }]));
+    const edgeWeights = {
+      calls: 1.2,
+      called_by: 1.2,
+      imports: 1,
+      imported_by: 1,
+      sibling: 0.3,
+      tests: 1.5,
+      tested_by: 1.5,
+    };
+    const weightedEdges = new Map();
+
+    for (const edge of edgeRows) {
+      const weight = edgeWeights[edge.edge_type] || 0.5;
+      weightedEdges.set(edge.source_path, (weightedEdges.get(edge.source_path) || 0) + weight);
+      weightedEdges.set(edge.target_path, (weightedEdges.get(edge.target_path) || 0) + weight);
+    }
+
+    const graphQualityScores = new Map();
+    for (const [filePath, weightedEdgeScore] of weightedEdges.entries()) {
+      const stats = chunkStats.get(filePath);
+      const typeHeavy = stats?.totalChunks > 0 && (stats.typeExportChunks / stats.totalChunks) > 0.7;
+      const typePenalty = typeHeavy ? 0.5 : 1;
+      graphQualityScores.set(filePath, {
+        hasImplementationChunks: Boolean(stats?.implementationChunks),
+        implementationNames: stats?.implementationNames || '',
+        typeHeavy,
+        weightedEdges: weightedEdgeScore,
+        weightedScore: weightedEdgeScore * typePenalty,
+      });
+    }
+
+    return graphQualityScores;
+  }
+
   function getDeletedOverlayPaths(worktreeId) {
     if (!worktreeId) return new Set();
     const rows = db.query('SELECT file_path FROM overlays WHERE worktree_id = ? AND status = ?').all(worktreeId, 'deleted');
@@ -443,6 +495,7 @@ function createStore(repoRoot, remoteUrl) {
     getFiles,
     getChunksForFiles,
     getChunksWithoutEmbeddings,
+    getGraphQualityScores,
     getMeta,
     getStats,
     hasChunkEmbedding,

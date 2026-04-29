@@ -32,8 +32,18 @@ function getNameMatchScore(query, filePath) {
   return tokens.some((token) => normalizedPath.includes(token)) ? 1 : 0;
 }
 
+function getImplementationBonus(query, candidate, graphQuality) {
+  if (!graphQuality?.hasImplementationChunks) return 0;
+  const tokens = tokenizeQuery(query);
+  if (tokens.length === 0) return 0;
+
+  const symbolText = graphQuality.implementationNames.toLowerCase();
+  return tokens.some((token) => symbolText.includes(token)) ? 0.05 : 0;
+}
+
 function scoreCandidate(candidate, context) {
-  const graphCentrality = normalize(context.edgeCounts.get(candidate.path) || 0, 20);
+  const graphQuality = context.graphQualityScores?.get(candidate.path) || null;
+  const graphCentrality = normalize(graphQuality?.weightedScore ?? context.edgeCounts.get(candidate.path) ?? 0, 30);
   const recency = getRecencyScore(context.recencyByPath.get(candidate.path));
   const changeRelevance = context.changedPaths.has(candidate.path)
     ? 1
@@ -42,18 +52,21 @@ function scoreCandidate(candidate, context) {
       : 0;
   const nameMatch = getNameMatchScore(context.query, candidate.path);
   const embeddingSimilarity = Math.max(0, Math.min(1, candidate.embeddingSimilarity || 0));
+  const implementationBonus = getImplementationBonus(context.query, candidate, graphQuality);
 
   return {
     score: Math.max(0, Math.min(1,
-      (0.55 * embeddingSimilarity)
-      + (0.20 * graphCentrality)
+      (0.60 * embeddingSimilarity)
+      + (0.15 * graphCentrality)
       + (0.10 * recency)
       + (0.10 * changeRelevance)
-      + (0.05 * nameMatch),
+      + (0.05 * nameMatch)
+      + implementationBonus,
     )),
     parts: {
       embeddingSimilarity,
       graphCentrality,
+      implementationBonus,
       recency,
       changeRelevance,
       nameMatch,

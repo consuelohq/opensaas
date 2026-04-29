@@ -2,8 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const { resolveGitRoot } = require('./lib/paths');
+const { createStore } = require('./lib/index/store');
 const {
   appendEvidenceEvent,
   getEvidenceEvents,
@@ -45,32 +47,65 @@ function isTestPath(filePath) {
   return /\.(spec|test)\.(ts|tsx|js|jsx)$/.test(filePath) || filePath.includes('/__tests__/');
 }
 
-function topResultsShareGraphEdges(results) {
+function getRemoteUrl(repoRoot) {
+  try {
+    return execFileSync('git', ['config', '--get', 'remote.origin.url'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim() || repoRoot;
+  } catch {
+    return repoRoot;
+  }
+}
+
+function topResultsShareGraphEdges(repoRoot, results) {
   const top = results.slice(0, 3);
   if (top.length < 3) return true;
+  const topPaths = new Set(top.map((result) => result.path));
+  let store = null;
 
-  const allConnections = top.map((result) => new Set(result.graph_connections || []));
-  for (let left = 0; left < allConnections.length; left += 1) {
-    for (let right = left + 1; right < allConnections.length; right += 1) {
-      if (Array.from(allConnections[left]).some((filePath) => allConnections[right].has(filePath))) {
-        return true;
-      }
+  try {
+    store = createStore(repoRoot, getRemoteUrl(repoRoot));
+    return store.getEdgesForFiles(Array.from(topPaths)).some((edge) => (
+      topPaths.has(edge.source_path) && topPaths.has(edge.target_path)
+    ));
+  } finally {
+    if (store?.db) {
+      store.db.close();
+    }
+  }
+}
+
+function getEventTime(event) {
+  const parsed = Date.parse(event.occurred_at || '');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getLatestValidationEvents(events) {
+  const latestByGroup = new Map();
+  const validationGroups = new Set(['runtime', 'test', 'verify']);
+
+  for (const event of events) {
+    const group = String(event.type || '').split('.')[0];
+    if (!validationGroups.has(group)) continue;
+
+    const current = latestByGroup.get(group);
+    if (!current || getEventTime(event) >= getEventTime(current)) {
+      latestByGroup.set(group, event);
     }
   }
 
-  return false;
+  return latestByGroup;
 }
 
 function getErrorRelatedResult(results) {
   return results.some((result) => /error|exception|fail|test|spec|log/i.test(`${result.path} ${result.reason} ${result.preview}`));
 }
 
-function hasEvent(events, types) {
-  return events.some((event) => types.includes(event.type));
-}
-
 function computeConfidence(repoRoot, state) {
   const events = getEvidenceEvents(repoRoot);
+  const latestValidationEvents = getLatestValidationEvents(events);
   const results = state.results || [];
   const topResults = results.slice(0, 5);
   const readFiles = getReadFilesFromEvidence(repoRoot);
@@ -80,11 +115,19 @@ function computeConfidence(repoRoot, state) {
   const testFiles = graphConnections.filter(isTestPath);
   const readTests = testFiles.filter((filePath) => readFiles.has(filePath));
   const hasTestCoverage = testFiles.length > 0;
-  const verifyPassed = hasEvent(events, ['verify.pass']);
-  const testPassed = hasEvent(events, ['test.pass']);
-  const runtimeClean = hasEvent(events, ['runtime.clean']);
-  const failingSignals = events.filter((event) => ['verify.fail', 'test.fail', 'runtime.error', 'contradiction.detected'].includes(event.type));
-  const unrelatedTopResults = !topResultsShareGraphEdges(results);
+  const verifyEvent = latestValidationEvents.get('verify');
+  const testEvent = latestValidationEvents.get('test');
+  const runtimeEvent = latestValidationEvents.get('runtime');
+  const verifyPassed = verifyEvent?.type === 'verify.pass';
+  const testPassed = testEvent?.type === 'test.pass';
+  const runtimeClean = runtimeEvent?.type === 'runtime.clean';
+  const failingSignals = [
+    verifyEvent,
+    testEvent,
+    runtimeEvent,
+    ...events.filter((event) => event.type === 'contradiction.detected'),
+  ].filter((event) => event && ['verify.fail', 'test.fail', 'runtime.error', 'contradiction.detected'].includes(event.type));
+  const unrelatedTopResults = !topResultsShareGraphEdges(repoRoot, results);
   const deletedResult = results.some((result) => !fs.existsSync(path.join(repoRoot, result.path)));
   const questionMentionsError = /error|exception|failed|failing|stack|trace|crash/i.test(state.query || '');
   const missingErrorFiles = questionMentionsError && !getErrorRelatedResult(results);
@@ -240,7 +283,7 @@ function main() {
 
 try {
   main();
-} catch {
-  writeStderr('unknown error');
+} catch (error /* unknown */) {
+  writeStderr(error instanceof Error ? error.stack || error.message : String(error));
   process.exit(1);
 }

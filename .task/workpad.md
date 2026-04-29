@@ -138,3 +138,16 @@ bun run task:finish
 - [x] task:fs read tracking verified through branch script: file.read was written to .task/evidence-log.json and mirrored into SQLite evidence_events.
 
 - 2026-04-29 01:45:42 append: `.task/workpad.md`
+
+## Apr 29 round 2 ranking/confidence fixes
+
+- [x] Kept the completed index intact. No DB delete or re-index was run.
+- [x] Patched confidence-score so only the latest verify/test/runtime event contributes to evidence_for/evidence_against.
+- [x] Patched confidence-score top-3 graph check to query SQLite graph_edges for direct edges between the current top 3 result paths.
+- [x] Patched ranking weights to 0.60 embedding / 0.15 graph centrality / 0.10 recency / 0.10 change / 0.05 name.
+- [x] Replaced raw edge-count centrality with weighted link quality plus a 0.5 type/export-heavy penalty.
+- [x] Added implementation-name bonus for class/function/method chunks that match query terms.
+- [x] Preferred structural chunk reasons within 0.05 similarity of a top block chunk.
+- [x] Validation: dialer query now ranks `packages/dialer/src/services/parallel-dialer.ts` #1 and `packages/dialer/src/dialer.ts` #2, above `packages/dialer/src/types.ts`.
+- [x] Validation: dialer confidence has no stale verify pass/fail conflict and no false top-3 graph penalty.
+- [x] Validation: audit --scripts passes and all six command help surfaces still work.
