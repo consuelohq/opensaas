@@ -39,9 +39,11 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
     """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
     if not _tracing or not ls_trace:
         return fn(*args, **kwargs)
-    with ls_trace(name=name, run_type=run_type, metadata={'session_id': _session_id}) as rt:
+    inputs = {f'arg{i}': v for i, v in enumerate(args)}
+    inputs.update(kwargs)
+    with ls_trace(name=name, run_type=run_type, inputs=inputs, metadata={'session_id': _session_id}) as rt:
         result = fn(*args, **kwargs)
-        rt.end(outputs={'result': result[:200] if isinstance(result, str) else str(result)[:200]})
+        rt.end(outputs={'result': result})
         return result
 
 APP_DIR = os.path.dirname(__file__)
@@ -90,7 +92,7 @@ def get_steering() -> str:
 @mcp.tool(annotations=RO)
 def sandbox_exec(command: str, timeout: int = 120) -> str:
     """run a bash command on the host machine inside the configured workspace."""
-    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command, timeout)
+    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command=command, timeout=timeout)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
