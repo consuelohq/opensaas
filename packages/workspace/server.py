@@ -3,6 +3,7 @@
 import contextlib
 import json
 import os
+import uuid
 
 import uvicorn
 from mcp.server.fastmcp import FastMCP
@@ -17,17 +18,31 @@ from tools import sandbox as sandbox_mod
 try:
     from langsmith import Client as LSClient
     from langsmith import traceable
+    from langsmith.run_helpers import trace as ls_trace
 
     _ls = LSClient()
     _tracing = True
 except Exception:
     _tracing = False
+    ls_trace = None
 
     def traceable(**kwargs):
         def decorator(fn):
             return fn
 
         return decorator
+
+# one session ID per server process — groups all tool calls into one langsmith thread
+_session_id = str(uuid.uuid4())
+
+def _traced_call(name, run_type, fn, *args, **kwargs):
+    """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
+    if not _tracing or not ls_trace:
+        return fn(*args, **kwargs)
+    with ls_trace(name=name, run_type=run_type, metadata={'session_id': _session_id}) as rt:
+        result = fn(*args, **kwargs)
+        rt.end(outputs={'result': result[:200] if isinstance(result, str) else str(result)[:200]})
+        return result
 
 APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
@@ -67,17 +82,15 @@ def _read_steering() -> str:
 
 
 @mcp.tool(annotations=RO)
-@traceable(name='get_steering', run_type='tool')
 def get_steering() -> str:
     """mandatory first call. returns the steering file and workspace scripts reference."""
-    return _read_steering()
+    return _traced_call('get_steering', 'tool', _read_steering)
 
 
 @mcp.tool(annotations=RO)
-@traceable(name='sandbox_exec', run_type='tool')
 def sandbox_exec(command: str, timeout: int = 120) -> str:
     """run a bash command on the host machine inside the configured workspace."""
-    return sandbox_mod.exec(command, timeout)
+    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command, timeout)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
