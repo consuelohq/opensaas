@@ -226,6 +226,38 @@ when running in CI, the dev environment is **not** pre-configured. dependencies 
 - **skip the setup script** for tasks that only read code — architecture questions, code review, documentation, etc.
 - the script is idempotent and safe to run multiple times.
 
+### codex cloud (openai)
+
+codex cloud runs tasks in containers at `chatgpt.com/codex`. the repo is cloned to `/workspace/opensaas`.
+
+**setup script** (manual mode — auto-setup fails because it runs `npm install` per-package, which doesn't work with yarn workspaces):
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+corepack enable
+corepack prepare yarn@4.9.2 --activate
+yarn config set --home enableTelemetry 0
+yarn install --immutable
+npx nx build twenty-shared
+```
+
+**environment variables** (set in codex cloud ui, NOT as secrets — secrets are stripped before agent phase):
+
+| variable | value | purpose |
+|----------|-------|---------|
+| `WORKSPACE_MCP_TOKEN` | bearer token from `packages/workspace/.env` `MCP_BEARER_TOKEN` | auth for workspace MCP server |
+
+**MCP config** lives in `.codex/config.toml` (project-scoped, picked up automatically):
+- `workspace` — connects to `https://workspace.consuelohq.com/mcp` (mac mini tools: linear, slack, sandbox, brain)
+- `nx-mcp` — nx workspace tools
+
+**agent internet access** must be ON — codex needs to reach `workspace.consuelohq.com` during the agent phase.
+
+**no maintenance script needed** — container caching handles resumed containers fine with the existing setup.
+
+**do NOT use auto-setup** — it scans every `packages/` dir and runs `npm install` individually, which fails on every package because this is a yarn 4 monorepo with workspace deps that only resolve from the root.
+
 ### keyboard shortcuts
 
 twenty has a full hotkey system built in. **always use it** — never raw `addEventListener` for keyboard shortcuts.
