@@ -663,6 +663,18 @@ bun run task:push -- --message "fix(scope): address review" --changed  # 7. push
 
 ---
 
+### ai-review — run the AI PR review helper
+
+runs the local AI review helper for a PR. use `--no-post` when you need review output without publishing comments.
+
+```bash
+bun run ai-review -- 173
+bun run ai-review -- 173 --no-post
+bun run ai-review -- 173 --no-post --json
+```
+
+---
+
 ### gh — common github commands
 
 wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. all commands auto-detect PR from `.task/current.json` when no PR number given.
@@ -800,45 +812,45 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ---
 
-### tool:run — run one typed workspace tool
+### tool-runner — run one typed workspace tool
 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
 
 ```bash
-bun run tool:run -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
-bun run tool:run -- context.categories '{}'
-bun run tool:run -- mac.list '{"path":"/tmp","depth":1}'
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- context.categories '{}'
+bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
 ```
 
 ---
 
-### tool:batch — run typed workspace tools in sequence
+### tool-batch — run typed workspace tools in sequence
 
 runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
 
 ```bash
-bun run tool:batch -- '[{"tool":"fs.read","args":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
-bun run tool:batch -- --file /tmp/workspace-batch.json
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
 ---
 
-### generate:docs — generate typed tool documentation
+### generate-docs — generate typed tool documentation
 
 generates `packages/workspace/TOOLS.md` from `packages/workspace/tooling/tool-manifest.json`.
 
 ```bash
-bun run generate:docs
+bun run generate-docs
 ```
 
 ---
 
-### generate:types — generate typed tool stubs
+### generate-types — generate typed tool stubs
 
 generates `packages/workspace/src/generated/workspace.d.ts` and `packages/workspace/src/generated/tool-client.ts` from the tool manifest.
 
 ```bash
-bun run generate:types
+bun run generate-types
 ```
 
 ---

@@ -312,9 +312,72 @@ build the review packet generator first. the packet must collect the durable dat
 
 ---
 
-## 7. tool priority
+## 7. how to use workspace tools
 
-workspace is the primary work surface.
+the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, and command mappings.
+
+invoke tools through the facade:
+
+```bash
+bun run tool-runner -- <tool-name> '<json-input>'
+```
+
+the tool-runner validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
+
+for batch operations:
+
+```bash
+bun run tool-batch -- '[{"tool":"fs.read","input":{"path":"src/foo.ts"}},{"tool":"fs.search","input":{"pattern":"TODO","paths":["packages/"]}}]'
+```
+
+the manifest JSON tells you:
+
+- `name` - the tool identifier, such as `fs.read`, `task.start`, or `explore`
+- `description` - what the tool does
+- `inputSchema` - the zod input schema name
+- `defaultTimeout` - max execution time in milliseconds
+- `capabilities` - flags such as `readOnly`, `mutating`, `deterministic`, and `safeToRetry`
+- `command` - the underlying Bun script and arguments
+
+tool categories:
+
+- **fs** - file operations: read, search, list, write, patch, http, trash
+- **task** - task lifecycle: start, push, pr, prs, merge, finish, cleanup, init, fs, exec
+- **context** - project memory: search, find, list, save, categories
+- **decision** - exploration and confidence: explore, decide-next, confidence-score, exploit, confirm, audit
+- **stream** - stream management: list, sync, context
+- **review** - code review and verification: review, verify, pr-review, aiReview
+- **infra** - deploy and observability: railway.logs, railway.redeploy, browser, wait
+- **system** - workspace management: server, doctor, status, tmp, agent
+- **mac** - local machine operations that are not repo-scoped
+
+if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure instead of silently routing around it.
+
+raw shell commands are fallback tools, not the default. use the facade when a manifest tool exists.
+
+## how to think: the decision engine
+
+the decision engine is the reasoning loop behind workspace work. it is not optional tooling; it is how agents avoid guessing.
+
+the loop:
+
+```text
+explore -> decide-next -> read -> update beliefs -> confidence-score -> exploit or keep exploring
+```
+
+the correct flow:
+
+1. `explore("what is wrong with x?")` gets ranked files with bayesian posteriors.
+2. `decideNext()` chooses what to read next by information value.
+3. read the suggested file through workspace tools so the read is tracked.
+4. `confidenceScore()` checks whether the evidence is strong enough.
+5. if score is below `0.55`, keep exploring.
+6. if score is at least `0.55` but below `0.75`, read one more connected file.
+7. if score is at least `0.75`, run `exploit()` and act.
+
+workspace is the primary work surface. the engine tracks beliefs, evidence for and against, unresolved uncertainty, and graph connections between candidates, callers, tests, imports, and siblings. retrieval is a prior, not proof. confidence comes from accumulated evidence.
+
+read `packages/workspace/decision.md` before relying on the system. that file is the full guide for when to explore versus exploit, how beliefs update, what confidence thresholds mean, how contradictions work, and how evidence moves through the lifecycle.
 
 use tools in this order unless the task clearly requires otherwise:
 
@@ -327,21 +390,49 @@ use tools in this order unless the task clearly requires otherwise:
 7. linear for issue/project/customer workflow
 8. connected files only when the task is explicitly about uploaded files, recordings, docs, or transcripts
 
-for repo work, use the scripts.
+the academic foundation:
 
-do not bypass scripts with raw shell tools when a script exists for the operation.
+- **thompson sampling** - explore ranks by information value, not only relevance
+- **optimal stopping** - the `0.55` and `0.75` thresholds answer whether one more file read is worth it
+- **gittins index intuition** - `decide-next` picks the file with the highest value right now
+- **bayesian belief updating** - posteriors update as evidence arrives
 
-examples:
+for repo work, use the scripts. agents that skip this loop are guessing instead of knowing.
 
-* read/search/list repo files with `bun run fs`
-* read/search/list task worktree files with `bun run task:fs`
-* run commands in task worktrees with `bun run task:exec`
-* use github through `bun run gh` or dedicated workspace scripts
-* use review data through `bun run pr-review`
-* use railway through `bun run railway:logs`
-* use browser verification through `bun run browser`
+## typed facade usage examples
 
-raw commands are fallback tools, not the default.
+branch auto-detection starts with the strongest source and stops at the first valid match.
+
+```bash
+bun run tool-runner -- task.start '{"area":"workspace-agents","title":"fix review comments","startFrom":"stream"}'
+# -> { "ok": true, "data": { "branch": "task/workspace-agents/fix-review-comments", "worktreePath": "..." } }
+
+bun run tool-runner -- fs.read '{"path":"packages/workspace/package.json"}'
+# resolver chain: pinned branch -> .task/current.json -> single active worktree -> TASK_BRANCH
+```
+
+decision loop:
+
+```bash
+bun run tool-runner -- explore '{"query":"why is task push failing?"}'
+bun run tool-runner -- decide-next '{}'
+bun run tool-runner -- confidence-score '{}'
+bun run tool-runner -- exploit '{}'
+bun run tool-runner -- confirm '{"verify":true}'
+```
+
+batch operations:
+
+```bash
+bun run tool-batch -- '[{"tool":"fs.read","input":{"path":"packages/workspace/package.json"}},{"tool":"fs.search","input":{"pattern":"task:push","paths":["packages/workspace/SCRIPTS.md"]}}]'
+```
+
+review pipeline:
+
+```bash
+bun run tool-runner -- review.run '{"base":"stream/workspace-agents","noTests":true}'
+bun run tool-runner -- aiReview '{"pr":226,"noPost":true}'
+```
 
 if a script fails, read `--help`, inspect the script/docs, and diagnose. do not silently route around it.
 

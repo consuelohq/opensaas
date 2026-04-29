@@ -9,6 +9,7 @@ export type LogEntry = {
   exitCode?: number;
   traceId: string;
   requestId?: string;
+  event?: string;
   message: string;
   capabilities?: Pick<ToolCapabilities, 'readOnly' | 'mutating'>;
   ok?: boolean;
@@ -45,6 +46,7 @@ export function logToolExecution(entry: {
     ok: entry.ok,
     code: entry.code,
     capabilities: entry.capabilities,
+    event: 'tool.executed',
     message: 'tool.executed',
   });
 }

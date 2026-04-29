@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
-import { executeTool, manifestEntries } from '../../scripts/lib/facade/executor';
+import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 
@@ -62,6 +62,24 @@ function timeoutRunner(): ToolRunner {
   };
 }
 
+function passthroughRunner(): ToolRunner {
+  return async () => ({
+    stdout: JSON.stringify({
+      ok: true,
+      code: 'OK',
+      message: 'passthrough',
+      data: { value: 'ok' },
+      stderr: '',
+      exitCode: 0,
+      durationMs: 4,
+      traceId: 'trc_passthrough',
+      apiVersion: '1.0.0',
+    }),
+    stderr: '',
+    exitCode: 0,
+  });
+}
+
 function exampleInput(entryName: string): ToolInput {
   const entry = manifestEntries.find((item) => item.name === entryName);
   if (!entry) throw new Error(`missing entry: ${entryName}`);
@@ -101,11 +119,19 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating).map((entry) => entry.name))('supports dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
     expect(plans).toHaveLength(0);
+  });
+
+  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && entry.command.dryRunFlag).map((entry) => entry.name))('passes native dry-run through for %s', async (toolName) => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
+    const entry = getToolManifestEntry(toolName);
+    expect(result.code).toBe('OK');
+    expect(plans[0].args).toContain(entry?.command.dryRunFlag);
   });
 
   it('passes request ids through the envelope', async () => {
@@ -114,6 +140,20 @@ describe('typed facade executor', () => {
       requestId: 'req_123',
     }, stableOptions(successfulRunner()));
     expect(result.requestId).toBe('req_123');
+  });
+
+  it('passes request ids through nested tool envelopes', async () => {
+    const result = await executeTool('mac.exec', {
+      ...exampleInput('mac.exec'),
+      requestId: 'req_passthrough',
+    }, stableOptions(passthroughRunner()));
+    expect(result.requestId).toBe('req_passthrough');
+  });
+
+  it('resolves unique script aliases from the manifest', () => {
+    expect(getToolManifestEntry('decide-next')?.name).toBe('decideNext');
+    expect(getToolManifestEntry('confidence-score')?.name).toBe('confidenceScore');
+    expect(getToolManifestEntry('task:fs')).toBeNull();
   });
 });
 
@@ -205,8 +245,8 @@ describe('branch resolver', () => {
 describe('batch executor', () => {
   it('runs successful chains', async () => {
     const result = await runBatch([
-      { tool: 'fs.read', args: exampleInput('fs.read') },
-      { tool: 'fs.search', args: exampleInput('fs.search') },
+      { tool: 'fs.read', input: exampleInput('fs.read') },
+      { tool: 'fs.search', input: exampleInput('fs.search') },
     ], stableOptions(successfulRunner()));
     expect(result.ok).toBe(true);
     expect(result.data.completed).toBe(2);
@@ -224,8 +264,8 @@ describe('batch executor', () => {
   it('runs parallel read-only steps together', async () => {
     const plans: CommandPlan[] = [];
     const result = await runBatch([
-      { tool: 'fs.read', args: exampleInput('fs.read'), parallel: true },
-      { tool: 'fs.search', args: exampleInput('fs.search'), parallel: true },
+      { tool: 'fs.read', input: exampleInput('fs.read'), parallel: true },
+      { tool: 'fs.search', input: exampleInput('fs.search'), parallel: true },
     ], stableOptions(successfulRunner(), plans));
     expect(result.ok).toBe(true);
     expect(plans).toHaveLength(2);
@@ -241,11 +281,11 @@ describe('composed and mac wrappers', () => {
     expect(plans[0].args).toContain('--stop-on-first-error');
   });
 
-  it('returns editFlow dry-run without executing', async () => {
+  it('passes editFlow dry-run to the native script', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('editFlow', { ...exampleInput('editFlow'), dryRun: true }, stableOptions(successfulRunner(), plans));
-    expect(result.code).toBe('DRY_RUN');
-    expect(plans).toHaveLength(0);
+    expect(result.code).toBe('OK');
+    expect(plans[0].args).toContain('--dry-run');
   });
 
   it('builds mac operation commands', async () => {

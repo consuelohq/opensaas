@@ -1170,7 +1170,7 @@ example error envelope:
 generate TOOLS.md from the tool manifest
 
 - signature: `workspace.generate.docs({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run generate:docs`
+- wraps: `bun run generate-docs`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -1223,7 +1223,7 @@ example error envelope:
 generate workspace.d.ts from the tool manifest
 
 - signature: `workspace.generate.types({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run generate:types`
+- wraps: `bun run generate-types`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -1279,7 +1279,7 @@ run the workspace GitHub helper with an explicit action
 
 - signature: `workspace.gh({ action: string; args?: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `bun run gh`
-- capabilities: readOnly=true, mutating=true, safeToRetry=false
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
 example call:
@@ -1709,13 +1709,67 @@ example error envelope:
 
 ## review
 
+### aiReview
+
+run the AI PR review helper
+
+- signature: `workspace.aiReview({ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `bun run ai-review`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.aiReview({
+  "pr": 226,
+  "noPost": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### prReview
 
 fetch review comments for a PR
 
 - signature: `workspace.prReview({ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `bun run pr-review`
-- capabilities: readOnly=true, mutating=true, safeToRetry=true
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
 example call:
@@ -1823,7 +1877,7 @@ run the full task safety gate
 
 - signature: `workspace.verify({ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `bun run verify`
-- capabilities: readOnly=true, mutating=true, safeToRetry=false
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
 
 example call:
@@ -2364,7 +2418,7 @@ example error envelope:
 
 merge a pull request through the workspace task merge script
 
-- signature: `workspace.task.merge({ pr: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `bun run task:merge`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -3226,7 +3280,7 @@ example error envelope:
 
 ## batch execution
 
-Use `workspace.batch([...])` for dependent steps. Each step receives the previous result when `args` is a function. Read-only steps can set `parallel: true`; mutating steps are always sequential.
+Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `args` remains a compatibility alias and can be a function receiving the previous result. Read-only steps can set `parallel: true`; mutating steps are always sequential.
 
 ## branch resolution
 

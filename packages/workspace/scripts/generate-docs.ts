@@ -104,7 +104,7 @@ function renderDocs(): string {
     '',
     '## batch execution',
     '',
-    'Use `workspace.batch([...])` for dependent steps. Each step receives the previous result when `args` is a function. Read-only steps can set `parallel: true`; mutating steps are always sequential.',
+    'Use `workspace.batch([...])` for dependent steps. Each step accepts `input`; `args` remains a compatibility alias and can be a function receiving the previous result. Read-only steps can set `parallel: true`; mutating steps are always sequential.',
     '',
     '## branch resolution',
     '',
