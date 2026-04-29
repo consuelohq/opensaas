@@ -8,9 +8,9 @@ const path = require('path');
 const { execSync, execFileSync } = require('child_process');
 
 const PI_PROXY_URL = 'http://127.0.0.1:11434/v1/chat/completions';
-const REVIEW_MODEL = 'google/gemma-4-31b-it:free';
+const REVIEW_MODEL = 'google/gemma-4-31b-it';
 const MAX_DIFF_CHARS = 60000;
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const NVIDIA_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
@@ -174,12 +174,12 @@ files changed: ${prMeta.files.join(', ')}
 ${diff}
 \`\`\``;
 
-  // get openrouter key from keychain
+  // get nvidia key from keychain
   let apiKey;
   try {
-    apiKey = execSync('security find-generic-password -a "$USER" -s "pi-proxy-openrouter-api-key" -w', { encoding: 'utf8' }).trim();
+    apiKey = execSync('security find-generic-password -a "$USER" -s "pi-proxy-nvidia-api-key" -w', { encoding: 'utf8' }).trim();
   } catch {
-    throw new Error('openrouter API key not found in keychain. run: security add-generic-password -a "$USER" -s "pi-proxy-openrouter-api-key" -w "YOUR_KEY"');
+    throw new Error('nvidia API key not found in keychain. run: security add-generic-password -a "$USER" -s "pi-proxy-nvidia-api-key" -w "YOUR_KEY"');
   }
 
   const body = JSON.stringify({
@@ -190,14 +190,14 @@ ${diff}
     ],
   });
 
-  const response = await fetch(OPENROUTER_URL, {
+  const response = await fetch(NVIDIA_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
     },
     body,
-    signal: AbortSignal.timeout(120000),
+    signal: AbortSignal.timeout(180000),
   });
 
   if (!response.ok) {
@@ -206,20 +206,20 @@ ${diff}
     if (response.status === 429) {
       writeStderr('  rate limited, waiting 30s and retrying...');
       await new Promise(r => setTimeout(r, 30000));
-      const retry = await fetch(OPENROUTER_URL, {
+      const retry = await fetch(NVIDIA_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
         body,
-        signal: AbortSignal.timeout(120000),
+        signal: AbortSignal.timeout(180000),
       });
       if (!retry.ok) {
         const retryText = await retry.text();
-        throw new Error(`openrouter returned ${retry.status} after retry: ${retryText}`);
+        throw new Error(`nvidia returned ${retry.status} after retry: ${retryText}`);
       }
       const retryData = await retry.json();
       return retryData.choices?.[0]?.message?.content || '';
     }
-    throw new Error(`openrouter returned ${response.status}: ${text}`);
+    throw new Error(`nvidia returned ${response.status}: ${text}`);
   }
 
   const data = await response.json();
