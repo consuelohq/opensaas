@@ -35,13 +35,32 @@ except Exception:
 # one session ID per server process — groups all tool calls into one langsmith thread
 _session_id = str(uuid.uuid4())
 
+# estimated system prompt tokens from the LLM calling us (chatgpt ~15k, kiro ~10k)
+_SYSTEM_PROMPT_TOKENS = 15000
+
+def _estimate_tokens(text: str) -> int:
+    """rough token estimate: ~4 chars per token."""
+    return max(1, len(str(text)) // 4)
+
 def _traced_call(name, run_type, fn, *args, **kwargs):
     """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
     if not _tracing or not ls_trace:
         return fn(*args, **kwargs)
-    with ls_trace(name=name, run_type=run_type, metadata={'session_id': _session_id}) as rt:
+    inputs = {f'arg{i}': v for i, v in enumerate(args)}
+    inputs.update(kwargs)
+    input_text = ' '.join(str(v) for v in inputs.values())
+    with ls_trace(name=name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id}) as rt:
         result = fn(*args, **kwargs)
-        rt.end(outputs={'result': result[:200] if isinstance(result, str) else str(result)[:200]})
+        prompt_tokens = _SYSTEM_PROMPT_TOKENS + _estimate_tokens(input_text)
+        completion_tokens = _estimate_tokens(result)
+        rt.end(outputs={
+            'result': result,
+            'usage': {
+                'prompt_tokens': prompt_tokens,
+                'completion_tokens': completion_tokens,
+                'total_tokens': prompt_tokens + completion_tokens,
+            },
+        })
         return result
 
 APP_DIR = os.path.dirname(__file__)
@@ -50,6 +69,8 @@ SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
+TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
+DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
@@ -74,9 +95,13 @@ def _read_steering() -> str:
     with open(steering_path, 'r', encoding='utf-8') as handle:
         content = handle.read()
 
-    scripts = _read_optional_file(SCRIPTS_FILE)
-    if scripts:
-        content += '\n\n' + scripts
+    manifest = _read_optional_file(TOOL_MANIFEST_FILE)
+    if manifest:
+        content += '\n\n# tool manifest\n\n```json\n' + manifest + '\n```'
+
+    decision = _read_optional_file(DECISION_PROCESS_FILE)
+    if decision:
+        content += '\n\n' + decision
 
     return content
 
@@ -90,7 +115,7 @@ def get_steering() -> str:
 @mcp.tool(annotations=RO)
 def sandbox_exec(command: str, timeout: int = 120) -> str:
     """run a bash command on the host machine inside the configured workspace."""
-    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command, timeout)
+    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command=command, timeout=timeout)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

@@ -172,7 +172,7 @@ function isLoggerFile(f) {
 }
 
 function isReviewSelfFile(f) {
-  return f === 'packages/workspace/scripts/review.js';
+  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
@@ -747,6 +747,37 @@ async function main() {
     writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
   }
 
+  // confidence score — read from decision engine state if available
+  let confidenceResult = null;
+  try {
+    const { readExploreState, updateBeliefsWithEvents } = require('./lib/state/explore-state');
+    const { getEvidenceEvents } = require('./lib/state/evidence-log');
+    const { computeConfidence } = require('./confidence-score');
+    const state = readExploreState(root);
+    if (state) {
+      const events = getEvidenceEvents(root);
+      const updated = updateBeliefsWithEvents(state, events);
+      confidenceResult = computeConfidence(root, updated, events);
+      if (!args.quiet && !args.json) {
+        const s = confidenceResult;
+        const status = s.score >= 0.75 ? 'exploit' : s.score >= 0.55 ? 'gather more' : 'low';
+        writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ${s.score.toFixed(2)} (${status})`);
+        if (s.evidence_counts.top_files > 0) {
+          writeStdout(`    read ${s.evidence_counts.read_top_files}/${s.evidence_counts.top_files} top files, ${s.evidence_counts.read_graph_files}/${s.evidence_counts.graph_files} graph files`);
+        }
+        if (s.uncertainties.length > 0) {
+          writeStdout(`    uncertainty: ${s.uncertainties[0]}`);
+        }
+      }
+    } else if (!args.quiet && !args.json) {
+      writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ no evidence (decision system not used)`);
+    }
+  } catch {
+    if (!args.quiet && !args.json) {
+      writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ skipped (modules not available)`);
+    }
+  }
+
   // run tests — default on, skip with --no-tests
   let testResults = [];
   if (!args.noTests) {
@@ -784,7 +815,7 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults }, null, 2));
+    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult }, null, 2));
     return;
   }
 
@@ -797,6 +828,27 @@ async function main() {
   const total = yours.length + preExisting.length;
   if (total === 0 && !testsFailed) {
     writeStdout('✓ all checks passed');
+
+    // kick off ai review in tmux background if a PR exists
+    try {
+      const taskFile = path.join(root, '.task', 'current.json');
+      if (fs.existsSync(taskFile)) {
+        const taskData = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
+        const prMatch = (taskData.prUrl || '').match(/\/pull\/(\d+)/);
+        if (prMatch) {
+          const prNum = prMatch[1];
+          const aiScript = path.join(root, 'packages/workspace/scripts/ai-review.js');
+          if (fs.existsSync(aiScript)) {
+            try {
+              execSync(`tmux new-session -d -s ai-review-${prNum} "cd ${root} && bun ${aiScript} -- ${prNum} 2>&1 | tee /tmp/ai-review-${prNum}.log"`, { stdio: 'ignore' });
+              writeStdout(`→ ai review started in tmux (ai-review-${prNum})`);
+            } catch {
+              writeStdout('→ ai review: tmux not available, skipping background review');
+            }
+          }
+        }
+      }
+    } catch { /* non-critical */ }
   } else {
     if (total > 0) {
       writeStdout(`${total} lint/type issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);

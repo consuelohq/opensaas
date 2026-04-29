@@ -20,6 +20,7 @@
     "context": "bun ./scripts/context.js",
     "tmp": "bun ./scripts/tmp.js",
     "review": "bun ./scripts/review.js",
+    "ai-review": "bun ./scripts/ai-review.js",
     "explore": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore.js",
     "decide-next": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/decide-next.js",
     "confidence-score": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/confidence-score.js",
@@ -39,8 +40,8 @@
     "@supabase/supabase-js": "latest",
     "node-llama-cpp": "^3.18.1",
     "sqlite-vec": "^0.1.9",
-    "tree-sitter": "^0.25.0",
-    "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-javascript": "^0.23.1",
     "tree-sitter-typescript": "^0.23.2"
   },
   "devDependencies": {
