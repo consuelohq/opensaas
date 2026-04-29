@@ -286,8 +286,7 @@
       "packages/twenty-shared",
       "packages/twenty-ui",
       "packages/twenty-utils",
-      "packages/twenty-zapier",
-      "packages/workspace"
+      "packages/twenty-zapier"
     ]
   },
   "prettier": {
