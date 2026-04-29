@@ -20,6 +20,7 @@
     "context": "bun ./scripts/context.js",
     "tmp": "bun ./scripts/tmp.js",
     "review": "bun ./scripts/review.js",
+    "ai-review": "bun ./scripts/ai-review.js",
     "explore": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore.js",
     "decide-next": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/decide-next.js",
     "confidence-score": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/confidence-score.js",
