@@ -1,12 +1,28 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const { VECTOR_DIMENSIONS } = require('./store');
 
 const DEFAULT_MODEL_PATH = path.join(os.homedir(), '.cache', 'qmd', 'models', 'Qwen3-Embedding-4B-Q8_0.gguf');
 const DOCUMENT_INSTRUCTION = 'Instruct: Represent this code for retrieval\nQuery: ';
 const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: ';
+
+// openrouter embedding API — same qwen3-embedding-4b model as local, zero CPU
+const EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
+const EMBEDDING_API_MODEL = 'qwen/qwen3-embedding-4b';
+
+let _apiKey = null;
+function getApiKey() {
+  if (_apiKey) return _apiKey;
+  try {
+    _apiKey = execSync('security find-generic-password -a "$USER" -s "pi-proxy-openrouter-api-key" -w', { encoding: 'utf8' }).trim();
+    return _apiKey;
+  } catch { return null; }
+}
+
+const USE_API = process.env.WORKSPACE_EMBEDDING_API !== '0' && process.env.WORKSPACE_EMBEDDING_API !== 'false';
 
 const embeddingContextsByPath = new Map();
 const embeddingContextsPromiseByPath = new Map();
@@ -119,6 +135,31 @@ async function getEmbeddingContext(modelPath = DEFAULT_MODEL_PATH) {
 }
 
 async function embedText(text, options = {}) {
+  const apiKey = USE_API ? getApiKey() : null;
+  if (apiKey) {
+    return embedTextApi(text, apiKey, options);
+  }
+  return embedTextLocal(text, options);
+}
+
+async function embedTextApi(text, apiKey, options = {}) {
+  const response = await fetch(EMBEDDING_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: [text] }),
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`embedding API failed (${response.status}): ${err}`);
+  }
+  const data = await response.json();
+  const vector = data.data?.[0]?.embedding;
+  if (!vector) throw new Error('embedding API returned no embedding');
+  return truncateVector(new Float32Array(vector));
+}
+
+async function embedTextLocal(text, options = {}) {
   try {
     const context = await getEmbeddingContext(options.modelPath || DEFAULT_MODEL_PATH);
     const prefix = options.kind === 'query' ? QUERY_INSTRUCTION : DOCUMENT_INSTRUCTION;
