@@ -1,12 +1,16 @@
+approval_policy = "never"
+features.multi_agent = true
 
 mcp_servers.nx-mcp.command = 'npx'
 mcp_servers.nx-mcp.args = [
 	'nx',
 	'mcp',
 ]
-features.multi_agent = true
 
-approval_policy = "never"
+[mcp_servers.workspace]
+url = "https://workspace.consuelohq.com/mcp"
+bearer_token_env_var = "WORKSPACE_MCP_TOKEN"
+
 [agents.ci-monitor-subagent]
 description = 'CI helper for /monitor-ci. Fetches CI status, retrieves fix details, or updates self-healing fixes. Executes one MCP tool call and returns the result.'
 config_file = 'agents/ci-monitor-subagent.toml'
