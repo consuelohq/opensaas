@@ -35,15 +35,32 @@ except Exception:
 # one session ID per server process — groups all tool calls into one langsmith thread
 _session_id = str(uuid.uuid4())
 
+# estimated system prompt tokens from the LLM calling us (chatgpt ~15k, kiro ~10k)
+_SYSTEM_PROMPT_TOKENS = 15000
+
+def _estimate_tokens(text: str) -> int:
+    """rough token estimate: ~4 chars per token."""
+    return max(1, len(str(text)) // 4)
+
 def _traced_call(name, run_type, fn, *args, **kwargs):
     """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
     if not _tracing or not ls_trace:
         return fn(*args, **kwargs)
     inputs = {f'arg{i}': v for i, v in enumerate(args)}
     inputs.update(kwargs)
-    with ls_trace(name=name, run_type=run_type, inputs=inputs, metadata={'session_id': _session_id}) as rt:
+    input_text = ' '.join(str(v) for v in inputs.values())
+    with ls_trace(name=name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id}) as rt:
         result = fn(*args, **kwargs)
-        rt.end(outputs={'result': result})
+        prompt_tokens = _SYSTEM_PROMPT_TOKENS + _estimate_tokens(input_text)
+        completion_tokens = _estimate_tokens(result)
+        rt.end(outputs={
+            'result': result,
+            'usage': {
+                'prompt_tokens': prompt_tokens,
+                'completion_tokens': completion_tokens,
+                'total_tokens': prompt_tokens + completion_tokens,
+            },
+        })
         return result
 
 APP_DIR = os.path.dirname(__file__)
