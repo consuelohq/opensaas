@@ -1,8 +1,13 @@
 #!/usr/bin/env bun
 
 const fs = require('fs');
+const path = require('path');
 
 const { resolveGitRoot } = require('./lib/paths');
+const {
+  CONFIDENCE_EXPLOIT_THRESHOLD,
+  calculateConfidence,
+} = require('./confidence-score');
 const {
   appendEvidenceEvent,
   getEvidenceEvents,
@@ -143,18 +148,23 @@ function getEvidenceSummary(repoRoot, state, events) {
   const verifyEvent = latestValidationEvents.get('verify');
   const testEvent = latestValidationEvents.get('test');
   const runtimeEvent = latestValidationEvents.get('runtime');
+  const confirmationVerdict = state?.confirmation?.verdict || null;
   const contradictionFound = events.some((event) => event.type === 'contradiction.detected');
   const verificationPassed = verifyEvent?.type === 'verify.pass';
   const verificationFailed = verifyEvent?.type === 'verify.fail' || testEvent?.type === 'test.fail' || runtimeEvent?.type === 'runtime.error' || contradictionFound;
   const runtimeChecked = runtimeEvent?.type === 'runtime.clean' || runtimeEvent?.type === 'runtime.error';
-  const confirmationPassed = verificationPassed || testEvent?.type === 'test.pass' || runtimeEvent?.type === 'runtime.clean';
-  const confirmationFailed = verifyEvent?.type === 'verify.fail' || testEvent?.type === 'test.fail' || runtimeEvent?.type === 'runtime.error';
+  const confirmationPassed = confirmationVerdict === 'CONFIRMED';
+  const confirmationFailed = confirmationVerdict === 'NOT_CONFIRMED';
 
   const readCoverage = topResults.length === 0 ? 0 : readTopCount / topResults.length;
   const graphCoverage = graphConnections.length === 0 ? 0 : readGraphCount / graphConnections.length;
-  const positiveConfirmation = (verificationPassed ? 0.15 : 0) + (runtimeChecked && !confirmationFailed ? 0.05 : 0);
-  const penalty = confirmationFailed ? 0.2 : 0;
-  const confidence = Math.max(0, Math.min(1, 0.3 + readCoverage * 0.3 + graphCoverage * 0.1 + positiveConfirmation - penalty));
+  const confidence = calculateConfidence({
+    confirmationFailed,
+    graphCoverage,
+    readCoverage,
+    runtimeChecked,
+    verificationPassed,
+  });
 
   return {
     events,
@@ -314,7 +324,7 @@ function buildRecommendation(state, evidence, args) {
     };
   }
 
-  if (evidence.confidence >= 0.65) {
+  if (evidence.confidence >= CONFIDENCE_EXPLOIT_THRESHOLD) {
     return {
       action: 'run exploit',
       reason: 'recommended files are read and evidence is strong enough to commit to an edit path',
@@ -326,7 +336,7 @@ function buildRecommendation(state, evidence, args) {
   }
 
   return {
-    action: `explore deeper into ${results[0]?.path || state?.query || 'the current task'}`,
+    action: `explore deeper into ${state.results?.[0]?.path || state?.query || 'the current task'}`,
     reason: 'evidence is still thin; embeddings are only the prior, not proof',
     confidence: evidence.confidence,
     alternative: 'rerun explore with a larger --budget or inspect connected callers/tests',
@@ -402,8 +412,14 @@ function main() {
     throw new Error('no explore state found; run explore first');
   }
 
-  if (args.context && !fs.existsSync(args.context)) {
-    throw new Error(`context file not found: ${args.context}`);
+  if (args.context) {
+    const resolvedContext = path.isAbsolute(args.context)
+      ? args.context
+      : path.join(repoRoot, args.context);
+    if (!fs.existsSync(resolvedContext)) {
+      throw new Error(`context file not found: ${args.context}`);
+    }
+    args.context = resolvedContext;
   }
 
   const events = getEvidenceEvents(repoRoot);

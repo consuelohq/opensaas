@@ -146,7 +146,7 @@ function expandGraph(store, candidates, depth, limit) {
         path: connection.path,
         embeddingSimilarity: Math.max(0, (currentCandidate?.embeddingSimilarity || 0) * 0.85),
         bestChunkName: connection.symbol || null,
-        bestChunkType: connection.edgeType,
+        bestChunkType: null,
         preview: '',
         startLine: 1,
         endLine: 1,
@@ -294,8 +294,9 @@ async function retrieve(store, repoRoot, query, options = {}) {
   try {
     const queryVector = await embedText(query, { kind: 'query' });
     rows = store.searchChunks(queryVector, budget * 3);
-  } catch {
-    throw new Error('retrieval failed');
+  } catch (error /* unknown */) {
+    const details = error instanceof Error ? error.stack || error.message : String(error);
+    throw new Error(`retrieval failed: ${details}`, { cause: error });
   }
   const candidates = mergeSearchRows(rows);
   const graphCandidateLimit = budget * 2;

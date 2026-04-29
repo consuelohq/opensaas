@@ -46,12 +46,13 @@ function createStore(repoRoot, remoteUrl) {
 
   try {
     sqliteVec.load(db);
-  } catch {
+  } catch (error /* unknown */) {
+    const details = error instanceof Error ? error.stack || error.message : String(error);
     throw new Error([
       'sqlite-vec could not be loaded.',
       'On macOS, run commands through the workspace scripts so DYLD_LIBRARY_PATH includes Homebrew SQLite.',
-      'Original error: unavailable',
-    ].join(' '));
+      `Original error: ${details}`,
+    ].join(' '), { cause: error });
   }
 
   db.exec('PRAGMA busy_timeout = 10000;');
@@ -239,13 +240,14 @@ function createStore(repoRoot, remoteUrl) {
   }
 
   function replaceGraphEdges(edges) {
-    db.query('DELETE FROM graph_edges').run();
+    const removeAll = db.query('DELETE FROM graph_edges');
     const insert = db.query([
       'INSERT OR IGNORE INTO graph_edges(source_path, target_path, edge_type, symbol)',
       'VALUES (?, ?, ?, ?)',
     ].join('\n'));
 
     const transaction = db.transaction((items) => {
+      removeAll.run();
       for (const edge of items) {
         insert.run(edge.sourcePath, edge.targetPath, edge.edgeType, edge.symbol || null);
       }

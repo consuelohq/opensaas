@@ -15,6 +15,9 @@ const {
   writeExploreState,
 } = require('./lib/state/explore-state');
 
+const CONFIDENCE_EXPLOIT_THRESHOLD = 0.75;
+const CONFIDENCE_GATHER_MORE_THRESHOLD = 0.55;
+
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
 }
@@ -72,7 +75,37 @@ function getLatestValidationEvents(events) {
 }
 
 function getErrorRelatedResult(results) {
-  return results.some((result) => /error|exception|fail|test|spec|log/i.test(`${result.path} ${result.reason} ${result.preview}`));
+  return results.some((result) => /error|exception|fail|fatal|panic|stack|trace/i.test(`${result.path} ${result.reason} ${result.preview}`));
+}
+
+function calculateConfidence({
+  beliefBonus = 0,
+  confirmationFailed = false,
+  contradictionPenalty = null,
+  graphCoverage = 0,
+  readCoverage = 0,
+  runtimeChecked = false,
+  runtimeClean = false,
+  testPassed = false,
+  validationBonus = null,
+  verificationPassed = false,
+}) {
+  const effectiveValidationBonus = validationBonus ?? (
+    (verificationPassed ? 0.15 : 0)
+    + (testPassed ? 0.10 : 0)
+    + ((runtimeClean || (runtimeChecked && !confirmationFailed)) ? 0.05 : 0)
+  );
+  const effectivePenalty = contradictionPenalty ?? (confirmationFailed ? 0.20 : 0);
+
+  return Math.max(0, Math.min(
+    1,
+    0.30
+      + readCoverage * 0.30
+      + graphCoverage * 0.10
+      + effectiveValidationBonus
+      + beliefBonus
+      - effectivePenalty,
+  ));
 }
 
 function computeConfidence(repoRoot, state, events) {
@@ -169,16 +202,22 @@ function computeConfidence(repoRoot, state, events) {
   const validationBonus = (verifyPassed ? 0.15 : 0) + (testPassed ? 0.10 : 0) + (runtimeClean ? 0.05 : 0);
   const beliefBonus = beliefObservationCount > 0 ? Math.max(0, topPosterior - 0.5) * 0.15 : 0;
   const contradictionPenalty = Math.min(0.30, evidenceAgainst.length * 0.15);
-  const score = Math.max(0, Math.min(1, 0.30 + readCoverage * 0.30 + graphCoverage * 0.10 + validationBonus + beliefBonus - contradictionPenalty));
+  const rawScore = calculateConfidence({
+    beliefBonus,
+    contradictionPenalty,
+    graphCoverage,
+    readCoverage,
+    validationBonus,
+  });
 
-  const recommendation = score >= 0.75
+  const recommendation = rawScore >= CONFIDENCE_EXPLOIT_THRESHOLD
     ? 'safe to exploit or confirm if edits already happened'
-    : score >= 0.55
+    : rawScore >= CONFIDENCE_GATHER_MORE_THRESHOLD
       ? 'read one more connected file before exploiting'
       : 'continue gathering evidence';
 
   return {
-    score: Number(score.toFixed(2)),
+    score: Number(rawScore.toFixed(2)),
     starting_state: startingState,
     evidence_for: evidenceFor,
     evidence_against: evidenceAgainst,
@@ -258,7 +297,7 @@ function main() {
     status: result.score >= 0.55 ? 'strengthened' : 'uncertain',
     confidence_delta: 0,
     details: result,
-  }, { requireMirror: true });
+  }, { requireMirror: false });
 
   if (args.json) {
     writeStdout(JSON.stringify(result, null, 2));
@@ -267,9 +306,18 @@ function main() {
   }
 }
 
-try {
-  main();
-} catch (error /* unknown */) {
-  writeStderr(error instanceof Error ? error.stack || error.message : String(error));
-  process.exit(1);
+if (require.main === module) {
+  try {
+    main();
+  } catch (error /* unknown */) {
+    writeStderr(error instanceof Error ? error.stack || error.message : String(error));
+    process.exit(1);
+  }
 }
+
+module.exports = {
+  CONFIDENCE_EXPLOIT_THRESHOLD,
+  CONFIDENCE_GATHER_MORE_THRESHOLD,
+  calculateConfidence,
+  computeConfidence,
+};
