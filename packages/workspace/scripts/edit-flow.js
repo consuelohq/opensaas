@@ -11,19 +11,25 @@ function parseArgs(argv) {
   const args = { searchPaths: [], json: false, dryRun: false };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === '--branch') args.branch = argv[++index];
-    else if (argument === '--search-pattern') args.searchPattern = argv[++index];
+    if (argument === '--branch') args.branch = readFlagValue(argv, ++index, '--branch');
+    else if (argument === '--search-pattern') args.searchPattern = readFlagValue(argv, ++index, '--search-pattern');
     else if (argument === '--search-paths') {
       while (argv[index + 1] && !argv[index + 1].startsWith('--')) args.searchPaths.push(argv[++index]);
-    } else if (argument === '--from') args.from = Number.parseInt(argv[++index], 10);
-    else if (argument === '--to') args.to = Number.parseInt(argv[++index], 10);
-    else if (argument === '--content-file') args.contentFile = argv[++index];
+    } else if (argument === '--from') args.from = Number.parseInt(readFlagValue(argv, ++index, '--from'), 10);
+    else if (argument === '--to') args.to = Number.parseInt(readFlagValue(argv, ++index, '--to'), 10);
+    else if (argument === '--content-file') args.contentFile = readFlagValue(argv, ++index, '--content-file');
     else if (argument === '--dry-run') args.dryRun = true;
     else if (argument === '--json') args.json = true;
     else if (argument === '--help') args.help = true;
     else throw new Error(`unknown argument: ${argument}`);
   }
   return args;
+}
+
+function readFlagValue(argv, index, flag) {
+  const value = argv[index];
+  if (!value || value.startsWith('--')) throw new Error(`${flag} requires a value`);
+  return value;
 }
 
 function showHelp() {
@@ -59,6 +65,7 @@ function main() {
   }
 
   if (!args.searchPattern) throw new Error('missing --search-pattern');
+  if (args.searchPaths.length === 0) throw new Error('missing --search-paths');
   if (!Number.isInteger(args.from) || !Number.isInteger(args.to)) throw new Error('missing --from/--to');
   if (!args.contentFile) throw new Error('missing --content-file');
   if (!fs.existsSync(args.contentFile)) throw new Error(`content file not found: ${args.contentFile}`);

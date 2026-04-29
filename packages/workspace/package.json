@@ -30,23 +30,23 @@
     "check-files": "bun ./scripts/check-files.js",
     "edit-flow": "bun ./scripts/edit-flow.js",
     "mac": "bun ./scripts/mac.js",
-    "tool:run": "bun ./scripts/tool-runner.ts",
-    "tool:batch": "bun ./scripts/tool-batch.ts",
-    "generate:docs": "bun ./scripts/generate-docs.ts",
-    "generate:types": "bun ./scripts/generate-types.ts",
+    "tool-runner": "bun ./scripts/tool-runner.ts",
+    "tool-batch": "bun ./scripts/tool-batch.ts",
+    "generate-docs": "bun ./scripts/generate-docs.ts",
+    "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "execa": "^9.6.1",
     "node-llama-cpp": "^3.18.1",
     "sqlite-vec": "^0.1.9",
     "tree-sitter": "^0.22.4",
     "tree-sitter-javascript": "^0.23.1",
-    "tree-sitter-typescript": "^0.23.2"
+    "tree-sitter-typescript": "^0.23.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "execa": "^9.6.1",
-    "vitest": "^4.1.5",
-    "zod": "^4.3.6"
+    "vitest": "^4.1.5"
   }
 }

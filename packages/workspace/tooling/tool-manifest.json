@@ -296,7 +296,7 @@
       "script": "task:merge",
       "branchMode": "none",
       "arguments": [
-        { "source": "pr", "flag": "--pr", "kind": "value", "required": true },
+        { "source": "pr", "flag": "--pr", "kind": "value" },
         { "source": "wait", "flag": "--wait", "kind": "boolean" },
         { "source": "squash", "flag": "--squash", "kind": "boolean" }
       ],
@@ -760,7 +760,7 @@
     "description": "run the full task safety gate",
     "category": "review",
     "underlying": "bun run verify",
-    "capabilities": { "readOnly": true, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
     "defaultTimeout": 600000,
     "inputSchema": "VerifyInput",
     "outputSchema": "RawOutput",
@@ -784,7 +784,7 @@
     "description": "fetch review comments for a PR",
     "category": "review",
     "underlying": "bun run pr-review",
-    "capabilities": { "readOnly": true, "mutating": true, "deterministic": false, "safeToRetry": true },
+    "capabilities": { "readOnly": true, "mutating": false, "deterministic": false, "safeToRetry": true },
     "defaultTimeout": 120000,
     "inputSchema": "PrReviewInput",
     "outputSchema": "RawOutput",
@@ -800,12 +800,33 @@
     "exampleInput": { "pr": 225, "stdout": true }
   },
   {
+    "name": "aiReview",
+    "methodPath": ["aiReview"],
+    "description": "run the AI PR review helper",
+    "category": "review",
+    "underlying": "bun run ai-review",
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "defaultTimeout": 600000,
+    "inputSchema": "AiReviewInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "ai-review",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        { "source": "pr", "kind": "value" },
+        { "source": "noPost", "flag": "--no-post", "kind": "boolean" }
+      ]
+    },
+    "exampleInput": { "pr": 226, "noPost": true }
+  },
+  {
     "name": "gh",
     "methodPath": ["gh"],
     "description": "run the workspace GitHub helper with an explicit action",
     "category": "github",
     "underlying": "bun run gh",
-    "capabilities": { "readOnly": true, "mutating": true, "deterministic": false, "safeToRetry": false },
+    "capabilities": { "readOnly": false, "mutating": true, "deterministic": false, "safeToRetry": false },
     "defaultTimeout": 120000,
     "inputSchema": "GhInput",
     "outputSchema": "RawOutput",
@@ -1033,10 +1054,11 @@
       "branchMode": "required",
       "branchArgumentStyle": "flag",
       "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
       "arguments": [
         { "source": "branch", "flag": "--branch", "kind": "value" },
         { "source": "searchPattern", "flag": "--search-pattern", "kind": "value", "required": true },
-        { "source": "searchPaths", "flag": "--search-paths", "kind": "array" },
+        { "source": "searchPaths", "flag": "--search-paths", "kind": "array", "required": true },
         { "source": "from", "flag": "--from", "kind": "value", "required": true },
         { "source": "to", "flag": "--to", "kind": "value", "required": true },
         { "source": "contentFile", "flag": "--content-file", "kind": "value", "required": true }
@@ -1198,12 +1220,12 @@
     "methodPath": ["generate", "docs"],
     "description": "generate TOOLS.md from the tool manifest",
     "category": "generation",
-    "underlying": "bun run generate:docs",
+    "underlying": "bun run generate-docs",
     "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
     "defaultTimeout": 120000,
     "inputSchema": "EmptyInput",
     "outputSchema": "RawOutput",
-    "command": { "script": "generate:docs", "branchMode": "none", "arguments": [] },
+    "command": { "script": "generate-docs", "branchMode": "none", "arguments": [] },
     "exampleInput": { "dryRun": true }
   },
   {
@@ -1211,12 +1233,12 @@
     "methodPath": ["generate", "types"],
     "description": "generate workspace.d.ts from the tool manifest",
     "category": "generation",
-    "underlying": "bun run generate:types",
+    "underlying": "bun run generate-types",
     "capabilities": { "readOnly": false, "mutating": true, "deterministic": true, "safeToRetry": false },
     "defaultTimeout": 120000,
     "inputSchema": "EmptyInput",
     "outputSchema": "RawOutput",
-    "command": { "script": "generate:types", "branchMode": "none", "arguments": [] },
+    "command": { "script": "generate-types", "branchMode": "none", "arguments": [] },
     "exampleInput": { "dryRun": true }
   }
 ]

@@ -14,18 +14,30 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--json') args.json = true;
-    else if (argument === '--cwd') args.cwd = argv[++index];
-    else if (argument === '--timeout') args.timeout = Number.parseInt(argv[++index], 10);
-    else if (argument === '--content') args.content = argv[++index];
-    else if (argument === '--content-file') args.contentFile = argv[++index];
-    else if (argument === '--include') args.include = argv[++index];
-    else if (argument === '--depth') args.depth = Number.parseInt(argv[++index], 10);
-    else if (argument === '--pid') args.pid = Number.parseInt(argv[++index], 10);
-    else if (argument === '--name') args.name = argv[++index];
+    else if (argument === '--cwd') args.cwd = readFlagValue(argv, ++index, '--cwd');
+    else if (argument === '--timeout') args.timeout = parsePositiveInteger(readFlagValue(argv, ++index, '--timeout'), '--timeout');
+    else if (argument === '--content') args.content = readFlagValue(argv, ++index, '--content');
+    else if (argument === '--content-file') args.contentFile = readFlagValue(argv, ++index, '--content-file');
+    else if (argument === '--include') args.include = readFlagValue(argv, ++index, '--include');
+    else if (argument === '--depth') args.depth = parsePositiveInteger(readFlagValue(argv, ++index, '--depth'), '--depth');
+    else if (argument === '--pid') args.pid = parsePositiveInteger(readFlagValue(argv, ++index, '--pid'), '--pid');
+    else if (argument === '--name') args.name = readFlagValue(argv, ++index, '--name');
     else if (argument === '--help') args.help = true;
     else args.positional.push(argument);
   }
   return args;
+}
+
+function readFlagValue(argv, index, flag) {
+  const value = argv[index];
+  if (!value || value.startsWith('--')) throw new Error(`${flag} requires a value`);
+  return value;
+}
+
+function parsePositiveInteger(value, flag) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed) || parsed <= 0) throw new Error(`${flag} must be a positive integer`);
+  return parsed;
 }
 
 function envelope(input) {
@@ -120,17 +132,30 @@ function processAction(action, args) {
 
   if (action === 'kill') {
     if (args.pid) {
-      process.kill(args.pid);
-      return { killed: [{ pid: args.pid }] };
+      const killed = [];
+      const failed = [];
+      recordKillResult({ pid: args.pid }, killed, failed);
+      return { killed, failed };
     }
     if (!args.name) throw new Error('process kill requires --pid or --name');
     const list = processAction('list', args).processes;
     const matches = list.filter((item) => item.command.includes(args.name));
-    for (const item of matches) process.kill(item.pid);
-    return { killed: matches };
+    const killed = [];
+    const failed = [];
+    for (const item of matches) recordKillResult(item, killed, failed);
+    return { killed, failed };
   }
 
   throw new Error(`unknown process action: ${action}`);
+}
+
+function recordKillResult(item, killed, failed) {
+  try {
+    process.kill(item.pid);
+    killed.push(item);
+  } catch (error /*: unknown */) {
+    failed.push({ ...item, error: error instanceof Error ? error.message : String(error) });
+  }
 }
 
 function portAction(action, port) {
@@ -179,7 +204,12 @@ function main() {
     else if (command === 'search') data = searchFiles(args.positional[1], args);
     else if (command === 'list') data = listFiles(args.positional[1], args.depth);
     else if (command === 'process') data = processAction(args.positional[1], args);
-    else if (command === 'port') data = portAction(args.positional[1], Number.parseInt(args.positional[2], 10));
+    else if (command === 'port') {
+      const port = args.positional[2] === undefined
+        ? undefined
+        : parsePositiveInteger(args.positional[2], 'port');
+      data = portAction(args.positional[1], port);
+    }
     else throw new Error(`unknown command: ${command}`);
   } catch (error /*: unknown */) {
     const result = envelope({

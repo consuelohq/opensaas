@@ -10,7 +10,7 @@ function parseArgs(argv) {
   const args = { files: [], json: false, stopOnFirstError: false };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === '--branch') args.branch = argv[++index];
+    if (argument === '--branch') args.branch = readFlagValue(argv, ++index, '--branch');
     else if (argument === '--files') {
       while (argv[index + 1] && !argv[index + 1].startsWith('--')) args.files.push(argv[++index]);
     } else if (argument === '--stop-on-first-error') args.stopOnFirstError = true;
@@ -20,6 +20,12 @@ function parseArgs(argv) {
     else throw new Error(`unknown argument: ${argument}`);
   }
   return args;
+}
+
+function readFlagValue(argv, index, flag) {
+  const value = argv[index];
+  if (!value || value.startsWith('--')) throw new Error(`${flag} requires a value`);
+  return value;
 }
 
 function showHelp() {

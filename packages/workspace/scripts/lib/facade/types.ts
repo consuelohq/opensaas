@@ -118,7 +118,8 @@ export type ExecuteToolOptions = {
 
 export type BatchStep = {
   tool: string;
-  args: ToolInput | ((previous: ToolResult<unknown> | null, results: ToolResult<unknown>[]) => ToolInput);
+  input?: ToolInput | ((previous: ToolResult<unknown> | null, results: ToolResult<unknown>[]) => ToolInput);
+  args?: ToolInput | ((previous: ToolResult<unknown> | null, results: ToolResult<unknown>[]) => ToolInput);
   parallel?: boolean;
 };
 

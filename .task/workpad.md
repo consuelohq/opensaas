@@ -1,54 +1,47 @@
-# typed workspace facade zod schemas standard envelopes full command coverage
+# address pr 226 review fixes
 
-branch: `task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage`
+branch: `task/workspace-agents/address-pr-226-review-fixes`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/225
+task pr: https://github.com/consuelohq/opensaas/pull/227
+review pr: https://github.com/consuelohq/opensaas/pull/226
 started: 2026-04-29
 
 ## acceptance criteria
 
-- [x] add a manifest-backed typed facade over workspace scripts.
-- [x] standardize envelopes, trace ids, request ids, dry-run handling, and stderr audit events.
-- [x] generate agent-facing docs and workspace type stubs from the manifest.
-- [x] cover wrappers, branch resolution, batch execution, composed methods, and mac operations with vitest.
+- [x] address actionable PR 226 review comments in the typed workspace facade.
+- [x] move runtime facade dependencies into `dependencies`.
+- [x] harden CLI flag validation and failure handling in composed scripts.
+- [x] update the manifest, generated docs, generated types, decision docs, and steering.
+- [x] keep PR 226 title aligned with the feature scope.
 
 ## plan
 
-1. build the manifest, schemas, executor, typed client, batch runner, and cli entries.
-2. add composed helper scripts for file checks, edit flows, and mac operations.
-3. generate docs/types and verify with unit, smoke, syntax, and audit checks.
+1. review `/tmp/codex-pr226-fixes.md` and `/tmp/pr226-reviews.md`.
+2. patch the manifest, facade executor, batch runner, CLI scripts, and tests.
+3. regenerate docs/types and run package tests plus task verification.
+4. push the task branch and promote it into the stream review PR.
 
 ## files changed
 
-- root/package workspace scripts, `packages/workspace/package.json`, and `packages/workspace/bun.lock`.
-- facade implementation under `packages/workspace/scripts/lib/facade/`.
-- cli entries, composed helper scripts, manifest files, generated docs/types, and facade tests.
+- `package.json`
+- `packages/workspace/package.json`
+- `packages/workspace/tooling/tool-manifest.json`
+- `packages/workspace/scripts/check-files.js`
+- `packages/workspace/scripts/edit-flow.js`
+- `packages/workspace/scripts/mac.js`
+- `packages/workspace/scripts/tool-batch.ts`
+- `packages/workspace/scripts/lib/facade/*`
+- `packages/workspace/tests/facade/facade.test.ts`
+- `packages/workspace/decision.md`
+- `packages/workspace/STEERING.md`
 
 ## key decisions
 
-- the facade stays thin: it validates and envelopes calls, then invokes the existing scripts.
-- `task:*` and `stream:*` calls execute from the controller root so task worktree discovery stays stable.
-- facade-local scripts execute from the current task root so unmerged script changes can be tested.
+- native dry-run flags pass through when a script supports them; otherwise the facade returns a synthetic `DRY_RUN` envelope.
+- `tool-batch` accepts `input` and keeps `args` as a compatibility alias.
+- `task.merge` PR input stays optional because the underlying script can resolve PR context.
 
-## notes for ko
+## notes
 
-- `context.categories` currently returns plain text from the underlying script, so the facade wraps it as `data.raw` in an `OK` envelope.
-
-## improvements noticed
-
-- `task.current` now honors `TASK_BRANCH` before stale `.task/current.json` metadata.
-
-## errors i ran into
-
-- `bun install --cwd packages/workspace` populated dependencies but left an untracked worktree `node_modules` symlink; it is not part of the push.
-- initial smokes caught plain-text stdout being treated as `PARSE_ERROR` and `mac.*` running from the wrong root; both are fixed.
-
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "type(workspace-agents): description" --changed
-bun run task:pr
-bun run task:finish
-```
+- PR 226 is the durable review PR for the original typed facade work.
+- PR 227 carries these review-fix changes before promotion into the stream.

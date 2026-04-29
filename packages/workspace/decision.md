@@ -181,7 +181,7 @@ each command should read or write decision state.
 use `explore` when the agent needs to know what files or paths are likely relevant.
 
 ```bash
-bun run explore -- "how does the dialer queue work?" --json
+bun run tool-runner -- explore '{"query":"how does the dialer queue work?"}'
 ```
 
 what it does:
@@ -206,7 +206,7 @@ what to remember:
 use `decide-next` when the agent has evidence and needs the next best action.
 
 ```bash
-bun run decide-next -- --json
+bun run tool-runner -- decide-next '{}'
 ```
 
 what it does:
@@ -228,9 +228,9 @@ examples of correct actions:
 manual fallback:
 
 ```bash
-bun run decide-next -- --mark-read packages/dialer/src/dialer.ts
-bun run decide-next -- --mark-relevant packages/dialer/src/dialer.ts
-bun run decide-next -- --mark-irrelevant packages/dialer/src/types.ts
+bun run tool-runner -- decide-next '{"markRead":"packages/dialer/src/dialer.ts"}'
+bun run tool-runner -- decide-next '{"markRelevant":"packages/dialer/src/dialer.ts"}'
+bun run tool-runner -- decide-next '{"markIrrelevant":"packages/dialer/src/types.ts"}'
 ```
 
 manual marking exists because not every read happens through the normal workspace scripts.
@@ -241,7 +241,7 @@ automatic read tracking is still preferred.
 use `confidence-score` when the agent needs to know how justified the current path is.
 
 ```bash
-bun run confidence-score -- --json
+bun run tool-runner -- confidence-score '{}'
 ```
 
 what it does:
@@ -263,7 +263,7 @@ what to remember:
 use `exploit` when the system has enough evidence to stop exploring and commit to a path.
 
 ```bash
-bun run exploit -- --json
+bun run tool-runner -- exploit '{}'
 ```
 
 what it does:
@@ -284,7 +284,7 @@ what to remember:
 use `confirm` when the agent needs validation truth.
 
 ```bash
-bun run confirm -- --verify --json
+bun run tool-runner -- confirm '{"verify":true}'
 ```
 
 what it does:
@@ -307,7 +307,7 @@ what to remember:
 use `audit` when the agent needs to know whether the script and doc surface is truthful.
 
 ```bash
-bun run audit -- --scripts --json
+bun run tool-runner -- audit '{"scripts":true}'
 ```
 
 what it does:
@@ -329,8 +329,8 @@ what to remember:
 use this flow when starting from a question or bug:
 
 ```bash
-bun run explore -- "<question or goal>" --json
-bun run decide-next -- --json
+bun run tool-runner -- explore '{"query":"<question or goal>"}'
+bun run tool-runner -- decide-next '{}'
 ```
 
 then do the recommended action.
@@ -344,13 +344,13 @@ bun run task:fs -- --branch <task-branch> read <path> --plain
 if the read happened outside normal tracking, mark it:
 
 ```bash
-bun run decide-next -- --mark-read <path>
+bun run tool-runner -- decide-next '{"markRead":"<path>"}'
 ```
 
 then check confidence:
 
 ```bash
-bun run confidence-score -- --json
+bun run tool-runner -- confidence-score '{}'
 ```
 
 repeat:
@@ -362,19 +362,19 @@ decide-next -> action -> evidence -> confidence-score
 when confidence is concentrated enough:
 
 ```bash
-bun run exploit -- --json
+bun run tool-runner -- exploit '{}'
 ```
 
 after editing and validation:
 
 ```bash
-bun run confirm -- --verify --json
+bun run tool-runner -- confirm '{"verify":true}'
 ```
 
 before pushing script/workflow changes:
 
 ```bash
-bun run audit -- --scripts --json
+bun run tool-runner -- audit '{"scripts":true}'
 ```
 
 ---
@@ -609,7 +609,7 @@ preferred behavior:
 manual fallback:
 
 ```bash
-bun run decide-next -- --mark-read <path>
+bun run tool-runner -- decide-next '{"markRead":"<path>"}'
 ```
 
 if a file was read and the system does not know it, the next decision will be weaker.
@@ -827,25 +827,25 @@ good explore questions name the behavior, not just a keyword.
 weak:
 
 ```bash
-bun run explore -- "queue"
+bun run tool-runner -- explore '{"query":"queue"}'
 ```
 
 better:
 
 ```bash
-bun run explore -- "how does the dialer queue choose the next call?"
+bun run tool-runner -- explore '{"query":"how does the dialer queue choose the next call?"}'
 ```
 
 weak:
 
 ```bash
-bun run explore -- "auth"
+bun run tool-runner -- explore '{"query":"auth"}'
 ```
 
 better:
 
 ```bash
-bun run explore -- "how does authentication create and refresh workspace tokens?"
+bun run tool-runner -- explore '{"query":"how does authentication create and refresh workspace tokens?"}'
 ```
 
 the query should describe the job the code performs.
@@ -858,27 +858,27 @@ qwen can bridge synonyms, but it still needs a meaningful task.
 before reading random files:
 
 ```bash
-bun run explore -- "<goal>" --json
-bun run decide-next -- --json
+bun run tool-runner -- explore '{"query":"<goal>"}'
+bun run tool-runner -- decide-next '{}'
 ```
 
 before editing:
 
 ```bash
-bun run confidence-score -- --json
-bun run exploit -- --json
+bun run tool-runner -- confidence-score '{}'
+bun run tool-runner -- exploit '{}'
 ```
 
 after editing:
 
 ```bash
-bun run confirm -- --verify --json
+bun run tool-runner -- confirm '{"verify":true}'
 ```
 
 before claiming done:
 
 ```bash
-bun run audit -- --scripts --json
+bun run tool-runner -- audit '{"scripts":true}'
 ```
 
 if the recommendation feels wrong:
@@ -1006,4 +1006,3 @@ the system is working when an agent can say:
 i know what to do next because the current evidence makes that action highest value.
 i know whether it was right because validation and runtime truth updated the belief.
 ```
-

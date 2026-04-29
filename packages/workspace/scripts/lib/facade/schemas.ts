@@ -137,7 +137,7 @@ export const TaskPrInput = z.object({
 export const TaskMergeInput = z.object({
   ...requestFields,
   ...dryRunField,
-  pr: z.number().int().positive(),
+  pr: z.number().int().positive().optional(),
   wait: z.boolean().optional(),
   squash: z.boolean().optional(),
 });
@@ -269,6 +269,13 @@ export const PrReviewInput = z.object({
   ...dryRunField,
   pr: z.number().int().positive().optional(),
   stdout: z.boolean().optional(),
+});
+
+export const AiReviewInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  pr: z.number().int().positive().optional(),
+  noPost: z.boolean().optional(),
 });
 
 export const GhInput = z.object({
@@ -433,6 +440,7 @@ export const schemaRegistry = {
   ReviewInput,
   VerifyInput,
   PrReviewInput,
+  AiReviewInput,
   GhInput,
   BrowserInput,
   WaitInput,
@@ -472,7 +480,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string }',
   TaskPushInput: '{ branch?: string; message: string; changed?: boolean; files?: string[]; noVerify?: boolean; dryRun?: boolean; requestId?: string }',
   TaskPrInput: '{ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string }',
-  TaskMergeInput: '{ pr: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }',
+  TaskMergeInput: '{ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }',
   TaskCleanupInput: '{ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string }',
   TaskExecInput: '{ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string }',
   ContextSearchInput: '{ keyword: string; limit?: number; category?: string; requestId?: string }',
@@ -490,6 +498,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ReviewInput: '{ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }',
   VerifyInput: '{ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }',
+  AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string }',
   WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string }',

@@ -22,7 +22,11 @@ import type {
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
-  return manifestEntries.find((entry) => entry.name === toolName) || null;
+  const directMatch = manifestEntries.find((entry) => entry.name === toolName);
+  if (directMatch) return directMatch;
+
+  const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
+  return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
 export const defaultRunner: ToolRunner = async (plan, timeoutMs) => {
@@ -133,7 +137,7 @@ export async function executeTool<TData = unknown>(
     const plan = buildCommandPlan(entry, commandInput, cwd, env);
     const plannedCommand = formatCommand(plan);
 
-    if (entry.capabilities.mutating && commandInput.dryRun === true) {
+    if (entry.capabilities.mutating && commandInput.dryRun === true && !entry.command.dryRunFlag) {
       const result = createToolResult({
         ok: true,
         code: 'DRY_RUN',
@@ -184,8 +188,12 @@ export async function executeTool<TData = unknown>(
 
     if (isToolResult(parsedStdout.data)) {
       const passthrough = parsedStdout.data as ToolResult<TData>;
-      logResult(entry, toolName, passthrough, plannedCommand, branchResolution.branch);
-      return passthrough;
+      const result = {
+        ...passthrough,
+        ...(requestId && !passthrough.requestId ? { requestId } : {}),
+      };
+      logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+      return result;
     }
 
     const ok = runResult.exitCode === 0;
@@ -415,6 +423,7 @@ function buildCommandPlan(
   }
 
   if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
+  if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
 
   return {
     command: 'bun',

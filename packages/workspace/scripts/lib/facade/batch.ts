@@ -74,7 +74,7 @@ function collectParallelGroup(steps: BatchStep[], startIndex: number): BatchStep
 }
 
 function hasFunctionArgs(step: BatchStep): boolean {
-  return typeof step.args === 'function';
+  return typeof step.input === 'function' || typeof step.args === 'function';
 }
 
 function isReadOnly(toolName: string): boolean {
@@ -87,8 +87,9 @@ async function runStep(
   results: ToolResult<unknown>[],
   options: ExecuteToolOptions,
 ): Promise<ToolResult<unknown>> {
-  const args = typeof step.args === 'function'
-    ? step.args(previous, results)
-    : step.args;
+  const input = step.input ?? step.args ?? {};
+  const args = typeof input === 'function'
+    ? input(previous, results)
+    : input;
   return executeTool(step.tool, args as ToolInput, options);
 }

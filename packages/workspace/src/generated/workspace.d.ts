@@ -24,7 +24,8 @@ export type ToolResult<TData = unknown> = {
 
 export type BatchStep = {
   tool: string;
-  args: Record<string, unknown>;
+  input?: Record<string, unknown>;
+  args?: Record<string, unknown>;
   parallel?: boolean;
 };
 
@@ -78,7 +79,7 @@ declare const workspace: {
     exec: (input: { branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     finish: (input: { branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     init: (input: { area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    merge: (input: { pr: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    merge: (input: { pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     pin: (input: { branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string }>>;
     pr: (input: { branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     prs: (input: { branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -91,6 +92,7 @@ declare const workspace: {
   website: {
     deploy: (input: { preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  aiReview: (input: { pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   audit: (input: { scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   browser: (input: { command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   checkFiles: (input: { branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
