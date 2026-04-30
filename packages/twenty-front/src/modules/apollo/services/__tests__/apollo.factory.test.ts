@@ -4,8 +4,10 @@ import fetchMock, { enableFetchMocks } from 'jest-fetch-mock';
 import { DEFAULT_FAST_MODEL } from '@/ai/constants/DefaultFastModel';
 import { DEFAULT_SMART_MODEL } from '@/ai/constants/DefaultSmartModel';
 import { ApolloFactory, type Options } from '@/apollo/services/apollo.factory';
+import { renewToken } from '@/auth/services/AuthService';
 import { CUSTOM_WORKSPACE_APPLICATION_MOCK } from '@/object-metadata/hooks/__tests__/constants/CustomWorkspaceApplicationMock.test.constant';
 import { WorkspaceActivationStatus } from '~/generated-metadata/graphql';
+import { cookieStorage } from '~/utils/cookie-storage';
 
 enableFetchMocks();
 
@@ -13,21 +15,41 @@ jest.mock('@/auth/services/AuthService', () => {
   const initialAuthService = jest.requireActual('@/auth/services/AuthService');
   return {
     ...initialAuthService,
-    renewToken: jest.fn().mockReturnValue(
-      Promise.resolve({
-        accessOrWorkspaceAgnosticToken: {
-          token: 'newAccessToken',
-          expiresAt: '',
-        },
-        refreshToken: { token: 'newRefreshToken', expiresAt: '' },
-      }),
-    ),
+    renewToken: jest.fn(),
   };
 });
+
+jest.mock('~/utils/cookie-storage', () => ({
+  cookieStorage: {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+  },
+}));
 
 const mockOnError = jest.fn();
 const mockOnNetworkError = jest.fn();
 const mockOnPayloadTooLarge = jest.fn();
+const mockOnUnauthenticatedError = jest.fn();
+
+const mockRenewToken = renewToken as jest.MockedFunction<typeof renewToken>;
+const mockCookieStorage = cookieStorage as jest.Mocked<typeof cookieStorage>;
+
+const validTokenPair = {
+  accessOrWorkspaceAgnosticToken: {
+    token: 'accessToken',
+    expiresAt: '',
+  },
+  refreshToken: { token: 'refreshToken', expiresAt: '' },
+};
+
+const renewedTokenPair = {
+  accessOrWorkspaceAgnosticToken: {
+    token: 'newAccessToken',
+    expiresAt: '',
+  },
+  refreshToken: { token: 'newRefreshToken', expiresAt: '' },
+};
 
 const mockWorkspaceMember = {
   id: 'workspace-member-id',
@@ -74,7 +96,7 @@ const mockWorkspace = {
   workspaceCustomApplicationId: CUSTOM_WORKSPACE_APPLICATION_MOCK.id,
 };
 
-const createMockOptions = (): Options<any> => ({
+const createMockOptions = (): Options<unknown> => ({
   uri: 'http://localhost:3000',
   currentWorkspaceMember: mockWorkspaceMember,
   currentWorkspace: mockWorkspace,
@@ -83,6 +105,7 @@ const createMockOptions = (): Options<any> => ({
   onError: mockOnError,
   onNetworkError: mockOnNetworkError,
   onPayloadTooLarge: mockOnPayloadTooLarge,
+  onUnauthenticatedError: mockOnUnauthenticatedError,
   appVersion: '1.0.0',
 });
 
@@ -114,6 +137,13 @@ const makeRequest = async () => {
 };
 
 describe('ApolloFactory', () => {
+  beforeEach(() => {
+    fetchMock.resetMocks();
+    jest.clearAllMocks();
+    mockCookieStorage.getItem.mockReturnValue(JSON.stringify(validTokenPair));
+    mockRenewToken.mockResolvedValue(renewedTokenPair);
+  });
+
   it('should create an instance of ApolloFactory', () => {
     const options = createMockOptions();
     const apolloFactory = new ApolloFactory(options);
@@ -140,7 +170,7 @@ describe('ApolloFactory', () => {
     );
     try {
       await makeRequest();
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(ApolloError);
       expect((error as ApolloError).message).toBe('Unauthorized');
       expect(mockOnError).toHaveBeenCalledWith(errors);
@@ -166,11 +196,38 @@ describe('ApolloFactory', () => {
 
     try {
       await makeRequest();
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(ApolloError);
       expect((error as ApolloError).message).toBe('Error message not found.');
       expect(mockOnError).toHaveBeenCalledWith(errors);
     }
+  }, 10000);
+
+  it('should clear stale tokens and stop retrying when token renewal fails', async () => {
+    const errors = [
+      {
+        extensions: {
+          code: 'UNAUTHENTICATED',
+        },
+      },
+    ];
+
+    fetchMock.mockResponse(() =>
+      Promise.resolve({
+        body: JSON.stringify({
+          data: {},
+          errors,
+        }),
+      }),
+    );
+    mockRenewToken.mockRejectedValueOnce(new Error('Refresh token revoked'));
+
+    await expect(makeRequest()).rejects.toThrow('Refresh token revoked');
+
+    expect(mockRenewToken).toHaveBeenCalledTimes(1);
+    expect(mockCookieStorage.removeItem).toHaveBeenCalledWith('tokenPair');
+    expect(mockOnUnauthenticatedError).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   }, 10000);
 
   it('should call onNetworkError when encountering a network error', async () => {
@@ -190,7 +247,7 @@ describe('ApolloFactory', () => {
 
     try {
       await makeRequest();
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(ApolloError);
       expect((error as ApolloError).message).toBe('Unknown error');
       expect(mockOnError).toHaveBeenCalledWith(errors);
@@ -203,7 +260,7 @@ describe('ApolloFactory', () => {
 
     try {
       await makeRequest();
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(ApolloError);
       expect((error as ApolloError).message).toBe('Unknown error');
       expect(mockOnNetworkError).toHaveBeenCalledWith(mockError);
