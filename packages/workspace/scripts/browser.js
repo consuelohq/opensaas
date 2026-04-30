@@ -23,7 +23,7 @@ function printHelp() {
     'screenshots go to /tmp/opensaas-screenshots/.',
     '',
     'commands:',
-    '  open <url>           open url, wait for load, snapshot, screenshot',
+    '  open|url <url>       open url, wait for load, snapshot, screenshot',
     '  consuelo             open consuelo.consuelohq.com (internal CRM)',
     '  app                  open app.consuelohq.com (production)',
     '  screenshot [name]    take screenshot of current page',
@@ -38,6 +38,7 @@ function printHelp() {
     '  uncheck <ref>        uncheck checkbox',
     '  scroll <dir> [px]    scroll up/down/left/right',
     '  login <name>         run saved auth login',
+    '  reauth [name]        close daemon, restart profile, run saved auth login',
     '  eval <js>            run javascript on current page',
     '  close                close the browser',
     '',
@@ -85,6 +86,9 @@ function printHelp() {
     '',
     '  raw <...args>        pass args directly to agent-browser',
     '',
+    `profile: ${PROFILE}`,
+    'set AGENT_BROWSER_PROFILE to override the persistent profile path.',
+    '',
     'options:',
     '  --headed             show browser window (visible to ko)',
     '  --full               full page screenshot',
@@ -98,10 +102,24 @@ function ensureScreenshotDir() {
   try { execSync(`mkdir -p ${SCREENSHOT_DIR}`, { encoding: 'utf8' }); } catch {}
 }
 
-function run(args, { silent = false } = {}) {
-  const cmd = ['agent-browser', ...args].join(' ');
+function shouldUseProfile(args) {
+  if (!PROFILE) return false;
+  if (args.includes('--profile')) return false;
+
+  const command = args.find((arg) => !arg.startsWith('--'));
+  return !['close', 'profiles', 'install', 'upgrade'].includes(command);
+}
+
+function withProfile(args, { useProfile = true } = {}) {
+  if (!useProfile || !shouldUseProfile(args)) return args;
+  return ['--profile', PROFILE, ...args];
+}
+
+function run(args, { silent = false, useProfile = true } = {}) {
+  const runArgs = withProfile(args, { useProfile });
+  const cmd = ['agent-browser', ...runArgs].join(' ');
   if (!silent) writeStderr(`> ${cmd}`);
-  const result = spawnSync('agent-browser', args, {
+  const result = spawnSync('agent-browser', runArgs, {
     encoding: 'utf8',
     timeout: 30000,
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -120,8 +138,9 @@ function screenshotPath(name) {
 }
 
 function cmdOpen(url, opts) {
-  const openArgs = ['open', url];
+  const openArgs = [];
   if (opts.headed) openArgs.push('--headed');
+  openArgs.push('open', url);
 
   writeStderr(`opening ${url}...`);
   const open = run(openArgs);
@@ -194,10 +213,29 @@ function cmdFill(ref, text) {
   }
 }
 
-function cmdLogin(name) {
-  const result = run(['auth', 'login', name]);
+function loginArgs(name, opts) {
+  const args = [];
+  if (opts.headed) args.push('--headed');
+  args.push('auth', 'login', name);
+  return args;
+}
+
+function cmdLogin(name = 'consuelo', opts = {}) {
+  const result = run(loginArgs(name, opts));
   if (result.ok) {
     writeStdout(`logged in as ${name}`);
+  } else {
+    writeStdout(`error: ${result.stderr}`);
+  }
+}
+
+function cmdReauth(name = 'consuelo', opts = {}) {
+  writeStderr('closing browser daemon so profile flags apply...');
+  run(['close', '--all'], { silent: true, useProfile: false });
+
+  const result = run(loginArgs(name, opts));
+  if (result.ok) {
+    writeStdout(`reauth complete for ${name}`);
   } else {
     writeStdout(`error: ${result.stderr}`);
   }
@@ -226,7 +264,8 @@ function cmdNetwork(argv) {
   }
 
   // bump timeout for network requests — can be slow
-  const result = spawnSync('agent-browser', argv, {
+  const networkArgs = withProfile(argv);
+  const result = spawnSync('agent-browser', networkArgs, {
     encoding: 'utf8',
     timeout: 15000,
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -359,6 +398,7 @@ function main() {
 
   switch (command) {
     case 'open':
+    case 'url':
       if (!args[1]) { writeStdout('error: url required. usage: bun run browser -- open <url>'); return; }
       cmdOpen(args[1], opts);
       break;
@@ -404,13 +444,17 @@ function main() {
       cmdPassthrough('scroll', args.slice(1));
       break;
     case 'login':
-      cmdLogin(args[1]);
+      cmdLogin(args[1], opts);
+      break;
+    case 'reauth':
+    case 'refresh-auth':
+      cmdReauth(args[1], opts);
       break;
     case 'eval':
       cmdEval(args.slice(1).join(' '));
       break;
     case 'close':
-      run(['close']); writeStdout('browser closed'); break;
+      run(['close', '--all'], { useProfile: false }); writeStdout('browser closed'); break;
 
     // wait / find / batch — pass full argv for flag handling
     case 'wait':

@@ -1316,7 +1316,7 @@ example error envelope:
 
 make HTTP requests through the workspace http wrapper (wraps xh)
 
-- signature: `workspace.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace http`
 - capabilities: readOnly=false, mutating=true, safeToRetry=true
 - default timeout: 60000ms
@@ -2832,7 +2832,7 @@ example error envelope:
 
 ### browser
 
-open or inspect a browser target through the workspace browser script
+run the generic workspace browser wrapper command
 
 - signature: `workspace.browser({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser`
@@ -2843,7 +2843,711 @@ example call:
 
 ```ts
 await workspace.browser({
-  "command": "url",
+  "command": "open",
+  "url": "https://example.com",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.app
+
+open app.consuelohq.com with the browser wrapper
+
+- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.app`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.app({
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.click
+
+click a browser element by ref
+
+- signature: `workspace.browser.click({ ref: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.click`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.click({
+  "ref": "@e1",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.close
+
+close active browser sessions
+
+- signature: `workspace.browser.close({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.close`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.close({
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.consuelo
+
+open consuelo.consuelohq.com with the browser wrapper
+
+- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.consuelo`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.consuelo({
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.eval
+
+execute JavaScript on the current browser page
+
+- signature: `workspace.browser.eval({ js: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.eval`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.eval({
+  "js": "document.title",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.fill
+
+fill a browser input by ref
+
+- signature: `workspace.browser.fill({ ref: string; text: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.fill`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.fill({
+  "ref": "@e1",
+  "text": "hello",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.login
+
+run a saved browser auth login profile
+
+- signature: `workspace.browser.login({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.login`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.login({
+  "name": "consuelo",
+  "headed": true,
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.open
+
+open a URL with the browser wrapper
+
+- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.open`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.open({
+  "url": "https://example.com",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.raw
+
+pass raw arguments through to agent-browser
+
+- signature: `workspace.browser.raw({ args: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.raw`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.raw({
+  "args": [
+    "auth",
+    "list"
+  ],
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.reauth
+
+restart the browser daemon and run a saved auth login profile
+
+- signature: `workspace.browser.reauth({ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.reauth`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.reauth({
+  "name": "consuelo",
+  "headed": true,
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.screenshot
+
+capture a browser screenshot
+
+- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.screenshot`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.screenshot({
+  "name": "after-login",
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.snap
+
+capture an accessibility snapshot
+
+- signature: `workspace.browser.snap({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.snap`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.snap({
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### browser.test
+
+open a URL, wait for load, snapshot, and screenshot
+
+- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace browser.test`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 300000ms
+
+example call:
+
+```ts
+await workspace.browser.test({
   "url": "https://example.com",
   "dryRun": true
 });
@@ -3348,48 +4052,6 @@ The decision engine wrappers call the existing scripts as-is: `workspace.explore
 Do not call lower-level workspace scripts from the workspace app during normal work.
 
 Use the facade command instead: `workspace.sandbox_exec({ command: "workspace fs.read '{\"branch\":\"task/x\",\"path\":\"packages/workspace/package.json\"}'", timeout: 120 })`.
-
-## raw xh — advanced HTTP
-
-`workspace http` covers common cases. for advanced HTTP work, use `xh` directly through `sandbox_exec`. xh is a rust rewrite of httpie — same syntax, faster.
-
-```bash
-# GET
-xh https://api.github.com
-
-# POST with json (key=value auto-serializes)
-xh POST https://api.example.com name=value count:=42
-
-# headers
-xh https://api.example.com Authorization:"Bearer $TOKEN"
-
-# body only output
-xh -b https://api.example.com
-
-# basic auth
-xh -a user:pass https://api.example.com
-
-# form upload
-xh --form POST https://api.example.com field=value
-xh --multipart POST https://api.example.com file@./data.csv
-
-# download
-xh --download https://example.com/file.zip -o /tmp/file.zip
-
-# verbose (full request + response headers)
-xh -v https://api.example.com
-
-# nested json values (use := for raw json)
-xh POST https://api.example.com name=value count:=42 tags:='["a","b"]'
-
-# skip TLS (local/self-signed)
-xh --verify=no https://localhost:8443
-
-# timeout
-xh --timeout 30 https://slow-api.example.com
-```
-
-prefer `workspace http` for simple requests. use raw `xh` when you need forms, uploads, downloads, verbose debugging, or complex json bodies.
 
 ## final reminder
 
