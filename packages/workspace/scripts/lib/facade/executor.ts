@@ -1,7 +1,5 @@
 import { execa } from 'execa';
 import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
 
@@ -304,20 +302,6 @@ async function executeInternalTool<TData>(
     }
 
     context.options.setPinnedBranch?.(resolution.branch);
-
-    // persist pin to repo root .task/current.json so it survives across CLI calls
-    try {
-      const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], {
-        cwd: context.cwd,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim();
-      const metaDir = path.join(repoRoot, ".task");
-      fs.mkdirSync(metaDir, { recursive: true });
-      const area = getAreaFromBranch(resolution.branch) || "unknown";
-      const meta = { area, taskBranch: resolution.branch, pinnedAt: new Date().toISOString() };
-      fs.writeFileSync(path.join(metaDir, "current.json"), JSON.stringify(meta, null, 2) + "\n", "utf8");
-    } catch { /* non-critical — in-memory pin still works for this session */ }
     const result = createToolResult({
       ok: true,
       code: 'OK',

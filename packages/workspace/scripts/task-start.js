@@ -424,8 +424,7 @@ async function main() {
   };
 
   writeTaskMeta(worktreePath, taskMeta);
-  // also write to repo root so the branch resolver can find it across sessions
-  writeTaskMeta(repoRoot, taskMeta);
+
   // guard 2: verify .task/current.json was written correctly
   const verifyMeta = readTaskMeta(worktreePath);
   if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
