@@ -110,7 +110,7 @@ def get_steering() -> str:
 
 
 @mcp.tool(annotations=RO)
-def sandbox_exec(command: str, timeout: int = 120) -> str:
+def sandbox_exec(command: str, timeout: int = 120) -> dict | str:
     """run a bash command on the host machine inside the configured workspace."""
     return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command=command, timeout=timeout)
 

@@ -142,14 +142,15 @@ def _env() -> dict[str, str]:
     return env
 
 
-def exec(command: str, timeout: int = 120) -> str:
+def exec(command: str, timeout: int = 120) -> dict | str:
     """run bash in the configured workspace. destructive commands are blocked."""
     blocked = _check_guardrails(command)
     if blocked:
         _log(command, {}, blocked=blocked)
-        return json.dumps({'error': blocked, 'exitCode': -1})
+        return {'error': blocked, 'exitCode': -1}
 
     safe_command = _rewrite(command)
+    is_workspace = command.strip().startswith('workspace ')
     try:
         result = subprocess.run(
             ['bash', '-c', safe_command],
@@ -159,17 +160,30 @@ def exec(command: str, timeout: int = 120) -> str:
             text=True,
             timeout=timeout,
         )
+        stdout_text = result.stdout[-_STDOUT_LIMIT:] if len(result.stdout) > _STDOUT_LIMIT else result.stdout
+        stderr_text = result.stderr[-_STDERR_LIMIT:] if len(result.stderr) > _STDERR_LIMIT else result.stderr
+
+        # workspace commands return a JSON envelope — pass the parsed dict
+        # directly so FastMCP can send it as structuredContent
+        if is_workspace and stdout_text.strip():
+            try:
+                parsed = json.loads(stdout_text)
+                if isinstance(parsed, dict) and 'ok' in parsed:
+                    parsed['stderr'] = parsed.get('stderr', '') or stderr_text
+                    _log(safe_command, {'exitCode': result.returncode})
+                    return parsed
+            except (json.JSONDecodeError, ValueError):
+                pass
+
         output = {
-            'stdout': result.stdout[-_STDOUT_LIMIT:] if len(result.stdout) > _STDOUT_LIMIT else result.stdout,
-            'stderr': result.stderr[-_STDERR_LIMIT:] if len(result.stderr) > _STDERR_LIMIT else result.stderr,
+            'stdout': stdout_text,
+            'stderr': stderr_text,
             'exitCode': result.returncode,
         }
         _log(safe_command, output)
-        return json.dumps(output)
+        return output
     except subprocess.TimeoutExpired:
-        output = {'error': 'timeout', 'timeout': timeout}
-        _log(safe_command, output)
-        return json.dumps(output)
+        return {'error': 'timeout', 'timeout': timeout}
 
 
 def read_file(path: str) -> str:

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/test-review-pipeline-in-worktree",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 230,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/230",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-test-review-pipeline-in-worktree",
+  "createdAt": "2026-04-30T08:43:30.414Z"
+}

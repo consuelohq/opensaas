@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-task-pin-to-persist-to-disk",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 233,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/233",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-task-pin-to-persist-to-disk",
+  "createdAt": "2026-04-30T09:02:59.733Z"
+}

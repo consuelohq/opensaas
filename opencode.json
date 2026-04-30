@@ -1,6 +1,14 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
+    "workspace": {
+      "type": "local",
+      "command": ["bash", "/Users/kokayi/.kiro/scripts/workspace-mcp.sh"],
+      "env": {
+        "MCP_BEARER_TOKEN": "jjA7Lxn7szDESKQTj945a94xwdHDMBNywKlXAtggNf8"
+      },
+      "enabled": true
+    },
     "nx-mcp": {
       "type": "local",
       "command": ["npx", "nx", "mcp"],

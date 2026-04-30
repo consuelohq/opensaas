@@ -4680,8 +4680,136 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage"
       }
+    },
+    {
+      "id": "e6694ed1-9c5e-438f-842a-041244dd7783",
+      "occurred_at": "2026-04-30T08:47:59.702Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "52d744b0-11c8-4ee0-a835-b6c2f54d8fae",
+      "occurred_at": "2026-04-30T08:48:16.776Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "808a5b4b-048c-4317-b92d-e65c14324bd1",
+      "occurred_at": "2026-04-30T08:51:03.025Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-meta.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "64a7a312-6511-4fb6-ac17-c7a490078bd0",
+      "occurred_at": "2026-04-30T08:51:08.730Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "00fb4e69-6232-4542-ae8c-0ddea1d7cfed",
+      "occurred_at": "2026-04-30T08:51:24.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "c4995472-6d56-47a3-9fa5-8868f94bc408",
+      "occurred_at": "2026-04-30T08:51:36.603Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "65d14039-26b4-4647-8353-45e66537519b",
+      "occurred_at": "2026-04-30T08:52:35.811Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+      }
+    },
+    {
+      "id": "ba4efa2a-68c9-471a-8936-1a43c9c62dfe",
+      "occurred_at": "2026-04-30T09:03:14.317Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-task-pin-to-persist-to-disk",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-task-pin-to-persist-to-disk"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-29T08:48:00.038Z"
+  "updated_at": "2026-04-30T09:03:14.378Z"
 }
