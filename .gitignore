@@ -78,6 +78,7 @@ tsx-*/
 nx-native-file-cache-*/
 
 # Temp cache dirs
+/tmp/
 jest_dx/
 jiti/
 xfs-*/

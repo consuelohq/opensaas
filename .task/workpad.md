@@ -1,59 +1,60 @@
-# Recover revoked auth tokens on workspace subdomains
+# ignore repo tmp directory
 
-branch: `task/clean-up/recover-revoked-auth-tokens-on-workspace-subdomains`
+branch: `task/clean-up/ignore-repo-tmp-directory`
 stream: `stream/clean-up`
-pr: https://github.com/consuelohq/opensaas/pull/237
+pr: https://github.com/consuelohq/opensaas/pull/241
 started: 2026-04-30
 
 ## acceptance criteria
 
-- [x] `app.consuelohq.com` remains the canonical `SERVER_URL`; no Railway env changes in this task.
-- [x] Expired or revoked refresh tokens clear local auth state deterministically.
-- [x] Workspace subdomain users are redirected to sign-in/session recovery without a persistent blank bootstrap retry loop.
-- [x] Relevant auth/Apollo tests cover failed token renewal behavior.
-- [x] Review/type validation passes or failures are documented.
+- [x] Root `tmp/` directory is ignored by git.
+- [x] Existing ignore rules remain intact.
+- [x] Diff is reviewed and validation is run.
 
 ## plan
 
-1. Confirm task starts from `stream/clean-up` to keep the PR diff scoped.
-2. Re-apply the verified Apollo renewal patch from the first attempted task branch.
-3. Run focused ApolloFactory Jest coverage.
-4. Run branch-scoped review.
-5. Publish task branch into stream review flow.
+1. Read repo standards and current `.gitignore`.
+2. Add a root-scoped `/tmp/` ignore rule near existing temp cache rules.
+3. Verify the diff and run a lightweight review gate.
+4. Publish the task branch for review.
 
 ## files changed
 
-- `packages/twenty-front/src/modules/apollo/services/apollo.factory.ts`
-- `packages/twenty-front/src/modules/apollo/services/__tests__/apollo.factory.test.ts`
+- `.gitignore`
+- `.task/workpad.md`
 
 ## key decisions
 
-- `SERVER_URL=https://app.consuelohq.com` is confirmed correct and out of scope.
-- Runtime evidence points to expired/revoked token recovery, not a Railway process hang.
-- Failed token renewal must reject instead of resolving and retrying the original operation without valid auth; otherwise Apollo can loop through unauthenticated requests.
+- Used `/tmp/` instead of `tmp/` so only the repo-root temp directory is ignored.
+- Existing tracked files under `tmp/` were left untouched because this task request was to add the ignore rule.
 
 ## notes for ko
 
-- Production Railway env was not changed.
-- Any later Railway/DNS change should be done together after this code branch is reviewed.
-- Branch-scoped raw review ran against `origin/stream/clean-up`. It still marks existing Apollo `console.*` and module-boundary warnings as `yours` because this task touches `apollo.factory.ts`; this patch removed logs in the token-renewal path and did not introduce new logging. Typecheck still fails in pre-existing `twenty-shared` relative date utilities.
-- Focused Jest passed on this branch: `npx jest packages/twenty-front/src/modules/apollo/services/__tests__/apollo.factory.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand`.
-- First task attempt was PR 236, started from `main`; PR 237 superseded it because this branch starts from `stream/clean-up` and keeps the diff scoped.
+- `git ls-files tmp` shows `tmp/linear-mutation.json` and `tmp/opensaas-embedding.md` are already tracked. The new ignore rule prevents future untracked files under root `tmp/` from showing up, but tracked files stay tracked until removed in a cleanup task.
 
 ## improvements noticed
 
-- Existing Apollo code still has production `console.log` calls outside this patch. I removed the two logs in the touched renewal success/failure path, but left unrelated existing logs alone.
+- `.gitignore` currently has `.claude/settings.local.jsonesbuild-*` on one line, which looks like two rules collapsed together. Left unchanged because it is outside this request.
 
 ## errors i ran into
 
-- First task branch started from `main`, which made the PR diff include stream changes. I created this replacement task from `stream/clean-up` and applied only the auth patch.
+- Decision engine confidence is polluted by an existing `verify.fail` evidence event unrelated to this trivial ignore-file change. I treated `.gitignore` as the direct evidence-backed target after reading it.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "fix(clean-up): recover revoked auth tokens" --changed
+bun run task:push -- --message "chore(clean-up): ignore repo tmp directory" --changed
 bun run task:pr
 bun run task:finish
 ```
+
+- 2026-04-30 20:15:04 write: `.task/workpad.md`
+- 2026-04-30 20:15:35 verified ignore behavior: `git check-ignore -v --no-index tmp/new-temp-file` matched `.gitignore:81:/tmp/`.
+- 2026-04-30 20:16:11 ran `workspace review.run { base: stream/clean-up, noTests: true }`; wrapper returned OK, with existing stream typecheck failures in `twenty-server` unrelated to `.gitignore`.
+- 2026-04-30 20:16:40 patch lines 53-53: `.task/workpad.md`
+- 2026-04-30 20:18 task push via facade failed because stale verify stamp referenced `task/dialer/fix-railway-docker-chown-build-timeout`; refreshed verify stamp inside this task worktree.
+- 2026-04-30 20:21 ran task-context `bun run verify -- --base stream/clean-up --no-review --no-db --json`; branch stamp now matches `task/clean-up/ignore-repo-tmp-directory`.
+- 2026-04-30 20:22 task push via facade explicit files failed with `file is outside the repository root: .gitignore`; using task-context publish command keeps paths relative to this worktree.
+- 2026-04-30 20:23:34 patch lines 56-56: `.task/workpad.md`
