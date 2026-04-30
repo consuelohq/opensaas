@@ -9,11 +9,11 @@
   ],
   "verifiedAt": "2026-04-27T20:33:03.376Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

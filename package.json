@@ -227,7 +227,7 @@
     "task:cleanup": "bun packages/workspace/scripts/task-cleanup.js",
     "task:finish": "bun packages/workspace/scripts/task-finish.js",
     "task:exec": "bun packages/workspace/scripts/task-exec.js",
-    "task:fs": "bun packages/workspace/scripts/task-fs.js",
+    "task:fs": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/task-fs.js",
     "task-meta:smoke": "node packages/workspace/scripts/task-meta-smoke.js",
     "doctor": "bun packages/workspace/scripts/doctor.js",
     "status": "bun packages/workspace/scripts/status.js",
@@ -249,10 +249,26 @@
     "tmp": "bun packages/workspace/scripts/tmp.js",
     "review": "bun packages/workspace/scripts/review.js",
     "verify": "bun packages/workspace/scripts/verify.js",
+    "explore": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/explore.js",
+    "decide-next": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/decide-next.js",
+    "confidence-score": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/confidence-score.js",
+    "exploit": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/exploit.js",
+    "confirm": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/confirm.js",
+    "audit": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun packages/workspace/scripts/audit.js",
     "pr-review": "bun packages/workspace/scripts/pr-review.js",
+    "ai-review": "bun packages/workspace/scripts/ai-review.js",
     "gh": "bun packages/workspace/scripts/gh.js",
     "fs": "bun packages/workspace/scripts/fs.js",
     "wait": "bun packages/workspace/scripts/wait.js",
+    "check-files": "bun packages/workspace/scripts/check-files.js",
+    "edit-flow": "bun packages/workspace/scripts/edit-flow.js",
+    "mac": "bun packages/workspace/scripts/mac.js",
+    "linear": "bun packages/workspace/scripts/linear.js",
+    "workspace": "bun packages/workspace/scripts/workspace.ts",
+    "tool-runner": "bun packages/workspace/scripts/tool-runner.ts",
+    "tool-batch": "bun packages/workspace/scripts/tool-batch.ts",
+    "generate-docs": "bun packages/workspace/scripts/generate-docs.ts",
+    "generate-types": "bun packages/workspace/scripts/generate-types.ts",
     "server": "bun packages/workspace/scripts/server.js"
   },
   "workspaces": {
@@ -280,8 +296,7 @@
       "packages/twenty-shared",
       "packages/twenty-ui",
       "packages/twenty-utils",
-      "packages/twenty-zapier",
-      "packages/workspace"
+      "packages/twenty-zapier"
     ]
   },
   "prettier": {

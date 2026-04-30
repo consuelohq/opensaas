@@ -272,6 +272,8 @@ bun run task:fs -- --area dialer write .task/workpad.md --append "\n- [x] fixed 
 
 task:fs only considers active worktrees whose `.task/current.json.taskBranch` matches the actual git worktree branch. stale metadata in stream sync scratch worktrees is ignored. when more than one task exists in an area, `--area` intentionally fails; select the exact task with `--branch <task-branch>` or `--pr <number>`.
 
+successful `task:fs read <file>` calls also append a `file.read` event to `.task/evidence-log.json` and mirror it into the local workspace index database. this is the automatic read-tracking path for the explore/decision system.
+
 **task:fs failure modes**
 ```bash
 bad: bun run task:fs -- --area workspace-agents read .task/current.json
@@ -367,7 +369,99 @@ bad: verify fails on a package with no typecheck target
 
 bad: bun run task:push -- --message "fix: thing" --changed
  → error: no matching verify stamp
- (run bun run verify first. or use --no-verify to bypass — but this is visible and logged)
+(run bun run verify first. or use --no-verify to bypass — but this is visible and logged)
+```
+
+---
+
+### explore — repo exploration retrieval
+
+builds or refreshes the git-aware local index at `~/.cache/workspace-index/`, embeds the question with Qwen3-Embedding-4B, expands through import/test/caller graph edges, and returns the best files to inspect next. explore uses multiplicative scoring, weighted graph link quality, and cluster coherence. it writes an `explore.result` evidence event and initializes `.task/explore-state.json` beliefs; embeddings are the prior, not proof.
+
+`packages/workspace` is mac-local agent tooling, not production runtime. it is intentionally excluded from the root yarn workspace and railway Docker builds so native local-index dependencies such as `node-llama-cpp`, `sqlite-vec`, and `tree-sitter` never ship to railway. if local index dependencies are missing, install them from the tool package only:
+
+```bash
+cd packages/workspace && bun install
+```
+
+```bash
+bun run explore -- "how does the dialer queue work?"
+bun run explore -- "where is task metadata verified?" --budget 5
+bun run explore -- "recent workspace changes" --changed-only --json
+bun run explore -- "refresh everything" --reindex
+```
+
+**explore failure modes**
+```text
+bad: sqlite-vec could not be loaded
+ → use the root script, which sets Homebrew SQLite on DYLD_LIBRARY_PATH for macOS extension loading.
+
+bad: embedding model not found
+ → the expected cached model is missing at ~/.cache/qmd/models/Qwen3-Embedding-4B-Q8_0.gguf.
+```
+
+---
+
+### decide-next — next action from evidence
+
+reads `.task/explore-state.json` plus `.task/evidence-log.json` when a task is active, or the fallback session state under `~/.cache/workspace-index/`, updates posterior beliefs from evidence, then recommends the action with the best mix of posterior relevance and information value. it writes a `decision.taken` evidence event and recommends `exploit` when belief concentration is high enough.
+
+```bash
+bun run decide-next
+bun run decide-next -- --context .task/workpad.md
+bun run decide-next -- --mark-read packages/dialer/src/queue.ts
+bun run decide-next -- --mark-relevant packages/dialer/src/dialer.ts
+bun run decide-next -- --mark-irrelevant packages/dialer/src/types.ts
+bun run decide-next -- --json
+```
+
+---
+
+### confidence-score — evidence confidence
+
+scores the current path from evidence events: reads, posterior belief updates, connected files actually visited, verify/test/runtime results, and contradictions. Qwen candidates, graph expansion, and test existence are reported as starting state, not `evidence_for`; cold start confidence stays low because retrieval is only a prior.
+
+```bash
+bun run confidence-score
+bun run confidence-score -- --json
+```
+
+---
+
+### exploit — commit to an editing path
+
+selects the highest-confidence file from explore state, emits line ranges and context files, marks the state as exploiting, and writes a `decision.taken` evidence event.
+
+```bash
+bun run exploit
+bun run exploit -- --target packages/workspace/scripts/task-push.js
+bun run exploit -- --json
+```
+
+---
+
+### confirm — validation truth
+
+piggybacks on the existing `verify` flow and can also run runtime-log checks or a targeted Jest pattern. defaults to `--verify` when no validation flag is passed. verify, test, and runtime outcomes are written as evidence events.
+
+```bash
+bun run confirm
+bun run confirm -- --verify --json
+bun run confirm -- --runtime
+bun run confirm -- --test packages/workspace/scripts/__tests__/example.test.js
+```
+
+---
+
+### audit — script/docs/index drift
+
+checks whether documented workspace scripts exist, whether undocumented workspace scripts have drifted in, whether markdown path references are still real, and whether the local exploration index is stale.
+
+```bash
+bun run audit
+bun run audit -- --scripts
+bun run audit -- --docs --json
+bun run audit -- --index
 ```
 
 ---
@@ -569,6 +663,18 @@ bun run task:push -- --message "fix(scope): address review" --changed  # 7. push
 
 ---
 
+### ai-review — run the AI PR review helper
+
+runs the local AI review helper for a PR. use `--no-post` when you need review output without publishing comments.
+
+```bash
+bun run ai-review -- 173
+bun run ai-review -- 173 --no-post
+bun run ai-review -- 173 --no-post --json
+```
+
+---
+
 ### gh — common github commands
 
 wraps `gh` CLI with repo defaults (consuelohq/opensaas) and structured output. all commands auto-detect PR from `.task/current.json` when no PR number given.
@@ -630,7 +736,7 @@ bun run browser -- snapshot           # get accessibility tree
 
 ---
 
-### railway — deploy observability
+### railway:logs — deploy observability
 
 USE THIS OFTEN. this is how you get truth about what's happening in production. don't guess — read the logs.
 
@@ -666,6 +772,19 @@ bad: railway logs --service opensaas (raw CLI)
 
 ---
 
+### railway:redeploy — trigger railway deploys
+
+redeploys Railway services and can wait for completion. use this after merges when production needs a fresh deploy.
+
+```bash
+bun run railway:redeploy -- --wait
+bun run railway:redeploy -- --service twenty-worker --wait
+bun run railway:redeploy -- --all --wait
+bun run railway:redeploy -- --json
+```
+
+---
+
 ### wait — sleep or wait for deploy
 
 ```bash
@@ -693,6 +812,109 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ---
 
+### workspace — typed facade CLI for the workspace MCP app
+
+routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the command form agents should put inside `workspace.sandbox_exec({ command, timeout })`.
+
+```bash
+bun run workspace -- status
+bun run workspace -- stream.context '{"area":"workspace-agents"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- batch '[{"tool":"status","input":{}}]'
+```
+
+inside the workspace MCP app, the command string is cleaner because `sandbox_exec` rewrites it to this script:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
+  timeout: 120
+})
+```
+
+---
+
+### tool-runner — run one typed workspace tool
+
+runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.
+
+```bash
+bun run tool-runner -- fs.read '{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}'
+bun run tool-runner -- context.categories '{}'
+bun run tool-runner -- mac.list '{"path":"/tmp","depth":1}'
+```
+
+---
+
+### tool-batch — run typed workspace tools in sequence
+
+runs a JSON array of facade steps. dependent steps run sequentially. read-only steps marked with `parallel: true` can run together.
+
+```bash
+bun run tool-batch -- '[{"tool":"fs.read","input":{"branch":"task/workspace-agents/example","path":"packages/workspace/package.json"}}]'
+bun run tool-batch -- --file /tmp/workspace-batch.json
+```
+
+---
+
+### generate-docs — generate typed tool documentation
+
+generates `packages/workspace/TOOLS.md` from `packages/workspace/tooling/tool-manifest.json`.
+
+```bash
+bun run generate-docs
+```
+
+---
+
+### generate-types — generate typed tool stubs
+
+generates `packages/workspace/src/generated/workspace.d.ts` and `packages/workspace/src/generated/tool-client.ts` from the tool manifest.
+
+```bash
+bun run generate-types
+```
+
+---
+
+### check-files — batch syntax check
+
+runs `node --check` for each provided file through `task:exec`, returning structured per-file results.
+
+```bash
+bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/fs.js --json
+bun run check-files -- --branch task/workspace-agents/example --files packages/workspace/scripts/a.js packages/workspace/scripts/b.js --stop-on-first-error --json
+```
+
+---
+
+### edit-flow — composed search-read-patch flow
+
+runs a real script for search -> read -> patch -> read verification. this keeps multi-step editing orchestration outside the facade.
+
+```bash
+bun run edit-flow -- --branch task/workspace-agents/example --search-pattern "oldFn" --search-paths packages/workspace/scripts --from 10 --to 12 --content-file /tmp/new.ts --json
+bun run edit-flow -- --branch task/workspace-agents/example --search-pattern "oldFn" --search-paths packages/workspace/scripts --from 10 --to 12 --content-file /tmp/new.ts --dry-run --json
+```
+
+---
+
+### mac — non-repo mac operations
+
+operates outside repo context. it does not do task branch resolution. use for local file, process, command, and port operations that are not scoped to opensaas.
+
+```bash
+bun run mac -- exec "pwd" --json
+bun run mac -- read /tmp/some-file.txt --json
+bun run mac -- write /tmp/output.txt --content "hello" --json
+bun run mac -- search "pattern" /tmp --include "*.ts" --json
+bun run mac -- list /tmp --depth 1 --json
+bun run mac -- process list --json
+bun run mac -- port find --json
+```
+
+---
+
 ### server — manage the workspace MCP server
 
 ```bash
@@ -711,6 +933,38 @@ bun run server -- logs                # tail /tmp/workspace.log
 bun run website:deploy                # build and deploy to cloudflare pages
 bun run website:deploy -- --preview   # preview deploy (non-production url)
 bun run website:deploy -- --build-only  # build only, don't deploy
+```
+
+---
+
+### doctor — workspace diagnostics
+
+checks local workspace prerequisites, server health, git state, and related command availability.
+
+```bash
+bun run doctor
+bun run doctor -- --json
+```
+
+---
+
+### status — workspace status summary
+
+prints a compact status view for the current branch, task metadata, workspace scripts, and deploy health.
+
+```bash
+bun run status
+bun run status -- --json
+```
+
+---
+
+### task-meta:smoke — metadata resolver smoke test
+
+runs the task metadata conflict-resolution smoke suite.
+
+```bash
+bun run task-meta:smoke
 ```
 
 ---
