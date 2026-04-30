@@ -6,10 +6,21 @@
     "CODING-STANDARDS.md",
     "package.json",
     "packages/dialer/src/dialer.ts",
+    "packages/dialer/src/services/caller-id.ts",
+    "packages/dialer/src/services/parallel-dialer.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
     "packages/twenty-front/src/modules/object-record/hooks/useFindManyRecords.ts",
     "packages/twenty-front/src/modules/object-record/hooks/useLazyFindManyRecords.ts",
     "packages/twenty-front/src/modules/ui/input/components/TextInput.tsx",
     "packages/twenty-front/src/pages/home/HomePage.tsx",
+    "packages/twenty-server/package.json",
+    "packages/twenty-server/project.json",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+    "packages/workspace/decision.md",
     "packages/workspace/package.json",
     "packages/workspace/project.json",
     "packages/workspace/scripts/audit.js",
@@ -34,5 +45,5 @@
     "packages/workspace/scripts/tmp.js",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-04-30T20:36:01.511Z"
+  "updatedAt": "2026-04-30T22:38:39.637Z"
 }
