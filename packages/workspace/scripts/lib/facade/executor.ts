@@ -1,12 +1,11 @@
-import { execa } from 'execa';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from "node:child_process";
 
-import manifestJson from '../../../tooling/tool-manifest.json';
+import manifestJson from "../../../tooling/tool-manifest.json";
 
-import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
-import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
-import { logToolExecution } from './logger';
-import { getInputSchema } from './schemas';
+import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from "./branch-resolver";
+import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from "./errors";
+import { logToolExecution } from "./logger";
+import { getInputSchema } from "./schemas";
 import type {
   BranchResolution,
   CommandArgument,
@@ -17,7 +16,7 @@ import type {
   ToolManifestEntry,
   ToolResult,
   ToolRunner,
-} from './types';
+} from "./types";
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
@@ -29,21 +28,39 @@ export function getToolManifestEntry(toolName: string): ToolManifestEntry | null
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
-export const defaultRunner: ToolRunner = async (plan, timeoutMs) => {
-  const result = await execa(plan.command, plan.args, {
+export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
+  const child = spawn(plan.command, plan.args, {
     cwd: plan.cwd,
     env: plan.env,
-    timeout: timeoutMs,
-    reject: false,
+    stdio: ["ignore", "pipe", "pipe"],
   });
+  let stdout = "";
+  let stderr = "";
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    child.kill("SIGTERM");
+  }, timeoutMs);
 
-  return {
-    stdout: String(result.stdout || ''),
-    stderr: String(result.stderr || ''),
-    exitCode: result.exitCode ?? 0,
-  };
-};
-
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  child.stdout.on("data", (chunk) => { stdout += chunk; });
+  child.stderr.on("data", (chunk) => { stderr += chunk; });
+  child.on("error", (error) => {
+    clearTimeout(timeout);
+    reject(error);
+  });
+  child.on("close", (code) => {
+    clearTimeout(timeout);
+    if (timedOut) {
+      const error = new Error(`command timed out after ${timeoutMs}ms`) as Error & { timedOut: boolean };
+      error.timedOut = true;
+      reject(error);
+      return;
+    }
+    resolve({ stdout, stderr, exitCode: code ?? 0 });
+  });
+});
 export async function executeTool<TData = unknown>(
   toolName: string,
   input: ToolInput = {},
@@ -68,7 +85,7 @@ export async function executeTool<TData = unknown>(
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, '');
+      logResult(entry, toolName, result, "", undefined, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -83,7 +100,7 @@ export async function executeTool<TData = unknown>(
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, entry.underlying);
+      logResult(entry, toolName, result, entry.underlying, undefined, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -98,7 +115,7 @@ export async function executeTool<TData = unknown>(
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, entry.underlying);
+      logResult(entry, toolName, result, entry.underlying, undefined, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -126,7 +143,7 @@ export async function executeTool<TData = unknown>(
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, entry.underlying);
+      logResult(entry, toolName, result, entry.underlying, undefined, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -147,25 +164,26 @@ export async function executeTool<TData = unknown>(
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, options.logMode);
       return result as ToolResult<TData>;
     }
 
     const timeoutMs = getTimeoutMs(entry, commandInput);
     const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
         ok: false,
-        code: 'TIMEOUT',
+        code: "TIMEOUT",
         message: `command timed out after ${timeoutMs}ms`,
         data: null,
-        stderr: runResult.stderr,
+        stderr: cleanStderr,
         exitCode: 1,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -173,16 +191,16 @@ export async function executeTool<TData = unknown>(
     if (parsedStdout.parseError && entry.command.jsonFlag) {
       const result = createToolResult({
         ok: false,
-        code: 'PARSE_ERROR',
+        code: "PARSE_ERROR",
         message: parsedStdout.parseError,
         data: { raw: runResult.stdout },
-        stderr: runResult.stderr,
+        stderr: cleanStderr,
         exitCode: runResult.exitCode,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
       });
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -190,25 +208,26 @@ export async function executeTool<TData = unknown>(
       const passthrough = parsedStdout.data as ToolResult<TData>;
       const result = {
         ...passthrough,
+        stderr: stripCommandEcho(String(passthrough.stderr || "")),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
-      logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+      logResult(entry, toolName, result, plannedCommand, branchResolution.branch, options.logMode);
       return result;
     }
 
     const ok = runResult.exitCode === 0;
     const result = createToolResult({
       ok,
-      code: ok ? 'OK' : 'COMMAND_FAILED',
-      message: ok ? 'command completed' : 'command failed',
+      code: ok ? "OK" : "COMMAND_FAILED",
+      message: ok ? "command completed" : "command failed",
       data: parsedStdout.data as TData,
-      stderr: runResult.stderr,
+      stderr: cleanStderr,
       exitCode: runResult.exitCode,
       durationMs: elapsedMs(startedAt, options.now),
       traceId,
       requestId,
     });
-    logResult(entry, toolName, result, plannedCommand, branchResolution.branch);
+    logResult(entry, toolName, result, plannedCommand, branchResolution.branch, options.logMode);
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -222,7 +241,7 @@ export async function executeTool<TData = unknown>(
       traceId,
       requestId,
     });
-    logResult(entry, toolName, result, entry?.underlying || '');
+    logResult(entry, toolName, result, entry?.underlying || "", undefined, options.logMode);
     return result as ToolResult<TData>;
   }
 }
@@ -272,7 +291,7 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, entry.underlying, task?.branch);
+    logResult(entry, entry.name, result, entry.underlying, task?.branch, context.options.logMode);
     return result as ToolResult<TData>;
   }
 
@@ -294,7 +313,7 @@ async function executeInternalTool<TData>(
         traceId: context.traceId,
         requestId: context.requestId,
       });
-      logResult(entry, entry.name, result, entry.underlying);
+      logResult(entry, entry.name, result, entry.underlying, undefined, context.options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -308,7 +327,7 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, entry.underlying, resolution.branch);
+    logResult(entry, entry.name, result, entry.underlying, resolution.branch, context.options.logMode);
     return result as ToolResult<TData>;
   }
 
@@ -330,7 +349,7 @@ async function executeInternalTool<TData>(
         traceId: context.traceId,
         requestId: context.requestId,
       });
-      logResult(entry, entry.name, result, entry.underlying);
+      logResult(entry, entry.name, result, entry.underlying, undefined, context.options.logMode);
       return result as ToolResult<TData>;
     }
 
@@ -362,7 +381,7 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, formatCommand(plan), resolution.branch);
+    logResult(entry, entry.name, result, formatCommand(plan), resolution.branch, context.options.logMode);
     return result as ToolResult<TData>;
   }
 
@@ -375,7 +394,7 @@ async function executeInternalTool<TData>(
     traceId: context.traceId,
     requestId: context.requestId,
   });
-  logResult(entry, entry.name, result, entry.underlying);
+  logResult(entry, entry.name, result, entry.underlying, undefined, context.options.logMode);
   return result as ToolResult<TData>;
 }
 
@@ -531,15 +550,22 @@ function elapsedMs(startedAt: number, now?: () => number): number {
 }
 
 function formatCommand(plan: CommandPlan): string {
-  return [plan.command, ...plan.args].join(' ');
+  return [plan.command, ...plan.args].join(" ");
 }
-
+function stripCommandEcho(stderr: string): string {
+  return stderr
+    .split("\n")
+    .filter((line) => !line.startsWith("$ " ) || !line.includes("packages/workspace/scripts/"))
+    .filter((line) => !line.startsWith("→ task: " ) && !line.startsWith("→ cwd: ") && !line.startsWith("→ running: "))
+    .join("\n")
+    .trim();
+}
 function resolveGitRoot(cwd: string): string {
   try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    return execFileSync("git", ["rev-parse", "--show-toplevel"], {
       cwd,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
     }).trim();
   } catch (error: unknown) {
     return cwd;
@@ -550,13 +576,12 @@ function resolveWorkspaceCommandCwd(cwd: string, script: string): string {
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   return resolveControllerRoot(cwd) || cwd;
 }
-
 function resolveControllerRoot(cwd: string): string | null {
   try {
-    const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+    const output = execFileSync("git", ["worktree", "list", "--porcelain"], {
       cwd,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
     });
     const firstWorktree = output.match(/^worktree (.+)$/m);
     return firstWorktree?.[1] || null;
@@ -571,7 +596,11 @@ function logResult(
   result: ToolResult<unknown>,
   command: string,
   branch?: string,
+  logMode: ExecuteToolOptions["logMode"] = "all",
 ): void {
+  if (logMode === "silent") return;
+  if (logMode === "errors" && result.ok) return;
+
   logToolExecution({
     tool: entry?.name || toolName,
     branch,
