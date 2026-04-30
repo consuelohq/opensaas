@@ -142,7 +142,7 @@ async function indexChunkEmbeddings(store, chunks, options) {
   let processedCount = 0;
 
   if (chunks.length > 0 && !options.json) {
-    writeStderr(`indexing: embedding ${chunks.length} missing/changed chunks with ${batchSize} Qwen context(s)...`);
+    writeStderr(`indexing: embedding ${chunks.length} missing/changed chunks...`);
   }
 
   for (let index = 0; index < chunks.length; index += batchSize) {

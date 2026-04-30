@@ -35,9 +35,6 @@ except Exception:
 # one session ID per server process — groups all tool calls into one langsmith thread
 _session_id = str(uuid.uuid4())
 
-# estimated system prompt tokens from the LLM calling us (chatgpt ~15k, kiro ~10k)
-_SYSTEM_PROMPT_TOKENS = 15000
-
 def _estimate_tokens(text: str) -> int:
     """rough token estimate: ~4 chars per token."""
     return max(1, len(str(text)) // 4)
@@ -51,7 +48,7 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
     input_text = ' '.join(str(v) for v in inputs.values())
     with ls_trace(name=name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id}) as rt:
         result = fn(*args, **kwargs)
-        prompt_tokens = _SYSTEM_PROMPT_TOKENS + _estimate_tokens(input_text)
+        prompt_tokens = _estimate_tokens(input_text)
         completion_tokens = _estimate_tokens(result)
         rt.end(outputs={
             'result': result,
@@ -122,6 +119,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
         if request.url.path in skip:
+            return await call_next(request)
+        # tailnet agents skip bearer auth
+        client_ip = request.client.host if request.client else ''
+        if client_ip.startswith('100.'):
             return await call_next(request)
         if bearer_token:
             auth = request.headers.get('authorization', '')

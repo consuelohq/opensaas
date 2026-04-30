@@ -1,5 +1,29 @@
 # decision process
 
+## mandatory workspace app transport
+
+you are working inside the workspace mcp app. the app exposes exactly two tools:
+
+- `workspace.get_steering()`
+- `workspace.sandbox_exec({ command, timeout })`
+
+every command in this document runs through `sandbox_exec`. when you see a workspace command such as:
+
+```bash
+workspace explore '{"query":"how does auth work"}'
+```
+
+call it as:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace explore '{\"query\":\"how does auth work\"}'",
+  timeout: 120
+})
+```
+
+**this wrapper is mandatory.** `workspace explore ...` is the command string passed to `sandbox_exec`; it is not a separate mcp tool. there are no per-operation mcp tools beyond `get_steering` and `sandbox_exec`. if a command does not work through `sandbox_exec`, test it there and fix the invocation or implementation.
+
 alignment is the number one thing this system protects.
 
 if an agent does not know what to inspect next, it should use the decision process.
@@ -86,7 +110,7 @@ transitions:
 
 policy:
 
-- `decide-next` chooses the highest-value next action from the current state
+- `decideNext` chooses the highest-value next action from the current state
 - good policy balances relevance, uncertainty, graph reach, and confirmation value
 
 terminal truth:
@@ -125,7 +149,7 @@ an agent sees a high score, treats the result as proof, edits too early, and the
 the correct behavior:
 
 1. use `explore` to find candidate files
-2. use `decide-next` to pick the next action
+2. use `decideNext` to pick the next action
 3. read or test the recommended target
 4. let the evidence event update beliefs
 5. repeat until the system has enough evidence to exploit
@@ -181,7 +205,7 @@ each command should read or write decision state.
 use `explore` when the agent needs to know what files or paths are likely relevant.
 
 ```bash
-bun run tool-runner -- explore '{"query":"how does the dialer queue work?"}'
+workspace explore '{"query":"how does the dialer queue work?"}'
 ```
 
 what it does:
@@ -201,12 +225,12 @@ what to remember:
 - structural reasons matter
 - results should include implementation files, tests, and connected context
 
-### decide-next
+### decideNext
 
-use `decide-next` when the agent has evidence and needs the next best action.
+use `decideNext` when the agent has evidence and needs the next best action.
 
 ```bash
-bun run tool-runner -- decide-next '{}'
+workspace decideNext
 ```
 
 what it does:
@@ -228,20 +252,20 @@ examples of correct actions:
 manual fallback:
 
 ```bash
-bun run tool-runner -- decide-next '{"markRead":"packages/dialer/src/dialer.ts"}'
-bun run tool-runner -- decide-next '{"markRelevant":"packages/dialer/src/dialer.ts"}'
-bun run tool-runner -- decide-next '{"markIrrelevant":"packages/dialer/src/types.ts"}'
+workspace decideNext '{"markRead":"packages/dialer/src/dialer.ts"}'
+workspace decideNext '{"markRelevant":"packages/dialer/src/dialer.ts"}'
+workspace decideNext '{"markIrrelevant":"packages/dialer/src/types.ts"}'
 ```
 
 manual marking exists because not every read happens through the normal workspace scripts.
 automatic read tracking is still preferred.
 
-### confidence-score
+### confidenceScore
 
-use `confidence-score` when the agent needs to know how justified the current path is.
+use `confidenceScore` when the agent needs to know how justified the current path is.
 
 ```bash
-bun run tool-runner -- confidence-score '{}'
+workspace confidenceScore
 ```
 
 what it does:
@@ -263,7 +287,7 @@ what to remember:
 use `exploit` when the system has enough evidence to stop exploring and commit to a path.
 
 ```bash
-bun run tool-runner -- exploit '{}'
+workspace exploit
 ```
 
 what it does:
@@ -284,7 +308,7 @@ what to remember:
 use `confirm` when the agent needs validation truth.
 
 ```bash
-bun run tool-runner -- confirm '{"verify":true}'
+workspace confirm '{"verify":true}'
 ```
 
 what it does:
@@ -307,7 +331,7 @@ what to remember:
 use `audit` when the agent needs to know whether the script and doc surface is truthful.
 
 ```bash
-bun run tool-runner -- audit '{"scripts":true}'
+workspace audit '{"scripts":true}'
 ```
 
 what it does:
@@ -329,8 +353,8 @@ what to remember:
 use this flow when starting from a question or bug:
 
 ```bash
-bun run tool-runner -- explore '{"query":"<question or goal>"}'
-bun run tool-runner -- decide-next '{}'
+workspace explore '{"query":"<question or goal>"}'
+workspace decideNext
 ```
 
 then do the recommended action.
@@ -338,43 +362,43 @@ then do the recommended action.
 if it says to read a file, read the file through the workspace script so the read can be tracked:
 
 ```bash
-bun run task:fs -- --branch <task-branch> read <path> --plain
+workspace fs.read '{"branch":"<task-branch>","path":"<path>"}'
 ```
 
 if the read happened outside normal tracking, mark it:
 
 ```bash
-bun run tool-runner -- decide-next '{"markRead":"<path>"}'
+workspace decideNext '{"markRead":"<path>"}'
 ```
 
 then check confidence:
 
 ```bash
-bun run tool-runner -- confidence-score '{}'
+workspace confidenceScore
 ```
 
 repeat:
 
 ```text
-decide-next -> action -> evidence -> confidence-score
+decideNext -> action -> evidence -> confidenceScore
 ```
 
 when confidence is concentrated enough:
 
 ```bash
-bun run tool-runner -- exploit '{}'
+workspace exploit
 ```
 
 after editing and validation:
 
 ```bash
-bun run tool-runner -- confirm '{"verify":true}'
+workspace confirm '{"verify":true}'
 ```
 
 before pushing script/workflow changes:
 
 ```bash
-bun run tool-runner -- audit '{"scripts":true}'
+workspace audit '{"scripts":true}'
 ```
 
 ---
@@ -466,7 +490,7 @@ information value estimates how much a next action could teach the agent.
 
 a lower-belief file can be worth reading if it reduces uncertainty or touches many connected paths.
 
-this is why `decide-next` should not always pick the top score.
+this is why `decideNext` should not always pick the top score.
 
 ---
 
@@ -479,7 +503,7 @@ in that state:
 - qwen embeddings provide the prior
 - graph expansion provides connected context
 - confidence should stay modest
-- `decide-next` should usually recommend reading
+- `decideNext` should usually recommend reading
 
 cold start confidence should not begin high just because retrieval looks good.
 
@@ -526,7 +550,7 @@ confirm after the system has something real to validate.
 
 confirmation can include:
 
-- `bun run verify`
+- `workspace verify`
 - targeted tests
 - runtime logs
 - production or browser verification
@@ -588,7 +612,7 @@ good evidence:
 ```text
 file.read packages/dialer/src/dialer.ts
 test.fail packages/dialer/src/dialer.test.ts
-verify.pass bun run verify -- --json
+verify.pass workspace verify
 runtime.clean railway errors query returned no new errors
 ```
 
@@ -603,13 +627,13 @@ it understands more only after reading evidence-producing files.
 
 preferred behavior:
 
-- reads through `task:fs` should create `file.read` evidence automatically
+- reads through `workspace fs.read` should create `file.read` evidence automatically
 - direct reads outside the wrapper should be manually marked
 
 manual fallback:
 
 ```bash
-bun run tool-runner -- decide-next '{"markRead":"<path>"}'
+workspace decideNext '{"markRead":"<path>"}'
 ```
 
 if a file was read and the system does not know it, the next decision will be weaker.
@@ -705,7 +729,7 @@ agent runs explore once, edits the first result, and calls syntax checks confirm
 fix:
 
 ```text
-run decide-next, inspect connected files/tests, then exploit.
+run decideNext, inspect connected files/tests, then exploit.
 ```
 
 ### graph connections are empty
@@ -814,7 +838,7 @@ the correct response:
 1. write the contradiction as evidence
 2. lower confidence
 3. ask what observation would resolve it
-4. let `decide-next` pick or inform the next action
+4. let `decideNext` pick or inform the next action
 
 beliefs should move when reality pushes them.
 
@@ -827,25 +851,25 @@ good explore questions name the behavior, not just a keyword.
 weak:
 
 ```bash
-bun run tool-runner -- explore '{"query":"queue"}'
+workspace explore '{"query":"queue"}'
 ```
 
 better:
 
 ```bash
-bun run tool-runner -- explore '{"query":"how does the dialer queue choose the next call?"}'
+workspace explore '{"query":"how does the dialer queue choose the next call?"}'
 ```
 
 weak:
 
 ```bash
-bun run tool-runner -- explore '{"query":"auth"}'
+workspace explore '{"query":"auth"}'
 ```
 
 better:
 
 ```bash
-bun run tool-runner -- explore '{"query":"how does authentication create and refresh workspace tokens?"}'
+workspace explore '{"query":"how does authentication create and refresh workspace tokens?"}'
 ```
 
 the query should describe the job the code performs.
@@ -858,27 +882,27 @@ qwen can bridge synonyms, but it still needs a meaningful task.
 before reading random files:
 
 ```bash
-bun run tool-runner -- explore '{"query":"<goal>"}'
-bun run tool-runner -- decide-next '{}'
+workspace explore '{"query":"<goal>"}'
+workspace decideNext
 ```
 
 before editing:
 
 ```bash
-bun run tool-runner -- confidence-score '{}'
-bun run tool-runner -- exploit '{}'
+workspace confidenceScore
+workspace exploit
 ```
 
 after editing:
 
 ```bash
-bun run tool-runner -- confirm '{"verify":true}'
+workspace confirm '{"verify":true}'
 ```
 
 before claiming done:
 
 ```bash
-bun run tool-runner -- audit '{"scripts":true}'
+workspace audit '{"scripts":true}'
 ```
 
 if the recommendation feels wrong:
@@ -886,7 +910,7 @@ if the recommendation feels wrong:
 - inspect the evidence
 - inspect the graph connections
 - mark relevant or irrelevant files explicitly
-- rerun `decide-next`
+- rerun `decideNext`
 
 do not ignore the system silently.
 either follow it or correct its state.
@@ -989,7 +1013,7 @@ retrieval is a prior.
 evidence updates belief.
 confidence comes from observations.
 graph expansion follows the program.
-decide-next is the policy.
+decideNext is the policy.
 exploit is the commit point.
 confirm is truth.
 audit protects drift.

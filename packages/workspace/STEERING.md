@@ -314,20 +314,62 @@ build the review packet generator first. the packet must collect the durable dat
 
 ## 7. how to use workspace tools
 
-the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, and command mappings.
+the workspace app exposes exactly two mcp tools:
 
-invoke tools through the facade:
+- `workspace.get_steering()`
+- `workspace.sandbox_exec({ command, timeout })`
 
-```bash
-bun run tool-runner -- <tool-name> '<json-input>'
+all workspace operations run through `sandbox_exec`. the command string inside `sandbox_exec` uses the workspace facade cli:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
+  timeout: 120
+})
 ```
 
-the tool-runner validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
+the shape is always:
+
+```text
+workspace <tool.name> '<json-input>'
+```
+
+omit the json input only when the tool accepts an empty object:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace status",
+  timeout: 120
+})
+```
+
+there are no separate mcp tools for `stream.context`, `fs.read`, `task.current`, or any other workspace operation. `sandbox_exec` is the transport layer. `workspace <tool.name>` is the command inside that transport.
+
+the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, and command mappings.
+
+the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
+
+quick reference:
+
+```ts
+workspace.sandbox_exec({ command: "workspace stream.list", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace stream.context '{\"area\":\"workspace-agents\"}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run '{\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
+```
 
 for batch operations:
 
-```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"path":"src/foo.ts"}},{"tool":"fs.search","input":{"pattern":"TODO","paths":["packages/"]}}]'
+```ts
+workspace.sandbox_exec({
+  command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"src/foo.ts\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"TODO\",\"paths\":[\"packages/\"]}}]'",
+  timeout: 120
+})
 ```
 
 the manifest JSON tells you:
@@ -337,23 +379,23 @@ the manifest JSON tells you:
 - `inputSchema` - the zod input schema name
 - `defaultTimeout` - max execution time in milliseconds
 - `capabilities` - flags such as `readOnly`, `mutating`, `deterministic`, and `safeToRetry`
-- `command` - the underlying Bun script and arguments
+- `command` - the underlying command mapping
 
 tool categories:
 
 - **fs** - file operations: read, search, list, write, patch, http, trash
-- **task** - task lifecycle: start, push, pr, prs, merge, finish, cleanup, init, fs, exec
+- **task** - task lifecycle: start, current, pin, push, pr, prs, merge, finish, cleanup, init, fs, exec
 - **context** - project memory: search, find, list, save, categories
-- **decision** - exploration and confidence: explore, decide-next, confidence-score, exploit, confirm, audit
+- **decision** - exploration and confidence: explore, decideNext, confidenceScore, exploit, confirm, audit
 - **stream** - stream management: list, sync, context
-- **review** - code review and verification: review, verify, pr-review, aiReview
+- **review** - code review and verification: review.run, verify, prReview, aiReview
 - **infra** - deploy and observability: railway.logs, railway.redeploy, browser, wait
 - **system** - workspace management: server, doctor, status, tmp, agent
 - **mac** - local machine operations that are not repo-scoped
 
-if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure instead of silently routing around it.
+if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure inside `sandbox_exec` instead of silently routing around it.
 
-raw shell commands are fallback tools, not the default. use the facade when a manifest tool exists.
+raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
 
 ## how to think: the decision engine
 
@@ -362,7 +404,7 @@ the decision engine is the reasoning loop behind workspace work. it is not optio
 the loop:
 
 ```text
-explore -> decide-next -> read -> update beliefs -> confidence-score -> exploit or keep exploring
+explore -> decideNext -> read -> update beliefs -> confidenceScore -> exploit or keep exploring
 ```
 
 the correct flow:
@@ -382,8 +424,8 @@ read `packages/workspace/decision.md` before relying on the system. that file is
 use tools in this order unless the task clearly requires otherwise:
 
 1. workspace steering and sandbox
-2. repo files through workspace scripts
-3. project memory through `bun run context`
+2. repo files through `workspace fs.*` commands inside `sandbox_exec`
+3. project memory through `workspace context.*` commands inside `sandbox_exec`
 4. docs in the repo
 5. browser/production verification
 6. web search for fresh or external information
@@ -394,7 +436,7 @@ the academic foundation:
 
 - **thompson sampling** - explore ranks by information value, not only relevance
 - **optimal stopping** - the `0.55` and `0.75` thresholds answer whether one more file read is worth it
-- **gittins index intuition** - `decide-next` picks the file with the highest value right now
+- **gittins index intuition** - `decideNext` picks the file with the highest value right now
 - **bayesian belief updating** - posteriors update as evidence arrives
 
 for repo work, use the scripts. agents that skip this loop are guessing instead of knowing.
@@ -403,38 +445,47 @@ for repo work, use the scripts. agents that skip this loop are guessing instead 
 
 branch auto-detection starts with the strongest source and stops at the first valid match.
 
-```bash
-bun run tool-runner -- task.start '{"area":"workspace-agents","title":"fix review comments","startFrom":"stream"}'
-# -> { "ok": true, "data": { "branch": "task/workspace-agents/fix-review-comments", "worktreePath": "..." } }
+```ts
+workspace.sandbox_exec({
+  command: "workspace task.start '{\"area\":\"workspace-agents\",\"title\":\"fix review comments\",\"startFrom\":\"stream\"}'",
+  timeout: 120
+})
 
-bun run tool-runner -- fs.read '{"path":"packages/workspace/package.json"}'
-# resolver chain: pinned branch -> .task/current.json -> single active worktree -> TASK_BRANCH
+workspace.sandbox_exec({
+  command: "workspace fs.read '{\"path\":\"packages/workspace/package.json\"}'",
+  timeout: 120
+})
 ```
+
+after `task.start`, branch-aware tools auto-resolve the branch from the pinned/current task state. the resolver chain is: explicit `branch`, pinned branch, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
 
 decision loop:
 
-```bash
-bun run tool-runner -- explore '{"query":"why is task push failing?"}'
-bun run tool-runner -- decide-next '{}'
-bun run tool-runner -- confidence-score '{}'
-bun run tool-runner -- exploit '{}'
-bun run tool-runner -- confirm '{"verify":true}'
+```ts
+workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"why is task push failing?\"}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace exploit", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace confirm '{\"verify\":true}'", timeout: 120 })
 ```
 
 batch operations:
 
-```bash
-bun run tool-batch -- '[{"tool":"fs.read","input":{"path":"packages/workspace/package.json"}},{"tool":"fs.search","input":{"pattern":"task:push","paths":["packages/workspace/SCRIPTS.md"]}}]'
+```ts
+workspace.sandbox_exec({
+  command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"packages/workspace/package.json\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"task:push\",\"paths\":[\"packages/workspace/SCRIPTS.md\"]}}]'",
+  timeout: 120
+})
 ```
 
 review pipeline:
 
-```bash
-bun run tool-runner -- review.run '{"base":"stream/workspace-agents","noTests":true}'
-bun run tool-runner -- aiReview '{"pr":226,"noPost":true}'
+```ts
+workspace.sandbox_exec({ command: "workspace review.run '{\"base\":\"stream/workspace-agents\",\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
 ```
 
-if a script fails, read `--help`, inspect the script/docs, and diagnose. do not silently route around it.
+if a workspace command fails, test the failing command through `sandbox_exec`, read the envelope, inspect the docs or implementation, and fix the invocation or command. do not silently route around the workspace app.
 
 ---
 
@@ -827,13 +878,13 @@ verifying work — never ship without checking
 
 every change gets verified. how depends on what you changed:
 
-code changes — bun run review
+code changes — run `workspace review.run` through `sandbox_exec`
 
-deployed changes — sleep, then check. after merging or deploying, sleep 300 (5 min for railway), then verify it's actually live. use sandbox_exec("curl -s https://the-endpoint") or agent-browser with ko's profile to click through the UI. don't assume the deploy worked — confirm it.
+deployed changes — sleep, then check. after merging or deploying, sleep 300 (5 min for railway), then verify it's actually live with a workspace command, browser verification, or the appropriate production log tool. don't assume the deploy worked — confirm it.
 
 -UI changes — use agent-browser. navigate to the page, snapshot, verify the change is visible. take a screenshot if it helps. if you can't verify visually, ask ko to check.
 
--API changes — hit the endpoint. use sandbox_exec("xh GET https://...") or curl. check the response shape, status code, edge cases.
+-API changes — hit the endpoint through the workspace app, for example with `workspace fs.http` when it fits the request. check the response shape, status code, and edge cases.
 
 -the general principle: think about how a real person will use what you just built. what will they click? what will they type? what happens if they do something unexpected? if you can simulate that — do it. if you can't, describe what should be tested and ask ko.
 

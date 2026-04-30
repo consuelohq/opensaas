@@ -142,6 +142,27 @@ describe('typed facade executor', () => {
     expect(result.requestId).toBe('req_123');
   });
 
+  it('falls back to repo fs for read-only fs tools when no task branch is active', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      path: 'AGENTS.md',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'WORKTREE_NOT_FOUND',
+        message: 'no active task worktree found; run task:start first or pass branch',
+        candidates: [],
+      }),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans[0].args).toContain('fs');
+    expect(plans[0].args).not.toContain('--branch');
+  });
+
   it('passes request ids through nested tool envelopes', async () => {
     const result = await executeTool('mac.exec', {
       ...exampleInput('mac.exec'),
