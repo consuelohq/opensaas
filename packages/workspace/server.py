@@ -120,9 +120,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         skip = {'/health', '/oauth/authorize', '/oauth/token', '/.well-known/oauth-authorization-server'}
         if request.url.path in skip:
             return await call_next(request)
-        # tailnet and localhost agents skip bearer auth
+        # tailnet agents skip bearer auth
         client_ip = request.client.host if request.client else ''
-        if client_ip.startswith('100.') or client_ip in ('127.0.0.1', '::1'):
+        if client_ip.startswith('100.'):
             return await call_next(request)
         if bearer_token:
             auth = request.headers.get('authorization', '')
