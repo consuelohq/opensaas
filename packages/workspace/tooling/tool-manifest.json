@@ -4,7 +4,7 @@
     "methodPath": ["fs", "read"],
     "description": "read file contents with an optional line range",
     "category": "filesystem",
-    "underlying": "bun run task:fs -- --branch <branch> read",
+    "underlying": "workspace fs read, or task:fs read when a branch is resolved",
     "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
     "defaultTimeout": 30000,
     "inputSchema": "FsReadInput",
@@ -12,7 +12,7 @@
     "command": {
       "script": "task:fs",
       "subcommand": "read",
-      "branchMode": "required",
+      "branchMode": "optional",
       "branchArgumentStyle": "prefix",
       "jsonFlag": "--json",
       "arguments": [
@@ -28,7 +28,7 @@
     "methodPath": ["fs", "search"],
     "description": "search files with ripgrep through the workspace script",
     "category": "filesystem",
-    "underlying": "bun run task:fs -- --branch <branch> search",
+    "underlying": "workspace fs search, or task:fs search when a branch is resolved",
     "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
     "defaultTimeout": 30000,
     "inputSchema": "FsSearchInput",
@@ -36,7 +36,7 @@
     "command": {
       "script": "task:fs",
       "subcommand": "search",
-      "branchMode": "required",
+      "branchMode": "optional",
       "branchArgumentStyle": "prefix",
       "jsonFlag": "--json",
       "arguments": [
@@ -52,9 +52,9 @@
   {
     "name": "fs.list",
     "methodPath": ["fs", "list"],
-    "description": "list or find files in a task worktree",
+    "description": "list or find files in the repo root or a resolved task worktree",
     "category": "filesystem",
-    "underlying": "bun run task:fs -- --branch <branch> list",
+    "underlying": "workspace fs list, or task:fs list when a branch is resolved",
     "capabilities": { "readOnly": true, "mutating": false, "deterministic": true, "safeToRetry": true },
     "defaultTimeout": 30000,
     "inputSchema": "FsListInput",
@@ -62,7 +62,7 @@
     "command": {
       "script": "task:fs",
       "subcommand": "list",
-      "branchMode": "required",
+      "branchMode": "optional",
       "branchArgumentStyle": "prefix",
       "arguments": [
         { "source": "path", "kind": "value" },

@@ -390,7 +390,7 @@ function resolveBranchIfNeeded(
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
   const explicitBranch = typeof input.branch === 'string' ? input.branch : undefined;
-  return (options.branchResolver || resolveTaskBranch)({
+  const resolution = (options.branchResolver || resolveTaskBranch)({
     explicitBranch,
     cwd,
     env,
@@ -398,6 +398,12 @@ function resolveBranchIfNeeded(
     currentTask: options.currentTask,
     candidates: options.candidates,
   });
+
+  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+    return { ok: true, branch: '', source: 'none' };
+  }
+
+  return resolution;
 }
 
 function buildCommandPlan(
@@ -406,8 +412,9 @@ function buildCommandPlan(
   cwd: string,
   env: NodeJS.ProcessEnv,
 ): CommandPlan {
-  const args = ['run', entry.command.script, '--'];
   const branch = typeof input.branch === 'string' ? input.branch : '';
+  const script = entry.command.script === 'task:fs' && !branch ? 'fs' : entry.command.script;
+  const args = ['run', script, '--'];
 
   if (entry.command.branchArgumentStyle === 'prefix' && branch) {
     args.push('--branch', branch);
@@ -428,7 +435,7 @@ function buildCommandPlan(
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, entry.command.script),
+    cwd: resolveWorkspaceCommandCwd(cwd, script),
     env: { ...env, ...(branch ? { TASK_BRANCH: branch } : {}) },
   };
 }

@@ -1,8 +1,43 @@
 # workspace typed tools
 
+## mandatory workspace app transport
+
+You are working inside the workspace MCP app. The app exposes exactly two tools:
+
+- `workspace.get_steering()`
+- `workspace.sandbox_exec({ command, timeout })`
+
+Every command in this document is run through `sandbox_exec`. When you see a command string such as:
+
+```bash
+workspace stream.context '{"area":"workspace-agents"}'
+```
+
+call it as:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
+  timeout: 120
+})
+```
+
+**This wrapper is mandatory.** `workspace stream.context ...` is not a direct MCP tool call and it is not a shell command agents should run outside the workspace app. Inside the workspace app, `sandbox_exec` is the transport layer and the `workspace <tool> '<json>'` command is the typed facade entrypoint. If a command does not work through `sandbox_exec`, test it there and fix the command or implementation.
+
 This file is generated from `packages/workspace/tooling/tool-manifest.json`. The typed facade validates inputs, invokes the existing Bun workspace scripts, and wraps every result in the standard tool envelope.
 
 ## quick start
+
+Inside the workspace app, invoke the same tool through `sandbox_exec`:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace fs.read '{\"path\":\"packages/workspace/package.json\"}'",
+  timeout: 120
+})
+```
+
+The TypeScript shape below documents the facade schema and return envelope:
 
 ```ts
 import { workspace } from './src/generated/tool-client';
@@ -830,10 +865,10 @@ example error envelope:
 
 ### fs.list
 
-list or find files in a task worktree
+list or find files in the repo root or a resolved task worktree
 
 - signature: `workspace.fs.list({ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:fs -- --branch <branch> list`
+- wraps: `workspace fs list, or task:fs list when a branch is resolved`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
 
@@ -946,7 +981,7 @@ example error envelope:
 read file contents with an optional line range
 
 - signature: `workspace.fs.read({ path: string; from?: number; to?: number; branch?: string; requestId?: string }) => Promise<ToolResult<Array<{ path: string; from: number; to: number; total: number; lines: string[] }>>>`
-- wraps: `bun run task:fs -- --branch <branch> read`
+- wraps: `workspace fs read, or task:fs read when a branch is resolved`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
 
@@ -1000,7 +1035,7 @@ example error envelope:
 search files with ripgrep through the workspace script
 
 - signature: `workspace.fs.search({ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string }) => Promise<ToolResult<Array<{ file: string; line: number; text: string }>>>`
-- wraps: `bun run task:fs -- --branch <branch> search`
+- wraps: `workspace fs search, or task:fs search when a branch is resolved`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
 
@@ -3306,9 +3341,13 @@ Every result includes `traceId`, optional echoed `requestId`, `durationMs`, `exi
 
 The decision engine wrappers call the existing scripts as-is: `workspace.explore`, `workspace.decideNext`, `workspace.confidenceScore`, and `workspace.exploit`. Retrieval is treated as a prior; confidence comes from evidence written by those scripts.
 
-## migration from raw scripts
+## migration from lower-level scripts
 
-Before: `bun run task:fs -- --branch task/x read packages/workspace/package.json --json`.
+Do not call lower-level workspace scripts from the workspace app during normal work.
 
-After: `await workspace.fs.read({ branch: "task/x", path: "packages/workspace/package.json" })`.
+Use the facade command instead: `workspace.sandbox_exec({ command: "workspace fs.read '{\"branch\":\"task/x\",\"path\":\"packages/workspace/package.json\"}'", timeout: 120 })`.
+
+## final reminder
+
+Every workspace operation above is invoked through `workspace.sandbox_exec({ command, timeout })`. There are no per-operation MCP tools beyond `get_steering` and `sandbox_exec`. The command string should use `workspace <tool.name> '<json-input>'`; omit the JSON input only when the tool accepts an empty object. The workspace app is the environment, so work inside it and fix any command that does not run there.
 
