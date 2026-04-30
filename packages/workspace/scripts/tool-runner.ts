@@ -13,13 +13,14 @@ function writeStderr(value: string): void {
 
 function printHelp(): void {
   writeStdout([
-    'usage: bun packages/workspace/scripts/tool-runner.ts <tool.name> <json-input>',
+    'usage: workspace <tool.name> [json-input]',
     '',
     'runs one typed workspace tool and prints one JSON envelope to stdout.',
     '',
     'examples:',
-    '  bun packages/workspace/scripts/tool-runner.ts fs.read \'{"path":"packages/workspace/package.json"}\'',
-    '  bun packages/workspace/scripts/tool-runner.ts context.categories \'{}\'',
+    '  workspace status',
+    '  workspace stream.context \'{"area":"workspace-agents"}\'',
+    '  workspace fs.read \'{"path":"AGENTS.md"}\'',
     '',
   ].join('\n'));
 }

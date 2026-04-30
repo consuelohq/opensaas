@@ -5,6 +5,7 @@ export type LogEntry = {
   tool: string;
   branch?: string;
   command: string;
+  implementationCommand?: string;
   durationMs?: number;
   exitCode?: number;
   traceId: string;
@@ -26,6 +27,7 @@ export function logToolExecution(entry: {
   tool: string;
   branch?: string;
   command: string;
+  implementationCommand?: string;
   durationMs: number;
   exitCode: number;
   traceId: string;
@@ -39,6 +41,7 @@ export function logToolExecution(entry: {
     tool: entry.tool,
     branch: entry.branch,
     command: entry.command,
+    implementationCommand: entry.implementationCommand,
     durationMs: entry.durationMs,
     exitCode: entry.exitCode,
     traceId: entry.traceId,

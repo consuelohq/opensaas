@@ -78,6 +78,7 @@ export const FsPatchInput = z.object({
 
 export const FsHttpInput = z.object({
   ...requestFields,
+  ...dryRunField,
   method: z.enum(['get', 'post', 'put', 'patch', 'delete', 'head']).optional(),
   url: z.string().url(),
   headers: z.record(z.string(), z.string()).optional(),
@@ -417,6 +418,7 @@ export const schemaRegistry = {
   FsWriteInput,
   FsPatchInput,
   FsHttpInput,
+  HttpInput: FsHttpInput,
   FsTrashInput,
   TaskStartInput,
   TaskInitInput,
@@ -474,7 +476,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string }',
   FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string }',
   FsPatchInput: '{ path: string; from: number; to: number; content: string; branch?: string; dryRun?: boolean; requestId?: string }',
-  FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; requestId?: string }',
+  FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
+  HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string }',
   TaskStartInput: '{ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string }',

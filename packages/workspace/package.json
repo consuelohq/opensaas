@@ -30,6 +30,8 @@
     "check-files": "bun ./scripts/check-files.js",
     "edit-flow": "bun ./scripts/edit-flow.js",
     "mac": "bun ./scripts/mac.js",
+    "linear": "bun ./scripts/linear.js",
+    "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",

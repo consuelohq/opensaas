@@ -812,6 +812,28 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ---
 
+### workspace — typed facade CLI for the workspace MCP app
+
+routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the command form agents should put inside `workspace.sandbox_exec({ command, timeout })`.
+
+```bash
+bun run workspace -- status
+bun run workspace -- stream.context '{"area":"workspace-agents"}'
+bun run workspace -- fs.read '{"path":"AGENTS.md"}'
+bun run workspace -- batch '[{"tool":"status","input":{}}]'
+```
+
+inside the workspace MCP app, the command string is cleaner because `sandbox_exec` rewrites it to this script:
+
+```ts
+workspace.sandbox_exec({
+  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
+  timeout: 120
+})
+```
+
+---
+
 ### tool-runner — run one typed workspace tool
 
 runs a single manifest-backed workspace tool through the typed facade. stdout is always one standard JSON envelope. audit events and human logs go to stderr.

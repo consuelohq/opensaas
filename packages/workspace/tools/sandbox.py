@@ -4,10 +4,13 @@ import datetime
 import json
 import os
 import re
+import shlex
 import subprocess
 from pathlib import Path
 
 _LOG_FILE = '/tmp/sandbox-audit.jsonl'
+_STDOUT_LIMIT = 100000
+_STDERR_LIMIT = 10000
 _REQUIRED_TOOL_HINTS = ['rg', 'fd', 'bat', 'gh', 'node', 'bun', 'xh', 'agent-browser', 'opencode', 'kiro-cli']
 _BLOCKED_PATTERNS = [
     r'\brm\s+-rf\s+/',
@@ -104,10 +107,32 @@ def _check_guardrails(command: str) -> str | None:
 
 
 def _rewrite(command: str) -> str:
+    workspace_command = _rewrite_workspace_command(command)
+    if workspace_command:
+        return workspace_command
+
     rewritten = command
     if re.match(r'^\s*rm\s+(?!-rf)(?!-r\s+/)', rewritten):
         rewritten = re.sub(r'^\s*rm\s+', 'trash ', rewritten)
     return rewritten
+
+
+def _rewrite_workspace_command(command: str) -> str | None:
+    stripped = command.strip()
+    if not re.match(r'^workspace(?:\s|$)', stripped):
+        return None
+
+    try:
+        parts = shlex.split(stripped)
+    except ValueError:
+        return None
+
+    if not parts or parts[0] != 'workspace':
+        return None
+
+    workspace_root = Path(__file__).resolve().parents[1]
+    cli_script = workspace_root / 'scripts' / 'workspace.ts'
+    return ' '.join(['bun', shlex.quote(str(cli_script)), *[shlex.quote(part) for part in parts[1:]]])
 
 
 def _env() -> dict[str, str]:
@@ -135,8 +160,8 @@ def exec(command: str, timeout: int = 120) -> str:
             timeout=timeout,
         )
         output = {
-            'stdout': result.stdout[-50000:] if len(result.stdout) > 50000 else result.stdout,
-            'stderr': result.stderr[-5000:] if len(result.stderr) > 5000 else result.stderr,
+            'stdout': result.stdout[-_STDOUT_LIMIT:] if len(result.stdout) > _STDOUT_LIMIT else result.stdout,
+            'stderr': result.stderr[-_STDERR_LIMIT:] if len(result.stderr) > _STDERR_LIMIT else result.stderr,
             'exitCode': result.returncode,
         }
         _log(safe_command, output)

@@ -516,7 +516,7 @@ function cmdHttp(argv) {
     out('  http get https://api.example.com --json');
     return;
   }
-  const cmd = ['xh', ...argv];
+  const cmd = ['xh', '--ignore-stdin', ...argv];
   try {
     const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
     process.stdout.write(result);
