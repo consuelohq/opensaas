@@ -809,60 +809,6 @@ example error envelope:
 
 ## filesystem
 
-### fs.http
-
-make an HTTP request through the workspace http wrapper
-
-- signature: `workspace.fs.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `workspace fs.http`
-- capabilities: readOnly=true, mutating=false, safeToRetry=true
-- default timeout: 60000ms
-
-example call:
-
-```ts
-await workspace.fs.http({
-  "method": "get",
-  "url": "https://example.com"
-});
-```
-
-example success envelope:
-
-```json
-{
-  "ok": true,
-  "code": "OK",
-  "message": "command completed",
-  "data": {
-    "raw": "example"
-  },
-  "stderr": "",
-  "exitCode": 0,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
-example error envelope:
-
-```json
-{
-  "ok": false,
-  "code": "VALIDATION_ERROR",
-  "message": "input: Required",
-  "data": {
-    "issues": []
-  },
-  "stderr": "",
-  "exitCode": 1,
-  "durationMs": 12,
-  "traceId": "trc_abc123def456",
-  "apiVersion": "1.0.0"
-}
-```
-
 ### fs.list
 
 list or find files in the repo root or a resolved task worktree
@@ -1325,6 +1271,62 @@ await workspace.gh({
   "args": [
     "225"
   ]
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+## http
+
+### http
+
+make HTTP requests through the workspace http wrapper (wraps xh)
+
+- signature: `workspace.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace http`
+- capabilities: readOnly=false, mutating=true, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.http({
+  "method": "get",
+  "url": "https://example.com"
 });
 ```
 
@@ -3346,6 +3348,48 @@ The decision engine wrappers call the existing scripts as-is: `workspace.explore
 Do not call lower-level workspace scripts from the workspace app during normal work.
 
 Use the facade command instead: `workspace.sandbox_exec({ command: "workspace fs.read '{\"branch\":\"task/x\",\"path\":\"packages/workspace/package.json\"}'", timeout: 120 })`.
+
+## raw xh — advanced HTTP
+
+`workspace http` covers common cases. for advanced HTTP work, use `xh` directly through `sandbox_exec`. xh is a rust rewrite of httpie — same syntax, faster.
+
+```bash
+# GET
+xh https://api.github.com
+
+# POST with json (key=value auto-serializes)
+xh POST https://api.example.com name=value count:=42
+
+# headers
+xh https://api.example.com Authorization:"Bearer $TOKEN"
+
+# body only output
+xh -b https://api.example.com
+
+# basic auth
+xh -a user:pass https://api.example.com
+
+# form upload
+xh --form POST https://api.example.com field=value
+xh --multipart POST https://api.example.com file@./data.csv
+
+# download
+xh --download https://example.com/file.zip -o /tmp/file.zip
+
+# verbose (full request + response headers)
+xh -v https://api.example.com
+
+# nested json values (use := for raw json)
+xh POST https://api.example.com name=value count:=42 tags:='["a","b"]'
+
+# skip TLS (local/self-signed)
+xh --verify=no https://localhost:8443
+
+# timeout
+xh --timeout 30 https://slow-api.example.com
+```
+
+prefer `workspace http` for simple requests. use raw `xh` when you need forms, uploads, downloads, verbose debugging, or complex json bodies.
 
 ## final reminder
 

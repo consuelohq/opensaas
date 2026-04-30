@@ -285,22 +285,22 @@
     }
   },
   {
-    "name": "fs.http",
+    "name": "http",
     "methodPath": [
       "fs",
       "http"
     ],
-    "description": "make an HTTP request through the workspace http wrapper",
-    "category": "filesystem",
-    "underlying": "workspace fs.http",
+    "description": "make HTTP requests through the workspace http wrapper (wraps xh)",
+    "category": "http",
+    "underlying": "workspace http",
     "capabilities": {
-      "readOnly": true,
-      "mutating": false,
+      "readOnly": false,
+      "mutating": true,
       "deterministic": false,
       "safeToRetry": true
     },
     "defaultTimeout": 60000,
-    "inputSchema": "FsHttpInput",
+    "inputSchema": "HttpInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "fs",
@@ -322,7 +322,8 @@
         },
         {
           "source": "body",
-          "kind": "value"
+          "kind": "value",
+          "flag": "--raw"
         }
       ]
     },

@@ -263,6 +263,7 @@
     "check-files": "bun packages/workspace/scripts/check-files.js",
     "edit-flow": "bun packages/workspace/scripts/edit-flow.js",
     "mac": "bun packages/workspace/scripts/mac.js",
+    "linear": "bun packages/workspace/scripts/linear.js",
     "workspace": "bun packages/workspace/scripts/workspace.ts",
     "tool-runner": "bun packages/workspace/scripts/tool-runner.ts",
     "tool-batch": "bun packages/workspace/scripts/tool-batch.ts",
