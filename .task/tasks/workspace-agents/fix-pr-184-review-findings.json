@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-pr-184-review-findings",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 186,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/186",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-pr-184-review-findings",
+  "createdAt": "2026-04-24T18:01:56.974Z"
+}

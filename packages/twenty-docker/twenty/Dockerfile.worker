@@ -28,7 +28,6 @@ COPY ./packages/dialer/package.json /app/packages/dialer/
 COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
-COPY ./packages/workspace/package.json /app/packages/workspace/
 
 RUN yarn && yarn cache clean && npx nx reset
 

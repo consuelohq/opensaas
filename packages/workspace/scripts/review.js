@@ -8,6 +8,9 @@ const { execFileSync, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+const { getTrackedChanges } = require('./lib/git');
+const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
+
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
 
@@ -25,6 +28,7 @@ function printHelp() {
     '  --quiet              only show failures',
     '  --no-tests           skip test suite',
     '  --strict             enable strictPropertyInitialization (shows hidden TS2564 errors)',
+    '  --mine               scope to active task worktree (auto-detects from .task/current.json)',
     '  --help               show this help',
   ];
   lines.forEach((l) => writeStdout(l));
@@ -41,6 +45,7 @@ function parseArgs(argv) {
       case '--quiet': args.quiet = true; break;
       case '--no-tests': args.noTests = true; break;
       case '--strict': args.strict = true; break;
+      case '--mine': args.mine = true; break;
       case '--help': args.help = true; break;
       default:
         if (argv[i].startsWith('--')) throw new Error(`unknown flag: ${argv[i]}`);
@@ -78,22 +83,44 @@ function detectBase() {
   return 'origin/main';
 }
 
-function getChangedFiles(base) {
-  // try diff against base
-  let files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
-  if (!files) {
-    files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
-  }
-  if (!files) {
-    files = run('git', ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
-  }
-  return files.split('\n').filter((f) => f && /\.tsx?$/.test(f) && f.startsWith('packages/'));
+function normalizeRepoPath(root, filePath) {
+  const value = path.isAbsolute(filePath)
+    ? path.relative(root, filePath)
+    : filePath;
+
+  return value.split(path.sep).join('/');
 }
 
-function getChangedLineNumbers(base, file) {
-  // get line numbers that YOU changed
-  const diff = run('git', ['diff', '-U0', `${base}...HEAD`, '--', file]);
-  const lines = new Set();
+function isReviewableFile(filePath) {
+  return filePath.startsWith('packages/') && /\.(tsx?|jsx?|mjs|cjs)$/.test(filePath);
+}
+
+function addChangedFiles(files, args) {
+  const output = run('git', args);
+  for (const file of output.split('\n').filter(Boolean)) {
+    files.add(file);
+  }
+}
+
+function getChangedFiles(base) {
+  const files = new Set();
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
+  addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
+
+  try {
+    for (const change of getTrackedChanges(gitRoot())) {
+      files.add(change.path);
+    }
+  } catch {
+    // status output is advisory; diff output above covers committed ranges.
+  }
+
+  return [...files].filter(isReviewableFile).sort();
+}
+
+function addChangedLineNumbers(lines, args) {
+  const diff = run('git', args);
   for (const line of diff.split('\n')) {
     const m = line.match(/^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,(\d+))?\s+@@/);
     if (m) {
@@ -102,13 +129,31 @@ function getChangedLineNumbers(base, file) {
       for (let i = start; i < start + count; i++) lines.add(i);
     }
   }
+}
+
+function getChangedLineNumbers(base, file) {
+  const lines = new Set();
+  addChangedLineNumbers(lines, ['diff', '-U0', `${base}...HEAD`, '--', file]);
+  addChangedLineNumbers(lines, ['diff', '-U0', 'HEAD', '--', file]);
+  addChangedLineNumbers(lines, ['diff', '-U0', '--staged', '--', file]);
   return lines;
 }
 
 function getAllTsFiles(root) {
-  return run('find', [root, '-path', '*/node_modules', '-prune', '-o', '-path', '*/dist', '-prune', '-o', '-name', '*.ts', '-print', '-o', '-name', '*.tsx', '-print'])
+  return run('find', [
+    root,
+    '-path', '*/node_modules', '-prune',
+    '-o', '-path', '*/dist', '-prune',
+    '-o', '-name', '*.ts', '-print',
+    '-o', '-name', '*.tsx', '-print',
+    '-o', '-name', '*.js', '-print',
+    '-o', '-name', '*.mjs', '-print',
+    '-o', '-name', '*.cjs', '-print',
+  ])
     .split('\n')
-    .filter((f) => f && f.startsWith('packages/'));
+    .filter(Boolean)
+    .map((file) => normalizeRepoPath(root, file))
+    .filter(isReviewableFile);
 }
 
 // --- checks ---
@@ -124,6 +169,10 @@ function isTestFile(f) {
 
 function isLoggerFile(f) {
   return f.includes('packages/cli/src/output.ts') || f.includes('packages/logger/src/');
+}
+
+function isReviewSelfFile(f) {
+  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
@@ -173,7 +222,7 @@ function checkSqlParam(file, lines) {
 }
 
 function checkErrorHandling(file, lines) {
-  if (isTestFile(file)) return [];
+  if (isTestFile(file) || isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/async\s+\w+|async\s*\(/.test(lines[i])) {
@@ -188,6 +237,7 @@ function checkErrorHandling(file, lines) {
 }
 
 function checkTypeSafety(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/:\s*any\b|as\s+any\b|<any>/.test(lines[i])) {
@@ -211,6 +261,7 @@ function checkSecrets(file, lines) {
 }
 
 function checkTodoFixme(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     if (/\bTODO\b|\bFIXME\b/.test(lines[i])) {
@@ -233,6 +284,7 @@ function checkImportSafety(file, lines) {
 }
 
 function checkCatchTyping(file, lines) {
+  if (isReviewSelfFile(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     // catch(err: any) — explicit any
@@ -374,43 +426,29 @@ function runEslint(files, fix) {
 
 function runTypecheck(files) {
   const root = gitRoot();
-  // detect affected packages
-  const packages = [...new Set(files.map((f) => {
-    const m = f.match(/^packages\/([^/]+)\//);
-    return m ? m[1] : null;
-  }).filter(Boolean))];
-
-  // map package dirs to nx project names
-  const projectMap = {
-    'twenty-front': 'twenty-front',
-    'twenty-server': 'twenty-server',
-    'twenty-shared': 'twenty-shared',
-    'api': '@consuelo/api',
-    'dialer': '@consuelo/dialer',
-    'coaching': '@consuelo/coaching',
-    'contacts': '@consuelo/contacts',
-    'analytics': '@consuelo/analytics',
-    'cli': '@consuelo/cli',
-    'sdk': '@consuelo/sdk',
-    'metering': '@consuelo/metering',
-    'logger': '@consuelo/logger',
-  };
-
   const findings = [];
+  const nxPath = getNxBinary(root);
 
-  // check if nx is available
-  const nxPath = path.join(root, 'node_modules', '.bin', 'nx');
-  if (!fs.existsSync(nxPath)) {
+  if (!nxPath) {
     findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: 'nx not found — run yarn install or symlink node_modules' });
     return findings;
   }
 
-  for (const pkg of packages) {
-    const project = projectMap[pkg];
-    if (!project) continue;
+  const projects = getProjectsWithTarget(root, files, 'typecheck');
 
+  if (files.length > 0 && projects.length === 0) {
+    findings.push({
+      file: '',
+      line: 0,
+      rule: 'TYPECHECK',
+      msg: "no projects with 'typecheck' target found (nx available)",
+    });
+    return findings;
+  }
+
+  for (const project of projects) {
     try {
-      execFileSync('npx', ['nx', 'typecheck', project], {
+      execFileSync(nxPath, ['typecheck', project.name], {
         encoding: 'utf8',
         cwd: root,
         maxBuffer: 10 * 1024 * 1024,
@@ -418,24 +456,24 @@ function runTypecheck(files) {
       });
     } catch (err) {
       const output = (err.stdout || '') + (err.stderr || '');
-      // parse tsc errors: file(line,col): error TS1234: message
-      const errorLines = output.split('\n').filter((l) => /error TS\d+/.test(l));
+      const errorLines = output.split('\n').filter((line) => /error TS\d+/.test(line));
+
       for (const errLine of errorLines) {
         const m = errLine.match(/([^(]+)\((\d+),\d+\):\s*error\s+(TS\d+):\s*(.*)/);
         if (m) {
-          const relFile = path.relative(root, m[1].trim());
+          const relFile = path.relative(root, m[1].trim()).split(path.sep).join('/');
           findings.push({ file: relFile, line: parseInt(m[2], 10), rule: 'TYPECHECK', msg: `${m[3]}: ${m[4]}` });
         } else {
-          // try alternative format: file:line:col - error TS1234: message
           const m2 = errLine.match(/([^:]+):(\d+):\d+\s*-\s*error\s+(TS\d+):\s*(.*)/);
           if (m2) {
-            const relFile = path.relative(root, m2[1].trim());
+            const relFile = path.relative(root, m2[1].trim()).split(path.sep).join('/');
             findings.push({ file: relFile, line: parseInt(m2[2], 10), rule: 'TYPECHECK', msg: `${m2[3]}: ${m2[4]}` });
           }
         }
       }
+
       if (errorLines.length === 0 && output.includes('error')) {
-        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project}: ${output}` });
+        findings.push({ file: '', line: 0, rule: 'TYPECHECK', msg: `typecheck failed for ${project.name}: ${output}` });
       }
     }
   }
@@ -497,6 +535,9 @@ function runTests(files) {
       });
     } catch (err) {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      if (err.killed) {
+        writeStderr(`⚠ jest timed out for ${pkg} after ${elapsed}s — partial output below`);
+      }
       const output = (err.stdout || '') + (err.stderr || '');
       const suitesMatch = output.match(/Test Suites:\s*(.*)/);
       const testsMatch = output.match(/Tests:\s*(.*)/);
@@ -572,6 +613,30 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return; }
 
+  // --mine: re-run review from the active task worktree
+  if (args.mine) {
+    const { listWorktrees } = require('./lib/git');
+    const { readTaskMeta } = require('./lib/task-meta');
+    const { resolveGitRoot } = require('./lib/paths');
+    const repoRoot = resolveGitRoot(process.cwd());
+    const worktrees = listWorktrees(repoRoot);
+    const tasks = [];
+    for (const wt of worktrees) {
+      if (wt.path === repoRoot) continue;
+      const meta = readTaskMeta(wt.path);
+      if (meta) tasks.push({ path: wt.path, meta });
+    }
+    if (tasks.length === 0) { writeStderr('no active task worktree found'); process.exitCode = 1; return; }
+    if (tasks.length > 1) { writeStderr('multiple active tasks — run from inside the task worktree or use task:exec'); process.exitCode = 1; return; }
+    const taskRoot = tasks[0].path;
+    writeStderr(`→ review scoped to: ${taskRoot}`);
+    const passthrough = process.argv.slice(2).filter(a => a !== '--mine');
+    try {
+      execSync(`node ${__filename} ${passthrough.join(' ')}`, { cwd: taskRoot, stdio: 'inherit' });
+    } catch (e) { process.exitCode = e.status || 1; }
+    return;
+  }
+
   const root = gitRoot();
   if (!root) throw new Error('not in a git repository');
   process.chdir(root);
@@ -605,7 +670,16 @@ async function main() {
   // get files
   const files = args.all ? getAllTsFiles(root) : getChangedFiles(base);
 
+  const affectedProjects = getProjectsForFiles(root, files).map((project) => ({
+    name: project.name,
+    root: project.root,
+    files: project.files,
+  }));
+
   if (!args.quiet) writeStdout(`checking ${files.length} changed file(s)...`);
+  if (!args.quiet && affectedProjects.length > 0) {
+    writeStdout(`affected projects: ${affectedProjects.map((project) => project.name).join(', ')}`);
+  }
 
   // get changed line numbers for yours/not-yours split
   const changedLines = new Map();
@@ -673,6 +747,37 @@ async function main() {
     writeStdout(`  ${'SPEC_COMPLIANCE' + ' '.repeat(4)} ${specFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${specFindings.length})`}`);
   }
 
+  // confidence score — read from decision engine state if available
+  let confidenceResult = null;
+  try {
+    const { readExploreState, updateBeliefsWithEvents } = require('./lib/state/explore-state');
+    const { getEvidenceEvents } = require('./lib/state/evidence-log');
+    const { computeConfidence } = require('./confidence-score');
+    const state = readExploreState(root);
+    if (state) {
+      const events = getEvidenceEvents(root);
+      const updated = updateBeliefsWithEvents(state, events);
+      confidenceResult = computeConfidence(root, updated, events);
+      if (!args.quiet && !args.json) {
+        const s = confidenceResult;
+        const status = s.score >= 0.75 ? 'exploit' : s.score >= 0.55 ? 'gather more' : 'low';
+        writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ${s.score.toFixed(2)} (${status})`);
+        if (s.evidence_counts.top_files > 0) {
+          writeStdout(`    read ${s.evidence_counts.read_top_files}/${s.evidence_counts.top_files} top files, ${s.evidence_counts.read_graph_files}/${s.evidence_counts.graph_files} graph files`);
+        }
+        if (s.uncertainties.length > 0) {
+          writeStdout(`    uncertainty: ${s.uncertainties[0]}`);
+        }
+      }
+    } else if (!args.quiet && !args.json) {
+      writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ no evidence (decision system not used)`);
+    }
+  } catch {
+    if (!args.quiet && !args.json) {
+      writeStdout(`  ${'CONFIDENCE' + ' '.repeat(8)} ⊘ skipped (modules not available)`);
+    }
+  }
+
   // run tests — default on, skip with --no-tests
   let testResults = [];
   if (!args.noTests) {
@@ -710,7 +815,7 @@ async function main() {
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json) {
-    writeStdout(JSON.stringify({ base, branch, files: files.length, yours, preExisting, testResults }, null, 2));
+    writeStdout(JSON.stringify({ base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult }, null, 2));
     return;
   }
 
@@ -723,6 +828,27 @@ async function main() {
   const total = yours.length + preExisting.length;
   if (total === 0 && !testsFailed) {
     writeStdout('✓ all checks passed');
+
+    // kick off ai review in tmux background if a PR exists
+    try {
+      const taskFile = path.join(root, '.task', 'current.json');
+      if (fs.existsSync(taskFile)) {
+        const taskData = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
+        const prMatch = (taskData.prUrl || '').match(/\/pull\/(\d+)/);
+        if (prMatch) {
+          const prNum = prMatch[1];
+          const aiScript = path.join(root, 'packages/workspace/scripts/ai-review.js');
+          if (fs.existsSync(aiScript)) {
+            try {
+              execSync(`tmux new-session -d -s ai-review-${prNum} "cd ${root} && bun ${aiScript} -- ${prNum} 2>&1 | tee /tmp/ai-review-${prNum}.log"`, { stdio: 'ignore' });
+              writeStdout(`→ ai review started in tmux (ai-review-${prNum})`);
+            } catch {
+              writeStdout('→ ai review: tmux not available, skipping background review');
+            }
+          }
+        }
+      }
+    } catch { /* non-critical */ }
   } else {
     if (total > 0) {
       writeStdout(`${total} lint/type issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);

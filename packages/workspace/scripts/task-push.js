@@ -33,6 +33,10 @@ const {
   isStreamBranchName,
 } = require('./lib/validation');
 const { collectTaskMetaFiles, findTaskMeta, validateBranchMatch } = require('./lib/task-meta');
+const { findActiveTaskResult } = require('./lib/task-selection');
+const { getVerifyStampMismatch } = require('./lib/verification');
+
+const BOOLEAN_FLAGS = new Set(['--json', '--help', '--changed', '--verify', '--no-verify']);
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -50,9 +54,13 @@ function printHelp() {
   writeStdout('  --changed              push tracked changed files from the current task worktree');
   writeStdout('  --files <paths...>     explicit file paths to read from disk');
   writeStdout('  --files-json <json>    explicit JSON array of {path, content, deleted?} objects');
-  writeStdout('  --branch <name>        override task branch (normally inferred from .task/current.json)');
+  writeStdout('  --area <name>          select task by area');
+  writeStdout('  --branch <name>        select exact task branch');
+  writeStdout('  --pr <number>          select task by pr number');
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --cwd <dir>            base directory for explicit file paths');
+  writeStdout('  --verify               require a matching .task/verify.json stamp (default)');
+  writeStdout('  --no-verify            visibly bypass the verify stamp check');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -63,6 +71,7 @@ function parseArgs(argv) {
     filePaths: [],
     json: false,
     changed: false,
+    verify: true,
   };
 
   let index = 0;
@@ -84,7 +93,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--changed';
+    const isBooleanFlag = BOOLEAN_FLAGS.has(flag);
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -102,8 +111,14 @@ function parseArgs(argv) {
       case '--files-json':
         args.filesJson = value;
         break;
+      case '--area':
+        args.area = value;
+        break;
       case '--branch':
         args.branch = value;
+        break;
+      case '--pr':
+        args.prNumber = Number.parseInt(value, 10);
         break;
       case '--cwd':
         args.cwd = value;
@@ -113,6 +128,12 @@ function parseArgs(argv) {
         break;
       case '--changed':
         args.changed = true;
+        break;
+      case '--verify':
+        args.verify = true;
+        break;
+      case '--no-verify':
+        args.verify = false;
         break;
       case '--json':
         args.json = true;
@@ -127,11 +148,48 @@ function parseArgs(argv) {
     index += 1;
   }
 
+  if (args.prNumber !== undefined && !Number.isInteger(args.prNumber)) {
+    throw new Error('invalid --pr value');
+  }
+
   return args;
+}
+
+function hasExplicitTaskSelector(args) {
+  return Boolean(args.area || args.branch || args.prNumber !== undefined);
+}
+
+function getSelectedTaskContext(args, startDirectory) {
+  const repoRoot = resolveGitRoot(startDirectory);
+  const selected = findActiveTaskResult(repoRoot, {
+    area: args.area || null,
+    branch: args.branch || null,
+    prNumber: args.prNumber === undefined ? null : args.prNumber,
+  });
+
+  if (selected.error) {
+    throw new Error(selected.error);
+  }
+
+  return {
+    branch: selected.task.meta.taskBranch,
+    currentBranch: selected.task.branch,
+    repoRoot: selected.task.worktreePath,
+    taskMeta: {
+      dir: selected.task.worktreePath,
+      data: selected.task.meta,
+      path: path.join(selected.task.worktreePath, '.task', 'current.json'),
+    },
+  };
 }
 
 function getTaskContext(args) {
   const startDirectory = path.resolve(args.cwd || process.cwd());
+
+  if (hasExplicitTaskSelector(args)) {
+    return getSelectedTaskContext(args, startDirectory);
+  }
+
   const repoRoot = resolveGitRoot(startDirectory);
   const currentBranch = getCurrentBranch(startDirectory);
   const taskMeta = findTaskMeta(startDirectory);
@@ -322,7 +380,20 @@ async function main() {
 
   assertCommitMessageFormat(args.message);
 
-  const { branch, repoRoot } = getTaskContext(args);
+  const { branch, repoRoot, taskMeta } = getTaskContext(args);
+
+  if (args.verify) {
+    const verifyMismatch = getVerifyStampMismatch(repoRoot, branch);
+    if (verifyMismatch) {
+      throw new Error(
+        `verify required before task:push: ${verifyMismatch}.\n` +
+        'run: bun run verify\n' +
+        'or explicitly bypass with: bun run task:push -- --no-verify --message "fix(area): summary" --changed',
+      );
+    }
+  } else {
+    writeStderr('warning: task:push bypassing verify because --no-verify was provided');
+  }
 
   if (args.changed) {
     assertChangedBranchIsSynced(repoRoot, branch);
@@ -346,8 +417,10 @@ async function main() {
     }
   }
 
-  // auto-include .task/ metadata files in every push
-  const metaFiles = collectTaskMetaFiles(repoRoot);
+  // auto-include .task/ metadata files — scoped to current task area only
+  const currentArea = taskMeta && taskMeta.data && taskMeta.data.area;
+  const currentTaskBranch = taskMeta && taskMeta.data && taskMeta.data.taskBranch;
+  const metaFiles = collectTaskMetaFiles(repoRoot, currentArea, currentTaskBranch, { includeVerify: args.verify });
   const seenPaths = new Set(userFiles.map((f) => f.path));
   const files = [...userFiles];
   for (const mf of metaFiles) {
@@ -380,6 +453,8 @@ async function main() {
     if (file.deleted) {
       treeItems.push({
         path: file.path,
+        mode: '100644',
+        type: 'blob',
         sha: null,
       });
       continue;

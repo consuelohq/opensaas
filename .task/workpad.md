@@ -38,7 +38,7 @@ started: 2026-04-30
 - Any later Railway/DNS change should be done together after this code branch is reviewed.
 - Branch-scoped raw review ran against `origin/stream/clean-up`. It still marks existing Apollo `console.*` and module-boundary warnings as `yours` because this task touches `apollo.factory.ts`; this patch removed logs in the token-renewal path and did not introduce new logging. Typecheck still fails in pre-existing `twenty-shared` relative date utilities.
 - Focused Jest passed on this branch: `npx jest packages/twenty-front/src/modules/apollo/services/__tests__/apollo.factory.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand`.
-- First task attempt was PR 236, started from `main`; this PR supersedes it because this branch starts from `stream/clean-up` and keeps the diff scoped.
+- First task attempt was PR 236, started from `main`; PR 237 superseded it because this branch starts from `stream/clean-up` and keeps the diff scoped.
 
 ## improvements noticed
 

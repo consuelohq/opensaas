@@ -202,29 +202,119 @@ every PR gets reviewed against these rules. `scripts/code-review.sh` (also `npm 
 
 ### mandatory rules
 
-1. **LOGGING** — uses structured logger, never `console.*`
-2. **SENTRY** — HTTP errors and caught exceptions have sentry tracking
-3. **PHONE_NORM** — phone comparisons use `normalizePhone()`
-4. **SQL_PARAM** — all SQL queries use parameterized values, never string interpolation
-5. **ERROR_HANDLING** — async functions with `await` must have try/catch within 30 lines
-6. **TYPE_SAFETY** — no `any` types without a `// HACK:` comment explaining why
-7. **SECRETS** — no hardcoded API keys, tokens, or passwords (skips `process.env` and type annotations)
-8. **TODO_FIXME** — bare `TODO` or `FIXME` must include a ticket reference like `DEV-123`
-9. **IMPORT_SAFETY** — no wildcard `import *` (except builtins like fs, path, os and Sentry)
-10. **ROUTE_ORDER** — literal routes must come before param routes (`:id`) in the same prefix
-11. **CATCH_TYPING** — `catch (err)` must have `: unknown` type annotation
-12. **OPTIONAL_IMPORT** — peer dependencies must use lazy `await import()`, never top-level `import`
-13. **STUB_HANDLER** — route handlers must return real data or explicit 501, not hardcoded fakes
-14. **SPEC_COMPLIANCE** — changed files must match the original prompt/spec (confirmation required)
-15. **ESLINT** — all changed .ts/.tsx files must pass eslint (includes lingui/no-unlocalized-strings, no-hardcoded-colors, import restrictions, and all configured rules)
-16. **TYPECHECK** — affected packages must pass `npx nx typecheck` with no errors
+### review.run
 
+run the workspace review checks
+
+- signature: `workspace.review.run({ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace review.run`
+- capabilities: readOnly=true, mutating=false, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.review.run({
+  "mine": true,
+  "noTests": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### verify
+
+run the full task safety gate
+
+- signature: `workspace.verify({ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace verify`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.verify({
+  "noStamp": true,
+  "dryRun": true
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
 ### review triggers
 
 auto-review when:
 - diff touches 3+ files OR 50+ lines changed
 - changes touch: `Dockerfile`, `package.json`, `template.yaml`, deployment configs
 - changes include new API routes or database queries
+- if a check in your stream fails it counts as "mine"
 
 ### severity levels
 
@@ -241,7 +331,7 @@ before pushing code:
 1. **check for stashed changes**: `git stash list`
 2. **review the diff**: `git diff --staged`
 3. **run code review**: check against mandatory rules above
-4. **verify no forbidden files**: no `.env`, `node_modules/`, `dist/`, `.turbo/`
+4. **verify no forbidden files**: no `.env`, `node_modules/`, `dist/`, `.turbo/`, ect
 5. **type check**: `npx tsc --noEmit` in affected packages
 
 ---
@@ -316,7 +406,7 @@ export async function someCommand(opts: Options): Promise<void> {
 
 ## package-specific rules
 
-### optional / peer dependencies
+### peer dependencies
 
 packages that list dependencies in `peerDependencies` must NEVER import them at the top level. top-level imports crash the entire package for consumers who don't have the optional dep installed.
 
@@ -381,29 +471,4 @@ private async getClient() {
 
 ---
 
-## git conventions
 
-### commit format
-
-```text
-type(scope): description
-
-- detail 1
-- detail 2
-```
-
-types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
-scopes: `cli`, `api`, `dialer`, `coaching`, `contacts`, `analytics`, `sdk`, `metering`, `workspace`
-
-### branch naming
-
-- `agent/description` — agent-created branches
-- `remote/repo-hash--description` — remote dev branches
-- `fix/description` — bug fixes
-- `feat/description` — features
-
-### PR rules
-
-- one PR per feature (don't split related work across PRs)
-- link linear issues in PR description
-- all mandatory code review rules must pass before merge

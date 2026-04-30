@@ -61,6 +61,8 @@ TRANSLATION_QA_REPORT.md
 .agent/backups/
 .agent/.oauth-token.json
 .agent/.opencode-token.json
+.agent/.chatgpt-token.json
+.agent/*-token.json
 .agent/workpads/
 .agent/handoffs/
 

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/tighten-exact-task-command-selection",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 210,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/210",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-tighten-exact-task-command-selection",
+  "createdAt": "2026-04-27T04:25:23.509Z"
+}

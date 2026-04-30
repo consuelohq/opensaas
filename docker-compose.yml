@@ -27,7 +27,9 @@ services:
       retries: 10
 
   server:
-    image: ghcr.io/consuelohq/opensaas:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: packages/twenty-docker/twenty/Dockerfile
     volumes:
       - server-local-data:/app/packages/twenty-server/.local-storage
     ports:
@@ -71,7 +73,9 @@ services:
     restart: always
 
   worker:
-    image: ghcr.io/consuelohq/opensaas:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: packages/twenty-docker/twenty/Dockerfile
     volumes:
       - server-local-data:/app/packages/twenty-server/.local-storage
     command: ["yarn", "worker:prod"]

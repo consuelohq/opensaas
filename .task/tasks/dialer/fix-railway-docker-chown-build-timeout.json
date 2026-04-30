@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-railway-docker-chown-build-timeout",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/217",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-railway-docker-chown-build-timeout",
+  "createdAt": "2026-04-27T20:25:38.800Z"
+}

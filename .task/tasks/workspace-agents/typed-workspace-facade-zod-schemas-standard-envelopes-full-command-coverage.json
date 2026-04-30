@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 226,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/226",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-typed-workspace-facade-zod-schemas-standard-envelopes-full-command-coverage",
+  "createdAt": "2026-04-29T08:05:05.174Z"
+}

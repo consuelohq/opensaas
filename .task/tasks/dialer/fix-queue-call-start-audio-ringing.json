@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-queue-call-start-audio-ringing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 190,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/190",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-queue-call-start-audio-ringing",
+  "createdAt": "2026-04-24T21:07:59.511Z"
+}

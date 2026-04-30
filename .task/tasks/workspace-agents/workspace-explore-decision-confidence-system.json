@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/workspace-explore-decision-confidence-system",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 222,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/222",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-workspace-explore-decision-confidence-system",
+  "createdAt": "2026-04-27T22:56:48.655Z"
+}

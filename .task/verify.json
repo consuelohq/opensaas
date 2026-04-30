@@ -1,0 +1,22 @@
+{
+  "result": "pass",
+  "branch": "task/dialer/fix-railway-docker-chown-build-timeout",
+  "base": "origin/stream/dialer",
+  "headSha": "0c1adc41725dc35f1c456db390a10c0b9f955eeb",
+  "changeHash": "046d7d2b6971198a64a9a7d7bfb2fec503323f304e63074af1c348568171835b",
+  "changedFiles": [
+    "packages/twenty-docker/twenty/Dockerfile"
+  ],
+  "verifiedAt": "2026-04-27T20:33:03.376Z",
+  "review": {
+    "skipped": false,
+    "passed": true
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 1
+}

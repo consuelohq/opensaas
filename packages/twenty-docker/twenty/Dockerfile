@@ -27,7 +27,6 @@ COPY ./packages/dialer/package.json /app/packages/dialer/
 COPY ./packages/logger/package.json /app/packages/logger/
 COPY ./packages/metering/package.json /app/packages/metering/
 COPY ./packages/sdk/package.json /app/packages/sdk/
-COPY ./packages/workspace/package.json /app/packages/workspace/
 
 # Install all dependencies
 RUN yarn && yarn cache clean && npx nx reset
@@ -80,10 +79,8 @@ COPY ./packages/dialer /app/packages/dialer
 COPY ./packages/logger /app/packages/logger
 COPY ./packages/metering /app/packages/metering
 COPY ./packages/sdk /app/packages/sdk
-COPY ./packages/workspace /app/packages/workspace
 RUN npx nx build twenty-shared && cd packages/twenty-front && npx @lingui/cli extract --clean && npx @lingui/cli compile
 RUN NODE_OPTIONS="--max-old-space-size=4096" npx nx build twenty-front
-
 
 # Final stage: Run the application
 FROM node:24-alpine AS twenty
@@ -115,7 +112,7 @@ LABEL org.opencontainers.image.source=https://github.com/consuelohq/opensaas
 LABEL org.opencontainers.image.description="Consuelo — open-source sales infrastructure. CRM server and frontend in a single container."
 
 RUN mkdir -p /app/.local-storage /app/packages/twenty-server/.local-storage && \
-    chown -R 1000:1000 /app
+    chown 1000:1000 /app/.local-storage /app/packages/twenty-server/.local-storage
 
 # Use non root user with uid 1000
 USER 1000

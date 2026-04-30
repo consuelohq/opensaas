@@ -359,7 +359,7 @@ export const useOpportunityQueueWorkspace = ({
 
   const { status: twilioConfigStatus } = useTwilioConfigStatus();
   const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
-  const { startParallelBatch } = useParallelDialer();
+  const { startParallelBatch, cancelParallelDial } = useParallelDialer();
   const { recordResult } = useQueueOperations();
 
   const [wrapUpState, setWrapUpState] = useState<OpportunityWrapUpState | null>(
@@ -1245,8 +1245,31 @@ export const useOpportunityQueueWorkspace = ({
     }
 
     if (queueUsesParallelDialing) {
-      autoStartedItemIdRef.current = currentQueueItem.id;
-      void startParallelBatch();
+      const autoStartedItemId = currentQueueItem.id;
+      autoStartedItemIdRef.current = autoStartedItemId;
+
+      void startParallelBatch()
+        .then((result) => {
+          if (result.status === 'blocked' || result.status === 'failed') {
+            return;
+          }
+
+          if (
+            result.status === 'skipped' &&
+            autoStartedItemIdRef.current === autoStartedItemId
+          ) {
+            autoStartedItemIdRef.current = null;
+          }
+        })
+        .catch((error: unknown) => {
+          Sentry.captureException(error, {
+            extra: {
+              context: 'startParallelBatch',
+              currentQueueItemId: autoStartedItemId,
+              listId,
+            },
+          });
+        });
       return;
     }
 
@@ -1254,6 +1277,7 @@ export const useOpportunityQueueWorkspace = ({
   }, [
     callState.status,
     currentQueueItem,
+    listId,
     listStatus,
     queueRunnerReady,
     queueUsesParallelDialing,
@@ -1477,6 +1501,7 @@ export const useOpportunityQueueWorkspace = ({
           return;
         }
 
+        await cancelParallelDial();
         disconnect();
 
         const response = await authenticatedFetch(
@@ -1530,6 +1555,7 @@ export const useOpportunityQueueWorkspace = ({
     },
     [
       backendQueue?.id,
+      cancelParallelDial,
       callState.callSid,
       callState.duration,
       currentQueueItem,

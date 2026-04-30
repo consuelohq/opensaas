@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-queue-walkthrough-lifecycle",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 197,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/197",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-queue-walkthrough-lifecycle",
+  "createdAt": "2026-04-25T23:29:27.708Z"
+}

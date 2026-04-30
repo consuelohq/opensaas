@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-pr-198-review-findings",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 200,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/200",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-pr-198-review-findings",
+  "createdAt": "2026-04-26T22:29:27.087Z"
+}

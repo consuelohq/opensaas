@@ -1,104 +1,16 @@
 # Agents.md — opensaas agent instructions
 
+
 ## first things first
 
 read `CODING-STANDARDS.md` before writing any code. every rule in that file is mandatory.
 
 ## project overview
 
-Consuelo - Teleommunication infrastructure.
+Company: Consuelo
+Repo:Opensaas
+About:Teleommunication infrastructure.
 
-## key commands
-
-### development
-
-```bash
-# start development environment (frontend + backend + worker)
-yarn start
-
-# individual package development
-npx nx start twenty-front     # frontend dev server (vite, HMR)
-npx nx start twenty-server    # backend server (nestjs)
-npx nx run twenty-server:worker  # background worker
-```
-
-### testing
-
-```bash
-# preferred: run a single test file (fast)
-npx jest path/to/test.test.ts --config=packages/PROJECT/jest.config.mjs
-
-# run all tests for a package
-npx nx test twenty-front      # frontend unit tests
-npx nx test twenty-server     # backend unit tests
-npx nx run twenty-server:test:integration:with-db-reset  # integration tests with DB reset
-
-# storybook
-npx nx storybook:build twenty-front
-npx nx storybook:test twenty-front
-
-# when testing the UI end to end, click on "Continue with Email" and use the prefilled credentials.
-```
-
-### code quality
-
-```bash
-# linting (diff with main — fastest, always prefer this)
-npx nx lint:diff-with-main twenty-front
-npx nx lint:diff-with-main twenty-server
-npx nx lint:diff-with-main twenty-front --configuration=fix  # auto-fix
-
-# linting (full project — slower, use only when needed)
-npx nx lint twenty-front
-npx nx lint twenty-server
-
-# type checking
-npx nx typecheck twenty-front
-npx nx typecheck twenty-server
-
-# format code
-npx nx fmt twenty-front
-npx nx fmt twenty-server
-```
-
-### build
-
-```bash
-# twenty-shared must be built first
-npx nx build twenty-shared
-npx nx build twenty-front
-npx nx build twenty-server
-```
-
-### database operations
-
-> **IMPORTANT:** always run `bash scripts/db-backup.sh` before any migration, reset, or schema change. backups are saved to `.agent/backups/` and the last 5 are kept automatically.
-
-```bash
-# backup/restore (run backup BEFORE any db work)
-bash scripts/db-backup.sh                    # snapshot current database
-bash scripts/db-restore.sh                   # list available backups
-bash scripts/db-restore.sh <backup-file>     # restore from backup
-
-# database management
-npx nx database:reset twenty-server         # reset database
-npx nx run twenty-server:database:init:prod # initialize database
-npx nx run twenty-server:database:migrate:prod # run migrations
-
-# generate migration (replace [name] with kebab-case descriptive name)
-npx nx run twenty-server:typeorm migration:generate src/database/typeorm/core/migrations/common/[name] -d src/database/typeorm/core/core.datasource.ts
-
-# sync metadata
-npx nx run twenty-server:command workspace:sync-metadata
-```
-
-### graphql
-
-```bash
-# generate GraphQL types (run after schema changes)
-npx nx run twenty-front:graphql:generate
-npx nx run twenty-front:graphql:generate --configuration=metadata
-```
 
 ## architecture
 
@@ -133,6 +45,7 @@ npx nx run twenty-front:graphql:generate --configuration=metadata
 - **types/classes**: PascalCase (suffix component props with `Props`, e.g. `ButtonProps`)
 - **files/directories**: kebab-case with descriptive suffixes (`.component.tsx`, `.service.ts`, `.entity.ts`, `.dto.ts`, `.module.ts`)
 - **TypeScript generics**: descriptive names (`TData` not `T`)
+- **Proper upper vs lowercase all across work.**
 
 ### file structure
 
@@ -181,26 +94,6 @@ use existing helpers from `twenty-shared` instead of manual type guards:
 
 - `isDefined()`, `isNonEmptyString()`, `isNonEmptyArray()`
 
-### auth system (twenty's built-in JWT)
-
-single `APP_SECRET` env var. per-token secrets derived via `sha256(APP_SECRET + workspaceId + tokenType)`. implemented in `packages/twenty-server/src/engine/core-modules/jwt/services/jwt-wrapper.service.ts`.
-
-- access token: 30m expiry, payload: `{ sub, type: "ACCESS", userId, workspaceId, workspaceMemberId, userWorkspaceId, authProvider, isImpersonating }`
-- refresh token: 60d expiry, stored in DB as AppToken entities with reuse detection
-- frontend stores tokens in cookies (key: `tokenPair`), NOT localStorage
-- no clerk, no separate auth provider
-
-## development workflow
-
-IMPORTANT: Use Context7 for code generation, setup or configuration steps, or library/API documentation. Automatically use the Context7 MCP tools to resolve library IDs and get library docs without waiting for explicit requests.
-
-### before making changes
-
-1. always run linting (`lint:diff-with-main`) and type checking after code changes
-2. test changes with relevant test suites (prefer single-file test runs)
-3. ensure database migrations are generated for entity changes
-4. check that GraphQL schema changes are backward compatible
-5. run `graphql:generate` after any GraphQL schema changes
 
 ### code style
 
@@ -218,34 +111,12 @@ IMPORTANT: Use Context7 for code generation, setup or configuration steps, or li
 - descriptive test names: "should [behavior] when [condition]"
 - clear mocks between tests with `jest.clearAllMocks()`
 
-### CI environment (GitHub Actions)
 
-when running in CI, the dev environment is **not** pre-configured. dependencies are installed but builds, env files, and databases are not set up.
 
-- **before running tests, builds, lint, type checks, or DB operations**, run: `bash packages/twenty-utils/setup-dev-env.sh`
-- **skip the setup script** for tasks that only read code — architecture questions, code review, documentation, etc.
-- the script is idempotent and safe to run multiple times.
-
-### keyboard shortcuts
-
-twenty has a full hotkey system built in. **always use it** — never raw `addEventListener` for keyboard shortcuts.
-
-| hook                         | use case                                                     |
-| ---------------------------- | ------------------------------------------------------------ |
-| `useGlobalHotkeys`           | single key or modifier combos (e.g. `m` for mute)            |
-| `useGlobalHotkeysSequence`   | two-key sequences (e.g. `g` then `s` = go to settings)       |
-| `useGoToHotkeys`             | navigation via `g+key` (wraps sequence hook + `useNavigate`) |
-| `useHotkeysOnFocusedElement` | context-scoped (only fires when specific element focused)    |
-
-all hooks live in `packages/twenty-front/src/modules/ui/utilities/hotkey/hooks/`.
-
-dialer shortcuts use `useDialerHotkeys` hook (`packages/twenty-front/src/modules/dialer/hooks/useDialerHotkeys.ts`) — takes callbacks, registers via `useGlobalHotkeys`.
-
-**full shortcut reference + planned shortcuts for all phases:** `.kiro/docs/KEYBOARD-SHORTCUTS.md`
 
 ## deployment — railway
 
-production is deployed on railway at `app.consuelohq.com`. four services: we are selling this to insurance agents
+
 
 | service         | what it does                          | Dockerfile                                 |
 | --------------- | ------------------------------------- | ------------------------------------------ |
@@ -254,7 +125,7 @@ production is deployed on railway at `app.consuelohq.com`. four services: we are
 | `postgres`      | PostgreSQL database                   | railway managed                            |
 | `redis`         | Redis cache + sessions + BullMQ       | railway managed                            |
 
-### railway Dockerfile configuration
+### railway Dockerfile configuration (twenty is just namining old old packages consuelo built on top of)
 
 railway has TWO env vars for Dockerfile path — you need BOTH:
 
@@ -275,70 +146,11 @@ the worker uses the same Dockerfile as the main server but with a custom start c
 
 the `/bin/sh -c` wrapper is required because the Dockerfile uses an ENTRYPOINT (`/app/entrypoint.sh`), and railway treats the start command as an ENTRYPOINT override — without the shell wrapper, env vars won't expand.
 
-### railway CLI cheat sheet
 
-```bash
-railway logs --service opensaas          # runtime logs
-railway logs --service opensaas --build  # build logs
-railway variables --service opensaas     # list env vars
-railway variables --set "KEY=value" --service opensaas  # set env var
-railway redeploy --service opensaas      # trigger redeploy
-```
-
-note: the railway CLI cannot delete env vars or set start commands. use the dashboard for those. use this, stop suggesting we do things when this is in your tool kit, mainly for logs and verification. and make sure we are on the right deploy, not a prior deploy
-
-## patches & workarounds
-
-### @graphql-tools/merge — null fields in applyExtensions (feb 2026)
-
-**patch file:** `packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch`
-
-`mergeSchemas()` crashes with `Cannot convert undefined or null to object` when `Object.entries()` is called on `data.fields`, `data.values`, or `fieldData.arguments` that are null/undefined in the `applyExtensions()` function. this only surfaces with large workspace schemas (551+ types).
-
-**fix:** yarn resolution in root `package.json` forces a single patched copy across the entire monorepo:
-
-```json
-"resolutions": {
-  "@graphql-tools/merge": "patch:@graphql-tools/merge@9.1.7#./packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch"
-}
-```
-
-**critical:** the resolution MUST be in root `package.json`, not in `packages/twenty-server/package.json`. yarn can create nested copies of transitive deps (e.g. `node_modules/@graphql-tools/schema/node_modules/@graphql-tools/merge/`). a direct dep only patches the top-level copy. a root resolution forces deduplication to a single patched copy.
-
-### patching transitive dependencies — the pattern
-
-when you need to patch a transitive dep in this monorepo:
-
-1. create the patch file in `packages/twenty-server/patches/`
-2. add a `resolutions` entry in ROOT `package.json` (not the package's `package.json`)
-3. use the `patch:` protocol: `"pkg": "patch:pkg@version#./packages/twenty-server/patches/file.patch"`
-4. run `yarn install` and verify with `grep` that the fix is in `node_modules/`
-5. verify there are NO nested copies: `ls node_modules/<parent>/node_modules/<pkg>/ 2>/dev/null` should return nothing
-
-**DO NOT use `sed` on patch files** — it corrupts diff hunk headers. edit patch files with a proper editor or regenerate with `diff -u`.
 
 ### yoga driver patch (DO NOT MODIFY)
 
 `packages/twenty-server/patches/@graphql-yoga+nestjs+2.1.0.patch` — patches the yoga NestJS driver to support conditional schema merging (workspace + core schemas). this is the code path that calls `mergeSchemas()`. do not touch this file.
-
-## graphql schema architecture
-
-twenty's graphql has two schema scopes:
-
-- **core** — always available, no auth needed. metadata operations, auth mutations.
-- **workspace** — requires auth token. all business data (companies, people, opportunities, etc.). 551+ types, built dynamically per workspace from metadata.
-
-the yoga driver patch merges these at request time:
-
-1. core schema is always loaded
-2. if request has a valid auth token, workspace schema is fetched (cached in redis)
-3. `mergeSchemas({ schemas: [coreSchema, workspaceSchema] })` produces the final schema
-
-key file: `packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts`
-
-- `resolverSchemaScope: 'core'` — for the main graphql config (core schema)
-- `resolverSchemaScope: 'metadata'` — for the metadata graphql config
-- workspace schema is returned by `conditionalSchema` callback in the yoga driver patch
 
 ## consuelo internal instance — direct API access this is NOT the same as app.consuelohq.com this is our workspace for us to dev and work on and app.consuelohq.com is what we sell.
 
@@ -385,11 +197,11 @@ without this, the server reads stale data from redis and your DB changes are inv
 ### workspace IDs
 
 - consuelo (internal): `7d0894c1-bdb1-4dd6-9a00-78681b52d5f6`
-- alex moreno: `8eaedb39-991a-47fc-8337-00a195483851`
+
 
 ## critical rules
 
-0. **NEVER switch branches on the main worktree** — `/Users/kokayi/Dev/opensaas` is ko's working directory. no `git checkout`, `git switch`, `git merge`, `git reset`, or any branch-changing operation without pre-flight checks (`git status`, `pgrep -f opencode`, `git branch --show-current`). **default to github API** (`gh api`) for editing files on other branches — create blobs → trees → commits directly on the remote, zero local impact. worktrees (`git worktree add /tmp/opensaas-<task> <branch>`) are the fallback when you need a real filesystem (builds, tests, lint). main worktree is last resort, only when ko explicitly says to or the work IS on the current branch.
+
 1. **read CODING-STANDARDS.md** — contains all error tracking, logging, SQL, phone normalization, and code review rules
 2. **never use `console.log/error/warn`** — use structured logger
 3. **never interpolate user input into SQL** — parameterized queries only
@@ -398,9 +210,7 @@ without this, the server reads stale data from redis and your DB changes are inv
 6. **config lives at `~/.consuelo/config.json`** — loaded via `loadConfig()` from `packages/cli/src/config.ts`
 7. **error format is consistent** — API: `{ error: { code, message } }`, CLI: `error()` + `process.exit(1)`
 
-## pre-push code review — 16 automated checks
 
-`scripts/code-review.sh` (also `npm run review`) runs on every push. all 16 must pass. checks all changed .ts/.tsx files across all packages.
 
 ## route ordering
 
@@ -417,7 +227,7 @@ literal routes MUST come before param routes in the same prefix group. the frame
 { path: '/v1/contacts/search', ... },
 ```
 
-the pre-push `ROUTE_ORDER` check enforces this automatically.
+
 
 ## shared instances
 
@@ -473,7 +283,7 @@ catch (err: any) {
 }
 ```
 
-## optional / peer dependencies — lazy imports only
+## peer dependencies — lazy imports only
 
 if a package is in `peerDependencies` (not `dependencies`), it MUST be imported dynamically inside the function that uses it. never at the top level. top-level imports of optional deps crash the entire package for anyone who doesn't have them installed.
 
@@ -565,214 +375,7 @@ private async getClient() {
     throw err;
   }
 }
-```
-
-## git
-
-- suelo-kiro[bot] is the **committer**, not the author. ko (kokayicobb) must remain the author for github credit:
-  ```bash
-  GIT_COMMITTER_NAME="suelo-kiro[bot]" GIT_COMMITTER_EMAIL="260422584+suelo-kiro[bot]@users.noreply.github.com" git commit -m "message"
-  ```
-- **never** use `--author="suelo-kiro[bot] ..."` — that steals ko's commit credit
-- commit format: `type(scope): description`
-- one PR per feature
-
-## github API — remote branch edits (no local checkout)
-
-**this is the default for editing files on any branch that isn't the current local branch.** never `git checkout` on the main worktree to fix a PR or push changes to a remote branch. use `gh api` instead.
-
-### the pattern: blob → tree → commit → update ref
-
-```bash
-# 1. get current branch HEAD
-HEAD_SHA=$(gh api repos/consuelohq/opensaas/git/ref/heads/<branch> --jq '.object.sha')
-TREE_SHA=$(gh api repos/consuelohq/opensaas/git/commits/$HEAD_SHA --jq '.tree.sha')
-
-# 2. create blobs for each file you're changing
-BLOB_SHA=$(gh api repos/consuelohq/opensaas/git/blobs \
-  -f content="$(base64 < /tmp/fixed-file.ts)" \
-  -f encoding=base64 --jq '.sha')
-
-# 3. create a new tree with the updated files
-NEW_TREE=$(gh api repos/consuelohq/opensaas/git/trees --input - <<EOF | jq -r '.sha'
-{
-  "base_tree": "$TREE_SHA",
-  "tree": [
-    {"path": "packages/api/src/routes/queues.ts", "mode": "100644", "type": "blob", "sha": "$BLOB_SHA"}
-  ]
-}
-EOF
-)
-
-# 4. create the commit (ko as author, suelo-kiro[bot] as committer)
-COMMIT_SHA=$(gh api repos/consuelohq/opensaas/git/commits --input - <<EOF | jq -r '.sha'
-{
-  "message": "fix(scope): description",
-  "tree": "$NEW_TREE",
-  "parents": ["$HEAD_SHA"],
-  "author": {"name": "kokayicobb", "email": "kokayicobb@users.noreply.github.com", "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"},
-  "committer": {"name": "suelo-kiro[bot]", "email": "260422584+suelo-kiro[bot]@users.noreply.github.com", "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
-}
-EOF
-)
-
-# 5. update the branch ref
-gh api repos/consuelohq/opensaas/git/refs/heads/<branch> -X PATCH -f sha=$COMMIT_SHA
-```
-
-### reading files from a remote branch
-
-```bash
-# get file content (base64 decoded)
-gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.content' | base64 -d > /tmp/file.ts
-
-# get file SHA (for reference)
-gh api repos/consuelohq/opensaas/contents/<path>?ref=<branch> --jq '.sha'
-```
-
-### when to use what
-
-| scenario | method |
-|----------|--------|
-| fix files on a PR branch | github API (blob → tree → commit) |
-| code review follow-ups | github API |
-| need to run builds/tests/lint | `git worktree add /tmp/opensaas-<task> <branch>` |
-| work IS on the current local branch | local git (with pre-flight checks) |
-| create a PR | `gh pr create` (works without checkout) |
-| post PR comments/reviews | `gh pr comment` / `gh pr review` |
-
-ALl text must be localized with Lingui
-
-# MCP tools — USE THEM
-
-you have MCP servers available. learn them, use them, stop doing things the hard way.
-
-## codemode (`execute_code`) — batch file operations
-
-**this is your most important token-saving tool.** every time you're about to make 2+ sequential tool calls that touch files, search, or bash — stop and use codemode instead. one round-trip instead of many.
-
-```javascript
-// available async functions (all paths relative to workingDirectory):
-await readFile('src/foo.ts')                    // full file
-await readFile('src/foo.ts', 10, 30)            // lines 10-30
-await writeFile('src/foo.ts', content)           // create/overwrite
-await editFile('src/foo.ts', 'old text', 'new') // str_replace
-await appendFile('src/foo.ts', '\nnew line')
-await insertLine('src/foo.ts', 15, 'new code')  // insert after line 15
-await readDir('src/', 2)                         // list with depth
-await grep('pattern', 'src/', { include: '*.ts' })
-await glob('*.test.ts', 'src/')
-await bash('npm run build')                      // shell commands
-```
-
-**when to use codemode:**
-- reading 2+ files → `Promise.all([readFile(a), readFile(b), readFile(c)])`
-- grep → read → edit chains (the whole flow in one call)
-- batch edits across multiple files
-- any sequence where one result feeds into the next
-- investigating a codebase (readDir + readFile several files)
-
-**the token math:** 5 file reads = 5 tool calls = 5 round-trips. with codemode: 1 call = 1 round-trip. each saved round-trip saves the full context window being re-sent.
-
-**return only what matters** — don't return a 500-line file when you need 20 lines:
-```javascript
-const content = await readFile('src/big-service.ts');
-const relevant = content.split('\n').filter(l => l.includes('transferCall')).join('\n');
-return { matchingLines: relevant, totalLines: content.split('\n').length };
-```
-
-## context7 — up-to-date library docs
-
-when writing code that uses any library/framework, look up the latest docs instead of relying on training data. prevents hallucinated APIs.
-
-```
-// 1. resolve the library ID
-resolve-library-id({ libraryName: "nestjs" })
-
-// 2. fetch docs for a specific topic
-get-library-docs({ context7CompatibleLibraryID: "/nestjs/nest", topic: "guards" })
-```
-
-use for: code generation, setup/config, API docs, version-specific behavior. especially important for fast-moving libraries (react, nestjs, twilio, stripe, typeorm).
-
-## qmd — memory and knowledge search
-
-qmd is a local hybrid search engine (BM25 + vector + LLM reranking) that indexes all markdown files across opensaas, kiro sessions, opencode sessions, and docs. **search before you say "i don't know."**
-
-if available as an MCP tool, use `qmd_query` for best results. otherwise via shell:
-```bash
-~/.bun/bin/qmd query "conference transfer architecture"  # hybrid search (best)
-~/.bun/bin/qmd search "twilio conference"                # keyword only (fast)
-```
-
-# context-mode — MANDATORY routing rules
-
-You have context-mode MCP tools available. These rules are NOT optional — they protect your context window from flooding. A single unrouted command can dump 56 KB into context and waste the entire session.
-
-## BLOCKED commands — do NOT attempt these
-
-### curl / wget — BLOCKED
-
-Any shell command containing `curl` or `wget` will be intercepted and blocked by the context-mode plugin. Do NOT retry.
-Instead use:
-
-- `context-mode_ctx_fetch_and_index(url, source)` to fetch and index web pages
-- `context-mode_ctx_execute(language: "javascript", code: "const r = await fetch(...)")` to run HTTP calls in sandbox
-
-### Inline HTTP — BLOCKED
-
-Any shell command containing `fetch('http`, `requests.get(`, `requests.post(`, `http.get(`, or `http.request(` will be intercepted and blocked. Do NOT retry with shell.
-Instead use:
-
-- `context-mode_ctx_execute(language, code)` to run HTTP calls in sandbox — only stdout enters context
-
-### Direct web fetching — BLOCKED
-
-Do NOT use any direct URL fetching tool. Use the sandbox equivalent.
-Instead use:
-
-- `context-mode_ctx_fetch_and_index(url, source)` then `context-mode_ctx_search(queries)` to query the indexed content
-
-## REDIRECTED tools — use sandbox equivalents
-
-### Shell (>20 lines output)
-
-Shell is ONLY for: `git`, `mkdir`, `rm`, `mv`, `cd`, `ls`, `npm install`, `pip install`, and other short-output commands.
-For everything else, use:
-
-- `context-mode_ctx_batch_execute(commands, queries)` — run multiple commands + search in ONE call
-- `context-mode_ctx_execute(language: "shell", code: "...")` — run in sandbox, only stdout enters context
-
-### File reading (for analysis)
-
-If you are reading a file to **edit** it → reading is correct (edit needs content in context).
-If you are reading to **analyze, explore, or summarize** → use `context-mode_ctx_execute_file(path, language, code)` instead. Only your printed summary enters context.
-
-### grep / search (large results)
-
-Search results can flood context. Use `context-mode_ctx_execute(language: "shell", code: "grep ...")` to run searches in sandbox. Only your printed summary enters context.
-
-## Tool selection hierarchy
-
-1. **GATHER**: `context-mode_ctx_batch_execute(commands, queries)` — Primary tool. Runs all commands, auto-indexes output, returns search results. ONE call replaces 30+ individual calls.
-2. **FOLLOW-UP**: `context-mode_ctx_search(queries: ["q1", "q2", ...])` — Query indexed content. Pass ALL questions as array in ONE call.
-3. **PROCESSING**: `context-mode_ctx_execute(language, code)` | `context-mode_ctx_execute_file(path, language, code)` — Sandbox execution. Only stdout enters context.
-4. **WEB**: `context-mode_ctx_fetch_and_index(url, source)` then `context-mode_ctx_search(queries)` — Fetch, chunk, index, query. Raw HTML never enters context.
-5. **INDEX**: `context-mode_ctx_index(content, source)` — Store content in FTS5 knowledge base for later search.
-
-## Output constraints
-
-- Keep responses under 500 words.
-- Write artifacts (code, configs, PRDs) to FILES — never return them as inline text. Return only: file path + 1-line description.
-- When indexing content, use descriptive source labels so others can `search(source: "label")` later.
-
-## ctx commands
-
-| Command       | Action                                                                            |
-| ------------- | --------------------------------------------------------------------------------- |
-| `ctx stats`   | Call the `stats` MCP tool and display the full output verbatim                    |
-| `ctx doctor`  | Call the `doctor` MCP tool, run the returned shell command, display as checklist  |
-| `ctx upgrade` | Call the `upgrade` MCP tool, run the returned shell command, display as checklist |
+`
 
 ## API routes — NOT MOUNTED IN PRODUCTION (2026-04-05)
 
@@ -794,31 +397,6 @@ TOKEN=$(curl -s https://consuelo.consuelohq.com/metadata \
 
 this returns a workspace-agnostic token. the auth mutations live on `/metadata`, not `/graphql`.
 
-## licensing — AGPL-3.0 + proprietary
-
-- twenty-forked code (`twenty-front`, `twenty-server`, `twenty-shared`) → AGPL-3.0, must be public
-- opensaas packages (`dialer`, `coaching`, `api`, `contacts`, `analytics`, `metering`) → proprietary, consuelo's IP
-- the dialer is the enterprise product — CRM is free, calling is paid
-- controllers in twenty-server are thin wrappers (AGPL), business logic in private packages
-- need a source code link somewhere in the app (AGPL section 13) — future task
-
-## upstream remote removed (2026-04-05)
-
-the `upstream` remote (twentyhq/twenty, 482 branches) has been removed. consuelo is fully independent. security and feature PRs from twenty worth backporting are cataloged in linear DEV-1451 through DEV-1458 with links to twenty's open-source PRs.
-
-**do NOT re-add the upstream remote.** if you need to reference twenty's code, use their github web UI.
-
-## test infrastructure (2026-04-05)
-
-97 unit tests across 4 suites:
-- `packages/api/src/services/retry-policy.spec.ts` — 17 tests
-- `packages/api/src/routes/__tests__/queues.spec.ts` — 24 tests
-- `packages/dialer/src/services/parallel-dialer.spec.ts` — 35 tests
-- `packages/dialer/src/services/parallel-strategy-resolver.spec.ts` — 21 tests
-
-run with: `npx jest <file> --config=packages/<pkg>/jest.config.mjs --no-coverage`
-
-these are layer 1 (logic with mocks). layer 2 (integration with real twilio) and layer 3 (agent-browser) are next.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
@@ -872,55 +450,336 @@ lesson 1: `railway ssh` output can swallow simple echo commands. don't use railw
   >= 0 per the sync validator. workspace record position (listMember rows) can be
   negative — that's twenty's prepend behavior.
 
+# key commands
 
-## qmd queries by area
+all commands run through `workspace.sandbox_exec({ command, timeout })`.
 
-  **csv import + ai matching**
+---
 
-  csv import header detection row
-  ai column matching groq csv mapping
-  spreadsheet import upload step header row
-  buildRecordFromImportedStructuredRow phones composite
-  selectHeaderStepHook header selection
+## 1. code quality — workspace review tools
 
-  **dialer calling flow**
+`review.run` is the single quality gate. it runs 13 static checks, eslint, typecheck, spec compliance, confidence score, and tests.
 
-  dialer call initiation voice token twilio
-  CallsController VoiceController route prefix
-  listMember phone number extraction dialer
-  getListMemberPhoneNumber extractPhoneNumber
-  dialer queue complete zero calls phone
+### review.run
 
-  **route architecture**
+standard review — changed files against auto-detected base:
 
-  consuelo api controller route prefix v1
-  nestjs controller route mismatch spa catch-all
-  voice controller calls controller prefix
+```
+workspace review.run '{}'
+```
 
- **github api push (no local checkout**
+scope to active task worktree:
 
-  github api blob tree commit update ref
-  push to main without checkout worktree
-  suelo-kiro bot committer author github api
+```
+workspace review.run '{"mine": true}'
+```
 
-  **listmember + person import**
+skip tests (faster iteration):
 
-  listMember creation event stream error resilience
-  pre-generate person ids batch create
-  useOpenListMemberImportDialog import flow
-  person phones to listMember phoneNumber mapping
+```
+workspace review.run '{"noTests": true}'
+```
 
-  **workspace metadata + standard fields**
+review against a specific base:
 
-  person workspace entity standard fields
-  workspace sync metadata standard objects
-  csv import available field metadata items
+```
+workspace review.run '{"base": "stream/workspace-agents"}'
+```
 
-  qmd query "APP_VERSION upgrade command allCommands version 1.16 1.17 1.18"
-  qmd query "workspace version column null upgrade previous minor version"
-  qmd query "standard application sync existing workspace metadata views fields"
-  qmd query "custom view fields standard views applicationId sync ENTITY_NOT_FOUND"
-  qmd query "orphaned view fields fieldMetadataId sync crash"
-  qmd query "railway ssh echo env var output swallowed grep"
-  qmd query "navigationMenuItem position non-negative vs record position negative"
+auto-fix eslint issues:
+
+```
+workspace review.run '{"fix": true}'
+```
+
+review all files (full project scan):
+
+```
+workspace review.run '{"all": true}'
+```
+
+strict mode (surfaces hidden TS2564 errors):
+
+```
+workspace review.run '{"strict": true}'
+```
+
+**facade flags:** `fix`, `all`, `base`, `strict`, `mine`, `noTests` — all exposed. `--json` and `--quiet` are handled automatically by the facade.
+
+**what it runs, in order:**
+
+| step | check | details |
+|------|-------|---------|
+| 1 | 13 static checks | LOGGING, SENTRY, PHONE_NORM, SQL_PARAM, ERROR_HANDLING, TYPE_SAFETY, SECRETS, TODO_FIXME, IMPORT_SAFETY, ROUTE_ORDER, CATCH_TYPING, OPTIONAL_IMPORT, STUB_HANDLER |
+| 2 | eslint | changed files (or all with `all: true`) |
+| 3 | typecheck | `nx typecheck` on affected projects |
+| 4 | spec compliance | checks against task spec |
+| 5 | confidence score | reads decision engine state |
+| 6 | tests | jest on affected packages (skip with `noTests: true`) |
+
+findings are classified as "yours" (from your diff) vs "pre-existing" (already in the stream).
+
+---
+
+### verify
+
+full safety gate. runs `review.run` internally, adds db migration safety checks, and stamps the result.
+
+full verification:
+
+```
+workspace verify '{"base": "stream/workspace-agents"}'
+```
+
+skip review (db checks only):
+
+```
+workspace verify '{"noReview": true}'
+```
+
+db warnings only (don't fail on migration risks):
+
+```
+workspace verify '{"dbWarnOnly": true}'
+```
+
+dry run (preview without stamping):
+
+```
+workspace verify '{"dryRun": true}'
+```
+
+skip stamp (run checks but don't write verify.json):
+
+```
+workspace verify '{"noStamp": true}'
+```
+
+---
+
+### ai review
+
+sends diff + decision engine evidence to gemma via pi-proxy. posts structured findings to the PR on github. triggers automatically in tmux when `review.run` passes and a task PR exists.
+
+review a PR and post to github:
+
+```
+workspace aiReview '{"pr": 226}'
+```
+
+preview only (don't post):
+
+```
+workspace aiReview '{"pr": 226, "noPost": true}'
+```
+
+---
+
+### pr review
+
+fetches all review comments from a PR (qodo, coderabbit, codex, ko, human reviewers) into `.task/reviews/<pr>.md`.
+
+```
+workspace prReview '{"pr": 226}'
+```
+
+print to stdout:
+
+```
+workspace prReview '{"pr": 226, "stdout": true}'
+```
+
+---
+
+### file syntax checking
+
+```
+workspace checkFiles '{"files": ["packages/twenty-server/src/engine/core-modules/example.ts"]}'
+```
+
+---
+
+## 2. development
+
+start full dev environment (frontend + backend + worker):
+
+```
+workspace task.exec '{"command": ["yarn", "start"]}'
+```
+
+individual services:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "start", "twenty-front"]}'
+workspace task.exec '{"command": ["npx", "nx", "start", "twenty-server"]}'
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:worker"]}'
+```
+
+---
+
+## 3. testing
+
+`review.run` runs tests on affected packages by default. use these for targeted testing.
+
+single test file (fast, preferred):
+
+```
+workspace task.exec '{"command": ["npx", "jest", "path/to/test.test.ts", "--config=packages/PROJECT/jest.config.mjs"]}'
+```
+
+all tests for a package:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "test", "twenty-front"]}'
+workspace task.exec '{"command": ["npx", "nx", "test", "twenty-server"]}'
+```
+
+integration tests with DB reset:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:test:integration:with-db-reset"]}'
+```
+
+storybook:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "storybook:build", "twenty-front"]}'
+workspace task.exec '{"command": ["npx", "nx", "storybook:test", "twenty-front"]}'
+```
+
+when testing the UI end to end, click "Continue with Email" and use the prefilled credentials.
+
+---
+
+## 4. build
+
+twenty-shared must be built first:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "build", "twenty-shared"]}'
+workspace task.exec '{"command": ["npx", "nx", "build", "twenty-front"]}'
+workspace task.exec '{"command": ["npx", "nx", "build", "twenty-server"]}'
+```
+
+---
+
+## 5. database operations
+
+always run `db-backup.sh` before any migration, reset, or schema change. backups are saved to `.agent/backups/` and the last 5 are kept automatically.
+
+backup and restore:
+
+```
+workspace task.exec '{"command": ["bash", "scripts/db-backup.sh"]}'
+workspace task.exec '{"command": ["bash", "scripts/db-restore.sh"]}'
+workspace task.exec '{"command": ["bash", "scripts/db-restore.sh", "<backup-file>"]}'
+```
+
+database management:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "database:reset", "twenty-server"]}'
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:database:init:prod"]}'
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:database:migrate:prod"]}'
+```
+
+generate migration (replace `[name]` with kebab-case name):
+
+```
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:typeorm", "migration:generate", "src/database/typeorm/core/migrations/common/[name]", "-d", "src/database/typeorm/core/core.datasource.ts"]}'
+```
+
+sync metadata:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-server:command", "workspace:sync-metadata"]}'
+```
+
+---
+
+## 6. graphql
+
+generate GraphQL types (run after schema changes):
+
+```
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-front:graphql:generate"]}'
+workspace task.exec '{"command": ["npx", "nx", "run", "twenty-front:graphql:generate", "--configuration=metadata"]}'
+```
+
+---
+
+## 7. deploy and observability
+
+railway logs:
+
+```
+workspace railway.logs '{"service": "opensaas", "lines": 50}'
+workspace railway.logs '{"service": "opensaas", "errors": true}'
+workspace railway.logs '{"service": "twenty-worker", "lines": 20}'
+```
+
+redeploy:
+
+```
+workspace railway.redeploy '{"service": "opensaas"}'
+workspace railway.redeploy '{"service": "opensaas", "dryRun": true}'
+```
+
+wait for deploy:
+
+```
+workspace wait '{"deploy": true}'
+```
+
+check deploy status:
+
+```
+workspace status
+```
+
+---
+
+## 8. nx commands ( fallback only)
+
+`review.run` wraps eslint and typecheck. use these only for isolated package debugging.
+
+lint a single project against main:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "twenty-front"]}'
+```
+
+lint with auto-fix:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "twenty-front", "--configuration=fix"]}'
+```
+
+typecheck a single project:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "typecheck", "twenty-front"]}'
+workspace task.exec '{"command": ["npx", "nx", "typecheck", "twenty-server"]}'
+```
+
+format:
+
+```
+workspace task.exec '{"command": ["npx", "nx", "fmt", "twenty-front"]}'
+```
+
+---
+
+## when to use what
+
+| situation | command |
+|-----------|---------|
+| before pushing any code | `workspace review.run '{"noTests": true}'` |
+| full pre-merge gate | `workspace verify '{"base": "stream/<area>"}'` |
+| after review.run passes | ai review triggers automatically via tmux |
+| addressing PR feedback | `workspace prReview '{"pr": N}'` then fix |
+| debugging one package's types | `workspace task.exec '{"command": ["npx", "nx", "typecheck", "<project>"]}'` |
+| debugging one package's lint | `workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "<project>"]}'` |
+| checking deploy health | `workspace railway.logs '{"service": "opensaas", "errors": true}'` |
+| running a single test | `workspace task.exec '{"command": ["npx", "jest", "<path>", "--config=packages/<pkg>/jest.config.mjs"]}'` |
 
