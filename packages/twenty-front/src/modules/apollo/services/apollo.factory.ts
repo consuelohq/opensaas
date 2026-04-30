@@ -162,19 +162,17 @@ export class ApolloFactory<TCacheShape> implements ApolloManager<TCacheShape> {
 
           renewalPromise = renewToken(graphqlUri, getTokenPair())
             .then((tokens) => {
-              if (isDefined(tokens)) {
-                // eslint-disable-next-line no-console
-                console.log('setTokenPair from handleTokenRenewal');
-                onTokenPairChange?.(tokens);
-                cookieStorage.setItem('tokenPair', JSON.stringify(tokens));
+              if (!isDefined(tokens)) {
+                throw new Error('Token renewal returned no tokens');
               }
+
+              onTokenPairChange?.(tokens);
+              cookieStorage.setItem('tokenPair', JSON.stringify(tokens));
             })
-            .catch(() => {
-              // eslint-disable-next-line no-console
-              console.log(
-                'Failed to renew token, triggering unauthenticated error from handleTokenRenewal',
-              );
+            .catch((error: unknown) => {
+              cookieStorage.removeItem('tokenPair');
               onUnauthenticatedError?.();
+              throw error;
             })
             .finally(() => {
               renewalPromise = null;
