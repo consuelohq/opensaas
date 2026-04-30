@@ -294,6 +294,15 @@ function createStore(repoRoot, remoteUrl) {
     return db.query('SELECT * FROM files ORDER BY path').all();
   }
 
+  function getFileSizesForPaths(paths) {
+    if (paths.length === 0) return new Map();
+    const placeholders = paths.map(() => '?').join(',');
+    const rows = db.query(
+      `SELECT path, size_bytes FROM files WHERE path IN (${placeholders})`,
+    ).all(...paths);
+    return new Map(rows.map((row) => [row.path, Number(row.size_bytes || 0)]));
+  }
+
   function getChunksForFiles(paths) {
     if (paths.length === 0) return [];
     const placeholders = paths.map(() => '?').join(',');
@@ -513,6 +522,7 @@ function createStore(repoRoot, remoteUrl) {
     getAllChunks,
     getFile,
     getFiles,
+    getFileSizesForPaths,
     getChunksForFiles,
     getChunksWithoutEmbeddings,
     getChunkStatsForFiles,

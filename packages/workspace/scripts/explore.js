@@ -2,7 +2,11 @@
 
 const { ensureIndex } = require('./lib/index/indexer');
 const { retrieve } = require('./lib/search/retriever');
-const { appendEvidenceEvent } = require('./lib/state/evidence-log');
+const {
+  appendEvidenceEvent,
+  getReadFilesFromEvidence,
+  readEvidenceLog,
+} = require('./lib/state/evidence-log');
 const {
   buildBeliefsFromResults,
   readExploreState,
@@ -83,21 +87,85 @@ function parseArgs(argv) {
   return args;
 }
 
+function getPackage(filePath) {
+  const match = filePath.match(/^packages\/([^/]+)\//);
+  return match ? match[1] : null;
+}
+
+function hasTestEdge(edges) {
+  return (edges || []).some((edge) => edge.type === 'tests' || edge.type === 'tested_by');
+}
+
+function isTestPath(filePath) {
+  return /\.(test|spec)\.[jt]sx?$/.test(filePath) || filePath.includes('__tests__');
+}
+
+function computeInformationValue(result, beliefs) {
+  const posterior = Math.max(0, Math.min(1,
+    beliefs[result.path]?.posterior ?? result.belief_prior ?? result.score ?? 0.45));
+  const uncertainty = 1 - Math.abs((2 * posterior) - 1);
+  const reachNorm = Math.min(1, (result.graph_connection_count || 0) / 10);
+  const testBonus = isTestPath(result.path) ? 1.5 : 1;
+  return Number((uncertainty * (1 + reachNorm) * testBonus).toFixed(4));
+}
+
+function buildEvidenceStateMap(repoRoot) {
+  const stateMap = new Map();
+  try {
+    const readFiles = getReadFilesFromEvidence(repoRoot);
+    for (const filePath of readFiles) {
+      stateMap.set(filePath, 'read');
+    }
+    const log = readEvidenceLog(repoRoot);
+    for (const event of log.events) {
+      if (event.type === 'file.relevant' && event.file_path) {
+        stateMap.set(event.file_path, 'relevant');
+      } else if (event.type === 'file.irrelevant' && event.file_path) {
+        stateMap.set(event.file_path, 'irrelevant');
+      }
+    }
+  } catch {
+    // no evidence state yet
+  }
+  return stateMap;
+}
+
 function toJsonResult(args, results, indexResult) {
   const maxRawScore = Math.max(
     ...results.map((result) => result.scoreParts?.rawScore || result.score || 0),
     0,
   );
 
-  return {
-    query: args.question,
-    budget: args.budget,
-    results: results.map((result) => ({
+  const evidenceState = buildEvidenceStateMap(indexResult.repoRoot);
+
+  const enrichedResults = results.map((result) => {
+    const beliefPrior = maxRawScore > 0
+      ? Number((0.30 + (0.45 * ((result.scoreParts?.rawScore || result.score || 0) / maxRawScore))).toFixed(4))
+      : Number(result.score.toFixed(4));
+
+    const typedEdges = (result.edges || []).map((edge) => ({
+      path: edge.sourcePath === result.path ? edge.targetPath : edge.sourcePath,
+      type: edge.type,
+      symbol: edge.symbol || null,
+    }));
+
+    const base = {
       path: result.path,
       score: Number(result.score.toFixed(4)),
-      belief_prior: maxRawScore > 0
-        ? Number((0.30 + (0.45 * ((result.scoreParts?.rawScore || result.score || 0) / maxRawScore))).toFixed(4))
-        : Number(result.score.toFixed(4)),
+      belief_prior: beliefPrior,
+      symbol: result.bestChunkName || null,
+      chunk_type: result.bestChunkType || null,
+      file_outline: result.implementationNames || null,
+      typed_edges: typedEdges,
+      is_implementation: Boolean(result.hasClassOrFunction),
+      file_size: result.fileSize || null,
+      chunk_count: result.totalChunks || null,
+      last_modified: result.lastModified || null,
+      has_test: hasTestEdge(result.edges),
+      package: getPackage(result.path),
+      changed_in_branch: Boolean(result.changedInBranch),
+      evidence_state: evidenceState.get(result.path) || null,
+      information_value: null,
       reason: result.reason,
       preview: result.preview,
       graph_connections: Array.from(new Set(result.graphConnections || [])),
@@ -107,7 +175,20 @@ function toJsonResult(args, results, indexResult) {
         end: result.endLine,
       },
       score_parts: result.scoreParts || {},
-    })),
+    };
+
+    return base;
+  });
+
+  const beliefs = buildBeliefsFromResults(enrichedResults, {});
+  for (const result of enrichedResults) {
+    result.information_value = computeInformationValue(result, beliefs);
+  }
+
+  return {
+    query: args.question,
+    budget: args.budget,
+    results: enrichedResults,
     index_stats: {
       total_files: indexResult.stats.totalFiles,
       total_chunks: indexResult.stats.totalChunks,

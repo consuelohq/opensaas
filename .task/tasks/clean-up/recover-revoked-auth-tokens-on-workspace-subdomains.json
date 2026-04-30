@@ -1,0 +1,12 @@
+{
+  "area": "clean-up",
+  "stream": "stream/clean-up",
+  "taskBranch": "task/clean-up/recover-revoked-auth-tokens-on-workspace-subdomains",
+  "baseBranch": "stream/clean-up",
+  "sourceBranch": "stream/clean-up",
+  "startFrom": "stream",
+  "prNumber": 237,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/237",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-clean-up-recover-revoked-auth-tokens-on-workspace-subdomains",
+  "createdAt": "2026-04-30T18:04:15.778Z"
+}

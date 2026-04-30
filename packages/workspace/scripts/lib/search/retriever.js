@@ -182,6 +182,7 @@ function attachCandidateMetadata(store, candidates) {
 
   const pathSet = new Set(paths);
   const edgesByPath = new Map(paths.map((filePath) => [filePath, []]));
+  const fileSizes = store.getFileSizesForPaths(paths);
   const chunkStatsByPath = new Map(store.getChunkStatsForFiles(paths).map((row) => [row.file_path, {
     hasClassOrFunction: Number(row.implementation_chunks || 0) > 0,
     implementationNames: row.implementation_names || '',
@@ -218,6 +219,8 @@ function attachCandidateMetadata(store, candidates) {
     candidate.graphConnectionCount = candidate.graphConnections?.length || candidate.edgeCount;
     candidate.hasClassOrFunction = stats.hasClassOrFunction;
     candidate.implementationNames = stats.implementationNames;
+    candidate.fileSize = fileSizes.get(candidate.path) || 0;
+    candidate.totalChunks = stats.totalChunks;
     candidate.typeExportChunkRatio = stats.totalChunks === 0 ? 0 : stats.typeExportChunks / stats.totalChunks;
   }
 }
@@ -331,6 +334,8 @@ async function retrieve(store, repoRoot, query, options = {}) {
 
     return {
       ...outputCandidate,
+      changedInBranch: changedPaths.has(candidate.path),
+      lastModified: recencyByPath.get(candidate.path) || null,
       score: candidate.score,
       scoreParts: candidate.scoreParts,
       reason: getReason(candidate),
