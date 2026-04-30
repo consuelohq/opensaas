@@ -80,7 +80,6 @@ function hasFunctionArgs(step: BatchStep): boolean {
 function isReadOnly(toolName: string): boolean {
   return getToolManifestEntry(toolName)?.capabilities.readOnly === true;
 }
-
 async function runStep(
   step: BatchStep,
   previous: ToolResult<unknown> | null,
@@ -88,8 +87,12 @@ async function runStep(
   options: ExecuteToolOptions,
 ): Promise<ToolResult<unknown>> {
   const input = step.input ?? step.args ?? {};
-  const args = typeof input === 'function'
+  const args = typeof input === "function"
     ? input(previous, results)
     : input;
-  return executeTool(step.tool, args as ToolInput, options);
+  const batchOptions: ExecuteToolOptions = {
+    ...options,
+    logMode: options.logMode ?? "errors",
+  };
+  return executeTool(step.tool, args as ToolInput, batchOptions);
 }

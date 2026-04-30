@@ -2,8 +2,11 @@
   "files": [
     ".task/verify.json",
     ".task/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
     "package.json",
     "packages/dialer/src/dialer.ts",
+    "packages/workspace/linear.md",
     "packages/workspace/package.json",
     "packages/workspace/project.json",
     "packages/workspace/scripts/audit.js",
@@ -17,16 +20,15 @@
     "packages/workspace/scripts/lib/facade/branch-resolver.ts",
     "packages/workspace/scripts/lib/facade/errors.ts",
     "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
     "packages/workspace/scripts/lib/paths.js",
-    "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
     "packages/workspace/scripts/mac.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
-    "packages/workspace/scripts/task-start.js",
     "packages/workspace/scripts/tmp.js",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-04-30T09:03:14.253Z"
+  "updatedAt": "2026-04-30T20:49:43.515Z"
 }
