@@ -1,8 +1,8 @@
-# test review pipeline in worktree
+# fix task pin to persist to disk
 
-branch: `task/workspace-agents/test-review-pipeline-in-worktree`
+branch: `task/workspace-agents/fix-task-pin-to-persist-to-disk`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/230
+pr: https://github.com/consuelohq/opensaas/pull/233
 started: 2026-04-30
 
 ## acceptance criteria
@@ -43,4 +43,5 @@ bun run task:pr
 bun run task:finish
 ```
 
-- 2026-04-30 08:52:27 patch lines 427-427: `packages/workspace/scripts/task-start.js`
+- 2026-04-30 09:03:07 patch lines 2-2: `packages/workspace/scripts/lib/facade/executor.ts`
+- 2026-04-30 09:03:25 patch lines 306-306: `packages/workspace/scripts/lib/facade/executor.ts`
