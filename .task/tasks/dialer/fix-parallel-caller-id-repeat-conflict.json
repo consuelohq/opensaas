@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 246,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/246",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-parallel-caller-id-repeat-conflict",
+  "createdAt": "2026-04-30T22:18:31.941Z"
+}

@@ -5400,6 +5400,534 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/fix-browser-facade-commands"
       }
+    },
+    {
+      "id": "b1892897-48c1-4937-a8f0-eb1a99a0ea51",
+      "occurred_at": "2026-04-30T20:27:22.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "d640464a-b3fb-4ac3-8e20-2d1e97f71e5d",
+      "occurred_at": "2026-04-30T20:27:22.364Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "cff5630a-1139-42a9-892f-908bcd8a567d",
+      "occurred_at": "2026-04-30T20:29:42.072Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/pages/home/HomePage.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "b20b4d76-7966-48c9-94ff-b8f81181f079",
+      "occurred_at": "2026-04-30T20:29:57.682Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/hooks/useFindManyRecords.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "f19b4f1b-c3d0-4b6e-9922-b293936af550",
+      "occurred_at": "2026-04-30T20:31:24.382Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/object-record/hooks/useLazyFindManyRecords.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "22d491a4-554d-4b3b-bb70-07225caf6e8f",
+      "occurred_at": "2026-04-30T20:32:47.742Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/ui/input/components/TextInput.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "e5e85794-685d-47fb-83da-36d099c3871a",
+      "occurred_at": "2026-04-30T20:34:02.002Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/ui/input/components/TextInput.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "c44d8ddb-bfe8-4bbe-97c0-07b621c9d041",
+      "occurred_at": "2026-04-30T20:34:09.732Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "eb5792c1-754a-4bbc-8be1-ab973a9394e2",
+      "occurred_at": "2026-04-30T20:36:01.561Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/pages/home/HomePage.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/address-csv-import-naming-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/address-csv-import-naming-review-findings"
+      }
+    },
+    {
+      "id": "fe13b46c-1226-4c02-b17c-fd91962374f0",
+      "occurred_at": "2026-04-30T22:18:39.384Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "d61d845e-276e-4ffe-815d-b84ddcacd7ad",
+      "occurred_at": "2026-04-30T22:18:39.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "f910438e-0f46-4b9d-ae47-959833126fe5",
+      "occurred_at": "2026-04-30T22:18:40.003Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/decision.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "e7dc5759-11d3-42d1-9441-dea9f0ce8d22",
+      "occurred_at": "2026-04-30T22:18:53.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "39ef3adf-e83f-4bf5-82b8-0046d5789161",
+      "occurred_at": "2026-04-30T22:21:14.261Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "1029c2a3-747f-4325-8bf1-d2e851931bcb",
+      "occurred_at": "2026-04-30T22:21:14.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "6ecd3cb0-65f8-49f6-b768-98e829877779",
+      "occurred_at": "2026-04-30T22:21:14.869Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "d9969ba1-eff0-44f8-8217-dbee14460674",
+      "occurred_at": "2026-04-30T22:21:15.174Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "2a120ec5-e5d3-43c6-a998-ee20fe95ecae",
+      "occurred_at": "2026-04-30T22:21:15.482Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/services/caller-id.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "713bba57-6fe5-4bcd-9a44-7823a9e03f76",
+      "occurred_at": "2026-04-30T22:21:15.773Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/services/parallel-dialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "169253d8-b95f-4097-b469-eb267a0932e5",
+      "occurred_at": "2026-04-30T22:22:20.158Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "7f69091f-8376-4253-8e28-57e91f32a3b4",
+      "occurred_at": "2026-04-30T22:22:20.453Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "731c5941-fb3c-45c9-9b73-3891dc1ba7ee",
+      "occurred_at": "2026-04-30T22:22:52.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "dd538a04-a551-43b4-b191-6b1e74ab0681",
+      "occurred_at": "2026-04-30T22:23:06.621Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "24d381d5-4708-4f8e-b551-0c7153d8cbe6",
+      "occurred_at": "2026-04-30T22:23:19.163Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "3713c9ca-8f28-4638-8bda-faff1157ce9c",
+      "occurred_at": "2026-04-30T22:26:54.097Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "d07c86ec-58db-45ab-bb91-4118ba331a0b",
+      "occurred_at": "2026-04-30T22:26:59.448Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "7702b8d3-e0e6-444a-9e83-de72e559c214",
+      "occurred_at": "2026-04-30T22:27:05.813Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "cf45b1c1-bd36-4fdf-8e46-7bd48423434a",
+      "occurred_at": "2026-04-30T22:28:09.957Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/project.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "fc1fc82b-e722-4b7d-98b2-82e4789f4c68",
+      "occurred_at": "2026-04-30T22:28:26.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "3f367eba-770d-4c1e-be34-ae35ac3854d4",
+      "occurred_at": "2026-04-30T22:38:19.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "22f3646d-6162-4707-b081-8d9cb87db4c2",
+      "occurred_at": "2026-04-30T22:38:20.257Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "87b482f4-aed2-4a6b-a318-3b27cce9978d",
+      "occurred_at": "2026-04-30T22:38:20.568Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
+    },
+    {
+      "id": "6aba7953-1043-49ec-a8aa-367b6cca8462",
+      "occurred_at": "2026-04-30T22:38:39.687Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-parallel-caller-id-repeat-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
+      }
     }
   ],
   "hypotheses": [],
