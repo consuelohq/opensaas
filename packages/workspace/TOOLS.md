@@ -55,7 +55,7 @@ if (!result.ok) throw new Error(result.message);
 run syntax checks over a set of files through task:exec
 
 - signature: `workspace.checkFiles({ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run check-files`
+- wraps: `workspace checkFiles`
 - capabilities: readOnly=true, mutating=false, safeToRetry=false
 - default timeout: 300000ms
 
@@ -112,7 +112,7 @@ example error envelope:
 run a search-read-patch-verify flow as a composed script
 
 - signature: `workspace.editFlow({ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run edit-flow`
+- wraps: `workspace editFlow`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -175,7 +175,7 @@ example error envelope:
 list project memory categories
 
 - signature: `workspace.context.categories({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- categories`
+- wraps: `workspace context.categories`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -226,7 +226,7 @@ example error envelope:
 search project memory by title
 
 - signature: `workspace.context.find({ keyword: string; limit?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- find`
+- wraps: `workspace context.find`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -280,7 +280,7 @@ example error envelope:
 read a full project memory search result
 
 - signature: `workspace.context.get({ index: number; keyword: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- get`
+- wraps: `workspace context.get`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -334,7 +334,7 @@ example error envelope:
 list recent project memories
 
 - signature: `workspace.context.list({ category?: string; limit?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- list`
+- wraps: `workspace context.list`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -388,7 +388,7 @@ example error envelope:
 save a file or text into project memory
 
 - signature: `workspace.context.save({ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- save`
+- wraps: `workspace context.save`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 60000ms
 
@@ -443,7 +443,7 @@ example error envelope:
 search project memory by content
 
 - signature: `workspace.context.search({ keyword: string; limit?: number; category?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run context -- search`
+- wraps: `workspace context.search`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -499,7 +499,7 @@ example error envelope:
 audit workspace scripts, docs, or index freshness
 
 - signature: `workspace.audit({ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run audit`
+- wraps: `workspace audit`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -552,7 +552,7 @@ example error envelope:
 score confidence from evidence state
 
 - signature: `workspace.confidenceScore({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run confidence-score`
+- wraps: `workspace confidenceScore`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -603,7 +603,7 @@ example error envelope:
 run verification or targeted validation through confirm
 
 - signature: `workspace.confirm({ verify?: boolean; runtime?: boolean; test?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run confirm`
+- wraps: `workspace confirm`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -656,7 +656,7 @@ example error envelope:
 recommend the next action from evidence state
 
 - signature: `workspace.decideNext({ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run decide-next`
+- wraps: `workspace decideNext`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -707,7 +707,7 @@ example error envelope:
 select the highest-confidence editing target
 
 - signature: `workspace.exploit({ query?: string; target?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run exploit`
+- wraps: `workspace exploit`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -758,7 +758,7 @@ example error envelope:
 run repository exploration retrieval
 
 - signature: `workspace.explore({ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run explore`
+- wraps: `workspace explore`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -814,7 +814,7 @@ example error envelope:
 make an HTTP request through the workspace http wrapper
 
 - signature: `workspace.fs.http({ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run fs -- http`
+- wraps: `workspace fs.http`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -923,7 +923,7 @@ example error envelope:
 replace a line range in a task worktree file
 
 - signature: `workspace.fs.patch({ path: string; from: number; to: number; content: string; branch?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:fs -- --branch <branch> patch`
+- wraps: `workspace fs.patch`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
 
@@ -1092,7 +1092,7 @@ example error envelope:
 move a task worktree file to trash
 
 - signature: `workspace.fs.trash({ path: string; branch?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:fs -- --branch <branch> trash`
+- wraps: `workspace fs.trash`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
 
@@ -1147,7 +1147,7 @@ example error envelope:
 write a file in a task worktree
 
 - signature: `workspace.fs.write({ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:fs -- --branch <branch> write`
+- wraps: `workspace fs.write`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
 
@@ -1205,7 +1205,7 @@ example error envelope:
 generate TOOLS.md from the tool manifest
 
 - signature: `workspace.generate.docs({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run generate-docs`
+- wraps: `workspace generate.docs`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -1258,7 +1258,7 @@ example error envelope:
 generate workspace.d.ts from the tool manifest
 
 - signature: `workspace.generate.types({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run generate-types`
+- wraps: `workspace generate.types`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -1313,7 +1313,7 @@ example error envelope:
 run the workspace GitHub helper with an explicit action
 
 - signature: `workspace.gh({ action: string; args?: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run gh`
+- wraps: `workspace gh`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -1371,7 +1371,7 @@ example error envelope:
 run a non-repo shell command on the Mac
 
 - signature: `workspace.mac.exec({ command: string; cwd?: string; timeout?: number; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- exec`
+- wraps: `workspace mac.exec`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -1425,7 +1425,7 @@ example error envelope:
 list non-repo files on the Mac
 
 - signature: `workspace.mac.list({ path?: string; depth?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- list`
+- wraps: `workspace mac.list`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -1479,7 +1479,7 @@ example error envelope:
 check or find a local port
 
 - signature: `workspace.mac.port({ action: "check" | "find"; port?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- port`
+- wraps: `workspace mac.port`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -1532,7 +1532,7 @@ example error envelope:
 list or kill local Mac processes
 
 - signature: `workspace.mac.process({ action: "list" | "kill"; pid?: number; name?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- process`
+- wraps: `workspace mac.process`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -1585,7 +1585,7 @@ example error envelope:
 read a non-repo file on the Mac
 
 - signature: `workspace.mac.read({ path: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- read`
+- wraps: `workspace mac.read`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -1638,7 +1638,7 @@ example error envelope:
 search non-repo files on the Mac
 
 - signature: `workspace.mac.search({ pattern: string; path?: string; include?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- search`
+- wraps: `workspace mac.search`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -1692,7 +1692,7 @@ example error envelope:
 write a non-repo file on the Mac
 
 - signature: `workspace.mac.write({ path: string; content?: string; contentFile?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run mac -- write`
+- wraps: `workspace mac.write`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -1749,7 +1749,7 @@ example error envelope:
 run the AI PR review helper
 
 - signature: `workspace.aiReview({ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run ai-review`
+- wraps: `workspace aiReview`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
 
@@ -1803,7 +1803,7 @@ example error envelope:
 fetch review comments for a PR
 
 - signature: `workspace.prReview({ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run pr-review`
+- wraps: `workspace prReview`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -1857,7 +1857,7 @@ example error envelope:
 run the workspace review checks
 
 - signature: `workspace.review.run({ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run review`
+- wraps: `workspace review.run`
 - capabilities: readOnly=true, mutating=false, safeToRetry=false
 - default timeout: 600000ms
 
@@ -1911,7 +1911,7 @@ example error envelope:
 run the full task safety gate
 
 - signature: `workspace.verify({ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run verify`
+- wraps: `workspace verify`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
 
@@ -1967,7 +1967,7 @@ example error envelope:
 show recent stream context
 
 - signature: `workspace.stream.context({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run stream:context`
+- wraps: `workspace stream.context`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -2020,7 +2020,7 @@ example error envelope:
 list stream branches
 
 - signature: `workspace.stream.list({ repo?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run stream:list`
+- wraps: `workspace stream.list`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -2071,7 +2071,7 @@ example error envelope:
 sync a stream branch with main
 
 - signature: `workspace.stream.sync({ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run stream:sync`
+- wraps: `workspace stream.sync`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2127,7 +2127,7 @@ example error envelope:
 preview or remove stale task worktrees and branches
 
 - signature: `workspace.task.cleanup({ branch?: string; force?: boolean; preview?: boolean; merged?: boolean; staleDays?: number; keep?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:cleanup`
+- wraps: `workspace task.cleanup`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2233,7 +2233,7 @@ example error envelope:
 check whether the task stream appears synced
 
 - signature: `workspace.task.ensureSynced({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>`
-- wraps: `bun run stream:context`
+- wraps: `workspace task.ensureSynced`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -2286,7 +2286,7 @@ example error envelope:
 run a command inside a task worktree
 
 - signature: `workspace.task.exec({ branch?: string; command: string[]; timeout?: number; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:exec -- --branch <branch>`
+- wraps: `workspace task.exec`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -2345,7 +2345,7 @@ example error envelope:
 finish a task branch after merge
 
 - signature: `workspace.task.finish({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:finish`
+- wraps: `workspace task.finish`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2399,7 +2399,7 @@ example error envelope:
 write task metadata for an existing worktree
 
 - signature: `workspace.task.init({ area: string; branch: string; pr?: number; worktree?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:init`
+- wraps: `workspace task.init`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 60000ms
 
@@ -2454,7 +2454,7 @@ example error envelope:
 merge a pull request through the workspace task merge script
 
 - signature: `workspace.task.merge({ pr?: number; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:merge`
+- wraps: `workspace task.merge`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2561,7 +2561,7 @@ example error envelope:
 merge task to stream and create or refresh the stream review PR
 
 - signature: `workspace.task.pr({ branch?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:pr`
+- wraps: `workspace task.pr`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2616,7 +2616,7 @@ example error envelope:
 show task and review PR links
 
 - signature: `workspace.task.prs({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:prs`
+- wraps: `workspace task.prs`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -2669,7 +2669,7 @@ example error envelope:
 push changed task files to the task branch through GitHub API
 
 - signature: `workspace.task.push({ branch?: string; message: string; changed?: boolean; files?: string[]; noVerify?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:push`
+- wraps: `workspace task.push`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -2725,7 +2725,7 @@ example error envelope:
 create a task branch, worktree, and draft PR
 
 - signature: `workspace.task.start({ stream?: string; area?: string; title: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task:start`
+- wraps: `workspace task.start`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 60000ms
 
@@ -2780,7 +2780,7 @@ example error envelope:
 run the task metadata smoke suite
 
 - signature: `workspace.taskMeta.smoke({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run task-meta:smoke`
+- wraps: `workspace taskMeta.smoke`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -2833,7 +2833,7 @@ example error envelope:
 open or inspect a browser target through the workspace browser script
 
 - signature: `workspace.browser({ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run browser`
+- wraps: `workspace browser`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
 
@@ -2888,7 +2888,7 @@ example error envelope:
 run workspace diagnostics
 
 - signature: `workspace.doctor({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run doctor`
+- wraps: `workspace doctor`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -2939,7 +2939,7 @@ example error envelope:
 read Railway deploy/runtime logs through the workspace script
 
 - signature: `workspace.railway.logs({ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run railway:logs`
+- wraps: `workspace railway.logs`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
 
@@ -2993,7 +2993,7 @@ example error envelope:
 trigger a Railway redeploy
 
 - signature: `workspace.railway.redeploy({ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run railway:redeploy`
+- wraps: `workspace railway.redeploy`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
 
@@ -3047,7 +3047,7 @@ example error envelope:
 manage the workspace MCP server
 
 - signature: `workspace.server({ action: "status" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run server`
+- wraps: `workspace server`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
 
@@ -3100,7 +3100,7 @@ example error envelope:
 show compact workspace status
 
 - signature: `workspace.status({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run status`
+- wraps: `workspace status`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
 
@@ -3151,7 +3151,7 @@ example error envelope:
 run the workspace temp-file helper
 
 - signature: `workspace.tmp({ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run tmp`
+- wraps: `workspace tmp`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 60000ms
 
@@ -3207,7 +3207,7 @@ example error envelope:
 sleep or wait for a PR/deploy
 
 - signature: `workspace.wait({ seconds?: number; deploy?: boolean; pr?: number; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run wait`
+- wraps: `workspace wait`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
 
@@ -3260,7 +3260,7 @@ example error envelope:
 deploy the Consuelo website
 
 - signature: `workspace.website.deploy({ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
-- wraps: `bun run website:deploy`
+- wraps: `workspace website.deploy`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
 
