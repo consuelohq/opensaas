@@ -1748,9 +1748,10 @@
   {
     "name": "browser",
     "methodPath": [
-      "browser"
+      "browser",
+      "run"
     ],
-    "description": "open or inspect a browser target through the workspace browser script",
+    "description": "run the generic workspace browser wrapper command",
     "category": "utilities",
     "underlying": "workspace browser",
     "capabilities": {
@@ -1781,8 +1782,502 @@
       ]
     },
     "exampleInput": {
-      "command": "url",
+      "command": "open",
       "url": "https://example.com",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.open",
+    "methodPath": [
+      "browser",
+      "open"
+    ],
+    "description": "open a URL with the browser wrapper",
+    "category": "utilities",
+    "underlying": "workspace browser.open",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserOpenInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "open",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "url",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "url": "https://example.com",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.test",
+    "methodPath": [
+      "browser",
+      "test"
+    ],
+    "description": "open a URL, wait for load, snapshot, and screenshot",
+    "category": "utilities",
+    "underlying": "workspace browser.test",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserOpenInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "open",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "url",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "url": "https://example.com",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.consuelo",
+    "methodPath": [
+      "browser",
+      "consuelo"
+    ],
+    "description": "open consuelo.consuelohq.com with the browser wrapper",
+    "category": "utilities",
+    "underlying": "workspace browser.consuelo",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserPageInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "consuelo",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.app",
+    "methodPath": [
+      "browser",
+      "app"
+    ],
+    "description": "open app.consuelohq.com with the browser wrapper",
+    "category": "utilities",
+    "underlying": "workspace browser.app",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserPageInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "app",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.screenshot",
+    "methodPath": [
+      "browser",
+      "screenshot"
+    ],
+    "description": "capture a browser screenshot",
+    "category": "utilities",
+    "underlying": "workspace browser.screenshot",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserScreenshotInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "screenshot",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "name",
+          "kind": "value"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "name": "after-login",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.snap",
+    "methodPath": [
+      "browser",
+      "snap"
+    ],
+    "description": "capture an accessibility snapshot",
+    "category": "utilities",
+    "underlying": "workspace browser.snap",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "snap",
+      "branchMode": "none",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.click",
+    "methodPath": [
+      "browser",
+      "click"
+    ],
+    "description": "click a browser element by ref",
+    "category": "utilities",
+    "underlying": "workspace browser.click",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserElementInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "click",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "ref",
+          "kind": "value",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "ref": "@e1",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.fill",
+    "methodPath": [
+      "browser",
+      "fill"
+    ],
+    "description": "fill a browser input by ref",
+    "category": "utilities",
+    "underlying": "workspace browser.fill",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserFillInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "fill",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "ref",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "ref": "@e1",
+      "text": "hello",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.login",
+    "methodPath": [
+      "browser",
+      "login"
+    ],
+    "description": "run a saved browser auth login profile",
+    "category": "utilities",
+    "underlying": "workspace browser.login",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserLoginInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "login",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "name",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "name": "consuelo",
+      "headed": true,
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.reauth",
+    "methodPath": [
+      "browser",
+      "reauth"
+    ],
+    "description": "restart the browser daemon and run a saved auth login profile",
+    "category": "utilities",
+    "underlying": "workspace browser.reauth",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserLoginInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "reauth",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "name",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "headed",
+          "flag": "--headed",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "name": "consuelo",
+      "headed": true,
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.eval",
+    "methodPath": [
+      "browser",
+      "eval"
+    ],
+    "description": "execute JavaScript on the current browser page",
+    "category": "utilities",
+    "underlying": "workspace browser.eval",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserEvalInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "eval",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "js",
+          "kind": "value",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "js": "document.title",
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.raw",
+    "methodPath": [
+      "browser",
+      "raw"
+    ],
+    "description": "pass raw arguments through to agent-browser",
+    "category": "utilities",
+    "underlying": "workspace browser.raw",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserRawInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "raw",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "args",
+          "kind": "array",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "args": [
+        "auth",
+        "list"
+      ],
+      "dryRun": true
+    }
+  },
+  {
+    "name": "browser.close",
+    "methodPath": [
+      "browser",
+      "close"
+    ],
+    "description": "close active browser sessions",
+    "category": "utilities",
+    "underlying": "workspace browser.close",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "EmptyInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "close",
+      "branchMode": "none",
+      "arguments": []
+    },
+    "exampleInput": {
       "dryRun": true
     }
   },
