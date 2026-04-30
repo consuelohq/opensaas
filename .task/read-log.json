@@ -1,7 +1,10 @@
 {
   "files": [
+    ".gitignore",
     ".task/verify.json",
     ".task/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
     "package.json",
     "packages/dialer/src/dialer.ts",
     "packages/workspace/package.json",
@@ -24,9 +27,12 @@
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/task-start.js",
     "packages/workspace/scripts/tmp.js",
-    "packages/workspace/tests/facade/facade.test.ts"
+    "packages/workspace/tests/facade/facade.test.ts",
+    "tmp/linear-mutation.json",
+    "tmp/opensaas-embedding.md"
   ],
-  "updatedAt": "2026-04-30T09:03:14.253Z"
+  "updatedAt": "2026-04-30T20:22:55.774Z"
 }
