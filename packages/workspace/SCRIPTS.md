@@ -722,17 +722,46 @@ bad: answering "what did we decide about X?" from memory alone
 
 ---
 
-### browser — test and interact with web pages
+### linear — Linear GraphQL API wrapper
 
-opens agent-browser with ko's authenticated profile. use for production verification after deploys.
+runs Linear GraphQL API operations using the workspace app actor token from `.agent/.chatgpt-token.json`. use the dedicated Linear connector first when available; use this script for repo-local workflow automation and debugging.
 
 ```bash
-bun run browser -- consuelo           # open consuelo CRM (internal)
-bun run browser -- app                # open app.consuelohq.com
-bun run browser -- url https://example.com  # open any URL
-bun run browser -- screenshot /tmp/out.png  # take screenshot
-bun run browser -- snapshot           # get accessibility tree
+bun run linear -- issue DEV-123
+bun run linear -- issues --search "browser facade"
+bun run linear -- create "[task] add browser facade aliases" --description "markdown body"
+bun run linear -- comment ISSUE-UUID "added browser facade aliases"
+bun run linear -- query "{ viewer { id name } }"
 ```
+
+---
+
+### browser — test and interact with web pages
+
+opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-browser-ko`. use for production verification after deploys.
+
+```bash
+bun run browser -- consuelo                 # open consuelo CRM (internal)
+bun run browser -- app                      # open app.consuelohq.com
+bun run browser -- open https://example.com # open any URL
+bun run browser -- screenshot after-login   # take screenshot
+bun run browser -- snapshot                 # get accessibility tree
+bun run browser -- login consuelo --headed  # run saved login profile visibly
+bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
+```
+
+facade aliases are also registered for agent use:
+
+```bash
+workspace browser.test '{"url":"https://example.com"}'
+workspace browser.consuelo '{"headed":true}'
+workspace browser.login '{"name":"consuelo","headed":true}'
+workspace browser.reauth '{"name":"consuelo","headed":true}'
+workspace browser.snap
+workspace browser.screenshot '{"name":"after-login"}'
+```
+
+when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
 
 ---
 

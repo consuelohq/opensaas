@@ -1,19 +1,25 @@
 {
   "result": "pass",
-  "branch": "task/dialer/fix-railway-docker-chown-build-timeout",
-  "base": "origin/stream/dialer",
-  "headSha": "0c1adc41725dc35f1c456db390a10c0b9f955eeb",
-  "changeHash": "046d7d2b6971198a64a9a7d7bfb2fec503323f304e63074af1c348568171835b",
+  "branch": "task/workspace-agents/fix-browser-facade-commands",
+  "base": "stream/workspace-agents",
+  "headSha": "487a758fce730c27ce8c03e7354a720e0e010456",
+  "changeHash": "b7caa9063fe11a0c0aefbcf1232da3781d9fed8d8d51a832716b33c6b2147ba8",
   "changedFiles": [
-    "packages/twenty-docker/twenty/Dockerfile"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-04-27T20:33:03.376Z",
+  "verifiedAt": "2026-04-30T22:18:22.003Z",
   "review": {
     "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

@@ -1,0 +1,12 @@
+{
+  "area": "clean-up",
+  "stream": "stream/clean-up",
+  "taskBranch": "task/clean-up/ignore-repo-tmp-directory",
+  "baseBranch": "stream/clean-up",
+  "sourceBranch": "stream/clean-up",
+  "startFrom": "stream",
+  "prNumber": 241,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/241",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-clean-up-ignore-repo-tmp-directory",
+  "createdAt": "2026-04-30T20:13:49.487Z"
+}

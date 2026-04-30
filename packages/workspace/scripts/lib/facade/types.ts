@@ -103,6 +103,8 @@ export type BranchResolver = (input: {
   candidates?: TaskCandidate[];
 }) => BranchResolution;
 
+export type LogMode = "all" | "errors" | "silent";
+
 export type ExecuteToolOptions = {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
@@ -114,6 +116,7 @@ export type ExecuteToolOptions = {
   setPinnedBranch?: (branch: string) => void;
   now?: () => number;
   randomUUID?: () => string;
+  logMode?: LogMode;
 };
 
 export type BatchStep = {

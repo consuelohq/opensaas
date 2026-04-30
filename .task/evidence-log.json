@@ -4682,8 +4682,24 @@
       }
     },
     {
-      "id": "e6694ed1-9c5e-438f-842a-041244dd7783",
-      "occurred_at": "2026-04-30T08:47:59.702Z",
+      "id": "54b2fab5-c767-4f67-bbb0-b39816a127a6",
+      "occurred_at": "2026-04-30T07:40:51.189Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "0ec54acc-1a42-42a5-b05e-b97b72c2c77a",
+      "occurred_at": "2026-04-30T07:40:59.026Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -4691,111 +4707,15 @@
       "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
       }
     },
     {
-      "id": "52d744b0-11c8-4ee0-a835-b6c2f54d8fae",
-      "occurred_at": "2026-04-30T08:48:16.776Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/lib/facade/branch-resolver.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "808a5b4b-048c-4317-b92d-e65c14324bd1",
-      "occurred_at": "2026-04-30T08:51:03.025Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/lib/task-meta.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "64a7a312-6511-4fb6-ac17-c7a490078bd0",
-      "occurred_at": "2026-04-30T08:51:08.730Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "00fb4e69-6232-4542-ae8c-0ddea1d7cfed",
-      "occurred_at": "2026-04-30T08:51:24.328Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "c4995472-6d56-47a3-9fa5-8868f94bc408",
-      "occurred_at": "2026-04-30T08:51:36.603Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "65d14039-26b4-4647-8353-45e66537519b",
-      "occurred_at": "2026-04-30T08:52:35.811Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/test-review-pipeline-in-worktree",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/test-review-pipeline-in-worktree"
-      }
-    },
-    {
-      "id": "ba4efa2a-68c9-471a-8936-1a43c9c62dfe",
-      "occurred_at": "2026-04-30T09:03:14.317Z",
+      "id": "2f7ce037-a6a6-4f5f-bc03-3e512b80b8b5",
+      "occurred_at": "2026-04-30T07:41:03.986Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -4803,10 +4723,682 @@
       "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-task-pin-to-persist-to-disk",
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-task-pin-to-persist-to-disk"
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "6a747c38-d3a8-4f32-a445-66fb1727225c",
+      "occurred_at": "2026-04-30T07:41:19.976Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "2ec268cd-7179-420a-9d01-f2fc62b2a59a",
+      "occurred_at": "2026-04-30T07:41:31.157Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "46770779-9bed-4abf-8120-60591255ddbd",
+      "occurred_at": "2026-04-30T07:41:50.414Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "3327de32-9c31-40ac-8c3a-42128d0bbaac",
+      "occurred_at": "2026-04-30T07:42:13.366Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "b9f9fa1f-b004-4e1c-8768-fa504179abba",
+      "occurred_at": "2026-04-30T07:45:24.284Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "6201cda3-4a4c-44c5-9a63-e1ec08b29ceb",
+      "occurred_at": "2026-04-30T07:45:24.557Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "29e63235-4f07-41ce-9d00-8ef68b08ec8b",
+      "occurred_at": "2026-04-30T07:48:36.245Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "c6d4c980-19f0-42b8-a555-f18ce217ed48",
+      "occurred_at": "2026-04-30T07:48:36.554Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/linear.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "f2b2c1c9-55f3-4b8b-a5fe-c145d9a2fc4f",
+      "occurred_at": "2026-04-30T07:49:09.789Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "564f63c7-3397-4750-a36d-e4fb24398d9d",
+      "occurred_at": "2026-04-30T07:49:10.232Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/linear.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "b276506b-dd3e-4ed7-be8f-d394a2023e58",
+      "occurred_at": "2026-04-30T07:50:43.166Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "db3bcb16-123c-43cf-8d51-63c4fcb24c16",
+      "occurred_at": "2026-04-30T07:50:52.457Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "1a590cdd-6820-46e7-a552-ec4cc756a0ca",
+      "occurred_at": "2026-04-30T07:51:49.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "bf6347c8-3d85-448c-9da8-124a247de5d9",
+      "occurred_at": "2026-04-30T07:51:49.421Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/linear.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "c7c0db52-fdba-4092-b161-6699ff7bb7ee",
+      "occurred_at": "2026-04-30T20:49:10.251Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "8a17ac6d-72fa-445b-a5cb-01f0da7df213",
+      "occurred_at": "2026-04-30T20:49:10.540Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/linear.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "099b900c-8e78-446b-a80d-ebb6374bb69f",
+      "occurred_at": "2026-04-30T20:49:43.306Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "15dc8160-b8be-4e5c-a8d2-1105c50e37dc",
+      "occurred_at": "2026-04-30T20:49:43.558Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/linear.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-batch-facade-logging-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
+      }
+    },
+    {
+      "id": "79112d7c-71af-4dc9-84d8-16e4236fb136",
+      "occurred_at": "2026-04-30T21:32:15.277Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9c9fbc9a-dd4c-4c80-99a3-79e74b8bdb07",
+      "occurred_at": "2026-04-30T21:32:19.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "157610a8-f7c8-4276-a947-2eb71e70ece4",
+      "occurred_at": "2026-04-30T21:33:33.083Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "7ebc3559-ef85-4f3e-8e1e-3474f4de2d1d",
+      "occurred_at": "2026-04-30T21:33:37.637Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/browser.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "07667539-432c-4437-93dd-3f8bd0100bd7",
+      "occurred_at": "2026-04-30T21:33:46.049Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+      "occurred_at": "2026-04-30T21:33:56.403Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+      "occurred_at": "2026-04-30T21:34:01.880Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "48cbab32-d853-461b-86b1-53c5525ed041",
+      "occurred_at": "2026-04-30T21:34:19.867Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "a1647eb6-f3ed-40de-9bb9-73c2e6e745e7",
+      "occurred_at": "2026-04-30T21:35:08.081Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "746f789e-861c-4f06-9531-61e37e7964a4",
+      "occurred_at": "2026-04-30T21:35:12.130Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "d2b8a43a-fce8-4e68-8eb3-a25dfc7856c2",
+      "occurred_at": "2026-04-30T21:35:20.497Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "21009e52-3b34-4d4d-a1b9-3cf79527cdb2",
+      "occurred_at": "2026-04-30T21:35:40.542Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "94744d20-4011-48b4-bec9-268e79bce5c8",
+      "occurred_at": "2026-04-30T21:35:44.760Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "64b7d489-048f-466c-9f19-5201e8ee5c9d",
+      "occurred_at": "2026-04-30T21:35:50.402Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "15839b50-c746-4b69-b7cd-bd3e6088ef66",
+      "occurred_at": "2026-04-30T21:36:34.247Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/TOOLS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+      "occurred_at": "2026-04-30T22:03:02.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "320a1e0f-cc30-474b-8902-9eea0303b954",
+      "occurred_at": "2026-04-30T22:03:24.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.schema.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9b28d105-ee7b-4605-b7b6-2b881f718708",
+      "occurred_at": "2026-04-30T22:04:32.836Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "73a9e60b-e46e-405d-bfc4-dd656d367a24",
+      "occurred_at": "2026-04-30T22:05:05.468Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "57b324c1-ed02-46e2-a61e-ef3ade7a075a",
+      "occurred_at": "2026-04-30T22:06:40.289Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/src/generated/workspace.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "99eccb4f-5d77-4c45-a4a0-37c51f0d9733",
+      "occurred_at": "2026-04-30T22:06:53.834Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/src/generated/workspace.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9172dcff-3ecc-4946-b0f0-c569a3635413",
+      "occurred_at": "2026-04-30T22:07:55.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "0021ce43-1d20-48dc-91bc-f77d5d0d01a2",
+      "occurred_at": "2026-04-30T22:15:37.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "fd112c8f-a96c-4934-8b46-ca354abf72c5",
+      "occurred_at": "2026-04-30T22:15:38.101Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
       }
     },
     {
@@ -5339,5 +5931,5 @@
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-30T22:38:39.737Z"
+  "updated_at": "2026-04-30T22:15:38.178Z"
 }

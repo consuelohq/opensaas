@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-batch-facade-logging-policy",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 229,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/229",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-batch-facade-logging-policy",
+  "createdAt": "2026-04-30T07:40:35.207Z"
+}
