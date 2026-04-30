@@ -2,8 +2,14 @@
   "files": [
     ".task/verify.json",
     ".task/workpad.md",
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
     "package.json",
     "packages/dialer/src/dialer.ts",
+    "packages/twenty-front/src/modules/object-record/hooks/useFindManyRecords.ts",
+    "packages/twenty-front/src/modules/object-record/hooks/useLazyFindManyRecords.ts",
+    "packages/twenty-front/src/modules/ui/input/components/TextInput.tsx",
+    "packages/twenty-front/src/pages/home/HomePage.tsx",
     "packages/workspace/package.json",
     "packages/workspace/project.json",
     "packages/workspace/scripts/audit.js",
@@ -28,5 +34,5 @@
     "packages/workspace/scripts/tmp.js",
     "packages/workspace/tests/facade/facade.test.ts"
   ],
-  "updatedAt": "2026-04-30T09:03:14.253Z"
+  "updatedAt": "2026-04-30T20:36:01.511Z"
 }

@@ -17,6 +17,7 @@ import { useObjectMetadataItem } from '@/object-metadata/hooks/useObjectMetadata
 import { MainContainerLayoutWithCommandMenu } from '@/object-record/components/MainContainerLayoutWithCommandMenu';
 import { useCreateOneRecord } from '@/object-record/hooks/useCreateOneRecord';
 import { useFindManyRecords } from '@/object-record/hooks/useFindManyRecords';
+import { useLazyFindManyRecords } from '@/object-record/hooks/useLazyFindManyRecords';
 import { type ObjectRecord } from '@/object-record/types/ObjectRecord';
 import { SpreadsheetImportProvider } from '@/spreadsheet-import/provider/components/SpreadsheetImportProvider';
 import { TextInput } from '@/ui/input/components/TextInput';
@@ -40,6 +41,34 @@ type OpportunityRecord = ObjectRecord & {
 };
 
 const normalizeListName = (name: string) => name.trim().toLocaleLowerCase();
+
+const getActiveListNames = (opportunityRecords: OpportunityRecord[]) => {
+  return new Set(
+    opportunityRecords
+      .map((record) => normalizeListName(record.name ?? ''))
+      .filter(Boolean),
+  );
+};
+
+const getDefaultImportListName = ({
+  activeOpportunityRecords,
+  historicalOpportunityCount,
+}: {
+  activeOpportunityRecords: OpportunityRecord[];
+  historicalOpportunityCount?: number;
+}) => {
+  const activeListNames = getActiveListNames(activeOpportunityRecords);
+  let nextListNumber =
+    (historicalOpportunityCount ?? activeOpportunityRecords.length) + 1;
+  let defaultName = t`List ${nextListNumber}`;
+
+  while (activeListNames.has(normalizeListName(defaultName))) {
+    nextListNumber += 1;
+    defaultName = t`List ${nextListNumber}`;
+  }
+
+  return defaultName;
+};
 
 const StyledImportListNameModalContent = styled(Modal.Content)`
   gap: ${({ theme }) => theme.spacing(4)};
@@ -103,14 +132,17 @@ export const HomePage = () => {
   const isAiEnabled = useIsFeatureEnabled(FeatureFlagKey.IS_AI_ENABLED);
   const setImportedListId = useSetRecoilState(importedListIdState);
   const [importListName, setImportListName] = useState('');
+  const [activeOpportunityRecords, setActiveOpportunityRecords] = useState<
+    OpportunityRecord[]
+  >([]);
   const [isCreatingImportList, setIsCreatingImportList] = useState(false);
 
   const { createOneRecord: createOpportunity } = useCreateOneRecord({
     objectNameSingular: 'opportunity',
   });
 
-  const { records: activeOpportunityRecords } =
-    useFindManyRecords<OpportunityRecord>({
+  const { findManyRecordsLazy: findManyActiveOpportunityRecords } =
+    useLazyFindManyRecords<OpportunityRecord>({
       objectNameSingular: 'opportunity',
       recordGqlFields: { id: true, name: true },
       limit: DEFAULT_ACTIVE_LIST_NAME_LOOKUP_LIMIT,
@@ -124,30 +156,25 @@ export const HomePage = () => {
       withSoftDeleted: true,
     });
 
+  const fetchActiveOpportunities = useCallback(async () => {
+    const { records } = await findManyActiveOpportunityRecords();
+    const fetchedActiveOpportunityRecords = records ?? [];
+
+    setActiveOpportunityRecords(fetchedActiveOpportunityRecords);
+
+    return fetchedActiveOpportunityRecords;
+  }, [findManyActiveOpportunityRecords]);
+
   const activeListNames = useMemo(() => {
-    return new Set(
-      activeOpportunityRecords
-        .map((record) => normalizeListName(record.name ?? ''))
-        .filter(Boolean),
-    );
+    return getActiveListNames(activeOpportunityRecords);
   }, [activeOpportunityRecords]);
 
   const defaultImportListName = useMemo(() => {
-    let nextListNumber =
-      (historicalOpportunityCount ?? activeOpportunityRecords.length) + 1;
-    let defaultName = t`List ${nextListNumber}`;
-
-    while (activeListNames.has(normalizeListName(defaultName))) {
-      nextListNumber += 1;
-      defaultName = t`List ${nextListNumber}`;
-    }
-
-    return defaultName;
-  }, [
-    activeListNames,
-    activeOpportunityRecords.length,
-    historicalOpportunityCount,
-  ]);
+    return getDefaultImportListName({
+      activeOpportunityRecords,
+      historicalOpportunityCount,
+    });
+  }, [activeOpportunityRecords, historicalOpportunityCount]);
 
   const trimmedImportListName = importListName.trim();
 
@@ -184,12 +211,20 @@ export const HomePage = () => {
 
   const handleCloseImportCSVModal = useCallback(() => {
     closeModal(HOME_IMPORT_CSV_LIST_NAME_MODAL_ID);
+    setImportListName('');
   }, [closeModal]);
 
-  const handleOpenImportCSVModal = useCallback(() => {
-    setImportListName(defaultImportListName);
+  const handleOpenImportCSVModal = useCallback(async () => {
+    const fetchedActiveOpportunityRecords = await fetchActiveOpportunities();
+
+    setImportListName(
+      getDefaultImportListName({
+        activeOpportunityRecords: fetchedActiveOpportunityRecords,
+        historicalOpportunityCount,
+      }),
+    );
     openModal(HOME_IMPORT_CSV_LIST_NAME_MODAL_ID);
-  }, [defaultImportListName, openModal]);
+  }, [fetchActiveOpportunities, historicalOpportunityCount, openModal]);
 
   const handleCreateImportList = useCallback(async () => {
     if (!canCreateImportList) {
@@ -208,6 +243,7 @@ export const HomePage = () => {
       }
 
       closeModal(HOME_IMPORT_CSV_LIST_NAME_MODAL_ID);
+      setImportListName('');
       setImportedListId(newList.id);
       openListMemberImportDialog(newList.id);
     } catch {
@@ -239,7 +275,9 @@ export const HomePage = () => {
           title={t`Import CSV`}
           variant="secondary"
           Icon={IconUpload}
-          onClick={handleOpenImportCSVModal}
+          onClick={() => {
+            void handleOpenImportCSVModal();
+          }}
         />
         {isAiEnabled && (
           <Button
@@ -290,6 +328,7 @@ export const HomePage = () => {
           </StyledImportListNameModalHeader>
 
           <TextInput
+            label={t`Import list name`}
             value={importListName}
             onChange={setImportListName}
             placeholder={defaultImportListName}
