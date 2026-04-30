@@ -1,12 +1,12 @@
 {
-  "area": "workspace-agents",
-  "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/address-pr-226-review-fixes",
-  "baseBranch": "stream/workspace-agents",
-  "sourceBranch": "main",
-  "startFrom": "main",
-  "prNumber": 227,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/227",
-  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-address-pr-226-review-fixes",
-  "createdAt": "2026-04-29T13:46:59.451Z"
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-railway-docker-chown-build-timeout",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/217",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-fix-railway-docker-chown-build-timeout",
+  "createdAt": "2026-04-27T20:25:38.800Z"
 }

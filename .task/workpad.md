@@ -1,47 +1,23 @@
-# address pr 226 review fixes
-
-branch: `task/workspace-agents/address-pr-226-review-fixes`
-stream: `stream/workspace-agents`
-task pr: https://github.com/consuelohq/opensaas/pull/227
-review pr: https://github.com/consuelohq/opensaas/pull/226
-started: 2026-04-29
+# fix railway docker chown build timeout
 
 ## acceptance criteria
-
-- [x] address actionable PR 226 review comments in the typed workspace facade.
-- [x] move runtime facade dependencies into `dependencies`.
-- [x] harden CLI flag validation and failure handling in composed scripts.
-- [x] update the manifest, generated docs, generated types, decision docs, and steering.
-- [x] keep PR 226 title aligned with the feature scope.
+- [x] start from stream/dialer task branch.
+- [ ] inspect docker build path and identify why final chown layer is slow/canceling.
+- [ ] avoid recursive chown over all of /app if not needed.
+- [ ] keep runtime writable directories owned by app user.
+- [ ] validate dockerfile syntax/build-relevant diff.
+- [ ] publish through task workflow.
+- [ ] redeploy and confirm railway build no longer spends 20m on final chown.
 
 ## plan
-
-1. review `/tmp/codex-pr226-fixes.md` and `/tmp/pr226-reviews.md`.
-2. patch the manifest, facade executor, batch runner, CLI scripts, and tests.
-3. regenerate docs/types and run package tests plus task verification.
-4. push the task branch and promote it into the stream review PR.
-
-## files changed
-
-- `package.json`
-- `packages/workspace/package.json`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/scripts/check-files.js`
-- `packages/workspace/scripts/edit-flow.js`
-- `packages/workspace/scripts/mac.js`
-- `packages/workspace/scripts/tool-batch.ts`
-- `packages/workspace/scripts/lib/facade/*`
-- `packages/workspace/tests/facade/facade.test.ts`
-- `packages/workspace/decision.md`
-- `packages/workspace/STEERING.md`
-
-## key decisions
-
-- native dry-run flags pass through when a script supports them; otherwise the facade returns a synthetic `DRY_RUN` envelope.
-- `tool-batch` accepts `input` and keeps `args` as a compatibility alias.
-- `task.merge` PR input stays optional because the underlying script can resolve PR context.
+1. inspect dockerfiles and dockerignore.
+2. find exact final stage file ownership requirements.
+3. patch smallest safe dockerfile change.
+4. validate with dockerfile parse/build-target if feasible and review diff.
+5. push pr, merge stream, redeploy, inspect build logs.
 
 ## notes
+- current observed failure: final layer  ran about 20 minutes then build canceled.
 
-- PR 226 is the durable review PR for the original typed facade work.
-- PR 227 carries these review-fix changes before promotion into the stream.
+- 2026-04-27 20:26:08 write: `.task/workpad.md`
+- 2026-04-27 20:26:49 patch lines 87-88: `packages/twenty-docker/twenty/Dockerfile`
