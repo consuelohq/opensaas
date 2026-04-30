@@ -782,3 +782,4 @@ workspace task.exec '{"command": ["npx", "nx", "fmt", "twenty-front"]}'
 | debugging one package's lint | `workspace task.exec '{"command": ["npx", "nx", "lint:diff-with-main", "<project>"]}'` |
 | checking deploy health | `workspace railway.logs '{"service": "opensaas", "errors": true}'` |
 | running a single test | `workspace task.exec '{"command": ["npx", "jest", "<path>", "--config=packages/<pkg>/jest.config.mjs"]}'` |
+
