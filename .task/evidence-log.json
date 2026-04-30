@@ -5016,8 +5016,392 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/fix-batch-facade-logging-policy"
       }
+    },
+    {
+      "id": "79112d7c-71af-4dc9-84d8-16e4236fb136",
+      "occurred_at": "2026-04-30T21:32:15.277Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9c9fbc9a-dd4c-4c80-99a3-79e74b8bdb07",
+      "occurred_at": "2026-04-30T21:32:19.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "157610a8-f7c8-4276-a947-2eb71e70ece4",
+      "occurred_at": "2026-04-30T21:33:33.083Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "7ebc3559-ef85-4f3e-8e1e-3474f4de2d1d",
+      "occurred_at": "2026-04-30T21:33:37.637Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/browser.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "07667539-432c-4437-93dd-3f8bd0100bd7",
+      "occurred_at": "2026-04-30T21:33:46.049Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "f9e658ff-5407-458e-8ea1-9d5da3c86eb3",
+      "occurred_at": "2026-04-30T21:33:56.403Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "05cf3045-1a90-4be0-92b6-23a01c8f33d7",
+      "occurred_at": "2026-04-30T21:34:01.880Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "48cbab32-d853-461b-86b1-53c5525ed041",
+      "occurred_at": "2026-04-30T21:34:19.867Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "a1647eb6-f3ed-40de-9bb9-73c2e6e745e7",
+      "occurred_at": "2026-04-30T21:35:08.081Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "746f789e-861c-4f06-9531-61e37e7964a4",
+      "occurred_at": "2026-04-30T21:35:12.130Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "d2b8a43a-fce8-4e68-8eb3-a25dfc7856c2",
+      "occurred_at": "2026-04-30T21:35:20.497Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "21009e52-3b34-4d4d-a1b9-3cf79527cdb2",
+      "occurred_at": "2026-04-30T21:35:40.542Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "94744d20-4011-48b4-bec9-268e79bce5c8",
+      "occurred_at": "2026-04-30T21:35:44.760Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "64b7d489-048f-466c-9f19-5201e8ee5c9d",
+      "occurred_at": "2026-04-30T21:35:50.402Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "15839b50-c746-4b69-b7cd-bd3e6088ef66",
+      "occurred_at": "2026-04-30T21:36:34.247Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/TOOLS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "5595a84c-4ea9-4d5c-aa07-1beeba87ae38",
+      "occurred_at": "2026-04-30T22:03:02.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "320a1e0f-cc30-474b-8902-9eea0303b954",
+      "occurred_at": "2026-04-30T22:03:24.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.schema.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9b28d105-ee7b-4605-b7b6-2b881f718708",
+      "occurred_at": "2026-04-30T22:04:32.836Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "73a9e60b-e46e-405d-bfc4-dd656d367a24",
+      "occurred_at": "2026-04-30T22:05:05.468Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "57b324c1-ed02-46e2-a61e-ef3ade7a075a",
+      "occurred_at": "2026-04-30T22:06:40.289Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/src/generated/workspace.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "99eccb4f-5d77-4c45-a4a0-37c51f0d9733",
+      "occurred_at": "2026-04-30T22:06:53.834Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/src/generated/workspace.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "9172dcff-3ecc-4946-b0f0-c569a3635413",
+      "occurred_at": "2026-04-30T22:07:55.734Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "0021ce43-1d20-48dc-91bc-f77d5d0d01a2",
+      "occurred_at": "2026-04-30T22:15:37.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
+    },
+    {
+      "id": "fd112c8f-a96c-4934-8b46-ca354abf72c5",
+      "occurred_at": "2026-04-30T22:15:38.101Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-browser-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-browser-facade-commands"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-30T20:49:43.603Z"
+  "updated_at": "2026-04-30T22:15:38.178Z"
 }

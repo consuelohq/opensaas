@@ -294,6 +294,60 @@ export const BrowserInput = z.object({
   args: stringArray,
 });
 
+export const BrowserOpenInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  url: z.string().url(),
+  headed: z.boolean().optional(),
+  full: z.boolean().optional(),
+});
+
+export const BrowserPageInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  headed: z.boolean().optional(),
+  full: z.boolean().optional(),
+});
+
+export const BrowserScreenshotInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  name: optionalString,
+  full: z.boolean().optional(),
+});
+
+export const BrowserElementInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ref: z.string().min(1),
+});
+
+export const BrowserFillInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ref: z.string().min(1),
+  text: z.string(),
+});
+
+export const BrowserLoginInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  name: z.string().min(1),
+  headed: z.boolean().optional(),
+});
+
+export const BrowserEvalInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  js: z.string().min(1),
+});
+
+export const BrowserRawInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  args: z.array(z.string().min(1)).min(1),
+});
+
 export const WaitInput = z.object({
   ...requestFields,
   seconds: z.number().int().positive().optional(),
@@ -445,6 +499,14 @@ export const schemaRegistry = {
   AiReviewInput,
   GhInput,
   BrowserInput,
+  BrowserOpenInput,
+  BrowserPageInput,
+  BrowserScreenshotInput,
+  BrowserElementInput,
+  BrowserFillInput,
+  BrowserLoginInput,
+  BrowserEvalInput,
+  BrowserRawInput,
   WaitInput,
   TmpInput,
   RailwayLogsInput,
@@ -504,6 +566,14 @@ export const schemaTypeSignatures: Record<string, string> = {
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string }',
+  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }',
+  BrowserPageInput: '{ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string }',
+  BrowserScreenshotInput: '{ name?: string; full?: boolean; dryRun?: boolean; requestId?: string }',
+  BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string }',
+  BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string }',
+  BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }',
+  BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string }',
+  BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string }',
   WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string }',
