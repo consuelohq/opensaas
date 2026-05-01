@@ -720,7 +720,9 @@ export class ParallelService {
   }
 
   private getGroupFromNumbers(group: ParallelGroup): string[] {
-    return group.calls.map((call) => call.fromNumber).filter(Boolean);
+    return Array.from(
+      new Set(group.calls.map((call) => call.fromNumber).filter(Boolean)),
+    );
   }
 
   private isSuccessfulCompletion(
