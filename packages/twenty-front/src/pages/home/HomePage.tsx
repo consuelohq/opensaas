@@ -192,7 +192,20 @@ export const HomePage = () => {
   }, [closeModal]);
 
   const handleOpenImportCSVModal = useCallback(async () => {
-    const fetchedActiveOpportunityRecords = await fetchActiveOpportunities();
+    let fetchedActiveOpportunityRecords: OpportunityRecord[] = [];
+
+    try {
+      fetchedActiveOpportunityRecords = await fetchActiveOpportunities();
+    } catch (error) {
+      captureException(error, {
+        extra: {
+          context: 'HomePage:fetchActiveOpportunities',
+          message:
+            'fetchActiveOpportunities failed before opening import CSV modal',
+          modalId: HOME_IMPORT_CSV_LIST_NAME_MODAL_ID,
+        },
+      });
+    }
 
     setImportListName(
       getDefaultImportListName({

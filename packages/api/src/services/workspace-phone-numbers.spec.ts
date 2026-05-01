@@ -97,12 +97,17 @@ describe('listWorkspacePhoneNumbers', () => {
     const missingRelationError = new Error(
       'ERROR: Relation "public.workspace_phone_numbers" does not exist',
     );
-
     mockQuery.mockRejectedValueOnce(missingRelationError);
 
-    await expect(
-      listWorkspacePhoneNumbers('ws-test-001', dialerNumbers, null),
-    ).rejects.toThrow(missingRelationError);
+    const listWorkspacePhoneNumbersPromise = listWorkspacePhoneNumbers(
+      'ws-test-001',
+      dialerNumbers,
+      null,
+    );
+
+    await expect(listWorkspacePhoneNumbersPromise).rejects.toBe(
+      missingRelationError,
+    );
     expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 });
