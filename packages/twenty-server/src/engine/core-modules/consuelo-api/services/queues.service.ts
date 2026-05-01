@@ -1328,7 +1328,8 @@ export class QueuesService {
       `SELECT EXISTS (
          SELECT 1
          FROM information_schema.tables
-         WHERE table_name = 'contact_attempt_ledger'
+         WHERE table_schema = current_schema()
+           AND table_name = 'contact_attempt_ledger'
        ) AS exists`,
     );
 

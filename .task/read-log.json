@@ -16,6 +16,8 @@
     "packages/twenty-front/src/modules/dialer/hooks/useQueueOperations.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useTwilioConfigStatus.ts",
     "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+    "packages/twenty-front/src/pages/home/HomePage.tsx",
+    "packages/twenty-front/src/pages/home/home-page.styles.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
@@ -60,5 +62,5 @@
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json"
   ],
-  "updatedAt": "2026-05-01T02:24:11.805Z"
+  "updatedAt": "2026-05-01T05:11:12.039Z"
 }

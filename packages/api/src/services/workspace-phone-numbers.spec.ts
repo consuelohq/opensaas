@@ -27,6 +27,18 @@ import * as Sentry from '@sentry/node';
 
 import { listWorkspacePhoneNumbers } from './workspace-phone-numbers';
 
+const createDialerNumber = (
+  overrides: Partial<PhoneNumber> = {},
+): PhoneNumber => ({
+  areaCode: '555',
+  friendlyName: 'Main',
+  isActive: true,
+  isPrimary: false,
+  phoneNumber: '+15551234567',
+  twilioSid: 'PN-001',
+  ...overrides,
+});
+
 describe('listWorkspacePhoneNumbers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -36,16 +48,7 @@ describe('listWorkspacePhoneNumbers', () => {
   });
 
   it('backfills untracked twilio numbers for non-legacy workspaces before filtering', async () => {
-    const dialerNumbers: PhoneNumber[] = [
-      {
-        areaCode: '555',
-        friendlyName: 'Main',
-        isActive: true,
-        isPrimary: false,
-        phoneNumber: '+15551234567',
-        twilioSid: 'PN-001',
-      },
-    ];
+    const dialerNumbers: PhoneNumber[] = [createDialerNumber()];
 
     mockQuery
       .mockResolvedValueOnce({ rows: [] })
@@ -90,18 +93,9 @@ describe('listWorkspacePhoneNumbers', () => {
     ]);
   });
   it('does not report missing workspace phone-number table before route fallback', async () => {
-    const dialerNumbers: PhoneNumber[] = [
-      {
-        areaCode: '555',
-        friendlyName: 'Main',
-        isActive: true,
-        isPrimary: false,
-        phoneNumber: '+15551234567',
-        twilioSid: 'PN-001',
-      },
-    ];
+    const dialerNumbers: PhoneNumber[] = [createDialerNumber()];
     const missingRelationError = new Error(
-      'relation "workspace_phone_numbers" does not exist',
+      'ERROR: Relation "public.workspace_phone_numbers" does not exist',
     );
 
     mockQuery.mockRejectedValueOnce(missingRelationError);

@@ -1,26 +1,30 @@
-# preserve double dial attempts without ledger
+# address dialer review comments
 
-branch: `task/dialer/preserve-double-dial-attempts-without-ledger`
+branch: `task/dialer/address-dialer-review-comments`
 stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/254
+pr: https://github.com/consuelohq/opensaas/pull/257
 started: 2026-05-01
 
 ## acceptance criteria
 
-- [ ] Resolve stream metadata conflicts by starting from the most recent `stream/dialer` state.
-- [ ] Change ledger-absent FIFO selection to reuse `claimQueueItem(workspaceId, item)`.
-- [ ] Preserve double-dial behavior: do not increment attempts and mark `retry_reason` as `double_dial_attempted`.
-- [ ] Add focused unit coverage for retry columns plus `retry_reason = double_dial` in the ledger-absent path.
-- [ ] Run focused validation, review diff, and publish through task workflow.
+- [ ] Verify each requested inline/nitpick finding against current stream code before editing.
+- [ ] Fix workspace phone number missing-relation matcher only if still brittle.
+- [ ] Deduplicate PhoneNumber fixtures in workspace phone-number tests if duplication still exists.
+- [ ] Debounce HomePage import-list name validation only if query still fires directly from `trimmedImportListName`.
+- [ ] Log/report `createOpportunity` failures while preserving cleanup if catch still swallows errors.
+- [ ] Extract HomePage modal styled components if still inline.
+- [ ] Align parallel `getGroupFromNumbers` filtering with `terminateGroup` if still needed.
+- [ ] Scope `hasContactAttemptLedger` to the intended schema if still broad.
+- [ ] Run focused tests/checks plus `workspace review.run` with a 10-minute timeout.
+- [ ] Publish through `task.push`, `task.pr`, and `task.finish`.
 
 ## plan
 
-1. Read current queue service and spec at the requested focus areas.
-2. Use decision-engine evidence before editing.
-3. Update `selectNextCallableItemWithoutLedger` signature and callers.
-4. Extend the focused queue service spec for double-dial fallback behavior.
-5. Run focused Jest, formatting/static checks, and workspace review if available.
-6. Push, open/merge task PR, and finish task.
+1. Run decision-engine research once, then read each exact file section from the latest task branch.
+2. Mark each finding verified/not-needed in this workpad.
+3. Apply only verified fixes with minimal scope.
+4. Run focused API/server/frontend checks and the longer review gate.
+5. Self-review diff, push, update PR, and finish.
 
 ## files changed
 
@@ -28,11 +32,11 @@ started: 2026-05-01
 
 ## key decisions
 
-- User explicitly waived the line-length comment; this task only addresses double-dial attempt accounting in the ledger-absent FIFO fallback.
+- User explicitly requested verifying every finding against current code and only fixing still-valid items.
 
 ## notes for ko
 
-- Started from `stream/dialer` after PR 248 landed, so current task includes the latest missing-schema fallback work.
+- Task was started from current `stream/dialer` at source sha 37fece31, which includes the prior schema fallback and double-dial fallback tasks.
 
 ## improvements noticed
 
@@ -40,8 +44,7 @@ started: 2026-05-01
 
 ## errors i ran into
 
-- Initial `workspace stream.list` timed out twice; `stream.context` succeeded and showed stream/dialer latest commits.
-- Initial required docs batch read timed out; read required docs individually.
+-
 
 ---
 
@@ -53,30 +56,71 @@ bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-01 02:14:31 write: `.task/workpad.md`
-- 2026-05-01 02:19:48 patch lines 693-693: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- 2026-05-01 02:20:09 patch lines 979-979: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- 2026-05-01 02:20:52 patch lines 1176-1208: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- 2026-05-01 02:21:20 patch lines 1182-1182: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- 2026-05-01 02:21:26 patch lines 1197-1197: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- 2026-05-01 02:21:47 patch lines 104-129: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts`
-- 2026-05-01 02:22:52 write: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts`
+- 2026-05-01 05:00:21 write: `.task/workpad.md`
+- 2026-05-01 05:04:22 patch lines 62-70: `packages/api/src/services/workspace-phone-numbers.ts`
+- 2026-05-01 05:04:57 patch lines 72-76: `packages/api/src/services/workspace-phone-numbers.ts`
+- 2026-05-01 05:05:25 patch lines 69-71: `packages/api/src/services/workspace-phone-numbers.ts`
+- 2026-05-01 05:05:39 patch lines 66-71: `packages/api/src/services/workspace-phone-numbers.ts`
+- 2026-05-01 05:11:52 patch lines 141-144: `packages/twenty-front/src/pages/home/HomePage.tsx`
+## verification notes
+
+- Verified `workspace-phone-numbers.ts` still used an exact missing-relation string before fixing.
+- Verified `workspace-phone-numbers.spec.ts` still duplicated the PhoneNumber fixture before adding `createDialerNumber`.
+- Verified `HomePage.tsx` still queried duplicate names from `trimmedImportListName`, swallowed `createOpportunity` errors, and declared modal styled components inline before fixing.
+- Verified `parallel.service.ts` still used `.filter((fromNumber) => fromNumber.length > 0)` before changing it to `.filter(Boolean)`.
+- Verified `queues.service.ts` still checked `contact_attempt_ledger` without a schema filter before adding `table_schema = current_schema()`.
+
 ## implementation notes
 
-- Updated `selectNextCallableItemWithoutLedger` to accept `workspaceId` and delegate claiming to `claimQueueItem(workspaceId, item)`.
-- This keeps the ledger-absent FIFO path on the same claim logic as the ledger-present path, including double-dial handling.
-- Extended the focused queue service spec to cover `retry_reason = double_dial` with retry columns present: attempts stay unchanged and retry_reason becomes `double_dial_attempted`.
+- Broadened `isWorkspacePhoneNumbersRelationError` with a case-insensitive regex and Postgres `42P01` code support while preserving the existing function name and `err instanceof Error` guard.
+- Added a `createDialerNumber` spec fixture factory and updated both workspace phone-number tests to use it.
+- Added debounced import-list name validation in HomePage using `useDebounce`, and disabled Continue while the debounced validation is pending.
+- Replaced the swallowed `createOpportunity` catch with `captureException` while preserving `setIsCreatingImportList(false)` in `finally`.
+- Moved HomePage import-list modal styled components into `home-page.styles.ts` with identical style definitions.
+- Changed `getGroupFromNumbers` to use `.filter(Boolean)`.
+- Scoped `hasContactAttemptLedger` to `current_schema()`.
 
 ## validation
 
+- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
 - passed: `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand`.
-- passed: `workspace checkFiles` for `queues.service.ts` and `queues.service.spec.ts`.
-- passed: `npx prettier --write` on changed files.
+- passed: `workspace checkFiles` for changed `.ts` files. Direct `.tsx` check is unsupported by `node --check` and fails on file extension, so HomePage is covered by Prettier and targeted ESLint instead.
+- passed: `npx prettier --check` for all changed source/spec/style files.
 - passed: `git diff --check`.
-- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out before returning a structured result.
+- passed: targeted ESLint for API and HomePage files, with only Nx project graph warnings.
+- blocked: targeted `parallel.service.spec.ts` is blocked by existing `@nestjs/common` module resolution in that spec.
+- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out twice, including the requested 10-minute timeout after final cleanup.
+- not changed: server service type-import ESLint findings were left alone because those constructor-injected Nest services may require runtime value imports for metadata; this is outside the requested review comments.
 
-## merge/conflict notes
+- 2026-05-01 05:16:44 append: `.task/workpad.md`
+## verification notes
 
-- Fresh task branch was started from the current `stream/dialer` source after the previous schema fallback work landed. No product-code merge conflicts were encountered in this task.
+- Verified `workspace-phone-numbers.ts` still used an exact missing-relation string before fixing.
+- Verified `workspace-phone-numbers.spec.ts` still duplicated the PhoneNumber fixture before adding `createDialerNumber`.
+- Verified `HomePage.tsx` still queried duplicate names from `trimmedImportListName`, swallowed `createOpportunity` errors, and declared modal styled components inline before fixing.
+- Verified `parallel.service.ts` still used `.filter((fromNumber) => fromNumber.length > 0)` before changing it to `.filter(Boolean)`.
+- Verified `queues.service.ts` still checked `contact_attempt_ledger` without a schema filter before adding `table_schema = current_schema()`.
 
-- 2026-05-01 02:28:54 append: `.task/workpad.md`
+## implementation notes
+
+- Broadened `isWorkspacePhoneNumbersRelationError` with a case-insensitive regex and Postgres `42P01` code support while preserving the existing function name and `err instanceof Error` guard.
+- Added a `createDialerNumber` spec fixture factory and updated both workspace phone-number tests to use it.
+- Added debounced import-list name validation in HomePage using `useDebounce`, and disabled Continue while the debounced validation is pending.
+- Replaced the swallowed `createOpportunity` catch with `captureException` while preserving `setIsCreatingImportList(false)` in `finally`.
+- Moved HomePage import-list modal styled components into `home-page.styles.ts` with identical style definitions.
+- Changed `getGroupFromNumbers` to use `.filter(Boolean)`.
+- Scoped `hasContactAttemptLedger` to `current_schema()`.
+
+## validation
+
+- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
+- passed: `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand`.
+- passed: `workspace checkFiles` for changed `.ts` files. Direct `.tsx` check is unsupported by `node --check` and fails on file extension, so HomePage is covered by Prettier and targeted ESLint instead.
+- passed: `npx prettier --check` for all changed source/spec/style files.
+- passed: `git diff --check`.
+- passed: targeted ESLint for API and HomePage files, with only Nx project graph warnings.
+- blocked: targeted `parallel.service.spec.ts` is blocked by existing `@nestjs/common` module resolution in that spec.
+- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out twice, including the requested 10-minute timeout after final cleanup.
+- not changed: server service type-import ESLint findings were left alone because those constructor-injected Nest services may require runtime value imports for metadata; this is outside the requested review comments.
+
+- 2026-05-01 05:16:44 append: `.task/workpad.md`
