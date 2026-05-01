@@ -23,6 +23,8 @@ jest.mock('./phone-number-addons.js', () => ({
     mockGetPhoneNumberAddOnStatus(...args),
 }));
 
+import * as Sentry from '@sentry/node';
+
 import { listWorkspacePhoneNumbers } from './workspace-phone-numbers';
 
 describe('listWorkspacePhoneNumbers', () => {
@@ -86,5 +88,27 @@ describe('listWorkspacePhoneNumbers', () => {
         workspaceId: 'ws-test-001',
       }),
     ]);
+  });
+  it('does not report missing workspace phone-number table before route fallback', async () => {
+    const dialerNumbers: PhoneNumber[] = [
+      {
+        areaCode: '555',
+        friendlyName: 'Main',
+        isActive: true,
+        isPrimary: false,
+        phoneNumber: '+15551234567',
+        twilioSid: 'PN-001',
+      },
+    ];
+    const missingRelationError = new Error(
+      'relation "workspace_phone_numbers" does not exist',
+    );
+
+    mockQuery.mockRejectedValueOnce(missingRelationError);
+
+    await expect(
+      listWorkspacePhoneNumbers('ws-test-001', dialerNumbers, null),
+    ).rejects.toThrow(missingRelationError);
+    expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 });
