@@ -1,128 +1,78 @@
-# fix browser facade commands
+# polish launch motion backgrounds and mobile menu
 
-branch: `task/workspace-agents/fix-browser-facade-commands`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/245
-started: 2026-04-30
+branch: `task/website/polish-launch-motion-backgrounds-and-mobile-menu`
+stream: `stream/website`
+pr: https://github.com/consuelohq/opensaas/pull/255
+started: 2026-05-01
 
 ## acceptance criteria
 
-- [x] Identify current manifest/browser wrapper mismatch.
-- [x] Add typed browser facade aliases matching the browser skill.
-- [x] Add deterministic auth reauth command for expired browser profiles.
-- [x] Regenerate generated docs/types.
-- [x] Verify command dry-runs, syntax, audit, and review gate.
+- [x] Source branch includes the deployed GSAP launch website changes and DashboardDemo ReactElement build fix.
+- [x] Hero GIF media loads after the tab/link snippet block begins its reveal, not during the initial text reveal.
+- [x] Hero GIF frame background is transparent and avoids the gray panel/border feel.
+- [x] Silver glint flash is removed from nav, announcement, links, FAQ, buttons, stats, footer, and Mercury UI.
+- [x] SVG/chart hover uses tracing/draw motion instead of a silver mask.
+- [x] FAQ items use the same split-line reveal base and keep open/close animation.
+- [x] Mercury hosted calling sections use the normal transparent section style while retaining button hover transitions.
+- [x] Mobile menu/sidebar links are clickable and page-section items appear in the mobile drawer.
+- [x] Build passes.
+- [x] Browser verification covers desktop home, desktop Mercury, and mobile menu.
 
 ## plan
 
-1. Read current manifest, browser wrapper, scripts docs, and generated facade surfaces.
-2. Patch browser wrapper profile handling and auth refresh flow.
-3. Add manifest aliases and schema types for browser commands.
-4. Regenerate docs/types and run validation.
+1. Rehydrate task branch with the currently deployed GSAP website source so this task does not regress the live launch work.
+2. Remove glint tokens from interactive surfaces and keep only transition-based hover states.
+3. Defer hero media GIF src/srcset assignment until the demo/media timeline point.
+4. Make hero/stat media backgrounds transparent and attach hover motion to chart tracing.
+5. Add FAQ split-line wrappers and improve mobile drawer page-section links.
+6. Validate with website build, browser smoke, deploy, then publish source.
 
 ## files changed
 
-- `packages/workspace/scripts/browser.js`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/SCRIPTS.md`
+- `packages/consuelo-website/bun.lock`
+- `packages/consuelo-website/package.json`
+- `packages/consuelo-website/src/components/DashboardDemo.tsx`
+- `packages/consuelo-website/src/components/scripts/LaunchGsapMotion.astro`
+- `packages/consuelo-website/src/lib/launch-motion.ts`
+- `packages/consuelo-website/src/components/launch/LaunchFaq.astro`
+- `packages/consuelo-website/src/components/launch/LaunchFooter.astro`
+- `packages/consuelo-website/src/components/launch/LaunchHeader.astro`
+- `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- `packages/consuelo-website/src/components/launch/LaunchMercuryPromo.astro`
+- `packages/consuelo-website/src/components/launch/LaunchOverview.astro`
+- `packages/consuelo-website/src/components/launch/LaunchPrivacy.astro`
+- `packages/consuelo-website/src/components/launch/LaunchStats.astro`
+- `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- `packages/consuelo-website/src/pages/mercury.astro`
 
 ## key decisions
 
-- Keep `workspace browser` as the generic CLI facade while moving generated typed client shape to `workspace.browser.run` so `workspace.browser.*` nested aliases can exist.
-- Add `browser.reauth` as the durable command for expired/revoked auth profiles.
+- The remote `stream/website` ref was stale relative to the previously deployed PR 251 code, so this task starts from stream and restores the deployed website package before applying polish fixes.
+- Removed live `silver-glint` data-motion tokens from markup instead of tuning glint speed; ko wants transitions and SVG tracing, not the flat silver mask.
+- Deferred hero GIF loading by storing GIF URLs in data attributes and assigning src/srcset from the GSAP media reveal timeline.
+- Added mobile page-section links inside the drawer and hid the sticky mobile page nav so the sidebar/drawer owns mobile navigation.
 
 ## notes for ko
 
-- `agent-browser` ignores `--profile` when its daemon is already running, so reauth must close the daemon before login.
+- Live production deploy is Cloudflare Pages main: `https://cb21d5f9.consuelo-website.pages.dev`.
+- The DashboardDemo ReactElement fix from the previous live deploy is now in this task branch source.
+- Remaining review failure is pre-existing workspace tooling: no Nx project with `typecheck` target found. Review reports `0 yours`.
 
 ## improvements noticed
 
--
-
-## errors i ran into
-
-- `workspace explore` failed twice before returning usable evidence; direct repo reads/searches were used for this investigation.
+- `@tailwindcss/typography` is still duplicated in the website package manifest. Bun warns, but it is unrelated to this motion polish.
 
 ## validation
 
-- `bun run generate-types` passed.
-- `bun run generate-docs` passed.
-- `workspace browser.login` dry-run resolved to `bun run browser -- login consuelo --headed`.
-- `workspace browser.reauth` dry-run resolved to `bun run browser -- reauth consuelo --headed`.
-- `workspace browser.test` dry-run resolved to `bun run browser -- open https://example.com`.
-- `bun run browser -- raw auth list` passed and showed profile injection: `agent-browser --profile /Users/kokayi/.agent-browser-ko auth list`.
-- `bun run browser -- --help` passed and documents `reauth`.
-- `workspace checkFiles` passed for browser/facade generator files.
-- `bun run audit -- --scripts --json` passed after documenting existing `linear` script drift.
-- package-scoped facade test passed: `cd packages/workspace && bun run test tests/facade/facade.test.ts`.
-- review gate passed: `bun run review -- --base stream/workspace-agents --no-tests --json`.
-- `bun run verify -- --base stream/workspace-agents --no-db --json` passed and refreshed the task verify stamp.
+- `cd packages/consuelo-website && bun install --frozen-lockfile && bun run build` passed.
+- `bun run review -- --base origin/stream/website --no-tests --quiet` returned `0 yours`, `1 pre-existing` Nx typecheck target issue.
+- Deployed with `bun run website:deploy -- --skip-build`.
+- `curl -I -L https://consuelohq.com` returned HTTP/2 200.
+- `curl -I -L https://consuelohq.com/mercury/` returned HTTP/2 200.
+- Browser verified desktop homepage screenshot: `/tmp/opensaas-screenshots/consuelohq.com-2026-05-01T03-14-14.png`.
+- Browser verified Mercury screenshot: `/tmp/opensaas-screenshots/consuelohq.com-2026-05-01T03-14-23.png`.
+- Browser verified mobile menu screenshot: `/tmp/opensaas-screenshots/consuelohq.com-2026-05-01T03-15-21.png`.
+- Mobile drawer opens and shows `mobile navigation` plus `mobile page navigation` with Intro / What is Consuelo? / Proof / Privacy / FAQ / Mercury / Waitlist.
+- Browser errors and console checks returned no output.
 
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "type(workspace-agents): description" --changed
-bun run task:pr
-bun run task:finish
-```
-
-## task brief from Apr 30 handoff
-
-Objective: fix production dialer issue where the parallel dialer repeatedly posts to POST /api/v1/calls/parallel and receives 409 CALLER_ID_LOCKED while a list dialer is active.
-
-Acceptance criteria:
-- [ ] Prove deployed main/source and runtime path before editing.
-- [ ] Confirm whether duplicate POST comes from frontend effect re-entry, queue identity churn, queue hydration reset, another call path, or backend lock lifecycle.
-- [ ] Add focused frontend coverage if duplicate autostart after blocked result is root cause.
-- [ ] Add focused backend coverage if lock release/lifecycle or stale Redis behavior is root cause.
-- [ ] Verify no start sound, no polling loop, and no repeated same-item POST after caller-id-lock 409.
-- [ ] Verify locks release on all intended terminal parallel outcomes if lifecycle is changed.
-- [ ] Run focused checks plus workspace review or document blocker.
-- [ ] Publish through task.push, task.pr, and task.finish.
-
-Initial plan:
-1. Pull Railway runtime truth and compare deployed main with stream/dialer implementation.
-2. Use decision engine to choose read targets and avoid guessing.
-3. Inspect frontend autostart path and backend caller-id lock lifecycle.
-4. Implement the simplest correct fix with tests.
-5. Verify, publish, and record any production/browser limitation.
-
-Initial issue encountered:
-- workspace stream.sync for dialer hit only .task metadata conflicts in .task/current.json, .task/evidence-log.json, .task/read-log.json, and .task/workpad.md. Product-code conflicts were absent, so task work proceeded from stream/dialer source sha 2393bfd3.
-
-- 2026-04-30 22:19:39 append: `.task/workpad.md`
-
-## implementation notes
-
-Root cause fixed:
-- Parallel status callbacks released loser caller-id locks when a group connected and all locks when a no-winner group completed, but the winning caller-id lock stayed held after the winner call ended because the group status remained connected. That left the winner number locked until the 5-minute caller-id TTL, causing later parallel starts to receive CALLER_ID_LOCKED.
-
-Code changes:
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts now releases all caller-id locks when the group is completed or when the winning call receives a terminal callback.
-- The connected/non-terminal path still releases only loser numbers so the active winner call keeps its caller-id lock while live.
-- Added getGroupFromNumbers helper to release every caller-id used by the parallel group.
-
-Test coverage added:
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts verifies loser-only release while the winner is still active.
-- Same spec verifies all caller-id locks are released when the winner receives a completed callback.
-
-Verification attempts:
-- Railway status checked: opensaas was deployed from main commit bd06d88b, build success.
-- Railway targeted filters for parallel dial blocked / caller id lock returned no fresh matching entries in the current window.
-- Confirmed deployed bd06d88b already had the prior frontend blocked-result guard and delayed start sound behavior.
-- Focused bun test failed because the worktree test runner could not resolve @nestjs/common.
-- Focused npx jest with packages/twenty-server/jest.config.mjs failed with the same @nestjs/common module resolution issue.
-- Plain yarn jest failed earlier because it did not load the TypeScript/Jest package config and could not parse import type.
-- workspace review.run timed out twice without returning a structured result.
-- npx nx typecheck twenty-server also timed out through the wrapper.
-- git diff --check initially found trailing whitespace in generated .task/workpad.md placeholders; those were stripped.
-
-Issues faced:
-- stream.sync hit .task metadata conflicts only; product code had no sync conflict.
-- The first patch command failed because shell quoting stripped TypeScript string quotes before Python ran. Retried using base64-encoded patch scripts.
-- npx/yarn attempts created an untracked node_modules directory in the task worktree; it was removed before publish.
-
-- 2026-04-30 22:39:24 append: `.task/workpad.md`
+- 2026-05-01 03:21:06 write: `.task/workpad.md`

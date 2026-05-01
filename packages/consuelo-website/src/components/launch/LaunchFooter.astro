@@ -13,35 +13,35 @@ type Props = {
 const { sectionId } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId}>
-  <div class="launch-content launch-content--wide launch-footer-signup">
+<section class="launch-section" id={sectionId} data-motion="section-reveal">
+  <div class="launch-content launch-content--wide launch-footer-signup" data-motion="footer-item">
     <div class="launch-footer-signup__intro">
-      <p class="launch-eyebrow">{launchFooterSignup.eyebrow}</p>
-      <h2>{launchFooterSignup.title}</h2>
-      <p class="launch-copy">{launchFooterSignup.intro}</p>
+      <p class="launch-eyebrow" data-motion="split-line">{launchFooterSignup.eyebrow}</p>
+      <h2 data-motion="split-line">{launchFooterSignup.title}</h2>
+      <p class="launch-copy" data-motion="split-line">{launchFooterSignup.intro}</p>
     </div>
 
     <form class="launch-footer-signup__form" data-newsletter-form>
-      <div class="launch-footer-signup__field">
+      <div class="launch-footer-signup__field" data-motion="">
         <input aria-label="Email address" name="email" placeholder="Email address" type="email" />
-        <button class="launch-button launch-mono" type="submit">{launchFooterSignup.buttonLabel}</button>
+        <button class="launch-button launch-mono" type="submit" data-motion="">{launchFooterSignup.buttonLabel}</button>
       </div>
     </form>
   </div>
 </section>
 
-<footer class="launch-section">
+<footer class="launch-section" data-motion="section-reveal">
   <div class="launch-footer-links launch-mono">
     {footerLinks.map((link) => (
-      <a href={link.href}>{link.label}</a>
+      <a href={link.href} data-motion="footer-item">{link.label}</a>
     ))}
   </div>
   <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
     <span>©2026 Consuelo</span>
-    <a href="/blog">Blog</a>
-    <a href={siteLinks.github} class="desktop-only-link">GitHub</a>
-    <a href={siteLinks.privacy}>Privacy</a>
-    <a href={siteLinks.terms}>Terms</a>
+    <a href="/blog" data-motion="footer-item">Blog</a>
+    <a href={siteLinks.github} class="desktop-only-link" data-motion="footer-item">GitHub</a>
+    <a href={siteLinks.privacy} data-motion="footer-item">Privacy</a>
+    <a href={siteLinks.terms} data-motion="footer-item">Terms</a>
     <LanguageSelector />
   </div>
 </footer>

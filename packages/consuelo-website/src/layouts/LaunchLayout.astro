@@ -1,5 +1,6 @@
 ---
 import SeoHead from '../components/SeoHead.astro';
+import LaunchGsapMotion from '../components/scripts/LaunchGsapMotion.astro';
 import { siteMetadata } from '../lib/site-seo';
 import { posthogKey, posthogHost } from '../config/analytics';
 
@@ -109,6 +110,7 @@ const {
     <div class="launch-shell">
       <slot />
     </div>
+    <LaunchGsapMotion />
     <div id="cookie-banner" style="display:none;position:fixed;bottom:1rem;right:1rem;z-index:9999;padding:0.85rem 1rem;border:1px solid var(--launch-line);background:color-mix(in srgb, var(--launch-bg) 40%, transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-family:var(--launch-mono-font);font-size:0.68rem;line-height:1.5;color:var(--launch-muted);">
       <button id="cookie-close" style="position:absolute;top:0.4rem;right:0.5rem;background:none;border:none;color:var(--launch-muted);font-size:0.8rem;cursor:pointer;padding:0;line-height:1;opacity:0.6;">✕</button>
       <p id="cookie-text" style="margin:0;">We use cookies to understand how you use our site and improve your experience.</p>
@@ -188,6 +190,8 @@ const {
     --launch-shimmer-stop-2: rgba(0, 0, 0, 0.4);
     --launch-shimmer-stop-3: rgba(0, 0, 0, 0.82);
     --launch-success: #6fdd92;
+    --launch-silver: rgba(0, 0, 0, 0.58);
+    --launch-silver-soft: rgba(0, 0, 0, 0.18);
     --launch-mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   }
 
@@ -207,6 +211,8 @@ const {
       --launch-shimmer-stop-2: rgba(255, 255, 255, 0.52);
       --launch-shimmer-stop-3: rgba(255, 255, 255, 0.88);
       --launch-success: #82e8a4;
+      --launch-silver: rgba(255, 255, 255, 0.72);
+      --launch-silver-soft: rgba(210, 210, 210, 0.35);
     }
   }
 
@@ -216,7 +222,7 @@ const {
 
   html {
     background: var(--launch-bg);
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
@@ -443,4 +449,62 @@ const {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
+
+  [data-motion~='silver-glint'] {
+    position: relative;
+  }
+
+  .launch-motion-line {
+    will-change: transform, opacity;
+  }
+
+  .is-motion-ready .launch-header__mobile-menu,
+  .is-motion-ready .launch-header__mobile-panel,
+  .is-motion-ready .launch-header__menu-line,
+  .is-motion-ready .launch-faq__icon span,
+  .is-motion-ready .launch-header__summary-icon span {
+    transition: none;
+  }
+
+  .launch-header::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background: linear-gradient(90deg, transparent, var(--launch-silver), transparent);
+    opacity: 0;
+    transition: opacity 180ms ease, transform 220ms ease;
+  }
+
+  .launch-header.is-motion-scrolled::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .launch-motion-spark {
+    position: absolute;
+    left: var(--spark-left);
+    top: var(--spark-top);
+    z-index: 2;
+    width: 4px;
+    height: 4px;
+    border: 1px solid var(--launch-silver-soft);
+    background: var(--launch-silver);
+    box-shadow: 0 0 14px var(--launch-silver-soft);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
 </style>
