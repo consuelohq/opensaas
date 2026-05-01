@@ -1,40 +1,29 @@
-# fix browser facade commands
+# fix workspace review command
 
-branch: `task/workspace-agents/fix-browser-facade-commands`
+branch: `task/workspace-agents/fix-workspace-review-command`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/245
-started: 2026-04-30
+pr: https://github.com/consuelohq/opensaas/pull/261
+started: 2026-05-01
 
 ## acceptance criteria
 
-- [x] Identify current manifest/browser wrapper mismatch.
-- [x] Add typed browser facade aliases matching the browser skill.
-- [x] Add deterministic auth reauth command for expired browser profiles.
-- [x] Regenerate generated docs/types.
-- [x] Verify command dry-runs, syntax, audit, and review gate.
+- [ ] 
 
 ## plan
 
-1. Read current manifest, browser wrapper, scripts docs, and generated facade surfaces.
-2. Patch browser wrapper profile handling and auth refresh flow.
-3. Add manifest aliases and schema types for browser commands.
-4. Regenerate docs/types and run validation.
+1. 
 
 ## files changed
 
-- `packages/workspace/scripts/browser.js`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/SCRIPTS.md`
+- 
 
 ## key decisions
 
-- Keep `workspace browser` as the generic CLI facade while moving generated typed client shape to `workspace.browser.run` so `workspace.browser.*` nested aliases can exist.
-- Add `browser.reauth` as the durable command for expired/revoked auth profiles.
+- 
 
 ## notes for ko
 
-- `agent-browser` ignores `--profile` when its daemon is already running, so reauth must close the daemon before login.
+- 
 
 ## improvements noticed
 
@@ -42,22 +31,7 @@ started: 2026-04-30
 
 ## errors i ran into
 
-- `workspace explore` failed twice before returning usable evidence; direct repo reads/searches were used for this investigation.
-
-## validation
-
-- `bun run generate-types` passed.
-- `bun run generate-docs` passed.
-- `workspace browser.login` dry-run resolved to `bun run browser -- login consuelo --headed`.
-- `workspace browser.reauth` dry-run resolved to `bun run browser -- reauth consuelo --headed`.
-- `workspace browser.test` dry-run resolved to `bun run browser -- open https://example.com`.
-- `bun run browser -- raw auth list` passed and showed profile injection: `agent-browser --profile /Users/kokayi/.agent-browser-ko auth list`.
-- `bun run browser -- --help` passed and documents `reauth`.
-- `workspace checkFiles` passed for browser/facade generator files.
-- `bun run audit -- --scripts --json` passed after documenting existing `linear` script drift.
-- package-scoped facade test passed: `cd packages/workspace && bun run test tests/facade/facade.test.ts`.
-- review gate passed: `bun run review -- --base stream/workspace-agents --no-tests --json`.
-- `bun run verify -- --base stream/workspace-agents --no-db --json` passed and refreshed the task verify stamp.
+- 
 
 ---
 
@@ -68,3 +42,21 @@ bun run task:push -- --message "type(workspace-agents): description" --changed
 bun run task:pr
 bun run task:finish
 ```
+
+- 2026-05-01 07:32:01 write: `tmp/workspace-review-command-smoke.txt`
+- 2026-05-01 08:08:25 patch lines 248-257: `packages/workspace/scripts/lib/facade/schemas.ts`
+- 2026-05-01 08:08:34 patch lines 563-563: `packages/workspace/scripts/lib/facade/schemas.ts`
+- 2026-05-01 08:08:39 patch lines 254-260: `packages/workspace/scripts/lib/facade/executor.ts`
+- 2026-05-01 08:08:48 patch lines 253-267: `packages/workspace/scripts/lib/facade/executor.ts`
+- 2026-05-01 08:09:00 patch lines 610-633: `packages/workspace/scripts/review.js`
+- 2026-05-01 08:09:16 patch lines 600-657: `packages/workspace/scripts/review.js`
+- 2026-05-01 08:09:24 patch lines 1539-1539: `packages/workspace/tooling/tool-manifest.json`
+- 2026-05-01 08:09:38 patch lines 1574-1577: `packages/workspace/tooling/tool-manifest.json`
+- 2026-05-01 08:10:46 patch lines 462-508: `AGENTS.md`
+- 2026-05-01 08:10:56 patch lines 771-771: `AGENTS.md`
+- 2026-05-01 08:11:03 patch lines 318-335: `packages/workspace/SCRIPTS.md`
+- 2026-05-01 08:11:15 patch lines 317-318: `packages/workspace/SCRIPTS.md`
+- 2026-05-01 08:11:34 patch lines 428-428: `packages/workspace/STEERING.md`
+- 2026-05-01 08:11:39 patch lines 551-551: `packages/workspace/STEERING.md`
+- 2026-05-01 08:11:54 patch lines 657-657: `packages/workspace/scripts/review.js`
+- 2026-05-01 08:15:40 patch lines 461-462: `AGENTS.md`

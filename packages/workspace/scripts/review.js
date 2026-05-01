@@ -600,7 +600,7 @@ function printFindings(label, findings, quiet) {
   for (const [rule, items] of Object.entries(byRule)) {
     writeStdout(`  ${rule} (${items.length}):`);
     for (const item of items) {
-      const loc = item.file ? `${item.file}:${item.line}` : '(project)';
+      const loc = item.file ? `${item.file}:${item.line}` : "(project)";
       writeStdout(`    ${loc} — ${item.msg}`);
     }
     if (items.length > 10) {
@@ -615,32 +615,46 @@ async function main() {
 
   // --mine: re-run review from the active task worktree
   if (args.mine) {
-    const { listWorktrees } = require('./lib/git');
-    const { readTaskMeta } = require('./lib/task-meta');
-    const { resolveGitRoot } = require('./lib/paths');
+    const { listWorktrees } = require("./lib/git");
+    const { readTaskMeta } = require("./lib/task-meta");
+    const { resolveGitRoot } = require("./lib/paths");
     const repoRoot = resolveGitRoot(process.cwd());
+    const requestedBranch = process.env.TASK_BRANCH;
     const worktrees = listWorktrees(repoRoot);
     const tasks = [];
     for (const wt of worktrees) {
-      if (wt.path === repoRoot) continue;
       const meta = readTaskMeta(wt.path);
-      if (meta) tasks.push({ path: wt.path, meta });
+      if (!meta) continue;
+      const taskBranch = meta.taskBranch || meta.branch || wt.branch;
+      if (taskBranch !== wt.branch) continue;
+      tasks.push({ path: wt.path, branch: taskBranch, meta });
     }
-    if (tasks.length === 0) { writeStderr('no active task worktree found'); process.exitCode = 1; return; }
-    if (tasks.length > 1) { writeStderr('multiple active tasks — run from inside the task worktree or use task:exec'); process.exitCode = 1; return; }
-    const taskRoot = tasks[0].path;
+    if (tasks.length === 0) { writeStderr("no active task worktree found"); process.exitCode = 1; return; }
+
+    let task = null;
+    if (requestedBranch) {
+      task = tasks.find((candidate) => candidate.branch === requestedBranch) || null;
+      if (!task) {
+        writeStderr(`no active task worktree found for ${requestedBranch}`);
+        process.exitCode = 1;
+        return;
+      }
+    } else {
+      if (tasks.length > 1) { writeStderr("multiple active tasks — run from inside the task worktree or set TASK_BRANCH"); process.exitCode = 1; return; }
+      task = tasks[0];
+    }
+
+    const taskRoot = task.path;
     writeStderr(`→ review scoped to: ${taskRoot}`);
-    const passthrough = process.argv.slice(2).filter(a => a !== '--mine');
+    const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
     try {
-      execSync(`node ${__filename} ${passthrough.join(' ')}`, { cwd: taskRoot, stdio: 'inherit' });
-    } catch (e) { process.exitCode = e.status || 1; }
+      execSync(`node ${__filename} ${passthrough.join(" ")}`, { cwd: taskRoot, stdio: "inherit" });
+    } catch (error) { process.exitCode = error.status || 1; }
     return;
   }
-
   const root = gitRoot();
-  if (!root) throw new Error('not in a git repository');
+  if (!root) throw new Error("not in a git repository");
   process.chdir(root);
-
   // ensure node_modules exists — symlink from main worktree if in a task worktree
   const nodeModulesPath = path.join(root, 'node_modules');
   if (!fs.existsSync(nodeModulesPath)) {

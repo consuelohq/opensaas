@@ -1,19 +1,23 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-browser-facade-commands",
+  "branch": "task/workspace-agents/fix-workspace-review-command",
   "base": "stream/workspace-agents",
-  "headSha": "487a758fce730c27ce8c03e7354a720e0e010456",
-  "changeHash": "b7caa9063fe11a0c0aefbcf1232da3781d9fed8d8d51a832716b33c6b2147ba8",
+  "headSha": "244820ddd5df72dbae1c2229ba769f3a56c82fd7",
+  "changeHash": "46b78ddb6c8f956119fc7ae6d2816c424d2e33d738f859b03f887f7c3e421cee",
   "changedFiles": [
+    "AGENTS.md",
     "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
     "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/review.js",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-04-30T22:18:22.003Z",
+  "verifiedAt": "2026-05-01T08:16:08.195Z",
   "review": {
     "skipped": false,
     "passed": true

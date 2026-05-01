@@ -425,7 +425,7 @@ workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace review.run '{\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
 ```
@@ -548,7 +548,7 @@ workspace.sandbox_exec({
 review pipeline:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace review.run '{\"base\":\"stream/workspace-agents\",\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
 ```
 
