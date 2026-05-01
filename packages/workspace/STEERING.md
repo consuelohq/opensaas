@@ -464,7 +464,7 @@ if a tool returns an error envelope, read the error message and `stderr`. valida
 
 raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
 
-## how to think: the decision engine
+## how to think: the decision.md
 
 the decision engine is the reasoning loop behind workspace work. it is not optional tooling; it is how agents avoid guessing.
 
@@ -918,6 +918,20 @@ the failure mode: writing an absolute prohibition when you meant a priority orde
 fix: use "only," "solely," or "at the expense of" to signal that the thing still matters —
 it just is not the whole picture.
 
+## workspace docs are part of the change
+
+when changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+use the owning source of truth:
+
+- doctrine goes in `packages/workspace/STEERING.md`
+- decision-engine doctrine goes in `packages/workspace/decision.md`
+- procedural script usage goes in `packages/workspace/SCRIPTS.md`
+- typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`
+- generated tool docs come from `packages/workspace/scripts/generate-docs.ts` and regenerate `packages/workspace/TOOLS.md`
+
+write durable rules, not conversation recaps. generated files should be regenerated from source instead of patched by hand.
+
 ## retrieval is a prior, not a conclusion
 
 when building systems that combine search/retrieval with decision-making, do not conflate
@@ -961,4 +975,59 @@ for command construction:
 
 never nest more than 2 levels of quotes in a single sandbox_exec call
 heredocs don't survive JSON. the \n in a JSON string value is a literal backslash-n, not a newline.
+
+## Workspace tooling and facade change doctrine
+
+When working on workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, use the workspace facade as the primary operating surface. Do not default to raw absolute-path shell commands when a workspace command exists.
+
+Start workspace-tooling investigations with:
+
+```bash
+workspace get_steering
+workspace stream.context '{"area":"workspace-agents"}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"browser facade aliases","limit":5}'
+workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
+
+After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like rg ... /Users/kokayi/Dev/opensaas as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+
+workspace fs.search '{"branch":"<branch>","pattern":"<pattern>","paths":["."],"context":8,"maxResults":80}'
+workspace fs.read '{"branch":"<branch>","path":"<path>"}'
+workspace fs.list '{"branch":"<branch>","path":"<path>","depth":2}'
+
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via workspace task.exec. If raw shell is used, explain why the workspace facade was not sufficient.
+
+Workspace docs are part of the change
+
+When changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, generated tool surfaces, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+Use the owning source of truth:
+
+Doctrine goes in packages/workspace/STEERING.md.
+Decision-engine doctrine goes in packages/workspace/decision.md.
+Procedural script usage goes in packages/workspace/SCRIPTS.md.
+Typed tool contracts go in packages/workspace/tooling/tool-manifest.json.
+Input schemas go in packages/workspace/scripts/lib/facade/schemas.ts.
+Generated tool docs come from packages/workspace/scripts/generate-docs.ts; regenerate packages/workspace/TOOLS.md.
+Generated type stubs come from packages/workspace/scripts/generate-types.ts; regenerate packages/workspace/src/generated/workspace.d.ts.
+Facade behavior changes should update or regenerate relevant tests/snapshots under packages/workspace/tests/facade/.
+
+Write durable operating rules, not conversation recaps. Documentation should describe the behavior future agents must follow, not summarize why one chat made a change.
+
+Generated files must be regenerated from source instead of patched by hand.
+
+Before reporting completion, verify one of these is true:
+
+The owning documentation surface was updated and regenerated where applicable.
+No documentation update was required, and the reason is stated explicitly.
+
+For typed facade changes, the expected validation path is:
+
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-types"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-docs"]}'
+workspace task.exec '{"branch":"<branch>","command":["bash","-lc","cd packages/workspace && bun run test tests/facade/facade.test.ts"],"timeout":300000}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","audit","--","--scripts","--json"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","--base","stream/workspace-agents","--no-tests","--json"],"timeout":600000}'
+
+If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 ```
