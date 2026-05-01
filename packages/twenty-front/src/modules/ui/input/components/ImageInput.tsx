@@ -158,6 +158,7 @@ export const ImageInput = ({
               Icon={IconX}
               onClick={onAbort}
               variant="secondary"
+              size="small"
               title={t`Abort`}
               disabled={!pictureURI || disabled}
             />
@@ -166,6 +167,7 @@ export const ImageInput = ({
               Icon={IconUpload}
               onClick={onUploadButtonClick}
               variant="secondary"
+              size="small"
               title={t`Upload`}
               disabled={disabled}
             />
@@ -174,6 +176,7 @@ export const ImageInput = ({
             Icon={IconTrash}
             onClick={onRemove}
             variant="secondary"
+            size="small"
             title={t`Remove`}
             disabled={!pictureURI || disabled}
           />

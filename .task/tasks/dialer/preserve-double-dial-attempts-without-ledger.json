@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/preserve-double-dial-attempts-without-ledger",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 254,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/254",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-preserve-double-dial-attempts-without-ledger",
+  "createdAt": "2026-05-01T02:10:06.892Z"
+}
