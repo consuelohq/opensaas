@@ -990,6 +990,44 @@ workspace context.search '{"keyword":"browser facade aliases","limit":5}'
 workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
 ```
 
+## shell command construction with base64 + JSON escaping
+When generating a shell command that decodes base64 through Python, prefer this shape:
+```bash
+python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING
+
+The base64 string does not need quotes when it contains only standard base64 characters. Keep it as a positional argument to avoid nested shell quoting.
+
+When embedding that command inside JSON, escape only the JSON double quotes around the command value. Keep the Python snippet single-quoted inside the shell command:
+
+{
+  "command": "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING"
+}
+
+For workspace.sandbox_exec, the full call shape is:
+
+workspace.sandbox_exec({
+  command: "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING",
+  timeout: 120
+})
+
+Avoid this failure mode:
+
+{
+  "command": "python3 -c "import base64; ..." BASE64_STRING"
+}
+
+That breaks JSON because the inner double quotes terminate the command string.
+
+If double quotes are required inside the shell command, escape them for JSON:
+
+{
+  "command": "python3 -c \"import base64,sys;print(base64.b64decode(sys.argv[1]).decode())\" BASE64_STRING"
+}
+
+Prefer the single-quoted Python form because it keeps the JSON cleaner and reduces escaping mistakes.
+
+I tightened it into a durable steering rule: positional base64 arg, single-quoted Python snippet, JSON-safe command string, and one explicit escaped-double-quote fallback.
+
 ## Exploration is mandatory
 
 Before planning, coding, documenting, or handing off a workspace tooling change, perform explicit exploration. Do not skip exploration because the change appears obvious, because a prior agent summarized it, or because a file path seems known.
@@ -1025,6 +1063,7 @@ For repo changes, exploration should include the nearest existing implementation
 Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
 
 Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.exec`. If raw shell is used, explain why the workspace facade was not sufficient.
+
 
 ## Workspace docs are part of the change
 
