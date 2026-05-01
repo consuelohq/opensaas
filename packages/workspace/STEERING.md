@@ -988,29 +988,58 @@ workspace stream.context '{"area":"workspace-agents"}'
 workspace context.search '{"keyword":"typed workspace facade","limit":5}'
 workspace context.search '{"keyword":"browser facade aliases","limit":5}'
 workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
+```
 
-After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like rg ... /Users/kokayi/Dev/opensaas as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+## Exploration is mandatory
 
+Before planning, coding, documenting, or handing off a workspace tooling change, perform explicit exploration. Do not skip exploration because the change appears obvious, because a prior agent summarized it, or because a file path seems known.
+
+Exploration must answer these questions before implementation begins:
+
+1. What is the current source of truth for this behavior?
+2. Which script, manifest entry, generated file, skill, or doctrine currently owns it?
+3. What existing pattern should this change follow?
+4. What docs or generated surfaces must change with it?
+5. What tests, snapshots, audits, or review gates prove the change?
+6. What uncertainty remains, and what needs Ko’s answer before coding?
+
+Use context search first, then code/file exploration. Good first-pass commands:
+
+```bash
+workspace context.search '{"keyword":"<feature or behavior>","limit":5}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"workspace scripts docs","limit":5}'
+workspace explore '{"query":"<feature or behavior> workspace facade script manifest docs tests","limit":8}'
+```
+
+After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+
+```bash
 workspace fs.search '{"branch":"<branch>","pattern":"<pattern>","paths":["."],"context":8,"maxResults":80}'
 workspace fs.read '{"branch":"<branch>","path":"<path>"}'
 workspace fs.list '{"branch":"<branch>","path":"<path>","depth":2}'
+```
 
-Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via workspace task.exec. If raw shell is used, explain why the workspace facade was not sufficient.
+For repo changes, exploration should include the nearest existing implementation and at least one generated/consumer surface. For typed facade work, this usually means reading the relevant script, `tool-manifest.json`, `schemas.ts`, generated types/docs, and the facade test/snapshot pattern before editing.
 
-Workspace docs are part of the change
+Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
+
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.exec`. If raw shell is used, explain why the workspace facade was not sufficient.
+
+## Workspace docs are part of the change
 
 When changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, generated tool surfaces, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
 
 Use the owning source of truth:
 
-Doctrine goes in packages/workspace/STEERING.md.
-Decision-engine doctrine goes in packages/workspace/decision.md.
-Procedural script usage goes in packages/workspace/SCRIPTS.md.
-Typed tool contracts go in packages/workspace/tooling/tool-manifest.json.
-Input schemas go in packages/workspace/scripts/lib/facade/schemas.ts.
-Generated tool docs come from packages/workspace/scripts/generate-docs.ts; regenerate packages/workspace/TOOLS.md.
-Generated type stubs come from packages/workspace/scripts/generate-types.ts; regenerate packages/workspace/src/generated/workspace.d.ts.
-Facade behavior changes should update or regenerate relevant tests/snapshots under packages/workspace/tests/facade/.
+* Doctrine goes in `packages/workspace/STEERING.md`.
+* Decision-engine doctrine goes in `packages/workspace/decision.md`.
+* Procedural script usage goes in `packages/workspace/SCRIPTS.md`.
+* Typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`.
+* Input schemas go in `packages/workspace/scripts/lib/facade/schemas.ts`.
+* Generated tool docs come from `packages/workspace/scripts/generate-docs.ts`; regenerate `packages/workspace/TOOLS.md`.
+* Generated type stubs come from `packages/workspace/scripts/generate-types.ts`; regenerate `packages/workspace/src/generated/workspace.d.ts`.
+* Facade behavior changes should update or regenerate relevant tests/snapshots under `packages/workspace/tests/facade/`.
 
 Write durable operating rules, not conversation recaps. Documentation should describe the behavior future agents must follow, not summarize why one chat made a change.
 
@@ -1018,16 +1047,19 @@ Generated files must be regenerated from source instead of patched by hand.
 
 Before reporting completion, verify one of these is true:
 
-The owning documentation surface was updated and regenerated where applicable.
-No documentation update was required, and the reason is stated explicitly.
+1. The owning documentation surface was updated and regenerated where applicable.
+2. No documentation update was required, and the reason is stated explicitly.
 
 For typed facade changes, the expected validation path is:
 
+```bash
 workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-types"]}'
 workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-docs"]}'
 workspace task.exec '{"branch":"<branch>","command":["bash","-lc","cd packages/workspace && bun run test tests/facade/facade.test.ts"],"timeout":300000}'
 workspace task.exec '{"branch":"<branch>","command":["bun","run","audit","--","--scripts","--json"]}'
 workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","--base","stream/workspace-agents","--no-tests","--json"],"timeout":600000}'
+```
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
+
 ```
