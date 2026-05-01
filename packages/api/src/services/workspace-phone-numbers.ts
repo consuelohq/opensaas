@@ -56,10 +56,18 @@ const SQL_MARK_RELEASED =
 const SQL_SUBSCRIPTION_STATUS =
   'SELECT status FROM workspace_subscriptions WHERE workspace_id = $1';
 
+const WORKSPACE_PHONE_NUMBERS_RELATION_ERROR_PATTERN =
+  /(?=.*\brelation\b)(?=.*\bworkspace_phone_numbers\b)(?=.*\bdoes\b)(?=.*\bnot\b)(?=.*\bexist\b)/i;
+
+const getPostgresErrorCode = (err: Error): unknown => {
+  return 'code' in err ? err.code : undefined;
+};
+
 const isWorkspacePhoneNumbersRelationError = (err: unknown): boolean => {
   return (
     err instanceof Error &&
-    err.message.includes('relation "workspace_phone_numbers" does not exist')
+    (WORKSPACE_PHONE_NUMBERS_RELATION_ERROR_PATTERN.test(err.message) ||
+      getPostgresErrorCode(err) === '42P01')
   );
 };
 
