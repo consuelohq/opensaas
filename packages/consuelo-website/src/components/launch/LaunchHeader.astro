@@ -19,20 +19,20 @@ const { pageSections = [] } = Astro.props as Props;
 const hasPageSections = pageSections.length > 0;
 ---
 
-<header class="launch-header launch-section" data-launch-header>
+<header class="launch-header launch-section" data-launch-header data-motion="header">
   <div class="launch-content launch-content--wide launch-header__inner">
     <a class="launch-header__brand launch-mono" href="/">consuelo.</a>
 
     <div class="launch-header__desktop">
       <nav class="launch-header__nav" aria-label="Primary">
         {launchHeaderLinks.map((link) => (
-          <a href={link.href}>{link.label}</a>
+          <a href={link.href} data-motion="nav-link silver-glint">{link.label}</a>
         ))}
       </nav>
 
       <div class="launch-header__actions">
-        <a class="launch-header__login" href={siteLinks.login}>Login</a>
-        <a class="launch-button" href={siteLinks.free} style="font-size: 1.1rem; padding: 0.4rem 1rem;">
+        <a class="launch-header__login" href={siteLinks.login} data-motion="nav-link silver-glint">Login</a>
+        <a class="launch-button" href={siteLinks.free} style="font-size: 1.1rem; padding: 0.4rem 1rem;" data-motion="silver-glint">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.2rem;">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
@@ -49,6 +49,7 @@ const hasPageSections = pageSections.length > 0;
       aria-controls="launch-mobile-menu"
       aria-expanded="false"
       data-mobile-menu-toggle
+      data-motion="mobile-menu-toggle silver-glint"
     >
       <span class="sr-only">open menu</span>
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -65,7 +66,7 @@ const hasPageSections = pageSections.length > 0;
         {pageSections.map((section) => (
           <a class="launch-header__page-link" href={
             '#' + section.id
-          } data-page-anchor>
+          } data-page-anchor data-motion="anchor-link silver-glint">
             {section.label}
           </a>
         ))}
@@ -74,10 +75,10 @@ const hasPageSections = pageSections.length > 0;
   )}
 </header>
 
-<div class="launch-header__mobile-menu" data-mobile-menu data-open="false" aria-hidden="true" id="launch-mobile-menu">
-  <button class="launch-header__mobile-backdrop" type="button" aria-label="close menu" data-mobile-menu-close></button>
+<div class="launch-header__mobile-menu" data-mobile-menu data-open="false" aria-hidden="true" id="launch-mobile-menu" data-motion="mobile-menu">
+  <button class="launch-header__mobile-backdrop" type="button" aria-label="close menu" data-mobile-menu-close data-motion="mobile-backdrop"></button>
 
-  <div class="launch-header__mobile-panel">
+  <div class="launch-header__mobile-panel" data-motion="mobile-panel">
     <div class="launch-header__mobile-top launch-mono">
       <a class="launch-header__brand" href="/">consuelo.</a>
       <button class="launch-header__mobile-close" type="button" data-mobile-menu-close>
@@ -94,7 +95,7 @@ const hasPageSections = pageSections.length > 0;
         <p class="launch-eyebrow">Menu</p>
         <nav class="launch-header__mobile-links" aria-label="mobile navigation">
           {launchMobileMenuLinks.map((link) => (
-            <a class="launch-header__mobile-link" href={link.href} data-mobile-link>{link.label}</a>
+            <a class="launch-header__mobile-link" href={link.href} data-mobile-link data-motion="mobile-link silver-glint">{link.label}</a>
           ))}
         </nav>
       </section>
@@ -146,6 +147,7 @@ const hasPageSections = pageSections.length > 0;
     menuToggle.dataset.open = nextOpen ? 'true' : 'false';
     menuToggle.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
     document.body.style.overflow = nextOpen ? 'hidden' : '';
+    document.dispatchEvent(new CustomEvent('launch:mobile-menu', { detail: { open: nextOpen } }));
   };
 
   const syncActiveSection = (sectionId) => {

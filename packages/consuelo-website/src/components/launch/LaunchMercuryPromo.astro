@@ -16,16 +16,16 @@ const icons = [
 ];
 ---
 
-<section class="launch-section" id={sectionId}>
-  <div class="launch-content launch-content--wide launch-mercury-promo">
-    <h2 class="launch-mono">{launchMercury.title}</h2>
-    <p class="launch-copy">{launchMercury.intro}</p>
+<section class="launch-section" id={sectionId} data-motion="section-reveal">
+  <div class="launch-content launch-content--wide launch-mercury-promo launch-card" data-motion="mercury-card silver-glint">
+    <h2 class="launch-mono" data-motion="split-line">{launchMercury.title}</h2>
+    <p class="launch-copy" data-motion="split-line">{launchMercury.intro}</p>
     <div class="launch-mercury-promo__icons">
       {icons.map((icon) => (
-        <img src={icon.src} alt={icon.alt} width="24" height="24" class="launch-mercury-promo__icon" />
+        <img src={icon.src} alt={icon.alt} width="24" height="24" class="launch-mercury-promo__icon" data-motion="commit-twinkle" />
       ))}
     </div>
-    <a class="launch-mercury-promo__link launch-mono" href={launchMercury.primaryHref}>
+    <a class="launch-mercury-promo__link launch-mono" href={launchMercury.primaryHref} data-motion="silver-glint">
       {launchMercury.primaryLabel} ↗
     </a>
   </div>
@@ -35,6 +35,8 @@ const icons = [
   .launch-mercury-promo {
     display: grid;
     gap: 1rem;
+    padding-block: clamp(2rem, 1.5rem + 1.5vw, 3.5rem);
+    overflow: hidden;
   }
 
   .launch-mercury-promo h2 {

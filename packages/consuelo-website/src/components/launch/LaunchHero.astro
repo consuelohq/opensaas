@@ -12,9 +12,9 @@ type Props = {
 const { sectionId } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId}>
+<section class="launch-section" id={sectionId} data-motion="section-reveal">
   <div class="launch-content launch-content--wide launch-hero">
-    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono">
+    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono" data-motion="hero-eyebrow silver-glint">
       <span class="launch-hero__badge">{launchAnnouncement.badge}</span>
       <span class="launch-hero__announcement-text">
         {launchAnnouncement.text} <span class="launch-inline-link">{launchAnnouncement.linkLabel}</span>
@@ -22,12 +22,12 @@ const { sectionId } = Astro.props as Props;
     </a>
 
     <div class="launch-hero__copy">
-      <h1 class="launch-title">{launchHero.title}</h1>
-      <p class="launch-copy">{launchHero.description}</p>
+      <h1 class="launch-title" data-motion="hero-line">{launchHero.title}</h1>
+      <p class="launch-copy" data-motion="hero-copy">{launchHero.description}</p>
     </div>
 
-    <div class="launch-hero__snippet launch-card" data-launch-hero>
-      <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces">
+    <div class="launch-hero__snippet launch-card" data-launch-hero data-motion="hero-demo silver-glint">
+      <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces" data-motion="hero-tabs">
         {launchTabs.map((tab, index) => (
           <button
             class:list={['launch-hero__tab', { 'is-active': index === 0 }]}
@@ -35,6 +35,7 @@ const { sectionId } = Astro.props as Props;
             role="tab"
             aria-selected={index === 0 ? 'true' : 'false'}
             data-tab-button={tab.id}
+            data-motion="tab silver-glint"
           >
             {tab.label}
           </button>
@@ -47,6 +48,7 @@ const { sectionId } = Astro.props as Props;
             href={tab.href}
             class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]}
             data-tab-panel={tab.id}
+            data-motion="tab-panel"
           >
             <span class="launch-hero__snippet-value launch-mono">{tab.value}</span>
             <span class="launch-hero__snippet-action" aria-hidden="true">
@@ -61,6 +63,7 @@ const { sectionId } = Astro.props as Props;
             class:list={['launch-hero__snippet-panel', { 'is-active': index === 0 }]} 
             data-tab-panel={tab.id}
             data-copy-button={tab.id}
+            data-motion="tab-panel"
           >
             <code class="launch-hero__snippet-value launch-mono">{tab.value}</code>
             <span class="launch-hero__snippet-action" aria-hidden="true">
@@ -77,9 +80,9 @@ const { sectionId } = Astro.props as Props;
       </div>
     </div>
 
-    <div class="launch-hero__media launch-card" data-launch-media>
+    <div class="launch-hero__media launch-card" data-launch-media data-motion="hero-media silver-glint">
       {launchTabs.map((tab, index) => (
-        <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
+        <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id} data-motion="media-panel">
           <picture>
             {tab.darkImageSrc && <source srcset={tab.darkImageSrc} media="(prefers-color-scheme: dark)" />}
             <img src={tab.imageSrc} alt={tab.imageAlt} loading={index === 0 ? 'eager' : 'lazy'} />
@@ -110,6 +113,7 @@ const { sectionId } = Astro.props as Props;
       });
       panels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
       mediaPanels.forEach((panel, index) => panel.classList.toggle('is-active', index === nextIndex));
+      document.dispatchEvent(new CustomEvent('launch:hero-tab-change', { detail: { activeIndex: nextIndex } }));
     };
 
     buttons.forEach((button, index) => {
