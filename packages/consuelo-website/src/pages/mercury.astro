@@ -32,43 +32,43 @@ const steps = [
   <LaunchHeader />
 
   <!-- hero -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion="section-reveal">
     <div class="launch-content launch-content--wide mercury-hero">
-      <h1 class="mercury-hero__logo launch-mono">Mercury</h1>
-      <h2 class="mercury-hero__subtitle">Hosted calling and AI, ready to go.</h2>
-      <p class="launch-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
+      <h1 class="mercury-hero__logo launch-mono" data-motion="hero-line">Mercury</h1>
+      <h2 class="mercury-hero__subtitle" data-motion="hero-copy">Hosted calling and AI, ready to go.</h2>
+      <p class="launch-copy" data-motion="hero-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.</p>
       <div class="mercury-hero__icons">
         {icons.map((icon) => (
-          <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
+          <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" data-motion="commit-twinkle" />
         ))}
       </div>
-      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>Get started with Mercury ↗</a>
-      <p class="launch-copy mercury-hero__pricing">$20 pay as you go balance (+$1.23 card processing fee)</p>
-      <p class="launch-copy mercury-hero__note">Use with any plan. Set monthly spend limits. Cancel any time.</p>
+      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app} data-motion="">Get started with Mercury ↗</a>
+      <p class="launch-copy mercury-hero__pricing" data-motion="hero-copy">$20 pay as you go balance (+$1.23 card processing fee)</p>
+      <p class="launch-copy mercury-hero__note" data-motion="hero-copy">Use with any plan. Set monthly spend limits. Cancel any time.</p>
     </div>
   </section>
 
   <!-- problem -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion="section-reveal">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">What problem is Mercury solving?</p>
-      <p class="launch-copy">Teams waste weeks configuring business accounts and fighting telecom spam flags instead of using a persistent tech layer that follows them across devices and contexts.</p>
+      <p class="mercury-block__eyebrow launch-mono" data-motion="split-line">What problem is Mercury solving?</p>
+      <p class="launch-copy" data-motion="split-line">Teams waste weeks configuring business accounts and fighting telecom spam flags instead of using a persistent tech layer that follows them across devices and contexts.</p>
       {problems.map((item) => (
-        <details class="mercury-expandable">
-          <summary class="mercury-expandable__trigger launch-mono">{item}</summary>
+        <details class="mercury-expandable" data-motion="faq">
+          <summary class="mercury-expandable__trigger launch-mono" data-motion="faq-trigger"><span data-motion="faq-question split-line">{item}</span></summary>
         </details>
       ))}
     </div>
   </section>
 
   <!-- how it works -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion="section-reveal">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">How Mercury works</p>
-      <p class="launch-copy">While we suggest you use Mercury with Consuelo, you can use Mercury with any sales tool.</p>
+      <p class="mercury-block__eyebrow launch-mono" data-motion="split-line">How Mercury works</p>
+      <p class="launch-copy" data-motion="split-line">While we suggest you use Mercury with Consuelo, you can use Mercury with any sales tool.</p>
       {steps.map((step) => (
-        <p class="mercury-step launch-copy">
-          <span class="mercury-step__n launch-mono">[{step.n}]</span>
+        <p class="mercury-step launch-copy" data-motion="feature-row">
+          <span class="mercury-step__n launch-mono" data-motion="commit-twinkle">[{step.n}]</span>
           {step.text}{' '}
           {step.link && step.href && (
             <a class="launch-inline-link" href={step.href}>{step.link}</a>
@@ -81,23 +81,23 @@ const steps = [
   </section>
 
   <!-- privacy -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion="section-reveal">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">Your privacy is important to us</p>
-      <details class="mercury-expandable">
+      <p class="mercury-block__eyebrow launch-mono" data-motion="split-line">Your privacy is important to us</p>
+      <details class="mercury-expandable" data-motion="faq">
         <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">All Mercury providers are hosted in the US. Providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
       </details>
     </div>
   </section>
 
   <!-- faq -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion="section-reveal">
     <div class="launch-content launch-content--wide mercury-block">
-      <p class="mercury-block__eyebrow launch-mono">FAQ</p>
+      <p class="mercury-block__eyebrow launch-mono" data-motion="split-line">FAQ</p>
       {mercuryFaqItems.map((item) => (
-        <details class="mercury-expandable">
-          <summary class="mercury-expandable__trigger launch-mono">{item.question}</summary>
-          <p class="launch-copy mercury-expandable__body">{item.answer}</p>
+        <details class="mercury-expandable" data-motion="faq">
+          <summary class="mercury-expandable__trigger launch-mono" data-motion="faq-trigger"><span data-motion="faq-question split-line">{item.question}</span></summary>
+          <p class="launch-copy mercury-expandable__body" data-motion="faq-body">{item.answer}</p>
         </details>
       ))}
     </div>
@@ -109,6 +109,7 @@ const steps = [
 <style>
   .mercury-hero {
     display: grid;
+    background: transparent;
     gap: 0.75rem;
     padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
     padding-bottom: clamp(2.5rem, 2rem + 2vw, 5rem);
@@ -165,6 +166,7 @@ const steps = [
   /* shared block */
   .mercury-block {
     display: grid;
+    background: transparent;
     gap: 0.75rem;
     padding-top: clamp(2rem, 1.5rem + 1.5vw, 3.5rem);
     padding-bottom: clamp(2rem, 1.5rem + 1.5vw, 3.5rem);

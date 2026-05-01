@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -500,7 +501,7 @@ function AnalyticsView() {
 
 // --- view map ---
 
-const VIEW_COMPONENTS: Record<ViewId, () => JSX.Element> = {
+const VIEW_COMPONENTS: Record<ViewId, () => ReactElement> = {
   "power-dialer": DialerPanel,
   "ai-crm": ContactsView,
   coaching: DialerPanel,
