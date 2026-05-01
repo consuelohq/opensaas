@@ -1,105 +1,64 @@
-# address final dialer review comments
+# fix themed settings buttons
 
-branch: `task/dialer/address-final-dialer-review-comments`
+branch: `task/dialer/fix-themed-settings-buttons`
 stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/258
+pr: https://github.com/consuelohq/opensaas/pull/262
 started: 2026-05-01
 
 ## acceptance criteria
 
-- [ ] Verify each requested finding against current `stream/dialer` code before editing.
-- [ ] Fix HomePage import CSV open flow only if `fetchActiveOpportunities` rejection still escapes.
-- [ ] Deduplicate `getGroupFromNumbers` only if it still returns duplicates.
-- [ ] Change workspace phone-number missing relation test to identity assertion only if it still uses message matching.
-- [ ] Run focused API/frontend/server validation.
-- [ ] Publish task into `stream/dialer`.
-- [ ] Merge stream PR to `main` if available and test after merge.
+- [x] Replace the custom Add Number button with the shared themed `Button`.
+- [x] Align image upload/remove buttons with the same small settings-button sizing.
+- [x] Keep existing phone-number and image-upload behavior unchanged.
+- [x] Move touched phone-number settings copy onto Lingui macros.
+- [ ] Publish the task branch for review.
 
 ## plan
 
-1. Run decision-engine search for the three review comments.
-2. Read current HomePage, parallel service, and workspace phone-number spec sections.
-3. Patch only findings that are still present.
-4. Run focused Jest/lint/format checks and any relevant type/syntax checks.
-5. Publish task PR, merge stream PR to main, and run post-merge tests/checks.
+1. Locate the settings button implementations from the screenshots.
+2. Reuse the shared `twenty-ui/input` `Button` standard.
+3. Run focused formatting, lint, and diff checks.
+4. Push the task PR.
 
 ## files changed
 
--
+- `packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`
+- `packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx`
 
 ## key decisions
 
-- User requested main merge this time; after task PR lands in `stream/dialer`, use the existing stream review PR path to merge into `main` if checks/tooling allow it.
+- `PhoneNumberSettings` now uses the shared `Button` with `IconPlus`, `accent=blue`, and `size=small` instead of a local styled button.
+- `ImageInput` keeps the existing secondary Upload, Remove, and Abort behavior while matching the small settings-button standard.
+- The phone-number action icons now import from `twenty-ui/display` instead of restricted direct Tabler imports.
 
 ## notes for ko
 
-- `workspace get_steering` is unavailable in this connector (`unknown tool: get_steering`), so I read `AGENTS.md`, `CODING-STANDARDS.md`, and the task skills as the authoritative steering.
+- Targeted typecheck is blocked by pre-existing `twenty-shared` strict type errors in relative date filter utilities.
+- Targeted ESLint passes when the existing Nx module-boundaries rule is disabled; with the rule on, it reports the repo-existing `twenty-ui` import-boundary issue in these files.
 
 ## improvements noticed
 
--
+- The old custom Add Number button duplicated theme logic already handled by `twenty-ui/input` `Button`.
 
 ## errors i ran into
 
-- `workspace get_steering` returned NOT_FOUND.
+- `stream.sync` could not force-update `stream/dialer` while the stream worktree was checked out, but `stream.context` showed `stream/dialer` was already even with remote.
+- `workspace review.run` timed out before returning a structured result.
+
+## validation
+
+- passed: `npx prettier --check packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx`.
+- passed: `git diff --check`.
+- passed: `npx eslint --config packages/twenty-front/eslint.config.mjs --rule @nx/enforce-module-boundaries: off packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx`.
+- blocked: `npx eslint --config packages/twenty-front/eslint.config.mjs ...` reports existing `@nx/enforce-module-boundaries` issues on `twenty-ui` imports in touched files.
+- blocked: `npx nx typecheck twenty-front` fails in `twenty-shared` relative date filter utilities before reaching this change.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "type(dialer): description" --changed
+bun run task:push -- --message fix-dialer-themed-settings-buttons --changed
 bun run task:pr
 bun run task:finish
 ```
-
-- 2026-05-01 05:31:18 write: `.task/workpad.md`
-- 2026-05-01 05:32:52 patch lines 101-103: `packages/api/src/services/workspace-phone-numbers.spec.ts`
-## verification notes
-
-- Verified `HomePage.tsx` still awaited `fetchActiveOpportunities()` directly in `handleOpenImportCSVModal` before fixing.
-- Verified the import button caller still used `void handleOpenImportCSVModal()`, so catching inside the handler resolves that caller path as well.
-- Verified `parallel.service.ts` still returned filtered caller IDs without deduplication before fixing.
-- Verified `workspace-phone-numbers.spec.ts` still used `.rejects.toThrow(missingRelationError)` before changing it to identity assertion.
-
-## implementation notes
-
-- `handleOpenImportCSVModal` now catches `fetchActiveOpportunities` failures, captures the thrown error with context, computes the default name from an empty active record fallback plus `historicalOpportunityCount`, and still opens `HOME_IMPORT_CSV_LIST_NAME_MODAL_ID`.
-- `getGroupFromNumbers` now returns `Array.from(new Set(...))` after filtering falsy caller IDs so release-all paths only release each caller ID once.
-- `workspace-phone-numbers.spec.ts` now stores the promise and asserts `.rejects.toBe(missingRelationError)`.
-
-## validation
-
-- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
-- passed: `npx prettier --check` for `HomePage.tsx`, `parallel.service.ts`, and `workspace-phone-numbers.spec.ts`.
-- passed: `workspace checkFiles` for changed `.ts` files.
-- passed: targeted ESLint for `HomePage.tsx` and `workspace-phone-numbers.spec.ts` with only Nx project graph warnings.
-- passed: `git diff --check`.
-- blocked: targeted ESLint on `parallel.service.ts` reports existing Nest constructor-injection type-import findings. Left unchanged to avoid breaking runtime DI metadata.
-- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out at 10 minutes.
-
-- 2026-05-01 05:42:05 append: `.task/workpad.md`
-## verification notes
-
-- Verified `HomePage.tsx` still awaited `fetchActiveOpportunities()` directly in `handleOpenImportCSVModal` before fixing.
-- Verified the import button caller still used `void handleOpenImportCSVModal()`, so catching inside the handler resolves that caller path as well.
-- Verified `parallel.service.ts` still returned filtered caller IDs without deduplication before fixing.
-- Verified `workspace-phone-numbers.spec.ts` still used `.rejects.toThrow(missingRelationError)` before changing it to identity assertion.
-
-## implementation notes
-
-- `handleOpenImportCSVModal` now catches `fetchActiveOpportunities` failures, captures the thrown error with context, computes the default name from an empty active record fallback plus `historicalOpportunityCount`, and still opens `HOME_IMPORT_CSV_LIST_NAME_MODAL_ID`.
-- `getGroupFromNumbers` now returns `Array.from(new Set(...))` after filtering falsy caller IDs so release-all paths only release each caller ID once.
-- `workspace-phone-numbers.spec.ts` now stores the promise and asserts `.rejects.toBe(missingRelationError)`.
-
-## validation
-
-- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
-- passed: `npx prettier --check` for `HomePage.tsx`, `parallel.service.ts`, and `workspace-phone-numbers.spec.ts`.
-- passed: `workspace checkFiles` for changed `.ts` files.
-- passed: targeted ESLint for `HomePage.tsx` and `workspace-phone-numbers.spec.ts` with only Nx project graph warnings.
-- passed: `git diff --check`.
-- blocked: targeted ESLint on `parallel.service.ts` reports existing Nest constructor-injection type-import findings. Left unchanged to avoid breaking runtime DI metadata.
-- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out at 10 minutes.
-
-- 2026-05-01 05:42:06 append: `.task/workpad.md`
