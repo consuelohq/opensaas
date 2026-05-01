@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/diagnose-call-queue-not-dialing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 248,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/248",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-diagnose-call-queue-not-dialing",
+  "createdAt": "2026-05-01T01:11:47.868Z"
+}

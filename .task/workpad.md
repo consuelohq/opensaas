@@ -1,40 +1,39 @@
-# fix browser facade commands
+# address final dialer review comments
 
-branch: `task/workspace-agents/fix-browser-facade-commands`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/245
-started: 2026-04-30
+branch: `task/dialer/address-final-dialer-review-comments`
+stream: `stream/dialer`
+pr: https://github.com/consuelohq/opensaas/pull/258
+started: 2026-05-01
 
 ## acceptance criteria
 
-- [x] Identify current manifest/browser wrapper mismatch.
-- [x] Add typed browser facade aliases matching the browser skill.
-- [x] Add deterministic auth reauth command for expired browser profiles.
-- [x] Regenerate generated docs/types.
-- [x] Verify command dry-runs, syntax, audit, and review gate.
+- [ ] Verify each requested finding against current `stream/dialer` code before editing.
+- [ ] Fix HomePage import CSV open flow only if `fetchActiveOpportunities` rejection still escapes.
+- [ ] Deduplicate `getGroupFromNumbers` only if it still returns duplicates.
+- [ ] Change workspace phone-number missing relation test to identity assertion only if it still uses message matching.
+- [ ] Run focused API/frontend/server validation.
+- [ ] Publish task into `stream/dialer`.
+- [ ] Merge stream PR to `main` if available and test after merge.
 
 ## plan
 
-1. Read current manifest, browser wrapper, scripts docs, and generated facade surfaces.
-2. Patch browser wrapper profile handling and auth refresh flow.
-3. Add manifest aliases and schema types for browser commands.
-4. Regenerate docs/types and run validation.
+1. Run decision-engine search for the three review comments.
+2. Read current HomePage, parallel service, and workspace phone-number spec sections.
+3. Patch only findings that are still present.
+4. Run focused Jest/lint/format checks and any relevant type/syntax checks.
+5. Publish task PR, merge stream PR to main, and run post-merge tests/checks.
 
 ## files changed
 
-- `packages/workspace/scripts/browser.js`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/SCRIPTS.md`
+-
 
 ## key decisions
 
-- Keep `workspace browser` as the generic CLI facade while moving generated typed client shape to `workspace.browser.run` so `workspace.browser.*` nested aliases can exist.
-- Add `browser.reauth` as the durable command for expired/revoked auth profiles.
+- User requested main merge this time; after task PR lands in `stream/dialer`, use the existing stream review PR path to merge into `main` if checks/tooling allow it.
 
 ## notes for ko
 
-- `agent-browser` ignores `--profile` when its daemon is already running, so reauth must close the daemon before login.
+- `workspace get_steering` is unavailable in this connector (`unknown tool: get_steering`), so I read `AGENTS.md`, `CODING-STANDARDS.md`, and the task skills as the authoritative steering.
 
 ## improvements noticed
 
@@ -42,87 +41,65 @@ started: 2026-04-30
 
 ## errors i ran into
 
-- `workspace explore` failed twice before returning usable evidence; direct repo reads/searches were used for this investigation.
-
-## validation
-
-- `bun run generate-types` passed.
-- `bun run generate-docs` passed.
-- `workspace browser.login` dry-run resolved to `bun run browser -- login consuelo --headed`.
-- `workspace browser.reauth` dry-run resolved to `bun run browser -- reauth consuelo --headed`.
-- `workspace browser.test` dry-run resolved to `bun run browser -- open https://example.com`.
-- `bun run browser -- raw auth list` passed and showed profile injection: `agent-browser --profile /Users/kokayi/.agent-browser-ko auth list`.
-- `bun run browser -- --help` passed and documents `reauth`.
-- `workspace checkFiles` passed for browser/facade generator files.
-- `bun run audit -- --scripts --json` passed after documenting existing `linear` script drift.
-- package-scoped facade test passed: `cd packages/workspace && bun run test tests/facade/facade.test.ts`.
-- review gate passed: `bun run review -- --base stream/workspace-agents --no-tests --json`.
-- `bun run verify -- --base stream/workspace-agents --no-db --json` passed and refreshed the task verify stamp.
+- `workspace get_steering` returned NOT_FOUND.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "type(workspace-agents): description" --changed
+bun run task:push -- --message "type(dialer): description" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-## task brief from Apr 30 handoff
+- 2026-05-01 05:31:18 write: `.task/workpad.md`
+- 2026-05-01 05:32:52 patch lines 101-103: `packages/api/src/services/workspace-phone-numbers.spec.ts`
+## verification notes
 
-Objective: fix production dialer issue where the parallel dialer repeatedly posts to POST /api/v1/calls/parallel and receives 409 CALLER_ID_LOCKED while a list dialer is active.
-
-Acceptance criteria:
-- [ ] Prove deployed main/source and runtime path before editing.
-- [ ] Confirm whether duplicate POST comes from frontend effect re-entry, queue identity churn, queue hydration reset, another call path, or backend lock lifecycle.
-- [ ] Add focused frontend coverage if duplicate autostart after blocked result is root cause.
-- [ ] Add focused backend coverage if lock release/lifecycle or stale Redis behavior is root cause.
-- [ ] Verify no start sound, no polling loop, and no repeated same-item POST after caller-id-lock 409.
-- [ ] Verify locks release on all intended terminal parallel outcomes if lifecycle is changed.
-- [ ] Run focused checks plus workspace review or document blocker.
-- [ ] Publish through task.push, task.pr, and task.finish.
-
-Initial plan:
-1. Pull Railway runtime truth and compare deployed main with stream/dialer implementation.
-2. Use decision engine to choose read targets and avoid guessing.
-3. Inspect frontend autostart path and backend caller-id lock lifecycle.
-4. Implement the simplest correct fix with tests.
-5. Verify, publish, and record any production/browser limitation.
-
-Initial issue encountered:
-- workspace stream.sync for dialer hit only .task metadata conflicts in .task/current.json, .task/evidence-log.json, .task/read-log.json, and .task/workpad.md. Product-code conflicts were absent, so task work proceeded from stream/dialer source sha 2393bfd3.
-
-- 2026-04-30 22:19:39 append: `.task/workpad.md`
+- Verified `HomePage.tsx` still awaited `fetchActiveOpportunities()` directly in `handleOpenImportCSVModal` before fixing.
+- Verified the import button caller still used `void handleOpenImportCSVModal()`, so catching inside the handler resolves that caller path as well.
+- Verified `parallel.service.ts` still returned filtered caller IDs without deduplication before fixing.
+- Verified `workspace-phone-numbers.spec.ts` still used `.rejects.toThrow(missingRelationError)` before changing it to identity assertion.
 
 ## implementation notes
 
-Root cause fixed:
-- Parallel status callbacks released loser caller-id locks when a group connected and all locks when a no-winner group completed, but the winning caller-id lock stayed held after the winner call ended because the group status remained connected. That left the winner number locked until the 5-minute caller-id TTL, causing later parallel starts to receive CALLER_ID_LOCKED.
+- `handleOpenImportCSVModal` now catches `fetchActiveOpportunities` failures, captures the thrown error with context, computes the default name from an empty active record fallback plus `historicalOpportunityCount`, and still opens `HOME_IMPORT_CSV_LIST_NAME_MODAL_ID`.
+- `getGroupFromNumbers` now returns `Array.from(new Set(...))` after filtering falsy caller IDs so release-all paths only release each caller ID once.
+- `workspace-phone-numbers.spec.ts` now stores the promise and asserts `.rejects.toBe(missingRelationError)`.
 
-Code changes:
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts now releases all caller-id locks when the group is completed or when the winning call receives a terminal callback.
-- The connected/non-terminal path still releases only loser numbers so the active winner call keeps its caller-id lock while live.
-- Added getGroupFromNumbers helper to release every caller-id used by the parallel group.
+## validation
 
-Test coverage added:
-- packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts verifies loser-only release while the winner is still active.
-- Same spec verifies all caller-id locks are released when the winner receives a completed callback.
+- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
+- passed: `npx prettier --check` for `HomePage.tsx`, `parallel.service.ts`, and `workspace-phone-numbers.spec.ts`.
+- passed: `workspace checkFiles` for changed `.ts` files.
+- passed: targeted ESLint for `HomePage.tsx` and `workspace-phone-numbers.spec.ts` with only Nx project graph warnings.
+- passed: `git diff --check`.
+- blocked: targeted ESLint on `parallel.service.ts` reports existing Nest constructor-injection type-import findings. Left unchanged to avoid breaking runtime DI metadata.
+- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out at 10 minutes.
 
-Verification attempts:
-- Railway status checked: opensaas was deployed from main commit bd06d88b, build success.
-- Railway targeted filters for parallel dial blocked / caller id lock returned no fresh matching entries in the current window.
-- Confirmed deployed bd06d88b already had the prior frontend blocked-result guard and delayed start sound behavior.
-- Focused bun test failed because the worktree test runner could not resolve @nestjs/common.
-- Focused npx jest with packages/twenty-server/jest.config.mjs failed with the same @nestjs/common module resolution issue.
-- Plain yarn jest failed earlier because it did not load the TypeScript/Jest package config and could not parse import type.
-- workspace review.run timed out twice without returning a structured result.
-- npx nx typecheck twenty-server also timed out through the wrapper.
-- git diff --check initially found trailing whitespace in generated .task/workpad.md placeholders; those were stripped.
+- 2026-05-01 05:42:05 append: `.task/workpad.md`
+## verification notes
 
-Issues faced:
-- stream.sync hit .task metadata conflicts only; product code had no sync conflict.
-- The first patch command failed because shell quoting stripped TypeScript string quotes before Python ran. Retried using base64-encoded patch scripts.
-- npx/yarn attempts created an untracked node_modules directory in the task worktree; it was removed before publish.
+- Verified `HomePage.tsx` still awaited `fetchActiveOpportunities()` directly in `handleOpenImportCSVModal` before fixing.
+- Verified the import button caller still used `void handleOpenImportCSVModal()`, so catching inside the handler resolves that caller path as well.
+- Verified `parallel.service.ts` still returned filtered caller IDs without deduplication before fixing.
+- Verified `workspace-phone-numbers.spec.ts` still used `.rejects.toThrow(missingRelationError)` before changing it to identity assertion.
 
-- 2026-04-30 22:39:24 append: `.task/workpad.md`
+## implementation notes
+
+- `handleOpenImportCSVModal` now catches `fetchActiveOpportunities` failures, captures the thrown error with context, computes the default name from an empty active record fallback plus `historicalOpportunityCount`, and still opens `HOME_IMPORT_CSV_LIST_NAME_MODAL_ID`.
+- `getGroupFromNumbers` now returns `Array.from(new Set(...))` after filtering falsy caller IDs so release-all paths only release each caller ID once.
+- `workspace-phone-numbers.spec.ts` now stores the promise and asserts `.rejects.toBe(missingRelationError)`.
+
+## validation
+
+- passed: `npx jest packages/api/src/services/workspace-phone-numbers.spec.ts --config=packages/api/jest.config.mjs --runInBand`.
+- passed: `npx prettier --check` for `HomePage.tsx`, `parallel.service.ts`, and `workspace-phone-numbers.spec.ts`.
+- passed: `workspace checkFiles` for changed `.ts` files.
+- passed: targeted ESLint for `HomePage.tsx` and `workspace-phone-numbers.spec.ts` with only Nx project graph warnings.
+- passed: `git diff --check`.
+- blocked: targeted ESLint on `parallel.service.ts` reports existing Nest constructor-injection type-import findings. Left unchanged to avoid breaking runtime DI metadata.
+- blocked: `workspace review.run { base: stream/dialer, noTests: true }` timed out at 10 minutes.
+
+- 2026-05-01 05:42:06 append: `.task/workpad.md`

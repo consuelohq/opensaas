@@ -1,9 +1,10 @@
-import styled from '@emotion/styled';
+import { captureException } from '@sentry/react';
 import { t } from '@lingui/core/macro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { IconSparkles, IconUpload, IconX } from 'twenty-ui/display';
 import { Button, LightIconButton } from 'twenty-ui/input';
+import { useDebounce } from 'use-debounce';
 
 import { useCommandMenu } from '@/command-menu/hooks/useCommandMenu';
 import { useOpenAskAIPageInCommandMenu } from '@/command-menu/hooks/useOpenAskAIPageInCommandMenu';
@@ -28,11 +29,21 @@ import { PageHeader } from '@/ui/layout/page/components/PageHeader';
 import { useSetRecoilComponentState } from '@/ui/utilities/state/component-state/hooks/useSetRecoilComponentState';
 import { useIsFeatureEnabled } from '@/workspace/hooks/useIsFeatureEnabled';
 
+import {
+  StyledImportListNameModalContent,
+  StyledImportListNameModalFooter,
+  StyledImportListNameModalHeader,
+  StyledImportListNameModalHeaderText,
+  StyledImportListNameModalSubtitle,
+  StyledImportListNameModalTitle,
+} from './home-page.styles';
+
 import { FeatureFlagKey } from '~/generated-metadata/graphql';
 
 const IMPORT_CONTEXT_STORE_ID = 'home-import-context-store';
 const HOME_IMPORT_CSV_LIST_NAME_MODAL_ID = 'home-import-csv-list-name-modal';
 const IMPORT_LIST_NAME_VALIDATION_LIMIT = 1;
+const IMPORT_LIST_NAME_VALIDATION_DEBOUNCE_MS = 300;
 const DEFAULT_ACTIVE_LIST_NAME_LOOKUP_LIMIT = 1000;
 
 type OpportunityRecord = ObjectRecord & {
@@ -69,43 +80,6 @@ const getDefaultImportListName = ({
 
   return defaultName;
 };
-
-const StyledImportListNameModalContent = styled(Modal.Content)`
-  gap: ${({ theme }) => theme.spacing(4)};
-  padding: ${({ theme }) => theme.spacing(5)};
-`;
-
-const StyledImportListNameModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
-
-const StyledImportListNameModalHeaderText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${({ theme }) => theme.spacing(1)};
-`;
-
-const StyledImportListNameModalTitle = styled.h2`
-  color: ${({ theme }) => theme.font.color.primary};
-  font-size: ${({ theme }) => theme.font.size.lg};
-  font-weight: ${({ theme }) => theme.font.weight.semiBold};
-  margin: 0;
-`;
-
-const StyledImportListNameModalSubtitle = styled.p`
-  color: ${({ theme }) => theme.font.color.secondary};
-  font-size: ${({ theme }) => theme.font.size.sm};
-  line-height: 1.4;
-  margin: 0;
-`;
-
-const StyledImportListNameModalFooter = styled(Modal.Footer)`
-  display: flex;
-  gap: ${({ theme }) => theme.spacing(2)};
-  justify-content: flex-end;
-  padding: ${({ theme }) => theme.spacing(0, 5, 4, 5)};
-`;
 
 const HomeImportContextStoreEffect = () => {
   const { objectMetadataItem } = useObjectMetadataItem({
@@ -165,10 +139,6 @@ export const HomePage = () => {
     return fetchedActiveOpportunityRecords;
   }, [findManyActiveOpportunityRecords]);
 
-  const activeListNames = useMemo(() => {
-    return getActiveListNames(activeOpportunityRecords);
-  }, [activeOpportunityRecords]);
-
   const defaultImportListName = useMemo(() => {
     return getDefaultImportListName({
       activeOpportunityRecords,
@@ -177,17 +147,23 @@ export const HomePage = () => {
   }, [activeOpportunityRecords, historicalOpportunityCount]);
 
   const trimmedImportListName = importListName.trim();
+  const [debouncedImportListName] = useDebounce(
+    trimmedImportListName,
+    IMPORT_LIST_NAME_VALIDATION_DEBOUNCE_MS,
+  );
+  const isListNameValidationPending =
+    debouncedImportListName !== trimmedImportListName;
 
   const { records: duplicateOpportunityRecords, loading: isCheckingListName } =
     useFindManyRecords<OpportunityRecord>({
       objectNameSingular: 'opportunity',
       filter:
-        trimmedImportListName.length > 0
-          ? { name: { ilike: trimmedImportListName } }
+        debouncedImportListName.length > 0
+          ? { name: { ilike: debouncedImportListName } }
           : undefined,
       recordGqlFields: { id: true, name: true },
       limit: IMPORT_LIST_NAME_VALIDATION_LIMIT,
-      skip: trimmedImportListName.length === 0,
+      skip: debouncedImportListName.length === 0,
     });
 
   const isDuplicateListName = duplicateOpportunityRecords.some(
@@ -205,6 +181,7 @@ export const HomePage = () => {
     trimmedImportListName.length > 0 &&
     !isDuplicateListName &&
     !isCheckingListName &&
+    !isListNameValidationPending &&
     !isCreatingImportList;
 
   const { openListMemberImportDialog } = useOpenListMemberImportDialog();
@@ -215,7 +192,20 @@ export const HomePage = () => {
   }, [closeModal]);
 
   const handleOpenImportCSVModal = useCallback(async () => {
-    const fetchedActiveOpportunityRecords = await fetchActiveOpportunities();
+    let fetchedActiveOpportunityRecords: OpportunityRecord[] = [];
+
+    try {
+      fetchedActiveOpportunityRecords = await fetchActiveOpportunities();
+    } catch (error) {
+      captureException(error, {
+        extra: {
+          context: 'HomePage:fetchActiveOpportunities',
+          message:
+            'fetchActiveOpportunities failed before opening import CSV modal',
+          modalId: HOME_IMPORT_CSV_LIST_NAME_MODAL_ID,
+        },
+      });
+    }
 
     setImportListName(
       getDefaultImportListName({
@@ -246,8 +236,10 @@ export const HomePage = () => {
       setImportListName('');
       setImportedListId(newList.id);
       openListMemberImportDialog(newList.id);
-    } catch {
-      // createOpportunity handles its own errors
+    } catch (error) {
+      captureException(error, {
+        extra: { context: 'HomePage:createOpportunity' },
+      });
     } finally {
       setIsCreatingImportList(false);
     }
