@@ -56,6 +56,19 @@ const SQL_MARK_RELEASED =
 const SQL_SUBSCRIPTION_STATUS =
   'SELECT status FROM workspace_subscriptions WHERE workspace_id = $1';
 
+const isWorkspacePhoneNumbersRelationError = (err: unknown): boolean => {
+  return (
+    err instanceof Error &&
+    err.message.includes('relation "workspace_phone_numbers" does not exist')
+  );
+};
+
+const captureUnexpectedWorkspacePhoneNumberError = (err: unknown): void => {
+  if (!isWorkspacePhoneNumbersRelationError(err)) {
+    Sentry.captureException(err);
+  }
+};
+
 const getIncludedSlots = (status: string | undefined): number => {
   return status === 'active' || status === 'trialing' ? 3 : 0;
 };
@@ -68,7 +81,9 @@ const getLegacyWorkspaceId = (): string | null => {
 const getBackfillOwnershipType = (
   workspaceId: string,
 ): WorkspacePhoneNumberOwnershipType => {
-  return workspaceId === getLegacyWorkspaceId() ? 'legacy_reserved' : 'included';
+  return workspaceId === getLegacyWorkspaceId()
+    ? 'legacy_reserved'
+    : 'included';
 };
 
 const mapToWorkspacePhoneNumber = (
@@ -100,11 +115,12 @@ export const getPhoneNumberEntitlement = async (
 ): Promise<PhoneNumberEntitlement> => {
   try {
     const pool = await getSharedPool();
-    const [{ rows: subscriptionRows }, numberPackStatus, addOnStatus] = await Promise.all([
-      pool.query(SQL_SUBSCRIPTION_STATUS, [workspaceId]),
-      getNumberPackStatus(workspaceId),
-      getPhoneNumberAddOnStatus(workspaceId),
-    ]);
+    const [{ rows: subscriptionRows }, numberPackStatus, addOnStatus] =
+      await Promise.all([
+        pool.query(SQL_SUBSCRIPTION_STATUS, [workspaceId]),
+        getNumberPackStatus(workspaceId),
+        getPhoneNumberAddOnStatus(workspaceId),
+      ]);
 
     const subscriptionRow = subscriptionRows[0] as
       | {
@@ -133,7 +149,7 @@ export const getPhoneNumberEntitlement = async (
       usedSlots,
     };
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };
@@ -177,7 +193,7 @@ const claimLegacyWorkspaceNumbers = async (
       ]);
     }
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };
@@ -205,7 +221,7 @@ export const listWorkspacePhoneNumbers = async (
       return [mapToWorkspacePhoneNumber(row, dialerNumber, primarySid)];
     });
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };
@@ -216,12 +232,15 @@ export const findWorkspacePhoneNumberBySid = async (
 ): Promise<WorkspacePhoneNumberRow | null> => {
   try {
     const pool = await getSharedPool();
-    const { rows } = await pool.query(SQL_FIND_NUMBER_BY_SID, [workspaceId, sid]);
+    const { rows } = await pool.query(SQL_FIND_NUMBER_BY_SID, [
+      workspaceId,
+      sid,
+    ]);
     const row = rows[0] as WorkspacePhoneNumberRow | undefined;
 
     return row ?? null;
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };
@@ -247,7 +266,7 @@ export const recordProvisionedPhoneNumber = async (
       payload.ownershipType,
     ]);
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };
@@ -260,7 +279,7 @@ export const releaseWorkspacePhoneNumber = async (
     const pool = await getSharedPool();
     await pool.query(SQL_MARK_RELEASED, [workspaceId, sid]);
   } catch (err: unknown) {
-    Sentry.captureException(err);
+    captureUnexpectedWorkspacePhoneNumberError(err);
     throw err;
   }
 };

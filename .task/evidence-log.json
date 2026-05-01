@@ -5928,8 +5928,872 @@
         "source": "task:fs",
         "task_branch": "task/dialer/fix-parallel-caller-id-repeat-conflict"
       }
+    },
+    {
+      "id": "de894b4b-1af4-4bfd-9fa7-6997213f3e22",
+      "occurred_at": "2026-04-30T23:43:09.427Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "c2806e8a-fc3e-4e9f-a93b-919e7bf5afc1",
+      "occurred_at": "2026-04-30T23:43:09.717Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "42c417cc-5440-421b-8a8f-872acbb1fcf0",
+      "occurred_at": "2026-04-30T23:43:22.888Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "a7193bb0-b00e-4147-a672-9c7d6ba6a238",
+      "occurred_at": "2026-04-30T23:43:40.730Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/decision.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "2f8c3a2a-4841-448c-a2d5-97cfb9bfa6cf",
+      "occurred_at": "2026-04-30T23:45:07.883Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "e177340c-8a95-416a-8c19-5a04dd91e1d9",
+      "occurred_at": "2026-04-30T23:45:08.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "bbdb6b61-d943-4ffa-a4a7-b2640a4b113f",
+      "occurred_at": "2026-04-30T23:45:08.454Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useTwilioConfigStatus.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "dfc1ab35-c243-46d3-80ff-9dd8ddca76b4",
+      "occurred_at": "2026-04-30T23:45:08.736Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "9cad8382-38ff-4eb6-8f1e-3b7d5de71b60",
+      "occurred_at": "2026-04-30T23:45:59.165Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "f44f9259-4322-4807-aac5-d74d10b029a9",
+      "occurred_at": "2026-04-30T23:45:59.478Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "774cece5-5eee-485c-b232-0d387d460626",
+      "occurred_at": "2026-04-30T23:45:59.772Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "33dce77a-f3ca-45bd-a062-f705f41613bd",
+      "occurred_at": "2026-04-30T23:46:00.053Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "dd5db68e-6092-4f89-9b5e-6b4b385e0667",
+      "occurred_at": "2026-04-30T23:46:09.227Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "4582b394-abea-46d3-8ded-1e679c692df8",
+      "occurred_at": "2026-04-30T23:46:21.973Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "af284c76-750f-46b9-a704-cdf1cb2a2ec1",
+      "occurred_at": "2026-04-30T23:46:22.249Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "4dff99cb-a6dc-4e33-a8e5-d1cbde4e8d4e",
+      "occurred_at": "2026-04-30T23:46:27.938Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "41d066fc-5a6a-42fd-a09f-bdc5bd8334fd",
+      "occurred_at": "2026-04-30T23:46:41.085Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "d6e00a1c-7498-451a-916c-573e7d20efb9",
+      "occurred_at": "2026-04-30T23:46:59.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8da503ac-1314-464a-9b74-fb50faeaafb7",
+      "occurred_at": "2026-04-30T23:47:29.117Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8bd43f09-5132-422e-8e4c-4bb0a2d4070c",
+      "occurred_at": "2026-04-30T23:47:39.607Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/dialer/hooks/useQueueOperations.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "3619ddd7-bfdf-45e2-a404-04f6f46ba8c8",
+      "occurred_at": "2026-05-01T01:11:53.057Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "d65e05a8-61dd-4be9-9882-bf5f20585266",
+      "occurred_at": "2026-05-01T01:11:53.351Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "de438ebf-18f3-4072-a276-fa914254209c",
+      "occurred_at": "2026-05-01T01:11:53.637Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "b02c2299-316f-4d92-b310-cc5efaefa419",
+      "occurred_at": "2026-05-01T01:14:38.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8207b8de-6338-4693-b066-6666d4fdec1c",
+      "occurred_at": "2026-05-01T01:14:38.673Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8690629c-af62-46af-a0fa-9c8db03f3a48",
+      "occurred_at": "2026-05-01T01:14:38.975Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/workspace-phone-numbers.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "0d105360-303c-477e-a83e-87365656c266",
+      "occurred_at": "2026-05-01T01:14:39.279Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/voice.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "195e62e2-38b7-440e-a7a6-92e36ff2a2d4",
+      "occurred_at": "2026-05-01T01:14:43.576Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/voice.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "dc1a63c6-38be-4969-b06a-7384c924f954",
+      "occurred_at": "2026-05-01T01:14:51.333Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/voice.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "e7f90f0a-c9a0-40ee-a861-58eba12e5bbe",
+      "occurred_at": "2026-05-01T01:14:54.994Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/voice.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "aa7ad44f-d01f-4245-b382-30ef439b9b25",
+      "occurred_at": "2026-05-01T01:14:59.253Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/voice.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "177cb8ab-870b-4dd4-839a-b25b30cc63a5",
+      "occurred_at": "2026-05-01T01:17:03.410Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "706e1946-b7b1-4635-823a-8f8be6775a17",
+      "occurred_at": "2026-05-01T01:17:03.713Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "5238cced-cde1-497c-9b1f-f2c14f82f4a4",
+      "occurred_at": "2026-05-01T01:17:10.016Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "e845f60a-1d9f-476b-99f6-a8c5f2927b45",
+      "occurred_at": "2026-05-01T01:17:15.431Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "5b2aabcb-9847-4577-83d8-ea72bcd86e8d",
+      "occurred_at": "2026-05-01T01:34:16.079Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/workspace-phone-numbers.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "7187b075-e7d3-4720-aac5-7695a3af6862",
+      "occurred_at": "2026-05-01T01:34:16.403Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8d8ae235-6aec-4acb-82b5-27cb141c6684",
+      "occurred_at": "2026-05-01T01:35:04.037Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "84fa8d1d-3265-4e07-97a7-26b65a538adc",
+      "occurred_at": "2026-05-01T01:35:18.494Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "2e5a1b96-7936-4a15-bf54-ac757920b238",
+      "occurred_at": "2026-05-01T01:35:43.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "722cecec-5e57-4ef0-9409-c05bf0e03548",
+      "occurred_at": "2026-05-01T01:36:08.948Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "86f83b4c-d6cc-4318-830e-a42d873db3da",
+      "occurred_at": "2026-05-01T01:36:21.872Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "2a4803ba-6b0d-40bf-81b8-66d2e95426ad",
+      "occurred_at": "2026-05-01T01:36:33.340Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "8d6a423f-2920-46fc-9c1e-7e3bce34650d",
+      "occurred_at": "2026-05-01T01:38:13.793Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "21fd5b43-a6b8-4f01-9f4b-3e23030bf2a1",
+      "occurred_at": "2026-05-01T01:38:14.110Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "e21797f8-fcac-4bba-9638-9197f326f806",
+      "occurred_at": "2026-05-01T01:38:14.394Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "425df07d-ae95-4b40-ac9c-fed30cdd827c",
+      "occurred_at": "2026-05-01T01:38:14.671Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "2427611e-dac1-445d-aea7-7d2a8657dd16",
+      "occurred_at": "2026-05-01T01:38:22.513Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/workspace-phone-numbers.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "038b818f-32b5-4ed0-bb57-dc9c122047ea",
+      "occurred_at": "2026-05-01T01:38:22.792Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/services/workspace-phone-numbers.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "b2b00351-a834-4f82-9ef0-4c6f335f26ce",
+      "occurred_at": "2026-05-01T01:38:23.071Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "29f6c802-0311-4bc4-9d36-bded88a69610",
+      "occurred_at": "2026-05-01T01:39:13.543Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "3a3d5cbd-7063-4865-bbae-196c738deb81",
+      "occurred_at": "2026-05-01T01:39:39.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "cfaeca8a-89ec-4bb1-b43e-6b816c7152d7",
+      "occurred_at": "2026-05-01T01:48:21.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/handoff.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
+    },
+    {
+      "id": "062e5e00-805c-4351-a508-81009571af2c",
+      "occurred_at": "2026-05-01T01:48:21.573Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/handoff.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/diagnose-call-queue-not-dialing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-04-30T22:15:38.178Z"
+  "updated_at": "2026-05-01T01:48:21.621Z"
 }
