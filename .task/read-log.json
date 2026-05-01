@@ -18,6 +18,7 @@
     "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
@@ -59,5 +60,5 @@
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json"
   ],
-  "updatedAt": "2026-05-01T01:48:21.523Z"
+  "updatedAt": "2026-05-01T02:24:11.805Z"
 }

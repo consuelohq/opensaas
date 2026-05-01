@@ -115,6 +115,14 @@ describe('QueuesService', () => {
         return [{ exists: false }];
       }
 
+      if (statement.includes("column_name IN ('retry_strategy'")) {
+        return [
+          { column_name: 'retry_strategy' },
+          { column_name: 'retry_scheduled_at' },
+          { column_name: 'retry_reason' },
+        ];
+      }
+
       if (
         statement.includes("status = 'pending' ORDER BY position ASC LIMIT 1")
       ) {
@@ -123,7 +131,7 @@ describe('QueuesService', () => {
 
       if (
         statement.includes(
-          'UPDATE queue_items SET status = $1, attempts = attempts + 1',
+          'attempts = attempts + (CASE WHEN $3 THEN 0 ELSE 1 END)',
         )
       ) {
         return [claimedItem];
@@ -145,6 +153,85 @@ describe('QueuesService', () => {
         (statement) =>
           statement.includes('LEFT JOIN contact_attempt_ledger') ||
           statement.includes('INSERT INTO contact_attempt_ledger'),
+      ),
+    ).toBe(false);
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('preserves attempts for double-dial FIFO claims without contact attempt ledger', async () => {
+    const queue = { id: 'queue-1', workspace_id: 'workspace-1' };
+    const pendingItem = {
+      id: 'item-1',
+      queue_id: 'queue-1',
+      contact_id: 'contact-1',
+      position: 1,
+      status: 'pending',
+      attempts: 2,
+      retry_reason: 'double_dial',
+    };
+    const claimedItem = {
+      ...pendingItem,
+      status: 'calling',
+      attempts: 2,
+      retry_reason: 'double_dial_attempted',
+      last_attempt_at: new Date('2026-01-01T00:00:00.000Z'),
+    };
+    const statements: string[] = [];
+
+    query.mockImplementation(async (statement: string, params?: unknown[]) => {
+      statements.push(statement);
+
+      if (statement.startsWith('UPDATE call_queues SET status')) {
+        return [queue];
+      }
+
+      if (statement.includes('status = $2 LIMIT 1')) {
+        return [];
+      }
+
+      if (statement.includes("table_name = 'contact_attempt_ledger'")) {
+        return [{ exists: false }];
+      }
+
+      if (statement.includes("column_name IN ('retry_strategy'")) {
+        return [
+          { column_name: 'retry_strategy' },
+          { column_name: 'retry_scheduled_at' },
+          { column_name: 'retry_reason' },
+        ];
+      }
+
+      if (
+        statement.includes("status = 'pending' ORDER BY position ASC LIMIT 1")
+      ) {
+        return [pendingItem];
+      }
+
+      if (
+        statement.includes(
+          'attempts = attempts + (CASE WHEN $3 THEN 0 ELSE 1 END)',
+        )
+      ) {
+        expect(params).toEqual(['calling', 'item-1', true]);
+        return [claimedItem];
+      }
+
+      throw new Error(`unexpected query: ${statement}`);
+    });
+
+    const result = await buildService().startQueue('workspace-1', 'queue-1');
+
+    expect(result?.currentItem).toEqual(
+      expect.objectContaining({
+        id: 'item-1',
+        status: 'calling',
+        attempts: 2,
+        retry_reason: 'double_dial_attempted',
+      }),
+    );
+    expect(
+      statements.some((statement) =>
+        statement.includes('INSERT INTO contact_attempt_ledger'),
       ),
     ).toBe(false);
     expect(Sentry.captureException).not.toHaveBeenCalled();
