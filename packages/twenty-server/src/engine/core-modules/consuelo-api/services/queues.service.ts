@@ -690,7 +690,10 @@ export class QueuesService {
         this.contactAttemptLedgerCompatible === false ||
         !(await this.hasContactAttemptLedger())
       ) {
-        return await this.selectNextCallableItemWithoutLedger(queueId);
+        return await this.selectNextCallableItemWithoutLedger(
+          queueId,
+          workspaceId,
+        );
       }
 
       const queueRows = await this.dataSource.query(
@@ -976,7 +979,10 @@ export class QueuesService {
             workspaceId,
           },
         );
-        return await this.selectNextCallableItemWithoutLedger(queueId);
+        return await this.selectNextCallableItemWithoutLedger(
+          queueId,
+          workspaceId,
+        );
       }
 
       const message = err instanceof Error ? err.message : 'Unknown error';
@@ -1175,6 +1181,7 @@ export class QueuesService {
 
   private async selectNextCallableItemWithoutLedger(
     queueId: string,
+    workspaceId: string,
   ): Promise<QueueSelectionResult> {
     try {
       const rows = await this.dataSource.query(
@@ -1187,13 +1194,8 @@ export class QueuesService {
         return { nextItem: null, suppression: null };
       }
 
-      const updatedRows = await this.dataSource.query(
-        "UPDATE queue_items SET status = $1, attempts = attempts + 1, last_attempt_at = NOW() WHERE id = $2 AND status = 'pending' RETURNING *",
-        ['calling', item.id],
-      );
-
       return {
-        nextItem: this.unwrapRow(updatedRows[0]),
+        nextItem: await this.claimQueueItem(workspaceId, item),
         suppression: null,
         ranking: {
           index: 0,
@@ -1205,7 +1207,6 @@ export class QueuesService {
       // noop
     }
   }
-
   private isMissingRelationError(err: unknown, relationName: string) {
     return (
       err instanceof Error &&

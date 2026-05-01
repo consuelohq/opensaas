@@ -6792,8 +6792,376 @@
         "source": "task:fs",
         "task_branch": "task/dialer/diagnose-call-queue-not-dialing"
       }
+    },
+    {
+      "id": "9424d2de-4e15-4881-bd71-6c1796b1d30e",
+      "occurred_at": "2026-05-01T02:11:54.899Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "aeb04058-dde5-4c9e-85d7-af05ed9de705",
+      "occurred_at": "2026-05-01T02:11:55.219Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "3588cf33-c1e8-4317-912f-fca9bd54a7a0",
+      "occurred_at": "2026-05-01T02:11:55.532Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "4ef30bbe-0eb8-4b5a-af37-cf30069af490",
+      "occurred_at": "2026-05-01T02:11:57.859Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "6f7534ff-1675-4713-b109-28d44f82d4dc",
+      "occurred_at": "2026-05-01T02:11:58.183Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "5d23877d-3259-4eb5-917d-bf5544b44b99",
+      "occurred_at": "2026-05-01T02:11:58.501Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "27734ae7-46d9-48e4-86d4-2fa9a9aa293c",
+      "occurred_at": "2026-05-01T02:13:50.794Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "b3f8712b-76bd-4493-8027-298c4452cae6",
+      "occurred_at": "2026-05-01T02:13:51.189Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "771251d8-a7a1-4615-a9b9-7b0612a3414f",
+      "occurred_at": "2026-05-01T02:13:56.692Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "2ab24fe4-e2c5-4687-80ea-2fcee30cb703",
+      "occurred_at": "2026-05-01T02:14:01.913Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "e6e96237-8d00-4b56-b46d-67b8b9819128",
+      "occurred_at": "2026-05-01T02:15:40.174Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "6eeaf121-1b3a-4e84-b2a1-c96bf3758887",
+      "occurred_at": "2026-05-01T02:15:40.599Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "ecf4ca9b-95c7-444a-89ef-d5efe0cd0836",
+      "occurred_at": "2026-05-01T02:15:41.010Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "9698601e-1f52-4205-a33d-ae560832296f",
+      "occurred_at": "2026-05-01T02:16:34.728Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/cadence-store.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "0a2bd692-dbd2-4eea-abca-9f6df3aba18f",
+      "occurred_at": "2026-05-01T02:20:29.882Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "19a32623-31db-499a-9e91-b3f0ad919ef5",
+      "occurred_at": "2026-05-01T02:21:31.611Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "1a2536f2-8093-46a5-b207-8b9299762546",
+      "occurred_at": "2026-05-01T02:21:52.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "d5098d4b-511d-415d-8a76-bcb805daa21c",
+      "occurred_at": "2026-05-01T02:22:26.012Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "6247da24-287a-4f66-9486-c0ec01450fb6",
+      "occurred_at": "2026-05-01T02:23:13.697Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "468a1636-f6e8-4d2b-900d-b26967179483",
+      "occurred_at": "2026-05-01T02:23:38.190Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "571c778d-37de-4ae5-b13d-9e7ab685d6f3",
+      "occurred_at": "2026-05-01T02:23:45.629Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "69b845d9-cd49-41af-8578-08aa941e30d7",
+      "occurred_at": "2026-05-01T02:24:11.552Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
+    },
+    {
+      "id": "07689a25-81f3-4e63-a8a3-2ac11410741c",
+      "occurred_at": "2026-05-01T02:24:11.857Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/preserve-double-dial-attempts-without-ledger",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/preserve-double-dial-attempts-without-ledger"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-01T01:48:21.621Z"
+  "updated_at": "2026-05-01T02:24:11.909Z"
 }
