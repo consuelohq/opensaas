@@ -1,20 +1,22 @@
-import { useAvailableCallerIds } from '~/modules/dialer/hooks/useAvailableCallerIds';
+import { Trans, useLingui } from '@lingui/react/macro';
+import styled from '@emotion/styled';
+import { useCallback, useState } from 'react';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { availableCallerIdsState } from '@/dialer/states/availableCallerIdsState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { useReleaseNumber } from '@/dialer/hooks/useReleaseNumber';
 import { useSetPrimaryNumber } from '@/dialer/hooks/useSetPrimaryNumber';
-import styled from '@emotion/styled';
-import { useCallback, useState } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
 import {
+  H2Title,
   IconPhone,
   IconPlus,
-  IconStar,
-  IconStarFilled,
   IconTrash,
-} from '@tabler/icons-react';
-import { H2Title } from 'twenty-ui/display';
+  IconTwentyStar,
+  IconTwentyStarFilled,
+} from 'twenty-ui/display';
+import { Button } from 'twenty-ui/input';
 import { Card, Section } from 'twenty-ui/layout';
+import { useAvailableCallerIds } from '~/modules/dialer/hooks/useAvailableCallerIds';
 
 import { AddPhoneNumberModal } from '~/pages/settings/consuelo/AddPhoneNumberModal';
 
@@ -83,23 +85,6 @@ const StyledPrimaryIcon = styled.button`
   padding: 4px;
 `;
 
-const StyledAddButton = styled.button`
-  align-items: center;
-  background: ${({ theme }) => theme.color.blue};
-  border: none;
-  border-radius: ${({ theme }) => theme.border.radius.sm};
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  font-size: 13px;
-  gap: ${({ theme }) => theme.spacing(1)};
-  padding: ${({ theme }) => theme.spacing(2)} ${({ theme }) => theme.spacing(3)};
-
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-
 const StyledHeaderRow = styled.div`
   align-items: center;
   display: flex;
@@ -108,15 +93,15 @@ const StyledHeaderRow = styled.div`
 
 const StyledModalBackdrop = styled.div`
   align-items: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: ${({ theme }) => theme.background.transparent.medium};
   display: flex;
   inset: 0;
   justify-content: center;
   position: fixed;
   z-index: 100;
 `;
-
 export const PhoneNumberSettings = () => {
+  const { t } = useLingui();
   const { refetch } = useAvailableCallerIds();
   const availableCallerIds = useRecoilValue(availableCallerIdsState);
   const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
@@ -153,18 +138,23 @@ export const PhoneNumberSettings = () => {
     <Section>
       <StyledHeaderRow>
         <H2Title
-          title="Phone Numbers"
-          description="Manage your outbound caller IDs"
+          title={t`Phone Numbers`}
+          description={t`Manage your outbound caller IDs`}
         />
-        <StyledAddButton onClick={() => setShowModal(true)}>
-          <IconPlus size={14} />
-          Add Number
-        </StyledAddButton>
+        <Button
+          Icon={IconPlus}
+          onClick={() => setShowModal(true)}
+          title={t`Add Number`}
+          accent="blue"
+          size="small"
+        />
       </StyledHeaderRow>
       <Card rounded>
         {availableCallerIds.length === 0 ? (
           <StyledEmptyState>
-            No phone numbers yet. Click &quot;Add Number&quot; to get started.
+            <Trans>
+              No phone numbers yet. Click "Add Number" to get started.
+            </Trans>
           </StyledEmptyState>
         ) : (
           availableCallerIds.map((number) => (
@@ -180,22 +170,22 @@ export const PhoneNumberSettings = () => {
                 <StyledAreaCode>{number.areaCode}</StyledAreaCode>
               )}
               {number.isPrimary ? (
-                <StyledPrimaryIcon aria-label="Primary number">
-                  <IconStarFilled size={16} />
+                <StyledPrimaryIcon aria-label={t`Primary number`}>
+                  <IconTwentyStarFilled size={16} />
                 </StyledPrimaryIcon>
               ) : (
                 <StyledIconButton
                   onClick={() =>
                     handleSetPrimary(number.sid, number.phoneNumber)
                   }
-                  aria-label="Set as primary"
+                  aria-label={t`Set as primary`}
                 >
-                  <IconStar size={16} />
+                  <IconTwentyStar size={16} />
                 </StyledIconButton>
               )}
               <StyledIconButton
                 onClick={() => handleDelete(number.sid)}
-                aria-label="Delete number"
+                aria-label={t`Delete number`}
               >
                 <IconTrash size={16} />
               </StyledIconButton>
