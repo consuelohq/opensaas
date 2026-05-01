@@ -145,7 +145,7 @@ export const PhoneNumberSettings = () => {
           Icon={IconPlus}
           onClick={() => setShowModal(true)}
           title={t`Add Number`}
-          accent="blue"
+          variant="secondary"
           size="small"
         />
       </StyledHeaderRow>
