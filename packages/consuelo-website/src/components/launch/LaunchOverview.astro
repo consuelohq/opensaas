@@ -11,19 +11,19 @@ type Props = {
 const { sectionId } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId} data-motion="section-reveal">
+<section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-overview">
     <div class="launch-overview__intro">
-      <p class="launch-eyebrow" data-motion="split-line">{launchOverview.eyebrow}</p>
-      {launchOverview.title && <h2 class="launch-overview__title" data-motion="split-line">{launchOverview.title}</h2>}
-      <p class="launch-copy" data-motion="split-line">{launchOverview.intro}</p>
+      <p class="launch-eyebrow">{launchOverview.eyebrow}</p>
+      {launchOverview.title && <h2 class="launch-overview__title">{launchOverview.title}</h2>}
+      <p class="launch-copy">{launchOverview.intro}</p>
     </div>
 
     <div class="launch-overview__body">
       <div class="launch-overview__list">
         {launchOverviewFeatures.map((feature) => (
-          <div class="launch-overview__item" data-motion="feature-row">
-            <span class="launch-overview__marker launch-mono" aria-hidden="true" data-motion="commit-twinkle">[*]</span>
+          <div class="launch-overview__item">
+            <span class="launch-overview__marker launch-mono" aria-hidden="true">[*]</span>
             <p class="launch-copy">
               <strong>{feature.title}</strong>
               <span class="launch-overview__text">{feature.text}</span>
@@ -32,7 +32,7 @@ const { sectionId } = Astro.props as Props;
         ))}
       </div>
 
-      <a class="launch-button launch-mono launch-overview__cta" href={launchOverview.ctaHref} data-motion="silver-glint">{launchOverview.ctaLabel} →</a>
+      <a class="launch-button launch-mono launch-overview__cta" href={launchOverview.ctaHref}>{launchOverview.ctaLabel} →</a>
     </div>
   </div>
 </section>

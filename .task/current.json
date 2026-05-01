@@ -1,12 +1,12 @@
 {
-  "area": "website",
-  "stream": "stream/website",
-  "taskBranch": "task/website/gsap-motion-system-and-homepage-delight",
-  "baseBranch": "stream/website",
-  "sourceBranch": "main",
-  "startFrom": "main",
-  "prNumber": 251,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/251",
-  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-gsap-motion-system-and-homepage-delight",
-  "createdAt": "2026-05-01T00:50:44.544Z"
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-browser-facade-commands",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 245,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/245",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-browser-facade-commands",
+  "createdAt": "2026-04-30T21:32:10.381Z"
 }

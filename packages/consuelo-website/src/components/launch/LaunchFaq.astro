@@ -17,25 +17,25 @@ const {
 } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId} data-motion="section-reveal">
+<section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-faq">
     <div class="launch-faq__intro">
-      <p class="launch-eyebrow" data-motion="split-line">{launchFaq.eyebrow}</p>
-      <h2 data-motion="split-line">{title}</h2>
-      {intro && <p class="launch-copy" data-motion="split-line">{intro}</p>}
+      <p class="launch-eyebrow">{launchFaq.eyebrow}</p>
+      <h2>{title}</h2>
+      {intro && <p class="launch-copy">{intro}</p>}
     </div>
 
     <div class="launch-faq__list">
       {items.map((item) => (
-        <details class="launch-faq__item" data-motion="faq">
-          <summary data-motion="faq-trigger silver-glint">
-            <span class="launch-faq__icon" aria-hidden="true" data-motion="faq-icon">
+        <details class="launch-faq__item">
+          <summary>
+            <span class="launch-faq__icon" aria-hidden="true">
               <span></span>
               <span></span>
             </span>
             <span>{item.question}</span>
           </summary>
-          <p class="launch-copy launch-faq__body" data-motion="faq-body">{item.answer}</p>
+          <p class="launch-copy">{item.answer}</p>
         </details>
       ))}
     </div>

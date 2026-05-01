@@ -8,15 +8,15 @@ type Props = {
 const { sectionId } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId} data-motion="section-reveal">
+<section class="launch-section" id={sectionId}>
   <div class="launch-content launch-content--wide launch-privacy">
-    <p class="launch-eyebrow" data-motion="split-line">{launchPrivacy.eyebrow}</p>
-    <div class="launch-privacy__row" data-motion="privacy-row silver-glint">
-      <span class="launch-privacy__marker launch-mono" aria-hidden="true" data-motion="commit-twinkle">[*]</span>
+    <p class="launch-eyebrow">{launchPrivacy.eyebrow}</p>
+    <div class="launch-privacy__row">
+      <span class="launch-privacy__marker launch-mono" aria-hidden="true">[*]</span>
       <p class="launch-copy">
         <strong>{launchPrivacy.title}</strong>
         <span>{launchPrivacy.description}</span>
-        <a class="launch-inline-link" href={launchPrivacy.linkHref} data-motion="silver-glint">{launchPrivacy.linkLabel}</a>
+        <a class="launch-inline-link" href={launchPrivacy.linkHref}>{launchPrivacy.linkLabel}</a>
       </p>
     </div>
   </div>

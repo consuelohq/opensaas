@@ -1,28 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/website/gsap-motion-system-and-homepage-delight",
-  "base": "origin/task/website/gsap-motion-system-and-homepage-delight",
-  "headSha": "50c1fc419de61253e5dd59f1ac4e0d41d53b5711",
-  "changeHash": "ab308303a5c015b006f383ad90f0dc93b9cb0063a1af57e077e07015b18afe4e",
+  "branch": "task/workspace-agents/fix-browser-facade-commands",
+  "base": "stream/workspace-agents",
+  "headSha": "487a758fce730c27ce8c03e7354a720e0e010456",
+  "changeHash": "b7caa9063fe11a0c0aefbcf1232da3781d9fed8d8d51a832716b33c6b2147ba8",
   "changedFiles": [
-    "packages/consuelo-website/bun.lock",
-    "packages/consuelo-website/package.json",
-    "packages/consuelo-website/src/components/launch/LaunchFaq.astro",
-    "packages/consuelo-website/src/components/launch/LaunchFooter.astro",
-    "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
-    "packages/consuelo-website/src/components/launch/LaunchHero.astro",
-    "packages/consuelo-website/src/components/launch/LaunchMercuryPromo.astro",
-    "packages/consuelo-website/src/components/launch/LaunchOverview.astro",
-    "packages/consuelo-website/src/components/launch/LaunchPrivacy.astro",
-    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
-    "packages/consuelo-website/src/components/scripts/LaunchGsapMotion.astro",
-    "packages/consuelo-website/src/layouts/LaunchLayout.astro",
-    "packages/consuelo-website/src/lib/launch-motion.ts",
-    "packages/consuelo-website/src/pages/mercury.astro"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-01T01:07:37.623Z",
+  "verifiedAt": "2026-04-30T22:18:22.003Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
