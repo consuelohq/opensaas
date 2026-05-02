@@ -70,14 +70,13 @@ function main() {
   if (!args.contentFile) throw new Error('missing --content-file');
   if (!fs.existsSync(args.contentFile)) throw new Error(`content file not found: ${args.contentFile}`);
 
-  const replacement = fs.readFileSync(args.contentFile, 'utf8');
   const search = runTaskFs(args, ['search', args.searchPattern, ...args.searchPaths, '--json']);
   const searchData = search.ok ? parseJson(search.stdout, []) : [];
   const firstMatch = Array.isArray(searchData) ? searchData[0] : null;
   const pathFromSearch = firstMatch && typeof firstMatch.file === 'string' ? firstMatch.file : null;
   const targetPath = pathFromSearch || args.searchPaths[0];
   const before = runTaskFs(args, ['read', targetPath, '--from', String(args.from), '--to', String(args.to), '--json']);
-  const patchArgs = ['patch', targetPath, '--from', String(args.from), '--to', String(args.to), '--content', replacement];
+  const patchArgs = ['patch', targetPath, '--from', String(args.from), '--to', String(args.to), '--content-file', args.contentFile];
   if (args.dryRun) patchArgs.push('--dry-run');
   const patch = runTaskFs(args, patchArgs);
   const after = args.dryRun ? null : runTaskFs(args, ['read', targetPath, '--from', String(args.from), '--to', String(args.to), '--json']);

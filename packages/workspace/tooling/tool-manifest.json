@@ -270,8 +270,12 @@
         {
           "source": "content",
           "flag": "--content",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "contentFile",
+          "flag": "--content-file",
+          "kind": "value"
         }
       ]
     },
@@ -280,8 +284,8 @@
       "path": "tmp/example.txt",
       "from": 1,
       "to": 1,
-      "content": "hello",
-      "dryRun": true
+      "dryRun": true,
+      "contentFile": "/tmp/replacement.txt"
     }
   },
   {

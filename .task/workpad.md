@@ -1,65 +1,74 @@
-# expand dialer scenario e2e harness
+# make fs patch multiline safe
 
-branch: `task/workspace-agents/expand-dialer-scenario-e2e-harness`
+branch: `task/workspace-agents/make-fs-patch-multiline-safe`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/279
+pr: https://github.com/consuelohq/opensaas/pull/281
 started: 2026-05-02
 
 ## acceptance criteria
 
-- [x] Add a Bun entrypoint for the dialer queue scenario.
-- [x] Authenticate with user token flow for user/workspace context.
-- [x] Resolve exactly five contacts from `CONSUELO_SCENARIO_CONTACT_IDS` or `CONSUELO_SCENARIO_LIST_ID`.
-- [x] Create a queue, start it, advance dispositions, require cadence suppression for contact 3, test user skip, verify completion, restart, and CSV export.
-- [x] Write a JSON transcript after every step/failure.
+- [x] Add a safe multiline replacement transport for `fs.patch`.
+- [x] Reject unsafe inline multiline/literal-newline-escape patch content.
+- [x] Ensure `editFlow` preserves `contentFile` instead of reserializing source into argv.
+- [x] Regenerate typed facade docs/types for the new `contentFile` surface.
+- [x] Update `STEERING.md` and `SCRIPTS.md` so future agents use `--content-file` for multiline code.
+- [x] Validate the CLI patch path and typed facade behavior.
 
 ## plan
 
-1. Add `packages/workspace/scripts/run-dialer-scenario.ts`.
-2. Add `bun run dialer:scenario` in `packages/workspace/package.json`.
-3. Validate syntax, JSON parse, and smoke failure behavior without credentials.
-4. Publish task branch and promote to stream review PR.
+1. Add `--content-file` support to `packages/workspace/scripts/fs.js`.
+2. Add guards for unsafe inline patch content.
+3. Update facade schema, manifest, generated types, generated docs, and script docs.
+4. Update steering with durable command-construction guidance for source-code patching.
+5. Run syntax, unit, smoke, and review validation.
 
 ## files changed
 
-- `packages/workspace/package.json`
-- `packages/workspace/scripts/run-dialer-scenario.ts`
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/STEERING.md`
+- `packages/workspace/TOOLS.md`
+- `packages/workspace/scripts/edit-flow.js`
+- `packages/workspace/scripts/fs.js`
+- `packages/workspace/scripts/lib/facade/schemas.ts`
+- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/tooling/tool-manifest.json`
+
 
 ## key decisions
 
-- The script uses sign-in/user token auth for dialer queue endpoints because those endpoints require user + workspace context.
-- The script supports either explicit contact IDs or a list ID so local deterministic runs do not depend on GraphQL contact creation work tomorrow.
-- Cadence suppression is a hard assertion: after contact 2 is answered, contact 3 must appear in the suppression payload and contact 4 must be selected.
-- User skip is tested separately on contact 4, then contact 5 exhausts the queue.
+- `fs.patch --content` remains available for single-line patches.
+- `fs.patch --content-file` is the supported path for multiline replacement content.
+- Inline patch content containing real newlines or literal `\\n` escape sequences is rejected before writing.
+- `editFlow` now passes `--content-file` to `task:fs patch` directly so it does not reintroduce the argv serialization failure.
 
 ## notes for ko
 
-- Docker is not fixed in this task. The workspace shell could inspect compose files, but `docker` was not visible in PATH from the repo shell. Treat that as tomorrow setup work unless the Mac terminal shows Docker working.
-- For tomorrow local run, set `CONSUELO_API_BASE_URL=http://localhost:3000`, matching metadata/graphql URLs if they differ, and provide five deterministic contacts.
-- Contact 3 needs seeded prior attempt/ledger state that triggers cadence suppression. If the backend does not mark suppressed items as skipped, the transcript will show the exact mismatch.
+- `workspace stream.sync` failed before task start because `stream/workspace-agents` is already checked out by `/private/tmp/opensaas-worktrees/stream-workspace-agents-merge-main`. The task still started from `stream/workspace-agents` at commit `39eb0665`.
 
 ## improvements noticed
 
-- The queue service currently returns cadence suppression but does not appear to mark the suppressed queue item as skipped in the rows read so far; this harness is designed to make that behavior visible.
+- `checkFiles` is still syntax-oriented and not enough to validate structured file types such as Astro. The steering update now explicitly tells agents to use file-type validation after patching.
 
 ## errors i ran into
 
-- `workspace checkFiles` passed the TypeScript script but failed on `package.json` because the helper applies `node --check` to JSON. Validated `package.json` with `python3 -m json.tool` instead.
+- Initial generated edit wrote an invalid JavaScript string containing an actual newline; `node --check packages/workspace/scripts/fs.js` caught it before any publish step.
+- One Vitest invocation used a repo-rooted test path with `--cwd packages/workspace`; rerunning with `tests/facade/facade.test.ts` passed.
 
 ## validation
 
-- `node --check packages/workspace/scripts/run-dialer-scenario.ts` passed.
-- `bun run dialer:scenario` executed and failed cleanly without credentials, writing a transcript.
-- `python3 -m json.tool packages/workspace/package.json` passed.
+- `node --check packages/workspace/scripts/fs.js` passed.
+- `node --check packages/workspace/scripts/edit-flow.js` passed.
+- `workspace checkFiles` passed for `fs.js`, `edit-flow.js`, `schemas.ts`, `generate-docs.ts`, and `generate-types.ts`.
+- `bun --cwd packages/workspace test tests/facade/facade.test.ts` passed.
+- Manual CLI smoke passed: `fs.js patch --content-file` applied multiline replacement, and inline literal `\\n` content failed with the expected guard.
+- `bun run generate-types && bun run generate-docs` passed from `packages/workspace`.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "feat(workspace): expand dialer scenario harness" --changed
+bun run task:push -- --message "fix(workspace): make fs patch multiline safe" --changed
 bun run task:pr
 bun run task:finish
 ```
-
-- 2026-05-02 06:09:03 write: `.task/workpad.md`

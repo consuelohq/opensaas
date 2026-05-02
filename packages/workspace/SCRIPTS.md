@@ -197,8 +197,12 @@ bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to f
 
 **patch**
 ```bash
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content "new lines here"  # replace line range
+printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
+bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
+bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
+
+Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
