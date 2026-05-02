@@ -154,6 +154,16 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "이 링크는 다음 {duration} 동안만 유효합니다. 링크가 작동하지 않으면 로그인 인증 링크를 직접 사용할 수 있습니다:"
 
 #. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "삭제된 워크스페이스"
@@ -177,16 +187,6 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "새 워크스페이스 만들기"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx

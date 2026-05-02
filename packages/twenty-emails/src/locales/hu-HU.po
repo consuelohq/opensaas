@@ -154,6 +154,16 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr "Ez a hivatkozás csak a következő {duration} ideig érvényes. Ha a hivatkozás nem működik, használhatja közvetlenül a belépés ellenőrző hivatkozását:"
 
 #. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "What is Consuelo?"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: src/components/WhatIsTwenty.tsx
+msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
+msgstr ""
+
+#. js-lingui-explicit-id
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Deleted Workspace"
 msgstr "Törölt munkaterület"
@@ -177,16 +187,6 @@ msgstr ""
 #: src/emails/clean-suspended-workspace.email.tsx
 msgid "Create a new workspace"
 msgstr "Hozzon létre új munkaterületet"
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "What is Consuelo?"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: src/components/WhatIsTwenty.tsx
-msgid "It's an open-source sales infrastructure platform to help businesses manage their customer data and relationships efficiently."
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/components/Footer.tsx
