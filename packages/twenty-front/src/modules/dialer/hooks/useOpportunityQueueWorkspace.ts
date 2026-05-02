@@ -1029,6 +1029,31 @@ export const useOpportunityQueueWorkspace = ({
   ]);
 
   useEffect(() => {
+    if (listStatus !== 'ACTIVE') {
+      return;
+    }
+
+    if (callableRecords.length !== 0) {
+      return;
+    }
+
+    if (backendQueue?.status === 'completed') {
+      return;
+    }
+
+    void updateListRecord({ listStatus: 'COMPLETED' }).catch(
+      (error: unknown) => {
+        Sentry.captureException(error, {
+          extra: {
+            context: 'completeEmptyQueueSession',
+            listId,
+          },
+        });
+      },
+    );
+  }, [backendQueue?.status, callableRecords.length, listId, listStatus, updateListRecord]);
+
+  useEffect(() => {
     if (listStatus === 'COMPLETED') {
       return;
     }

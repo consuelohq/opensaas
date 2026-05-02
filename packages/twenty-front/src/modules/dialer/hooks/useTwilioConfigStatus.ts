@@ -28,13 +28,23 @@ export const useTwilioConfigStatus = () => {
       setTwilioConfigStatus(data);
     } catch (err: unknown) {
       captureException(err, { extra: { context: 'fetchTwilioConfigStatus' } });
-      setTwilioConfigStatus({
-        mode: 'byok',
-        configured: false,
-        twilioConnected: false,
-        hasPhoneNumbers: false,
-        twimlAppConfigured: false,
-        error: err instanceof Error ? err.message : 'Failed to fetch status',
+      setTwilioConfigStatus((previousStatus) => {
+        if (previousStatus !== null) {
+          return {
+            ...previousStatus,
+            error:
+              err instanceof Error ? err.message : 'Failed to fetch status',
+          };
+        }
+
+        return {
+          mode: 'byok',
+          configured: false,
+          twilioConnected: false,
+          hasPhoneNumbers: false,
+          twimlAppConfigured: false,
+          error: err instanceof Error ? err.message : 'Failed to fetch status',
+        };
       });
     }
   }, [setTwilioConfigStatus]);
