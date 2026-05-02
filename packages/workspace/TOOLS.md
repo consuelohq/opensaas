@@ -868,7 +868,7 @@ example error envelope:
 
 replace a line range in a task worktree file
 
-- signature: `workspace.fs.patch({ path: string; from: number; to: number; content: string; branch?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.fs.patch({ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace fs.patch`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
@@ -881,8 +881,8 @@ await workspace.fs.patch({
   "path": "tmp/example.txt",
   "from": 1,
   "to": 1,
-  "content": "hello",
-  "dryRun": true
+  "dryRun": true,
+  "contentFile": "/tmp/replacement.txt"
 });
 ```
 

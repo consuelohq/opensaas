@@ -82,8 +82,9 @@ function patchHelp() {
   out('  --from N       first line to replace (required)');
   out('  --to M         last line to replace (required)');
   out('  --stdin        read replacement from stdin (default)');
-  out('  --content <t>  inline replacement');
-  out('  --dry-run      show diff without applying');
+  out('  --content <t>       inline replacement for single-line patches');
+  out('  --content-file <p>  read replacement from a file for multiline patches');
+  out('  --dry-run           show diff without applying');
 }
 
 function mainHelp() {
@@ -427,6 +428,46 @@ function cmdWrite(argv) {
 
 // ── patch ──
 
+function readReplacementContent({ inlineContent, contentFile, stdinRequested }) {
+  if (inlineContent !== null && contentFile !== null) {
+    err('error: use exactly one of --content or --content-file');
+    return null;
+  }
+
+  if (contentFile !== null) {
+    const contentPath = path.resolve(process.cwd(), contentFile);
+    if (!fs.existsSync(contentPath)) {
+      err(`error: content file not found: ${contentFile}`);
+      return null;
+    }
+    return fs.readFileSync(contentPath, 'utf8');
+  }
+
+  if (inlineContent !== null) {
+    const newline = String.fromCharCode(10);
+    const literalNewlineEscape = String.raw`\n`;
+
+    if (inlineContent.includes(literalNewlineEscape) && !inlineContent.includes(newline)) {
+      err('error: inline replacement contains literal \n sequences; use --content-file for multiline patches');
+      return null;
+    }
+
+    if (inlineContent.includes(newline)) {
+      err('error: multiline --content is unsafe; use --content-file for multiline patches');
+      return null;
+    }
+
+    return inlineContent;
+  }
+
+  const stdinContent = readStdin();
+  if (!stdinContent && !stdinRequested) {
+    err('error: no replacement content (pipe via stdin, use --content, or use --content-file)');
+    return null;
+  }
+  return stdinContent;
+}
+
 function cmdPatch(argv) {
   if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; }
 
@@ -435,24 +476,32 @@ function cmdPatch(argv) {
   let to = null;
   let filePath = null;
   let inlineContent = null;
+  let contentFile = null;
+  let stdinRequested = false;
 
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--from') { from = parseInt(argv[++i], 10); }
     else if (a === '--to') { to = parseInt(argv[++i], 10); }
     else if (a === '--content') { inlineContent = argv[++i]; }
-    else if (a === '--dry-run' || a === '--stdin') { /* skip */ }
+    else if (a === '--content-file') { contentFile = argv[++i]; }
+    else if (a === '--stdin') { stdinRequested = true; }
+    else if (a === '--dry-run') { /* skip */ }
     else if (!a.startsWith('--') && !filePath) { filePath = a; }
   }
 
   if (!filePath) { err('error: file path required'); patchHelp(); return; }
   if (from === null || to === null) { err('error: --from and --to are required'); patchHelp(); return; }
+  if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < 1 || from > to) {
+    err('error: invalid line range; expected positive integers with --from <= --to');
+    return;
+  }
 
   const fp = resolve(filePath);
   if (!fs.existsSync(fp)) { err(`error: ${filePath} not found`); return; }
 
-  const replacement = inlineContent !== null ? inlineContent : readStdin();
-  if (!replacement && inlineContent === null) { err('error: no replacement content (pipe via stdin or use --content)'); return; }
+  const replacement = readReplacementContent({ inlineContent, contentFile, stdinRequested });
+  if (replacement === null) return;
 
   const lines = fs.readFileSync(fp, 'utf8').split('\n');
   const removed = lines.slice(from - 1, to);
@@ -460,7 +509,6 @@ function cmdPatch(argv) {
 
   const result = [...lines.slice(0, from - 1), ...newLines, ...lines.slice(to)];
 
-  // show diff
   out(`── patch ${filePath}:${from}-${to} ──`);
   out(`removing ${removed.length} lines, inserting ${newLines.length} lines`);
   out('');

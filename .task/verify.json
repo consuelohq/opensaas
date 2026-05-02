@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/expand-dialer-scenario-e2e-harness",
+  "branch": "task/workspace-agents/make-fs-patch-multiline-safe",
   "base": "stream/workspace-agents",
-  "headSha": "a863641ba647ebfee7f8e24f846b67bd7f4a7aaf",
-  "changeHash": "58303803a28f59a6098d311a7e179cbd94865e19f73a83f469a4f76f05417da6",
+  "headSha": "a18529ed23aa913843435d9e69cd3da6a6f7788b",
+  "changeHash": "263f75c8dbf6541c9a9e1b2515628603340f4c1e7ab831208d45223d9ff392e8",
   "changedFiles": [
     "AGENTS.md",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
@@ -25,6 +25,8 @@
     "packages/workspace/TOOLS.md",
     "packages/workspace/package.json",
     "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/edit-flow.js",
+    "packages/workspace/scripts/fs.js",
     "packages/workspace/scripts/lib/facade/executor.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/review.js",
@@ -33,7 +35,7 @@
     "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-02T06:15:41.079Z",
+  "verifiedAt": "2026-05-02T16:48:17.212Z",
   "review": {
     "skipped": true,
     "passed": true
