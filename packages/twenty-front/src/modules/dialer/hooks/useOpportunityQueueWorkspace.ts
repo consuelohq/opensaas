@@ -1033,7 +1033,7 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    if (callableRecords.length !== 0) {
+    if (allQueueRecords === null || callableRecords.length !== 0) {
       return;
     }
 
@@ -1051,7 +1051,14 @@ export const useOpportunityQueueWorkspace = ({
         });
       },
     );
-  }, [backendQueue?.status, callableRecords.length, listId, listStatus, updateListRecord]);
+  }, [
+    allQueueRecords,
+    backendQueue?.status,
+    callableRecords.length,
+    listId,
+    listStatus,
+    updateListRecord,
+  ]);
 
   useEffect(() => {
     if (listStatus === 'COMPLETED') {
@@ -1062,8 +1069,17 @@ export const useOpportunityQueueWorkspace = ({
       return;
     }
 
-    void updateListRecord({ listStatus: 'COMPLETED' });
-  }, [backendQueue?.status, listStatus, updateListRecord]);
+    void updateListRecord({ listStatus: 'COMPLETED' }).catch(
+      (error: unknown) => {
+        Sentry.captureException(error, {
+          extra: {
+            context: 'syncCompletedBackendQueueStatus',
+            listId,
+          },
+        });
+      },
+    );
+  }, [backendQueue?.status, listId, listStatus, updateListRecord]);
 
   useEffect(() => {
     if (listStatus !== 'ACTIVE' || callableRecords.length === 0) {
