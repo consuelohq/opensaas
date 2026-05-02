@@ -213,9 +213,16 @@ export class QueuesService {
       }
 
       const selection = await this.selectNextCallableItem(id, workspaceId);
+      const queueCompleted = !selection.nextItem && !selection.suppression;
+
+      if (queueCompleted) {
+        await this.completeQueue(id, workspaceId);
+      }
 
       return {
-        queue,
+        queue: queueCompleted
+          ? { ...queue, status: 'completed', completed_at: new Date() }
+          : queue,
         currentItem: this.unwrapRow(selection.nextItem),
         nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
