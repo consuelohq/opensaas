@@ -320,7 +320,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
 
 ### review — code review checks
 
-runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite.
+runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite. the typed facade requires an explicit task branch and scopes review to that task worktree.
 
 ```bash
 bun run review                        # review changed files (main vs origin/main)
@@ -332,6 +332,12 @@ bun run review -- --json              # json output
 bun run review -- --quiet             # only show failures
 bun run review -- --no-tests          # skip test suite
 bun run review -- --strict            # enable strictPropertyInitialization
+```
+
+typed facade form — `branch` is required:
+
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
 ```
 
 **review failure modes**

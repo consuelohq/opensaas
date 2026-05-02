@@ -27,6 +27,7 @@
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
     "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
     "packages/workspace/decision.md",
     "packages/workspace/linear.md",
@@ -48,19 +49,23 @@
     "packages/workspace/scripts/lib/facade/executor.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/lib/git.js",
     "packages/workspace/scripts/lib/paths.js",
+    "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/scripts/task-push.js",
     "packages/workspace/scripts/tmp.js",
     "packages/workspace/scripts/tool-runner.ts",
+    "packages/workspace/scripts/workspace.ts",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json"
   ],
-  "updatedAt": "2026-05-01T12:35:17.992Z"
+  "updatedAt": "2026-05-01T08:16:49.335Z"
 }
