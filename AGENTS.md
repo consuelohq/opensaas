@@ -464,37 +464,37 @@ all commands run through `workspace.sandbox_exec({ command, timeout })`.
 
 standard task review — `branch` is required:
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\"}"
 ```
 
 skip tests (faster iteration):
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
 ```
 
 review against a specific base:
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"base\":\"stream/workspace-agents\"}"
 ```
 
 auto-fix eslint issues:
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"fix\":true}"
 ```
 
 review all files in the task worktree:
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"all\":true}"
 ```
 
 strict mode (surfaces hidden TS2564 errors):
 
-```
+```bash
 workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"strict\":true}"
 ```
 

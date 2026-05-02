@@ -460,9 +460,14 @@ function readReplacementContent({ inlineContent, contentFile, stdinRequested }) 
     return inlineContent;
   }
 
-  const stdinContent = readStdin();
-  if (!stdinContent && !stdinRequested) {
+  if (process.stdin.isTTY) {
     err('error: no replacement content (pipe via stdin, use --content, or use --content-file)');
+    return null;
+  }
+
+  const stdinContent = readStdin();
+  if (stdinContent === '') {
+    err('error: no replacement content received on stdin');
     return null;
   }
   return stdinContent;
