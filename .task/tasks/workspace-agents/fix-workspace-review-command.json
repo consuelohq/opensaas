@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-workspace-review-command",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 261,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/261",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-workspace-review-command",
+  "createdAt": "2026-05-01T07:30:51.532Z"
+}

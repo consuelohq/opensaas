@@ -12,9 +12,9 @@ type Props = {
 const { sectionId } = Astro.props as Props;
 ---
 
-<section class="launch-section" id={sectionId}>
+<section class="launch-section" id={sectionId} data-motion-section="hero">
   <div class="launch-content launch-content--wide launch-hero">
-    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono">
+    <a href={launchAnnouncement.linkHref} class="launch-hero__announcement launch-mono" data-motion="hero-eyebrow">
       <span class="launch-hero__badge">{launchAnnouncement.badge}</span>
       <span class="launch-hero__announcement-text">
         {launchAnnouncement.text} <span class="launch-inline-link">{launchAnnouncement.linkLabel}</span>
@@ -22,11 +22,11 @@ const { sectionId } = Astro.props as Props;
     </a>
 
     <div class="launch-hero__copy">
-      <h1 class="launch-title">{launchHero.title}</h1>
-      <p class="launch-copy">{launchHero.description}</p>
+      <h1 class="launch-title" data-motion="hero-title">{launchHero.title}</h1>
+      <p class="launch-copy" data-motion="hero-copy">{launchHero.description}</p>
     </div>
 
-    <div class="launch-hero__snippet launch-card" data-launch-hero>
+    <div class="launch-hero__snippet launch-card" data-launch-hero data-motion="hero-tabs">
       <div class="launch-hero__tabs launch-mono" role="tablist" aria-label="Consuelo surfaces">
         {launchTabs.map((tab, index) => (
           <button
@@ -77,7 +77,7 @@ const { sectionId } = Astro.props as Props;
       </div>
     </div>
 
-    <div class="launch-hero__media launch-card" data-launch-media>
+    <div class="launch-hero__media launch-card" data-launch-media data-motion="hero-product-frame">
       {launchTabs.map((tab, index) => (
         <figure class:list={['launch-hero__media-panel', { 'is-active': index === 0 }]} data-media-panel={tab.id}>
           <picture>
