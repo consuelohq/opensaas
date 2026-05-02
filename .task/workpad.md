@@ -1,9 +1,9 @@
-# fix workspace review command
+# implement astro gsap motion
 
-branch: `task/workspace-agents/fix-workspace-review-command`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/261
-started: 2026-05-01
+branch: `task/website/implement-astro-gsap-motion`
+stream: `stream/website`
+pr: https://github.com/consuelohq/opensaas/pull/273
+started: 2026-05-02
 
 ## acceptance criteria
 
@@ -18,7 +18,17 @@ started: 2026-05-01
 - 
 
 ## key decisions
-
+## files changed
+- `packages/consuelo-website/src/lib/motion.ts`
+- `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- `packages/consuelo-website/src/components/launch/LaunchHeader.astro`
+- `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- `packages/consuelo-website/src/pages/mercury.astro`
+- `packages/consuelo-website/src/lib/motion.ts`
+- `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- `packages/consuelo-website/src/components/launch/LaunchHeader.astro`
+- `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- `packages/consuelo-website/src/pages/mercury.astro`
 - 
 
 ## notes for ko
@@ -33,31 +43,31 @@ started: 2026-05-01
 
 - 
 
-## errors i ran into
+---
 
-- Initial read of `packages/consuelo-website/animations.md` in the task branch failed because the file existed only in Ko’s main local worktree. Copied it into the task worktree.
-- Initial root-level `bun add gsap` failed due inherited workspace package paths; scoped package install succeeded.
+## publish checklist
 
 ```bash
-bun run task:push -- --message "type(workspace-agents): description" --changed
+bun run task:push -- --message "type(website): description" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-01 07:32:01 write: `tmp/workspace-review-command-smoke.txt`
-- 2026-05-01 08:08:25 patch lines 248-257: `packages/workspace/scripts/lib/facade/schemas.ts`
-- 2026-05-01 08:08:34 patch lines 563-563: `packages/workspace/scripts/lib/facade/schemas.ts`
-- 2026-05-01 08:08:39 patch lines 254-260: `packages/workspace/scripts/lib/facade/executor.ts`
-- 2026-05-01 08:08:48 patch lines 253-267: `packages/workspace/scripts/lib/facade/executor.ts`
-- 2026-05-01 08:09:00 patch lines 610-633: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:09:16 patch lines 600-657: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:09:24 patch lines 1539-1539: `packages/workspace/tooling/tool-manifest.json`
-- 2026-05-01 08:09:38 patch lines 1574-1577: `packages/workspace/tooling/tool-manifest.json`
-- 2026-05-01 08:10:46 patch lines 462-508: `AGENTS.md`
-- 2026-05-01 08:10:56 patch lines 771-771: `AGENTS.md`
-- 2026-05-01 08:11:03 patch lines 318-335: `packages/workspace/SCRIPTS.md`
-- 2026-05-01 08:11:15 patch lines 317-318: `packages/workspace/SCRIPTS.md`
-- 2026-05-01 08:11:34 patch lines 428-428: `packages/workspace/STEERING.md`
-- 2026-05-01 08:11:39 patch lines 551-551: `packages/workspace/STEERING.md`
-- 2026-05-01 08:11:54 patch lines 657-657: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:15:40 patch lines 461-462: `AGENTS.md`
+- 2026-05-02 03:55:22 write: `packages/consuelo-website/src/lib/motion.ts`
+- 2026-05-02 03:55:30 patch lines 22-22: `packages/consuelo-website/src/components/launch/LaunchHeader.astro`
+- 2026-05-02 03:56:39 patch lines 15-15: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:56:39 patch lines 17-17: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:56:39 patch lines 25-25: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:56:39 patch lines 26-26: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:56:39 patch lines 29-29: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:56:39 patch lines 80-80: `packages/consuelo-website/src/components/launch/LaunchHero.astro`
+- 2026-05-02 03:57:47 patch lines 27-27: `packages/consuelo-website/src/pages/mercury.astro`
+- 2026-05-02 03:57:47 patch lines 29-29: `packages/consuelo-website/src/pages/mercury.astro`
+- 2026-05-02 03:57:47 patch lines 30-30: `packages/consuelo-website/src/pages/mercury.astro`
+- 2026-05-02 03:57:47 patch lines 31-31: `packages/consuelo-website/src/pages/mercury.astro`
+- 2026-05-02 03:58:55 patch lines 243-243: `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- 2026-05-02 04:03:13 patch lines 243-247: `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- 2026-05-02 04:05:24 patch lines 172-172: `packages/consuelo-website/src/layouts/LaunchLayout.astro`
+- 2026-05-02 04:06:30 patch lines 95-105: `packages/consuelo-website/src/lib/motion.ts`
+- 2026-05-02 04:07:36 patch lines 21-21: `.task/workpad.md`
+- 2026-05-02 04:09:36 patch lines 21-21: `.task/workpad.md`

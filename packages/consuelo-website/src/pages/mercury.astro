@@ -24,11 +24,11 @@ const problems = [
 const steps = [
   { n: '1', text: 'sign up and add $20 balance — follow the', link: 'setup instructions', href: siteLinks.docs },
   { n: '2', text: 'Use Mercury with transparent pricing — ', link: 'pay per request', href: siteLinks.docs, after: ' with zero markups' },
-  { n: '3', text: 'auto-top up — when your balance reaches $5 we\'ll automatically add $20' },
+  <section class="launch-section" data-motion-section="hero">
 ];
----
-
-<LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
+      <h1 class="mercury-hero__logo launch-mono" data-motion="hero-eyebrow">Mercury</h1>
+      <h2 class="mercury-hero__subtitle" data-motion="hero-title">Hosted calling and AI, ready to go.</h2>
+      <p class="launch-copy" data-motion="hero-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
   <LaunchHeader />
 
   <!-- hero -->
