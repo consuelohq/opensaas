@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const path = require('path');
 const { execFileSync, spawnSync } = require('child_process');
 
 function writeStdout(value = '') { process.stdout.write(`${value}\n`); }
@@ -68,16 +69,16 @@ function main() {
   if (args.searchPaths.length === 0) throw new Error('missing --search-paths');
   if (!Number.isInteger(args.from) || !Number.isInteger(args.to)) throw new Error('missing --from/--to');
   if (!args.contentFile) throw new Error('missing --content-file');
-  if (!fs.existsSync(args.contentFile)) throw new Error(`content file not found: ${args.contentFile}`);
+  const resolvedContentFile = path.resolve(process.cwd(), args.contentFile);
+  if (!fs.existsSync(resolvedContentFile)) throw new Error(`content file not found: ${args.contentFile}`);
 
-  const replacement = fs.readFileSync(args.contentFile, 'utf8');
   const search = runTaskFs(args, ['search', args.searchPattern, ...args.searchPaths, '--json']);
   const searchData = search.ok ? parseJson(search.stdout, []) : [];
   const firstMatch = Array.isArray(searchData) ? searchData[0] : null;
   const pathFromSearch = firstMatch && typeof firstMatch.file === 'string' ? firstMatch.file : null;
   const targetPath = pathFromSearch || args.searchPaths[0];
   const before = runTaskFs(args, ['read', targetPath, '--from', String(args.from), '--to', String(args.to), '--json']);
-  const patchArgs = ['patch', targetPath, '--from', String(args.from), '--to', String(args.to), '--content', replacement];
+  const patchArgs = ['patch', targetPath, '--from', String(args.from), '--to', String(args.to), '--content-file', resolvedContentFile];
   if (args.dryRun) patchArgs.push('--dry-run');
   const patch = runTaskFs(args, patchArgs);
   const after = args.dryRun ? null : runTaskFs(args, ['read', targetPath, '--from', String(args.from), '--to', String(args.to), '--json']);
