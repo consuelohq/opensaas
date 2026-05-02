@@ -1,25 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-browser-facade-commands",
-  "base": "stream/workspace-agents",
-  "headSha": "487a758fce730c27ce8c03e7354a720e0e010456",
-  "changeHash": "b7caa9063fe11a0c0aefbcf1232da3781d9fed8d8d51a832716b33c6b2147ba8",
+  "branch": "task/website/add-gsap-motion-docs-dependency",
+  "base": "stream/website",
+  "headSha": "7b76f4417d8e0cb2b72b27662f669e3b9256a26a",
+  "changeHash": "7162d1c56bf1908bde9d6c228e994bcb1d2625baf93298d22f20dc778bd33dd2",
   "changedFiles": [
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/browser.js",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/consuelo-website/animations.md",
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package.json"
   ],
-  "verifiedAt": "2026-04-30T22:18:22.003Z",
+  "verifiedAt": "2026-05-02T02:49:38.271Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []
