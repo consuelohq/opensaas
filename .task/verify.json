@@ -1,15 +1,23 @@
 {
   "result": "pass",
-  "branch": "task/website/add-gsap-motion-docs-dependency",
-  "base": "stream/website",
-  "headSha": "7b76f4417d8e0cb2b72b27662f669e3b9256a26a",
-  "changeHash": "7162d1c56bf1908bde9d6c228e994bcb1d2625baf93298d22f20dc778bd33dd2",
+  "branch": "task/workspace-agents/fix-workspace-review-command",
+  "base": "stream/workspace-agents",
+  "headSha": "244820ddd5df72dbae1c2229ba769f3a56c82fd7",
+  "changeHash": "46b78ddb6c8f956119fc7ae6d2816c424d2e33d738f859b03f887f7c3e421cee",
   "changedFiles": [
-    "packages/consuelo-website/animations.md",
-    "packages/consuelo-website/bun.lock",
-    "packages/consuelo-website/package.json"
+    "AGENTS.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-02T02:49:38.271Z",
+  "verifiedAt": "2026-05-01T08:16:08.195Z",
   "review": {
     "skipped": true,
     "passed": true

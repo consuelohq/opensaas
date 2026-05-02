@@ -1858,7 +1858,7 @@ example error envelope:
 
 run the workspace review checks
 
-- signature: `workspace.review.run({ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.review.run({ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace review.run`
 - capabilities: readOnly=true, mutating=false, safeToRetry=false
 - default timeout: 600000ms
@@ -1867,7 +1867,7 @@ example call:
 
 ```ts
 await workspace.review.run({
-  "mine": true,
+  "branch": "task/workspace-agents/example",
   "noTests": true
 });
 ```

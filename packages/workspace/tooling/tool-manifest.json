@@ -1536,7 +1536,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "review",
-      "branchMode": "none",
+      "branchMode": "required",
       "jsonFlag": "--json",
       "arguments": [
         {
@@ -1572,7 +1572,7 @@
       ]
     },
     "exampleInput": {
-      "mine": true,
+      "branch": "task/workspace-agents/example",
       "noTests": true
     }
   },
