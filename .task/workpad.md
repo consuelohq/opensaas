@@ -1,45 +1,54 @@
-# fix add number outline button
+# add gsap motion docs dependency
 
-branch: `task/dialer/fix-add-number-outline-button`
-stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/266
-started: 2026-05-01
+branch: `task/website/add-gsap-motion-docs-dependency`
+stream: `stream/website`
+pr: https://github.com/consuelohq/opensaas/pull/269
+started: 2026-05-02
 
 ## acceptance criteria
 
-- [x] Verify why the previous task still showed a filled blue Add Number button.
-- [x] Change Add Number to match the Upload/Remove outline button standard.
-- [x] Keep size small and preserve add-number behavior.
-- [ ] Publish the task branch for review.
+- [x] `packages/consuelo-website/animations.md` is included in the website package.
+- [x] `gsap` is added to the website package dependencies.
+- [x] Website package lockfile is updated with only the GSAP dependency/package entry.
+- [x] Website build passes.
+- [ ] Workspace review passes or reports only pre-existing issues.
 
 ## plan
 
-1. Compare `PhoneNumberSettings` against `ImageInput` button props.
-2. Replace `accent=blue` with `variant=secondary` after approval.
-3. Run focused formatting and diff checks.
-4. Push the task PR.
+1. Copy Ko-created animation guide into the task branch.
+2. Add `gsap` to `packages/consuelo-website` dependencies.
+3. Keep lockfile diff scoped to GSAP only.
+4. Run website build and workspace review.
+5. Push task branch and refresh stream review PR.
 
 ## files changed
 
-- `packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`
+- `packages/consuelo-website/animations.md`
+- `packages/consuelo-website/package.json`
+- `packages/consuelo-website/bun.lock`
 
 ## key decisions
 
-- The previous change used shared `Button`, but left it as implicit `variant=primary` with `accent=blue`, which intentionally renders filled blue.
-- Upload and Remove use `variant=secondary`; Add Number now uses that same outline/transparent standard.
+- This task is setup-only. It adds the animation guide and dependency without implementing animation code or adding motion hooks.
+- `@gsap/react` was not added because the requested dependency was `gsap`; the guide documents the optional React helper for future React-island animation work.
+- The initial `bun add` rewrote the lockfile heavily. Restored the stream lockfile and added only the GSAP package entry to keep the PR clean.
+
+## notes for ko
+
+- `bun add gsap` had to run scoped to `packages/consuelo-website`; running it at repo root fails because root workspaces include missing inherited package paths.
+
+## improvements noticed
+
+- The existing package manifest still has duplicate `@tailwindcss/typography` entries in dependencies and devDependencies. Bun warns about it, but this setup task leaves it unchanged.
 
 ## validation
 
-- passed: `npx prettier --check packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`.
-- passed: `git diff --check`.
-- passed: `npx eslint --config packages/twenty-front/eslint.config.mjs --rule @nx/enforce-module-boundaries: off packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`.
+- Passed: `packages/consuelo-website` build via task worktree.
+- Workspace review through the facade did not complete cleanly in this environment: `review.run` hit active-task ambiguity from root, and a base-scoped review attempt timed out.
 
----
+## errors i ran into
 
-## publish checklist
+- Initial read of `packages/consuelo-website/animations.md` in the task branch failed because the file existed only in Ko’s main local worktree. Copied it into the task worktree.
+- Initial root-level `bun add gsap` failed due inherited workspace package paths; scoped package install succeeded.
 
-```bash
-bun run task:push -- --message fix-add-number-outline-button --changed
-bun run task:pr
-bun run task:finish
-```
+- 2026-05-02 02:48:57 write: `.task/workpad.md`

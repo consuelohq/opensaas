@@ -9,6 +9,8 @@
     "packages/api/src/routes/voice.ts",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
     "packages/api/src/services/workspace-phone-numbers.ts",
+    "packages/consuelo-website/animations.md",
+    "packages/consuelo-website/package.json",
     "packages/dialer/src/dialer.ts",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
@@ -62,5 +64,5 @@
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json"
   ],
-  "updatedAt": "2026-05-01T12:35:17.992Z"
+  "updatedAt": "2026-05-02T02:34:07.059Z"
 }
