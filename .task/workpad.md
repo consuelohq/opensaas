@@ -1,63 +1,65 @@
-# fix workspace review command
+# expand dialer scenario e2e harness
 
-branch: `task/workspace-agents/fix-workspace-review-command`
+branch: `task/workspace-agents/expand-dialer-scenario-e2e-harness`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/261
-started: 2026-05-01
+pr: https://github.com/consuelohq/opensaas/pull/279
+started: 2026-05-02
 
 ## acceptance criteria
 
-- [ ] 
+- [x] Add a Bun entrypoint for the dialer queue scenario.
+- [x] Authenticate with user token flow for user/workspace context.
+- [x] Resolve exactly five contacts from `CONSUELO_SCENARIO_CONTACT_IDS` or `CONSUELO_SCENARIO_LIST_ID`.
+- [x] Create a queue, start it, advance dispositions, require cadence suppression for contact 3, test user skip, verify completion, restart, and CSV export.
+- [x] Write a JSON transcript after every step/failure.
 
 ## plan
 
-1. 
+1. Add `packages/workspace/scripts/run-dialer-scenario.ts`.
+2. Add `bun run dialer:scenario` in `packages/workspace/package.json`.
+3. Validate syntax, JSON parse, and smoke failure behavior without credentials.
+4. Publish task branch and promote to stream review PR.
 
 ## files changed
 
-- 
+- `packages/workspace/package.json`
+- `packages/workspace/scripts/run-dialer-scenario.ts`
 
 ## key decisions
 
-- 
+- The script uses sign-in/user token auth for dialer queue endpoints because those endpoints require user + workspace context.
+- The script supports either explicit contact IDs or a list ID so local deterministic runs do not depend on GraphQL contact creation work tomorrow.
+- Cadence suppression is a hard assertion: after contact 2 is answered, contact 3 must appear in the suppression payload and contact 4 must be selected.
+- User skip is tested separately on contact 4, then contact 5 exhausts the queue.
 
 ## notes for ko
 
-- 
+- Docker is not fixed in this task. The workspace shell could inspect compose files, but `docker` was not visible in PATH from the repo shell. Treat that as tomorrow setup work unless the Mac terminal shows Docker working.
+- For tomorrow local run, set `CONSUELO_API_BASE_URL=http://localhost:3000`, matching metadata/graphql URLs if they differ, and provide five deterministic contacts.
+- Contact 3 needs seeded prior attempt/ledger state that triggers cadence suppression. If the backend does not mark suppressed items as skipped, the transcript will show the exact mismatch.
 
 ## improvements noticed
 
-- 
+- The queue service currently returns cadence suppression but does not appear to mark the suppressed queue item as skipped in the rows read so far; this harness is designed to make that behavior visible.
 
 ## errors i ran into
 
-- 
+- `workspace checkFiles` passed the TypeScript script but failed on `package.json` because the helper applies `node --check` to JSON. Validated `package.json` with `python3 -m json.tool` instead.
 
-## errors i ran into
+## validation
 
-- Initial read of `packages/consuelo-website/animations.md` in the task branch failed because the file existed only in Ko’s main local worktree. Copied it into the task worktree.
-- Initial root-level `bun add gsap` failed due inherited workspace package paths; scoped package install succeeded.
+- `node --check packages/workspace/scripts/run-dialer-scenario.ts` passed.
+- `bun run dialer:scenario` executed and failed cleanly without credentials, writing a transcript.
+- `python3 -m json.tool packages/workspace/package.json` passed.
+
+---
+
+## publish checklist
 
 ```bash
-bun run task:push -- --message "type(workspace-agents): description" --changed
+bun run task:push -- --message "feat(workspace): expand dialer scenario harness" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-01 07:32:01 write: `tmp/workspace-review-command-smoke.txt`
-- 2026-05-01 08:08:25 patch lines 248-257: `packages/workspace/scripts/lib/facade/schemas.ts`
-- 2026-05-01 08:08:34 patch lines 563-563: `packages/workspace/scripts/lib/facade/schemas.ts`
-- 2026-05-01 08:08:39 patch lines 254-260: `packages/workspace/scripts/lib/facade/executor.ts`
-- 2026-05-01 08:08:48 patch lines 253-267: `packages/workspace/scripts/lib/facade/executor.ts`
-- 2026-05-01 08:09:00 patch lines 610-633: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:09:16 patch lines 600-657: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:09:24 patch lines 1539-1539: `packages/workspace/tooling/tool-manifest.json`
-- 2026-05-01 08:09:38 patch lines 1574-1577: `packages/workspace/tooling/tool-manifest.json`
-- 2026-05-01 08:10:46 patch lines 462-508: `AGENTS.md`
-- 2026-05-01 08:10:56 patch lines 771-771: `AGENTS.md`
-- 2026-05-01 08:11:03 patch lines 318-335: `packages/workspace/SCRIPTS.md`
-- 2026-05-01 08:11:15 patch lines 317-318: `packages/workspace/SCRIPTS.md`
-- 2026-05-01 08:11:34 patch lines 428-428: `packages/workspace/STEERING.md`
-- 2026-05-01 08:11:39 patch lines 551-551: `packages/workspace/STEERING.md`
-- 2026-05-01 08:11:54 patch lines 657-657: `packages/workspace/scripts/review.js`
-- 2026-05-01 08:15:40 patch lines 461-462: `AGENTS.md`
+- 2026-05-02 06:09:03 write: `.task/workpad.md`
