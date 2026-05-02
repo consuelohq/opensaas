@@ -31,6 +31,7 @@
     "edit-flow": "bun ./scripts/edit-flow.js",
     "mac": "bun ./scripts/mac.js",
     "linear": "bun ./scripts/linear.js",
+    "sentry": "bun ./scripts/sentry.js",
     "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",

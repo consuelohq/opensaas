@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-pr-280-review-comments",
+  "branch": "task/workspace-agents/add-sentry-typed-facade-commands",
   "base": "stream/workspace-agents",
-  "headSha": "db84a0e10e938807a36a976a5d6a33e9d1a96366",
-  "changeHash": "1ea33f725373ad06281f7c72d0661017bbbaaae91e1c19fe30ed60175445cb3e",
+  "headSha": "84e80fd689f8e41a43b43b51b0d1ad4d56e237b3",
+  "changeHash": "31beed277ab2f2f6cc02e44bd1fcb5385baa4f9f9a809875fe00b73e81bbff4a",
   "changedFiles": [
     "AGENTS.md",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
@@ -31,17 +31,18 @@
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
+    "packages/workspace/scripts/sentry.js",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-02T17:15:30.968Z",
+  "verifiedAt": "2026-05-02T20:29:26.526Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []
