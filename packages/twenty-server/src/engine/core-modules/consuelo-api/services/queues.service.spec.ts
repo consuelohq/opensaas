@@ -103,6 +103,10 @@ describe('QueuesService', () => {
     query.mockImplementation(async (statement: string) => {
       statements.push(statement);
 
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
       if (statement.startsWith('UPDATE call_queues SET status')) {
         return [queue];
       }
@@ -181,6 +185,10 @@ describe('QueuesService', () => {
     query.mockImplementation(async (statement: string, params?: unknown[]) => {
       statements.push(statement);
 
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
       if (statement.startsWith('UPDATE call_queues SET status')) {
         return [queue];
       }
@@ -244,6 +252,10 @@ describe('QueuesService', () => {
     query.mockImplementation(async (statement: string) => {
       statements.push(statement);
 
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
       if (statement.startsWith('UPDATE call_queues SET status')) {
         return [queue];
       }
@@ -270,10 +282,6 @@ describe('QueuesService', () => {
         return [];
       }
 
-      if (statement.includes('completed_at = NOW()')) {
-        return [{ ...queue, status: 'completed' }];
-      }
-
       throw new Error(`unexpected query: ${statement}`);
     });
 
@@ -288,5 +296,4 @@ describe('QueuesService', () => {
       }),
     );
   });
-
 });
