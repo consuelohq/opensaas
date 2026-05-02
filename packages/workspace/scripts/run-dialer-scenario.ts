@@ -22,6 +22,7 @@ type QueueItem = JsonObject & {
   contactId?: string;
   status?: string;
   position?: number;
+  attempts?: number;
   call_outcome?: string | null;
   callOutcome?: string | null;
   skip_reason?: string | null;

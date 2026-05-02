@@ -640,15 +640,25 @@ async function main() {
         return;
       }
     } else {
-      if (tasks.length > 1) { writeStderr("multiple active tasks — run from inside the task worktree or set TASK_BRANCH"); process.exitCode = 1; return; }
-      task = tasks[0];
+      const currentDirectory = process.cwd();
+      const matchingTask = tasks.find((candidate) =>
+        currentDirectory === candidate.path ||
+        currentDirectory.startsWith(`${candidate.path}${path.sep}`)
+      ) || null;
+
+      if (matchingTask) {
+        task = matchingTask;
+      } else {
+        if (tasks.length > 1) { writeStderr("multiple active tasks — run from inside the task worktree or set TASK_BRANCH"); process.exitCode = 1; return; }
+        task = tasks[0];
+      }
     }
 
     const taskRoot = task.path;
     writeStderr(`→ review scoped to: ${taskRoot}`);
     const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
     try {
-      execSync(`node ${__filename} ${passthrough.join(" ")}`, { cwd: taskRoot, stdio: "inherit" });
+      execFileSync(process.execPath, [__filename, ...passthrough], { cwd: taskRoot, stdio: "inherit" });
     } catch (error) { process.exitCode = error.status || 1; }
     return;
   }

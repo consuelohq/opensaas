@@ -69,7 +69,8 @@
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tooling/tool-manifest.json",
-    "packages/workspace/tooling/tool-manifest.schema.json"
+    "packages/workspace/tooling/tool-manifest.schema.json",
+    "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-02T16:49:00.162Z"
+  "updatedAt": "2026-05-02T17:12:42.456Z"
 }
