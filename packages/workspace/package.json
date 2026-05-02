@@ -36,7 +36,8 @@
     "tool-batch": "bun ./scripts/tool-batch.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
