@@ -197,8 +197,12 @@ bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to f
 
 **patch**
 ```bash
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content "new lines here"  # replace line range
+printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
+bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
+bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
+
+Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
@@ -320,7 +324,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
 
 ### review — code review checks
 
-runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite.
+runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite. the typed facade requires an explicit task branch and scopes review to that task worktree.
 
 ```bash
 bun run review                        # review changed files (main vs origin/main)
@@ -332,6 +336,12 @@ bun run review -- --json              # json output
 bun run review -- --quiet             # only show failures
 bun run review -- --no-tests          # skip test suite
 bun run review -- --strict            # enable strictPropertyInitialization
+```
+
+typed facade form — `branch` is required:
+
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
 ```
 
 **review failure modes**

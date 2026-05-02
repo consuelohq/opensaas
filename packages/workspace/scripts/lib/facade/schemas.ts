@@ -73,7 +73,11 @@ export const FsPatchInput = z.object({
   path: z.string().min(1),
   from: z.number().int().positive(),
   to: z.number().int().positive(),
-  content: z.string(),
+  content: z.string().optional(),
+  contentFile: optionalString,
+}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
+  message: 'provide exactly one of content or contentFile',
+  path: ['content'],
 });
 
 export const FsHttpInput = z.object({
@@ -247,6 +251,7 @@ export const StreamListInput = z.object({
 
 export const ReviewInput = z.object({
   ...requestFields,
+  branch: z.string().min(1),
   fix: z.boolean().optional(),
   all: z.boolean().optional(),
   base: optionalString,
@@ -254,7 +259,6 @@ export const ReviewInput = z.object({
   mine: z.boolean().optional(),
   noTests: z.boolean().optional(),
 });
-
 export const VerifyInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -537,7 +541,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string }',
   FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string }',
-  FsPatchInput: '{ path: string; from: number; to: number; content: string; branch?: string; dryRun?: boolean; requestId?: string }',
+  FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string }',
@@ -560,7 +564,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string }',
   StreamListInput: '{ repo?: string; requestId?: string }',
-  ReviewInput: '{ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }',
+  ReviewInput: "{ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }",
   VerifyInput: '{ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }',

@@ -511,6 +511,42 @@ describe('ParallelService group lifecycle', () => {
     );
   });
 
+  it('should keep the winner caller-id lock while only losing calls have ended', async () => {
+    const { service, mockDialer, mockLockService } = createService();
+
+    await service.statusCallback({
+      CallSid: 'CA_LOSER',
+      CallStatus: 'completed',
+    });
+
+    expect(mockDialer.parallel.getReleasableNumbers).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: 'group-1' }),
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12125550123',
+    );
+    expect(mockLockService.releaseLockByNumber).not.toHaveBeenCalledWith(
+      '+12025550123',
+    );
+  });
+
+  it('should release every caller-id lock when the winning call ends', async () => {
+    const { service, mockLockService } = createService();
+
+    await service.statusCallback({
+      CallSid: 'CA_WINNER',
+      CallStatus: 'completed',
+      CallDuration: '45',
+    });
+
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12025550123',
+    );
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12125550123',
+    );
+  });
+
   it('should terminate the group and release caller-id locks', async () => {
     const { service, group, mockDialer, mockLockService } = createService();
 

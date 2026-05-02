@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-fs-patch-multiline-safe",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 281,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/281",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-make-fs-patch-multiline-safe",
+  "createdAt": "2026-05-02T16:38:21.451Z"
+}

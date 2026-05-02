@@ -1,0 +1,12 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/address-csv-import-naming-review-findings",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 243,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/243",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-dialer-address-csv-import-naming-review-findings",
+  "createdAt": "2026-04-30T20:25:51.993Z"
+}

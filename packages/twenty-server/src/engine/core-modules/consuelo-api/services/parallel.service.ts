@@ -345,14 +345,19 @@ export class ParallelService {
       return { received: true };
     }
 
-    if (group.status === 'connected' || group.status === 'completed') {
-      const releasableNumbers = dialer.parallel.getReleasableNumbers(group);
-      await this.releaseCallerIdLocks(releasableNumbers);
-    }
-
     const isTerminalCallback = TERMINAL_STATUSES.has(callStatus);
     const isWinnerCallback = callSid === group.winnerSid;
     const groupHasWinner = group.winnerSid !== null;
+    const shouldReleaseAllCallerIdLocks =
+      group.status === 'completed' ||
+      (isTerminalCallback && isWinnerCallback && groupHasWinner);
+
+    if (shouldReleaseAllCallerIdLocks) {
+      await this.releaseCallerIdLocks(this.getGroupFromNumbers(group));
+    } else if (group.status === 'connected') {
+      const releasableNumbers = dialer.parallel.getReleasableNumbers(group);
+      await this.releaseCallerIdLocks(releasableNumbers);
+    }
 
     if (isTerminalCallback && isWinnerCallback && groupHasWinner) {
       const claimed =
@@ -712,6 +717,12 @@ export class ParallelService {
         .getCallerIdLockService()
         .releaseLockByNumber(fromNumber);
     }
+  }
+
+  private getGroupFromNumbers(group: ParallelGroup): string[] {
+    return Array.from(
+      new Set(group.calls.map((call) => call.fromNumber).filter(Boolean)),
+    );
   }
 
   private isSuccessfulCompletion(

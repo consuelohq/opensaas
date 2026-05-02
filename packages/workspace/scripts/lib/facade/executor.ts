@@ -251,17 +251,20 @@ export async function executeTool<TData = unknown>(
 }
 
 function normalizeInput(toolName: string, input: ToolInput): ToolInput {
-  if (toolName === 'task.start' && !input.area && typeof input.stream === 'string') {
-    return { ...input, area: input.stream.replace(/^stream\//, '') };
+  if (toolName === "task.start" && !input.area && typeof input.stream === "string") {
+    return { ...input, area: input.stream.replace(/^stream\//, "") };
   }
 
-  if (toolName === 'fs.http' && !input.method) {
-    return { ...input, method: 'get' };
+  if (toolName === "fs.http" && !input.method) {
+    return { ...input, method: "get" };
+  }
+
+  if (toolName === "review.run") {
+    return { ...input, mine: true };
   }
 
   return input;
 }
-
 async function executeInternalTool<TData>(
   entry: ToolManifestEntry,
   input: ToolInput,

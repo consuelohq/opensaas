@@ -70,6 +70,66 @@ State the positive claim directly. If a genuine distinction needs both sides, na
 
 **Narrow exception:** technical statements about necessary or sufficient conditions in logic, math, or formal proofs.
 
+## Markdown as the default writing format
+
+Use Markdown as the default format for in chat conversations and agent-facing instructions because it stays readable in every surface where ChatGPT and workspace agents operate. Markdown is plain text with lightweight formatting markers, so the raw file is still understandable in a terminal, a repo file, a chat message, a canvas, or a rendered docs site. Use Markdown for chatting, steering, handoffs, runbooks, docs, and task notes because the source remains usable even when no preview, rich editor, or renderer is available.
+
+Write Markdown for a literal-minded reader. Headings should create the map of the document. Short paragraphs should carry the judgment. Bullets should be used for parallel rules, checklists, or examples. Code fences should be used for commands, file paths, config snippets, and exact text that should be copied without interpretation. The goal is to make the document easy for reader or another agent to parse.
+
+Prefer canvas over editor-specific formatting. A canvas file can move across editors, operating systems, repositories, documentation sites, and chat surfaces without losing the core content. This portability matters for steering because instructions need to survive tool changes, renderer changes, and future agents reading the file in raw form. Do not rely on formatting that only works in one app when the instruction itself needs to be permanent.
+
+When output is intended to be reused verbatim in a repo, steering file, prompt, config, script, or documentation page, always choose a copy-safe surface. Use canvas for multi-paragraph drafts, multi-section instructions, reusable docs, or anything the user is likely to edit. Use a fenced copy-paste block for short exact snippets, with the correct wrapper for the content: ` ```markdown ` for Markdown, ` ```json ` for JSON, ` ```bash ` for shell commands, ` ```ts ` or another language fence for code, and ` ```text ` for plain instructions. Normal conversational explanation can stay in chat; exact reusable content should live in canvas or a properly fenced block so copying preserves structure, spacing, and syntax.
+
+Use these examples as the default routing table and example of a markdown table:
+
+| Case                              | Correct behavior            |
+| --------------------------------- | --------------------------- |
+| Multi-paragraph steering update   | Use canvas                  |
+| Short snippet for `STEERING.md`   | Use fenced `markdown` block |
+| Shell command                     | Use fenced `bash` block     |
+| JSON config                       | Use fenced `json` block     |
+| TypeScript code                   | Use fenced `ts` block       |
+| Plain explanation                 | Normal chat is fine         |
+| Handoff, runbook, or durable docs | Use canvas                  |
+| Exact plain-text instruction      | Use fenced `text` block     |
+
+Be aware that Markdown has flavors. Different tools support different syntax, especially for tables, task lists, footnotes, callouts, diagrams, and embedded HTML. Steering should use conservative Markdown unless a repo-specific renderer clearly supports the feature. Headings, paragraphs, bullets, numbered lists, links, inline code, and fenced code blocks are safe defaults. Advanced syntax belongs only where it improves clarity and still remains readable as raw text.
+
+The standard for Markdown in steering is simple: write the file so the raw source is already clear, then let rendering make it nicer. A good Markdown instruction should still make sense in a terminal, a code editor, a docs site, a canvas, or a copied chat block. If the raw text needs the renderer to be understandable, simplify the structure.
+
+
+## Markdown syntax cheat sheet
+
+### Basic syntax
+
+| Element         | Markdown syntax                                        |
+| --------------- | ------------------------------------------------------ |
+| Heading         | `# H1`<br>`## H2`<br>`### H3`                          |
+| Bold            | `**bold text**`                                        |
+| Italic          | `*italicized text*`                                    |
+| Blockquote      | `> blockquote`                                         |
+| Ordered list    | `1. First item`<br>`2. Second item`<br>`3. Third item` |
+| Unordered list  | `- First item`<br>`- Second item`<br>`- Third item`    |
+| Code            | `` `code` ``                                           |
+| Horizontal rule | `---`                                                  |
+| Link            | `[title](https://www.example.com)`                     |
+| Image           | `![alt text](image.jpg)`                               |
+
+### Extended syntax
+
+| Element           | Markdown syntax                                                                                                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table             | <code>| Syntax | Description |</code><br><code>| --- | --- |</code><br><code>| Header | Title |</code><br><code>| Paragraph | Text |</code>                                                                      |
+| Fenced code block | <code>`json</code><br><code>{</code><br><code>&nbsp;&nbsp;"firstName": "John",</code><br><code>&nbsp;&nbsp;"lastName": "Smith",</code><br><code>&nbsp;&nbsp;"age": 25</code><br><code>}</code><br><code>`</code> |
+| Footnote          | `Here's a sentence with a footnote. [^1]`<br><br>`[^1]: This is the footnote.`                                                                                                                                   |
+| Heading ID        | `### My Great Heading {#custom-id}`                                                                                                                                                                              |
+| Definition list   | `term`<br>`: definition`                                                                                                                                                                                         |
+| Strikethrough     | `~~The world is flat.~~`                                                                                                                                                                                         |
+| Task list         | `- [x] Write the press release`<br>`- [ ] Update the website`<br>`- [ ] Contact the media`                                                                                                                       |
+| Emoji             | `That is so funny! :joy:`                                                                                                                                                                                        |
+| Highlight         | `I need to highlight these ==very important words==.`                                                                                                                                                            |
+| Subscript         | `H~2~O`                                                                                                                                                                                                          |
+| Superscript       | `X^2^`                                                                                                                                                                                                           |
 ---
 
 ## Rules
@@ -425,7 +485,7 @@ workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace review.run '{\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
 ```
@@ -464,7 +524,7 @@ if a tool returns an error envelope, read the error message and `stderr`. valida
 
 raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
 
-## how to think: the decision engine
+## how to think: the decision.md
 
 the decision engine is the reasoning loop behind workspace work. it is not optional tooling; it is how agents avoid guessing.
 
@@ -548,7 +608,7 @@ workspace.sandbox_exec({
 review pipeline:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace review.run '{\"base\":\"stream/workspace-agents\",\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
 ```
 
@@ -607,6 +667,14 @@ stop and ask ko when:
 * an external message/post/email would be sent
 
 do not ask before doing basic investigation.
+
+### source-code patching safety
+
+Source code is a structured payload. Do not send multiline code through inline command arguments. Inline patch content travels through JSON, shell parsing, facade argument building, argv parsing, and line splitting; those layers can convert real newlines into literal `\n` text or shift line ranges into the wrong language region.
+
+Use `fs.patch --content-file` or stdin for multiline replacements. Use inline `--content` only for single-line edits. After patching, reread the changed range and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
+
+The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter or inserting literal `\n` sequences into TypeScript. Treat shell-safe transport as part of correctness, not as a formatting detail.
 
 ### verification standard
 
@@ -918,6 +986,20 @@ the failure mode: writing an absolute prohibition when you meant a priority orde
 fix: use "only," "solely," or "at the expense of" to signal that the thing still matters —
 it just is not the whole picture.
 
+## workspace docs are part of the change
+
+when changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+use the owning source of truth:
+
+- doctrine goes in `packages/workspace/STEERING.md`
+- decision-engine doctrine goes in `packages/workspace/decision.md`
+- procedural script usage goes in `packages/workspace/SCRIPTS.md`
+- typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`
+- generated tool docs come from `packages/workspace/scripts/generate-docs.ts` and regenerate `packages/workspace/TOOLS.md`
+
+write durable rules, not conversation recaps. generated files should be regenerated from source instead of patched by hand.
+
 ## retrieval is a prior, not a conclusion
 
 when building systems that combine search/retrieval with decision-making, do not conflate
@@ -961,4 +1043,130 @@ for command construction:
 
 never nest more than 2 levels of quotes in a single sandbox_exec call
 heredocs don't survive JSON. the \n in a JSON string value is a literal backslash-n, not a newline.
+
+## Workspace tooling and facade change doctrine
+
+When working on workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, use the workspace facade as the primary operating surface. Do not default to raw absolute-path shell commands when a workspace command exists.
+
+Start workspace-tooling investigations with:
+
+```bash
+workspace get_steering
+workspace stream.context '{"area":"workspace-agents"}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"browser facade aliases","limit":5}'
+workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
+```
+
+## shell command construction with base64 + JSON escaping
+When generating a shell command that decodes base64 through Python, prefer this shape:
+```bash
+python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING
+
+The base64 string does not need quotes when it contains only standard base64 characters. Keep it as a positional argument to avoid nested shell quoting.
+
+When embedding that command inside JSON, escape only the JSON double quotes around the command value. Keep the Python snippet single-quoted inside the shell command:
+
+{
+  "command": "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING"
+}
+
+For workspace.sandbox_exec, the full call shape is:
+
+workspace.sandbox_exec({
+  command: "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING",
+  timeout: 120
+})
+
+Avoid this failure mode:
+
+{
+  "command": "python3 -c "import base64; ..." BASE64_STRING"
+}
+
+That breaks JSON because the inner double quotes terminate the command string.
+
+If double quotes are required inside the shell command, escape them for JSON:
+
+{
+  "command": "python3 -c \"import base64,sys;print(base64.b64decode(sys.argv[1]).decode())\" BASE64_STRING"
+}
+
+Prefer the single-quoted Python form because it keeps the JSON cleaner and reduces escaping mistakes.
+
+I tightened it into a durable steering rule: positional base64 arg, single-quoted Python snippet, JSON-safe command string, and one explicit escaped-double-quote fallback.
+
+## Exploration is mandatory
+
+Before planning, coding, documenting, or handing off a workspace tooling change, perform explicit exploration. Do not skip exploration because the change appears obvious, because a prior agent summarized it, or because a file path seems known.
+
+Exploration must answer these questions before implementation begins:
+
+1. What is the current source of truth for this behavior?
+2. Which script, manifest entry, generated file, skill, or doctrine currently owns it?
+3. What existing pattern should this change follow?
+4. What docs or generated surfaces must change with it?
+5. What tests, snapshots, audits, or review gates prove the change?
+6. What uncertainty remains, and what needs Ko’s answer before coding?
+
+Use context search first, then code/file exploration. Good first-pass commands:
+
+```bash
+workspace context.search '{"keyword":"<feature or behavior>","limit":5}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"workspace scripts docs","limit":5}'
+workspace explore '{"query":"<feature or behavior> workspace facade script manifest docs tests","limit":8}'
+```
+
+After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+
+```bash
+workspace fs.search '{"branch":"<branch>","pattern":"<pattern>","paths":["."],"context":8,"maxResults":80}'
+workspace fs.read '{"branch":"<branch>","path":"<path>"}'
+workspace fs.list '{"branch":"<branch>","path":"<path>","depth":2}'
+```
+
+For repo changes, exploration should include the nearest existing implementation and at least one generated/consumer surface. For typed facade work, this usually means reading the relevant script, `tool-manifest.json`, `schemas.ts`, generated types/docs, and the facade test/snapshot pattern before editing.
+
+Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
+
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.exec`. If raw shell is used, explain why the workspace facade was not sufficient.
+
+
+## Workspace docs are part of the change
+
+When changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, generated tool surfaces, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+Use the owning source of truth:
+
+* Doctrine goes in `packages/workspace/STEERING.md`.
+* Decision-engine doctrine goes in `packages/workspace/decision.md`.
+* Procedural script usage goes in `packages/workspace/SCRIPTS.md`.
+* Typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`.
+* Input schemas go in `packages/workspace/scripts/lib/facade/schemas.ts`.
+* Generated tool docs come from `packages/workspace/scripts/generate-docs.ts`; regenerate `packages/workspace/TOOLS.md`.
+* Generated type stubs come from `packages/workspace/scripts/generate-types.ts`; regenerate `packages/workspace/src/generated/workspace.d.ts`.
+* Facade behavior changes should update or regenerate relevant tests/snapshots under `packages/workspace/tests/facade/`.
+
+Write durable operating rules, not conversation recaps. Documentation should describe the behavior future agents must follow, not summarize why one chat made a change.
+
+Generated files must be regenerated from source instead of patched by hand.
+
+Before reporting completion, verify one of these is true:
+
+1. The owning documentation surface was updated and regenerated where applicable.
+2. No documentation update was required, and the reason is stated explicitly.
+
+For typed facade changes, the expected validation path is:
+
+```bash
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-types"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-docs"]}'
+workspace task.exec '{"branch":"<branch>","command":["bash","-lc","cd packages/workspace && bun run test tests/facade/facade.test.ts"],"timeout":300000}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","audit","--","--scripts","--json"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","--base","stream/workspace-agents","--no-tests","--json"],"timeout":600000}'
+```
+
+If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
+
 ```
