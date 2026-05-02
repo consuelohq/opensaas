@@ -16,7 +16,7 @@ type ScenarioLog = {
 
 const metadataUrl = process.env.CONSUELO_METADATA_URL ?? 'https://consuelo.consuelohq.com/metadata';
 const graphqlUrl = process.env.CONSUELO_GRAPHQL_URL ?? 'https://consuelo.consuelohq.com/graphql';
-const apiBaseUrl = process.env.CONSUELO_API_BASE_URL ?? 'https://app.consuelohq.com';
+const apiBaseUrl = process.env.CONSUELO_API_BASE_URL ?? 'https://consuelo.consuelohq.com';
 const email = process.env.CONSUELO_EMAIL ?? 'ryancaves22@gmail.com';
 const password = process.env.CONSUELO_PASSWORD ?? 'Consuelo2026!';
 const workspaceId = process.env.CONSUELO_WORKSPACE_ID ?? '7d0894c1-bdb1-4dd6-9a00-78681b52d5f6';
