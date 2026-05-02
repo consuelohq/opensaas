@@ -70,6 +70,33 @@ State the positive claim directly. If a genuine distinction needs both sides, na
 
 **Narrow exception:** technical statements about necessary or sufficient conditions in logic, math, or formal proofs.
 
+## Markdown as the default writing format
+
+Use Markdown as the default format for in chat conversations and agent-facing instructions because it stays readable in every surface where ChatGPT and workspace agents operate. Markdown is plain text with lightweight formatting markers, so the raw file is still understandable in a terminal, a repo file, a chat message, a canvas, or a rendered docs site. Use Markdown for chatting, steering, handoffs, runbooks, docs, and task notes because the source remains usable even when no preview, rich editor, or renderer is available.
+
+Write Markdown for a literal-minded reader. Headings should create the map of the document. Short paragraphs should carry the judgment. Bullets should be used for parallel rules, checklists, or examples. Code fences should be used for commands, file paths, config snippets, and exact text that should be copied without interpretation. The goal is to make the document easy for reader or another agent to parse.
+
+Prefer canvas over editor-specific formatting. A canvas file can move across editors, operating systems, repositories, documentation sites, and chat surfaces without losing the core content. This portability matters for steering because instructions need to survive tool changes, renderer changes, and future agents reading the file in raw form. Do not rely on formatting that only works in one app when the instruction itself needs to be permanent.
+
+When output is intended to be reused verbatim in a repo, steering file, prompt, config, script, or documentation page, always choose a copy-safe surface. Use canvas for multi-paragraph drafts, multi-section instructions, reusable docs, or anything the user is likely to edit. Use a fenced copy-paste block for short exact snippets, with the correct wrapper for the content: ` ```markdown ` for Markdown, ` ```json ` for JSON, ` ```bash ` for shell commands, ` ```ts ` or another language fence for code, and ` ```text ` for plain instructions. Normal conversational explanation can stay in chat; exact reusable content should live in canvas or a properly fenced block so copying preserves structure, spacing, and syntax.
+
+Use these examples as the default routing table and example of a markdown table:
+
+| Case                              | Correct behavior            |
+| --------------------------------- | --------------------------- |
+| Multi-paragraph steering update   | Use canvas                  |
+| Short snippet for `STEERING.md`   | Use fenced `markdown` block |
+| Shell command                     | Use fenced `bash` block     |
+| JSON config                       | Use fenced `json` block     |
+| TypeScript code                   | Use fenced `ts` block       |
+| Plain explanation                 | Normal chat is fine         |
+| Handoff, runbook, or durable docs | Use canvas                  |
+| Exact plain-text instruction      | Use fenced `text` block     |
+
+Be aware that Markdown has flavors. Different tools support different syntax, especially for tables, task lists, footnotes, callouts, diagrams, and embedded HTML. Steering should use conservative Markdown unless a repo-specific renderer clearly supports the feature. Headings, paragraphs, bullets, numbered lists, links, inline code, and fenced code blocks are safe defaults. Advanced syntax belongs only where it improves clarity and still remains readable as raw text.
+
+The standard for Markdown in steering is simple: write the file so the raw source is already clear, then let rendering make it nicer. A good Markdown instruction should still make sense in a terminal, a code editor, a docs site, a canvas, or a copied chat block. If the raw text needs the renderer to be understandable, simplify the structure.
+
 ---
 
 ## Rules
