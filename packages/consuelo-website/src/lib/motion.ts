@@ -26,7 +26,6 @@ export function playHeroBoot() {
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-        // Set initial states to avoid FOUC
         gsap.set("[data-motion=\"header\"]", { autoAlpha: 0, y: -8 });
         gsap.set("[data-motion=\"hero-eyebrow\"]", { autoAlpha: 0, y: 10 });
         gsap.set("[data-motion=\"hero-copy\"]", { autoAlpha: 0, y: 15 });
@@ -40,13 +39,9 @@ export function playHeroBoot() {
           gsap.set(titleSplit.lines, { autoAlpha: 0, yPercent: 105 });
         }
 
-        // 0ms: header fades/slides in
         tl.to("[data-motion=\"header\"]", { autoAlpha: 1, y: 0, duration: 0.5 }, 0);
-
-        // 80ms: eyebrow fades in
         tl.to("[data-motion=\"hero-eyebrow\"]", { autoAlpha: 1, y: 0, duration: 0.4 }, 0.08);
 
-        // 140ms: hero headline split text
         if (titleSplit && titleSplit.lines.length > 0) {
           tl.to(titleSplit.lines, {
             autoAlpha: 1,
@@ -56,16 +51,10 @@ export function playHeroBoot() {
           }, 0.14);
         }
 
-        // 280ms: subcopy reveals
         tl.to("[data-motion=\"hero-copy\"]", { autoAlpha: 1, y: 0, duration: 0.5 }, 0.28);
-
-        // 380ms: tab border draws in
         tl.to("[data-motion=\"hero-tabs\"]", { autoAlpha: 1, scaleX: 1, duration: 0.4, ease: "power2.out" }, 0.38);
-
-        // 460ms: product frame enters
         tl.to("[data-motion=\"hero-product-frame\"]", { autoAlpha: 1, y: 0, scale: 1, duration: 0.6, ease: "power2.out" }, 0.46);
 
-        // 620ms: silver scanline (if implemented in CSS with a class, we could trigger it, or use GSAP to animate a generated element)
         const scanline = document.querySelector("[data-motion=\"hero-scanline\"]");
         if (scanline) {
           gsap.set(scanline, { autoAlpha: 0, y: "-10%" });
@@ -87,11 +76,6 @@ export function playHeroBoot() {
   );
 }
 
-export const startHero = () => {
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      playHeroBoot();
-    });
 export const startHero = () => {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
