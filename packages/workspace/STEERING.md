@@ -97,6 +97,39 @@ Be aware that Markdown has flavors. Different tools support different syntax, es
 
 The standard for Markdown in steering is simple: write the file so the raw source is already clear, then let rendering make it nicer. A good Markdown instruction should still make sense in a terminal, a code editor, a docs site, a canvas, or a copied chat block. If the raw text needs the renderer to be understandable, simplify the structure.
 
+
+## Markdown syntax cheat sheet
+
+### Basic syntax
+
+| Element         | Markdown syntax                                        |
+| --------------- | ------------------------------------------------------ |
+| Heading         | `# H1`<br>`## H2`<br>`### H3`                          |
+| Bold            | `**bold text**`                                        |
+| Italic          | `*italicized text*`                                    |
+| Blockquote      | `> blockquote`                                         |
+| Ordered list    | `1. First item`<br>`2. Second item`<br>`3. Third item` |
+| Unordered list  | `- First item`<br>`- Second item`<br>`- Third item`    |
+| Code            | `` `code` ``                                           |
+| Horizontal rule | `---`                                                  |
+| Link            | `[title](https://www.example.com)`                     |
+| Image           | `![alt text](image.jpg)`                               |
+
+### Extended syntax
+
+| Element           | Markdown syntax                                                                                                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table             | <code>| Syntax | Description |</code><br><code>| --- | --- |</code><br><code>| Header | Title |</code><br><code>| Paragraph | Text |</code>                                                                      |
+| Fenced code block | <code>`json</code><br><code>{</code><br><code>&nbsp;&nbsp;"firstName": "John",</code><br><code>&nbsp;&nbsp;"lastName": "Smith",</code><br><code>&nbsp;&nbsp;"age": 25</code><br><code>}</code><br><code>`</code> |
+| Footnote          | `Here's a sentence with a footnote. [^1]`<br><br>`[^1]: This is the footnote.`                                                                                                                                   |
+| Heading ID        | `### My Great Heading {#custom-id}`                                                                                                                                                                              |
+| Definition list   | `term`<br>`: definition`                                                                                                                                                                                         |
+| Strikethrough     | `~~The world is flat.~~`                                                                                                                                                                                         |
+| Task list         | `- [x] Write the press release`<br>`- [ ] Update the website`<br>`- [ ] Contact the media`                                                                                                                       |
+| Emoji             | `That is so funny! :joy:`                                                                                                                                                                                        |
+| Highlight         | `I need to highlight these ==very important words==.`                                                                                                                                                            |
+| Subscript         | `H~2~O`                                                                                                                                                                                                          |
+| Superscript       | `X^2^`                                                                                                                                                                                                           |
 ---
 
 ## Rules
