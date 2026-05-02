@@ -24,25 +24,25 @@ const problems = [
 const steps = [
   { n: '1', text: 'sign up and add $20 balance — follow the', link: 'setup instructions', href: siteLinks.docs },
   { n: '2', text: 'Use Mercury with transparent pricing — ', link: 'pay per request', href: siteLinks.docs, after: ' with zero markups' },
-  <section class="launch-section" data-motion-section="hero">
+  { n: '3', text: 'auto-top up — when your balance reaches $5 we\'ll automatically add $20' },
 ];
-      <h1 class="mercury-hero__logo launch-mono" data-motion="hero-eyebrow">Mercury</h1>
-      <h2 class="mercury-hero__subtitle" data-motion="hero-title">Hosted calling and AI, ready to go.</h2>
-      <p class="launch-copy" data-motion="hero-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
+---
+
+<LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
   <LaunchHeader />
 
   <!-- hero -->
-  <section class="launch-section">
+  <section class="launch-section" data-motion-section="hero">
     <div class="launch-content launch-content--wide mercury-hero">
-      <h1 class="mercury-hero__logo launch-mono">Mercury</h1>
-      <h2 class="mercury-hero__subtitle">Hosted calling and AI, ready to go.</h2>
-      <p class="launch-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.,</p>
+      <h1 class="mercury-hero__logo launch-mono" data-motion="hero-eyebrow">Mercury</h1>
+      <h2 class="mercury-hero__subtitle" data-motion="hero-title">Hosted calling and AI, ready to go.</h2>
+      <p class="launch-copy" data-motion="hero-copy">Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.</p>
       <div class="mercury-hero__icons">
         {icons.map((icon) => (
           <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
         ))}
       </div>
-      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>Get started with Mercury ↗</a>
+      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>Get started with Mercury</a>
       <p class="launch-copy mercury-hero__pricing">$20 pay as you go balance (+$1.23 card processing fee)</p>
       <p class="launch-copy mercury-hero__note">Use with any plan. Set monthly spend limits. Cancel any time.</p>
     </div>
@@ -162,7 +162,6 @@ const steps = [
     font-size: clamp(0.76rem, 0.72rem + 0.14vw, 0.84rem);
   }
 
-  /* shared block */
   .mercury-block {
     display: grid;
     gap: 0.75rem;
@@ -179,7 +178,6 @@ const steps = [
     font-weight: 700;
   }
 
-  /* expandable items */
   .mercury-expandable {
     border-top: 1px solid var(--launch-line);
     padding: 0.75rem 0;
@@ -214,7 +212,6 @@ const steps = [
     padding: 0.5rem 0 0 1.6rem;
   }
 
-  /* steps */
   .mercury-step {
     border-top: 1px solid var(--launch-line);
     padding-top: 0.75rem;
@@ -224,23 +221,6 @@ const steps = [
   .mercury-step__n {
     color: var(--launch-muted);
     margin-right: 0.5rem;
-  }
-
-  @media (max-width: 720px) {
-    .mercury-step__after {
-      display: none;
-    }
-  }
-
-  .mercury-step {
-    border-top: 1px solid var(--launch-line);
-    padding-top: 0.75rem;
-    color: var(--launch-fg);
-  }
-
-  .mercury-step__n {
-    color: var(--launch-muted);
-    margin-right: 0.35rem;
   }
 
   @media (max-width: 720px) {
