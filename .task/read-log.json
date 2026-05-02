@@ -60,6 +60,7 @@
     "packages/workspace/scripts/mac.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
+    "packages/workspace/scripts/sentry.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
     "packages/workspace/scripts/task-push.js",
@@ -72,5 +73,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-02T17:12:42.456Z"
+  "updatedAt": "2026-05-02T20:25:58.382Z"
 }
