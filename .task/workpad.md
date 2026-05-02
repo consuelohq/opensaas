@@ -33,9 +33,10 @@ started: 2026-05-01
 
 - 
 
----
+## errors i ran into
 
-## publish checklist
+- Initial read of `packages/consuelo-website/animations.md` in the task branch failed because the file existed only in Ko’s main local worktree. Copied it into the task worktree.
+- Initial root-level `bun add gsap` failed due inherited workspace package paths; scoped package install succeeded.
 
 ```bash
 bun run task:push -- --message "type(workspace-agents): description" --changed

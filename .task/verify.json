@@ -19,11 +19,11 @@
   ],
   "verifiedAt": "2026-05-01T08:16:08.195Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []
