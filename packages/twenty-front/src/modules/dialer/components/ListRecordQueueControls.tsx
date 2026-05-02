@@ -351,11 +351,13 @@ export const ListRecordQueueControls = ({
           </StyledStatValue>
         </StyledStat>
         {(listStatus === 'ACTIVE' || listStatus === 'PAUSED') &&
-          currentIndex !== null && (
+          currentIndex !== null &&
+          stats.totalMembers > 0 && (
             <StyledStat>
               <StyledStatLabel>{t`Current Contact`}</StyledStatLabel>
               <StyledStatValue>
-                {currentIndex + 1} {t`of`} {stats.totalMembers}
+                {Math.min(currentIndex + 1, stats.totalMembers)} {t`of`}{' '}
+                {stats.totalMembers}
               </StyledStatValue>
             </StyledStat>
           )}
