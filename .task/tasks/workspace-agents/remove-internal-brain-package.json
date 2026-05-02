@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-internal-brain-package",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 264,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/264",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-remove-internal-brain-package",
+  "createdAt": "2026-05-01T12:34:44.676Z"
+}

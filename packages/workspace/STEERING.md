@@ -464,7 +464,7 @@ if a tool returns an error envelope, read the error message and `stderr`. valida
 
 raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
 
-## how to think: the decision engine
+## how to think: the decision.md
 
 the decision engine is the reasoning loop behind workspace work. it is not optional tooling; it is how agents avoid guessing.
 
@@ -918,6 +918,20 @@ the failure mode: writing an absolute prohibition when you meant a priority orde
 fix: use "only," "solely," or "at the expense of" to signal that the thing still matters —
 it just is not the whole picture.
 
+## workspace docs are part of the change
+
+when changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+use the owning source of truth:
+
+- doctrine goes in `packages/workspace/STEERING.md`
+- decision-engine doctrine goes in `packages/workspace/decision.md`
+- procedural script usage goes in `packages/workspace/SCRIPTS.md`
+- typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`
+- generated tool docs come from `packages/workspace/scripts/generate-docs.ts` and regenerate `packages/workspace/TOOLS.md`
+
+write durable rules, not conversation recaps. generated files should be regenerated from source instead of patched by hand.
+
 ## retrieval is a prior, not a conclusion
 
 when building systems that combine search/retrieval with decision-making, do not conflate
@@ -961,4 +975,130 @@ for command construction:
 
 never nest more than 2 levels of quotes in a single sandbox_exec call
 heredocs don't survive JSON. the \n in a JSON string value is a literal backslash-n, not a newline.
+
+## Workspace tooling and facade change doctrine
+
+When working on workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, use the workspace facade as the primary operating surface. Do not default to raw absolute-path shell commands when a workspace command exists.
+
+Start workspace-tooling investigations with:
+
+```bash
+workspace get_steering
+workspace stream.context '{"area":"workspace-agents"}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"browser facade aliases","limit":5}'
+workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
+```
+
+## shell command construction with base64 + JSON escaping
+When generating a shell command that decodes base64 through Python, prefer this shape:
+```bash
+python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING
+
+The base64 string does not need quotes when it contains only standard base64 characters. Keep it as a positional argument to avoid nested shell quoting.
+
+When embedding that command inside JSON, escape only the JSON double quotes around the command value. Keep the Python snippet single-quoted inside the shell command:
+
+{
+  "command": "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING"
+}
+
+For workspace.sandbox_exec, the full call shape is:
+
+workspace.sandbox_exec({
+  command: "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING",
+  timeout: 120
+})
+
+Avoid this failure mode:
+
+{
+  "command": "python3 -c "import base64; ..." BASE64_STRING"
+}
+
+That breaks JSON because the inner double quotes terminate the command string.
+
+If double quotes are required inside the shell command, escape them for JSON:
+
+{
+  "command": "python3 -c \"import base64,sys;print(base64.b64decode(sys.argv[1]).decode())\" BASE64_STRING"
+}
+
+Prefer the single-quoted Python form because it keeps the JSON cleaner and reduces escaping mistakes.
+
+I tightened it into a durable steering rule: positional base64 arg, single-quoted Python snippet, JSON-safe command string, and one explicit escaped-double-quote fallback.
+
+## Exploration is mandatory
+
+Before planning, coding, documenting, or handing off a workspace tooling change, perform explicit exploration. Do not skip exploration because the change appears obvious, because a prior agent summarized it, or because a file path seems known.
+
+Exploration must answer these questions before implementation begins:
+
+1. What is the current source of truth for this behavior?
+2. Which script, manifest entry, generated file, skill, or doctrine currently owns it?
+3. What existing pattern should this change follow?
+4. What docs or generated surfaces must change with it?
+5. What tests, snapshots, audits, or review gates prove the change?
+6. What uncertainty remains, and what needs Ko’s answer before coding?
+
+Use context search first, then code/file exploration. Good first-pass commands:
+
+```bash
+workspace context.search '{"keyword":"<feature or behavior>","limit":5}'
+workspace context.search '{"keyword":"typed workspace facade","limit":5}'
+workspace context.search '{"keyword":"workspace scripts docs","limit":5}'
+workspace explore '{"query":"<feature or behavior> workspace facade script manifest docs tests","limit":8}'
+```
+
+After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
+
+```bash
+workspace fs.search '{"branch":"<branch>","pattern":"<pattern>","paths":["."],"context":8,"maxResults":80}'
+workspace fs.read '{"branch":"<branch>","path":"<path>"}'
+workspace fs.list '{"branch":"<branch>","path":"<path>","depth":2}'
+```
+
+For repo changes, exploration should include the nearest existing implementation and at least one generated/consumer surface. For typed facade work, this usually means reading the relevant script, `tool-manifest.json`, `schemas.ts`, generated types/docs, and the facade test/snapshot pattern before editing.
+
+Record exploration in the task workpad: what was searched, what was read, what pattern was chosen, and what was still uncertain. If exploration fails or a tool errors, record that and use the next best workspace tool rather than silently guessing.
+
+Raw shell commands are allowed only when the workspace facade does not provide the needed operation, or when the command is intentionally run inside the task worktree via `workspace task.exec`. If raw shell is used, explain why the workspace facade was not sufficient.
+
+
+## Workspace docs are part of the change
+
+When changing workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, generated tool surfaces, or agent operating doctrine, update the documentation surface that owns that behavior in the same task.
+
+Use the owning source of truth:
+
+* Doctrine goes in `packages/workspace/STEERING.md`.
+* Decision-engine doctrine goes in `packages/workspace/decision.md`.
+* Procedural script usage goes in `packages/workspace/SCRIPTS.md`.
+* Typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`.
+* Input schemas go in `packages/workspace/scripts/lib/facade/schemas.ts`.
+* Generated tool docs come from `packages/workspace/scripts/generate-docs.ts`; regenerate `packages/workspace/TOOLS.md`.
+* Generated type stubs come from `packages/workspace/scripts/generate-types.ts`; regenerate `packages/workspace/src/generated/workspace.d.ts`.
+* Facade behavior changes should update or regenerate relevant tests/snapshots under `packages/workspace/tests/facade/`.
+
+Write durable operating rules, not conversation recaps. Documentation should describe the behavior future agents must follow, not summarize why one chat made a change.
+
+Generated files must be regenerated from source instead of patched by hand.
+
+Before reporting completion, verify one of these is true:
+
+1. The owning documentation surface was updated and regenerated where applicable.
+2. No documentation update was required, and the reason is stated explicitly.
+
+For typed facade changes, the expected validation path is:
+
+```bash
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-types"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-docs"]}'
+workspace task.exec '{"branch":"<branch>","command":["bash","-lc","cd packages/workspace && bun run test tests/facade/facade.test.ts"],"timeout":300000}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","audit","--","--scripts","--json"]}'
+workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","--base","stream/workspace-agents","--no-tests","--json"],"timeout":600000}'
+```
+
+If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
+
 ```

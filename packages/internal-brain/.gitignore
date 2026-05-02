@@ -1,6 +1,0 @@
-.env
-.venv/
-__pycache__/
-*.pyc
-/tmp/
-sandbox-audit.jsonl
