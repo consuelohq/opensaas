@@ -304,6 +304,182 @@ exports[`typed facade executor > returns a failure envelope for confirm 1`] = `
 }
 `;
 
+exports[`typed facade executor > returns a failure envelope for consueloDesign.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.ui 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.upstreamStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a failure envelope for consueloDesign.workflows 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "COMMAND_FAILED",
+  "data": {
+    "value": "failed",
+  },
+  "durationMs": 0,
+  "exitCode": 2,
+  "message": "command failed",
+  "ok": false,
+  "stderr": "boom",
+  "traceId": "trc_abc123def456",
+}
+`;
+
 exports[`typed facade executor > returns a failure envelope for context.categories 1`] = `
 {
   "apiVersion": "1.0.0",
@@ -1425,6 +1601,182 @@ exports[`typed facade executor > returns a success envelope for confidenceScore 
 `;
 
 exports[`typed facade executor > returns a success envelope for confirm 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.check 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.getDesignSystem 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.odBuild 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.railwayCheck 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.ui 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.uiBg 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.uiLogs 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.uiStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.uiStop 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.upstreamStatus 1`] = `
+{
+  "apiVersion": "1.0.0",
+  "code": "OK",
+  "data": {
+    "value": "ok",
+  },
+  "durationMs": 0,
+  "exitCode": 0,
+  "message": "command completed",
+  "ok": true,
+  "stderr": "",
+  "traceId": "trc_abc123def456",
+}
+`;
+
+exports[`typed facade executor > returns a success envelope for consueloDesign.workflows 1`] = `
 {
   "apiVersion": "1.0.0",
   "code": "OK",

@@ -28,13 +28,13 @@ Treat it as vendored third-party source. Keep local Open Design runtime state ou
 Use the Consuelo facade first:
 
 ```bash
-yarn workspace consuelo-design get-design-system
-yarn workspace consuelo-design workflows
-yarn workspace consuelo-design upstream:status
-yarn workspace consuelo-design railway:check
+bun run consuelo-design get-design-system
+bun run consuelo-design workflows
+bun run consuelo-design upstream-status
+bun run consuelo-design railway:check
 ```
 
-The facade should speak in Consuelo use cases: website, demo, image, digital e-guide, email, and motion-frame.
+The Bun facade in `packages/workspace/scripts/consuelo-design.ts` should speak in Consuelo use cases: website, demo, image, digital e-guide, email, and motion-frame.
 
 ## Railway boundary
 

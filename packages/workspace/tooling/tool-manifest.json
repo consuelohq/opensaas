@@ -3082,5 +3082,321 @@
     "exampleInput": {
       "dryRun": true
     }
+  },
+  {
+    "name": "consueloDesign.getDesignSystem",
+    "methodPath": [
+      "consueloDesign",
+      "getDesignSystem"
+    ],
+    "description": "return Consuelo DESIGN.md, animations.md, and AGENTS.md design-system context",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design get-design-system",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "get-design-system",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.workflows",
+    "methodPath": [
+      "consueloDesign",
+      "workflows"
+    ],
+    "description": "list Consuelo design workflow names exposed by the facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design workflows",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "workflows",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.upstreamStatus",
+    "methodPath": [
+      "consueloDesign",
+      "upstreamStatus"
+    ],
+    "description": "show vendored Open Design metadata and runtime requirements",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design upstream-status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "upstream-status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.railwayCheck",
+    "methodPath": [
+      "consueloDesign",
+      "railwayCheck"
+    ],
+    "description": "verify consuelo-design is excluded from Railway deploy paths",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design railway:check",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "railway:check",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.check",
+    "methodPath": [
+      "consueloDesign",
+      "check"
+    ],
+    "description": "run consuelo-design package boundary checks",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design check",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "check",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.ui",
+    "methodPath": [
+      "consueloDesign",
+      "ui"
+    ],
+    "description": "start the Open Design daemon and web UI in the foreground through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiBg",
+    "methodPath": [
+      "consueloDesign",
+      "uiBg"
+    ],
+    "description": "start Open Design managed runtimes in the background through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:bg",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:bg",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiStop",
+    "methodPath": [
+      "consueloDesign",
+      "uiStop"
+    ],
+    "description": "stop Open Design managed runtimes through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:stop",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:stop",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiStatus",
+    "methodPath": [
+      "consueloDesign",
+      "uiStatus"
+    ],
+    "description": "show Open Design managed runtime status through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.uiLogs",
+    "methodPath": [
+      "consueloDesign",
+      "uiLogs"
+    ],
+    "description": "show Open Design managed runtime logs through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:logs",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:logs",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.odBuild",
+    "methodPath": [
+      "consueloDesign",
+      "odBuild"
+    ],
+    "description": "build the vendored Open Design daemon CLI through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design od:build",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "od:build",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
   }
 ]

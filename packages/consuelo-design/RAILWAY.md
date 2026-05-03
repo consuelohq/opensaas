@@ -18,7 +18,7 @@ Relevant deployment files:
 Run:
 
 ```bash
-yarn workspace consuelo-design railway:check
+bun run consuelo-design railway:check
 ```
 
 The check verifies:

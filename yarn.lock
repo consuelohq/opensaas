@@ -30062,7 +30062,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "consuelo-design@workspace:packages/consuelo-design"
   bin:
-    consuelo-design: ./scripts/consuelo-design.mjs
+    consuelo-design: ./scripts/consuelo-design.ts
   languageName: unknown
   linkType: soft
 
