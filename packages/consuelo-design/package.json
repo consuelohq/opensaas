@@ -9,13 +9,19 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "bin": "./scripts/consuelo-design.mjs",
+  "bin": "./scripts/consuelo-design.ts",
   "scripts": {
-    "check": "node scripts/consuelo-design.mjs check",
-    "get-design-system": "node scripts/consuelo-design.mjs get-design-system",
-    "railway:check": "node scripts/consuelo-design.mjs railway-check",
-    "upstream:status": "node scripts/consuelo-design.mjs upstream-status",
-    "workflows": "node scripts/consuelo-design.mjs workflows"
+    "check": "bun ./scripts/consuelo-design.ts check",
+    "get-design-system": "bun ./scripts/consuelo-design.ts get-design-system",
+    "railway:check": "bun ./scripts/consuelo-design.ts railway:check",
+    "upstream:status": "bun ./scripts/consuelo-design.ts upstream-status",
+    "workflows": "bun ./scripts/consuelo-design.ts workflows",
+    "ui": "bun ./scripts/consuelo-design.ts ui",
+    "ui:bg": "bun ./scripts/consuelo-design.ts ui:bg",
+    "ui:stop": "bun ./scripts/consuelo-design.ts ui:stop",
+    "ui:status": "bun ./scripts/consuelo-design.ts ui:status",
+    "ui:logs": "bun ./scripts/consuelo-design.ts ui:logs",
+    "od:build": "bun ./scripts/consuelo-design.ts od:build"
   },
   "license": "AGPL-3.0"
 }

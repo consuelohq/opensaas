@@ -1,6 +1,6 @@
 # consuelo-design
 
-`consuelo-design` is Consuelo's internal design tooling package.
+`consuelo-design` is Consuelo's internal Bun-first design tooling package.
 
 It vendors [nexu-io/open-design](https://github.com/nexu-io/open-design) under:
 
@@ -24,12 +24,12 @@ Open Design's upstream `design-systems/` directory is vendored reference materia
 ## commands
 
 ```bash
-yarn workspace consuelo-design get-design-system
-yarn workspace consuelo-design get-design-system -- --json
-yarn workspace consuelo-design workflows
-yarn workspace consuelo-design upstream:status
-yarn workspace consuelo-design railway:check
-yarn workspace consuelo-design check
+bun run consuelo-design get-design-system
+bun run consuelo-design get-design-system -- --json
+bun run consuelo-design workflows
+bun run consuelo-design upstream-status
+bun run consuelo-design railway:check
+bun run consuelo-design check
 ```
 
 ## facade use cases
@@ -47,9 +47,32 @@ The facade names the workflows we care about:
 
 These workflows are descriptors in this first package pass. Generation behavior should be added behind the facade as use cases become concrete.
 
+
+## first run / UI
+
+Use the Bun facade from repo root:
+
+```bash
+bun run consuelo-design check
+bun run consuelo-design railway:check
+bun run consuelo-design get-design-system
+bun run consuelo-design ui
+```
+
+`ui` starts the vendored Open Design daemon and web app in the foreground. For managed background mode:
+
+```bash
+bun run consuelo-design ui:bg
+bun run consuelo-design ui:status
+bun run consuelo-design ui:logs
+bun run consuelo-design ui:stop
+```
+
+The facade may invoke `corepack pnpm ...` inside `packages/consuelo-design/upstream/open-design` because upstream Open Design pins pnpm. Do not call pnpm directly from Consuelo workflow scripts unless you are intentionally debugging upstream internals.
+
 ## upstream usage
 
-Open Design expects Node `~24` and pnpm `>=10.33.2 <11`. Run upstream commands inside the upstream folder when intentionally testing Open Design itself:
+Open Design expects Node `~24` and pnpm `>=10.33.2 <11`, but that pnpm usage is isolated behind the Bun facade. Run upstream commands inside the upstream folder when intentionally testing Open Design itself:
 
 ```bash
 cd packages/consuelo-design/upstream/open-design
@@ -64,7 +87,7 @@ Generated runtime state belongs in `.od/`, `out/`, or `artifacts/`; those are ig
 `consuelo-design` is tooling-only. It should stay outside Railway app and worker dependency graphs. Run:
 
 ```bash
-yarn workspace consuelo-design railway:check
+bun run consuelo-design railway:check
 ```
 
 before review when changing dependencies or Dockerfiles.
