@@ -30058,6 +30058,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"consuelo-design@workspace:packages/consuelo-design":
+  version: 0.0.0-use.local
+  resolution: "consuelo-design@workspace:packages/consuelo-design"
+  bin:
+    consuelo-design: ./scripts/consuelo-design.mjs
+  languageName: unknown
+  linkType: soft
+
 "consuelo-docs@workspace:packages/consuelo-docs":
   version: 0.0.0-use.local
   resolution: "consuelo-docs@workspace:packages/consuelo-docs"

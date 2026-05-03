@@ -324,7 +324,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
 
 ### review — code review checks
 
-runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite. the typed facade requires an explicit task branch and scopes review to that task worktree.
+runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite. the typed facade requires an explicit task branch and scopes review to that task worktree. vendored third-party source under `packages/*/upstream/**` and `packages/*/vendor/**` is excluded from first-party review rules; review the wrapper/facade and attribution boundaries instead.
 
 ```bash
 bun run review                        # review changed files (main vs origin/main)
