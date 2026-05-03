@@ -37,6 +37,14 @@ export const ConsueloDesignUiInput = z.object({
   timeout: z.number().int().positive().optional(),
 });
 
+export const ConsueloDesignSessionInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  name: optionalString,
+  prompt: optionalString,
+  timeout: z.number().int().positive().optional(),
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -483,6 +491,7 @@ export const schemaRegistry = {
   BranchInput,
   ConsueloDesignInput,
   ConsueloDesignUiInput,
+  ConsueloDesignSessionInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -552,6 +561,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   BranchInput: '{ branch?: string; requestId?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; dryRun?: boolean; timeout?: number }',
+  ConsueloDesignSessionInput: '{ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string }',

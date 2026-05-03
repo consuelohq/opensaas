@@ -3084,12 +3084,42 @@
     }
   },
   {
+    "name": "consueloDesign.run",
+    "methodPath": [
+      "consueloDesign",
+      "run"
+    ],
+    "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design run",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "run",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
     "name": "consueloDesign.getDesignSystem",
     "methodPath": [
       "consueloDesign",
       "getDesignSystem"
     ],
-    "description": "return Consuelo DESIGN.md, animations.md, and AGENTS.md design-system context",
+    "description": "return base Consuelo DESIGN.md and consuelo-design AGENTS.md only",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design get-design-system",
     "capabilities": {
@@ -3112,14 +3142,14 @@
     "exampleInput": {}
   },
   {
-    "name": "consueloDesign.workflows",
+    "name": "consueloDesign.listSkills",
     "methodPath": [
       "consueloDesign",
-      "workflows"
+      "listSkills"
     ],
-    "description": "list Consuelo design workflow names exposed by the facade",
+    "description": "list upstream Open Design skills and Consuelo workflow mappings",
     "category": "consuelo design",
-    "underlying": "workspace consuelo-design workflows",
+    "underlying": "workspace consuelo-design list-skills",
     "capabilities": {
       "readOnly": true,
       "mutating": false,
@@ -3131,7 +3161,35 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "consuelo-design",
-      "subcommand": "workflows",
+      "subcommand": "list-skills",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.listDesignSystems",
+    "methodPath": [
+      "consueloDesign",
+      "listDesignSystems"
+    ],
+    "description": "list Consuelo default design system and upstream reference systems",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design list-design-systems",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "list-design-systems",
       "branchMode": "none",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
@@ -3201,7 +3259,7 @@
       "consueloDesign",
       "check"
     ],
-    "description": "run consuelo-design package boundary checks",
+    "description": "run consuelo-design package boundary and Railway checks",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design check",
     "capabilities": {
@@ -3224,14 +3282,14 @@
     "exampleInput": {}
   },
   {
-    "name": "consueloDesign.ui",
+    "name": "consueloDesign.generateWebsite",
     "methodPath": [
       "consueloDesign",
-      "ui"
+      "generateWebsite"
     ],
-    "description": "start the Open Design daemon and web UI in the foreground through the Bun facade",
+    "description": "start or open a live Open Design website working session",
     "category": "consuelo design",
-    "underlying": "workspace consuelo-design ui",
+    "underlying": "workspace consuelo-design generate-website",
     "capabilities": {
       "readOnly": false,
       "mutating": true,
@@ -3239,15 +3297,272 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignUiInput",
+    "inputSchema": "ConsueloDesignSessionInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "consuelo-design",
-      "subcommand": "ui",
+      "subcommand": "generate-website",
       "branchMode": "none",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
-      "arguments": []
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateDemo",
+    "methodPath": [
+      "consueloDesign",
+      "generateDemo"
+    ],
+    "description": "start or open a live Open Design demo working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-demo",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-demo",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateImageBrief",
+    "methodPath": [
+      "consueloDesign",
+      "generateImageBrief"
+    ],
+    "description": "start or open a live Open Design image/media working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-image-brief",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-image-brief",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateDigitalEguide",
+    "methodPath": [
+      "consueloDesign",
+      "generateDigitalEguide"
+    ],
+    "description": "start or open a live Open Design digital e-guide working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-digital-eguide",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-digital-eguide",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateEmail",
+    "methodPath": [
+      "consueloDesign",
+      "generateEmail"
+    ],
+    "description": "start or open a live Open Design email working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-email",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-email",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateMotionFrame",
+    "methodPath": [
+      "consueloDesign",
+      "generateMotionFrame"
+    ],
+    "description": "start or open a live Open Design motion-frame working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-motion-frame",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-motion-frame",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.renderHyperframes",
+    "methodPath": [
+      "consueloDesign",
+      "renderHyperframes"
+    ],
+    "description": "start or open a live Open Design HyperFrames render working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design render-hyperframes",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "render-hyperframes",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
     },
     "exampleInput": {
       "dryRun": true

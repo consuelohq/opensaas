@@ -12,41 +12,59 @@ The package exposes a Consuelo-specific facade so agents and scripts can use Ope
 
 ## design system
 
-Consuelo's design system comes from our repo docs:
+Consuelo's base design system comes from our repo docs:
 
 - `packages/consuelo-website/DESIGN.md`
-- `packages/consuelo-website/animations.md`
-- `packages/consuelo-website/AGENTS.md`
 - `packages/consuelo-design/AGENTS.md`
 
-Open Design's upstream `design-systems/` directory is vendored reference material. It is not the Consuelo design system for this first integration.
+Website-specific sessions also attach:
+
+- `packages/consuelo-website/animations.md`
+- `packages/consuelo-website/AGENTS.md`
+
+Open Design's upstream `design-systems/` directory is vendored reference material. It is not Consuelo truth unless Ko explicitly asks for a reference skin.
 
 ## commands
 
+Run from repo root. These are Bun-first operator commands.
+
 ```bash
-bun run consuelo-design get-design-system
-bun run consuelo-design get-design-system -- --json
-bun run consuelo-design workflows
-bun run consuelo-design upstream-status
-bun run consuelo-design railway:check
+bun run consuelo-design run
+bun run consuelo-design generate website
+bun run consuelo-design generate demo
+bun run consuelo-design generate image-brief
+bun run consuelo-design generate digital-eguide
+bun run consuelo-design generate email
+bun run consuelo-design generate motion-frame
+bun run consuelo-design render hyperframes
+bun run consuelo-design list-skills
+bun run consuelo-design list-design-systems
 bun run consuelo-design check
 ```
 
-## facade use cases
+`generate ...` starts or reuses Open Design, creates a project with the right skill and Consuelo context, opens the project URL, and lets Ko and the agent iterate in the live preview workspace. It is not a prompt/spec-only command.
 
-The facade names the workflows we care about:
+Use `--dry-run --json` to inspect the exact project plan without starting runtimes or creating projects.
 
-| workflow | purpose |
-| --- | --- |
-| `website` | Generate or evaluate website design work against Consuelo's design system. |
-| `demo` | Shape demo assets and prototype briefs. |
-| `image` | Prepare image-generation briefs grounded in Consuelo design rules. |
-| `digital-eguide` | Prepare long-form e-guide artifacts. |
-| `email` | Prepare email design/content artifacts. |
-| `motion-frame` | Prepare motion frame briefs and future HyperFrames/GSAP handoff material. |
+## workflow commands
 
-These workflows are descriptors in this first package pass. Generation behavior should be added behind the facade as use cases become concrete.
+The facade names the live Open Design sessions we care about:
 
+| command | primary skill | behavior |
+| --- | --- | --- |
+| `generate website` | `saas-landing` | Starts/reuses Open Design, creates a website project, attaches base design context plus website motion/agent context, and opens the project URL. |
+| `generate demo` | `web-prototype` | Starts/reuses Open Design and opens a demo/prototype project. |
+| `generate image-brief` | `image-poster` | Starts/reuses Open Design and opens an image/media ideation project. |
+| `generate digital-eguide` | `digital-eguide` | Starts/reuses Open Design and opens a long-form e-guide project. |
+| `generate email` | `email-marketing` | Starts/reuses Open Design and opens an email artifact project. |
+| `generate motion-frame` | `motion-frames` | Starts/reuses Open Design, attaches motion context, and opens a motion-frame project. |
+| `render hyperframes` | `hyperframes` | Starts/reuses Open Design, attaches motion context, and opens a HyperFrames render project. |
+
+Use `--name` to set the Open Design project name and `--prompt` to attach Ko's brief to the pending prompt.
+
+```bash
+bun run consuelo-design generate website --name "Homepage hero" --prompt "Create a sharp hero for Consuelo voice AI"
+```
 
 ## first run / UI
 
@@ -54,15 +72,13 @@ Use the Bun facade from repo root:
 
 ```bash
 bun run consuelo-design check
-bun run consuelo-design railway:check
-bun run consuelo-design get-design-system
-bun run consuelo-design ui
+bun run consuelo-design run
 ```
 
-`ui` starts the vendored Open Design daemon and web app in the foreground. For managed background mode:
+`run` starts the vendored Open Design daemon and web app in the foreground. Workflow commands use the background web runtime so they can create and open projects:
 
 ```bash
-bun run consuelo-design ui:bg
+bun run consuelo-design generate website
 bun run consuelo-design ui:status
 bun run consuelo-design ui:logs
 bun run consuelo-design ui:stop
@@ -84,10 +100,4 @@ Generated runtime state belongs in `.od/`, `out/`, or `artifacts/`; those are ig
 
 ## Railway
 
-`consuelo-design` is tooling-only. It should stay outside Railway app and worker dependency graphs. Run:
-
-```bash
-bun run consuelo-design railway:check
-```
-
-before review when changing dependencies or Dockerfiles.
+`consuelo-design` is tooling-only. It should stay outside Railway app and worker dependency graphs. `bun run consuelo-design check` includes the Railway exclusion guard before review when changing dependencies or Dockerfiles.
