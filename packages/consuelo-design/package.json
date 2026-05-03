@@ -21,7 +21,17 @@
     "ui:stop": "bun ./scripts/consuelo-design.ts ui:stop",
     "ui:status": "bun ./scripts/consuelo-design.ts ui:status",
     "ui:logs": "bun ./scripts/consuelo-design.ts ui:logs",
-    "od:build": "bun ./scripts/consuelo-design.ts od:build"
+    "od:build": "bun ./scripts/consuelo-design.ts od:build",
+    "run": "bun ./scripts/consuelo-design.ts run",
+    "list-skills": "bun ./scripts/consuelo-design.ts list-skills",
+    "list-design-systems": "bun ./scripts/consuelo-design.ts list-design-systems",
+    "generate:website": "bun ./scripts/consuelo-design.ts generate website",
+    "generate:demo": "bun ./scripts/consuelo-design.ts generate demo",
+    "generate:image-brief": "bun ./scripts/consuelo-design.ts generate image-brief",
+    "generate:digital-eguide": "bun ./scripts/consuelo-design.ts generate digital-eguide",
+    "generate:email": "bun ./scripts/consuelo-design.ts generate email",
+    "generate:motion-frame": "bun ./scripts/consuelo-design.ts generate motion-frame",
+    "render:hyperframes": "bun ./scripts/consuelo-design.ts render hyperframes"
   },
   "license": "AGPL-3.0"
 }
