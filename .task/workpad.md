@@ -1,22 +1,23 @@
-# fix tools-dev JSON parsing for consuelo-design
+# fix Open Design missing artifact manifest
 
-branch: `task/consuelo-design/fix-tools-dev-json-parsing-for-consuelo-design`
+branch: `task/consuelo-design/fix-open-design-missing-artifact-manifest`
 stream: `stream/consuelo-design`
-task pr: https://github.com/consuelohq/opensaas/pull/291
+task pr: https://github.com/consuelohq/opensaas/pull/293
 
 ## acceptance criteria
 
-- [ ] Facade can parse `tools-dev start web --json` output even when pnpm prints lifecycle text before JSON.
-- [ ] Digital e-guide session can start from `bun run consuelo-design generate digital-eguide`.
-- [ ] Direct dry-run JSON still works.
-- [ ] `bun run consuelo-design check --json` still passes.
-- [ ] Branch-local review passes.
+- [ ] Fix Next build error: `Module not found: Can't resolve '../artifacts/manifest'` from Open Design `ProjectView.tsx`.
+- [ ] Keep vendored change minimal and record why we patched upstream vendored source.
+- [ ] Validate Open Design web build or at least TypeScript/module resolution for the touched path.
+- [ ] Re-run `bun run consuelo-design check --json`.
+- [ ] Publish into stream and merge back to main for Ko's e-guide flow.
 
 ## plan
 
-1. Patch JSON extraction in `packages/workspace/scripts/consuelo-design.ts`.
-2. Validate with sample mixed stdout and command dry-runs.
-3. Publish into `stream/consuelo-design` and merge stream back to main if needed.
+1. Inspect imports under `apps/web/src/artifacts` and `ProjectView.tsx`.
+2. Add missing compatibility module or correct import if upstream has renamed the file.
+3. Validate with `pnpm --filter @open-design/web build` or targeted command.
+4. Publish/merge.
 
 ## validation
 
@@ -24,9 +25,11 @@ pending
 
 ## validation update
 
-- `bun --check packages/workspace/scripts/consuelo-design.ts` passed.
+- Added missing vendored Open Design web artifact helper modules under `apps/web/src/artifacts`.
+- `bun --check` passed for each new artifact helper module.
+- `apps/web` Next build passed after installing upstream dependencies in this task worktree:
+  - compiled successfully
+  - TypeScript passed
+  - static pages generated
 - `bun run consuelo-design check --json` produced valid JSON.
-- `bun run consuelo-design generate digital-eguide --dry-run --json` produced valid JSON.
-- Installed upstream Open Design dependencies in this task worktree for runtime validation.
-- `bun run consuelo-design generate digital-eguide --name "Consuelo Digital E-guide" --prompt ... --json` returned `ok: true`, with local daemon and web URLs, and created an Open Design digital e-guide project.
-- Branch-local review passed: 1 file checked, 0 first-party findings.
+- Branch-local review passed with 0 first-party findings.
