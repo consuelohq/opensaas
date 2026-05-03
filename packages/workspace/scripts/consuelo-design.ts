@@ -460,6 +460,25 @@ async function runCommandInherited(command: string[], cwd: string): Promise<numb
   }
 }
 
+
+function parseJsonFromMixedStdout(stdout: string): unknown {
+  const trimmed = stdout.trim();
+  if (trimmed.length === 0) throw new Error('tools-dev returned empty JSON output');
+
+  for (let index = 0; index < trimmed.length; index += 1) {
+    const char = trimmed[index];
+    if (char !== '{' && char !== '[') continue;
+    try {
+      return JSON.parse(trimmed.slice(index)) as unknown;
+    } catch {
+      // pnpm can print lifecycle banners before the JSON payload. Keep
+      // scanning until a valid JSON object/array starts.
+    }
+  }
+
+  throw new Error(`could not find JSON payload in tools-dev output: ${trimmed.slice(0, 300)}`);
+}
+
 function extractRuntimeUrls(value: unknown): RuntimeUrls {
   const record = value != null && typeof value === 'object' ? value as Record<string, unknown> : {};
   const daemon = record.daemon != null && typeof record.daemon === 'object' ? record.daemon as Record<string, unknown> : {};
@@ -485,7 +504,7 @@ async function startOpenDesign(args: ParsedArgs): Promise<RuntimeUrls> {
   if (result.exitCode !== 0) {
     throw new Error(`Open Design failed to start: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
   }
-  const parsed = JSON.parse(result.stdout) as unknown;
+  const parsed = parseJsonFromMixedStdout(result.stdout);
   return extractRuntimeUrls(parsed);
 }
 
