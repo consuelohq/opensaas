@@ -9,9 +9,18 @@
     "packages/api/src/routes/voice.ts",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
     "packages/api/src/services/workspace-phone-numbers.ts",
+    "packages/cli/package.json",
+    "packages/consuelo-design/AGENTS.md",
+    "packages/consuelo-design/scripts/consuelo-design.mjs",
+    "packages/consuelo-design/src/index.ts",
+    "packages/consuelo-design/upstream/open-design/package.json",
+    "packages/consuelo-docs/project.json",
+    "packages/consuelo-website/AGENTS.md",
+    "packages/consuelo-website/DESIGN.md",
     "packages/consuelo-website/animations.md",
     "packages/consuelo-website/package.json",
     "packages/dialer/src/dialer.ts",
+    "packages/sdk/package.json",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
@@ -40,6 +49,7 @@
     "packages/workspace/scripts/browser.js",
     "packages/workspace/scripts/check-files.js",
     "packages/workspace/scripts/check-syntax.js",
+    "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/scripts/context.js",
     "packages/workspace/scripts/edit-flow.js",
     "packages/workspace/scripts/explore.js",
@@ -72,5 +82,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-02T17:12:42.456Z"
+  "updatedAt": "2026-05-03T21:56:45.692Z"
 }

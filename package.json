@@ -269,7 +269,8 @@
     "tool-batch": "bun packages/workspace/scripts/tool-batch.ts",
     "generate-docs": "bun packages/workspace/scripts/generate-docs.ts",
     "generate-types": "bun packages/workspace/scripts/generate-types.ts",
-    "server": "bun packages/workspace/scripts/server.js"
+    "server": "bun packages/workspace/scripts/server.js",
+    "consuelo-design": "bun packages/workspace/scripts/consuelo-design.ts"
   },
   "workspaces": {
     "packages": [
@@ -279,6 +280,7 @@
       "packages/cli",
       "packages/coaching",
       "packages/contacts",
+      "packages/consuelo-design",
       "packages/create-twenty-app",
       "packages/dialer",
       "packages/logger",
