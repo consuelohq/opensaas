@@ -14,7 +14,7 @@ upstream/open-design/artifacts/
 upstream/open-design/generated/
 
 # Consuelo design local outputs
-artifacts/
-out/
-dist/
-.tmp/
+/artifacts/
+/out/
+/dist/
+/.tmp/
