@@ -1,0 +1,20 @@
+# Open Design local runtime state
+upstream/open-design/.od/
+upstream/open-design/node_modules/
+upstream/open-design/.turbo/
+upstream/open-design/.vite/
+upstream/open-design/.cache/
+
+# Open Design build and generated outputs
+upstream/open-design/apps/*/dist/
+upstream/open-design/packages/*/dist/
+upstream/open-design/tools/*/dist/
+upstream/open-design/out/
+upstream/open-design/artifacts/
+upstream/open-design/generated/
+
+# Consuelo design local outputs
+artifacts/
+out/
+dist/
+.tmp/

@@ -1,0 +1,21 @@
+{
+  "name": "consuelo-design",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Consuelo design tooling facade over a vendored Open Design upstream.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": "./scripts/consuelo-design.mjs",
+  "scripts": {
+    "check": "node scripts/consuelo-design.mjs check",
+    "get-design-system": "node scripts/consuelo-design.mjs get-design-system",
+    "railway:check": "node scripts/consuelo-design.mjs railway-check",
+    "upstream:status": "node scripts/consuelo-design.mjs upstream-status",
+    "workflows": "node scripts/consuelo-design.mjs workflows"
+  },
+  "license": "AGPL-3.0"
+}
