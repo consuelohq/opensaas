@@ -371,6 +371,64 @@ export const BrowserRawInput = z.object({
   args: z.array(z.string().min(1)).min(1),
 });
 
+
+export const SentryConfigInput = z.object({
+  ...requestFields,
+  verify: z.boolean().optional(),
+});
+
+export const SentryProjectsInput = z.object({
+  ...requestFields,
+  limit: z.number().int().positive().optional(),
+  cursor: optionalString,
+});
+
+export const SentryIssuesInput = z.object({
+  ...requestFields,
+  query: optionalString,
+  project: optionalString,
+  environment: stringArray,
+  sort: optionalString,
+  statsPeriod: optionalString,
+  start: optionalString,
+  end: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().optional(),
+  expand: stringArray,
+  collapse: stringArray,
+});
+
+export const SentryIssueInput = z.object({
+  ...requestFields,
+  identifier: z.string().min(1),
+  expand: stringArray,
+});
+
+export const SentryIssueEventInput = z.object({
+  ...requestFields,
+  issueId: z.string().min(1),
+  eventId: optionalString,
+  full: z.boolean().optional(),
+});
+
+export const SentryEventInput = z.object({
+  ...requestFields,
+  eventId: z.string().min(1),
+  project: optionalString,
+});
+
+export const SentryTraceInput = z.object({
+  ...requestFields,
+  traceId: z.string().min(1),
+  project: optionalString,
+  query: optionalString,
+  statsPeriod: optionalString,
+  dataset: optionalString,
+  field: stringArray,
+  cursor: optionalString,
+  limit: z.number().int().positive().optional(),
+});
+
 export const WaitInput = z.object({
   ...requestFields,
   seconds: z.number().int().positive().optional(),
@@ -533,6 +591,13 @@ export const schemaRegistry = {
   BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
+  SentryConfigInput,
+  SentryProjectsInput,
+  SentryIssuesInput,
+  SentryIssueInput,
+  SentryIssueEventInput,
+  SentryEventInput,
+  SentryTraceInput,
   WaitInput,
   TmpInput,
   RailwayLogsInput,
@@ -603,6 +668,13 @@ export const schemaTypeSignatures: Record<string, string> = {
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string }',
+  SentryConfigInput: '{ verify?: boolean; requestId?: string }',
+  SentryProjectsInput: '{ limit?: number; cursor?: string; requestId?: string }',
+  SentryIssuesInput: '{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string }',
+  SentryIssueInput: '{ identifier: string; expand?: string[]; requestId?: string }',
+  SentryIssueEventInput: '{ issueId: string; eventId?: string; full?: boolean; requestId?: string }',
+  SentryEventInput: '{ eventId: string; project?: string; requestId?: string }',
+  SentryTraceInput: '{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string }',
   WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string }',

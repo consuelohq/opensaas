@@ -2286,6 +2286,357 @@
     }
   },
   {
+    "name": "sentry.config",
+    "methodPath": [
+      "sentry",
+      "config"
+    ],
+    "description": "show Sentry API configuration status from Keychain without exposing secrets",
+    "category": "sentry",
+    "underlying": "workspace sentry.config",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryConfigInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "config",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "verify",
+          "flag": "--verify",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "verify": true
+    }
+  },
+  {
+    "name": "sentry.projects",
+    "methodPath": [
+      "sentry",
+      "projects"
+    ],
+    "description": "list Sentry projects for the configured organization",
+    "category": "sentry",
+    "underlying": "workspace sentry.projects",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryProjectsInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "projects",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "limit": 25
+    }
+  },
+  {
+    "name": "sentry.issues",
+    "methodPath": [
+      "sentry",
+      "issues"
+    ],
+    "description": "search Sentry issues across the configured organization",
+    "category": "sentry",
+    "underlying": "workspace sentry.issues",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssuesInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issues",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "query",
+          "flag": "--query",
+          "kind": "value"
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "environment",
+          "flag": "--environment",
+          "kind": "array"
+        },
+        {
+          "source": "sort",
+          "flag": "--sort",
+          "kind": "value"
+        },
+        {
+          "source": "statsPeriod",
+          "flag": "--stats-period",
+          "kind": "value"
+        },
+        {
+          "source": "start",
+          "flag": "--start",
+          "kind": "value"
+        },
+        {
+          "source": "end",
+          "flag": "--end",
+          "kind": "value"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "expand",
+          "flag": "--expand",
+          "kind": "array"
+        },
+        {
+          "source": "collapse",
+          "flag": "--collapse",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "query": "is:unresolved",
+      "limit": 10
+    }
+  },
+  {
+    "name": "sentry.issue",
+    "methodPath": [
+      "sentry",
+      "issue"
+    ],
+    "description": "retrieve one Sentry issue by short id or numeric issue id",
+    "category": "sentry",
+    "underlying": "workspace sentry.issue",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssueInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issue",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "identifier",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "expand",
+          "flag": "--expand",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "identifier": "PROJECT-123"
+    }
+  },
+  {
+    "name": "sentry.issueEvent",
+    "methodPath": [
+      "sentry",
+      "issueEvent"
+    ],
+    "description": "retrieve a latest, recommended, oldest, or concrete Sentry event for an issue",
+    "category": "sentry",
+    "underlying": "workspace sentry.issueEvent",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssueEventInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issue-event",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "issueId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "eventId",
+          "kind": "value"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "issueId": "PROJECT-123",
+      "eventId": "recommended",
+      "full": true
+    }
+  },
+  {
+    "name": "sentry.event",
+    "methodPath": [
+      "sentry",
+      "event"
+    ],
+    "description": "retrieve or resolve a Sentry event id, using a project slug when available",
+    "category": "sentry",
+    "underlying": "workspace sentry.event",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryEventInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "event",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "eventId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "eventId": "0123456789abcdef0123456789abcdef"
+    }
+  },
+  {
+    "name": "sentry.trace",
+    "methodPath": [
+      "sentry",
+      "trace"
+    ],
+    "description": "perform a best-effort Sentry trace lookup across organization events and issues",
+    "category": "sentry",
+    "underlying": "workspace sentry.trace",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "traceId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "query",
+          "flag": "--query",
+          "kind": "value"
+        },
+        {
+          "source": "statsPeriod",
+          "flag": "--stats-period",
+          "kind": "value"
+        },
+        {
+          "source": "dataset",
+          "flag": "--dataset",
+          "kind": "value"
+        },
+        {
+          "source": "field",
+          "flag": "--field",
+          "kind": "array"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "traceId": "0123456789abcdef0123456789abcdef",
+      "limit": 10
+    }
+  },
+  {
     "name": "wait",
     "methodPath": [
       "wait"

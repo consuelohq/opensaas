@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-pr-280-review-comments",
+  "branch": "task/workspace-agents/fix-pr-286-review-comments",
   "base": "stream/workspace-agents",
-  "headSha": "db84a0e10e938807a36a976a5d6a33e9d1a96366",
-  "changeHash": "1ea33f725373ad06281f7c72d0661017bbbaaae91e1c19fe30ed60175445cb3e",
+  "headSha": "774bc8052b89a4776097ff4f7c7a35e63ba89666",
+  "changeHash": "900864c4173c76c3fddf0b46bd31920813110312f3e31ee7d95c3bda33dd5211",
   "changedFiles": [
     "AGENTS.md",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
@@ -31,11 +31,12 @@
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
+    "packages/workspace/scripts/sentry.js",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-02T17:15:30.968Z",
+  "verifiedAt": "2026-05-04T06:52:39.599Z",
   "review": {
     "skipped": true,
     "passed": true

@@ -34,7 +34,7 @@ started: 2026-05-04
 
 ## improvements noticed
 
-- 
+- The workspace audit dependency issue should be fixed separately so script audit can run reliably in task worktrees.
 
 ## errors i ran into
 
