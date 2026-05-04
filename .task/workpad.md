@@ -1,45 +1,76 @@
-# add workspace tool result time beacon
+# fix blog homepage post links and featured posts
 
-branch: `task/workspace-agents/add-workspace-tool-result-time-beacon`
-stream: `stream/workspace-agents`
+branch: `task/blog/fix-blog-homepage-post-links-and-featured-posts`
+stream: `stream/blog`
+pr: https://github.com/consuelohq/opensaas/pull/309
 started: 2026-05-04
 
 ## acceptance criteria
 
-- [ ] every top-level workspace typed tool JSON envelope includes `now`
-- [ ] `now` is an ISO timestamp string
-- [ ] existing envelope fields remain unchanged
-- [ ] implementation is centralized in facade layer
-- [ ] tests cover success/failure/batch/passthrough cases
-- [ ] note recorded: "rule/document injection is separate from time beacon."
+- [ ] 
 
 ## plan
 
-1. inspect `ToolResult` type and central result construction in `/workspace/opensaas/packages/workspace/scripts/lib/facade/types.ts` and `/workspace/opensaas/packages/workspace/scripts/lib/facade/errors.ts`.
-2. implement centralized `now` injection in the facade result creation path and backfill passthrough result envelopes when needed.
-3. add/update tests for success, failure, batch, and passthrough tool results.
-4. run targeted workspace checks and tests, then `review.run`.
+1. 
 
 ## files changed
 
-- `.task/workpad.md`
+- `packages/consuelo-website/src/content/blog/adding-new-post.md`
+- `packages/consuelo-website/src/content/blog/ai-insurance-sales.md`
+- `packages/consuelo-website/src/content/blog/building-sales-stack.md`
+- `packages/consuelo-website/src/content/blog/how-to-configure-astropaper-theme.md`
+- `packages/consuelo-website/src/content/blog/welcome.md`
+- `packages/consuelo-website/src/pages/blog/index.astro`
+
 
 ## key decisions
 
-- keep timestamp injection centralized so individual tools remain unchanged.
+- 
 
 ## notes for ko
 
-- `task.start` via workspace facade failed locally because `gh` and GitHub token are unavailable in this environment.
+- 
 
 ## improvements noticed
 
-- The workspace audit dependency issue should be fixed separately so script audit can run reliably in task worktrees.
+- 
 
 ## errors i ran into
 
-- `bun run workspace task.start '{"area":"workspace-agents","title":"add workspace tool result time beacon"}'` failed with missing `gh` / `GITHUB_TOKEN`.
+- 
 
-## follow-up note
+---
 
-- rule/document injection is separate from time beacon.
+## publish checklist
+
+```bash
+bun run task:push -- --message "type(blog): description" --changed
+bun run task:pr
+bun run task:finish
+```
+
+
+## acceptance criteria
+
+- [x] Change the blog homepage `All Posts` CTA from `/blog/archives/` to `/blog/posts/`.
+- [x] Limit homepage featured rendering to `SITE.postPerIndex` posts.
+- [x] Keep only the four latest intended posts marked `featured: true`.
+- [ ] Build the website.
+- [ ] Promote, merge, deploy, and verify production.
+
+## plan
+
+1. Inspect blog index, posts route, archives route, and frontmatter patterns.
+2. Update `/blog` CTA and featured/recent slicing.
+3. Normalize featured flags so only the newest four posts are featured.
+4. Build and deploy.
+
+## key decisions
+
+- Use `/blog/posts/` because `packages/consuelo-website/src/pages/blog/posts/[...page].astro` is the all-posts paginated route.
+- Keep the featured frontmatter true only on the latest four posts: decision infrastructure, Wavv comparison, GHL embedded launch, and sales stack sprawl.
+- Also slice `featuredPosts` to `SITE.postPerIndex` defensively so the homepage cannot overflow if future frontmatter drifts.
+
+- `workspace review.run` timed out before returning a result; using passed website build and built HTML inspection as task-specific validation.
+
+- `workspace review.run` timed out before returning a result; using passed website build and built HTML inspection as task-specific validation.

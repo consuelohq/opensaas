@@ -3,7 +3,7 @@ author: Kokayi Cobb
 pubDatetime: 2026-03-24T10:00:00Z
 title: AI in insurance sales — what's actually working
 slug: ai-insurance-sales
-featured: true
+featured: false
 draft: false
 tags:
   - ai

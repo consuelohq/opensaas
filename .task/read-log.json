@@ -19,13 +19,22 @@
     "packages/consuelo-website/DESIGN.md",
     "packages/consuelo-website/animations.md",
     "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/components/Card.astro",
     "packages/consuelo-website/src/components/DashboardDemo.tsx",
+    "packages/consuelo-website/src/config.ts",
     "packages/consuelo-website/src/content/blog/local-presence-data.md",
     "packages/consuelo-website/src/content/blog/mobile-app.md",
     "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+    "packages/consuelo-website/src/pages/blog/[...slug]/index.astro",
+    "packages/consuelo-website/src/pages/blog/archives/index.astro",
+    "packages/consuelo-website/src/pages/blog/index.astro",
+    "packages/consuelo-website/src/pages/blog/posts/[...page].astro",
     "packages/consuelo-website/src/styles/astropaper.css",
     "packages/consuelo-website/src/styles/blog.css",
     "packages/consuelo-website/src/styles/global.css",
+    "packages/consuelo-website/src/utils/getPath.ts",
+    "packages/consuelo-website/src/utils/getSortedPosts.ts",
+    "packages/consuelo-website/src/utils/postFilter.ts",
     "packages/consuelo-website/tailwind.config.mjs",
     "packages/dialer/src/dialer.ts",
     "packages/sdk/package.json",
@@ -91,5 +100,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-04T06:52:09.887Z"
+  "updatedAt": "2026-05-04T08:11:04.573Z"
 }

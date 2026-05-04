@@ -3,7 +3,7 @@ author: Kokayi Cobb
 pubDatetime: 2026-03-20T10:00:00Z
 title: Why agencies choose open-source sales tools
 slug: why-open-source-sales-tools
-featured: true
+featured: false
 draft: false
 tags:
   - open-source
