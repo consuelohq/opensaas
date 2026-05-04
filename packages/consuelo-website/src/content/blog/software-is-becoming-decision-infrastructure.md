@@ -20,17 +20,21 @@ The next wave of software has a harder job: helping teams decide what to do next
 
 <figure>
   <div
-    style="display:flex;min-height:320px;align-items:center;justify-content:center;border:1px dashed rgba(148,163,184,.6);border-radius:24px;background:linear-gradient(135deg,rgba(15,23,42,.06),rgba(59,130,246,.08));padding:48px;text-align:center;"
+    class="rounded-3xl border border-border bg-background px-10 py-12 text-center"
   >
-    <div>
-      <strong style="display:block;font-size:1.125rem;">media placeholder</strong>
-      <span style="display:block;margin-top:8px;color:rgb(100,116,139);">
-        replace this with the final decision-infrastructure image or video.
-      </span>
-    </div>
+    <img
+      class="mx-auto block h-auto w-full max-w-xs dark:hidden"
+      src="/ghl-app-logo-light-mode-512x512.png"
+      alt="Consuelo app logo"
+    />
+    <img
+      class="mx-auto hidden h-auto w-full max-w-xs dark:block"
+      src="/ghl-app-logo-dark-mode-512x512.png"
+      alt="Consuelo app logo"
+    />
   </div>
   <figcaption class="text-center">
-    Visual direction: context → decision → action → evidence.
+    Consuelo as agent-ready revenue infrastructure.
   </figcaption>
 </figure>
 
