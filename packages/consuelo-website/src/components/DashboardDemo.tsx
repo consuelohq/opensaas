@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
