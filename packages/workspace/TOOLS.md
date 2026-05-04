@@ -2905,7 +2905,8 @@ example error envelope:
 
 run the full task safety gate
 
-- signature: `workspace.verify({ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- recommended: always pass `branch` explicitly for deterministic verify stamps and branch-local execution.
+- signature: `workspace.verify({ branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace verify`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -2914,6 +2915,7 @@ example call:
 
 ```ts
 await workspace.verify({
+  "branch": "task/workspace-agents/example",
   "noStamp": true,
   "dryRun": true
 });

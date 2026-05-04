@@ -1170,3 +1170,16 @@ workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 
 ```
+
+
+## Branch-explicit final validation flow
+
+Use explicit `branch` for final validation and push commands so verify stamps and pushed commits always target the same task worktree.
+
+Canonical sequence:
+
+1. `bun run workspace review.run '{"branch":"task/<area>/<name>","noTests":true}'`
+2. `bun run workspace verify '{"branch":"task/<area>/<name>"}'`
+3. `bun run workspace task.push '{"branch":"task/<area>/<name>","message":"<commit message>"}'`
+
+This keeps review, verify, and push deterministic in multi-worktree sessions.
