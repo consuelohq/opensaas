@@ -18,8 +18,11 @@ export function createToolResult<TData>(input: {
   durationMs: number;
   traceId: string;
   requestId?: string;
+  now?: () => number;
 }): ToolResult<TData> {
+  const nowIso = new Date((input.now || Date.now)()).toISOString();
   return {
+    now: nowIso,
     ok: input.ok,
     code: input.code,
     message: input.message,

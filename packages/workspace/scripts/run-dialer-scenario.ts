@@ -79,8 +79,15 @@ const providedUserToken = process.env.CONSUELO_USER_TOKEN ?? '';
 const authMode = parseAuthMode(process.env.CONSUELO_AUTH_MODE ?? 'auto');
 const now = new Date().toISOString().replace(/[:.]/g, '-');
 const transcriptPath = process.env.CONSUELO_SCENARIO_TRANSCRIPT ?? `/tmp/dialer-scenario-${now}.json`;
-const maxAttempts = Number(process.env.CONSUELO_SCENARIO_STEP_ATTEMPTS ?? 3);
-const retryDelayMilliseconds = Number(process.env.CONSUELO_SCENARIO_RETRY_DELAY_MS ?? 2_000);
+const maxAttempts = parseIntegerEnvironmentValue(
+  process.env.CONSUELO_SCENARIO_STEP_ATTEMPTS,
+  3,
+);
+const retryDelayMilliseconds = parseIntegerEnvironmentValue(
+  process.env.CONSUELO_SCENARIO_RETRY_DELAY_MS,
+  2_000,
+  { allowZero: true },
+);
 const localTimezone = process.env.CONSUELO_SCENARIO_TIMEZONE ?? 'America/New_York';
 
 let userToken = providedUserToken;
@@ -116,6 +123,23 @@ function parseContactIds(value: string | undefined): string[] {
     .split(',')
     .map((contactId) => contactId.trim())
     .filter((contactId) => contactId.length > 0);
+}
+
+type IntegerEnvironmentValueOptions = { allowZero?: boolean };
+
+function parseIntegerEnvironmentValue(
+  value: string | undefined,
+  fallback: number,
+  options: IntegerEnvironmentValueOptions = {},
+): number {
+  const parsedValue = Number(value ?? fallback);
+  const minimumValue = options.allowZero === true ? 0 : 1;
+
+  if (!Number.isInteger(parsedValue) || parsedValue < minimumValue) {
+    return fallback;
+  }
+
+  return parsedValue;
 }
 
 function sleep(milliseconds: number): Promise<void> {
@@ -462,7 +486,9 @@ function assertCsvExport(csv: string): { rows: number; bytes: number; preview: s
   const lines = csv.trim().split(/\r?\n/);
   const header = lines[0] ?? '';
 
-  if (!header.includes('id,position,contact_id,status,outcome')) {
+  const expectedHeader =
+    'position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
+  if (header !== expectedHeader) {
     throw new Error(`CSV missing expected queue header: ${header}`);
   }
 

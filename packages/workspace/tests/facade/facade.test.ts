@@ -140,6 +140,7 @@ describe('typed facade executor', () => {
       requestId: 'req_123',
     }, stableOptions(successfulRunner()));
     expect(result.requestId).toBe('req_123');
+    expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
   it('falls back to repo fs for read-only fs tools when no task branch is active', async () => {
@@ -169,6 +170,13 @@ describe('typed facade executor', () => {
       requestId: 'req_passthrough',
     }, stableOptions(passthroughRunner()));
     expect(result.requestId).toBe('req_passthrough');
+    expect(result.now).toBe('1970-01-01T00:00:01.000Z');
+  });
+
+  it('includes now on validation failures', async () => {
+    const result = await executeTool('fs.read', {}, stableOptions(successfulRunner()));
+    expect(result.code).toBe('VALIDATION_ERROR');
+    expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
   it('resolves unique script aliases from the manifest', () => {
@@ -271,6 +279,7 @@ describe('batch executor', () => {
     ], stableOptions(successfulRunner()));
     expect(result.ok).toBe(true);
     expect(result.data.completed).toBe(2);
+    expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
   it('stops after a failed step', async () => {

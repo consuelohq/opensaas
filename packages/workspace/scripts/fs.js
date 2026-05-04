@@ -436,8 +436,15 @@ function readReplacementContent({ inlineContent, contentFile, stdinRequested }) 
 
   if (contentFile !== null) {
     const contentPath = path.resolve(process.cwd(), contentFile);
-    if (!fs.existsSync(contentPath)) {
-      err(`error: content file not found: ${contentFile}`);
+    try {
+      const contentFileStats = fs.statSync(contentPath);
+      fs.accessSync(contentPath, fs.constants.R_OK);
+      if (!contentFileStats.isFile()) {
+        err(`error: content file must be a regular file: ${contentFile}`);
+        return null;
+      }
+    } catch {
+      err(`error: content file not found or not readable: ${contentFile}`);
       return null;
     }
     return fs.readFileSync(contentPath, 'utf8');
@@ -445,12 +452,6 @@ function readReplacementContent({ inlineContent, contentFile, stdinRequested }) 
 
   if (inlineContent !== null) {
     const newline = String.fromCharCode(10);
-    const literalNewlineEscape = String.raw`\n`;
-
-    if (inlineContent.includes(literalNewlineEscape) && !inlineContent.includes(newline)) {
-      err('error: inline replacement contains literal \n sequences; use --content-file for multiline patches');
-      return null;
-    }
 
     if (inlineContent.includes(newline)) {
       err('error: multiline --content is unsafe; use --content-file for multiline patches');
@@ -509,6 +510,11 @@ function cmdPatch(argv) {
   if (replacement === null) return;
 
   const lines = fs.readFileSync(fp, 'utf8').split('\n');
+  if (from > lines.length || to > lines.length) {
+    err(`error: invalid line range; ${filePath} has only ${lines.length} lines`);
+    return;
+  }
+
   const removed = lines.slice(from - 1, to);
   const newLines = replacement.endsWith('\n') ? replacement.slice(0, -1).split('\n') : replacement.split('\n');
 

@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-sentry-typed-facade-commands",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 250,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/250",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-add-sentry-typed-facade-commands",
+  "createdAt": "2026-05-02T20:07:59.024Z"
+}
