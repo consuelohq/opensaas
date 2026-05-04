@@ -1,45 +1,46 @@
-# fix add number outline button
+# fix fresh db agent automation migration
 
-branch: `task/dialer/fix-add-number-outline-button`
-stream: `stream/dialer`
-pr: https://github.com/consuelohq/opensaas/pull/266
-started: 2026-05-01
+branch: task/dialer/fix-agent-automation-migration
+stream: stream/dialer
 
 ## acceptance criteria
 
-- [x] Verify why the previous task still showed a filled blue Add Number button.
-- [x] Change Add Number to match the Upload/Remove outline button standard.
-- [x] Keep size small and preserve add-number behavior.
-- [ ] Publish the task branch for review.
+- [ ] Fresh local database reset no longer fails on missing core.agentSkill during agent automation migration.
+- [ ] Preserve agent feature schema by letting canonical later agent migrations create active tables.
+- [ ] Do not delete agent functionality or rewrite broad migration history.
+- [ ] Push task branch and create/update stream review PR if validation succeeds.
 
 ## plan
 
-1. Compare `PhoneNumberSettings` against `ImageInput` button props.
-2. Replace `accent=blue` with `variant=secondary` after approval.
-3. Run focused formatting and diff checks.
-4. Push the task PR.
+1. Patch the old agent automation migration into an explicit compatibility no-op.
+2. Validate formatting and fresh DB reset.
+3. Publish if successful.
 
 ## files changed
 
-- `packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`
+- pending
 
 ## key decisions
 
-- The previous change used shared `Button`, but left it as implicit `variant=primary` with `accent=blue`, which intentionally renders filled blue.
-- Upload and Remove use `variant=secondary`; Add Number now uses that same outline/transparent standard.
+- The earlier migration references core.agentSkill before that table exists.
+- A later canonical migration creates agentSkill, then agentAutomation in the correct order.
 
-## validation
+## notes for ko
 
-- passed: `npx prettier --check packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`.
-- passed: `git diff --check`.
-- passed: `npx eslint --config packages/twenty-front/eslint.config.mjs --rule @nx/enforce-module-boundaries: off packages/twenty-front/src/pages/settings/consuelo/PhoneNumberSettings.tsx`.
+- This fixes the migration-order failure seen locally and in Railway.
 
----
+## implementation update
 
-## publish checklist
+- Patched stale agent migrations so fresh DBs keep the active core agent conversation schema and add the AI agent execution tables needed by the dev seeder.
+- Patched prebuilt skill seeding so text-array fields are passed as proper arrays and string parameters are cast explicitly.
+- Added `1774090000000-create-consuelo-dialer-runtime-tables.ts` to port the remaining Consuelo dialer runtime tables from old `packages/api/src/migrations` into the TypeORM core migration flow.
+- The new dialer runtime migration creates unqualified/public tables used by current raw SQL services: `caller_id_locks`, `area_code_locations`, `calls`, `contacts`, `call_queues`, `queue_items`, `contact_attempt_ledger`, `workspace_subscriptions`, `workspace_usage`, `workspace_phone_numbers`, and `user_settings`.
+- Kept `core.contact_attempt_hazard_hourly_mv` intact. The materialized view now has its base tables during fresh reset.
 
-```bash
-bun run task:push -- --message fix-add-number-outline-button --changed
-bun run task:pr
-bun run task:finish
-```
+## validation update
+
+- Brew local infra is now the local default for this task: `postgresql@17`, `pgvector`, and `redis` are installed and running.
+- `CREATE EXTENSION vector` works on the local `default` database.
+- `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server` exits 0.
+- Grep of the latest reset log found no migration/query failures.
+- SQL checks confirm the new runtime tables, agent execution tables, and hazard materialized view exist after reset.

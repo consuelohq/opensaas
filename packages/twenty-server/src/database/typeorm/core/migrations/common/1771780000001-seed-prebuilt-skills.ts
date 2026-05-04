@@ -22,32 +22,20 @@ type SkillSeed = {
 };
 
 const PREBUILT_SKILLS: SkillSeed[] = [
-  {
-    ...PRE_CALL_BRIEF_SEED,
-    useWhen: `{${PRE_CALL_BRIEF_SEED.useWhen}}`,
-    dontUseWhen: `{${PRE_CALL_BRIEF_SEED.dontUseWhen}}`,
-  },
-  {
-    ...POST_CALL_LOGGER_SEED,
-    useWhen: `{${POST_CALL_LOGGER_SEED.useWhen}}`,
-    dontUseWhen: `{${POST_CALL_LOGGER_SEED.dontUseWhen}}`,
-  },
-  {
-    ...PIPELINE_ANALYZER_SEED,
-    useWhen: `{${PIPELINE_ANALYZER_SEED.useWhen}}`,
-    dontUseWhen: `{${PIPELINE_ANALYZER_SEED.dontUseWhen}}`,
-  },
-  {
-    ...QUEUE_BUILDER_SEED,
-    useWhen: `{${QUEUE_BUILDER_SEED.useWhen}}`,
-    dontUseWhen: `{${QUEUE_BUILDER_SEED.dontUseWhen}}`,
-  },
-  {
-    ...CUSTOM_REPORT_GENERATOR_SEED,
-    useWhen: `{${CUSTOM_REPORT_GENERATOR_SEED.useWhen}}`,
-    dontUseWhen: `{${CUSTOM_REPORT_GENERATOR_SEED.dontUseWhen}}`,
-  },
+  PRE_CALL_BRIEF_SEED,
+  POST_CALL_LOGGER_SEED,
+  PIPELINE_ANALYZER_SEED,
+  QUEUE_BUILDER_SEED,
+  CUSTOM_REPORT_GENERATOR_SEED,
 ];
+
+const toTextArray = (value: string): string[] =>
+  value
+    .replace(/^\{/, '')
+    .replace(/\}$/, '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 
 export class SeedPrebuiltSkills1771780000001 implements MigrationInterface {
   name = 'SeedPrebuiltSkills1771780000001';
@@ -61,15 +49,15 @@ export class SeedPrebuiltSkills1771780000001 implements MigrationInterface {
           "useWhen", "dontUseWhen", "inputSchema",
           "createdBy", "workspaceId", "isPublic"
         ) SELECT
-          $1, $2, $3, $4, 'pre-built', $5::text[],
-          $6, $7::text[], $8, $9::jsonb,
+          $1::varchar, $2::text, $3::varchar, $4::varchar, 'pre-built', $5::text[],
+          $6::text, $7::text[], $8::varchar, $9::jsonb,
           $10::text[], $11::text[], $12::jsonb,
           'system', w."id", true
         FROM "core"."workspace" w
         WHERE NOT EXISTS (
           SELECT 1 FROM "core"."agentSkill" s
           WHERE s."workspaceId" = w."id"
-            AND s."name" = $1
+            AND s."name" = $1::varchar
             AND s."deletedAt" IS NULL
         )`,
         [
@@ -77,13 +65,13 @@ export class SeedPrebuiltSkills1771780000001 implements MigrationInterface {
           skill.description,
           skill.icon,
           skill.category,
-          skill.tools,
+          toTextArray(skill.tools),
           skill.systemPrompt,
-          skill.triggers,
+          toTextArray(skill.triggers),
           skill.outputFormat,
           skill.integrations,
-          skill.useWhen,
-          skill.dontUseWhen,
+          toTextArray(skill.useWhen),
+          toTextArray(skill.dontUseWhen),
           skill.inputSchema ?? null,
         ],
       );
