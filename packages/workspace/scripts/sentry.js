@@ -133,7 +133,7 @@ function appendSearchParam(params, key, value) {
 async function sentryFetch(pathname, query = {}, options = {}) {
   try {
     const config = options.config || loadConfig();
-  const url = new URL(`/api/0/${pathname.replace(/^\/+/, '')}`, `${config.baseUrl}/`);
+    const url = new URL(`/api/0/${pathname.replace(/^\/+/, '')}`, `${config.baseUrl}/`);
 
   for (const [key, value] of Object.entries(query)) {
     appendSearchParam(url.searchParams, key, value);
@@ -158,17 +158,19 @@ async function sentryFetch(pathname, query = {}, options = {}) {
   };
 
   if (!response.ok) {
-    fail('SENTRY_API_ERROR', `Sentry API request failed with HTTP ${response.status}`, {
+    const error = new Error(`Sentry API request failed with HTTP ${response.status}`);
+    error.details = {
       endpoint: url.pathname,
       query,
       response: redact(body || text),
       meta,
-    });
+    };
+    throw error;
   }
 
     return { data: redact(body), meta };
   } catch {
-    fail('SENTRY_API_ERROR', 'Sentry API request failed');
+    throw new Error('Sentry API request failed');
   }
 }
 
