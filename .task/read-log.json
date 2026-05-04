@@ -23,6 +23,9 @@
     "packages/consuelo-website/src/content/blog/local-presence-data.md",
     "packages/consuelo-website/src/content/blog/mobile-app.md",
     "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+    "packages/consuelo-website/src/styles/astropaper.css",
+    "packages/consuelo-website/src/styles/blog.css",
+    "packages/consuelo-website/src/styles/global.css",
     "packages/consuelo-website/tailwind.config.mjs",
     "packages/dialer/src/dialer.ts",
     "packages/sdk/package.json",
@@ -87,5 +90,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-04T05:12:28.345Z"
+  "updatedAt": "2026-05-04T05:21:18.035Z"
 }
