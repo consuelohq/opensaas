@@ -1,8 +1,8 @@
-# fix decision infrastructure logo treatment
+# fix decision infrastructure publish time
 
-branch: `task/blog/fix-decision-infrastructure-logo-treatment`
+branch: `task/blog/fix-decision-infrastructure-publish-time`
 stream: `stream/blog`
-pr: https://github.com/consuelohq/opensaas/pull/299
+pr: https://github.com/consuelohq/opensaas/pull/301
 started: 2026-05-04
 
 ## acceptance criteria
@@ -43,16 +43,25 @@ bun run task:pr
 bun run task:finish
 ```
 
+- 2026-05-04 05:27:28 patch lines 3-3: `packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md`
 
 ## implementation notes
 
-- Regenerated `ghl-app-logo-light-mode-512x512.png` from the existing black source with ffmpeg using exact light-mode blog text color `#000000`.
-- Regenerated `ghl-app-logo-dark-mode-512x512.png` from the existing black source with ffmpeg using exact dark-mode blog text color `#ffffff`.
-- Replaced Tailwind `dark:` image swapping with a native `<picture><source media="(prefers-color-scheme: dark)">` because the blog theme follows `prefers-color-scheme` on mobile.
-- Removed the card border classes and added explicit image border/radius overrides so AstroPaper prose image borders do not show.
+- The post showed `19 hours ago` because `pubDatetime` was manually set to `2026-05-03T10:00:00Z` in the original draft.
+- Updated `pubDatetime` to `2026-05-04T03:22:00Z`, matching the first published/merged window for the post.
 
 ## validation
 
-- PIL inspection confirmed high-alpha pixels in the light logo are only `(0, 0, 0)` and high-alpha pixels in the dark logo are only `(255, 255, 255)`.
-- `cd packages/consuelo-website && npm install --package-lock=false --no-audit --no-fund && npm run build` passed; remaining output is existing site warnings.
-- Built HTML contains the `<picture>` source and `style="border:0;border-radius:0;"` image override.
+- Read frontmatter before patch and confirmed the stale publish time.
+- Patched only `packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md`.
+
+
+## implementation notes
+
+- The post showed `19 hours ago` because `pubDatetime` was manually set to `2026-05-03T10:00:00Z` in the original draft.
+- Updated `pubDatetime` to `2026-05-04T03:22:00Z`, matching the first published/merged window for the post.
+
+## validation
+
+- Read frontmatter before patch and confirmed the stale publish time.
+- Patched only `packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md`.
