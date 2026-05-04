@@ -8,7 +8,7 @@ export type ConsueloDesignWorkflow =
 
 export const CONSUELO_DESIGN_SYSTEM_FILES = [
   'packages/consuelo-website/DESIGN.md',
-  'packages/consuelo-website/animations.md',
+  'areas/website/animations.md',
   'areas/website/AGENTS.md',
   'areas/consuelo-design/AGENTS.md',
 ] as const;
