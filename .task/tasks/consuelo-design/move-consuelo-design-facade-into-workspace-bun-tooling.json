@@ -1,0 +1,12 @@
+{
+  "area": "consuelo-design",
+  "stream": "stream/consuelo-design",
+  "taskBranch": "task/consuelo-design/move-consuelo-design-facade-into-workspace-bun-tooling",
+  "baseBranch": "stream/consuelo-design",
+  "sourceBranch": "stream/consuelo-design",
+  "startFrom": "stream",
+  "prNumber": 289,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/289",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-consuelo-design-move-consuelo-design-facade-into-workspace-bun-tooling",
+  "createdAt": "2026-05-03T21:10:14.182Z"
+}

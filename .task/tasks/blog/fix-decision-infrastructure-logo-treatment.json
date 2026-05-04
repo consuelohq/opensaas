@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/fix-decision-infrastructure-logo-treatment",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 299,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/299",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-fix-decision-infrastructure-logo-treatment",
+  "createdAt": "2026-05-04T05:20:15.803Z"
+}

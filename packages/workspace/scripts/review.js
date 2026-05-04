@@ -91,8 +91,14 @@ function normalizeRepoPath(root, filePath) {
   return value.split(path.sep).join('/');
 }
 
+function isVendoredThirdPartyFile(filePath) {
+  return filePath.includes('/upstream/') || filePath.includes('/vendor/');
+}
+
 function isReviewableFile(filePath) {
-  return filePath.startsWith('packages/') && /\.(tsx?|jsx?|mjs|cjs)$/.test(filePath);
+  return filePath.startsWith('packages/')
+    && !isVendoredThirdPartyFile(filePath)
+    && /\.(tsx?|jsx?|mjs|cjs)$/.test(filePath);
 }
 
 function addChangedFiles(files, args) {
@@ -285,6 +291,7 @@ function checkImportSafety(file, lines) {
 
 function checkCatchTyping(file, lines) {
   if (isReviewSelfFile(file)) return [];
+  if (!/\.tsx?$/.test(file)) return [];
   const findings = [];
   for (let i = 0; i < lines.length; i++) {
     // catch(err: any) — explicit any

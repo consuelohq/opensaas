@@ -1,0 +1,23 @@
+{
+  "name": "consuelo-design-system",
+  "description": "Consuelo design system manifest consumed by the consuelo-design facade.",
+  "sourceOfTruth": [
+    {
+      "role": "visual-design",
+      "path": "../consuelo-website/DESIGN.md"
+    },
+    {
+      "role": "motion-design",
+      "path": "../consuelo-website/animations.md"
+    },
+    {
+      "role": "website-agent-rules",
+      "path": "../consuelo-website/AGENTS.md"
+    },
+    {
+      "role": "design-tooling-agent-rules",
+      "path": "consuelo-design/AGENTS.md"
+    }
+  ],
+  "upstreamDesignSystemsPolicy": "Do not import upstream/open-design/design-systems as Consuelo design systems during the first integration."
+}

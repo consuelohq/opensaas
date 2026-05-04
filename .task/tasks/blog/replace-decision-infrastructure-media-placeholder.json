@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/replace-decision-infrastructure-media-placeholder",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 297,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/297",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-replace-decision-infrastructure-media-placeholder",
+  "createdAt": "2026-05-04T05:10:13.244Z"
+}

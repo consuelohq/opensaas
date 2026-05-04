@@ -213,9 +213,13 @@ export class QueuesService {
       }
 
       const selection = await this.selectNextCallableItem(id, workspaceId);
+      const completedQueue =
+        !selection.nextItem && !selection.suppression
+          ? await this.completeQueue(id, workspaceId)
+          : null;
 
       return {
-        queue,
+        queue: completedQueue ?? queue,
         currentItem: this.unwrapRow(selection.nextItem),
         nextItem: this.unwrapRow(selection.nextItem),
         suppression: selection.suppression,
@@ -675,10 +679,12 @@ export class QueuesService {
   }
 
   private async completeQueue(queueId: string, workspaceId: string) {
-    await this.dataSource.query(
+    const queueRows = await this.dataSource.query(
       'UPDATE call_queues SET status = $1, completed_at = COALESCE(completed_at, NOW()), updated_at = NOW() WHERE id = $2 AND workspace_id = $3 RETURNING *',
       ['completed', queueId, workspaceId],
     );
+
+    return queueRows[0] ?? null;
   }
 
   private async selectNextCallableItem(

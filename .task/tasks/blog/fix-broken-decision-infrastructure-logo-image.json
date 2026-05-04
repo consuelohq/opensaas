@@ -1,0 +1,12 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/fix-broken-decision-infrastructure-logo-image",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 303,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/303",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-blog-fix-broken-decision-infrastructure-logo-image",
+  "createdAt": "2026-05-04T05:38:43.013Z"
+}
