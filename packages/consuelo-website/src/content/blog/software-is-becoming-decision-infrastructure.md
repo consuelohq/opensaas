@@ -20,23 +20,26 @@ The next wave of software has a harder job: helping teams decide what to do next
 
 <figure>
   <div class="bg-background px-10 py-12 text-center">
-    <picture>
-      <source
-        srcset="/ghl-app-logo-dark-mode-512x512.png"
-        media="(prefers-color-scheme: dark)"
-      />
-      <img
-        class="mx-auto h-auto w-full max-w-xs !rounded-none !border-0"
-        style="border:0;border-radius:0;"
-        src="/ghl-app-logo-light-mode-512x512.png"
-        alt="Consuelo app logo"
-      />
-    </picture>
+    <img
+      id="decision-infrastructure-logo"
+      class="mx-auto h-auto w-full max-w-xs"
+      style="border:0!important;border-radius:0!important;filter:none;"
+      src="/ghl-app-logo-black-512x512.png"
+      alt="Consuelo app logo"
+    />
   </div>
   <figcaption class="text-center">
     Consuelo as agent-ready revenue infrastructure.
   </figcaption>
 </figure>
+
+<style>
+  @media (prefers-color-scheme: dark) {
+    #decision-infrastructure-logo {
+      filter: invert(1) !important;
+    }
+  }
+</style>
 
 ## Table of contents
 
