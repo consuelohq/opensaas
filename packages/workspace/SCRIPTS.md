@@ -896,6 +896,50 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 
 ---
 
+
+### sentry — inspect Sentry issues, events, and traces
+
+Read-only JSON wrapper around the Sentry REST API. It reads configuration from macOS Keychain and never prints the auth token.
+
+Required Keychain items:
+
+```bash
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-auth-token" -w "YOUR_SENTRY_AUTH_TOKEN"
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-org-slug" -w "YOUR_SENTRY_ORG_SLUG"
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-base-url" -w "https://sentry.io"
+```
+
+Optional default project:
+
+```bash
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-project-slug" -w "YOUR_DEFAULT_PROJECT_SLUG"
+```
+
+Examples:
+
+```bash
+bun run sentry -- config --verify
+bun run sentry -- projects --limit 25
+bun run sentry -- issues --query "is:unresolved" --limit 10
+bun run sentry -- issue PROJECT-123
+bun run sentry -- issue-event PROJECT-123 recommended --full
+bun run sentry -- event 0123456789abcdef0123456789abcdef --project opensaas
+bun run sentry -- trace 0123456789abcdef0123456789abcdef --limit 10
+```
+
+Typed facade examples:
+
+```bash
+workspace sentry.config '{"verify":true}'
+workspace sentry.issues '{"query":"is:unresolved","limit":10}'
+workspace sentry.issue '{"identifier":"PROJECT-123"}'
+workspace sentry.issueEvent '{"issueId":"PROJECT-123","eventId":"recommended","full":true}'
+workspace sentry.event '{"eventId":"0123456789abcdef0123456789abcdef","project":"opensaas"}'
+workspace sentry.trace '{"traceId":"0123456789abcdef0123456789abcdef","limit":10}'
+```
+
+The `trace` command is best-effort. It queries organization events for `trace:<traceId>` and falls back to issue search with the same trace query. It returns every attempt in JSON so agents can see partial Sentry API coverage.
+
 ### generate-docs — generate typed tool documentation
 
 generates `packages/workspace/TOOLS.md` from `packages/workspace/tooling/tool-manifest.json`.

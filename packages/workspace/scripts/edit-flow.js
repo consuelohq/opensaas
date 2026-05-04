@@ -70,7 +70,17 @@ function main() {
   if (!Number.isInteger(args.from) || !Number.isInteger(args.to)) throw new Error('missing --from/--to');
   if (!args.contentFile) throw new Error('missing --content-file');
   const resolvedContentFile = path.resolve(process.cwd(), args.contentFile);
-  if (!fs.existsSync(resolvedContentFile)) throw new Error(`content file not found: ${args.contentFile}`);
+  let contentFileStats;
+  try {
+    contentFileStats = fs.statSync(resolvedContentFile);
+    fs.accessSync(resolvedContentFile, fs.constants.R_OK);
+  } catch {
+    throw new Error(`content file not found or not readable: ${args.contentFile}`);
+  }
+
+  if (!contentFileStats.isFile()) {
+    throw new Error(`content file must be a regular file: ${args.contentFile}`);
+  }
 
   const search = runTaskFs(args, ['search', args.searchPattern, ...args.searchPaths, '--json']);
   const searchData = search.ok ? parseJson(search.stdout, []) : [];
