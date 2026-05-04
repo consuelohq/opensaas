@@ -19,14 +19,14 @@
 Base Consuelo design system context is exactly:
 
 - `packages/consuelo-website/DESIGN.md`
-- `packages/consuelo-design/AGENTS.md`
+- `areas/consuelo-design/AGENTS.md`
 
 `get-design-system` must return only those files.
 
 Website-specific context is attached only when starting website or motion-oriented sessions:
 
-- `packages/consuelo-website/animations.md`
-- `packages/consuelo-website/AGENTS.md`
+- `areas/website/animations.md`
+- `areas/website/AGENTS.md`
 
 Do not include `animations.md` or website `AGENTS.md` in base `get-design-system`. They are workflow context, not global design-system truth.
 
