@@ -17,6 +17,7 @@ export type ToolCapabilities = {
 };
 
 export type ToolResult<TData = unknown> = {
+  now: string;
   ok: boolean;
   code: ErrorCode;
   message: string;
