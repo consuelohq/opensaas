@@ -1,8 +1,8 @@
-# replace decision infrastructure media placeholder
+# fix decision infrastructure logo treatment
 
-branch: `task/blog/replace-decision-infrastructure-media-placeholder`
+branch: `task/blog/fix-decision-infrastructure-logo-treatment`
 stream: `stream/blog`
-pr: https://github.com/consuelohq/opensaas/pull/297
+pr: https://github.com/consuelohq/opensaas/pull/299
 started: 2026-05-04
 
 ## acceptance criteria
@@ -46,16 +46,13 @@ bun run task:finish
 
 ## implementation notes
 
-- Created `packages/consuelo-website/public/ghl-app-logo-light-mode-512x512.png` from `ghl-app-logo-black-512x512.png` using ffmpeg with light-mode text color `#0f172a`.
-- Created `packages/consuelo-website/public/ghl-app-logo-dark-mode-512x512.png` from `ghl-app-logo-black-512x512.png` using ffmpeg with dark-mode text color `#f8fafc`.
-- Replaced the blog media placeholder with light/dark image tags that use `dark:hidden` and `dark:block`.
-
+- Regenerated `ghl-app-logo-light-mode-512x512.png` from the existing black source with ffmpeg using exact light-mode blog text color `#000000`.
+- Regenerated `ghl-app-logo-dark-mode-512x512.png` from the existing black source with ffmpeg using exact dark-mode blog text color `#ffffff`.
+- Replaced Tailwind `dark:` image swapping with a native `<picture><source media="(prefers-color-scheme: dark)">` because the blog theme follows `prefers-color-scheme` on mobile.
+- Removed the card border classes and added explicit image border/radius overrides so AstroPaper prose image borders do not show.
 
 ## validation
 
-- `file packages/consuelo-website/public/ghl-app-logo-black-512x512.png` confirmed the source image is a 512x512 RGBA PNG.
-- `ffmpeg -version` confirmed ffmpeg is available.
-- `ffmpeg` generated both light-mode and dark-mode logo variants.
-- `cd packages/consuelo-website && npm install --package-lock=false --no-audit --no-fund && npm run build` initially exposed an existing `DashboardDemo.tsx` JSX namespace error.
-- Added `import type { JSX } from "react";` to `DashboardDemo.tsx` as the minimal build compatibility fix.
-- `cd packages/consuelo-website && npm run build` passed after the fix; remaining output is existing warnings.
+- PIL inspection confirmed high-alpha pixels in the light logo are only `(0, 0, 0)` and high-alpha pixels in the dark logo are only `(255, 255, 255)`.
+- `cd packages/consuelo-website && npm install --package-lock=false --no-audit --no-fund && npm run build` passed; remaining output is existing site warnings.
+- Built HTML contains the `<picture>` source and `style="border:0;border-radius:0;"` image override.
