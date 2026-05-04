@@ -1,5 +1,8 @@
 {
   "files": [
+    ".agent/linear-mcp/src/auth.ts",
+    ".agent/linear-mcp/src/graphql.ts",
+    ".agent/linear-mcp/src/index.ts",
     ".task/handoff.md",
     ".task/verify.json",
     ".task/workpad.md",
@@ -71,6 +74,7 @@
     "packages/workspace/scripts/edit-flow.js",
     "packages/workspace/scripts/explore.js",
     "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/generate-docs.ts",
     "packages/workspace/scripts/generate-types.ts",
     "packages/workspace/scripts/lib/facade/batch.ts",
     "packages/workspace/scripts/lib/facade/branch-resolver.ts",
@@ -100,5 +104,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-04T08:11:04.573Z"
+  "updatedAt": "2026-05-04T20:17:55.960Z"
 }

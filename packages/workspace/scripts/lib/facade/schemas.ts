@@ -372,6 +372,62 @@ export const BrowserRawInput = z.object({
 });
 
 
+
+export const LinearSearchInput = z.object({
+  ...requestFields,
+  search: optionalString,
+  team: optionalString,
+  first: z.number().int().positive().optional(),
+  after: optionalString,
+  filter: optionalString,
+});
+
+export const LinearIssueInput = z.object({
+  ...requestFields,
+  identifier: z.string().min(1),
+});
+
+export const LinearCreateIssueInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  title: z.string().min(1),
+  description: optionalString,
+  team: optionalString,
+  state: optionalString,
+  labels: stringArray,
+  priority: z.number().int().min(0).max(4).optional(),
+  assignee: optionalString,
+  project: optionalString,
+  cycle: optionalString,
+  parent: optionalString,
+});
+
+export const LinearUpdateIssueInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  issueId: z.string().min(1),
+  title: optionalString,
+  description: optionalString,
+  state: optionalString,
+  labels: stringArray,
+  priority: z.number().int().min(0).max(4).optional(),
+  assignee: optionalString,
+  project: optionalString,
+  cycle: optionalString,
+  parent: optionalString,
+});
+
+export const LinearListInput = z.object({
+  ...requestFields,
+  first: z.number().int().positive().optional(),
+  after: optionalString,
+});
+
+export const LinearTeamScopedListInput = z.object({
+  ...requestFields,
+  team: optionalString,
+});
+
 export const SentryConfigInput = z.object({
   ...requestFields,
   verify: z.boolean().optional(),
@@ -591,6 +647,12 @@ export const schemaRegistry = {
   BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
+  LinearSearchInput,
+  LinearIssueInput,
+  LinearCreateIssueInput,
+  LinearUpdateIssueInput,
+  LinearListInput,
+  LinearTeamScopedListInput,
   SentryConfigInput,
   SentryProjectsInput,
   SentryIssuesInput,
@@ -668,6 +730,12 @@ export const schemaTypeSignatures: Record<string, string> = {
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string }',
+  LinearSearchInput: '{ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string }',
+  LinearIssueInput: '{ identifier: string; requestId?: string }',
+  LinearCreateIssueInput: '{ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string }',
+  LinearUpdateIssueInput: '{ issueId: string; title?: string; description?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string }',
+  LinearListInput: '{ first?: number; after?: string; requestId?: string }',
+  LinearTeamScopedListInput: '{ team?: string; requestId?: string }',
   SentryConfigInput: '{ verify?: boolean; requestId?: string }',
   SentryProjectsInput: '{ limit?: number; cursor?: string; requestId?: string }',
   SentryIssuesInput: '{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string }',

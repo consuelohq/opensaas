@@ -9176,8 +9176,344 @@
         "source": "task:fs",
         "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
+    },
+    {
+      "id": "cdb4d514-c520-41f8-a21b-11d1cd6dae68",
+      "occurred_at": "2026-05-04T19:15:44.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "795cb289-eefb-45b9-a533-56ec58332a63",
+      "occurred_at": "2026-05-04T19:15:45.237Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "3aa8638e-a90e-4be7-a9d8-de0f70f80dc7",
+      "occurred_at": "2026-05-04T19:15:45.594Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "58bff3df-3b1f-4abd-93d8-ec657b312fbc",
+      "occurred_at": "2026-05-04T19:17:02.881Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "94eaa321-17e1-4043-818d-0a87458e8a44",
+      "occurred_at": "2026-05-04T19:17:03.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "8a904c57-5446-44f4-aedf-2f46659acf19",
+      "occurred_at": "2026-05-04T19:17:03.484Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+      "occurred_at": "2026-05-04T19:17:03.805Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "56af206d-fd16-4ab4-a726-2a55601c6602",
+      "occurred_at": "2026-05-04T19:17:28.248Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "6d82ea45-0c4a-44ce-84f4-8d49ad216856",
+      "occurred_at": "2026-05-04T19:17:36.665Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "0bdabb75-d817-4131-a81f-cc210f0ee690",
+      "occurred_at": "2026-05-04T19:17:36.941Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "ac589bb2-87ff-407d-b841-d02263d425b0",
+      "occurred_at": "2026-05-04T19:17:37.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "18a812ec-6eed-4c83-afd1-bd378c8896dc",
+      "occurred_at": "2026-05-04T19:18:21.217Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "528a5bbf-3c5d-4225-81c5-184c3eced2fc",
+      "occurred_at": "2026-05-04T19:18:37.555Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+      "occurred_at": "2026-05-04T19:18:50.674Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+      "occurred_at": "2026-05-04T19:18:59.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+      "occurred_at": "2026-05-04T19:19:12.761Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "a45f8821-6f9d-47fe-b8c2-c6ce277f508f",
+      "occurred_at": "2026-05-04T20:13:45.050Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "3a43291c-6b90-46f6-bd85-87dcc45ed9a4",
+      "occurred_at": "2026-05-04T20:13:45.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "973ff3c4-807e-4a46-bb35-7fca17dec3e7",
+      "occurred_at": "2026-05-04T20:17:55.422Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "8e475498-3faa-465a-a055-33ec9877fc2e",
+      "occurred_at": "2026-05-04T20:17:55.723Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/graphql.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "900e48b0-b103-4d33-9fcd-7be8454c77aa",
+      "occurred_at": "2026-05-04T20:17:56.012Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-04T08:11:04.662Z"
+  "updated_at": "2026-05-04T20:17:56.063Z"
 }
