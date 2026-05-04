@@ -5,12 +5,17 @@
     ".task/workpad.md",
     "AGENTS.md",
     "CODING-STANDARDS.md",
+    "areas/consuelo-design/AGENTS.md",
+    "areas/dialer/AGENTS.md",
+    "areas/website/AGENTS.md",
+    "areas/workspace-agents/AGENTS.md",
     "package.json",
     "packages/api/src/routes/voice.ts",
     "packages/api/src/services/workspace-phone-numbers.spec.ts",
     "packages/api/src/services/workspace-phone-numbers.ts",
     "packages/cli/package.json",
     "packages/consuelo-design/AGENTS.md",
+    "packages/consuelo-design/README.md",
     "packages/consuelo-design/scripts/consuelo-design.mjs",
     "packages/consuelo-design/src/index.ts",
     "packages/consuelo-design/upstream/open-design/package.json",
@@ -91,5 +96,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-04T06:52:09.887Z"
+  "updatedAt": "2026-05-04T07:14:58.498Z"
 }

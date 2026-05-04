@@ -1,73 +1,59 @@
-# fix pr 286 review comments
+# bootstrap stream agent docs
 
-branch: `task/workspace-agents/fix-pr-286-review-comments`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/305
+branch: task/workspace-agents/bootstrap-stream-agent-docs
+stream: stream/workspace-agents
+pr: https://github.com/consuelohq/opensaas/pull/306
 started: 2026-05-04
 
 ## acceptance criteria
 
-- [x] Tighten `edit-flow.js --content-file` validation for readable regular files.
-- [x] Allow literal `\n` sequences in single-line `fs.patch --content` replacements.
-- [x] Reject `fs.patch` line ranges past EOF.
-- [x] Validate `run-dialer-scenario.ts` retry env values and preserve defaults for invalid input.
-- [x] Match `run-dialer-scenario.ts` CSV header assertion to the queue export contract.
-- [x] Preserve Sentry trace best-effort fallback when one Sentry API lookup fails.
+- [x] Create stream-area docs folders under areas/<area> for existing streams.
+- [x] Bootstrap areas/workspace-agents/AGENTS.md.
+- [x] Bootstrap areas/dialer/AGENTS.md.
+- [x] Move packages/consuelo-design/AGENTS.md to areas/consuelo-design/AGENTS.md.
+- [x] Move packages/consuelo-website/AGENTS.md to areas/website/AGENTS.md.
+- [x] Preserve Git tracking for streams with intentionally blank docs via .gitkeep.
+- [x] Update references that still pointed at the old package AGENTS paths.
 
 ## plan
 
-1. Pull PR #286 review truth and file map.
-2. Read `AGENTS.md`, `CODING-STANDARDS.md`, `SCRIPTS.md`, and affected script ranges.
-3. Apply only CodeRabbit-scoped fixes.
-4. Run syntax, behavior smoke, facade, review, and diff checks.
-5. Push task branch, merge into stream review PR, then ship review PR #286 if mergeable.
+1. Confirm stream area names from stream.list.
+2. Create areas/<area> directories for all existing stream branches.
+3. Move existing package-level design and website AGENTS content into stream-area AGENTS docs.
+4. Add minimal bootstrapped AGENTS docs for workspace-agents and dialer.
+5. Update code and docs references to moved AGENTS paths.
+6. Validate file layout, syntax, boundary checks, review, and diff cleanliness.
 
 ## files changed
 
-- `packages/workspace/scripts/edit-flow.js`
-- `packages/workspace/scripts/fs.js`
-- `packages/workspace/scripts/run-dialer-scenario.ts`
-- `packages/workspace/scripts/sentry.js`
-- `.task/workpad.md`
+- pending task:push update
 
 ## key decisions
 
-- `edit-flow.js` and `fs.js` both validate content files as readable regular files so bad paths fail at the boundary with clear errors.
-- Literal two-character `\n` content remains valid for single-line replacements; actual newline characters still require `--content-file`.
-- Patch ranges beyond EOF now fail before `slice()` can turn a bad range into an append/partial replace.
-- Dialer scenario retry env parsing falls back to defaults for malformed values so retries stay enabled.
-- Sentry API failures now throw to callers; trace catches per-attempt failures and continues to issue search.
+- Stream docs live under areas/<area> because stream.list and existing stream-context code already use that convention.
+- packages/consuelo-design/AGENTS.md moved to areas/consuelo-design/AGENTS.md to match the actual stream name.
+- packages/consuelo-website/AGENTS.md moved to areas/website/AGENTS.md to match the actual stream name.
+- Other stream folders use .gitkeep placeholders so Git can track intentionally blank stream doc directories.
+- Design tooling references were updated so the move does not break get-design-system or boundary checks.
 
 ## notes for ko
 
-- `workspace stream.sync` is still blocked by `/private/tmp/opensaas-worktrees/stream-workspace-agents-merge-main` holding `stream/workspace-agents` checked out.
-- `bun run audit -- --scripts --json` still fails before reaching changed code because Bun cannot resolve `tree-sitter` from this task worktree.
-- `workspace review.run --no-tests` returns `ok: true`; remaining findings are inherited stream review findings outside this CodeRabbit batch.
+- This task only bootstraps doc files. It does not yet inject these docs into stream.context output.
 
 ## improvements noticed
 
-- The workspace audit dependency issue should be fixed separately so script audit can run reliably in task worktrees.
-
-## errors i ran into
-
-- `git diff --check` initially failed on generated workpad placeholder trailing whitespace; filling this workpad fixed it.
+- Follow-up: update stream.context to surface areas/<area>/AGENTS.md and related stream docs directly.
 
 ## validation
 
-- `workspace prReview '{"pr":286,"stdout":true}'` confirmed 6 actionable CodeRabbit comments.
-- `workspace checkFiles` passed for `edit-flow.js`, `fs.js`, `run-dialer-scenario.ts`, and `sentry.js`.
-- Local behavior smoke passed for readable regular file validation, literal `\n` patch content, EOF range rejection, and directory `--content-file` rejection.
-- `bun run sentry -- trace 00000000000000000000000000000000 --dataset invalid-dataset --limit 1` returned `ok: true` with failed events attempt plus successful issues attempt.
-- `CONSUELO_SCENARIO_STEP_ATTEMPTS=bad CONSUELO_SCENARIO_RETRY_DELAY_MS=bad bun run dialer:scenario` reached the expected credential guard and wrote a transcript, proving env parsing did not abort or skip unexpectedly.
-- `bun run test tests/facade/facade.test.ts` passed: 367 tests.
-- `workspace review.run --no-tests` returned `ok: true`.
-
----
-
-## publish checklist
-
-```bash
-bun run task:push -- --message "fix(workspace): address pr 286 review comments" --changed
-bun run task:pr
-bun run task:finish
-```
+- Confirmed existing stream areas from remote stream branches: analytics, blog, clean-up, consuelo-design, dialer, marketing-site, pi-agent, redis, trash, trash2, website, workspace-agents.
+- Confirmed area docs were created under areas/<area>.
+- Confirmed old package AGENTS paths for consuelo-design and consuelo-website were removed.
+- Updated design tooling references to areas/consuelo-design/AGENTS.md and areas/website/AGENTS.md.
+- workspace checkFiles passed for packages/consuelo-design/src/index.ts and packages/workspace/scripts/consuelo-design.ts.
+- bun packages/workspace/scripts/consuelo-design.ts check --json passed with the new area doc paths.
+- git diff --check passed.
+- workspace review.run without explicit branch returned a branch validation error; reran with explicit branch.
+- workspace review.run with branch task/workspace-agents/bootstrap-stream-agent-docs, base stream/workspace-agents, and noTests passed.
+- First task.push attempt failed because .task/verify.json still referenced a previous task branch.
+- bun packages/workspace/scripts/verify.js --base stream/workspace-agents --no-db --json passed and wrote a fresh verify stamp for this branch.
