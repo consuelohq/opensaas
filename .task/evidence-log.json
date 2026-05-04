@@ -9352,8 +9352,24 @@
         "source": "task:fs",
         "task_branch": "task/blog/fix-decision-infrastructure-logo-treatment"
       }
+    },
+    {
+      "id": "43849e0b-5d88-4760-bee6-08c586b55acc",
+      "occurred_at": "2026-05-04T05:27:23.810Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/fix-decision-infrastructure-publish-time",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/fix-decision-infrastructure-publish-time"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-04T05:21:18.126Z"
+  "updated_at": "2026-05-04T05:27:23.858Z"
 }
