@@ -15,7 +15,13 @@ started: 2026-05-04
 
 ## files changed
 
-- 
+- `packages/consuelo-website/src/content/blog/adding-new-post.md`
+- `packages/consuelo-website/src/content/blog/ai-insurance-sales.md`
+- `packages/consuelo-website/src/content/blog/building-sales-stack.md`
+- `packages/consuelo-website/src/content/blog/how-to-configure-astropaper-theme.md`
+- `packages/consuelo-website/src/content/blog/welcome.md`
+- `packages/consuelo-website/src/pages/blog/index.astro`
+
 
 ## key decisions
 
