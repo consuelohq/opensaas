@@ -1,29 +1,36 @@
-# fix broken decision infrastructure logo image
+# add workspace tool result time beacon
 
-branch: `task/blog/fix-broken-decision-infrastructure-logo-image`
-stream: `stream/blog`
-pr: https://github.com/consuelohq/opensaas/pull/303
+branch: `task/workspace-agents/add-workspace-tool-result-time-beacon`
+stream: `stream/workspace-agents`
 started: 2026-05-04
 
 ## acceptance criteria
 
-- [ ] 
+- [ ] every top-level workspace typed tool JSON envelope includes `now`
+- [ ] `now` is an ISO timestamp string
+- [ ] existing envelope fields remain unchanged
+- [ ] implementation is centralized in facade layer
+- [ ] tests cover success/failure/batch/passthrough cases
+- [ ] note recorded: "rule/document injection is separate from time beacon."
 
 ## plan
 
-1. 
+1. inspect `ToolResult` type and central result construction in `/workspace/opensaas/packages/workspace/scripts/lib/facade/types.ts` and `/workspace/opensaas/packages/workspace/scripts/lib/facade/errors.ts`.
+2. implement centralized `now` injection in the facade result creation path and backfill passthrough result envelopes when needed.
+3. add/update tests for success, failure, batch, and passthrough tool results.
+4. run targeted workspace checks and tests, then `review.run`.
 
 ## files changed
 
-- 
+- `.task/workpad.md`
 
 ## key decisions
 
-- 
+- keep timestamp injection centralized so individual tools remain unchanged.
 
 ## notes for ko
 
-- 
+- `task.start` via workspace facade failed locally because `gh` and GitHub token are unavailable in this environment.
 
 ## improvements noticed
 
@@ -31,14 +38,8 @@ started: 2026-05-04
 
 ## errors i ran into
 
-- 
+- `bun run workspace task.start '{"area":"workspace-agents","title":"add workspace tool result time beacon"}'` failed with missing `gh` / `GITHUB_TOKEN`.
 
----
+## follow-up note
 
-## publish checklist
-
-```bash
-bun run task:push -- --message "type(blog): description" --changed
-bun run task:pr
-bun run task:finish
-```
+- rule/document injection is separate from time beacon.

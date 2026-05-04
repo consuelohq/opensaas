@@ -87,6 +87,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, '', undefined, undefined, options.logMode);
       return result as ToolResult<TData>;
@@ -102,6 +103,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
       return result as ToolResult<TData>;
@@ -117,6 +119,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
       return result as ToolResult<TData>;
@@ -145,6 +148,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
       return result as ToolResult<TData>;
@@ -167,6 +171,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
       return result as ToolResult<TData>;
@@ -186,6 +191,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
       return result as ToolResult<TData>;
@@ -203,6 +209,7 @@ export async function executeTool<TData = unknown>(
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
         requestId,
+        now: options.now,
       });
       logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
       return result as ToolResult<TData>;
@@ -212,6 +219,7 @@ export async function executeTool<TData = unknown>(
       const passthrough = parsedStdout.data as ToolResult<TData>;
       const result = {
         ...passthrough,
+        now: typeof passthrough.now === 'string' ? passthrough.now : new Date((options.now || Date.now)()).toISOString(),
         stderr: stripCommandEcho(String(passthrough.stderr || '')),
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
@@ -319,6 +327,7 @@ async function executeInternalTool<TData>(
         durationMs: elapsedMs(context.startedAt, context.options.now),
         traceId: context.traceId,
         requestId: context.requestId,
+        now: options.now,
       });
       logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
       return result as ToolResult<TData>;
@@ -369,6 +378,7 @@ async function executeInternalTool<TData>(
         durationMs: elapsedMs(context.startedAt, context.options.now),
         traceId: context.traceId,
         requestId: context.requestId,
+        now: options.now,
       });
       logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
       return result as ToolResult<TData>;
