@@ -19,7 +19,7 @@ Consuelo's base design system comes from our repo docs:
 
 Website-specific sessions also attach:
 
-- `packages/consuelo-website/animations.md`
+- `areas/website/animations.md`
 - `areas/website/AGENTS.md`
 
 Open Design's upstream `design-systems/` directory is vendored reference material. It is not Consuelo truth unless Ko explicitly asks for a reference skin.

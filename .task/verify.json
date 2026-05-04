@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/bootstrap-stream-agent-docs",
+  "branch": "task/workspace-agents/move-website-animations-stream-doc",
   "base": "stream/workspace-agents",
-  "headSha": "7f33b8f84f30bfe87ff1dfab620b50acdb5bf054",
-  "changeHash": "55ad36e13d8c323167060fa08f02b3b7eab9cdb84bb47155e09c367c4ef88ccb",
+  "headSha": "ccea4b463939ee9d0b529e435b7e9c4777b4ff5c",
+  "changeHash": "97b815a13d469840fc86129bc3c482a7c6aa58c2e8a457aa2619a455540a7e8f",
   "changedFiles": [
     "areas/analytics/.gitkeep",
     "areas/blog/.gitkeep",
@@ -16,14 +16,14 @@
     "areas/trash/.gitkeep",
     "areas/trash2/.gitkeep",
     "areas/website/AGENTS.md",
+    "areas/website/animations.md",
     "areas/workspace-agents/AGENTS.md",
-    "packages/consuelo-design/AGENTS.md",
     "packages/consuelo-design/README.md",
     "packages/consuelo-design/src/index.ts",
-    "packages/consuelo-website/AGENTS.md",
+    "packages/consuelo-website/animations.md",
     "packages/workspace/scripts/consuelo-design.ts"
   ],
-  "verifiedAt": "2026-05-04T07:20:21.139Z",
+  "verifiedAt": "2026-05-04T08:21:28.441Z",
   "review": {
     "skipped": false,
     "passed": true

@@ -17,7 +17,7 @@ const CORE_DESIGN_SYSTEM_FILES = [
 ] as const;
 
 const WEBSITE_CONTEXT_FILES = [
-  { role: 'website-motion-design', path: 'packages/consuelo-website/animations.md' },
+  { role: 'website-motion-design', path: 'areas/website/animations.md' },
   { role: 'website-agent-rules', path: 'areas/website/AGENTS.md' },
 ] as const;
 
