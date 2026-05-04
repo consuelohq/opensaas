@@ -1169,8 +1169,6 @@ workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 
-```
-
 
 ## Branch-explicit final validation flow
 
