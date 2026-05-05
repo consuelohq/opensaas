@@ -1,31 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/move-website-animations-stream-doc",
-  "base": "stream/workspace-agents",
-  "headSha": "ccea4b463939ee9d0b529e435b7e9c4777b4ff5c",
-  "changeHash": "97b815a13d469840fc86129bc3c482a7c6aa58c2e8a457aa2619a455540a7e8f",
+  "branch": "task/website/fix-hero-headline-visibility-after-boot-motion",
+  "base": "stream/website",
+  "headSha": "170ef3590cbcbf7675770076838cc3e5bbfa578e",
+  "changeHash": "89032855706b7c836856a8cf3de2a4cb1e1cbb180db27719807d59dbbb9be479",
   "changedFiles": [
-    "areas/analytics/.gitkeep",
-    "areas/blog/.gitkeep",
-    "areas/clean-up/.gitkeep",
-    "areas/consuelo-design/AGENTS.md",
-    "areas/dialer/AGENTS.md",
-    "areas/marketing-site/.gitkeep",
-    "areas/pi-agent/.gitkeep",
-    "areas/redis/.gitkeep",
-    "areas/trash/.gitkeep",
-    "areas/trash2/.gitkeep",
-    "areas/website/AGENTS.md",
-    "areas/website/animations.md",
-    "areas/workspace-agents/AGENTS.md",
-    "packages/consuelo-design/README.md",
-    "packages/consuelo-design/src/index.ts",
-    "packages/consuelo-website/animations.md",
-    "packages/workspace/scripts/consuelo-design.ts"
+    "packages/consuelo-website/src/lib/motion.ts"
   ],
-  "verifiedAt": "2026-05-04T08:21:28.441Z",
+  "verifiedAt": "2026-05-05T07:12:48.349Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
