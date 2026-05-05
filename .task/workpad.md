@@ -44,3 +44,30 @@ stream: stream/dialer
 - `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server` exits 0.
 - Grep of the latest reset log found no migration/query failures.
 - SQL checks confirm the new runtime tables, agent execution tables, and hazard materialized view exist after reset.
+
+## codex review follow-up
+
+Accepted Codex review items and patched them:
+
+- Made `CreateConsueloDialerRuntimeTables1774090000000.down()` non-destructive because this is an adoption migration and may adopt pre-existing production data tables.
+- Made `RefactorAgentChatEntities1764100000000.down()` non-destructive because thread/turn-based agent messages may have `conversationId = NULL` after the forward migration.
+- Added explicit `ALTER TABLE IF EXISTS ... ADD COLUMN IF NOT EXISTS ...` repair statements for legacy additive columns so partial old-SQL-stack databases are repaired, not silently skipped.
+- Added old call-history indexes: `idx_calls_workspace_outcome`, `idx_calls_workspace_date`, and `idx_calls_history_query`.
+- Ported `contact_attempt_ledger` backfill from the old SQL migration so production databases with existing queue/call history do not lose historical cadence state.
+- Added minimal `core.workspace_settings` compatibility table with `dialer_config` for cadence/stopping economics paths that read `core.workspace_settings` directly.
+
+## codex follow-up validation
+
+- Reran `npx prettier --write` on changed migration files.
+- Reran `git diff --check`.
+- Reran fresh Brew-backed database reset:
+  `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server`
+- Reset exits 0.
+- Grep of latest reset log found no actual migration/query failures.
+- SQL checks confirmed:
+  - agent execution tables exist.
+  - hazard materialized view exists.
+  - public dialer runtime tables exist.
+  - `core.workspace_settings` exists.
+  - additive retry/subscription columns exist.
+  - call-history indexes exist.

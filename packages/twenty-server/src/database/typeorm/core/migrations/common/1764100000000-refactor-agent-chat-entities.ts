@@ -140,62 +140,9 @@ export class RefactorAgentChatEntities1764100000000 implements MigrationInterfac
     `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessagePart"
-      DROP CONSTRAINT IF EXISTS "FK_2aff9daad5cc3b5e15ca7173342"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      DROP CONSTRAINT IF EXISTS "FK_87dbab10ac94d9a091f8efaa67b"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      DROP CONSTRAINT IF EXISTS "FK_4c31daa882e3130534995bf90ca"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentTurn"
-      DROP CONSTRAINT IF EXISTS "FK_3be906dca9d5b50fbfe40e33f07"
-    `);
-
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_2aff9daad5cc3b5e15ca717334"`,
-    );
-    await queryRunner.query(`DROP TABLE IF EXISTS "core"."agentMessagePart"`);
-
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_48c75cb32ff0d2887ef0dc547f"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_87dbab10ac94d9a091f8efaa67"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_4c31daa882e3130534995bf90c"`,
-    );
-
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      DROP COLUMN IF EXISTS "agentId"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      DROP COLUMN IF EXISTS "turnId"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      DROP COLUMN IF EXISTS "threadId"
-    `);
-    await queryRunner.query(`
-      ALTER TABLE "core"."agentMessage"
-      ALTER COLUMN "conversationId" SET NOT NULL
-    `);
-
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_e6d7c07f32e6f0f08cf639d4f5"`,
-    );
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "core"."IDX_3be906dca9d5b50fbfe40e33f0"`,
-    );
-    await queryRunner.query(`DROP TABLE IF EXISTS "core"."agentTurn"`);
+  public async down(): Promise<void> {
+    // Compatibility/adoption migration: keep agent execution tables and columns
+    // intact on rollback because newer agent messages may not have a
+    // conversationId and the active dev seeder writes thread/turn-based rows.
   }
 }

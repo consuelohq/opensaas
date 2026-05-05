@@ -280,55 +280,160 @@ export class CreateConsueloDialerRuntimeTables1774090000000 implements Migration
       CREATE INDEX IF NOT EXISTS idx_user_settings_user_workspace
       ON user_settings (user_id, workspace_id)
     `);
+
+    await this.repairAdditiveLegacyColumns(queryRunner);
+    await this.createLegacyRuntimeIndexes(queryRunner);
+    await this.backfillContactAttemptLedger(queryRunner);
+    await this.createCoreWorkspaceSettingsCompatibilityTable(queryRunner);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  private async repairAdditiveLegacyColumns(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
+    await queryRunner.query(`
+      ALTER TABLE IF EXISTS calls
+        ADD COLUMN IF NOT EXISTS retry_strategy text,
+        ADD COLUMN IF NOT EXISTS retry_scheduled_at timestamptz,
+        ADD COLUMN IF NOT EXISTS retry_reason text,
+        ADD COLUMN IF NOT EXISTS parallel_group_id varchar(30),
+        ADD COLUMN IF NOT EXISTS parallel_position smallint,
+        ADD COLUMN IF NOT EXISTS parallel_outcome varchar(20) DEFAULT 'pending',
+        ADD COLUMN IF NOT EXISTS parallel_termination_reason varchar(30),
+        ADD COLUMN IF NOT EXISTS parallel_terminated_at timestamptz,
+        ADD COLUMN IF NOT EXISTS amd_result varchar(20),
+        ADD COLUMN IF NOT EXISTS amd_enabled boolean DEFAULT false
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE IF EXISTS queue_items
+        ADD COLUMN IF NOT EXISTS retry_strategy text,
+        ADD COLUMN IF NOT EXISTS retry_scheduled_at timestamptz,
+        ADD COLUMN IF NOT EXISTS retry_reason text,
+        ADD COLUMN IF NOT EXISTS call_duration_seconds integer,
+        ADD COLUMN IF NOT EXISTS skip_reason text,
+        ADD COLUMN IF NOT EXISTS notes text
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE IF EXISTS workspace_subscriptions
+        ADD COLUMN IF NOT EXISTS number_packs jsonb DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS phone_number_add_ons jsonb DEFAULT '[]'::jsonb
+    `);
+  }
+
+  private async createLegacyRuntimeIndexes(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
     await queryRunner.query(
-      'DROP INDEX IF EXISTS idx_user_settings_user_workspace',
+      'CREATE INDEX IF NOT EXISTS idx_calls_workspace_start_time ON calls(workspace_id, start_time DESC)',
     );
-    await queryRunner.query('DROP TABLE IF EXISTS user_settings');
     await queryRunner.query(
-      'DROP INDEX IF EXISTS idx_workspace_phone_numbers_workspace_status',
+      'CREATE INDEX IF NOT EXISTS idx_calls_workspace_outcome ON calls(workspace_id, outcome) WHERE outcome IS NOT NULL',
     );
-    await queryRunner.query('DROP TABLE IF EXISTS workspace_phone_numbers');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_workspace_usage_lookup');
-    await queryRunner.query('DROP TABLE IF EXISTS workspace_usage');
-    await queryRunner.query('DROP TABLE IF EXISTS workspace_subscriptions');
     await queryRunner.query(
-      'DROP INDEX IF EXISTS idx_contact_attempt_ledger_last_attempt',
+      'CREATE INDEX IF NOT EXISTS idx_calls_workspace_date ON calls(workspace_id, start_time)',
     );
-    await queryRunner.query('DROP TABLE IF EXISTS contact_attempt_ledger');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_queue_items_outcome');
     await queryRunner.query(
-      'DROP INDEX IF EXISTS idx_queue_items_queue_status',
+      'CREATE INDEX IF NOT EXISTS idx_calls_history_query ON calls(workspace_id, outcome, start_time, contact_id)',
     );
-    await queryRunner.query('DROP INDEX IF EXISTS idx_queue_items_contact');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_queue_items_queue');
-    await queryRunner.query(
-      'DROP INDEX IF EXISTS idx_call_queues_workspace_status',
-    );
-    await queryRunner.query('DROP INDEX IF EXISTS idx_call_queues_workspace');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_call_queues_status');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_call_queues_user');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_queue_items_status');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_queue_items_queue_id');
-    await queryRunner.query('DROP TABLE IF EXISTS queue_items');
-    await queryRunner.query('DROP TABLE IF EXISTS call_queues');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_contacts_email');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_contacts_phone');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_contacts_workspace');
-    await queryRunner.query('DROP TABLE IF EXISTS contacts');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_parallel_group');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_recording');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_contact');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_start_time');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_call_sid');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_calls_workspace');
-    await queryRunner.query('DROP TABLE IF EXISTS calls');
-    await queryRunner.query('DROP TABLE IF EXISTS area_code_locations');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_caller_locks_expires');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_caller_locks_user');
-    await queryRunner.query('DROP INDEX IF EXISTS idx_caller_locks_call_sid');
-    await queryRunner.query('DROP TABLE IF EXISTS caller_id_locks');
+  }
+
+  private async backfillContactAttemptLedger(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
+    await queryRunner.query(`
+      WITH queue_attempts AS (
+        SELECT
+          cq.workspace_id,
+          qi.contact_id,
+          COALESCE(qi.last_attempt_at, qi.created_at) AS attempted_at,
+          qi.call_outcome AS outcome
+        FROM queue_items qi
+        JOIN call_queues cq ON cq.id = qi.queue_id
+        WHERE qi.last_attempt_at IS NOT NULL
+      ),
+      call_attempts AS (
+        SELECT
+          calls.workspace_id::text AS workspace_id,
+          calls.contact_id::text AS contact_id,
+          COALESCE(calls.start_time, calls.created_at) AS attempted_at,
+          calls.outcome
+        FROM calls
+        WHERE calls.contact_id IS NOT NULL
+          AND (calls.start_time IS NOT NULL OR calls.created_at IS NOT NULL)
+      ),
+      all_attempts AS (
+        SELECT * FROM queue_attempts
+        UNION ALL
+        SELECT * FROM call_attempts
+      )
+      INSERT INTO contact_attempt_ledger (
+        workspace_id,
+        contact_id,
+        last_attempt_at,
+        attempts_total,
+        attempts_today,
+        attempts_this_week,
+        outcomes,
+        day_window_start,
+        week_window_start
+      )
+      SELECT
+        workspace_id,
+        contact_id,
+        MAX(attempted_at) AS last_attempt_at,
+        COUNT(*)::int AS attempts_total,
+        COUNT(*) FILTER (WHERE attempted_at >= date_trunc('day', now()))::int AS attempts_today,
+        COUNT(*) FILTER (WHERE attempted_at >= date_trunc('week', now()))::int AS attempts_this_week,
+        COALESCE(
+          jsonb_agg(outcome ORDER BY attempted_at DESC)
+            FILTER (WHERE outcome IS NOT NULL),
+          '[]'::jsonb
+        ) AS outcomes,
+        date_trunc('day', now()) AS day_window_start,
+        date_trunc('week', now()) AS week_window_start
+      FROM all_attempts
+      GROUP BY workspace_id, contact_id
+      ON CONFLICT (workspace_id, contact_id) DO UPDATE
+      SET
+        last_attempt_at = EXCLUDED.last_attempt_at,
+        attempts_total = EXCLUDED.attempts_total,
+        attempts_today = EXCLUDED.attempts_today,
+        attempts_this_week = EXCLUDED.attempts_this_week,
+        outcomes = EXCLUDED.outcomes,
+        day_window_start = EXCLUDED.day_window_start,
+        week_window_start = EXCLUDED.week_window_start,
+        updated_at = now()
+    `);
+  }
+
+  private async createCoreWorkspaceSettingsCompatibilityTable(
+    queryRunner: QueryRunner,
+  ): Promise<void> {
+    await queryRunner.query(`
+      CREATE TABLE IF NOT EXISTS "core"."workspace_settings" (
+        "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "workspace_id" uuid NOT NULL UNIQUE,
+        "dialer_config" jsonb NOT NULL DEFAULT '{}'::jsonb,
+        "created_at" timestamptz NOT NULL DEFAULT now(),
+        "updated_at" timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+
+    await queryRunner.query(`
+      ALTER TABLE IF EXISTS "core"."workspace_settings"
+        ADD COLUMN IF NOT EXISTS "dialer_config" jsonb NOT NULL DEFAULT '{}'::jsonb
+    `);
+
+    await queryRunner.query(`
+      CREATE INDEX IF NOT EXISTS "idx_core_workspace_settings_workspace_id"
+      ON "core"."workspace_settings" ("workspace_id")
+    `);
+  }
+
+  public async down(): Promise<void> {
+    // Compatibility/adoption migration: do not drop runtime tables here. Some
+    // production databases may have created these tables through the legacy SQL
+    // migration stack before this TypeORM migration was recorded.
   }
 }
