@@ -40,12 +40,16 @@ const revealImmediately = (elements: HTMLElement[]): void => {
   });
 };
 
+const releaseHeroMotionGate = (): void => {
+  delete document.documentElement.dataset[HERO_READY_ATTRIBUTE];
+};
+
 export const bootLaunchHeroMotion = (): void => {
   const isReady = document.documentElement.dataset[HERO_READY_ATTRIBUTE] === 'true';
   const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
 
   if (!isReady || reduceMotion) {
-    delete document.documentElement.dataset[HERO_READY_ATTRIBUTE];
+    releaseHeroMotionGate();
     return;
   }
 
@@ -63,7 +67,7 @@ export const bootLaunchHeroMotion = (): void => {
 
   if (!hero || !header || !eyebrow || !title || !copy || productFrames.length === 0) {
     revealImmediately([...requiredElements, ...productFrames]);
-    delete document.documentElement.dataset[HERO_READY_ATTRIBUTE];
+    releaseHeroMotionGate();
     return;
   }
 
@@ -131,6 +135,7 @@ export const bootLaunchHeroMotion = (): void => {
               ease: 'power3.out',
             },
             onComplete: () => {
+              releaseHeroMotionGate();
               split?.revert();
               split = undefined;
               gsap.set(title, {
@@ -158,6 +163,7 @@ export const bootLaunchHeroMotion = (): void => {
 
           activeAnimations.push(titleTimeline);
         } catch {
+          releaseHeroMotionGate();
           split?.revert();
           split = undefined;
           gsap.set(title, {
@@ -181,6 +187,6 @@ export const bootLaunchHeroMotion = (): void => {
     );
   }).catch(() => {
     revealImmediately([header, eyebrow, title, copy, ...productFrames]);
-    delete document.documentElement.dataset[HERO_READY_ATTRIBUTE];
+    releaseHeroMotionGate();
   });
 };

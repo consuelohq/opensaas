@@ -106,11 +106,12 @@
     "packages/workspace/scripts/tool-runner.ts",
     "packages/workspace/scripts/website-deploy.js",
     "packages/workspace/scripts/workspace.ts",
+    "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-05T04:56:30.836Z"
+  "updatedAt": "2026-05-05T07:12:39.270Z"
 }

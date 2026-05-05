@@ -1,69 +1,54 @@
-# hero boot motion only
+# fix hero headline visibility after boot motion
 
-branch: `task/website/hero-boot-motion-only`
+branch: `task/website/fix-hero-headline-visibility-after-boot-motion`
 stream: `stream/website`
-pr: https://github.com/consuelohq/opensaas/pull/322
+pr: https://github.com/consuelohq/opensaas/pull/325
 started: 2026-05-05
 
 ## acceptance criteria
 
-- [ ] Homepage hero has one coherent first-load boot sequence.
-- [ ] Hero media remains normal HTML and does not wait on JS animation setup.
-- [ ] First-paint states avoid flash-before-animation while no-JS content stays visible.
-- [ ] Motion is limited to header, announcement, headline, copy, product/demo frames, and one optional scanline.
-- [ ] No below-fold reveals, SVG draw, parallax, ScrollTrigger work, FAQ motion, or mobile drawer choreography.
-- [ ] `prefers-reduced-motion: reduce` shows content immediately and skips choreography.
-- [ ] Mobile layout and scrolling remain intact.
+- [x] Hero headline remains visible after the boot animation completes.
+- [x] Missing/reduced-motion/fallback reveal paths release the same motion CSS gate.
 - [ ] `cd packages/consuelo-website && bun run build` passes.
 - [ ] `workspace review.run` passes against `stream/website`.
-- [ ] Website deploy runs and browser screenshots are captured.
 - [ ] Stream review PR is created/refreshed for ko.
 
 ## plan
 
-1. Add homepage-only early `data-hero-motion-ready` boot flag before header markup.
-2. Add meaningful motion hooks to the header, hero announcement, title, copy, product frames, and scanline.
-3. Add CSS initial states scoped to `html[data-hero-motion-ready=true]` so no-JS and reduced-motion remain readable.
-4. Add a small GSAP module for one first-load timeline with double RAF, SplitText headline lines, product-frame entrance, scanline pass, cleanup, and reduced-motion guard.
-5. Reread changed files, run build, review, deploy, capture browser screenshots, then push and promote.
+1. Confirm the bug path in hero motion setup and CSS gate selectors.
+2. Add one helper to release the hero motion-ready data attribute.
+3. Release that gate before SplitText restores the title DOM and in fallback reveal paths.
+4. Build/review, push the task branch, and promote into `stream/website`.
 
 ## files changed
 
-- pending
+- `packages/consuelo-website/src/lib/motion.ts`
+- `.task/workpad.md`
 
 ## key decisions
 
-- Use a homepage-only HTML data attribute instead of a global layout-ready class so other launch pages cannot inherit hidden header states.
-- Keep hero product media in existing `<picture><img src=...>` markup; animation affects only frame opacity/transform.
-- Use SplitText only on the hero headline, with line-level reveal and completion cleanup.
-- Skip loops and ScrollTrigger for this phase.
+- Keep the existing animation sequence and CSS selectors intact.
+- Fix the root cleanup order by releasing `data-hero-motion-ready` before SplitText reverts the headline.
+- Use the same gate-release helper for reduced-motion, missing-element, title-error, and outer fallback paths.
 
 ## notes for ko
 
-- This PR is deliberately a taste/performance slice for the hero boot only.
+- This is scoped to the disappearing headline regression after the hero boot motion.
+- No visual timing changes were intentionally introduced.
 
 ## improvements noticed
 
-- Existing launch header and hero scripts use direct DOM listeners; future cleanup can centralize launch-page interactivity after motion taste is approved.
+- The previous task's CSS gate pattern needs this helper because SplitText restores normal DOM after the animation.
 
 ## errors i ran into
 
-- Decision engine confidence is polluted by stale prior verification evidence; implementation path is based on explicit file reads and required validation gates.
-
----
+- Root standards reads for `AGENTS.md` / `CODING-STANDARDS.md` were blocked by tool safety checks in this session, so I relied on the loaded project steering and skill instructions.
+- `workspace decideNext` was also blocked by tool safety checks after `workspace explore`; I continued with explicit file reads and targeted runtime evidence.
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "feat(website): add hero boot motion" --changed
+bun run task:push -- --message "fix(website): keep hero headline visible after boot"
 bun run task:pr
 bun run task:finish
 ```
-
-## wait log
-
-Wait reason: Cloudflare Pages deployment URL is returning HTTP 200 but older HTML while the task worktree dist has heroMotionReady.
-Duration: 15s polling interval, 4 attempts max.
-Resume action: curl deployment URL and grep for heroMotionReady.
-Expected signal: HTTP 200 plus heroMotionReady present in remote HTML.
-Fallback: Document timeout and continue with local build/review evidence plus deploy URL.
