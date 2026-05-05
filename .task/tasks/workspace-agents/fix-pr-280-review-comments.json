@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-pr-280-review-comments",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 282,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/282",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-fix-pr-280-review-comments",
+  "createdAt": "2026-05-02T17:07:56.069Z"
+}

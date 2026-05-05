@@ -26,6 +26,25 @@ export const BranchInput = z.object({
   ...branchField,
 });
 
+export const ConsueloDesignInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+});
+
+export const ConsueloDesignUiInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  timeout: z.number().int().positive().optional(),
+});
+
+export const ConsueloDesignSessionInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  name: optionalString,
+  prompt: optionalString,
+  timeout: z.number().int().positive().optional(),
+});
+
 export const FsReadInput = z.object({
   ...requestFields,
   ...branchField,
@@ -73,7 +92,11 @@ export const FsPatchInput = z.object({
   path: z.string().min(1),
   from: z.number().int().positive(),
   to: z.number().int().positive(),
-  content: z.string(),
+  content: z.string().optional(),
+  contentFile: optionalString,
+}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
+  message: 'provide exactly one of content or contentFile',
+  path: ['content'],
 });
 
 export const FsHttpInput = z.object({
@@ -247,6 +270,7 @@ export const StreamListInput = z.object({
 
 export const ReviewInput = z.object({
   ...requestFields,
+  branch: z.string().min(1),
   fix: z.boolean().optional(),
   all: z.boolean().optional(),
   base: optionalString,
@@ -254,10 +278,10 @@ export const ReviewInput = z.object({
   mine: z.boolean().optional(),
   noTests: z.boolean().optional(),
 });
-
 export const VerifyInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...branchField,
   base: optionalString,
   noReview: z.boolean().optional(),
   noDb: z.boolean().optional(),
@@ -346,6 +370,64 @@ export const BrowserRawInput = z.object({
   ...requestFields,
   ...dryRunField,
   args: z.array(z.string().min(1)).min(1),
+});
+
+
+export const SentryConfigInput = z.object({
+  ...requestFields,
+  verify: z.boolean().optional(),
+});
+
+export const SentryProjectsInput = z.object({
+  ...requestFields,
+  limit: z.number().int().positive().optional(),
+  cursor: optionalString,
+});
+
+export const SentryIssuesInput = z.object({
+  ...requestFields,
+  query: optionalString,
+  project: optionalString,
+  environment: stringArray,
+  sort: optionalString,
+  statsPeriod: optionalString,
+  start: optionalString,
+  end: optionalString,
+  cursor: optionalString,
+  limit: z.number().int().positive().optional(),
+  expand: stringArray,
+  collapse: stringArray,
+});
+
+export const SentryIssueInput = z.object({
+  ...requestFields,
+  identifier: z.string().min(1),
+  expand: stringArray,
+});
+
+export const SentryIssueEventInput = z.object({
+  ...requestFields,
+  issueId: z.string().min(1),
+  eventId: optionalString,
+  full: z.boolean().optional(),
+});
+
+export const SentryEventInput = z.object({
+  ...requestFields,
+  eventId: z.string().min(1),
+  project: optionalString,
+});
+
+export const SentryTraceInput = z.object({
+  ...requestFields,
+  traceId: z.string().min(1),
+  project: optionalString,
+  query: optionalString,
+  statsPeriod: optionalString,
+  dataset: optionalString,
+  field: stringArray,
+  cursor: optionalString,
+  limit: z.number().int().positive().optional(),
 });
 
 export const WaitInput = z.object({
@@ -466,6 +548,9 @@ export const MacPortInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
+  ConsueloDesignInput,
+  ConsueloDesignUiInput,
+  ConsueloDesignSessionInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -507,6 +592,13 @@ export const schemaRegistry = {
   BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
+  SentryConfigInput,
+  SentryProjectsInput,
+  SentryIssuesInput,
+  SentryIssueInput,
+  SentryIssueEventInput,
+  SentryEventInput,
+  SentryTraceInput,
   WaitInput,
   TmpInput,
   RailwayLogsInput,
@@ -533,11 +625,14 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; dryRun?: boolean }',
+  ConsueloDesignInput: '{ requestId?: string; dryRun?: boolean }',
+  ConsueloDesignUiInput: '{ requestId?: string; dryRun?: boolean; timeout?: number }',
+  ConsueloDesignSessionInput: '{ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string }',
   FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string }',
-  FsPatchInput: '{ path: string; from: number; to: number; content: string; branch?: string; dryRun?: boolean; requestId?: string }',
+  FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string }',
@@ -560,8 +655,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string }',
   StreamListInput: '{ repo?: string; requestId?: string }',
-  ReviewInput: '{ fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }',
-  VerifyInput: '{ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
+  ReviewInput: "{ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }",
+  VerifyInput: '{ branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string }',
@@ -574,6 +669,13 @@ export const schemaTypeSignatures: Record<string, string> = {
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string }',
+  SentryConfigInput: '{ verify?: boolean; requestId?: string }',
+  SentryProjectsInput: '{ limit?: number; cursor?: string; requestId?: string }',
+  SentryIssuesInput: '{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string }',
+  SentryIssueInput: '{ identifier: string; expand?: string[]; requestId?: string }',
+  SentryIssueEventInput: '{ issueId: string; eventId?: string; full?: boolean; requestId?: string }',
+  SentryEventInput: '{ eventId: string; project?: string; requestId?: string }',
+  SentryTraceInput: '{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string }',
   WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string }',

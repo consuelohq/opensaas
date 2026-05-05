@@ -458,54 +458,47 @@ all commands run through `workspace.sandbox_exec({ command, timeout })`.
 
 ## 1. code quality — workspace review tools
 
-`review.run` is the single quality gate. it runs 13 static checks, eslint, typecheck, spec compliance, confidence score, and tests.
+`review.run` is the single quality gate. it runs 13 static checks, eslint, typecheck, spec compliance, confidence score, and tests. the typed facade requires an explicit task branch so review scope is teachable and deterministic.
 
 ### review.run
 
-standard review — changed files against auto-detected base:
+standard task review — `branch` is required:
 
-```
-workspace review.run '{}'
-```
-
-scope to active task worktree:
-
-```
-workspace review.run '{"mine": true}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\"}"
 ```
 
 skip tests (faster iteration):
 
-```
-workspace review.run '{"noTests": true}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
 ```
 
 review against a specific base:
 
-```
-workspace review.run '{"base": "stream/workspace-agents"}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"base\":\"stream/workspace-agents\"}"
 ```
 
 auto-fix eslint issues:
 
-```
-workspace review.run '{"fix": true}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"fix\":true}"
 ```
 
-review all files (full project scan):
+review all files in the task worktree:
 
-```
-workspace review.run '{"all": true}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"all\":true}"
 ```
 
 strict mode (surfaces hidden TS2564 errors):
 
-```
-workspace review.run '{"strict": true}'
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"strict\":true}"
 ```
 
-**facade flags:** `fix`, `all`, `base`, `strict`, `mine`, `noTests` — all exposed. `--json` and `--quiet` are handled automatically by the facade.
-
+**facade input:** `branch` is required. flags: `fix`, `all`, `base`, `strict`, `noTests`. `mine` is applied internally after branch resolution. `--json` and `--quiet` are handled automatically by the facade.
 **what it runs, in order:**
 
 | step | check | details |
@@ -774,7 +767,7 @@ workspace task.exec '{"command": ["npx", "nx", "fmt", "twenty-front"]}'
 
 | situation | command |
 |-----------|---------|
-| before pushing any code | `workspace review.run '{"noTests": true}'` |
+| before pushing any code | `workspace review.run "{\"branch\":\"task/<area>/<task>\",\"noTests\":true}"` |
 | full pre-merge gate | `workspace verify '{"base": "stream/<area>"}'` |
 | after review.run passes | ai review triggers automatically via tmux |
 | addressing PR feedback | `workspace prReview '{"pr": N}'` then fix |

@@ -103,6 +103,10 @@ describe('QueuesService', () => {
     query.mockImplementation(async (statement: string) => {
       statements.push(statement);
 
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
       if (statement.startsWith('UPDATE call_queues SET status')) {
         return [queue];
       }
@@ -181,6 +185,10 @@ describe('QueuesService', () => {
     query.mockImplementation(async (statement: string, params?: unknown[]) => {
       statements.push(statement);
 
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
       if (statement.startsWith('UPDATE call_queues SET status')) {
         return [queue];
       }
@@ -235,5 +243,57 @@ describe('QueuesService', () => {
       ),
     ).toBe(false);
     expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('marks queue completed when no callable item is available at start', async () => {
+    const queue = { id: 'queue-1', workspace_id: 'workspace-1' };
+    const statements: string[] = [];
+
+    query.mockImplementation(async (statement: string) => {
+      statements.push(statement);
+
+      if (statement.includes('completed_at = COALESCE')) {
+        return [{ ...queue, status: 'completed' }];
+      }
+
+      if (statement.startsWith('UPDATE call_queues SET status')) {
+        return [queue];
+      }
+
+      if (statement.includes('status = $2 LIMIT 1')) {
+        return [];
+      }
+
+      if (statement.includes("table_name = 'contact_attempt_ledger'")) {
+        return [{ exists: false }];
+      }
+
+      if (statement.includes("column_name IN ('retry_strategy'")) {
+        return [
+          { column_name: 'retry_strategy' },
+          { column_name: 'retry_scheduled_at' },
+          { column_name: 'retry_reason' },
+        ];
+      }
+
+      if (
+        statement.includes("status = 'pending' ORDER BY position ASC LIMIT 1")
+      ) {
+        return [];
+      }
+
+      throw new Error(`unexpected query: ${statement}`);
+    });
+
+    const result = await buildService().startQueue('workspace-1', 'queue-1');
+
+    expect(result?.currentItem).toBeNull();
+    expect(result?.nextItem).toBeNull();
+    expect(result?.queue).toEqual(
+      expect.objectContaining({
+        id: 'queue-1',
+        status: 'completed',
+      }),
+    );
   });
 });

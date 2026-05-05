@@ -1,0 +1,42 @@
+{
+  "name": "open-design",
+  "version": "0.3.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "type": "module",
+  "description": "Local-first design product: detects your installed code-agent CLI, runs design skills + design systems, streams artifacts into a sandboxed preview.",
+  "license": "Apache-2.0",
+  "bin": {
+    "od": "./apps/daemon/dist/cli.js"
+  },
+  "scripts": {
+    "postinstall": "node ./scripts/postinstall.mjs",
+    "tools-dev": "pnpm exec tools-dev",
+    "tools-pack": "pnpm exec tools-pack",
+    "build": "pnpm --filter @open-design/web build",
+    "check:residual-js": "node --experimental-strip-types scripts/check-residual-js.ts",
+    "sync:community-pets": "node --experimental-strip-types scripts/sync-community-pets.ts",
+    "bake:community-pets": "node --experimental-strip-types scripts/bake-community-pets.ts",
+    "test:e2e:live": "pnpm --filter @open-design/e2e test:e2e:live",
+    "test": "pnpm -r --workspace-concurrency=1 --if-present run test",
+    "test:ui:clean": "pnpm --filter @open-design/e2e test:ui:clean",
+    "test:ui": "pnpm --filter @open-design/e2e test:ui",
+    "test:ui:headed": "pnpm --filter @open-design/e2e test:ui:headed",
+    "typecheck": "pnpm -r --workspace-concurrency=1 --if-present run typecheck && pnpm --filter @open-design/daemon build && pnpm check:residual-js"
+  },
+  "devDependencies": {
+    "@open-design/tools-dev": "workspace:0.3.0",
+    "@open-design/tools-pack": "workspace:0.3.0"
+  },
+  "engines": {
+    "node": "~24",
+    "pnpm": ">=10.33.2 <11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "electron",
+      "esbuild"
+    ]
+  }
+}

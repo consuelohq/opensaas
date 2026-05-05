@@ -197,8 +197,12 @@ bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to f
 
 **patch**
 ```bash
-bun run fs -- patch src/foo.ts --from 10 --to 15 --content "new lines here"  # replace line range
+printf 'single line' | bun run fs -- patch src/foo.ts --from 10 --to 10
+bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
+bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
+
+Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
@@ -320,7 +324,7 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && git diff
 
 ### review — code review checks
 
-runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite.
+runs all 16 mandatory checks from CODING-STANDARDS.md against changed files. includes eslint, typecheck, and test suite. the typed facade requires an explicit task branch and scopes review to that task worktree. vendored third-party source under `packages/*/upstream/**` and `packages/*/vendor/**` is excluded from first-party review rules; review the wrapper/facade and attribution boundaries instead.
 
 ```bash
 bun run review                        # review changed files (main vs origin/main)
@@ -332,6 +336,12 @@ bun run review -- --json              # json output
 bun run review -- --quiet             # only show failures
 bun run review -- --no-tests          # skip test suite
 bun run review -- --strict            # enable strictPropertyInitialization
+```
+
+typed facade form — `branch` is required:
+
+```bash
+workspace review.run "{\"branch\":\"task/workspace-agents/example\",\"noTests\":true}"
 ```
 
 **review failure modes**
@@ -885,6 +895,50 @@ bun run tool-batch -- --file /tmp/workspace-batch.json
 ```
 
 ---
+
+
+### sentry — inspect Sentry issues, events, and traces
+
+Read-only JSON wrapper around the Sentry REST API. It reads configuration from macOS Keychain and never prints the auth token.
+
+Required Keychain items:
+
+```bash
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-auth-token" -w "YOUR_SENTRY_AUTH_TOKEN"
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-org-slug" -w "YOUR_SENTRY_ORG_SLUG"
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-base-url" -w "https://sentry.io"
+```
+
+Optional default project:
+
+```bash
+security add-generic-password -U -a "$USER" -s "opensaas-sentry-project-slug" -w "YOUR_DEFAULT_PROJECT_SLUG"
+```
+
+Examples:
+
+```bash
+bun run sentry -- config --verify
+bun run sentry -- projects --limit 25
+bun run sentry -- issues --query "is:unresolved" --limit 10
+bun run sentry -- issue PROJECT-123
+bun run sentry -- issue-event PROJECT-123 recommended --full
+bun run sentry -- event 0123456789abcdef0123456789abcdef --project opensaas
+bun run sentry -- trace 0123456789abcdef0123456789abcdef --limit 10
+```
+
+Typed facade examples:
+
+```bash
+workspace sentry.config '{"verify":true}'
+workspace sentry.issues '{"query":"is:unresolved","limit":10}'
+workspace sentry.issue '{"identifier":"PROJECT-123"}'
+workspace sentry.issueEvent '{"issueId":"PROJECT-123","eventId":"recommended","full":true}'
+workspace sentry.event '{"eventId":"0123456789abcdef0123456789abcdef","project":"opensaas"}'
+workspace sentry.trace '{"traceId":"0123456789abcdef0123456789abcdef","limit":10}'
+```
+
+The `trace` command is best-effort. It queries organization events for `trace:<traceId>` and falls back to issue search with the same trace query. It returns every attempt in JSON so agents can see partial Sentry API coverage.
 
 ### generate-docs — generate typed tool documentation
 

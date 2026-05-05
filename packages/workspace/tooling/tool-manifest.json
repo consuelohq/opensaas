@@ -270,8 +270,12 @@
         {
           "source": "content",
           "flag": "--content",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "contentFile",
+          "flag": "--content-file",
+          "kind": "value"
         }
       ]
     },
@@ -280,8 +284,8 @@
       "path": "tmp/example.txt",
       "from": 1,
       "to": 1,
-      "content": "hello",
-      "dryRun": true
+      "dryRun": true,
+      "contentFile": "/tmp/replacement.txt"
     }
   },
   {
@@ -305,7 +309,7 @@
     "command": {
       "script": "fs",
       "subcommand": "http",
-      "branchMode": "none",
+      "branchMode": "optional",
       "arguments": [
         {
           "source": "method",
@@ -1536,7 +1540,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "review",
-      "branchMode": "none",
+      "branchMode": "required",
       "jsonFlag": "--json",
       "arguments": [
         {
@@ -1572,7 +1576,7 @@
       ]
     },
     "exampleInput": {
-      "mine": true,
+      "branch": "task/workspace-agents/example",
       "noTests": true
     }
   },
@@ -1595,7 +1599,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "verify",
-      "branchMode": "none",
+      "branchMode": "optional",
       "jsonFlag": "--json",
       "arguments": [
         {
@@ -1626,6 +1630,7 @@
       ]
     },
     "exampleInput": {
+      "branch": "task/workspace-agents/example",
       "noStamp": true,
       "dryRun": true
     }
@@ -2279,6 +2284,357 @@
     },
     "exampleInput": {
       "dryRun": true
+    }
+  },
+  {
+    "name": "sentry.config",
+    "methodPath": [
+      "sentry",
+      "config"
+    ],
+    "description": "show Sentry API configuration status from Keychain without exposing secrets",
+    "category": "sentry",
+    "underlying": "workspace sentry.config",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryConfigInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "config",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "verify",
+          "flag": "--verify",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "verify": true
+    }
+  },
+  {
+    "name": "sentry.projects",
+    "methodPath": [
+      "sentry",
+      "projects"
+    ],
+    "description": "list Sentry projects for the configured organization",
+    "category": "sentry",
+    "underlying": "workspace sentry.projects",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryProjectsInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "projects",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "limit": 25
+    }
+  },
+  {
+    "name": "sentry.issues",
+    "methodPath": [
+      "sentry",
+      "issues"
+    ],
+    "description": "search Sentry issues across the configured organization",
+    "category": "sentry",
+    "underlying": "workspace sentry.issues",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssuesInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issues",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "query",
+          "flag": "--query",
+          "kind": "value"
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "environment",
+          "flag": "--environment",
+          "kind": "array"
+        },
+        {
+          "source": "sort",
+          "flag": "--sort",
+          "kind": "value"
+        },
+        {
+          "source": "statsPeriod",
+          "flag": "--stats-period",
+          "kind": "value"
+        },
+        {
+          "source": "start",
+          "flag": "--start",
+          "kind": "value"
+        },
+        {
+          "source": "end",
+          "flag": "--end",
+          "kind": "value"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "expand",
+          "flag": "--expand",
+          "kind": "array"
+        },
+        {
+          "source": "collapse",
+          "flag": "--collapse",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "query": "is:unresolved",
+      "limit": 10
+    }
+  },
+  {
+    "name": "sentry.issue",
+    "methodPath": [
+      "sentry",
+      "issue"
+    ],
+    "description": "retrieve one Sentry issue by short id or numeric issue id",
+    "category": "sentry",
+    "underlying": "workspace sentry.issue",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssueInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issue",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "identifier",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "expand",
+          "flag": "--expand",
+          "kind": "array"
+        }
+      ]
+    },
+    "exampleInput": {
+      "identifier": "PROJECT-123"
+    }
+  },
+  {
+    "name": "sentry.issueEvent",
+    "methodPath": [
+      "sentry",
+      "issueEvent"
+    ],
+    "description": "retrieve a latest, recommended, oldest, or concrete Sentry event for an issue",
+    "category": "sentry",
+    "underlying": "workspace sentry.issueEvent",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryIssueEventInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "issue-event",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "issueId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "eventId",
+          "kind": "value"
+        },
+        {
+          "source": "full",
+          "flag": "--full",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "issueId": "PROJECT-123",
+      "eventId": "recommended",
+      "full": true
+    }
+  },
+  {
+    "name": "sentry.event",
+    "methodPath": [
+      "sentry",
+      "event"
+    ],
+    "description": "retrieve or resolve a Sentry event id, using a project slug when available",
+    "category": "sentry",
+    "underlying": "workspace sentry.event",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryEventInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "event",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "eventId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "eventId": "0123456789abcdef0123456789abcdef"
+    }
+  },
+  {
+    "name": "sentry.trace",
+    "methodPath": [
+      "sentry",
+      "trace"
+    ],
+    "description": "perform a best-effort Sentry trace lookup across organization events and issues",
+    "category": "sentry",
+    "underlying": "workspace sentry.trace",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "SentryTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "sentry",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "traceId",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "query",
+          "flag": "--query",
+          "kind": "value"
+        },
+        {
+          "source": "statsPeriod",
+          "flag": "--stats-period",
+          "kind": "value"
+        },
+        {
+          "source": "dataset",
+          "flag": "--dataset",
+          "kind": "value"
+        },
+        {
+          "source": "field",
+          "flag": "--field",
+          "kind": "array"
+        },
+        {
+          "source": "cursor",
+          "flag": "--cursor",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "traceId": "0123456789abcdef0123456789abcdef",
+      "limit": 10
     }
   },
   {
@@ -3073,6 +3429,637 @@
     "command": {
       "script": "generate-types",
       "branchMode": "none",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.run",
+    "methodPath": [
+      "consueloDesign",
+      "run"
+    ],
+    "description": "start Open Design daemon and web UI in the foreground through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design run",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "run",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.getDesignSystem",
+    "methodPath": [
+      "consueloDesign",
+      "getDesignSystem"
+    ],
+    "description": "return base Consuelo DESIGN.md and consuelo-design AGENTS.md only",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design get-design-system",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "get-design-system",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.listSkills",
+    "methodPath": [
+      "consueloDesign",
+      "listSkills"
+    ],
+    "description": "list upstream Open Design skills and Consuelo workflow mappings",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design list-skills",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "list-skills",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.listDesignSystems",
+    "methodPath": [
+      "consueloDesign",
+      "listDesignSystems"
+    ],
+    "description": "list Consuelo default design system and upstream reference systems",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design list-design-systems",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "list-design-systems",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.upstreamStatus",
+    "methodPath": [
+      "consueloDesign",
+      "upstreamStatus"
+    ],
+    "description": "show vendored Open Design metadata and runtime requirements",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design upstream-status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "upstream-status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.railwayCheck",
+    "methodPath": [
+      "consueloDesign",
+      "railwayCheck"
+    ],
+    "description": "verify consuelo-design is excluded from Railway deploy paths",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design railway:check",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "railway:check",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.check",
+    "methodPath": [
+      "consueloDesign",
+      "check"
+    ],
+    "description": "run consuelo-design package boundary and Railway checks",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design check",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "check",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.generateWebsite",
+    "methodPath": [
+      "consueloDesign",
+      "generateWebsite"
+    ],
+    "description": "start or open a live Open Design website working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-website",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-website",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateDemo",
+    "methodPath": [
+      "consueloDesign",
+      "generateDemo"
+    ],
+    "description": "start or open a live Open Design demo working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-demo",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-demo",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateImageBrief",
+    "methodPath": [
+      "consueloDesign",
+      "generateImageBrief"
+    ],
+    "description": "start or open a live Open Design image/media working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-image-brief",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-image-brief",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateDigitalEguide",
+    "methodPath": [
+      "consueloDesign",
+      "generateDigitalEguide"
+    ],
+    "description": "start or open a live Open Design digital e-guide working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-digital-eguide",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-digital-eguide",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateEmail",
+    "methodPath": [
+      "consueloDesign",
+      "generateEmail"
+    ],
+    "description": "start or open a live Open Design email working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-email",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-email",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.generateMotionFrame",
+    "methodPath": [
+      "consueloDesign",
+      "generateMotionFrame"
+    ],
+    "description": "start or open a live Open Design motion-frame working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design generate-motion-frame",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "generate-motion-frame",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.renderHyperframes",
+    "methodPath": [
+      "consueloDesign",
+      "renderHyperframes"
+    ],
+    "description": "start or open a live Open Design HyperFrames render working session",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design render-hyperframes",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ConsueloDesignSessionInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "render-hyperframes",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "prompt",
+          "flag": "--prompt",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiBg",
+    "methodPath": [
+      "consueloDesign",
+      "uiBg"
+    ],
+    "description": "start Open Design managed runtimes in the background through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:bg",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:bg",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiStop",
+    "methodPath": [
+      "consueloDesign",
+      "uiStop"
+    ],
+    "description": "stop Open Design managed runtimes through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:stop",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:stop",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {
+      "dryRun": true
+    }
+  },
+  {
+    "name": "consueloDesign.uiStatus",
+    "methodPath": [
+      "consueloDesign",
+      "uiStatus"
+    ],
+    "description": "show Open Design managed runtime status through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:status",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:status",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.uiLogs",
+    "methodPath": [
+      "consueloDesign",
+      "uiLogs"
+    ],
+    "description": "show Open Design managed runtime logs through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design ui:logs",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": true,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 30000,
+    "inputSchema": "ConsueloDesignInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "ui:logs",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": []
+    },
+    "exampleInput": {}
+  },
+  {
+    "name": "consueloDesign.odBuild",
+    "methodPath": [
+      "consueloDesign",
+      "odBuild"
+    ],
+    "description": "build the vendored Open Design daemon CLI through the Bun facade",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design od:build",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "ConsueloDesignUiInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "od:build",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
       "arguments": []
     },
     "exampleInput": {

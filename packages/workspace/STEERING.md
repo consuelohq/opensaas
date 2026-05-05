@@ -70,6 +70,66 @@ State the positive claim directly. If a genuine distinction needs both sides, na
 
 **Narrow exception:** technical statements about necessary or sufficient conditions in logic, math, or formal proofs.
 
+## Markdown as the default writing format
+
+Use Markdown as the default format for in chat conversations and agent-facing instructions because it stays readable in every surface where ChatGPT and workspace agents operate. Markdown is plain text with lightweight formatting markers, so the raw file is still understandable in a terminal, a repo file, a chat message, a canvas, or a rendered docs site. Use Markdown for chatting, steering, handoffs, runbooks, docs, and task notes because the source remains usable even when no preview, rich editor, or renderer is available.
+
+Write Markdown for a literal-minded reader. Headings should create the map of the document. Short paragraphs should carry the judgment. Bullets should be used for parallel rules, checklists, or examples. Code fences should be used for commands, file paths, config snippets, and exact text that should be copied without interpretation. The goal is to make the document easy for reader or another agent to parse.
+
+Prefer canvas over editor-specific formatting. A canvas file can move across editors, operating systems, repositories, documentation sites, and chat surfaces without losing the core content. This portability matters for steering because instructions need to survive tool changes, renderer changes, and future agents reading the file in raw form. Do not rely on formatting that only works in one app when the instruction itself needs to be permanent.
+
+When output is intended to be reused verbatim in a repo, steering file, prompt, config, script, or documentation page, always choose a copy-safe surface. Use canvas for multi-paragraph drafts, multi-section instructions, reusable docs, or anything the user is likely to edit. Use a fenced copy-paste block for short exact snippets, with the correct wrapper for the content: ` ```markdown ` for Markdown, ` ```json ` for JSON, ` ```bash ` for shell commands, ` ```ts ` or another language fence for code, and ` ```text ` for plain instructions. Normal conversational explanation can stay in chat; exact reusable content should live in canvas or a properly fenced block so copying preserves structure, spacing, and syntax.
+
+Use these examples as the default routing table and example of a markdown table:
+
+| Case                              | Correct behavior            |
+| --------------------------------- | --------------------------- |
+| Multi-paragraph steering update   | Use canvas                  |
+| Short snippet for `STEERING.md`   | Use fenced `markdown` block |
+| Shell command                     | Use fenced `bash` block     |
+| JSON config                       | Use fenced `json` block     |
+| TypeScript code                   | Use fenced `ts` block       |
+| Plain explanation                 | Normal chat is fine         |
+| Handoff, runbook, or durable docs | Use canvas                  |
+| Exact plain-text instruction      | Use fenced `text` block     |
+
+Be aware that Markdown has flavors. Different tools support different syntax, especially for tables, task lists, footnotes, callouts, diagrams, and embedded HTML. Steering should use conservative Markdown unless a repo-specific renderer clearly supports the feature. Headings, paragraphs, bullets, numbered lists, links, inline code, and fenced code blocks are safe defaults. Advanced syntax belongs only where it improves clarity and still remains readable as raw text.
+
+The standard for Markdown in steering is simple: write the file so the raw source is already clear, then let rendering make it nicer. A good Markdown instruction should still make sense in a terminal, a code editor, a docs site, a canvas, or a copied chat block. If the raw text needs the renderer to be understandable, simplify the structure.
+
+
+## Markdown syntax cheat sheet
+
+### Basic syntax
+
+| Element         | Markdown syntax                                        |
+| --------------- | ------------------------------------------------------ |
+| Heading         | `# H1`<br>`## H2`<br>`### H3`                          |
+| Bold            | `**bold text**`                                        |
+| Italic          | `*italicized text*`                                    |
+| Blockquote      | `> blockquote`                                         |
+| Ordered list    | `1. First item`<br>`2. Second item`<br>`3. Third item` |
+| Unordered list  | `- First item`<br>`- Second item`<br>`- Third item`    |
+| Code            | `` `code` ``                                           |
+| Horizontal rule | `---`                                                  |
+| Link            | `[title](https://www.example.com)`                     |
+| Image           | `![alt text](image.jpg)`                               |
+
+### Extended syntax
+
+| Element           | Markdown syntax                                                                                                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table             | <code>| Syntax | Description |</code><br><code>| --- | --- |</code><br><code>| Header | Title |</code><br><code>| Paragraph | Text |</code>                                                                      |
+| Fenced code block | <code>`json</code><br><code>{</code><br><code>&nbsp;&nbsp;"firstName": "John",</code><br><code>&nbsp;&nbsp;"lastName": "Smith",</code><br><code>&nbsp;&nbsp;"age": 25</code><br><code>}</code><br><code>`</code> |
+| Footnote          | `Here's a sentence with a footnote. [^1]`<br><br>`[^1]: This is the footnote.`                                                                                                                                   |
+| Heading ID        | `### My Great Heading {#custom-id}`                                                                                                                                                                              |
+| Definition list   | `term`<br>`: definition`                                                                                                                                                                                         |
+| Strikethrough     | `~~The world is flat.~~`                                                                                                                                                                                         |
+| Task list         | `- [x] Write the press release`<br>`- [ ] Update the website`<br>`- [ ] Contact the media`                                                                                                                       |
+| Emoji             | `That is so funny! :joy:`                                                                                                                                                                                        |
+| Highlight         | `I need to highlight these ==very important words==.`                                                                                                                                                            |
+| Subscript         | `H~2~O`                                                                                                                                                                                                          |
+| Superscript       | `X^2^`                                                                                                                                                                                                           |
 ---
 
 ## Rules
@@ -416,6 +476,13 @@ the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines eve
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
 
+After one successful workspace.get_steering call in a conversation, treat steering as loaded.
+Do not call get_steering again unless:
+- ko explicitly asks to refresh steering
+- the workspace tool session restarted
+- a previous get_steering call failed
+- there is evidence the steering response is stale or incomplete
+
 quick reference:
 
 ```ts
@@ -425,7 +492,7 @@ workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace review.run '{\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
 ```
@@ -548,7 +615,7 @@ workspace.sandbox_exec({
 review pipeline:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace review.run '{\"base\":\"stream/workspace-agents\",\"noTests\":true}'", timeout: 120 })
+workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
 workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
 ```
 
@@ -607,6 +674,14 @@ stop and ask ko when:
 * an external message/post/email would be sent
 
 do not ask before doing basic investigation.
+
+### source-code patching safety
+
+Source code is a structured payload. Do not send multiline code through inline command arguments. Inline patch content travels through JSON, shell parsing, facade argument building, argv parsing, and line splitting; those layers can convert real newlines into literal `\n` text or shift line ranges into the wrong language region.
+
+Use `fs.patch --content-file` or stdin for multiline replacements. Use inline `--content` only for single-line edits. After patching, reread the changed range and run the file-type validation that matches the file. For mixed-syntax files such as Astro, Vue, MDX, or embedded templates, confirm the patch stays inside the intended region and use the package parser or build check rather than generic `node --check`.
+
+The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter or inserting literal `\n` sequences into TypeScript. Treat shell-safe transport as part of correctness, not as a formatting detail.
 
 ### verification standard
 
@@ -983,7 +1058,7 @@ When working on workspace tooling, scripts, task workflow, typed facade behavior
 Start workspace-tooling investigations with:
 
 ```bash
-workspace get_steering
+
 workspace stream.context '{"area":"workspace-agents"}'
 workspace context.search '{"keyword":"typed workspace facade","limit":5}'
 workspace context.search '{"keyword":"browser facade aliases","limit":5}'
@@ -1101,4 +1176,15 @@ workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 
-```
+
+## Branch-explicit final validation flow
+
+Use explicit `branch` for final validation and push commands so verify stamps and pushed commits always target the same task worktree.
+
+Canonical sequence:
+
+1. `bun run workspace review.run '{"branch":"task/<area>/<name>","noTests":true}'`
+2. `bun run workspace verify '{"branch":"task/<area>/<name>"}'`
+3. `bun run workspace task.push '{"branch":"task/<area>/<name>","message":"<commit message>"}'`
+
+This keeps review, verify, and push deterministic in multi-worktree sessions.

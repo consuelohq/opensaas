@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/expand-dialer-scenario-e2e-harness",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 279,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/279",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-expand-dialer-scenario-e2e-harness",
+  "createdAt": "2026-05-02T06:05:18.276Z"
+}

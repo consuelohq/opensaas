@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/add-gsap-motion-docs-dependency",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 269,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/269",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-add-gsap-motion-docs-dependency",
+  "createdAt": "2026-05-02T02:33:06.619Z"
+}
