@@ -9512,8 +9512,632 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
+    },
+    {
+      "id": "f69f6f09-f98b-49dd-8e05-0b3798431e0f",
+      "occurred_at": "2026-05-05T04:30:48.406Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "1a5e391f-5505-4094-a459-5676e38175ea",
+      "occurred_at": "2026-05-05T04:30:54.386Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/animations.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "4367002f-b276-4827-bb58-dd79af20040d",
+      "occurred_at": "2026-05-05T04:31:09.151Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "a41369b8-a5d7-4814-9294-ddfe65a7cd1c",
+      "occurred_at": "2026-05-05T04:31:09.413Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "c7d7cfc1-d2ed-4829-8fc1-de088d7071fc",
+      "occurred_at": "2026-05-05T04:31:09.672Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/animations.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "99707c27-efd7-46dd-bd5a-c6182f333014",
+      "occurred_at": "2026-05-05T04:31:20.106Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "8bdac749-bf72-4e1e-a44e-b0d67021f400",
+      "occurred_at": "2026-05-05T04:31:27.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "9afb2442-1480-49a7-b0e9-d1350ee1059b",
+      "occurred_at": "2026-05-05T04:31:35.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "a5ba2ec7-a47a-40b1-8d23-067e11ded4b5",
+      "occurred_at": "2026-05-05T04:32:02.695Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "91ba982d-6dbf-414a-8c5a-dfc083cc9ee5",
+      "occurred_at": "2026-05-05T04:32:07.079Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "567c774f-f31d-464d-912f-dfb92110c88a",
+      "occurred_at": "2026-05-05T04:32:27.712Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "cbc90505-5aa0-4c0a-9d5a-00f915538f80",
+      "occurred_at": "2026-05-05T04:32:27.970Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "be301f0b-f97a-4ec3-a49a-ccdfdba60ad5",
+      "occurred_at": "2026-05-05T04:32:28.230Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "ee667e3e-5167-4450-9331-37fe1925ede0",
+      "occurred_at": "2026-05-05T04:32:28.487Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "93faeb02-1766-489d-bccb-860394fd2a35",
+      "occurred_at": "2026-05-05T04:32:38.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "f8e1b05e-008f-453b-8785-c052c957d910",
+      "occurred_at": "2026-05-05T04:32:44.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "5121d1a2-7024-4c2e-99b2-ff4b69472388",
+      "occurred_at": "2026-05-05T04:32:53.252Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "04b5256b-5b4a-47cb-9146-239089802ed8",
+      "occurred_at": "2026-05-05T04:34:31.113Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "87c7d8b4-8569-47c1-920f-52d4a4f21df9",
+      "occurred_at": "2026-05-05T04:34:38.148Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "6d9ea12c-6c45-4dbc-bf6c-798ff47a80d0",
+      "occurred_at": "2026-05-05T04:35:09.286Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "b943e51d-8fad-495d-9c69-5a46b5470aa6",
+      "occurred_at": "2026-05-05T04:35:34.071Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "86544613-f9bf-4aaa-9a1a-8972410a35c6",
+      "occurred_at": "2026-05-05T04:36:20.354Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "f124d670-3e59-45e5-8faf-3906d39efd08",
+      "occurred_at": "2026-05-05T04:38:40.687Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "07b25db0-60e6-47ff-a4cd-40be86564a41",
+      "occurred_at": "2026-05-05T04:38:40.943Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7a99a5c3-7399-4f44-861a-1ca0d6c4bbb3",
+      "occurred_at": "2026-05-05T04:38:41.197Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7685267c-f8c0-4f0d-8851-7cf9e27484ad",
+      "occurred_at": "2026-05-05T04:38:41.449Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "867a3c7f-559d-4b78-8847-cf6518853714",
+      "occurred_at": "2026-05-05T04:39:02.282Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "baa2f232-0aed-45b3-ac07-47bdb27a2141",
+      "occurred_at": "2026-05-05T04:39:02.536Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "2e5692d9-c68a-4c31-ae60-5a9ebab9ebcd",
+      "occurred_at": "2026-05-05T04:39:02.789Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "06ee4411-5b8c-4845-add1-601a39b2d75a",
+      "occurred_at": "2026-05-05T04:39:03.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "64b6c0c7-2f48-4903-8b6b-168171ed57a8",
+      "occurred_at": "2026-05-05T04:39:28.412Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "231cb1f4-533c-4591-a330-1e43fc777e8e",
+      "occurred_at": "2026-05-05T04:39:28.667Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "45c82a37-8fa7-4b67-8dae-ed8f0ce453b1",
+      "occurred_at": "2026-05-05T04:39:28.924Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7e8675cf-a747-434b-b81a-302a92c18885",
+      "occurred_at": "2026-05-05T04:39:37.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "a245388e-8998-4ea8-acec-cb3543fd031f",
+      "occurred_at": "2026-05-05T04:39:37.612Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "9ad0b003-5638-4091-b02a-da58203ab211",
+      "occurred_at": "2026-05-05T04:39:53.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "63ff315e-a1ec-45e7-8977-56b7336b9685",
+      "occurred_at": "2026-05-05T04:41:49.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7ad7d880-6b92-40c9-a3ce-70c604e429e4",
+      "occurred_at": "2026-05-05T04:53:29.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/website-deploy.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "b6e633c3-fb1b-46d0-b130-ae5de4c16e7d",
+      "occurred_at": "2026-05-05T04:56:30.879Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-04T20:17:56.063Z"
+  "updated_at": "2026-05-05T04:56:30.925Z"
 }
