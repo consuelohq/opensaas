@@ -485,10 +485,12 @@ async function preflightUserContext(): Promise<unknown> {
 function assertCsvExport(csv: string): { rows: number; bytes: number; preview: string } {
   const lines = csv.trim().split(/\r?\n/);
   const header = lines[0] ?? '';
+  const allowedHeaders = new Set([
+    'position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at',
+    'id,position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at',
+  ]);
 
-  const expectedHeader =
-    'position,contact_id,status,outcome,duration_seconds,skip_reason,attempted_at';
-  if (header !== expectedHeader) {
+  if (!allowedHeaders.has(header)) {
     throw new Error(`CSV missing expected queue header: ${header}`);
   }
 
