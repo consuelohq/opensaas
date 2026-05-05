@@ -1230,3 +1230,35 @@ bad: cd /private/tmp/opensaas-worktrees/task-dialer && rg "TODO" packages/
 ---
 
 ## script file paths section removed — run `bun run fs -- list packages/workspace/scripts/` to see current files.
+
+## Linear facade
+
+Linear uses `packages/workspace/scripts/linear.js` as the source wrapper and typed facade entries in `tooling/tool-manifest.json`.
+
+Required workflow for issue creation:
+
+1. Search first with `workspace linear.search '{"search":"<title keywords>"}'` to avoid duplicates.
+2. Create with `workspace linear.createIssue '{"title":"[task] description","description":"...","labels":["[task]","opensaas"]}'`.
+3. Use DEV by default. Pass `team:"growth"` only when Ko explicitly asks for non-engineering work.
+4. Every issue must include one bracket type label and one repository label. The wrapper defaults to the bracket type detected from the title plus `opensaas`; pass labels explicitly when creating non-default repository work.
+5. Use `linear.labels`, `linear.teams`, `linear.projects`, and `linear.states` to discover ids instead of guessing.
+
+Typed commands:
+
+- `linear.search` — search or list issues, DEV scoped by default when listing.
+- `linear.issue` — read one issue by identifier or id.
+- `linear.createIssue` — create an issue with `team`, `title`, `description`, `state`, `labels`, `assignee`, `priority`, `project`, `cycle`, and `parent`.
+- `linear.updateIssue` — update title, description, state, labels, assignee, priority, project, cycle, or parent.
+- `linear.labels` — list labels for type/repository consistency.
+- `linear.teams` — list teams and states.
+- `linear.projects` — list projects for project attachment.
+- `linear.states` — list workflow states for a team.
+
+Examples:
+
+```bash
+workspace linear.search '{"search":"workspace facade linear"}'
+workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrapper","labels":["[bug]","opensaas"]}'
+workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
+workspace linear.projects '{"first":50}'
+```

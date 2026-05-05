@@ -8986,8 +8986,8 @@
       }
     },
     {
-      "id": "44a2e610-b7b5-4e1b-84b0-5a98d2ace94f",
-      "occurred_at": "2026-05-04T07:10:22.299Z",
+      "id": "71d06d6d-423e-4b47-a4a8-b993bef18068",
+      "occurred_at": "2026-05-04T08:09:42.673Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -8995,15 +8995,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "4a401bb7-96e2-4181-87ff-3bd46006988f",
-      "occurred_at": "2026-05-04T07:10:22.602Z",
+      "id": "ebedb992-cb83-4041-9d2a-22d5e14917c5",
+      "occurred_at": "2026-05-04T08:09:42.932Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9011,111 +9011,511 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "a21d3248-f7b9-41d9-82be-2523690ca044",
-      "occurred_at": "2026-05-04T07:10:22.878Z",
+      "id": "d5be6625-6059-4c67-a7d0-067d8dc567a0",
+      "occurred_at": "2026-05-04T08:09:50.419Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-design/AGENTS.md",
+      "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "7f89c668-cbca-4be7-94bd-4116b674bb6c",
-      "occurred_at": "2026-05-04T07:10:23.185Z",
+      "id": "1adbef7c-83ce-4d0a-b936-f67d066b6799",
+      "occurred_at": "2026-05-04T08:10:15.270Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/pages/blog/index.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "50a38333-a2c1-4fb6-9ebc-0d3879b97ebe",
-      "occurred_at": "2026-05-04T07:10:23.503Z",
+      "id": "99450f1a-561e-4906-8993-04e4318ae77f",
+      "occurred_at": "2026-05-04T08:10:23.537Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/consuelo-website/src/utils/getSortedPosts.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "edbee9fc-aa7c-44da-a9b0-9e3cca5b5628",
-      "occurred_at": "2026-05-04T07:12:26.256Z",
+      "id": "aae3e5e6-97fb-4a7f-b4b4-cea8999e1815",
+      "occurred_at": "2026-05-04T08:10:23.793Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/workspace-agents/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/components/Card.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "bdf72e99-30d9-4c81-8377-042eb2a4a859",
-      "occurred_at": "2026-05-04T07:12:26.537Z",
+      "id": "3f50b1fd-5eb9-4d68-83a8-231da0e36bdd",
+      "occurred_at": "2026-05-04T08:10:24.052Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/dialer/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/config.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "c71a665e-5b25-462c-8414-a5b49b815046",
-      "occurred_at": "2026-05-04T07:12:26.805Z",
+      "id": "4db47651-8f2b-466f-8e43-27694f58682e",
+      "occurred_at": "2026-05-04T08:10:36.510Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/consuelo-design/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/pages/blog/posts/[...page].astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "1dcc36e5-f22a-47d3-acf9-5234103e91b6",
-      "occurred_at": "2026-05-04T07:12:27.089Z",
+      "id": "8e40a3a2-997e-4888-82dc-2eaf3a773fa0",
+      "occurred_at": "2026-05-04T08:10:36.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/blog/archives/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
+      }
+    },
+    {
+      "id": "d541bd07-ed1f-4d7f-a6ba-94930f206414",
+      "occurred_at": "2026-05-04T08:11:04.117Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/utils/getPath.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
+      }
+    },
+    {
+      "id": "91163309-bbd7-40d5-b912-1995a13e1f5b",
+      "occurred_at": "2026-05-04T08:11:04.367Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/utils/postFilter.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
+      }
+    },
+    {
+      "id": "915787b8-614f-4be0-b1fc-47720ee6ef23",
+      "occurred_at": "2026-05-04T08:11:04.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/blog/[...slug]/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
+      }
+    },
+    {
+      "id": "cdb4d514-c520-41f8-a21b-11d1cd6dae68",
+      "occurred_at": "2026-05-04T19:15:44.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "795cb289-eefb-45b9-a533-56ec58332a63",
+      "occurred_at": "2026-05-04T19:15:45.237Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "3aa8638e-a90e-4be7-a9d8-de0f70f80dc7",
+      "occurred_at": "2026-05-04T19:15:45.594Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "58bff3df-3b1f-4abd-93d8-ec657b312fbc",
+      "occurred_at": "2026-05-04T19:17:02.881Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "94eaa321-17e1-4043-818d-0a87458e8a44",
+      "occurred_at": "2026-05-04T19:17:03.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "8a904c57-5446-44f4-aedf-2f46659acf19",
+      "occurred_at": "2026-05-04T19:17:03.484Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+      "occurred_at": "2026-05-04T19:17:03.805Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "56af206d-fd16-4ab4-a726-2a55601c6602",
+      "occurred_at": "2026-05-04T19:17:28.248Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "6d82ea45-0c4a-44ce-84f4-8d49ad216856",
+      "occurred_at": "2026-05-04T19:17:36.665Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "0bdabb75-d817-4131-a81f-cc210f0ee690",
+      "occurred_at": "2026-05-04T19:17:36.941Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "ac589bb2-87ff-407d-b841-d02263d425b0",
+      "occurred_at": "2026-05-04T19:17:37.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "18a812ec-6eed-4c83-afd1-bd378c8896dc",
+      "occurred_at": "2026-05-04T19:18:21.217Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "528a5bbf-3c5d-4225-81c5-184c3eced2fc",
+      "occurred_at": "2026-05-04T19:18:37.555Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+      "occurred_at": "2026-05-04T19:18:50.674Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+      "occurred_at": "2026-05-04T19:18:59.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+      "occurred_at": "2026-05-04T19:19:12.761Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "a45f8821-6f9d-47fe-b8c2-c6ce277f508f",
+      "occurred_at": "2026-05-04T20:13:45.050Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "3a43291c-6b90-46f6-bd85-87dcc45ed9a4",
+      "occurred_at": "2026-05-04T20:13:45.578Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "973ff3c4-807e-4a46-bb35-7fca17dec3e7",
+      "occurred_at": "2026-05-04T20:17:55.422Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "8e475498-3faa-465a-a055-33ec9877fc2e",
+      "occurred_at": "2026-05-04T20:17:55.723Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/graphql.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "900e48b0-b103-4d33-9fcd-7be8454c77aa",
+      "occurred_at": "2026-05-04T20:17:56.012Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".agent/linear-mcp/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "f69f6f09-f98b-49dd-8e05-0b3798431e0f",
+      "occurred_at": "2026-05-05T04:30:48.406Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9123,111 +9523,31 @@
       "file_path": "areas/website/AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "e2e710cc-b99a-4c96-8261-59e5ec752e8d",
-      "occurred_at": "2026-05-04T07:13:02.639Z",
+      "id": "1a5e391f-5505-4094-a459-5676e38175ea",
+      "occurred_at": "2026-05-05T04:30:54.386Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-design/src/index.ts",
+      "file_path": "areas/website/animations.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "09eb6086-0494-43e4-87fa-840bcc1428c0",
-      "occurred_at": "2026-05-04T07:13:03.006Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/consuelo-design.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "4703924a-3e27-49fc-a767-f8361c0432ee",
-      "occurred_at": "2026-05-04T07:13:03.374Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/consuelo-design.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "b713fd26-198b-4549-a8a7-c07cee1315ba",
-      "occurred_at": "2026-05-04T07:13:03.716Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-design/README.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "3b8d786c-d1d9-4384-9151-c61a903019fa",
-      "occurred_at": "2026-05-04T07:14:37.758Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "76ada24c-06cb-462e-8ea4-fbb12b991895",
-      "occurred_at": "2026-05-04T07:14:58.548Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "6087dca8-329b-45d5-be35-5d3420037f81",
-      "occurred_at": "2026-05-04T08:19:22.056Z",
+      "id": "4367002f-b276-4827-bb58-dd79af20040d",
+      "occurred_at": "2026-05-05T04:31:09.151Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9235,15 +9555,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "099d6c86-481a-48d1-a1c7-c6c5e82af678",
-      "occurred_at": "2026-05-04T08:19:22.337Z",
+      "id": "a41369b8-a5d7-4814-9294-ddfe65a7cd1c",
+      "occurred_at": "2026-05-05T04:31:09.413Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9251,47 +9571,31 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "350d8851-d7bb-4a12-b354-92263b98be63",
-      "occurred_at": "2026-05-04T08:19:22.615Z",
+      "id": "c7d7cfc1-d2ed-4829-8fc1-de088d7071fc",
+      "occurred_at": "2026-05-05T04:31:09.672Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/animations.md",
+      "file_path": "areas/website/animations.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "9c5d40db-0bbc-4769-a96d-e0a62e4f8096",
-      "occurred_at": "2026-05-04T08:19:22.888Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
-      }
-    },
-    {
-      "id": "c668df04-8cc8-4a43-ae07-fe2bce565f31",
-      "occurred_at": "2026-05-05T00:00:01.466Z",
+      "id": "99707c27-efd7-46dd-bd5a-c6182f333014",
+      "occurred_at": "2026-05-05T04:31:20.106Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9299,15 +9603,47 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "60efcc4c-dfb9-402e-8db7-55aadf6a9410",
-      "occurred_at": "2026-05-05T00:00:05.269Z",
+      "id": "8bdac749-bf72-4e1e-a44e-b0d67021f400",
+      "occurred_at": "2026-05-05T04:31:27.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "9afb2442-1480-49a7-b0e9-d1350ee1059b",
+      "occurred_at": "2026-05-05T04:31:35.774Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "a5ba2ec7-a47a-40b1-8d23-067e11ded4b5",
+      "occurred_at": "2026-05-05T04:32:02.695Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9315,15 +9651,191 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "a4042142-9830-4fc1-ad2a-14c9e65f1f95",
-      "occurred_at": "2026-05-05T00:00:09.128Z",
+      "id": "91ba982d-6dbf-414a-8c5a-dfc083cc9ee5",
+      "occurred_at": "2026-05-05T04:32:07.079Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "567c774f-f31d-464d-912f-dfb92110c88a",
+      "occurred_at": "2026-05-05T04:32:27.712Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "cbc90505-5aa0-4c0a-9d5a-00f915538f80",
+      "occurred_at": "2026-05-05T04:32:27.970Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "be301f0b-f97a-4ec3-a49a-ccdfdba60ad5",
+      "occurred_at": "2026-05-05T04:32:28.230Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "ee667e3e-5167-4450-9331-37fe1925ede0",
+      "occurred_at": "2026-05-05T04:32:28.487Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "93faeb02-1766-489d-bccb-860394fd2a35",
+      "occurred_at": "2026-05-05T04:32:38.744Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "f8e1b05e-008f-453b-8785-c052c957d910",
+      "occurred_at": "2026-05-05T04:32:44.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "5121d1a2-7024-4c2e-99b2-ff4b69472388",
+      "occurred_at": "2026-05-05T04:32:53.252Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "04b5256b-5b4a-47cb-9146-239089802ed8",
+      "occurred_at": "2026-05-05T04:34:31.113Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "87c7d8b4-8569-47c1-920f-52d4a4f21df9",
+      "occurred_at": "2026-05-05T04:34:38.148Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "6d9ea12c-6c45-4dbc-bf6c-798ff47a80d0",
+      "occurred_at": "2026-05-05T04:35:09.286Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "b943e51d-8fad-495d-9c69-5a46b5470aa6",
+      "occurred_at": "2026-05-05T04:35:34.071Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9331,61 +9843,317 @@
       "file_path": ".task/workpad.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "53e613c9-da99-46f4-9225-e697a9363da3",
-      "occurred_at": "2026-05-05T00:00:16.152Z",
+      "id": "86544613-f9bf-4aaa-9a1a-8972410a35c6",
+      "occurred_at": "2026-05-05T04:36:20.354Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/run-dialer-scenario.ts",
+      "file_path": ".task/workpad.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "af2378cc-7a76-4ad7-8563-d458cbb1216b",
-      "occurred_at": "2026-05-05T00:00:21.586Z",
+      "id": "f124d670-3e59-45e5-8faf-3906d39efd08",
+      "occurred_at": "2026-05-05T04:38:40.687Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/sentry.js",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
       }
     },
     {
-      "id": "beb3660a-e073-4ade-a8de-03e5bbf8bd60",
-      "occurred_at": "2026-05-05T00:00:27.692Z",
+      "id": "07b25db0-60e6-47ff-a4cd-40be86564a41",
+      "occurred_at": "2026-05-05T04:38:40.943Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/sentry.js",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/website/hero-boot-motion-only",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7a99a5c3-7399-4f44-861a-1ca0d6c4bbb3",
+      "occurred_at": "2026-05-05T04:38:41.197Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7685267c-f8c0-4f0d-8851-7cf9e27484ad",
+      "occurred_at": "2026-05-05T04:38:41.449Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "867a3c7f-559d-4b78-8847-cf6518853714",
+      "occurred_at": "2026-05-05T04:39:02.282Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "baa2f232-0aed-45b3-ac07-47bdb27a2141",
+      "occurred_at": "2026-05-05T04:39:02.536Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "2e5692d9-c68a-4c31-ae60-5a9ebab9ebcd",
+      "occurred_at": "2026-05-05T04:39:02.789Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "06ee4411-5b8c-4845-add1-601a39b2d75a",
+      "occurred_at": "2026-05-05T04:39:03.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "64b6c0c7-2f48-4903-8b6b-168171ed57a8",
+      "occurred_at": "2026-05-05T04:39:28.412Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "231cb1f4-533c-4591-a330-1e43fc777e8e",
+      "occurred_at": "2026-05-05T04:39:28.667Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "45c82a37-8fa7-4b67-8dae-ed8f0ce453b1",
+      "occurred_at": "2026-05-05T04:39:28.924Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7e8675cf-a747-434b-b81a-302a92c18885",
+      "occurred_at": "2026-05-05T04:39:37.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "a245388e-8998-4ea8-acec-cb3543fd031f",
+      "occurred_at": "2026-05-05T04:39:37.612Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "9ad0b003-5638-4091-b02a-da58203ab211",
+      "occurred_at": "2026-05-05T04:39:53.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "63ff315e-a1ec-45e7-8977-56b7336b9685",
+      "occurred_at": "2026-05-05T04:41:49.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "7ad7d880-6b92-40c9-a3ce-70c604e429e4",
+      "occurred_at": "2026-05-05T04:53:29.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/website-deploy.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "b6e633c3-fb1b-46d0-b130-ae5de4c16e7d",
+      "occurred_at": "2026-05-05T04:56:30.879Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/hero-boot-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/hero-boot-motion-only"
+      }
+    },
+    {
+      "id": "965f997e-1981-4205-96b8-78ff0fd19527",
+      "occurred_at": "2026-05-05T07:12:39.320Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-hero-headline-visibility-after-boot-motion",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-hero-headline-visibility-after-boot-motion"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-05T00:00:27.743Z"
+  "updated_at": "2026-05-05T07:12:39.370Z"
 }

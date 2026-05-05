@@ -39,8 +39,9 @@ export async function runBatch(
         results,
         completed: results.length,
       },
-      durationMs: Math.max(0, Date.now() - startedAt),
+      durationMs: Math.max(0, (options.now || Date.now)() - startedAt),
       traceId,
+      now: options.now,
     });
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -53,8 +54,9 @@ export async function runBatch(
         completed: results.length,
       },
       stderr: message,
-      durationMs: Math.max(0, Date.now() - startedAt),
+      durationMs: Math.max(0, (options.now || Date.now)() - startedAt),
       traceId,
+      now: options.now,
     });
   }
 }
