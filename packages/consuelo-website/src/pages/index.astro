@@ -44,9 +44,10 @@ const schemaEntries = [
   <LaunchHeader pageSections={launchPageSections} />
   <LaunchHero sectionId="intro" />
   <script>
-    import { bootLaunchHeroMotion } from '../lib/motion';
+    import { bootLaunchHeroMotion, bootProofSvgMotion } from "../lib/motion";
 
     bootLaunchHeroMotion();
+    bootProofSvgMotion();
   </script>
   <LaunchOverview sectionId="overview" />
   <LaunchStats sectionId="proof" />

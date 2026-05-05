@@ -28,6 +28,7 @@
     "packages/consuelo-website/src/components/DashboardDemo.tsx",
     "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
     "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
     "packages/consuelo-website/src/config.ts",
     "packages/consuelo-website/src/content/blog/local-presence-data.md",
     "packages/consuelo-website/src/content/blog/mobile-app.md",
@@ -113,5 +114,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-05T07:12:39.270Z"
+  "updatedAt": "2026-05-05T22:56:50.139Z"
 }

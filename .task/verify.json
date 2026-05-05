@@ -1,19 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/website/fix-hero-headline-visibility-after-boot-motion",
+  "branch": "task/website/fix-mobile-proof-svg-trigger-timing",
   "base": "stream/website",
-  "headSha": "170ef3590cbcbf7675770076838cc3e5bbfa578e",
-  "changeHash": "89032855706b7c836856a8cf3de2a4cb1e1cbb180db27719807d59dbbb9be479",
+  "headSha": "33ae639e1215487b6092532e9c8021ce5002ff53",
+  "changeHash": "903a9ccc5ddfd2b02d3ba97d2a371db0838af4fbab146637f04d9ffac05de61f",
   "changedFiles": [
-    "packages/consuelo-website/src/lib/motion.ts"
+    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+    "packages/consuelo-website/src/lib/motion.ts",
+    "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T07:12:48.349Z",
+  "verifiedAt": "2026-05-05T23:00:39.821Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

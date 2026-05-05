@@ -1,54 +1,75 @@
-# fix hero headline visibility after boot motion
+# fix mobile proof svg trigger timing
 
-branch: `task/website/fix-hero-headline-visibility-after-boot-motion`
+branch: `task/website/fix-mobile-proof-svg-trigger-timing`
 stream: `stream/website`
-pr: https://github.com/consuelohq/opensaas/pull/325
+pr: https://github.com/consuelohq/opensaas/pull/329
 started: 2026-05-05
 
 ## acceptance criteria
 
-- [x] Hero headline remains visible after the boot animation completes.
-- [x] Missing/reduced-motion/fallback reveal paths release the same motion CSS gate.
-- [ ] `cd packages/consuelo-website && bun run build` passes.
-- [ ] `workspace review.run` passes against `stream/website`.
+- [x] Wave/joyplot proof SVG no longer starts from the whole proof section trigger.
+- [x] Bar chart animation waits for the bar chart card/viewport position on mobile.
+- [x] Square grid animation waits for the square chart card/viewport position on mobile.
+- [x] Square grid animation is visibly animated, not only a subtle opacity fade.
+- [x] Ambient loop remains chart-local and starts only after that chart finishes its draw.
+- [x] Reduced motion still shows the final state immediately.
+- [x] No global scroll hijack, scrub, pinning, or mobile drawer behavior changes.
+- [x] `cd packages/consuelo-website && bun run build` passes.
+- [x] `workspace review.run` passes against `stream/website`.
+- [x] Website deploy runs before push.
 - [ ] Stream review PR is created/refreshed for ko.
 
 ## plan
 
-1. Confirm the bug path in hero motion setup and CSS gate selectors.
-2. Add one helper to release the hero motion-ready data attribute.
-3. Release that gate before SplitText restores the title DOM and in fallback reveal paths.
-4. Build/review, push the task branch, and promote into `stream/website`.
+1. Keep the existing proof SVG visual design and hero boot untouched.
+2. Replace the single proof-section ScrollTrigger with per-chart ScrollTriggers.
+3. Make the mobile trigger later and based on each chart root, not the parent stats section.
+4. Add square scale animation so the heatmap reads as animating when it enters.
+5. Validate build, review, deploy, then publish into the stream review PR.
 
 ## files changed
 
-- `packages/consuelo-website/src/lib/motion.ts`
-- `.task/workpad.md`
+- pending
 
 ## key decisions
 
-- Keep the existing animation sequence and CSS selectors intact.
-- Fix the root cleanup order by releasing `data-hero-motion-ready` before SplitText reverts the headline.
-- Use the same gate-release helper for reduced-motion, missing-element, title-error, and outer fallback paths.
+- Root cause: the prior implementation gathered every path/bar/square in `section` and played one timeline from `trigger: section`; on mobile the stacked lower charts had already animated before they reached the viewport.
+- Fix: select `.launch-stats__chart[data-motion="svg-grid"]` roots and build an independent timeline + `ScrollTrigger` per chart.
+- Mobile trigger is `start: 'top 72%'` on each chart root. Desktop uses `top 70%`.
+- Square grid now starts at `scale: 0.42` plus low opacity and animates to final opacity/scale when its own card enters, preserving the existing 0.1/0.4/0.8 negative-space final states.
+- Added `transform-box`/`transform-origin` for square SVG rects so scale happens around each square center.
 
 ## notes for ko
 
-- This is scoped to the disappearing headline regression after the hero boot motion.
-- No visual timing changes were intentionally introduced.
+- This directly addresses the mobile review: bar and square no longer share the wave chart's trigger.
+- The wave should now also feel later because its own chart top must reach the mobile threshold.
+- Public host check after deploy returned HTTP 200 and found 414 `svg-square` markers.
+- Direct Pages deploy URL returned by deploy: `https://552e91af.consuelo-website.pages.dev`.
 
 ## improvements noticed
 
-- The previous task's CSS gate pattern needs this helper because SplitText restores normal DOM after the animation.
+- The browser facade still reports `about:blank` in this session, so source/build/deploy/curl checks remain more reliable than its screenshots for this website.
+- Website package lockfiles remain out of sync with package.json; `npm install --no-package-lock --no-save` is still needed to hydrate package-local validation without staging lock changes.
 
 ## errors i ran into
 
-- Root standards reads for `AGENTS.md` / `CODING-STANDARDS.md` were blocked by tool safety checks in this session, so I relied on the loaded project steering and skill instructions.
-- `workspace decideNext` was also blocked by tool safety checks after `workspace explore`; I continued with explicit file reads and targeted runtime evidence.
+- `workspace fs.patch` rejected a multiline CSS patch; used a task-scoped Python edit instead.
+- First build failed with `astro: command not found`; hydrated package-local dependencies with `npm install --no-package-lock --no-save` and reran the exact build command.
+
+---
+
+## validation log
+
+- `cd packages/consuelo-website && bun run build` — passed after dependency hydration; existing warnings only.
+- `workspace review.run '{"branch":"task/website/fix-mobile-proof-svg-trigger-timing","base":"stream/website","noTests":true}'` — passed.
+- `bun run website:deploy` — passed; deploy URL `https://552e91af.consuelo-website.pages.dev`.
+- `curl -I https://consuelohq.com` — HTTP 200.
+- `curl -sL https://consuelohq.com` — found 414 `svg-square` markers.
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "fix(website): keep hero headline visible after boot"
+bun run task:push -- --message "fix(website): tune mobile proof svg triggers" --changed
 bun run task:pr
 bun run task:finish
 ```

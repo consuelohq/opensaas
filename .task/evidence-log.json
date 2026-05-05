@@ -10152,8 +10152,616 @@
         "source": "task:fs",
         "task_branch": "task/website/fix-hero-headline-visibility-after-boot-motion"
       }
+    },
+    {
+      "id": "ca8b90f7-b4fa-4167-a16c-0c09d18e385b",
+      "occurred_at": "2026-05-05T22:20:08.756Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "e9c50a2d-b56a-43ac-8005-ba7538e7e4a2",
+      "occurred_at": "2026-05-05T22:20:09.041Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "b1497347-7d91-4d97-a132-cc0bd4fe5cd0",
+      "occurred_at": "2026-05-05T22:20:09.318Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "761b7a4a-5a5f-4b71-9ee1-44aa10db5465",
+      "occurred_at": "2026-05-05T22:20:09.588Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/animations.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "90e02499-cf22-4549-a2b7-206eb46da90e",
+      "occurred_at": "2026-05-05T22:20:26.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "8c094d7e-b1a7-43f2-b5af-9e23ccb2d38e",
+      "occurred_at": "2026-05-05T22:20:27.056Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHero.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "f966528c-f305-4771-aded-6c9d67832c46",
+      "occurred_at": "2026-05-05T22:20:27.322Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchHeader.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "7d8821f9-59c3-4320-ab74-14345550bff5",
+      "occurred_at": "2026-05-05T22:20:27.590Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/layouts/LaunchLayout.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "a137047a-c69e-43ce-ad21-9ad9d7cb8030",
+      "occurred_at": "2026-05-05T22:21:15.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "5e6a3ec4-5ef1-4527-af43-2f267a048b98",
+      "occurred_at": "2026-05-05T22:21:15.447Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "7de35cfb-d4a1-4520-807e-1787e20df1b2",
+      "occurred_at": "2026-05-05T22:21:15.714Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/animations.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "72ada1db-db1a-4da5-aa14-357537960234",
+      "occurred_at": "2026-05-05T22:21:24.683Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "7c8177d0-3f6e-49a9-babe-45992dc4a694",
+      "occurred_at": "2026-05-05T22:21:28.248Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "areas/website/animations.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "e56d00e1-56bb-41f6-9de7-efa6578a8ce6",
+      "occurred_at": "2026-05-05T22:21:46.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "539d5413-7e46-478a-9cf8-d52965ea02ae",
+      "occurred_at": "2026-05-05T22:23:02.948Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "2c6d81f8-03fa-4a58-8d9d-4077ebdb0da1",
+      "occurred_at": "2026-05-05T22:29:50.977Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "36719e32-29cf-49c5-890b-e01aae3580d0",
+      "occurred_at": "2026-05-05T22:29:57.373Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "4951af74-eb27-4be7-b618-c0c021e48f73",
+      "occurred_at": "2026-05-05T22:30:03.477Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "9140f102-dd28-4d07-ab08-f424a3955162",
+      "occurred_at": "2026-05-05T22:30:50.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "4ef20ef5-c8bd-4a93-b79e-fcc034e8a00f",
+      "occurred_at": "2026-05-05T22:31:15.265Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "3be89f93-27a4-4d38-b888-67641d070c21",
+      "occurred_at": "2026-05-05T22:33:05.709Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "46635436-ffaf-4df1-a918-baef8893f614",
+      "occurred_at": "2026-05-05T22:33:05.970Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "8b7d2e05-181f-410d-911c-5e04c4d07b1f",
+      "occurred_at": "2026-05-05T22:33:06.225Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "f7a422a4-6092-4903-813b-716c10b128b8",
+      "occurred_at": "2026-05-05T22:33:06.491Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "b43bf50d-9513-4c9e-a924-4f06549016b6",
+      "occurred_at": "2026-05-05T22:33:24.752Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "b9897967-702e-40f7-ac33-5a9fe5c5da62",
+      "occurred_at": "2026-05-05T22:33:25.022Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "6d32641b-b2e6-4fc5-9e8d-29fc0bf6b8ee",
+      "occurred_at": "2026-05-05T22:33:25.281Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "a5c6eefb-e4ee-4467-9383-b136022ec8f7",
+      "occurred_at": "2026-05-05T22:33:33.193Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/pages/index.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "3210bfeb-72df-4140-8d6e-d55e7feaf2b1",
+      "occurred_at": "2026-05-05T22:33:50.717Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/svg-draw-proof-motion-only",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/svg-draw-proof-motion-only"
+      }
+    },
+    {
+      "id": "d210b67c-6db7-4a20-b48e-6f7a14e6d89e",
+      "occurred_at": "2026-05-05T22:53:38.916Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "0be38fb9-38ee-4b28-87eb-c24e6fd94976",
+      "occurred_at": "2026-05-05T22:53:39.177Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "dac27fe0-bb60-41ba-8240-acaa96a9af0d",
+      "occurred_at": "2026-05-05T22:53:39.443Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "53f2b543-157c-4b66-acb0-f986de7878f7",
+      "occurred_at": "2026-05-05T22:54:06.198Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "193e3530-f9fc-4921-9ce4-e347d9f14160",
+      "occurred_at": "2026-05-05T22:54:06.466Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "346ca0ab-bd1a-4aed-86f0-6d78ea911d13",
+      "occurred_at": "2026-05-05T22:55:22.891Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "1cece2a8-24a7-4f2c-a16a-7e60aa18303a",
+      "occurred_at": "2026-05-05T22:56:44.675Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "b8003a08-7996-41ed-91fd-27785011a001",
+      "occurred_at": "2026-05-05T22:56:44.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
+    },
+    {
+      "id": "f1f36583-9b84-40c3-8469-48e80a97c44f",
+      "occurred_at": "2026-05-05T22:56:50.253Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/website/fix-mobile-proof-svg-trigger-timing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-05T07:12:39.370Z"
+  "updated_at": "2026-05-05T22:56:50.337Z"
 }
