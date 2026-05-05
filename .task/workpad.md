@@ -1,69 +1,73 @@
-# fix codex review findings for pr 308
+# fix fresh db agent automation migration
 
-branch: `task/workspace-agents/fix-codex-review-findings-for-pr-308`
-stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/315
-started: 2026-05-04
+branch: task/dialer/fix-agent-automation-migration
+stream: stream/dialer
 
 ## acceptance criteria
 
-- [x] Queue CSV export validation accepts both active server header schemas, including exports with leading `id`.
-- [x] Sentry CLI preserves repeated values for array-style flags emitted by the typed facade.
-- [x] Sentry issue-event only requests full payload when explicitly enabled.
-- [x] Focused syntax and behavior checks pass.
-- [ ] Task is published through the stream PR flow.
+- [ ] Fresh local database reset no longer fails on missing core.agentSkill during agent automation migration.
+- [ ] Preserve agent feature schema by letting canonical later agent migrations create active tables.
+- [ ] Do not delete agent functionality or rewrite broad migration history.
+- [ ] Push task branch and create/update stream review PR if validation succeeds.
 
 ## plan
 
-1. Patch run-dialer-scenario CSV header validation to parse by allowed header set.
-2. Patch sentry.js argument parsing to consume multiple consecutive values after flags.
-3. Patch Sentry issue-event full query semantics.
-4. Add focused CLI-level tests/smokes using local command execution.
-5. Run review/verify and publish.
+1. Patch the old agent automation migration into an explicit compatibility no-op.
+2. Validate formatting and fresh DB reset.
+3. Publish if successful.
 
 ## files changed
 
-- `packages/workspace/scripts/run-dialer-scenario.ts`
-- `packages/workspace/scripts/sentry.js`
+- pending
 
 ## key decisions
 
-- Use a small allowed-header set for queue CSV exports because both existing harness and active server schemas are valid.
-- Preserve single-value behavior for normal Sentry flags while supporting multiple token values for repeated/array-style flags.
-- Treat `--full` as opt-in instead of default-on to make the facade boolean meaningful.
+- The earlier migration references core.agentSkill before that table exists.
+- A later canonical migration creates agentSkill, then agentAutomation in the correct order.
 
 ## notes for ko
 
-- This task starts from merged PR #308 on current main.
+- This fixes the migration-order failure seen locally and in Railway.
 
-## improvements noticed
+## implementation update
 
-- Sentry CLI argument parsing would benefit from unit tests if this script grows more behavior.
+- Patched stale agent migrations so fresh DBs keep the active core agent conversation schema and add the AI agent execution tables needed by the dev seeder.
+- Patched prebuilt skill seeding so text-array fields are passed as proper arrays and string parameters are cast explicitly.
+- Added `1774090000000-create-consuelo-dialer-runtime-tables.ts` to port the remaining Consuelo dialer runtime tables from old `packages/api/src/migrations` into the TypeORM core migration flow.
+- The new dialer runtime migration creates unqualified/public tables used by current raw SQL services: `caller_id_locks`, `area_code_locations`, `calls`, `contacts`, `call_queues`, `queue_items`, `contact_attempt_ledger`, `workspace_subscriptions`, `workspace_usage`, `workspace_phone_numbers`, and `user_settings`.
+- Kept `core.contact_attempt_hazard_hourly_mv` intact. The materialized view now has its base tables during fresh reset.
 
-## errors i ran into
+## validation update
 
-- Initial combined workspace command failed because workspace commands accept only one JSON input argument.
-- Decision-engine query was blocked by safety filter when it echoed review text, so I used targeted file reads.
+- Brew local infra is now the local default for this task: `postgresql@17`, `pgvector`, and `redis` are installed and running.
+- `CREATE EXTENSION vector` works on the local `default` database.
+- `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server` exits 0.
+- Grep of the latest reset log found no migration/query failures.
+- SQL checks confirm the new runtime tables, agent execution tables, and hazard materialized view exist after reset.
 
----
+## codex review follow-up
 
-## publish checklist
+Accepted Codex review items and patched them:
 
-```bash
-bun run task:push -- --message "fix(workspace-agents): address pr 308 codex findings" --changed
-bun run task:pr
-bun run task:finish
-```
+- Made `CreateConsueloDialerRuntimeTables1774090000000.down()` non-destructive because this is an adoption migration and may adopt pre-existing production data tables.
+- Made `RefactorAgentChatEntities1764100000000.down()` non-destructive because thread/turn-based agent messages may have `conversationId = NULL` after the forward migration.
+- Added explicit `ALTER TABLE IF EXISTS ... ADD COLUMN IF NOT EXISTS ...` repair statements for legacy additive columns so partial old-SQL-stack databases are repaired, not silently skipped.
+- Added old call-history indexes: `idx_calls_workspace_outcome`, `idx_calls_workspace_date`, and `idx_calls_history_query`.
+- Ported `contact_attempt_ledger` backfill from the old SQL migration so production databases with existing queue/call history do not lose historical cadence state.
+- Added minimal `core.workspace_settings` compatibility table with `dialer_config` for cadence/stopping economics paths that read `core.workspace_settings` directly.
 
-## validation
+## codex follow-up validation
 
-- `node --check packages/workspace/scripts/sentry.js` passed.
-- `bun build packages/workspace/scripts/run-dialer-scenario.ts --no-bundle --outfile /tmp/run-dialer-scenario-check.js` passed.
-- Confirmed active queue export service emits the leading-id queue CSV header.
-- Sentry parser smoke passed for array flags plus normal positional handling.
-- CSV header smoke passed for both allowed queue export headers.
-
-## verification note
-
-- `workspace review.run` passed with zero `yours` findings against `stream/workspace-agents`; only pre-existing run-dialer-scenario async error-handling warnings remain.
-- Branch-local `verify.js --base stream/workspace-agents --no-db --json` failed because it treats the same pre-existing warnings as blocking. This is intentionally not fixed in this task because Codex requested three targeted PR #308 fixes only.
+- Reran `npx prettier --write` on changed migration files.
+- Reran `git diff --check`.
+- Reran fresh Brew-backed database reset:
+  `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server`
+- Reset exits 0.
+- Grep of latest reset log found no actual migration/query failures.
+- SQL checks confirmed:
+  - agent execution tables exist.
+  - hazard materialized view exists.
+  - public dialer runtime tables exist.
+  - `core.workspace_settings` exists.
+  - additive retry/subscription columns exist.
+  - call-history indexes exist.
