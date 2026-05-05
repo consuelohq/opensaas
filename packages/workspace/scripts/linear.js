@@ -235,7 +235,6 @@ function defaultLabelsForTitle(title) {
   return [match ? `[${match[1].toLowerCase()}]` : '[task]', 'opensaas'];
 }
 async function resolveLabelIds(token, labels, title) {
-  try {
   const requested = labels && labels.length > 0 ? labels : defaultLabelsForTitle(title);
   const data = await gql(token, `
     query($first: Int) {
@@ -251,10 +250,6 @@ async function resolveLabelIds(token, labels, title) {
     resolved.push(id);
   }
   return Array.from(new Set(resolved));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdCreate(token, args) {
@@ -334,7 +329,6 @@ async function cmdUpdate(token, args) {
 
 
 async function cmdLabels(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       issueLabels(first: $first, after: $after) {
@@ -344,14 +338,9 @@ async function cmdLabels(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ labels: data.issueLabels.nodes, pageInfo: data.issueLabels.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdTeams(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       teams(first: $first, after: $after) {
@@ -361,14 +350,9 @@ async function cmdTeams(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ teams: data.teams.nodes, pageInfo: data.teams.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdProjects(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       projects(first: $first, after: $after) {
@@ -378,14 +362,9 @@ async function cmdProjects(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ projects: data.projects.nodes, pageInfo: data.projects.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdStates(token, args) {
-  try {
   const teamId = resolveTeamId(args.team);
   const data = await gql(token, `
     query($id: String!) {
@@ -393,10 +372,6 @@ async function cmdStates(token, args) {
     }
   `, { id: teamId });
   writeStdout(JSON.stringify(data.team, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 // --- main ---
