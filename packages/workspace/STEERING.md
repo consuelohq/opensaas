@@ -476,6 +476,13 @@ the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines eve
 
 the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
 
+After one successful workspace.get_steering call in a conversation, treat steering as loaded.
+Do not call get_steering again unless:
+- ko explicitly asks to refresh steering
+- the workspace tool session restarted
+- a previous get_steering call failed
+- there is evidence the steering response is stale or incomplete
+
 quick reference:
 
 ```ts
@@ -1051,7 +1058,7 @@ When working on workspace tooling, scripts, task workflow, typed facade behavior
 Start workspace-tooling investigations with:
 
 ```bash
-workspace get_steering
+
 workspace stream.context '{"area":"workspace-agents"}'
 workspace context.search '{"keyword":"typed workspace facade","limit":5}'
 workspace context.search '{"keyword":"browser facade aliases","limit":5}'
