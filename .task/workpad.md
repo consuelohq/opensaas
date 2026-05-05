@@ -1,51 +1,69 @@
-# move website animations stream doc
+# fix codex review findings for pr 308
 
-branch: task/workspace-agents/move-website-animations-stream-doc
-stream: stream/workspace-agents
-pr: https://github.com/consuelohq/opensaas/pull/310
+branch: `task/workspace-agents/fix-codex-review-findings-for-pr-308`
+stream: `stream/workspace-agents`
+pr: https://github.com/consuelohq/opensaas/pull/315
 started: 2026-05-04
 
 ## acceptance criteria
 
-- [x] Move packages/consuelo-website/animations.md to areas/website/animations.md.
-- [x] Update design tooling and docs references to the new stream doc path.
-- [x] Preserve design tooling checks after the move.
+- [x] Queue CSV export validation accepts both active server header schemas, including exports with leading `id`.
+- [x] Sentry CLI preserves repeated values for array-style flags emitted by the typed facade.
+- [x] Sentry issue-event only requests full payload when explicitly enabled.
+- [x] Focused syntax and behavior checks pass.
+- [ ] Task is published through the stream PR flow.
 
 ## plan
 
-1. Find current animation doc references.
-2. Move the file into the website stream docs folder.
-3. Replace old package path references with areas/website/animations.md.
-4. Validate syntax, design boundary checks, diff cleanliness, review, and verify.
+1. Patch run-dialer-scenario CSV header validation to parse by allowed header set.
+2. Patch sentry.js argument parsing to consume multiple consecutive values after flags.
+3. Patch Sentry issue-event full query semantics.
+4. Add focused CLI-level tests/smokes using local command execution.
+5. Run review/verify and publish.
 
 ## files changed
 
-- pending task:push update
+- `packages/workspace/scripts/run-dialer-scenario.ts`
+- `packages/workspace/scripts/sentry.js`
 
 ## key decisions
 
-- animations.md belongs with areas/website because it is website stream context, matching the prior AGENTS.md move.
-- Design tooling still consumes the animation guide as website-specific context, just from the stream docs path.
+- Use a small allowed-header set for queue CSV exports because both existing harness and active server schemas are valid.
+- Preserve single-value behavior for normal Sentry flags while supporting multiple token values for repeated/array-style flags.
+- Treat `--full` as opt-in instead of default-on to make the facade boolean meaningful.
 
 ## notes for ko
 
-- This only moves the doc and updates references. stream.context still needs a follow-up to surface or inject area docs.
+- This task starts from merged PR #308 on current main.
 
 ## improvements noticed
 
-- Follow-up: stream context should list area doc files so moves like this are visible immediately to agents.
+- Sentry CLI argument parsing would benefit from unit tests if this script grows more behavior.
 
 ## errors i ran into
 
-- First inline move/reference/workpad command partially executed and damaged the workpad because shell quoting stripped markdown backticks. Repaired references and rewrote this workpad without shell-sensitive markdown.
+- Initial combined workspace command failed because workspace commands accept only one JSON input argument.
+- Decision-engine query was blocked by safety filter when it echoed review text, so I used targeted file reads.
+
+---
+
+## publish checklist
+
+```bash
+bun run task:push -- --message "fix(workspace-agents): address pr 308 codex findings" --changed
+bun run task:pr
+bun run task:finish
+```
 
 ## validation
 
-- pending
-- Confirmed no old packages/consuelo-website/animations.md references remain.
-- Confirmed new areas/website/animations.md references in design tooling, README, and area design docs.
-- git diff --check passed.
-- workspace checkFiles passed for packages/consuelo-design/src/index.ts and packages/workspace/scripts/consuelo-design.ts.
-- bun packages/workspace/scripts/consuelo-design.ts check --json passed and reports website-motion-design path as areas/website/animations.md.
-- workspace review.run passed with explicit branch and base stream/workspace-agents.
-- bun packages/workspace/scripts/verify.js --base stream/workspace-agents --no-db --json passed and wrote .task/verify.json.
+- `node --check packages/workspace/scripts/sentry.js` passed.
+- `bun build packages/workspace/scripts/run-dialer-scenario.ts --no-bundle --outfile /tmp/run-dialer-scenario-check.js` passed.
+- Confirmed active queue export service emits the leading-id queue CSV header.
+- Sentry parser smoke passed for array flags plus normal positional handling.
+- CSV header smoke passed for both allowed queue export headers.
+
+## verification note
+
+- `workspace review.run` passed with zero `yours` findings against `stream/workspace-agents`; only pre-existing run-dialer-scenario async error-handling warnings remain.
+- Branch-local `verify.js --base stream/workspace-agents --no-db --json` failed because it treats the same pre-existing warnings as blocking. This is intentionally not fixed in this task because Codex requested three targeted PR #308 fixes only.
