@@ -1,15 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/website/svg-draw-proof-motion-only",
+  "branch": "task/website/fix-mobile-proof-svg-trigger-timing",
   "base": "stream/website",
-  "headSha": "c35c59e19147aa8b366fa84df3d0e0630ebcda53",
-  "changeHash": "1722e0b189badd88ed24ca1ac293aa9c2b256444069dca8c797ab5aa3c5d64d5",
+  "headSha": "33ae639e1215487b6092532e9c8021ce5002ff53",
+  "changeHash": "903a9ccc5ddfd2b02d3ba97d2a371db0838af4fbab146637f04d9ffac05de61f",
   "changedFiles": [
     "packages/consuelo-website/src/components/launch/LaunchStats.astro",
     "packages/consuelo-website/src/lib/motion.ts",
     "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T22:47:28.642Z",
+  "verifiedAt": "2026-05-05T23:00:39.821Z",
   "review": {
     "skipped": true,
     "passed": true
