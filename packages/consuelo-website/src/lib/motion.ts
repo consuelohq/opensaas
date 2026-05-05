@@ -240,6 +240,25 @@ export const bootProofSvgMotion = (): void => {
       (element): element is SVGRectElement => element instanceof SVGRectElement,
     );
 
+
+  const isHeatmapChart = (root: HTMLElement): boolean =>
+    root.getAttribute('data-motion-chart') === 'dots' ||
+    root.querySelector('[data-motion-grid="heatmap"]') !== null;
+
+  const getHeatmapGrid = (root: HTMLElement): [number, number] => {
+    const grid = root.querySelector('[data-motion-grid="heatmap"]');
+    const rows = Number(grid?.getAttribute('data-motion-rows'));
+    const columns = Number(grid?.getAttribute('data-motion-columns'));
+
+    return [Number.isFinite(rows) ? rows : 18, Number.isFinite(columns) ? columns : 23];
+  };
+
+  const getSquareIndex = (square: SVGRectElement, fallback: number): number => {
+    const index = Number(square.getAttribute('data-motion-index'));
+
+    return Number.isFinite(index) ? index : fallback;
+  };
+
   const showChartRestingState = (root: HTMLElement): void => {
     const paths = getChartPaths(root);
     const bars = getChartBars(root);
@@ -350,8 +369,9 @@ export const bootProofSvgMotion = (): void => {
             const ambientBars = bars
               .filter((_, index) => index % 10 === 3)
               .slice(0, ambientBarCount);
-            const ambientSquares = squares
-              .filter((square, index) => index % 10 === 6 && getOpacity(square, 0.1) > 0.1)
+            const ambientSquarePool = squares.filter((square) => getOpacity(square, 0.1) >= 0.4);
+            const ambientSquares = ambientSquarePool
+              .filter((_, index) => index % 4 === 1)
               .slice(0, ambientSquareCount);
 
             ambientTimeline = gsap.timeline({
@@ -476,6 +496,12 @@ export const bootProofSvgMotion = (): void => {
           return restingOpacity > 0.12 && restingOpacity < 0.6;
         });
         const brightSquares = squares.filter((square) => getOpacity(square, 0.1) >= 0.6);
+        const heatmapGrid = getHeatmapGrid(root);
+        const squareStagger = (each: number): gsap.StaggerVars => ({
+          each,
+          from: 'center',
+          grid: heatmapGrid,
+        });
 
         if (dimSquares.length > 0) {
           drawTimeline.to(
@@ -484,11 +510,8 @@ export const bootProofSvgMotion = (): void => {
               opacity: 0.1,
               scale: 1,
               duration: 0.42,
-              stagger: {
-                each: isMobile ? 0.002 : 0.003,
-                from: 'center',
-                grid: [18, 23],
-              },
+              ease: 'back.out(1.45)',
+              stagger: squareStagger(isMobile ? 0.002 : 0.003),
             },
             0,
           );
@@ -501,11 +524,8 @@ export const bootProofSvgMotion = (): void => {
               opacity: 0.4,
               scale: 1,
               duration: 0.56,
-              stagger: {
-                each: isMobile ? 0.003 : 0.004,
-                from: 'center',
-                grid: [18, 23],
-              },
+              ease: 'back.out(1.35)',
+              stagger: squareStagger(isMobile ? 0.003 : 0.004),
             },
             0.08,
           );
@@ -518,11 +538,8 @@ export const bootProofSvgMotion = (): void => {
               opacity: 0.8,
               scale: 1,
               duration: 0.62,
-              stagger: {
-                each: isMobile ? 0.004 : 0.006,
-                from: 'center',
-                grid: [18, 23],
-              },
+              ease: 'back.out(1.28)',
+              stagger: squareStagger(isMobile ? 0.004 : 0.006),
             },
             0.14,
           );
