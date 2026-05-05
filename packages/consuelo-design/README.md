@@ -15,12 +15,12 @@ The package exposes a Consuelo-specific facade so agents and scripts can use Ope
 Consuelo's base design system comes from our repo docs:
 
 - `packages/consuelo-website/DESIGN.md`
-- `packages/consuelo-design/AGENTS.md`
+- `areas/consuelo-design/AGENTS.md`
 
 Website-specific sessions also attach:
 
-- `packages/consuelo-website/animations.md`
-- `packages/consuelo-website/AGENTS.md`
+- `areas/website/animations.md`
+- `areas/website/AGENTS.md`
 
 Open Design's upstream `design-systems/` directory is vendored reference material. It is not Consuelo truth unless Ko explicitly asks for a reference skin.
 

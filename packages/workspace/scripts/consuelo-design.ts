@@ -13,12 +13,12 @@ const OPEN_DESIGN_RELATIVE_ROOT = 'packages/consuelo-design/upstream/open-design
 
 const CORE_DESIGN_SYSTEM_FILES = [
   { role: 'visual-design', path: 'packages/consuelo-website/DESIGN.md' },
-  { role: 'design-tooling-agent-rules', path: 'packages/consuelo-design/AGENTS.md' },
+  { role: 'design-tooling-agent-rules', path: 'areas/consuelo-design/AGENTS.md' },
 ] as const;
 
 const WEBSITE_CONTEXT_FILES = [
-  { role: 'website-motion-design', path: 'packages/consuelo-website/animations.md' },
-  { role: 'website-agent-rules', path: 'packages/consuelo-website/AGENTS.md' },
+  { role: 'website-motion-design', path: 'areas/website/animations.md' },
+  { role: 'website-agent-rules', path: 'areas/website/AGENTS.md' },
 ] as const;
 
 const DEPLOYMENT_DOCKERFILES = [
@@ -387,7 +387,7 @@ function railwayCheck(args: ParsedArgs): ReturnType<typeof buildRailwayCheckResu
 function buildBoundaryCheckResult() {
   const requiredPaths = [
     'packages/consuelo-design/package.json',
-    'packages/consuelo-design/AGENTS.md',
+    'areas/consuelo-design/AGENTS.md',
     'packages/consuelo-design/README.md',
     'packages/consuelo-design/RAILWAY.md',
     'packages/consuelo-design/UPSTREAM.md',

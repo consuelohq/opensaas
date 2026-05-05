@@ -281,6 +281,7 @@ export const ReviewInput = z.object({
 export const VerifyInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...branchField,
   base: optionalString,
   noReview: z.boolean().optional(),
   noDb: z.boolean().optional(),
@@ -717,7 +718,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string }',
   StreamListInput: '{ repo?: string; requestId?: string }',
   ReviewInput: "{ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string }",
-  VerifyInput: '{ base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
+  VerifyInput: '{ branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string }',

@@ -12,6 +12,7 @@ const KEYCHAIN_SERVICES = {
 const DEFAULT_BASE_URL = 'https://sentry.io';
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
+const ARRAY_VALUE_FLAGS = new Set(['environment', 'expand', 'collapse', 'field']);
 const SENSITIVE_KEY_PATTERN = /authorization|cookie|set-cookie|token|password|secret|api[-_]?key|twilioauthtoken/i;
 
 function writeJson(payload) {
@@ -52,14 +53,21 @@ function parseArgs(argv) {
       continue;
     }
 
-    const next = argv[index + 1];
-    if (!next || next.startsWith('--')) {
+    const values = [];
+    while (argv[index + 1] && !argv[index + 1].startsWith('--')) {
+      values.push(argv[index + 1]);
+      index += 1;
+      if (!ARRAY_VALUE_FLAGS.has(key)) break;
+    }
+
+    if (values.length === 0) {
       setArg(parsed, key, true);
       continue;
     }
 
-    setArg(parsed, key, next);
-    index += 1;
+    for (const value of values) {
+      setArg(parsed, key, value);
+    }
   }
 
   return parsed;
@@ -352,7 +360,7 @@ async function cmdIssueEvent(args) {
   const resolution = await resolveIssueId(issueIdentifier, config);
   const { data, meta } = await sentryFetch(
     `/organizations/${config.orgSlug}/issues/${encodeURIComponent(resolution.issueId)}/events/${encodeURIComponent(eventId)}/`,
-    { full: args.full === false ? undefined : true },
+    { full: args.full === true || args.full === 'true' ? true : undefined },
     { config },
   );
     writeJson({ ok: true, command: 'issueEvent', orgSlug: config.orgSlug, issueInput: issueIdentifier, eventInput: eventId, resolution, event: data, trace: extractTrace(data), meta });

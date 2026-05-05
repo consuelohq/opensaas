@@ -309,7 +309,7 @@
     "command": {
       "script": "fs",
       "subcommand": "http",
-      "branchMode": "none",
+      "branchMode": "optional",
       "arguments": [
         {
           "source": "method",
@@ -1599,7 +1599,7 @@
     "outputSchema": "RawOutput",
     "command": {
       "script": "verify",
-      "branchMode": "none",
+      "branchMode": "optional",
       "jsonFlag": "--json",
       "arguments": [
         {
@@ -1630,6 +1630,7 @@
       ]
     },
     "exampleInput": {
+      "branch": "task/workspace-agents/example",
       "noStamp": true,
       "dryRun": true
     }
