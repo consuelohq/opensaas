@@ -1,20 +1,31 @@
-# fix fresh db agent automation migration
+# hero boot motion only
 
-branch: task/dialer/fix-agent-automation-migration
-stream: stream/dialer
+branch: `task/website/hero-boot-motion-only`
+stream: `stream/website`
+pr: https://github.com/consuelohq/opensaas/pull/322
+started: 2026-05-05
 
 ## acceptance criteria
 
-- [ ] Fresh local database reset no longer fails on missing core.agentSkill during agent automation migration.
-- [ ] Preserve agent feature schema by letting canonical later agent migrations create active tables.
-- [ ] Do not delete agent functionality or rewrite broad migration history.
-- [ ] Push task branch and create/update stream review PR if validation succeeds.
+- [ ] Homepage hero has one coherent first-load boot sequence.
+- [ ] Hero media remains normal HTML and does not wait on JS animation setup.
+- [ ] First-paint states avoid flash-before-animation while no-JS content stays visible.
+- [ ] Motion is limited to header, announcement, headline, copy, product/demo frames, and one optional scanline.
+- [ ] No below-fold reveals, SVG draw, parallax, ScrollTrigger work, FAQ motion, or mobile drawer choreography.
+- [ ] `prefers-reduced-motion: reduce` shows content immediately and skips choreography.
+- [ ] Mobile layout and scrolling remain intact.
+- [ ] `cd packages/consuelo-website && bun run build` passes.
+- [ ] `workspace review.run` passes against `stream/website`.
+- [ ] Website deploy runs and browser screenshots are captured.
+- [ ] Stream review PR is created/refreshed for ko.
 
 ## plan
 
-1. Patch the old agent automation migration into an explicit compatibility no-op.
-2. Validate formatting and fresh DB reset.
-3. Publish if successful.
+1. Add homepage-only early `data-hero-motion-ready` boot flag before header markup.
+2. Add meaningful motion hooks to the header, hero announcement, title, copy, product frames, and scanline.
+3. Add CSS initial states scoped to `html[data-hero-motion-ready=true]` so no-JS and reduced-motion remain readable.
+4. Add a small GSAP module for one first-load timeline with double RAF, SplitText headline lines, product-frame entrance, scanline pass, cleanup, and reduced-motion guard.
+5. Reread changed files, run build, review, deploy, capture browser screenshots, then push and promote.
 
 ## files changed
 
@@ -22,52 +33,37 @@ stream: stream/dialer
 
 ## key decisions
 
-- The earlier migration references core.agentSkill before that table exists.
-- A later canonical migration creates agentSkill, then agentAutomation in the correct order.
+- Use a homepage-only HTML data attribute instead of a global layout-ready class so other launch pages cannot inherit hidden header states.
+- Keep hero product media in existing `<picture><img src=...>` markup; animation affects only frame opacity/transform.
+- Use SplitText only on the hero headline, with line-level reveal and completion cleanup.
+- Skip loops and ScrollTrigger for this phase.
 
 ## notes for ko
 
-- This fixes the migration-order failure seen locally and in Railway.
+- This PR is deliberately a taste/performance slice for the hero boot only.
 
-## implementation update
+## improvements noticed
 
-- Patched stale agent migrations so fresh DBs keep the active core agent conversation schema and add the AI agent execution tables needed by the dev seeder.
-- Patched prebuilt skill seeding so text-array fields are passed as proper arrays and string parameters are cast explicitly.
-- Added `1774090000000-create-consuelo-dialer-runtime-tables.ts` to port the remaining Consuelo dialer runtime tables from old `packages/api/src/migrations` into the TypeORM core migration flow.
-- The new dialer runtime migration creates unqualified/public tables used by current raw SQL services: `caller_id_locks`, `area_code_locations`, `calls`, `contacts`, `call_queues`, `queue_items`, `contact_attempt_ledger`, `workspace_subscriptions`, `workspace_usage`, `workspace_phone_numbers`, and `user_settings`.
-- Kept `core.contact_attempt_hazard_hourly_mv` intact. The materialized view now has its base tables during fresh reset.
+- Existing launch header and hero scripts use direct DOM listeners; future cleanup can centralize launch-page interactivity after motion taste is approved.
 
-## validation update
+## errors i ran into
 
-- Brew local infra is now the local default for this task: `postgresql@17`, `pgvector`, and `redis` are installed and running.
-- `CREATE EXTENSION vector` works on the local `default` database.
-- `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server` exits 0.
-- Grep of the latest reset log found no migration/query failures.
-- SQL checks confirm the new runtime tables, agent execution tables, and hazard materialized view exist after reset.
+- Decision engine confidence is polluted by stale prior verification evidence; implementation path is based on explicit file reads and required validation gates.
 
-## codex review follow-up
+---
 
-Accepted Codex review items and patched them:
+## publish checklist
 
-- Made `CreateConsueloDialerRuntimeTables1774090000000.down()` non-destructive because this is an adoption migration and may adopt pre-existing production data tables.
-- Made `RefactorAgentChatEntities1764100000000.down()` non-destructive because thread/turn-based agent messages may have `conversationId = NULL` after the forward migration.
-- Added explicit `ALTER TABLE IF EXISTS ... ADD COLUMN IF NOT EXISTS ...` repair statements for legacy additive columns so partial old-SQL-stack databases are repaired, not silently skipped.
-- Added old call-history indexes: `idx_calls_workspace_outcome`, `idx_calls_workspace_date`, and `idx_calls_history_query`.
-- Ported `contact_attempt_ledger` backfill from the old SQL migration so production databases with existing queue/call history do not lose historical cadence state.
-- Added minimal `core.workspace_settings` compatibility table with `dialer_config` for cadence/stopping economics paths that read `core.workspace_settings` directly.
+```bash
+bun run task:push -- --message "feat(website): add hero boot motion" --changed
+bun run task:pr
+bun run task:finish
+```
 
-## codex follow-up validation
+## wait log
 
-- Reran `npx prettier --write` on changed migration files.
-- Reran `git diff --check`.
-- Reran fresh Brew-backed database reset:
-  `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server`
-- Reset exits 0.
-- Grep of latest reset log found no actual migration/query failures.
-- SQL checks confirmed:
-  - agent execution tables exist.
-  - hazard materialized view exists.
-  - public dialer runtime tables exist.
-  - `core.workspace_settings` exists.
-  - additive retry/subscription columns exist.
-  - call-history indexes exist.
+Wait reason: Cloudflare Pages deployment URL is returning HTTP 200 but older HTML while the task worktree dist has heroMotionReady.
+Duration: 15s polling interval, 4 attempts max.
+Resume action: curl deployment URL and grep for heroMotionReady.
+Expected signal: HTTP 200 plus heroMotionReady present in remote HTML.
+Fallback: Document timeout and continue with local build/review evidence plus deploy URL.
