@@ -1,70 +1,73 @@
-# add Linear facade commands
+# fix fresh db agent automation migration
 
-branch: task/workspace-agents/add-linear-facade-commands
-stream: stream/workspace-agents
-pr: https://github.com/consuelohq/opensaas/pull/312
-started: 2026-05-04
+branch: task/dialer/fix-agent-automation-migration
+stream: stream/dialer
 
 ## acceptance criteria
 
-- [x] Add typed Linear facade commands for issue search and issue creation.
-- [x] Add typed Linear facade commands for issue update, labels, teams, projects, and states.
-- [x] Issue creation supports team, title, description, state, labels, assignee, priority, project, cycle, and parent.
-- [x] Issue creation defaults to DEV/open and resolves bracket type + repository labels.
-- [x] Commands return structured JSON from the existing Linear GraphQL wrapper.
-- [x] Duplicate-check workflow is supported through linear.search before creation.
-- [x] Docs and facade schemas/manifest are updated.
-- [x] Generated docs/types and facade validation pass.
+- [ ] Fresh local database reset no longer fails on missing core.agentSkill during agent automation migration.
+- [ ] Preserve agent feature schema by letting canonical later agent migrations create active tables.
+- [ ] Do not delete agent functionality or rewrite broad migration history.
+- [ ] Push task branch and create/update stream review PR if validation succeeds.
 
 ## plan
 
-1. Inspect existing linear.js and typed facade patterns.
-2. Extend linear.js around existing commands instead of creating a second wrapper.
-3. Add schema registry/type signatures for Linear command inputs.
-4. Add manifest entries for first-class workspace linear.* commands.
-5. Update workspace docs with Linear issue creation conduct and examples.
-6. Validate syntax, facade behavior, generated artifacts, review, and publish.
+1. Patch the old agent automation migration into an explicit compatibility no-op.
+2. Validate formatting and fresh DB reset.
+3. Publish if successful.
 
 ## files changed
 
-- packages/workspace/scripts/linear.js
-- packages/workspace/scripts/lib/facade/schemas.ts
-- packages/workspace/tooling/tool-manifest.json
-- packages/workspace/SCRIPTS.md
+- pending
 
 ## key decisions
 
-- Reused packages/workspace/scripts/linear.js because it already owns token loading and Linear GraphQL access.
-- Added typed facade entries instead of requiring agents to call generic bash or browser automation.
-- Kept DEV as the default team and open as the default state.
-- Labels resolve by name through Linear so titles like [bug] default to [bug] + opensaas instead of hardcoding only [task].
-- Parent issue support is included for sub-issues. Blocking/related relation support still needs GraphQL mutation verification before exposing as a write facade.
+- The earlier migration references core.agentSkill before that table exists.
+- A later canonical migration creates agentSkill, then agentAutomation in the correct order.
 
 ## notes for ko
 
-- I started the task branch from the default task.start source, which returned main, not stream. The branch still targets stream/workspace-agents through the task PR, and review will surface any stream conflicts.
-- Linear live smoke is currently blocked by the checked-in OAuth token returning `Authentication required, not authenticated`.
-- The external ChatGPT linear skill content was read, but the repo does not contain that skill bundle. I updated repo workspace docs/tooling; packaging the external skill would need the tracked skill source or uploaded skill archive.
+- This fixes the migration-order failure seen locally and in Railway.
 
-## improvements noticed
+## implementation update
 
-- workspace task.start should probably default to startFrom stream when the stream has already been explicitly selected.
-- The Linear wrapper should add a refreshed-token/config status command so auth failures are clearer.
+- Patched stale agent migrations so fresh DBs keep the active core agent conversation schema and add the AI agent execution tables needed by the dev seeder.
+- Patched prebuilt skill seeding so text-array fields are passed as proper arrays and string parameters are cast explicitly.
+- Added `1774090000000-create-consuelo-dialer-runtime-tables.ts` to port the remaining Consuelo dialer runtime tables from old `packages/api/src/migrations` into the TypeORM core migration flow.
+- The new dialer runtime migration creates unqualified/public tables used by current raw SQL services: `caller_id_locks`, `area_code_locations`, `calls`, `contacts`, `call_queues`, `queue_items`, `contact_attempt_ledger`, `workspace_subscriptions`, `workspace_usage`, `workspace_phone_numbers`, and `user_settings`.
+- Kept `core.contact_attempt_hazard_hourly_mv` intact. The materialized view now has its base tables during fresh reset.
 
-## validation
+## validation update
 
-- node --check packages/workspace/scripts/linear.js passed.
-- Initial live Linear smoke for `bun run linear -- labels --first 5` failed with `Authentication required, not authenticated`.
-- Fixed the facade envelope timestamp path for normal executor and batch results.
-- `cd packages/workspace && bun run test -- tests/facade/facade.test.ts --reporter=json` passed with 0 failures.
-- `workspace review.run` against stream/workspace-agents returned no new review findings in ours; only pre-existing error-handling warnings remain.
+- Brew local infra is now the local default for this task: `postgresql@17`, `pgvector`, and `redis` are installed and running.
+- `CREATE EXTENSION vector` works on the local `default` database.
+- `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server` exits 0.
+- Grep of the latest reset log found no migration/query failures.
+- SQL checks confirm the new runtime tables, agent execution tables, and hazard materialized view exist after reset.
 
+## codex review follow-up
 
-## oauth refresh follow-up
+Accepted Codex review items and patched them:
 
-- Confirmed cron had a real mismatch: it calls `.agent/linear-refresh.sh --chatgpt`, but the script only recognized `--opencode`, so chatgpt refresh fell through to the kiro token path.
-- Since opencode is retired, `--opencode` is now treated as an alias for the chatgpt token path for backwards compatibility with old commands.
-- Updated `.agent/linear-refresh.sh` so `--chatgpt` refreshes `.agent/.chatgpt-token.json` using the chatgpt/opencode OAuth app config.
-- Preserved token metadata (`user_id`, `user_name`, `note`) when refresh responses rotate the access/refresh token pair.
-- Updated `.agent/webhook-receiver.py` on the task branch to support `state=chatgpt` writing to `.agent/.chatgpt-token.json` if we need browser reauth later.
-- Live smoke passed after refresh: direct GraphQL viewer returned `chatgpt`; task-branch Linear wrapper `labels --first 3` returned label JSON.
+- Made `CreateConsueloDialerRuntimeTables1774090000000.down()` non-destructive because this is an adoption migration and may adopt pre-existing production data tables.
+- Made `RefactorAgentChatEntities1764100000000.down()` non-destructive because thread/turn-based agent messages may have `conversationId = NULL` after the forward migration.
+- Added explicit `ALTER TABLE IF EXISTS ... ADD COLUMN IF NOT EXISTS ...` repair statements for legacy additive columns so partial old-SQL-stack databases are repaired, not silently skipped.
+- Added old call-history indexes: `idx_calls_workspace_outcome`, `idx_calls_workspace_date`, and `idx_calls_history_query`.
+- Ported `contact_attempt_ledger` backfill from the old SQL migration so production databases with existing queue/call history do not lose historical cadence state.
+- Added minimal `core.workspace_settings` compatibility table with `dialer_config` for cadence/stopping economics paths that read `core.workspace_settings` directly.
+
+## codex follow-up validation
+
+- Reran `npx prettier --write` on changed migration files.
+- Reran `git diff --check`.
+- Reran fresh Brew-backed database reset:
+  `PG_DATABASE_URL=postgres://postgres@localhost:5432/default DATABASE_URL=postgres://postgres@localhost:5432/default REDIS_URL=redis://localhost:6379 npx nx database:reset twenty-server`
+- Reset exits 0.
+- Grep of latest reset log found no actual migration/query failures.
+- SQL checks confirmed:
+  - agent execution tables exist.
+  - hazard materialized view exists.
+  - public dialer runtime tables exist.
+  - `core.workspace_settings` exists.
+  - additive retry/subscription columns exist.
+  - call-history indexes exist.
