@@ -8986,8 +8986,8 @@
       }
     },
     {
-      "id": "44a2e610-b7b5-4e1b-84b0-5a98d2ace94f",
-      "occurred_at": "2026-05-04T07:10:22.299Z",
+      "id": "71d06d6d-423e-4b47-a4a8-b993bef18068",
+      "occurred_at": "2026-05-04T08:09:42.673Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -8995,15 +8995,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "4a401bb7-96e2-4181-87ff-3bd46006988f",
-      "occurred_at": "2026-05-04T07:10:22.602Z",
+      "id": "ebedb992-cb83-4041-9d2a-22d5e14917c5",
+      "occurred_at": "2026-05-04T08:09:42.932Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9011,223 +9011,175 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "a21d3248-f7b9-41d9-82be-2523690ca044",
-      "occurred_at": "2026-05-04T07:10:22.878Z",
+      "id": "d5be6625-6059-4c67-a7d0-067d8dc567a0",
+      "occurred_at": "2026-05-04T08:09:50.419Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-design/AGENTS.md",
+      "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "7f89c668-cbca-4be7-94bd-4116b674bb6c",
-      "occurred_at": "2026-05-04T07:10:23.185Z",
+      "id": "1adbef7c-83ce-4d0a-b936-f67d066b6799",
+      "occurred_at": "2026-05-04T08:10:15.270Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/pages/blog/index.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "50a38333-a2c1-4fb6-9ebc-0d3879b97ebe",
-      "occurred_at": "2026-05-04T07:10:23.503Z",
+      "id": "99450f1a-561e-4906-8993-04e4318ae77f",
+      "occurred_at": "2026-05-04T08:10:23.537Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/consuelo-website/src/utils/getSortedPosts.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "edbee9fc-aa7c-44da-a9b0-9e3cca5b5628",
-      "occurred_at": "2026-05-04T07:12:26.256Z",
+      "id": "aae3e5e6-97fb-4a7f-b4b4-cea8999e1815",
+      "occurred_at": "2026-05-04T08:10:23.793Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/workspace-agents/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/components/Card.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "bdf72e99-30d9-4c81-8377-042eb2a4a859",
-      "occurred_at": "2026-05-04T07:12:26.537Z",
+      "id": "3f50b1fd-5eb9-4d68-83a8-231da0e36bdd",
+      "occurred_at": "2026-05-04T08:10:24.052Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/dialer/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/config.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "c71a665e-5b25-462c-8414-a5b49b815046",
-      "occurred_at": "2026-05-04T07:12:26.805Z",
+      "id": "4db47651-8f2b-466f-8e43-27694f58682e",
+      "occurred_at": "2026-05-04T08:10:36.510Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/consuelo-design/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/pages/blog/posts/[...page].astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "1dcc36e5-f22a-47d3-acf9-5234103e91b6",
-      "occurred_at": "2026-05-04T07:12:27.089Z",
+      "id": "8e40a3a2-997e-4888-82dc-2eaf3a773fa0",
+      "occurred_at": "2026-05-04T08:10:36.802Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "areas/website/AGENTS.md",
+      "file_path": "packages/consuelo-website/src/pages/blog/archives/index.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "e2e710cc-b99a-4c96-8261-59e5ec752e8d",
-      "occurred_at": "2026-05-04T07:13:02.639Z",
+      "id": "d541bd07-ed1f-4d7f-a6ba-94930f206414",
+      "occurred_at": "2026-05-04T08:11:04.117Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-design/src/index.ts",
+      "file_path": "packages/consuelo-website/src/utils/getPath.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "09eb6086-0494-43e4-87fa-840bcc1428c0",
-      "occurred_at": "2026-05-04T07:13:03.006Z",
+      "id": "91163309-bbd7-40d5-b912-1995a13e1f5b",
+      "occurred_at": "2026-05-04T08:11:04.367Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/consuelo-design.ts",
+      "file_path": "packages/consuelo-website/src/utils/postFilter.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "4703924a-3e27-49fc-a767-f8361c0432ee",
-      "occurred_at": "2026-05-04T07:13:03.374Z",
+      "id": "915787b8-614f-4be0-b1fc-47720ee6ef23",
+      "occurred_at": "2026-05-04T08:11:04.618Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/consuelo-design.ts",
+      "file_path": "packages/consuelo-website/src/pages/blog/[...slug]/index.astro",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
+      "worktree_id": "task/blog/fix-blog-homepage-post-links-and-featured-posts",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
+        "task_branch": "task/blog/fix-blog-homepage-post-links-and-featured-posts"
       }
     },
     {
-      "id": "b713fd26-198b-4549-a8a7-c07cee1315ba",
-      "occurred_at": "2026-05-04T07:13:03.716Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-design/README.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "3b8d786c-d1d9-4384-9151-c61a903019fa",
-      "occurred_at": "2026-05-04T07:14:37.758Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "76ada24c-06cb-462e-8ea4-fbb12b991895",
-      "occurred_at": "2026-05-04T07:14:58.548Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/bootstrap-stream-agent-docs",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/bootstrap-stream-agent-docs"
-      }
-    },
-    {
-      "id": "6087dca8-329b-45d5-be35-5d3420037f81",
-      "occurred_at": "2026-05-04T08:19:22.056Z",
+      "id": "cdb4d514-c520-41f8-a21b-11d1cd6dae68",
+      "occurred_at": "2026-05-04T19:15:44.934Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9235,15 +9187,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "099d6c86-481a-48d1-a1c7-c6c5e82af678",
-      "occurred_at": "2026-05-04T08:19:22.337Z",
+      "id": "795cb289-eefb-45b9-a533-56ec58332a63",
+      "occurred_at": "2026-05-04T19:15:45.237Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9251,47 +9203,239 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "350d8851-d7bb-4a12-b354-92263b98be63",
-      "occurred_at": "2026-05-04T08:19:22.615Z",
+      "id": "3aa8638e-a90e-4be7-a9d8-de0f70f80dc7",
+      "occurred_at": "2026-05-04T19:15:45.594Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/animations.md",
+      "file_path": "packages/workspace/SCRIPTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "9c5d40db-0bbc-4769-a96d-e0a62e4f8096",
-      "occurred_at": "2026-05-04T08:19:22.888Z",
+      "id": "58bff3df-3b1f-4abd-93d8-ec657b312fbc",
+      "occurred_at": "2026-05-04T19:17:02.881Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/workspace/scripts/linear.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/move-website-animations-stream-doc",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/move-website-animations-stream-doc"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "c668df04-8cc8-4a43-ae07-fe2bce565f31",
-      "occurred_at": "2026-05-05T00:00:01.466Z",
+      "id": "94eaa321-17e1-4043-818d-0a87458e8a44",
+      "occurred_at": "2026-05-04T19:17:03.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "8a904c57-5446-44f4-aedf-2f46659acf19",
+      "occurred_at": "2026-05-04T19:17:03.484Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "e76caeab-da1b-4059-acf7-72ffa100c21d",
+      "occurred_at": "2026-05-04T19:17:03.805Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "56af206d-fd16-4ab4-a726-2a55601c6602",
+      "occurred_at": "2026-05-04T19:17:28.248Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "6d82ea45-0c4a-44ce-84f4-8d49ad216856",
+      "occurred_at": "2026-05-04T19:17:36.665Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "0bdabb75-d817-4131-a81f-cc210f0ee690",
+      "occurred_at": "2026-05-04T19:17:36.941Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "ac589bb2-87ff-407d-b841-d02263d425b0",
+      "occurred_at": "2026-05-04T19:17:37.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-docs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "18a812ec-6eed-4c83-afd1-bd378c8896dc",
+      "occurred_at": "2026-05-04T19:18:21.217Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "528a5bbf-3c5d-4225-81c5-184c3eced2fc",
+      "occurred_at": "2026-05-04T19:18:37.555Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "1976e4d1-920d-404f-881a-1bfc98df7d18",
+      "occurred_at": "2026-05-04T19:18:50.674Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "c0ab1321-cc52-4c4b-af6a-200be1313a59",
+      "occurred_at": "2026-05-04T19:18:59.503Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "d25093ed-1e8d-439f-9952-e0986b505fa5",
+      "occurred_at": "2026-05-04T19:19:12.761Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
+      }
+    },
+    {
+      "id": "a45f8821-6f9d-47fe-b8c2-c6ce277f508f",
+      "occurred_at": "2026-05-04T20:13:45.050Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9299,15 +9443,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "60efcc4c-dfb9-402e-8db7-55aadf6a9410",
-      "occurred_at": "2026-05-05T00:00:05.269Z",
+      "id": "3a43291c-6b90-46f6-bd85-87dcc45ed9a4",
+      "occurred_at": "2026-05-04T20:13:45.578Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -9315,77 +9459,61 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "a4042142-9830-4fc1-ad2a-14c9e65f1f95",
-      "occurred_at": "2026-05-05T00:00:09.128Z",
+      "id": "973ff3c4-807e-4a46-bb35-7fca17dec3e7",
+      "occurred_at": "2026-05-04T20:17:55.422Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": ".agent/linear-mcp/src/auth.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "53e613c9-da99-46f4-9225-e697a9363da3",
-      "occurred_at": "2026-05-05T00:00:16.152Z",
+      "id": "8e475498-3faa-465a-a055-33ec9877fc2e",
+      "occurred_at": "2026-05-04T20:17:55.723Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/run-dialer-scenario.ts",
+      "file_path": ".agent/linear-mcp/src/graphql.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     },
     {
-      "id": "af2378cc-7a76-4ad7-8563-d458cbb1216b",
-      "occurred_at": "2026-05-05T00:00:21.586Z",
+      "id": "900e48b0-b103-4d33-9fcd-7be8454c77aa",
+      "occurred_at": "2026-05-04T20:17:56.012Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/sentry.js",
+      "file_path": ".agent/linear-mcp/src/index.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
+      "worktree_id": "task/workspace-agents/add-linear-facade-commands",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
-      }
-    },
-    {
-      "id": "beb3660a-e073-4ade-a8de-03e5bbf8bd60",
-      "occurred_at": "2026-05-05T00:00:27.692Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/sentry.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-codex-review-findings-for-pr-308",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
+        "task_branch": "task/workspace-agents/add-linear-facade-commands"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-05T00:00:27.743Z"
+  "updated_at": "2026-05-04T20:17:56.063Z"
 }

@@ -2638,6 +2638,416 @@
     }
   },
   {
+    "name": "linear.search",
+    "methodPath": [
+      "linear",
+      "search"
+    ],
+    "description": "search Linear issues with DEV default team support",
+    "category": "linear",
+    "underlying": "workspace linear.search",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearSearchInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "search",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "search",
+          "flag": "--search",
+          "kind": "value"
+        },
+        {
+          "source": "team",
+          "flag": "--team",
+          "kind": "value"
+        },
+        {
+          "source": "first",
+          "flag": "--first",
+          "kind": "value"
+        },
+        {
+          "source": "after",
+          "flag": "--after",
+          "kind": "value"
+        },
+        {
+          "source": "filter",
+          "flag": "--filter",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "search": "workspace facade"
+    }
+  },
+  {
+    "name": "linear.issue",
+    "methodPath": [
+      "linear",
+      "issue"
+    ],
+    "description": "read a Linear issue by identifier or id",
+    "category": "linear",
+    "underlying": "workspace linear.issue",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearIssueInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "issue",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "identifier",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "identifier": "DEV-123"
+    }
+  },
+  {
+    "name": "linear.createIssue",
+    "methodPath": [
+      "linear",
+      "createIssue"
+    ],
+    "description": "create a Linear issue with DEV/open defaults and required labels",
+    "category": "linear",
+    "underlying": "workspace linear.createIssue",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearCreateIssueInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "create",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "title",
+          "kind": "value"
+        },
+        {
+          "source": "description",
+          "flag": "--description",
+          "kind": "value"
+        },
+        {
+          "source": "team",
+          "flag": "--team",
+          "kind": "value"
+        },
+        {
+          "source": "state",
+          "flag": "--state",
+          "kind": "value"
+        },
+        {
+          "source": "labels",
+          "flag": "--labels",
+          "kind": "array"
+        },
+        {
+          "source": "priority",
+          "flag": "--priority",
+          "kind": "value"
+        },
+        {
+          "source": "assignee",
+          "flag": "--assignee",
+          "kind": "value"
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "cycle",
+          "flag": "--cycle",
+          "kind": "value"
+        },
+        {
+          "source": "parent",
+          "flag": "--parent",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "title": "[task] add Linear facade commands",
+      "labels": [
+        "[task]",
+        "opensaas"
+      ]
+    }
+  },
+  {
+    "name": "linear.updateIssue",
+    "methodPath": [
+      "linear",
+      "updateIssue"
+    ],
+    "description": "update Linear issue fields including labels, project, cycle, and parent",
+    "category": "linear",
+    "underlying": "workspace linear.updateIssue",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearUpdateIssueInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "update",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "issueId",
+          "kind": "value"
+        },
+        {
+          "source": "title",
+          "flag": "--title",
+          "kind": "value"
+        },
+        {
+          "source": "description",
+          "flag": "--description",
+          "kind": "value"
+        },
+        {
+          "source": "state",
+          "flag": "--state",
+          "kind": "value"
+        },
+        {
+          "source": "labels",
+          "flag": "--labels",
+          "kind": "array"
+        },
+        {
+          "source": "priority",
+          "flag": "--priority",
+          "kind": "value"
+        },
+        {
+          "source": "assignee",
+          "flag": "--assignee",
+          "kind": "value"
+        },
+        {
+          "source": "project",
+          "flag": "--project",
+          "kind": "value"
+        },
+        {
+          "source": "cycle",
+          "flag": "--cycle",
+          "kind": "value"
+        },
+        {
+          "source": "parent",
+          "flag": "--parent",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "issueId": "DEV-123",
+      "labels": [
+        "[bug]",
+        "opensaas"
+      ]
+    }
+  },
+  {
+    "name": "linear.labels",
+    "methodPath": [
+      "linear",
+      "labels"
+    ],
+    "description": "list Linear issue labels for label consistency",
+    "category": "linear",
+    "underlying": "workspace linear.labels",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "labels",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "first",
+          "flag": "--first",
+          "kind": "value"
+        },
+        {
+          "source": "after",
+          "flag": "--after",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "first": 50
+    }
+  },
+  {
+    "name": "linear.teams",
+    "methodPath": [
+      "linear",
+      "teams"
+    ],
+    "description": "list Linear teams and workflow states",
+    "category": "linear",
+    "underlying": "workspace linear.teams",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "teams",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "first",
+          "flag": "--first",
+          "kind": "value"
+        },
+        {
+          "source": "after",
+          "flag": "--after",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "first": 20
+    }
+  },
+  {
+    "name": "linear.projects",
+    "methodPath": [
+      "linear",
+      "projects"
+    ],
+    "description": "list Linear projects and ids",
+    "category": "linear",
+    "underlying": "workspace linear.projects",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "projects",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "first",
+          "flag": "--first",
+          "kind": "value"
+        },
+        {
+          "source": "after",
+          "flag": "--after",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "first": 50
+    }
+  },
+  {
+    "name": "linear.states",
+    "methodPath": [
+      "linear",
+      "states"
+    ],
+    "description": "list workflow states for a Linear team",
+    "category": "linear",
+    "underlying": "workspace linear.states",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "LinearTeamScopedListInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "linear",
+      "subcommand": "states",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "team",
+          "flag": "--team",
+          "kind": "value"
+        }
+      ],
+      "jsonFlag": "--json"
+    },
+    "exampleInput": {
+      "team": "dev"
+    }
+  },
+  {
     "name": "wait",
     "methodPath": [
       "wait"

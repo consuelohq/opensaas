@@ -238,6 +238,7 @@ export async function executeTool<TData = unknown>(
       durationMs: elapsedMs(startedAt, options.now),
       traceId,
       requestId,
+      now: options.now,
     });
     logResult(entry, toolName, result, plannedCommand, branchResolution.branch, facadeCmd, options.logMode);
     return result;
