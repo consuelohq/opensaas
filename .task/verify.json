@@ -1,19 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/website/fix-hero-headline-visibility-after-boot-motion",
+  "branch": "task/website/svg-draw-proof-motion-only",
   "base": "stream/website",
-  "headSha": "170ef3590cbcbf7675770076838cc3e5bbfa578e",
-  "changeHash": "89032855706b7c836856a8cf3de2a4cb1e1cbb180db27719807d59dbbb9be479",
+  "headSha": "c35c59e19147aa8b366fa84df3d0e0630ebcda53",
+  "changeHash": "1722e0b189badd88ed24ca1ac293aa9c2b256444069dca8c797ab5aa3c5d64d5",
   "changedFiles": [
-    "packages/consuelo-website/src/lib/motion.ts"
+    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+    "packages/consuelo-website/src/lib/motion.ts",
+    "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T07:12:48.349Z",
+  "verifiedAt": "2026-05-05T22:47:28.642Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []
