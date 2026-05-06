@@ -51,7 +51,9 @@ function isTmuxAvailable() {
 }
 
 function assertTmuxAvailable() {
-  assertTmuxAvailable();
+  if (!isTmuxAvailable()) {
+    throw new Error('tmux is required for task sessions but was not found on PATH');
+  }
 }
 
 function tmuxSessionExists(tmuxSession) {
