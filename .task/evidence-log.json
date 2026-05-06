@@ -9384,8 +9384,616 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/fix-codex-review-findings-for-pr-308"
       }
+    },
+    {
+      "id": "c3868007-f417-4ebc-ade3-9511508ca04a",
+      "occurred_at": "2026-05-05T21:09:40.283Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/run-dialer-scenario.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "b4721735-95c7-4d06-882e-f9694e8a99c5",
+      "occurred_at": "2026-05-05T21:09:40.555Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "8d5660dd-82a0-4044-948d-6b868561679c",
+      "occurred_at": "2026-05-05T21:09:40.817Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "da4f22bf-cda4-4bdd-bb82-27eae40e58d5",
+      "occurred_at": "2026-05-05T21:10:55.117Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilter.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "ee92a63b-f573-4fdc-b265-9c3906ebf863",
+      "occurred_at": "2026-05-05T21:10:55.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilterStringified.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "7f33ff15-5147-47cb-9c44-96172d92cebb",
+      "occurred_at": "2026-05-05T21:10:55.725Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilterStringified.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "cee4153d-5ac7-42d8-9bbd-da94fe2a32aa",
+      "occurred_at": "2026-05-05T21:11:06.147Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "533ff32b-dee1-4720-9a70-948771ac3efe",
+      "occurred_at": "2026-05-05T21:11:06.429Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/current.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "fef0004a-03ee-4ce9-b22e-8580f83377a8",
+      "occurred_at": "2026-05-05T21:11:13.905Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/addUnitToZonedDateTime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "7bb9d593-a228-4258-9144-f7e6f8ea873d",
+      "occurred_at": "2026-05-05T21:11:14.180Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/subUnitFromZonedDateTime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "e17361cb-8475-4924-9a80-6b3598e29e90",
+      "occurred_at": "2026-05-05T21:11:14.456Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/relativeDateFilterSchema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "bb329432-ecdd-4388-bab0-c795feef0549",
+      "occurred_at": "2026-05-05T21:11:20.605Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilter.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "acaf699c-d26e-4bf1-b466-7e7bc2e426e0",
+      "occurred_at": "2026-05-05T21:11:20.880Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/getPeriodStart.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "70e541f0-f08e-4b5f-a275-d9e7e7bb8524",
+      "occurred_at": "2026-05-05T21:11:29.577Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/validation/isDefined.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "dceb9d93-7b12-4cf5-892c-cb1f037ac653",
+      "occurred_at": "2026-05-05T21:11:29.852Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/validation/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "730aa2e1-cf82-45cf-8f74-70bcd1df4f47",
+      "occurred_at": "2026-05-05T21:12:01.208Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilter.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "f842ee03-168e-4b0c-9712-2b700275f966",
+      "occurred_at": "2026-05-05T21:12:01.518Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilterStringified.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "f35980ba-baa9-416e-8159-722c1f95d2c2",
+      "occurred_at": "2026-05-05T21:12:01.810Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilterStringified.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "286c60dc-ab65-42a8-9b72-30bca8decfd7",
+      "occurred_at": "2026-05-05T21:12:02.087Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "3ea6f6d5-6f87-48cf-abf3-e2a197dd6ecb",
+      "occurred_at": "2026-05-05T21:13:06.691Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".yarnrc.yml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "18290c39-4421-446d-b1f7-5b3f5d685845",
+      "occurred_at": "2026-05-05T21:13:44.737Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "8db74f9d-943b-4e56-8c81-3c9095f5a5dc",
+      "occurred_at": "2026-05-05T21:16:53.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "903ae179-aa29-4d3c-acd1-9a6d3ccd1e9f",
+      "occurred_at": "2026-05-05T21:19:26.897Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/queues.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "0c42b8ee-36e3-4c67-b293-55e1e5d29fb8",
+      "occurred_at": "2026-05-05T21:19:28.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "f7bf48a6-e467-433a-962a-1395777049c1",
+      "occurred_at": "2026-05-05T22:14:19.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/run-dialer-scenario.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "1ffbee60-3452-4547-b0a3-047f284b4cf1",
+      "occurred_at": "2026-05-05T22:14:20.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "f48ed993-c2f1-45f8-9b32-a8d4e7b0c4a6",
+      "occurred_at": "2026-05-05T22:14:24.931Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/guards/workspace-auth.guard.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "a68da40e-510d-4379-a34c-4aef713b8a4a",
+      "occurred_at": "2026-05-05T22:14:31.604Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "47900a73-fe31-470e-b023-be628cd06a5f",
+      "occurred_at": "2026-05-05T22:14:32.817Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "322368ce-4005-4d5b-9d2e-804450a9afc9",
+      "occurred_at": "2026-05-05T22:14:42.930Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces-and-access-tokens.output.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "931024e8-c7e5-4c06-b130-e5e2e949e448",
+      "occurred_at": "2026-05-05T22:14:45.945Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces.output.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "2966ed27-6cff-41b1-a3b9-1b9a0f078642",
+      "occurred_at": "2026-05-05T22:15:42.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-server.log",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "e62ac158-165f-43ca-b44a-7a910e09c88b",
+      "occurred_at": "2026-05-05T22:16:12.187Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "1bc71ec2-4883-4a10-a063-08c1b81280b4",
+      "occurred_at": "2026-05-05T22:20:07.227Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "2ec213e5-56b9-459b-9e2f-79c8ddd03652",
+      "occurred_at": "2026-05-05T22:23:37.177Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "52a59bb1-2979-4910-b920-194cb29d8b8e",
+      "occurred_at": "2026-05-05T22:24:54.346Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "db252d7d-7cc7-4b46-815c-b59efe6237f8",
+      "occurred_at": "2026-05-06T03:16:54.651Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
+    },
+    {
+      "id": "0e0376ab-6fd2-48ea-a19a-1ae741455110",
+      "occurred_at": "2026-05-06T03:17:08.153Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1499-local-setup-and-scenario-validation",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-05T00:00:27.743Z"
+  "updated_at": "2026-05-06T03:17:08.204Z"
 }

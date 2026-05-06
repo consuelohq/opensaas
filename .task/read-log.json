@@ -1,8 +1,11 @@
 {
   "files": [
+    ".task/current.json",
     ".task/handoff.md",
+    ".task/twenty-server.log",
     ".task/verify.json",
     ".task/workpad.md",
+    ".yarnrc.yml",
     "AGENTS.md",
     "CODING-STANDARDS.md",
     "areas/consuelo-design/AGENTS.md",
@@ -42,6 +45,9 @@
     "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
     "packages/twenty-front/src/pages/home/HomePage.tsx",
     "packages/twenty-front/src/pages/home/home-page.styles.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/auth.resolver.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces-and-access-tokens.output.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/dto/available-workspaces.output.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/queues.controller.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/voice.controller.ts",
@@ -51,6 +57,17 @@
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
+    "packages/twenty-server/src/engine/guards/workspace-auth.guard.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/addUnitToZonedDateTime.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/getPeriodStart.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/relativeDateFilterSchema.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilter.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilterStringified.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilter.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilterStringified.ts",
+    "packages/twenty-shared/src/utils/filter/dates/utils/subUnitFromZonedDateTime.ts",
+    "packages/twenty-shared/src/utils/validation/index.ts",
+    "packages/twenty-shared/src/utils/validation/isDefined.ts",
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
@@ -96,5 +113,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-05T00:00:27.642Z"
+  "updatedAt": "2026-05-06T03:17:08.103Z"
 }
