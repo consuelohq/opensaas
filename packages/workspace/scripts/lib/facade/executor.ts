@@ -22,6 +22,20 @@ import type {
 
 export const manifestEntries = manifestJson as ToolManifestEntry[];
 
+type TaskSessionMetadata = {
+  taskSession: string;
+  tmuxSession?: string;
+  branch?: string;
+  taskBranch?: string;
+  worktree?: string;
+  worktreePath?: string;
+};
+
+type TaskSessionResolution =
+  | { ok: true; branch: string; metadata: TaskSessionMetadata }
+  | { ok: false; code: 'TASK_SESSION_NOT_FOUND'; message: string };
+
+
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
@@ -126,8 +140,27 @@ export async function executeTool<TData = unknown>(
     }
 
     const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
+    const taskSessionResolution = resolveTaskSessionInput(normalizedInput, cwd);
+    if (taskSessionResolution && !taskSessionResolution.ok) {
+      const result = createToolResult({
+        ok: false,
+        code: taskSessionResolution.code,
+        message: taskSessionResolution.message,
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      return result as ToolResult<TData>;
+    }
+    const scopedInput = taskSessionResolution?.ok ? {
+      ...normalizedInput,
+      branch: taskSessionResolution.branch,
+    } : normalizedInput;
 
-    const internalResult = await executeInternalTool<TData>(entry, normalizedInput, {
+    const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
       cwd,
       env,
       runner,
@@ -138,7 +171,7 @@ export async function executeTool<TData = unknown>(
     });
     if (internalResult) return internalResult;
 
-    const branchResolution = resolveBranchIfNeeded(entry, normalizedInput, cwd, env, options);
+    const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
       const result = createToolResult({
         ok: false,
@@ -155,7 +188,7 @@ export async function executeTool<TData = unknown>(
     }
 
     const commandInput = {
-      ...normalizedInput,
+      ...scopedInput,
       ...(branchResolution.branch ? { branch: branchResolution.branch } : {}),
     };
     const plan = buildCommandPlan(entry, commandInput, cwd, env);
@@ -253,6 +286,7 @@ export async function executeTool<TData = unknown>(
       durationMs: elapsedMs(startedAt, options.now),
       traceId,
       requestId,
+      now: options.now,
     });
     logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
     return result as ToolResult<TData>;
@@ -429,6 +463,53 @@ async function executeInternalTool<TData>(
   logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
   return result as ToolResult<TData>;
 }
+
+function resolveTaskSessionInput(input: ToolInput, cwd: string): TaskSessionResolution | null {
+  const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
+  if (!taskSession) return null;
+
+  const metadata = findTaskSessionMetadata(cwd, taskSession);
+  if (!metadata) return {
+    ok: false,
+    code: 'TASK_SESSION_NOT_FOUND',
+    message: 'taskSession was not found. Use the taskSession returned by task.start.',
+  };
+
+  const branch = metadata.branch || metadata.taskBranch;
+  if (!branch) return {
+    ok: false,
+    code: 'TASK_SESSION_NOT_FOUND',
+    message: 'taskSession metadata did not include a task branch.',
+  };
+
+  return { ok: true, branch, metadata };
+}
+
+
+function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionMetadata | null {
+  const candidates = new Set<string>();
+  candidates.add(path.join(cwd, '.task', 'session.json'));
+
+  const worktreeRoot = 'private/tmp/opensaas-worktrees';
+  const absoluteWorktreeRoot = path.isAbsolute(worktreeRoot) ? worktreeRoot : path.join('/', worktreeRoot);
+  if (fs.existsSync(absoluteWorktreeRoot)) {
+    for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
+      candidates.add(path.join(absoluteWorktreeRoot, name, '.task', 'session.json'));
+    }
+  }
+
+  for (const candidate of candidates) {
+    try {
+      const metadata = JSON.parse(fs.readFileSync(candidate, 'utf8')) as TaskSessionMetadata;
+      if (metadata.taskSession === taskSession) return metadata;
+    } catch {
+      // no-op for missing or invalid session files
+    }
+  }
+
+  return null;
+}
+
 
 function resolveBranchIfNeeded(
   entry: ToolManifestEntry,

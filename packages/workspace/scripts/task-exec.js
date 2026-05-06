@@ -69,7 +69,7 @@ function main() {
   const result = spawnSync(commandArgs[0], commandArgs.slice(1), {
     cwd: task.worktreePath,
     stdio: 'inherit',
-    env: { ...process.env, TASK_WORKTREE: task.worktreePath },
+    env: { ...process.env, TASK_BRANCH: task.meta.taskBranch || task.branch, TASK_WORKTREE: task.worktreePath },
   });
 
   process.exitCode = result.status || (result.error ? 1 : 0);

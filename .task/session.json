@@ -1,0 +1,14 @@
+{
+  "taskSession": "tsk_12cf9dfeaa9f",
+  "tmuxSession": "opensaas-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-cal-12cf9dfe",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+  "branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
+  "worktree": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
+  "prNumber": 336,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/336",
+  "createdAt": "2026-05-06T05:05:58.579Z",
+  "tmuxCreated": true
+}

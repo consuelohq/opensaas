@@ -7,6 +7,8 @@ export type ErrorCode =
   | 'TIMEOUT'
   | 'PARSE_ERROR'
   | 'NOT_FOUND'
+  | 'TASK_SESSION_NOT_FOUND'
+  | 'TASK_SESSION_REQUIRED'
   | 'DRY_RUN';
 
 export type ToolCapabilities = {

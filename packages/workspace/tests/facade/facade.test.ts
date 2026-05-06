@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
@@ -162,6 +166,43 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(true);
     expect(plans[0].args).toContain('fs');
     expect(plans[0].args).not.toContain('--branch');
+  });
+
+  it('resolves taskSession metadata before branch planning', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-'));
+    mkdirSync(join(tempRoot, '.task'), { recursive: true });
+    writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+      taskSession: 'tsk_test',
+      tmuxSession: 'opensaas-test',
+      branch: 'task/workspace-agents/session-test',
+      worktree: tempRoot,
+    }, null, 2));
+
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      taskSession: 'tsk_test',
+      path: 'AGENTS.md',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      cwd: tempRoot,
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/session-test');
+    expect(plans[0].args).toContain('--branch');
+    expect(plans[0].args).toContain('task/workspace-agents/session-test');
+  });
+
+  it('fails unknown taskSession handles deterministically', async () => {
+    const result = await executeTool('fs.read', {
+      taskSession: 'tsk_missing',
+      path: 'AGENTS.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_NOT_FOUND');
   });
 
   it('passes request ids through nested tool envelopes', async () => {
