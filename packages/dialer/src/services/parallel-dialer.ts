@@ -28,9 +28,13 @@ export class ParallelDialerService {
   private credentials: TwilioCredentials;
   private store: ParallelStore;
 
-  constructor(credentials: TwilioCredentials | undefined, store: ParallelStore) {
+  constructor(
+    credentials: TwilioCredentials | undefined,
+    store: ParallelStore,
+  ) {
     this.credentials = {
-      accountSid: credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
+      accountSid:
+        credentials?.accountSid ?? process.env.TWILIO_ACCOUNT_SID ?? '',
       authToken: credentials?.authToken ?? process.env.TWILIO_AUTH_TOKEN ?? '',
     };
     this.store = store;
@@ -40,7 +44,10 @@ export class ParallelDialerService {
     if (this.client) return this.client;
     try {
       const twilio = await import('twilio');
-      this.client = twilio.default(this.credentials.accountSid, this.credentials.authToken);
+      this.client = twilio.default(
+        this.credentials.accountSid,
+        this.credentials.authToken,
+      );
       return this.client;
     } catch (err: unknown) {
       this.client = null;
@@ -71,30 +78,42 @@ export class ParallelDialerService {
       const createdAt = new Date().toISOString();
       const calls: ParallelCall[] = [];
 
-      for (let i = 0; i < opts.customerNumbers.length; i++) {
-        if (i > 0) await delay(opts.profile.staggerMs);
+      try {
+        for (let i = 0; i < opts.customerNumbers.length; i++) {
+          if (i > 0) await delay(opts.profile.staggerMs);
 
-        const call = await client.calls.create({
-          to: opts.customerNumbers[i],
-          from: opts.fromNumbers[i],
-          url: opts.customerTwimlUrl,
-          statusCallback: opts.statusCallbackUrl,
-          statusCallbackEvent: ['initiated', 'ringing', 'answered', 'completed'],
-          machineDetection: 'Enable',
-        });
+          const call = await client.calls.create({
+            to: opts.customerNumbers[i],
+            from: opts.fromNumbers[i],
+            url: opts.customerTwimlUrl,
+            statusCallback: opts.statusCallbackUrl,
+            statusCallbackEvent: [
+              'initiated',
+              'ringing',
+              'answered',
+              'completed',
+            ],
+            machineDetection: 'Enable',
+          });
 
-        const parallelCall: ParallelCall = {
-          callSid: call.sid,
-          customerNumber: opts.customerNumbers[i],
-          fromNumber: opts.fromNumbers[i],
-          position: i + 1,
-          status: 'dialing',
-          contactId: opts.contactIds?.[i],
-          dialStartedAt: new Date().toISOString(),
-        };
-        calls.push(parallelCall);
+          const parallelCall: ParallelCall = {
+            callSid: call.sid,
+            customerNumber: opts.customerNumbers[i],
+            fromNumber: opts.fromNumbers[i],
+            position: i + 1,
+            status: 'dialing',
+            contactId: opts.contactIds?.[i],
+            dialStartedAt: new Date().toISOString(),
+          };
+          calls.push(parallelCall);
 
-        await this.store.setCallMapping(call.sid, groupId, GROUP_TTL_SECONDS);
+          await this.store.setCallMapping(call.sid, groupId, GROUP_TTL_SECONDS);
+        }
+      } catch (err: unknown) {
+        await Promise.all(
+          calls.map((call) => this.terminateCall(call.callSid)),
+        );
+        throw err;
       }
 
       const group: ParallelGroup = {
@@ -111,7 +130,11 @@ export class ParallelDialerService {
         resolverReason: 'route-resolved',
       };
 
-      await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
 
       return {
         groupId,
@@ -164,7 +187,8 @@ export class ParallelDialerService {
 
       const isHumanLikeAnswer =
         call.amdResult === 'human' ||
-        (group.profile.amdPolicy === 'human-or-unknown' && call.amdResult === 'unknown');
+        (group.profile.amdPolicy === 'human-or-unknown' &&
+          call.amdResult === 'unknown');
 
       if (callStatus === 'in-progress' && isHumanLikeAnswer) {
         const won = await this.store.setWinnerIfAbsent(
@@ -188,9 +212,7 @@ export class ParallelDialerService {
         await this.terminateCall(callSid);
         call.status = 'completed';
         call.terminatedAt = new Date().toISOString();
-      } else if (
-        TERMINAL_CALL_STATUSES.has(callStatus)
-      ) {
+      } else if (TERMINAL_CALL_STATUSES.has(callStatus)) {
         call.terminatedAt = new Date().toISOString();
       }
 
@@ -202,7 +224,11 @@ export class ParallelDialerService {
         group.completedAt = new Date().toISOString();
       }
 
-      await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Status callback handling failed';
@@ -221,12 +247,15 @@ export class ParallelDialerService {
         await this.terminateGroup(groupId);
 
         const refreshedRaw = await this.store.getGroup(groupId);
-        return refreshedRaw ? (JSON.parse(refreshedRaw) as ParallelGroup) : null;
+        return refreshedRaw
+          ? (JSON.parse(refreshedRaw) as ParallelGroup)
+          : null;
       }
 
       return group;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Group lookup failed';
+      const message =
+        err instanceof Error ? err.message : 'Group lookup failed';
       throw new Error(message);
     }
   }
@@ -238,9 +267,7 @@ export class ParallelDialerService {
 
       const group: ParallelGroup = JSON.parse(raw);
       for (const call of group.calls) {
-        if (
-          !TERMINAL_CALL_STATUSES.has(call.status)
-        ) {
+        if (!TERMINAL_CALL_STATUSES.has(call.status)) {
           await this.terminateCall(call.callSid);
           call.status = 'completed';
           call.terminatedAt = new Date().toISOString();
@@ -248,7 +275,11 @@ export class ParallelDialerService {
       }
       group.status = 'completed';
       group.completedAt = new Date().toISOString();
-      await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+      await this.store.setGroup(
+        groupId,
+        JSON.stringify(group),
+        GROUP_TTL_SECONDS,
+      );
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : 'Group termination failed';
@@ -274,7 +305,8 @@ export class ParallelDialerService {
         '</Response>',
       ].join('');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'TwiML generation failed';
+      const message =
+        err instanceof Error ? err.message : 'TwiML generation failed';
       throw new Error(message);
     }
   }
@@ -293,7 +325,10 @@ export class ParallelDialerService {
       .map((call) => call.fromNumber);
   }
 
-  validateRequirements(numberCount: number, fanout = 3): {
+  validateRequirements(
+    numberCount: number,
+    fanout = 3,
+  ): {
     valid: boolean;
     required: number;
     current: number;
@@ -313,7 +348,10 @@ export class ParallelDialerService {
 
   computeTelemetry(group: ParallelGroup): ParallelTelemetry {
     const winnerRate = group.winnerSid ? 1 : 0;
-    const wastedLegs = Math.max(group.calls.length - (group.winnerSid ? 1 : 0), 0);
+    const wastedLegs = Math.max(
+      group.calls.length - (group.winnerSid ? 1 : 0),
+      0,
+    );
     const connectLatencyMs = group.connectedAt
       ? Math.max(
           0,
@@ -334,23 +372,30 @@ export class ParallelDialerService {
     if (!raw) return;
     const group: ParallelGroup = JSON.parse(raw);
     group.telemetryEmittedAt = new Date().toISOString();
-    await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+    await this.store.setGroup(
+      groupId,
+      JSON.stringify(group),
+      GROUP_TTL_SECONDS,
+    );
   }
 
   async markTelemetryEmittedIfAbsent(groupId: string): Promise<boolean> {
     const raw = await this.store.getGroup(groupId);
     if (!raw) return false;
     const group: ParallelGroup = JSON.parse(raw);
-    
+
     if (group.telemetryEmittedAt) {
       return false;
     }
-    
+
     group.telemetryEmittedAt = new Date().toISOString();
-    await this.store.setGroup(groupId, JSON.stringify(group), GROUP_TTL_SECONDS);
+    await this.store.setGroup(
+      groupId,
+      JSON.stringify(group),
+      GROUP_TTL_SECONDS,
+    );
     return true;
   }
-
 
   private isStaleDialingGroup(group: ParallelGroup, now: Date): boolean {
     if (group.status !== 'dialing') {
@@ -400,11 +445,18 @@ export class ParallelDialerService {
 export class InMemoryParallelStore implements ParallelStore {
   private groups = new Map<string, { data: string; expiresAt: number }>();
 
-  private callMappings = new Map<string, { groupId: string; expiresAt: number }>();
+  private callMappings = new Map<
+    string,
+    { groupId: string; expiresAt: number }
+  >();
 
   private winners = new Map<string, { callSid: string; expiresAt: number }>();
 
-  async setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void> {
+  async setGroup(
+    groupId: string,
+    data: string,
+    ttlSeconds: number,
+  ): Promise<void> {
     this.groups.set(groupId, {
       data,
       expiresAt: Date.now() + ttlSeconds * 1000,
