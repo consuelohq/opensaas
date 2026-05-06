@@ -5,6 +5,10 @@ const { spawnSync } = require('child_process');
 
 const SESSION_FILENAME = 'session.json';
 
+function writeStderr(message = '') {
+  process.stderr.write(`${message}\n`);
+}
+
 function getTaskSlug(taskBranch) {
   const parts = String(taskBranch || '').split('/');
   return parts[parts.length - 1] || 'task';
@@ -46,6 +50,10 @@ function isTmuxAvailable() {
   return result.status === 0;
 }
 
+function assertTmuxAvailable() {
+  assertTmuxAvailable();
+}
+
 function tmuxSessionExists(tmuxSession) {
   const result = runTmux([
     'has-session',
@@ -56,9 +64,7 @@ function tmuxSessionExists(tmuxSession) {
 }
 
 function ensureTmuxSession(tmuxSession, worktreePath, taskBranch) {
-  if (!isTmuxAvailable()) {
-    throw new Error('tmux is required for task sessions but was not found on PATH');
-  }
+  assertTmuxAvailable();
 
   if (tmuxSessionExists(tmuxSession)) {
     return { created: false };
@@ -87,12 +93,11 @@ function ensureTmuxSession(tmuxSession, worktreePath, taskBranch) {
   return { created: true };
 }
 
-function createTaskSessionMetadata({ area, stream, taskBranch, worktreePath, prNumber, prUrl }) {
+function buildTaskSessionMetadata({ area, stream, taskBranch, worktreePath, prNumber, prUrl }, tmuxCreated = false) {
   const taskSession = getTaskSessionHandle(taskBranch);
   const tmuxSession = getTmuxSessionName(area, taskBranch);
-  const tmux = ensureTmuxSession(tmuxSession, worktreePath, taskBranch);
 
-  const metadata = {
+  return {
     taskSession,
     tmuxSession,
     area,
@@ -104,14 +109,30 @@ function createTaskSessionMetadata({ area, stream, taskBranch, worktreePath, prN
     prNumber,
     prUrl,
     createdAt: new Date().toISOString(),
-    tmuxCreated: tmux.created,
+    tmuxCreated,
   };
+}
 
-  const sessionPath = getTaskSessionPath(worktreePath);
+function ensureTaskTmuxSession({ area, taskBranch, worktreePath }) {
+  const tmuxSession = getTmuxSessionName(area, taskBranch);
+  return {
+    taskSession: getTaskSessionHandle(taskBranch),
+    tmuxSession,
+    ...ensureTmuxSession(tmuxSession, worktreePath, taskBranch),
+  };
+}
+
+function writeTaskSessionMetadata(input, tmuxCreated = false) {
+  const metadata = buildTaskSessionMetadata(input, tmuxCreated);
+  const sessionPath = getTaskSessionPath(input.worktreePath);
   fs.mkdirSync(path.dirname(sessionPath), { recursive: true });
   fs.writeFileSync(sessionPath, JSON.stringify(metadata, null, 2) + '\n', 'utf8');
-
   return metadata;
+}
+
+function createTaskSessionMetadata(input) {
+  const tmux = ensureTaskTmuxSession(input);
+  return writeTaskSessionMetadata(input, tmux.created);
 }
 
 function readTaskSessionMetadata(worktreePath) {
@@ -119,15 +140,20 @@ function readTaskSessionMetadata(worktreePath) {
   if (!fs.existsSync(sessionPath)) return null;
   try {
     return JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
-  } catch {
+  } catch (error) {
+    writeStderr(`warning: failed to parse task session metadata ${sessionPath}: ${error instanceof Error ? error.message : String(error)}`);
     return null;
   }
 }
 
 module.exports = {
+  assertTmuxAvailable,
+  buildTaskSessionMetadata,
   createTaskSessionMetadata,
+  ensureTaskTmuxSession,
   getTaskSessionHandle,
   getTaskSessionPath,
   getTmuxSessionName,
   readTaskSessionMetadata,
+  writeTaskSessionMetadata,
 };

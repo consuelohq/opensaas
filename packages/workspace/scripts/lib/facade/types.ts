@@ -67,6 +67,7 @@ export type ToolManifestEntry = {
   outputSchema: string;
   command: ToolCommand;
   exampleInput: Record<string, unknown>;
+  sessionRequired?: boolean;
 };
 
 export type ToolInput = Record<string, unknown>;

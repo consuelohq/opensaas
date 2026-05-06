@@ -1,15 +1,19 @@
 #!/usr/bin/env node
 'use strict';
 
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { spawnSync } = require('child_process');
 const { resolveGitRoot } = require('./lib/paths');
 const { findActiveTaskResult, parseTaskSelectorPrefix } = require('./lib/task-selection');
+const { readTaskSessionMetadata } = require('./lib/task-session');
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
 
 function showHelp() {
-  writeStdout('task:exec — run a command inside the active task worktree');
+  writeStdout('task:exec — run a command inside the active task tmux session');
   writeStdout('');
   writeStdout('usage:');
   writeStdout('  bun run task:exec -- <command...>');
@@ -22,10 +26,79 @@ function showHelp() {
   writeStdout('  --branch <branch>    select exact task branch');
   writeStdout('  --pr <number>        select task by pr number');
   writeStdout('  --help               show this help');
-  writeStdout('');
-  writeStdout('examples:');
-  writeStdout('  bun run task:exec -- --branch task/workspace-agents/tighten-exact-task-command-selection git diff');
-  writeStdout('  bun run task:exec -- --pr 210 npx nx typecheck twenty-front');
+}
+
+function shellQuote(value) {
+  return `'${String(value).replace(/'/g, `'"'"'`)}'`;
+}
+
+function runTmux(args, options = {}) {
+  return spawnSync('tmux', args, {
+    encoding: 'utf8',
+    stdio: options.stdio || 'pipe',
+  });
+}
+
+function tmuxSessionExists(tmuxSession) {
+  const result = runTmux(['has-session', '-t', tmuxSession], { stdio: 'ignore' });
+  return result.status === 0;
+}
+
+function executeInTmux({ tmuxSession, worktreePath, taskBranch, commandArgs }) {
+  if (!tmuxSessionExists(tmuxSession)) {
+    throw new Error(`tmux session not found for task: ${tmuxSession}`);
+  }
+
+  const token = `opensaas-task-exec-${process.pid}-${Date.now()}`;
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opensaas-task-exec-'));
+  const stdoutPath = path.join(tempDir, 'stdout.log');
+  const stderrPath = path.join(tempDir, 'stderr.log');
+  const statusPath = path.join(tempDir, 'status');
+  const command = commandArgs.map(shellQuote).join(' ');
+  const script = [
+    'set +e',
+    `${command} > ${shellQuote(stdoutPath)} 2> ${shellQuote(stderrPath)}`,
+    `status=$?`,
+    `printf '%s\\n' "$status" > ${shellQuote(statusPath)}`,
+    `tmux wait-for -S ${shellQuote(token)}`,
+    'exit "$status"',
+  ].join('; ');
+
+  const start = runTmux([
+    'new-window',
+    '-d',
+    '-t',
+    tmuxSession,
+    '-c',
+    worktreePath,
+    'env',
+    `TASK_BRANCH=${taskBranch}`,
+    `TASK_WORKTREE=${worktreePath}`,
+    'bash',
+    '-lc',
+    script,
+  ]);
+  if (start.status !== 0) {
+    const detail = start.stderr || start.stdout || `exit ${start.status}`;
+    throw new Error(`failed to execute command in tmux session ${tmuxSession}: ${detail}`);
+  }
+
+  const wait = runTmux(['wait-for', token]);
+  if (wait.status !== 0) {
+    const detail = wait.stderr || wait.stdout || `exit ${wait.status}`;
+    throw new Error(`failed waiting for tmux task command ${tmuxSession}: ${detail}`);
+  }
+
+  const stdout = fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '';
+  const stderr = fs.existsSync(stderrPath) ? fs.readFileSync(stderrPath, 'utf8') : '';
+  const statusText = fs.existsSync(statusPath) ? fs.readFileSync(statusPath, 'utf8').trim() : '1';
+  const status = Number.parseInt(statusText, 10);
+  fs.rmSync(tempDir, { recursive: true, force: true });
+
+  if (stdout) process.stdout.write(stdout);
+  if (stderr) process.stderr.write(stderr);
+
+  return Number.isFinite(status) ? status : 1;
 }
 
 function main() {
@@ -62,17 +135,30 @@ function main() {
   }
 
   const task = selected.task;
+  const metadata = readTaskSessionMetadata(task.worktreePath);
+  const tmuxSession = metadata && typeof metadata.tmuxSession === 'string' ? metadata.tmuxSession : undefined;
+  if (!tmuxSession) {
+    writeStderr(`error: task ${task.meta.taskBranch || task.branch} does not have tmux session metadata`);
+    process.exitCode = 1;
+    return;
+  }
+
   writeStderr(`→ task: ${task.meta.area}/${task.meta.taskBranch.split('/').pop()}`);
+  writeStderr(`→ tmux: ${tmuxSession}`);
   writeStderr(`→ cwd: ${task.worktreePath}`);
   writeStderr(`→ running: ${commandArgs.join(' ')}`);
 
-  const result = spawnSync(commandArgs[0], commandArgs.slice(1), {
-    cwd: task.worktreePath,
-    stdio: 'inherit',
-    env: { ...process.env, TASK_BRANCH: task.meta.taskBranch || task.branch, TASK_WORKTREE: task.worktreePath },
-  });
-
-  process.exitCode = result.status || (result.error ? 1 : 0);
+  try {
+    process.exitCode = executeInTmux({
+      tmuxSession,
+      worktreePath: task.worktreePath,
+      taskBranch: task.meta.taskBranch || task.branch,
+      commandArgs,
+    });
+  } catch (error) {
+    writeStderr(`error: ${error instanceof Error ? error.message : String(error)}`);
+    process.exitCode = 1;
+  }
 }
 
 main();

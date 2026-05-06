@@ -686,11 +686,11 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 }
 
 export const schemaTypeSignatures: Record<string, string> = {
-  EmptyInput: '{ requestId?: string; dryRun?: boolean }',
-  BranchInput: '{ branch?: string; requestId?: string; dryRun?: boolean }',
-  ConsueloDesignInput: '{ requestId?: string; dryRun?: boolean }',
-  ConsueloDesignUiInput: '{ requestId?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
+  EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
+  ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
+  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',

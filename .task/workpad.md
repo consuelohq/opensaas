@@ -26,7 +26,24 @@ started: 2026-05-06
 
 ## files changed
 
+- `packages/workspace/README.md`
+- `packages/workspace/SCRIPTS.md`
+- `packages/workspace/TOOLS.md`
+- `packages/workspace/scripts/generate-docs.ts`
+- `packages/workspace/scripts/lib/facade/executor.ts`
+- `packages/workspace/scripts/lib/facade/schemas.ts`
+- `packages/workspace/scripts/lib/facade/types.ts`
+- `packages/workspace/scripts/lib/paths.js`
+- `packages/workspace/scripts/task-exec.js`
+- `packages/workspace/scripts/task-start.js`
 - `packages/workspace/server.py`
+- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap`
+- `packages/workspace/tests/facade/facade.test.ts`
+- `packages/workspace/tooling/tool-manifest.json`
+- `packages/workspace/scripts/lib/task-session.js`
+- `packages/workspace/tests/server_call_test.py`
+
 
 ## key decisions
 
@@ -66,3 +83,31 @@ started: 2026-05-06
 - `node --check packages/workspace/scripts/task-exec.js` passed.
 - Smoke-created `.task/session.json` for the current task with `taskSession=tsk_12cf9dfeaa9f`; tmux session creation succeeded.
 - Direct `server.py` behavior smoke is still blocked by missing local Python packages (`starlette` after `uvicorn` was mocked).
+
+## review fix pass — 2026-05-06
+
+Confirmed and fixed required review findings:
+
+- Removed process-global `ALREADY_LOADED` steering behavior; `get_steering` now returns cached full steering for every caller.
+- Added standard server-side envelopes for workspace.call boundary failures.
+- Derived session-required MCP enforcement from `tool-manifest.json` via `sessionRequired` instead of a hardcoded server list.
+- Added configurable worktree root support using `WORKSPACE_WORKTREE_ROOT`, `OPENSAAS_WORKTREE_ROOT`, then `os.tmpdir()/opensaas-worktrees` / `tempfile.gettempdir()/opensaas-worktrees`.
+- Moved tmux availability validation earlier in `task.start`; tmux session creation now happens before bootstrap commit and PR creation after the worktree exists.
+- Changed `task.exec` to execute through the task's tmux session and fail when tmux session metadata is missing.
+- Rejected `taskSession` + explicit `branch` together to avoid silent branch override.
+- Replaced blank workpad acceptance criteria placeholder with explicit guidance.
+- Made task session parse errors visible on stderr.
+- Added runtime guards and a successful-read cache for task session metadata in the TS facade.
+- Hardened server subprocess execution with `shell=False`, `check=False`, FileNotFoundError handling, and no internal `input` shadowing.
+- Added MCP boundary unit tests for steering cache, standard envelopes, manifest-derived session enforcement, batch taskSession propagation, branch conflict, and missing executable handling.
+- Isolated taskSession facade tests with temp dirs/env overrides and cleanup.
+
+Validation after review fix pass:
+
+- `python3 -m py_compile packages/workspace/server.py`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py`
+- `bun --check` for edited TS files and `generate-docs.ts`
+- `node --check` for edited JS files
+- `bun test packages/workspace/tests/facade/facade.test.ts` → 492 pass
+- `bun run review` → pass
+- `bun run verify` → pass

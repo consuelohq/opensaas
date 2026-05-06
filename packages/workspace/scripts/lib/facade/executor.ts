@@ -1,5 +1,6 @@
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import manifestJson from '../../../tooling/tool-manifest.json';
@@ -33,7 +34,9 @@ type TaskSessionMetadata = {
 
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
-  | { ok: false; code: 'TASK_SESSION_NOT_FOUND'; message: string };
+  | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
+
+const taskSessionMetadataCache = new Map<string, TaskSessionMetadata>();
 
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
@@ -467,6 +470,11 @@ async function executeInternalTool<TData>(
 function resolveTaskSessionInput(input: ToolInput, cwd: string): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
+  if (typeof input.branch === 'string') return {
+    ok: false,
+    code: 'VALIDATION_ERROR',
+    message: 'Pass either taskSession or branch, not both.',
+  };
 
   const metadata = findTaskSessionMetadata(cwd, taskSession);
   if (!metadata) return {
@@ -476,22 +484,29 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string): TaskSessionReso
   };
 
   const branch = metadata.branch || metadata.taskBranch;
-  if (!branch) return {
-    ok: false,
-    code: 'TASK_SESSION_NOT_FOUND',
-    message: 'taskSession metadata did not include a task branch.',
-  };
-
   return { ok: true, branch, metadata };
 }
 
 
+function getWorktreeRoot(env: NodeJS.ProcessEnv = process.env): string {
+  return env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(os.tmpdir(), 'opensaas-worktrees');
+}
+
+function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): value is TaskSessionMetadata {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Partial<TaskSessionMetadata>;
+  const branch = candidate.branch || candidate.taskBranch;
+  return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
+}
+
 function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionMetadata | null {
+  const cached = taskSessionMetadataCache.get(taskSession);
+  if (cached) return cached;
+
   const candidates = new Set<string>();
   candidates.add(path.join(cwd, '.task', 'session.json'));
 
-  const worktreeRoot = 'private/tmp/opensaas-worktrees';
-  const absoluteWorktreeRoot = path.isAbsolute(worktreeRoot) ? worktreeRoot : path.join('/', worktreeRoot);
+  const absoluteWorktreeRoot = getWorktreeRoot();
   if (fs.existsSync(absoluteWorktreeRoot)) {
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       candidates.add(path.join(absoluteWorktreeRoot, name, '.task', 'session.json'));
@@ -500,10 +515,15 @@ function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionM
 
   for (const candidate of candidates) {
     try {
-      const metadata = JSON.parse(fs.readFileSync(candidate, 'utf8')) as TaskSessionMetadata;
-      if (metadata.taskSession === taskSession) return metadata;
-    } catch {
-      // no-op for missing or invalid session files
+      const parsed = JSON.parse(fs.readFileSync(candidate, 'utf8')) as unknown;
+      if (isTaskSessionMetadata(parsed, taskSession)) {
+        taskSessionMetadataCache.set(taskSession, parsed);
+        return parsed;
+      }
+    } catch (error: unknown) {
+      if (fs.existsSync(candidate)) {
+        process.stderr.write(`warning: failed to parse task session metadata ${candidate}: ${getErrorMessage(error)}\n`);
+      }
     }
   }
 

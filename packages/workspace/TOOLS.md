@@ -17,7 +17,7 @@ await workspace.call({
 })
 ```
 
-Task-scoped work should pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Explicit `input.branch` remains a compatibility escape hatch.
+Task-scoped work must pass the `taskSession` returned by `task.start`. `workspace.call` resolves that session to the correct task worktree/branch before invoking the typed facade. Passing both `taskSession` and `input.branch` is rejected to avoid silent branch overrides.
 
 This file is generated from `packages/workspace/tooling/tool-manifest.json`. The typed facade validates inputs, invokes the existing Bun workspace scripts, and wraps every result in the standard tool envelope.
 
@@ -170,7 +170,7 @@ example error envelope:
 
 run consuelo-design package boundary and Railway checks
 
-- signature: `workspace.consueloDesign.check({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.check({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design check`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -221,7 +221,7 @@ example error envelope:
 
 start or open a live Open Design demo working session
 
-- signature: `workspace.consueloDesign.generateDemo({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-demo`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -274,7 +274,7 @@ example error envelope:
 
 start or open a live Open Design digital e-guide working session
 
-- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-digital-eguide`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -327,7 +327,7 @@ example error envelope:
 
 start or open a live Open Design email working session
 
-- signature: `workspace.consueloDesign.generateEmail({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-email`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -380,7 +380,7 @@ example error envelope:
 
 start or open a live Open Design image/media working session
 
-- signature: `workspace.consueloDesign.generateImageBrief({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-image-brief`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -433,7 +433,7 @@ example error envelope:
 
 start or open a live Open Design motion-frame working session
 
-- signature: `workspace.consueloDesign.generateMotionFrame({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-motion-frame`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -486,7 +486,7 @@ example error envelope:
 
 start or open a live Open Design website working session
 
-- signature: `workspace.consueloDesign.generateWebsite({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-website`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -539,7 +539,7 @@ example error envelope:
 
 return base Consuelo DESIGN.md and consuelo-design AGENTS.md only
 
-- signature: `workspace.consueloDesign.getDesignSystem({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.getDesignSystem({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design get-design-system`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -590,7 +590,7 @@ example error envelope:
 
 list Consuelo default design system and upstream reference systems
 
-- signature: `workspace.consueloDesign.listDesignSystems({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.listDesignSystems({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design list-design-systems`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -641,7 +641,7 @@ example error envelope:
 
 list upstream Open Design skills and Consuelo workflow mappings
 
-- signature: `workspace.consueloDesign.listSkills({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.listSkills({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design list-skills`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -692,7 +692,7 @@ example error envelope:
 
 build the vendored Open Design daemon CLI through the Bun facade
 
-- signature: `workspace.consueloDesign.odBuild({ requestId?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.odBuild({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design od:build`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -745,7 +745,7 @@ example error envelope:
 
 verify consuelo-design is excluded from Railway deploy paths
 
-- signature: `workspace.consueloDesign.railwayCheck({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.railwayCheck({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design railway:check`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -796,7 +796,7 @@ example error envelope:
 
 start or open a live Open Design HyperFrames render working session
 
-- signature: `workspace.consueloDesign.renderHyperframes({ requestId?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design render-hyperframes`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -849,7 +849,7 @@ example error envelope:
 
 start Open Design daemon and web UI in the foreground through the Bun facade
 
-- signature: `workspace.consueloDesign.run({ requestId?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.run({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design run`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -902,7 +902,7 @@ example error envelope:
 
 start Open Design managed runtimes in the background through the Bun facade
 
-- signature: `workspace.consueloDesign.uiBg({ requestId?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.uiBg({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design ui:bg`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -955,7 +955,7 @@ example error envelope:
 
 show Open Design managed runtime logs through the Bun facade
 
-- signature: `workspace.consueloDesign.uiLogs({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.uiLogs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design ui:logs`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -1006,7 +1006,7 @@ example error envelope:
 
 show Open Design managed runtime status through the Bun facade
 
-- signature: `workspace.consueloDesign.uiStatus({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.uiStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design ui:status`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -1057,7 +1057,7 @@ example error envelope:
 
 stop Open Design managed runtimes through the Bun facade
 
-- signature: `workspace.consueloDesign.uiStop({ requestId?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.uiStop({ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design ui:stop`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -1110,7 +1110,7 @@ example error envelope:
 
 show vendored Open Design metadata and runtime requirements
 
-- signature: `workspace.consueloDesign.upstreamStatus({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.upstreamStatus({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design upstream-status`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -1163,7 +1163,7 @@ example error envelope:
 
 list project memory categories
 
-- signature: `workspace.context.categories({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.context.categories({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace context.categories`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
@@ -1540,7 +1540,7 @@ example error envelope:
 
 score confidence from evidence state
 
-- signature: `workspace.confidenceScore({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.confidenceScore({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace confidenceScore`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 300000ms
@@ -2139,7 +2139,7 @@ example error envelope:
 
 generate TOOLS.md from the tool manifest
 
-- signature: `workspace.generate.docs({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.generate.docs({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace generate.docs`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -2192,7 +2192,7 @@ example error envelope:
 
 generate workspace.d.ts from the tool manifest
 
-- signature: `workspace.generate.types({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.generate.types({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace generate.types`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -3984,7 +3984,7 @@ example error envelope:
 
 resolve the current task branch without running a mutating command
 
-- signature: `workspace.task.current({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string; area: string; prNumber?: number; worktree: string } | null>>`
+- signature: `workspace.task.current({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string; area: string; prNumber?: number; worktree: string } | null>>`
 - wraps: `branch resolver`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -4035,7 +4035,7 @@ example error envelope:
 
 check whether the task stream appears synced
 
-- signature: `workspace.task.ensureSynced({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>`
+- signature: `workspace.task.ensureSynced({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>`
 - wraps: `workspace task.ensureSynced`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 60000ms
@@ -4147,7 +4147,7 @@ example error envelope:
 
 finish a task branch after merge
 
-- signature: `workspace.task.finish({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.finish({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.finish`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
@@ -4310,7 +4310,7 @@ example error envelope:
 
 pin a task branch for a programmatic workspace client
 
-- signature: `workspace.task.pin({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string }>>`
+- signature: `workspace.task.pin({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ branch: string }>>`
 - wraps: `client session state`
 - capabilities: readOnly=false, mutating=false, safeToRetry=true
 - default timeout: 30000ms
@@ -4418,7 +4418,7 @@ example error envelope:
 
 show task and review PR links
 
-- signature: `workspace.task.prs({ branch?: string; requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.task.prs({ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace task.prs`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
@@ -4582,7 +4582,7 @@ example error envelope:
 
 run the task metadata smoke suite
 
-- signature: `workspace.taskMeta.smoke({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.taskMeta.smoke({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace taskMeta.smoke`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
@@ -4797,7 +4797,7 @@ example error envelope:
 
 close active browser sessions
 
-- signature: `workspace.browser.close({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.close({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.close`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5287,7 +5287,7 @@ example error envelope:
 
 capture an accessibility snapshot
 
-- signature: `workspace.browser.snap({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.snap({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.snap`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5394,7 +5394,7 @@ example error envelope:
 
 run workspace diagnostics
 
-- signature: `workspace.doctor({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.doctor({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace doctor`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
@@ -5606,7 +5606,7 @@ example error envelope:
 
 show compact workspace status
 
-- signature: `workspace.status({ requestId?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.status({ requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace status`
 - capabilities: readOnly=true, mutating=false, safeToRetry=true
 - default timeout: 120000ms
@@ -5834,7 +5834,7 @@ Mutating tools accept `dryRun: true`. The facade validates input, resolves branc
 
 ## error codes
 
-`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `DRY_RUN`.
+`OK`, `VALIDATION_ERROR`, `AMBIGUOUS_TASK_SELECTION`, `WORKTREE_NOT_FOUND`, `COMMAND_FAILED`, `TIMEOUT`, `PARSE_ERROR`, `NOT_FOUND`, `TASK_SESSION_REQUIRED`, `TASK_SESSION_NOT_FOUND`, `DRY_RUN`.
 
 ## tracing
 

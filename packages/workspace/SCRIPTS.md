@@ -502,7 +502,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### task:start — create task branch + worktree + PR
 
-creates a new task branch, git worktree, and draft PR. the worktree is created in `/private/tmp/opensaas-worktrees/`.
+creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
@@ -518,7 +518,7 @@ bad: bun run task:start
  (--area and --title are both required)
 
 bad: bun run task:start -- --area dialer --title "fix thing"
- → error: worktree already exists at /private/tmp/opensaas-worktrees/task-dialer-fix-thing
+ → error: worktree already exists at <worktree-root>/task-dialer-fix-thing
  (check if the old task is still needed: bun run task:fs -- --branch task/dialer/fix-thing read .task/current.json
   if not needed: bun run task:finish or bun run task:cleanup -- --preview first)
 ```
@@ -865,7 +865,7 @@ bun run workspace -- batch '[{"tool":"status","input":{}}]'
 inside the workspace MCP app, call the typed facade directly through `workspace.call`:
 
 ```ts
-workspace.call({
+await workspace.call({
   tool: "stream.context",
   input: { area: "workspace-agents" },
   timeout: 120

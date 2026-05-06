@@ -34,7 +34,7 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
-const { createTaskSessionMetadata } = require('./lib/task-session');
+const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
@@ -61,7 +61,7 @@ function printHelp() {
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --body <text>          pull request body text');
   writeStdout('  --body-file <path>     pull request body markdown file');
-  writeStdout('  --worktree-root <dir>  worktree root (default: /private/tmp/opensaas-worktrees)');
+  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or os.tmpdir()/opensaas-worktrees)');
   writeStdout('  --json                 print machine-readable json');
   writeStdout('  --help                 show this help message');
 }
@@ -265,286 +265,298 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
 
 async function main() {
   try {
-    // Main is also guarded by main().catch; keep a local try near awaits for review visibility.
+    await runMain();
   } catch (error) {
-    throw error;
+    throw new Error(error instanceof Error ? error.message : String(error));
   }
+}
 
-  const args = parseArgs(process.argv.slice(2));
-
-  if (args.help) {
-    printHelp();
-    return;
-  }
-
-  if (!args.area) {
-    throw new Error('missing required --area');
-  }
-
-  if (!args.title) {
-    throw new Error('missing required --title');
-  }
-
-  const area = normalizeArea(args.area);
-  const stream = args.stream || getDefaultStreamBranch(area);
-  const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
-  const repoRoot = resolveGitRoot(process.cwd());
-  const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
-  const token = getToken();
-
-  assertStreamBranchName(stream, area);
-  assertTaskBranchName(taskBranch, area);
-
-  fetchOrigin(repoRoot);
-
-  const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
-
-  if (!mainRef) {
-    throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
-  }
-
-  const streamDetails = await ensureRemoteStreamBranch({
-    token,
-    repository: args.repo,
-    streamBranch: stream,
-    mainRef,
-  });
-
-  if (streamDetails.created) {
-    fetchOrigin(repoRoot);
-  }
-
-  const sourceBranch = resolveSourceBranch(args.startFrom, stream);
-  const sourceRef = `refs/remotes/origin/${sourceBranch}`;
-  const sourceSha = getRefSha(repoRoot, sourceRef);
-
-  const remoteTaskDetails = await ensureRemoteTaskBranch({
-    token,
-    repository: args.repo,
-    taskBranch,
-    sourceSha,
-  });
-
-  if (remoteTaskDetails.created) {
-    fetchOrigin(repoRoot);
-  }
-
-  let worktree = getWorktreeForBranch(repoRoot, taskBranch);
-
-  if (!worktree) {
-    createOrResetLocalBranch(repoRoot, taskBranch, `origin/${taskBranch}`);
-  }
-
+async function runMain() {
   try {
-    setBranchUpstream(repoRoot, taskBranch, `origin/${taskBranch}`);
-  } catch {
-    // ignore upstream wiring failures on older local setups
-  }
-
-  let createdWorktree = false;
-  const desiredWorktreePath = path.join(worktreeRoot, toWorktreeDirectoryName(taskBranch));
-
-  // guard 1: reject if worktree path already exists
-  if (fs.existsSync(desiredWorktreePath) && !worktree) {
-    throw new Error(
-      `worktree path already exists: ${desiredWorktreePath}\n` +
-      'run: bun run task:cleanup\n' +
-      'or pick a different --title to generate a new branch slug.',
-    );
-  }
-
-  if (!worktree) {
-    writeStderr(`creating worktree ${desiredWorktreePath}...`);
-    createWorktree(repoRoot, desiredWorktreePath, taskBranch);
-    worktree = getWorktreeForBranch(repoRoot, taskBranch) || { path: desiredWorktreePath };
-    createdWorktree = true;
-  }
-
-  const worktreePath = worktree.path;
-
-  // symlink node_modules from main worktree so tests/lint/typecheck work
-  const worktreeNodeModules = path.join(worktreePath, 'node_modules');
-  if (!fs.existsSync(worktreeNodeModules)) {
-    const mainNodeModules = path.join(repoRoot, 'node_modules');
-    if (fs.existsSync(mainNodeModules)) {
-      fs.symlinkSync(mainNodeModules, worktreeNodeModules);
-      writeStderr('symlinked node_modules from main worktree');
+    const args = parseArgs(process.argv.slice(2));
+  
+    if (args.help) {
+      printHelp();
+      return;
     }
-  }
-
-  let localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
-  let remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
-  let pullRequest = await findOpenPullRequest({
-    token,
-    repository: args.repo,
-    branch: taskBranch,
-    base: stream,
-  });
-  let bootstrappedBranch = false;
-
-  if (!pullRequest && localTaskSha === sourceSha && remoteTaskSha === sourceSha) {
-    createBootstrapCommit({
-      repoRoot,
-      worktreePath,
-      taskBranch,
-    });
-    bootstrappedBranch = true;
+  
+    if (!args.area) {
+      throw new Error('missing required --area');
+    }
+  
+    if (!args.title) {
+      throw new Error('missing required --title');
+    }
+  
+    const area = normalizeArea(args.area);
+    const stream = args.stream || getDefaultStreamBranch(area);
+    const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
+    const repoRoot = resolveGitRoot(process.cwd());
+    const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
+    const token = getToken();
+  
+    assertStreamBranchName(stream, area);
+    assertTaskBranchName(taskBranch, area);
+    assertTmuxAvailable();
+  
     fetchOrigin(repoRoot);
-    localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
-    remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
-  }
-
-  const prBody = readPullRequestBody(args, {
-    area,
-    stream,
-    taskBranch,
-    worktreePath,
-    sourceBranch,
-  });
-
-  let createdPr = false;
-
-  if (!pullRequest) {
-    writeStderr(`creating pr ${taskBranch} -> ${stream}...`);
-    pullRequest = await createPullRequest({
+  
+    const mainRef = await getBranchRef({ token, repository: args.repo, branch: DEFAULT_MAIN_BRANCH });
+  
+    if (!mainRef) {
+      throw new Error(`remote ${DEFAULT_MAIN_BRANCH} branch not found in ${args.repo}`);
+    }
+  
+    const streamDetails = await ensureRemoteStreamBranch({
       token,
       repository: args.repo,
-      title: args.title,
-      body: prBody,
-      head: taskBranch,
-      base: stream,
-      draft: false,
+      streamBranch: stream,
+      mainRef,
     });
-    createdPr = true;
-  }
-
-  // guard 3: verify PR targets stream, not main
-  if (pullRequest.base.ref !== stream) {
-    throw new Error(
-      `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\n` +
-      'the pr must target the stream branch, not main.\n' +
-      'close the incorrect pr on github and rerun task:start.',
-    );
-  }
-
-  const taskSessionMeta = createTaskSessionMetadata({
-    area,
-    stream,
-    taskBranch,
-    worktreePath,
-    prNumber: pullRequest.number,
-    prUrl: pullRequest.html_url,
-  });
-
-  const taskMeta = {
-    area,
-    stream,
-    taskBranch,
-    baseBranch: stream,
-    sourceBranch,
-    startFrom: args.startFrom,
-    prNumber: pullRequest.number,
-    prUrl: pullRequest.html_url,
-    worktreePath,
-    taskSession: taskSessionMeta.taskSession,
-    tmuxSession: taskSessionMeta.tmuxSession,
-    sessionPath: path.join(worktreePath, '.task', 'session.json'),
-    createdAt: new Date().toISOString(),
-  };
-
-  writeTaskMeta(worktreePath, taskMeta);
-
-  // guard 2: verify .task/current.json was written correctly
-  const verifyMeta = readTaskMeta(worktreePath);
-  if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
-    throw new Error(
-      `.task/current.json verification failed in ${worktreePath}.\n` +
-      'the file was not written correctly. check disk permissions.',
-    );
-  }
-
-  await saveTaskMetaMemory(taskMeta);
-
-  // create fresh workpad — always overwrite, never reuse from previous task
-  const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
-  const slug = taskBranch.split('/').pop();
-  const workpad = [
-    `# ${args.title}`,
-    '',
-    `branch: \`${taskBranch}\``,
-    `stream: \`${stream}\``,
-    `pr: ${pullRequest.html_url}`,
-    `started: ${new Date().toISOString().slice(0, 10)}`,
-    '',
-    '## acceptance criteria',
-    '',
-    '- [ ] ',
-    '',
-    '## plan',
-    '',
-    '1. ',
-    '',
-    '## files changed',
-    '',
-    '- ',
-    '',
-    '## key decisions',
-    '',
-    '- ',
-    '',
-    '## notes for ko',
-    '',
-    '- ',
-    '',
-    '## improvements noticed',
-    '',
-    '- ',
-    '',
-    '## errors i ran into',
-    '',
-    '- ',
-    '',
-    '---',
-    '',
-    '## publish checklist',
-    '',
-    '```bash',
-    `bun run task:push -- --message "type(${area}): description" --changed`,
-    'bun run task:pr',
-    'bun run task:finish',
-    '```',
-    '',
-  ].join('\n');
-  fs.writeFileSync(workpadPath, workpad, 'utf8');
-
-  printResult(
-    {
+  
+    if (streamDetails.created) {
+      fetchOrigin(repoRoot);
+    }
+  
+    const sourceBranch = resolveSourceBranch(args.startFrom, stream);
+    const sourceRef = `refs/remotes/origin/${sourceBranch}`;
+    const sourceSha = getRefSha(repoRoot, sourceRef);
+  
+    const remoteTaskDetails = await ensureRemoteTaskBranch({
+      token,
+      repository: args.repo,
+      taskBranch,
+      sourceSha,
+    });
+  
+    if (remoteTaskDetails.created) {
+      fetchOrigin(repoRoot);
+    }
+  
+    let worktree = getWorktreeForBranch(repoRoot, taskBranch);
+  
+    if (!worktree) {
+      createOrResetLocalBranch(repoRoot, taskBranch, `origin/${taskBranch}`);
+    }
+  
+    try {
+      setBranchUpstream(repoRoot, taskBranch, `origin/${taskBranch}`);
+    } catch {
+      // ignore upstream wiring failures on older local setups
+    }
+  
+    let createdWorktree = false;
+    const desiredWorktreePath = path.join(worktreeRoot, toWorktreeDirectoryName(taskBranch));
+  
+    // guard 1: reject if worktree path already exists
+    if (fs.existsSync(desiredWorktreePath) && !worktree) {
+      throw new Error(
+        `worktree path already exists: ${desiredWorktreePath}\n` +
+        'run: bun run task:cleanup\n' +
+        'or pick a different --title to generate a new branch slug.',
+      );
+    }
+  
+    if (!worktree) {
+      writeStderr(`creating worktree ${desiredWorktreePath}...`);
+      createWorktree(repoRoot, desiredWorktreePath, taskBranch);
+      worktree = getWorktreeForBranch(repoRoot, taskBranch) || { path: desiredWorktreePath };
+      createdWorktree = true;
+    }
+  
+    const worktreePath = worktree.path;
+  
+    // symlink node_modules from main worktree so tests/lint/typecheck work
+    const worktreeNodeModules = path.join(worktreePath, 'node_modules');
+    if (!fs.existsSync(worktreeNodeModules)) {
+      const mainNodeModules = path.join(repoRoot, 'node_modules');
+      if (fs.existsSync(mainNodeModules)) {
+        fs.symlinkSync(mainNodeModules, worktreeNodeModules);
+        writeStderr('symlinked node_modules from main worktree');
+      }
+    }
+  
+    const taskTmux = ensureTaskTmuxSession({
+      area,
+      taskBranch,
+      worktreePath,
+    });
+  
+    let localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
+    let remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
+    let pullRequest = await findOpenPullRequest({
+      token,
+      repository: args.repo,
+      branch: taskBranch,
+      base: stream,
+    });
+    let bootstrappedBranch = false;
+  
+    if (!pullRequest && localTaskSha === sourceSha && remoteTaskSha === sourceSha) {
+      createBootstrapCommit({
+        repoRoot,
+        worktreePath,
+        taskBranch,
+      });
+      bootstrappedBranch = true;
+      fetchOrigin(repoRoot);
+      localTaskSha = getRefSha(repoRoot, `refs/heads/${taskBranch}`);
+      remoteTaskSha = getRefSha(repoRoot, `refs/remotes/origin/${taskBranch}`);
+    }
+  
+    const prBody = readPullRequestBody(args, {
       area,
       stream,
+      taskBranch,
+      worktreePath,
       sourceBranch,
-      startFrom: args.startFrom,
-      branch: taskBranch,
+    });
+  
+    let createdPr = false;
+  
+    if (!pullRequest) {
+      writeStderr(`creating pr ${taskBranch} -> ${stream}...`);
+      pullRequest = await createPullRequest({
+        token,
+        repository: args.repo,
+        title: args.title,
+        body: prBody,
+        head: taskBranch,
+        base: stream,
+        draft: false,
+      });
+      createdPr = true;
+    }
+  
+    // guard 3: verify PR targets stream, not main
+    if (pullRequest.base.ref !== stream) {
+      throw new Error(
+        `pr #${pullRequest.number} targets ${pullRequest.base.ref}, expected ${stream}.\n` +
+        'the pr must target the stream branch, not main.\n' +
+        'close the incorrect pr on github and rerun task:start.',
+      );
+    }
+  
+    const taskSessionMeta = writeTaskSessionMetadata({
+      area,
+      stream,
+      taskBranch,
       worktreePath,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
+    }, taskTmux.created);
+  
+    const taskMeta = {
+      area,
+      stream,
+      taskBranch,
+      baseBranch: stream,
+      sourceBranch,
+      startFrom: args.startFrom,
+      prNumber: pullRequest.number,
+      prUrl: pullRequest.html_url,
+      worktreePath,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
-      createdBranch: remoteTaskDetails.created,
-      createdWorktree,
-      bootstrappedBranch,
-      createdPr,
-    },
-    args.json,
-  );
-
-  // guard 4: print next steps
-  if (!args.json) {
-    writeStderr('');
-    writeStderr('next steps:');
-    writeStderr(`  cd ${worktreePath}`);
-    writeStderr('  # make your changes');
-    writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
-    writeStderr('  bun run task:pr');
+      sessionPath: path.join(worktreePath, '.task', 'session.json'),
+      createdAt: new Date().toISOString(),
+    };
+  
+    writeTaskMeta(worktreePath, taskMeta);
+  
+    // guard 2: verify .task/current.json was written correctly
+    const verifyMeta = readTaskMeta(worktreePath);
+    if (!verifyMeta || verifyMeta.taskBranch !== taskBranch || verifyMeta.stream !== stream) {
+      throw new Error(
+        `.task/current.json verification failed in ${worktreePath}.\n` +
+        'the file was not written correctly. check disk permissions.',
+      );
+    }
+  
+    await saveTaskMetaMemory(taskMeta);
+  
+    // create fresh workpad — always overwrite, never reuse from previous task
+    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+    const slug = taskBranch.split('/').pop();
+    const workpad = [
+      `# ${args.title}`,
+      '',
+      `branch: \`${taskBranch}\``,
+      `stream: \`${stream}\``,
+      `pr: ${pullRequest.html_url}`,
+      `started: ${new Date().toISOString().slice(0, 10)}`,
+      '',
+      '## acceptance criteria',
+      '',
+      '- [ ] Define explicit task acceptance criteria before coding.',
+      '',
+      '## plan',
+      '',
+      '1. Read the relevant code and update this plan before editing.',
+      '',
+      '## files changed',
+      '',
+      '- none yet',
+      '',
+      '## key decisions',
+      '',
+      '- none yet',
+      '',
+      '## notes for ko',
+      '',
+      '- none yet',
+      '',
+      '## improvements noticed',
+      '',
+      '- none yet',
+      '',
+      '## errors i ran into',
+      '',
+      '- none yet',
+      '',
+      '---',
+      '',
+      '## publish checklist',
+      '',
+      '```bash',
+      `bun run task:push -- --message "type(${area}): description" --changed`,
+      'bun run task:pr',
+      'bun run task:finish',
+      '```',
+      '',
+    ].join('\n');
+    fs.writeFileSync(workpadPath, workpad, 'utf8');
+  
+    printResult(
+      {
+        area,
+        stream,
+        sourceBranch,
+        startFrom: args.startFrom,
+        branch: taskBranch,
+        worktreePath,
+        prNumber: pullRequest.number,
+        prUrl: pullRequest.html_url,
+        taskSession: taskSessionMeta.taskSession,
+        tmuxSession: taskSessionMeta.tmuxSession,
+        createdBranch: remoteTaskDetails.created,
+        createdWorktree,
+        bootstrappedBranch,
+        createdPr,
+      },
+      args.json,
+    );
+  
+    // guard 4: print next steps
+    if (!args.json) {
+      writeStderr('');
+      writeStderr('next steps:');
+      writeStderr(`  cd ${worktreePath}`);
+      writeStderr('  # make your changes');
+      writeStderr(`  bun run task:push -- --message "fix(${area}): description" --changed`);
+      writeStderr('  bun run task:pr');
+    }  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : String(error));
   }
 }
 
