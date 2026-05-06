@@ -9,7 +9,7 @@ started: 2026-05-06
 ## acceptance criteria
 
 - [ ] Replace the normal MCP operation surface from `sandbox_exec` to `workspace.call`.
-- [ ] Make `get_steering` bootstrap-only and idempotent.
+- [ ] Keep `get_steering` simple: always return full current steering; do not cache or reject repeated calls.
 - [ ] Add task-session-backed task context for task-scoped calls.
 - [ ] Make `batch` first-class under `workspace.call` with task context propagation.
 - [ ] Update steering, scripts docs, generated tool docs/types, schemas, manifest, and facade tests.
@@ -49,7 +49,7 @@ started: 2026-05-06
 
 - `packages/workspace/server.py` is the current MCP registration point. It exposed `get_steering` and `sandbox_exec`.
 - The existing typed facade path is `packages/workspace/scripts/lib/facade/executor.ts`, called by `packages/workspace/scripts/tool-runner.ts`.
-- The first patch changes the server boundary only: it exposes `call`, removes the server import/use of `tools.sandbox`, routes through `bun scripts/workspace.ts`, and makes repeated `get_steering` return `ALREADY_LOADED`.
+- The first patch changes the server boundary only: it exposes `call`, removes the server import/use of `tools.sandbox`, routes through `bun scripts/workspace.ts`, and keeps `get_steering` returning full steering on every call.
 - Added `packages/workspace/scripts/lib/task-session.js` as the tmux/session owner. It creates deterministic `taskSession` handles, sanitized tmux session names, tmux sessions rooted at the task worktree, and `.task/session.json`.
 - Wired `task-start.js` to create tmux-backed task sessions and include `taskSession`/`tmuxSession` in `.task/current.json`, task history, and task-start output.
 - `task-exec.js` now passes both `TASK_BRANCH` and `TASK_WORKTREE` into child commands.
@@ -88,7 +88,7 @@ started: 2026-05-06
 
 Confirmed and fixed required review findings:
 
-- Removed process-global `ALREADY_LOADED` steering behavior; `get_steering` now returns cached full steering for every caller.
+- Removed process-global `ALREADY_LOADED` steering behavior; after follow-up review, `get_steering` now reads and returns full current steering on every call instead of caching.
 - Added standard server-side envelopes for workspace.call boundary failures.
 - Derived session-required MCP enforcement from `tool-manifest.json` via `sessionRequired` instead of a hardcoded server list.
 - Added configurable worktree root support using `WORKSPACE_WORKTREE_ROOT`, `OPENSAAS_WORKTREE_ROOT`, then `os.tmpdir()/opensaas-worktrees` / `tempfile.gettempdir()/opensaas-worktrees`.
@@ -111,3 +111,14 @@ Validation after review fix pass:
 - `bun test packages/workspace/tests/facade/facade.test.ts` → 492 pass
 - `bun run review` → pass
 - `bun run verify` → pass
+
+## steering cache removal — 2026-05-06
+
+- Ko clarified that caching does not solve the per-chat duplicate-call problem and creates stale steering/tool-manifest risk.
+- Removed `_STEERING_CACHE`; `get_steering` now calls `_read_steering` every time and always returns full current steering.
+- Updated `server_call_test.py` to prove repeated calls re-read steering.
+
+Validation:
+
+- `python3 -m py_compile packages/workspace/server.py`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py`
