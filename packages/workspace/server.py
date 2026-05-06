@@ -74,7 +74,6 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
-_STEERING_CACHE: str | None = None
 _TASK_SESSION_CACHE: dict[str, dict[str, Any]] = {}
 
 
@@ -111,11 +110,8 @@ def _read_steering() -> str:
 
 @mcp.tool(annotations=RO)
 def get_steering() -> str:
-    """mandatory bootstrap call. returns cached full steering for every client."""
-    global _STEERING_CACHE
-    if _STEERING_CACHE is None:
-        _STEERING_CACHE = _traced_call('get_steering', 'tool', _read_steering)
-    return _STEERING_CACHE
+    """mandatory bootstrap call. always returns full current steering."""
+    return _traced_call('get_steering', 'tool', _read_steering)
 
 
 def _workspace_root() -> Path:

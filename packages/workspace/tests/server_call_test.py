@@ -76,12 +76,19 @@ class WorkspaceCallServerTest(unittest.TestCase):
         for key in ['now', 'ok', 'code', 'message', 'data', 'stderr', 'exitCode', 'durationMs', 'traceId', 'apiVersion']:
             self.assertIn(key, result)
 
-    def test_get_steering_returns_cached_full_steering(self):
+    def test_get_steering_reads_full_steering_each_call(self):
+        calls = []
+
+        def fake_read_steering():
+            calls.append(len(calls) + 1)
+            return f'full steering {len(calls)}'
+
+        self.module._read_steering = fake_read_steering
         first = self.module.get_steering()
         second = self.module.get_steering()
-        self.assertIsInstance(first, str)
-        self.assertEqual(first, second)
-        self.assertNotEqual(second, {'code': 'ALREADY_LOADED'})
+        self.assertEqual(first, 'full steering 1')
+        self.assertEqual(second, 'full steering 2')
+        self.assertEqual(calls, [1, 2])
 
     def test_task_scoped_tools_require_task_session(self):
         manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
