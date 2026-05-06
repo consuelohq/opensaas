@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-mobile-proof-svg-trigger-timing",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 329,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/329",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-fix-mobile-proof-svg-trigger-timing",
+  "createdAt": "2026-05-05T22:53:21.626Z"
+}

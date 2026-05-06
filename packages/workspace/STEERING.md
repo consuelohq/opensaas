@@ -96,6 +96,25 @@ Use these examples as the default routing table and example of a markdown table:
 Be aware that Markdown has flavors. Different tools support different syntax, especially for tables, task lists, footnotes, callouts, diagrams, and embedded HTML. Steering should use conservative Markdown unless a repo-specific renderer clearly supports the feature. Headings, paragraphs, bullets, numbered lists, links, inline code, and fenced code blocks are safe defaults. Advanced syntax belongs only where it improves clarity and still remains readable as raw text.
 
 The standard for Markdown in steering is simple: write the file so the raw source is already clear, then let rendering make it nicer. A good Markdown instruction should still make sense in a terminal, a code editor, a docs site, a canvas, or a copied chat block. If the raw text needs the renderer to be understandable, simplify the structure.
+The durable steering rule should be:
+
+
+## Markdown fence integrity
+
+When writing Markdown that contains code fences, preserve fence structure deliberately.
+
+If a Markdown document contains nested code blocks, do not wrap the whole document in a same-length triple-backtick fence. Use one of these safe patterns:
+
+1. Write the content directly as editable Markdown instead of putting the whole document inside a code fence.
+2. Use a four-backtick outer fence when the inner content contains triple-backtick fences.
+3. Split generated files into separate sections instead of nesting a full fenced Markdown file inside another Markdown document.
+
+Before finishing a Canvas document, scan for broken fences:
+
+- every opening fence has a matching closing fence
+- outer fences are longer than any inner fence
+- YAML frontmatter stays inside the intended file section
+- code fences do not swallow unrelated headings, prose, or packaging notes
 
 
 ## Markdown syntax cheat sheet

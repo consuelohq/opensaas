@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/hero-boot-motion-only",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 322,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/322",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-hero-boot-motion-only",
+  "createdAt": "2026-05-05T04:30:43.703Z"
+}
