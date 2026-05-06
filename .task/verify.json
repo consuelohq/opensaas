@@ -1,21 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/website/fix-square-heatmap-proof-reveal",
+  "branch": "task/website/restore-square-heatmap-svg-only",
   "base": "stream/website",
-  "headSha": "c2f76a127745213d3ce2af95117975b6f40eac20",
-  "changeHash": "a79345c394e34f8a31617730f5d34e39af38b616a6ae3f28be7940ce62d31963",
+  "headSha": "3d0c412ba8cbf98fc95330dd492d2bafd9c645a5",
+  "changeHash": "caa4d4db61569dad5f35d1d50a00f3a530010691ce1b6e4d5b378dba43d853a8",
   "changedFiles": [
     "packages/consuelo-website/src/components/launch/LaunchStats.astro",
     "packages/consuelo-website/src/lib/motion.ts",
     "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T23:45:38.022Z",
+  "verifiedAt": "2026-05-06T00:09:28.691Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

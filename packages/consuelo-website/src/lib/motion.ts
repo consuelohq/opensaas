@@ -240,23 +240,12 @@ export const bootProofSvgMotion = (): void => {
       (element): element is SVGRectElement => element instanceof SVGRectElement,
     );
 
-
-  const isHeatmapChart = (root: HTMLElement): boolean =>
-    root.getAttribute('data-motion-chart') === 'dots' ||
-    root.querySelector('[data-motion-grid="heatmap"]') !== null;
-
   const getHeatmapGrid = (root: HTMLElement): [number, number] => {
     const grid = root.querySelector('[data-motion-grid="heatmap"]');
     const rows = Number(grid?.getAttribute('data-motion-rows'));
     const columns = Number(grid?.getAttribute('data-motion-columns'));
 
     return [Number.isFinite(rows) ? rows : 18, Number.isFinite(columns) ? columns : 23];
-  };
-
-  const getSquareIndex = (square: SVGRectElement, fallback: number): number => {
-    const index = Number(square.getAttribute('data-motion-index'));
-
-    return Number.isFinite(index) ? index : fallback;
   };
 
   const showChartRestingState = (root: HTMLElement): void => {
