@@ -3,7 +3,12 @@
 import contextlib
 import json
 import os
+import subprocess
+import tempfile
+import time
 import uuid
+from pathlib import Path
+from typing import Any
 
 import uvicorn
 from mcp.server.fastmcp import FastMCP
@@ -13,7 +18,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
-from tools import sandbox as sandbox_mod
 
 try:
     from langsmith import Client as LSClient
@@ -68,9 +72,10 @@ STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
 TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
-
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+_STEERING_CACHE: str | None = None
+_TASK_SESSION_CACHE: dict[str, dict[str, Any]] = {}
 
 
 def _resolve_steering_file() -> str:
@@ -103,16 +108,300 @@ def _read_steering() -> str:
     return content
 
 
+
 @mcp.tool(annotations=RO)
 def get_steering() -> str:
-    """mandatory first call. returns the steering file and workspace scripts reference."""
-    return _traced_call('get_steering', 'tool', _read_steering)
+    """mandatory bootstrap call. returns cached full steering for every client."""
+    global _STEERING_CACHE
+    if _STEERING_CACHE is None:
+        _STEERING_CACHE = _traced_call('get_steering', 'tool', _read_steering)
+    return _STEERING_CACHE
 
 
-@mcp.tool(annotations=RO)
-def sandbox_exec(command: str, timeout: int = 120) -> dict | str:
-    """run a bash command on the host machine inside the configured workspace."""
-    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command=command, timeout=timeout)
+def _workspace_root() -> Path:
+    return Path(APP_DIR).resolve()
+
+
+def _worktree_root() -> Path:
+    configured = os.environ.get('WORKSPACE_WORKTREE_ROOT') or os.environ.get('OPENSAAS_WORKTREE_ROOT')
+    return Path(configured) if configured else Path(tempfile.gettempdir()) / 'opensaas-worktrees'
+
+
+def _now_iso() -> str:
+    return time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime()) + f'.{int((time.time() % 1) * 1000):03d}Z'
+
+
+def _trace_id() -> str:
+    return 'trc_' + uuid.uuid4().hex[:12]
+
+
+def _envelope(
+    *,
+    ok: bool,
+    code: str,
+    message: str,
+    data: Any = None,
+    stderr: str = '',
+    exitCode: int | None = None,
+    durationMs: int = 0,
+    traceId: str | None = None,
+) -> dict[str, Any]:
+    return {
+        'now': _now_iso(),
+        'ok': ok,
+        'code': code,
+        'message': message,
+        'data': data,
+        'stderr': stderr,
+        'exitCode': exitCode if exitCode is not None else (0 if ok else 1),
+        'durationMs': durationMs,
+        'traceId': traceId or _trace_id(),
+        'apiVersion': '1.0.0',
+    }
+
+
+def _load_manifest_entries() -> list[dict[str, Any]]:
+    try:
+        with open(TOOL_MANIFEST_FILE, 'r', encoding='utf-8') as handle:
+            data = json.load(handle)
+        return data if isinstance(data, list) else []
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def _manifest_entry(tool: str) -> dict[str, Any] | None:
+    for entry in _load_manifest_entries():
+        if entry.get('name') == tool:
+            return entry
+    return None
+
+
+def _manifest_tool_requires_task_session(tool: str) -> bool:
+    entry = _manifest_entry(tool)
+    if not entry:
+        return False
+    if entry.get('sessionRequired') is True:
+        return True
+    command = entry.get('command') if isinstance(entry.get('command'), dict) else {}
+    return command.get('branchMode') in {'optional', 'required'}
+
+
+def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
+    if not task_session:
+        return None
+    if task_session in _TASK_SESSION_CACHE:
+        return _TASK_SESSION_CACHE[task_session]
+
+    root = _workspace_root()
+    candidates = [root / '.task' / 'session.json']
+    worktree_base = _worktree_root()
+    if worktree_base.exists():
+        candidates.extend(worktree_base.glob('*/.task/session.json'))
+
+    for candidate in candidates:
+        try:
+            raw = json.loads(candidate.read_text(encoding='utf-8'))
+        except OSError:
+            continue
+        except json.JSONDecodeError as error:
+            print(f'warning: failed to parse task session metadata {candidate}: {error}', file=os.sys.stderr)
+            continue
+        if not isinstance(raw, dict):
+            continue
+        metadata = raw
+        branch = metadata.get('branch') or metadata.get('taskBranch')
+        if metadata.get('taskSession') == task_session and isinstance(branch, str):
+            metadata.setdefault('worktree', str(candidate.parents[1]))
+            _TASK_SESSION_CACHE[task_session] = metadata
+            return metadata
+    return None
+
+
+def _input_has_branch(value: Any) -> bool:
+    return isinstance(value, dict) and isinstance(value.get('branch'), str)
+
+
+def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
+    if not isinstance(value, list):
+        return False
+    for step in value:
+        if not isinstance(step, dict):
+            continue
+        child_tool = step.get('tool')
+        child_input = step.get('input') if 'input' in step else step.get('args')
+        if isinstance(child_tool, str) and _tool_requires_task_session(child_tool, child_input):
+            return True
+    return False
+
+
+def _batch_has_branch_conflict(value: Any) -> bool:
+    if not isinstance(value, list):
+        return False
+    for step in value:
+        if not isinstance(step, dict):
+            continue
+        child_input = step.get('input') if isinstance(step.get('input'), dict) else step.get('args')
+        if _input_has_branch(child_input):
+            return True
+    return False
+
+
+def _tool_requires_task_session(tool: str, tool_input: Any) -> bool:
+    if _manifest_tool_requires_task_session(tool):
+        return True
+    if tool == 'batch':
+        return _batch_has_task_scoped_step_without_session(tool_input)
+    return False
+
+
+def _apply_task_session(tool: str, task_session: str | None, tool_input: Any) -> tuple[Any, dict[str, Any] | None]:
+    metadata = _task_session_metadata(task_session)
+    if not task_session:
+        return tool_input, metadata
+    if metadata is None:
+        return tool_input, None
+
+    if tool == 'batch' and isinstance(tool_input, list):
+        updated_steps = []
+        for step in tool_input:
+            if not isinstance(step, dict):
+                updated_steps.append(step)
+                continue
+            child_input = step.get('input') if isinstance(step.get('input'), dict) else step.get('args')
+            if isinstance(child_input, dict) and 'taskSession' not in child_input:
+                child_input = {**child_input, 'taskSession': task_session}
+                step = {**step, 'input': child_input}
+                step.pop('args', None)
+            updated_steps.append(step)
+        return updated_steps, metadata
+
+    if isinstance(tool_input, dict) and 'taskSession' not in tool_input:
+        return {**tool_input, 'taskSession': task_session}, metadata
+    return tool_input, metadata
+
+
+def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: Any | None = None, timeout: int | None = None) -> dict[str, Any]:
+    started = time.time()
+    trace_id = _trace_id()
+    if not tool or not isinstance(tool, str):
+        return _envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id)
+
+    normalized_input: Any = {} if tool_input is None else tool_input
+    if taskSession and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
+        return _envelope(
+            ok=False,
+            code='VALIDATION_ERROR',
+            message='Pass either taskSession or input.branch, not both. taskSession is required for agent task-scoped calls.',
+            data={'tool': tool, 'taskSession': taskSession},
+            traceId=trace_id,
+        )
+
+    if not taskSession and _tool_requires_task_session(tool, normalized_input):
+        return _envelope(
+            ok=False,
+            code='TASK_SESSION_REQUIRED',
+            message=f'{tool} requires taskSession. Use the taskSession returned by task.start.',
+            data={'tool': tool},
+            traceId=trace_id,
+        )
+
+    resolved_input, metadata = _apply_task_session(tool, taskSession, normalized_input)
+    if taskSession and metadata is None:
+        return _envelope(
+            ok=False,
+            code='TASK_SESSION_NOT_FOUND',
+            message='taskSession was not found. Use the taskSession returned by task.start.',
+            data={'taskSession': taskSession},
+            traceId=trace_id,
+        )
+
+    args = ['bun', str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
+    run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
+    try:
+        result = subprocess.run(
+            args,
+            capture_output=True,
+            cwd=str(_workspace_root()),
+            text=True,
+            timeout=run_timeout,
+            check=False,
+            shell=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        return _envelope(
+            ok=False,
+            code='TIMEOUT',
+            message=f'workspace.call timed out after {run_timeout}s',
+            data=None,
+            stderr=str(error),
+            durationMs=int((time.time() - started) * 1000),
+            traceId=trace_id,
+        )
+    except FileNotFoundError as error:
+        return _envelope(
+            ok=False,
+            code='COMMAND_FAILED',
+            message='workspace.call could not start bun/workspace executable',
+            data={'command': args},
+            stderr=str(error),
+            durationMs=int((time.time() - started) * 1000),
+            traceId=trace_id,
+        )
+
+    stdout_text = result.stdout.strip()
+    try:
+        envelope = json.loads(stdout_text) if stdout_text else {}
+    except json.JSONDecodeError:
+        return _envelope(
+            ok=False,
+            code='PARSE_ERROR',
+            message='workspace.call received non-JSON output from facade',
+            data={'raw': result.stdout},
+            stderr=result.stderr,
+            exitCode=result.returncode,
+            durationMs=int((time.time() - started) * 1000),
+            traceId=trace_id,
+        )
+
+    if isinstance(envelope, dict):
+        envelope.setdefault('now', _now_iso())
+        envelope.setdefault('ok', result.returncode == 0)
+        envelope.setdefault('code', 'OK' if result.returncode == 0 else 'COMMAND_FAILED')
+        envelope.setdefault('message', 'command completed' if result.returncode == 0 else 'command failed')
+        envelope.setdefault('data', None)
+        envelope.setdefault('stderr', result.stderr or '')
+        envelope.setdefault('exitCode', result.returncode)
+        envelope.setdefault('durationMs', int((time.time() - started) * 1000))
+        envelope.setdefault('traceId', trace_id)
+        envelope.setdefault('apiVersion', '1.0.0')
+        if metadata:
+            envelope['taskContext'] = {
+                'taskSession': taskSession,
+                'tmuxSession': metadata.get('tmuxSession'),
+                'branch': metadata.get('branch') or metadata.get('taskBranch'),
+                'worktree': metadata.get('worktree') or metadata.get('worktreePath'),
+                'source': 'taskSession',
+            }
+        if result.stderr and not envelope.get('stderr'):
+            envelope['stderr'] = result.stderr
+        return envelope
+
+    return _envelope(
+        ok=False,
+        code='PARSE_ERROR',
+        message='workspace.call facade output was not an object',
+        data=envelope,
+        exitCode=result.returncode,
+        durationMs=int((time.time() - started) * 1000),
+        traceId=trace_id,
+    )
+
+
+@mcp.tool()
+def call(tool: str, input: Any | None = None, taskSession: str | None = None, timeout: int | None = None) -> dict[str, Any]:
+    """run a typed workspace tool through the facade. taskSession scopes task work."""
+    tool_input = input
+    return _traced_call('workspace.call', 'tool', _run_workspace_call, tool=tool, tool_input=tool_input, taskSession=taskSession, timeout=timeout)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -182,7 +471,7 @@ async def oauth_token(request):
 
 
 async def health(request):
-    return JSONResponse({'status': 'ok', 'tools': 2, 'name': SERVER_NAME})
+    return JSONResponse({'status': 'ok', 'tools': 2, 'name': SERVER_NAME, 'toolNames': ['get_steering', 'call']})
 
 
 @contextlib.asynccontextmanager

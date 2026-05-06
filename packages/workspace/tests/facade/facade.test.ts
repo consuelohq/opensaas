@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
@@ -162,6 +166,76 @@ describe('typed facade executor', () => {
     expect(result.ok).toBe(true);
     expect(plans[0].args).toContain('fs');
     expect(plans[0].args).not.toContain('--branch');
+  });
+
+  it('resolves taskSession metadata before branch planning', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_test',
+        tmuxSession: 'opensaas-test',
+        branch: 'task/workspace-agents/session-test',
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_test',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/session-test');
+      expect(plans[0].args).toContain('--branch');
+      expect(plans[0].args).toContain('task/workspace-agents/session-test');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects calls that pass both taskSession and branch', async () => {
+    const result = await executeTool('fs.read', {
+      taskSession: 'tsk_conflict',
+      branch: TEST_BRANCH,
+      path: 'AGENTS.md',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('fails unknown taskSession handles deterministically', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-missing-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_missing_isolated',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TASK_SESSION_NOT_FOUND');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('passes request ids through nested tool envelopes', async () => {
