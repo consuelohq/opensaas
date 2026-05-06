@@ -33,6 +33,7 @@
     "packages/consuelo-website/src/content/blog/local-presence-data.md",
     "packages/consuelo-website/src/content/blog/mobile-app.md",
     "packages/consuelo-website/src/content/blog/software-is-becoming-decision-infrastructure.md",
+    "packages/consuelo-website/src/data/launch-content.ts",
     "packages/consuelo-website/src/layouts/LaunchLayout.astro",
     "packages/consuelo-website/src/lib/motion.ts",
     "packages/consuelo-website/src/pages/blog/[...slug]/index.astro",
@@ -40,6 +41,7 @@
     "packages/consuelo-website/src/pages/blog/index.astro",
     "packages/consuelo-website/src/pages/blog/posts/[...page].astro",
     "packages/consuelo-website/src/pages/index.astro",
+    "packages/consuelo-website/src/pages/mercury.astro",
     "packages/consuelo-website/src/styles/astropaper.css",
     "packages/consuelo-website/src/styles/blog.css",
     "packages/consuelo-website/src/styles/global.css",
@@ -114,5 +116,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-05T23:53:47.574Z"
+  "updatedAt": "2026-05-06T06:58:26.576Z"
 }
