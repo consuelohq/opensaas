@@ -122,3 +122,27 @@ Validation:
 
 - `python3 -m py_compile packages/workspace/server.py`
 - `python3 -m unittest packages/workspace/tests/server_call_test.py`
+
+## review fix pass — tmux/docs/session cache — 2026-05-06
+
+Confirmed and fixed Ko's required findings:
+
+- Fixed `assertTmuxAvailable()` recursion in `packages/workspace/scripts/lib/task-session.js`; it now calls `isTmuxAvailable()` and throws a clear tmux-required error.
+- Removed task session metadata caching from both `server.py` and `executor.ts`; session metadata is read from `.task/session.json` discovery paths on each call.
+- Removed the extra `task-start.js` async try/catch wrappers that rethrew new `Error` instances and lost stack context; kept the existing top-level `main().catch` handler.
+- Updated `STEERING.md` and `decision.md` so normal workflow examples use `workspace.call({ tool, input, taskSession, timeout })` instead of `sandbox_exec` or nested shell/JSON workspace command strings.
+
+Validation:
+
+- `python3 -m py_compile packages/workspace/server.py`
+- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
+- `node --check packages/workspace/scripts/lib/task-session.js`
+- `node --check packages/workspace/scripts/task-start.js`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py -v`
+- `bun test packages/workspace/tests/facade/facade.test.ts` → 492 pass
+- `assertTmuxAvailable()` smoke passed with local tmux
+- `rg` confirmed no `sandbox_exec`, `workspace.sandbox_exec`, `TASK_SESSION_CACHE`, `taskSessionMetadataCache`, or nested `workspace <tool> '{...}'` examples remain in the targeted docs/code.
+
+Review note:
+
+- `bun run review -- --base task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` reports one pre-existing `ERROR_HANDLING` heuristic finding for `task-start.js:266`. This is expected because Ko explicitly requested removing the extra try/catch and relying on the existing top-level `main().catch` handler.

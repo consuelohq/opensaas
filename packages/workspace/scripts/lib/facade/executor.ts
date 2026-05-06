@@ -36,9 +36,6 @@ type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
 
-const taskSessionMetadataCache = new Map<string, TaskSessionMetadata>();
-
-
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
@@ -500,9 +497,6 @@ function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): val
 }
 
 function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionMetadata | null {
-  const cached = taskSessionMetadataCache.get(taskSession);
-  if (cached) return cached;
-
   const candidates = new Set<string>();
   candidates.add(path.join(cwd, '.task', 'session.json'));
 
@@ -517,7 +511,6 @@ function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionM
     try {
       const parsed = JSON.parse(fs.readFileSync(candidate, 'utf8')) as unknown;
       if (isTaskSessionMetadata(parsed, taskSession)) {
-        taskSessionMetadataCache.set(taskSession, parsed);
         return parsed;
       }
     } catch (error: unknown) {

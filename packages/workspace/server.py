@@ -74,7 +74,6 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
-_TASK_SESSION_CACHE: dict[str, dict[str, Any]] = {}
 
 
 def _resolve_steering_file() -> str:
@@ -185,9 +184,6 @@ def _manifest_tool_requires_task_session(tool: str) -> bool:
 def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
     if not task_session:
         return None
-    if task_session in _TASK_SESSION_CACHE:
-        return _TASK_SESSION_CACHE[task_session]
-
     root = _workspace_root()
     candidates = [root / '.task' / 'session.json']
     worktree_base = _worktree_root()
@@ -208,7 +204,6 @@ def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
         branch = metadata.get('branch') or metadata.get('taskBranch')
         if metadata.get('taskSession') == task_session and isinstance(branch, str):
             metadata.setdefault('worktree', str(candidate.parents[1]))
-            _TASK_SESSION_CACHE[task_session] = metadata
             return metadata
     return None
 
