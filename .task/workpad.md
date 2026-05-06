@@ -19,16 +19,12 @@ started: 2026-05-05
 
 ## files changed
 
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts`
-- `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`
 - `packages/dialer/src/services/parallel-dialer.ts`
-- `packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilter.ts`
-- `packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateFilterStringified.ts`
-- `packages/twenty-shared/src/utils/filter/dates/utils/resolveRelativeDateTimeFilterStringified.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.module.ts`
 - `packages/workspace/scripts/run-dialer-scenario.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts`
+- `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts`
 
 
 ## key decisions
