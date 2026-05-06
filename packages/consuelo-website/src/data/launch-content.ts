@@ -171,9 +171,9 @@ export const launchAnnouncement: LaunchAnnouncement = {
 };
 
 export const launchHero: LaunchHeroContent = {
-  title: 'The shared revenue system for reps and AI agents.',
+  title: 'Decision infrastructure for revenue teams.',
   description:
-        'Keep your sales context, calling activity, GTM data, and internal brain in one place so humans and agents can do work from the same system.',
+        'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
 };
 
 export const launchTabs: LaunchTab[] = [
