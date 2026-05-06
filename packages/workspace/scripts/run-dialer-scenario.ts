@@ -27,15 +27,17 @@ type StartDialerCallResult = {
   status: string;
   capacity: {
     requestedFanout: number;
-    callableUniqueTargets: number;
-    availableDistinctCallerIds: number;
+    callableTargetCount: number;
+    availableCallerIdCount: number;
+    reducedCapacityReasons: string[];
+    blockedReasons: string[];
     actualFanout: number;
   };
   calls: Array<{
     callSid: string;
     contactId: string;
-    to: string;
-    from: string;
+    customerNumber: string;
+    callerId: string;
     status: string;
     position: number;
   }>;
@@ -56,6 +58,10 @@ type ScenarioLog = {
   liveCallsEnabled: boolean;
   safeToNumberCount: number;
   safeFromNumberCount: number;
+  twilioTestCredentialPresence: {
+    accountSid: boolean;
+    authToken: boolean;
+  };
   steps: Array<{
     name: string;
     ok: boolean;
@@ -113,6 +119,10 @@ const scenarioLog: ScenarioLog = {
   liveCallsEnabled,
   safeToNumberCount: safeToNumbers.length,
   safeFromNumberCount: safeFromNumbers.length,
+  twilioTestCredentialPresence: {
+    accountSid: Boolean(process.env.TWILIO_TEST_ACCOUNT_SID),
+    authToken: Boolean(process.env.TWILIO_TEST_AUTH_TOKEN),
+  },
   steps: [],
 };
 
@@ -413,6 +423,11 @@ async function graphqlRequest<TData>(params: {
 }
 
 function assertLiveSafety(): void {
+  if (callMode === 'twilio-test') {
+    assertTwilioTestSafety();
+    return;
+  }
+
   if (callMode !== 'live') {
     return;
   }
@@ -440,6 +455,30 @@ function assertLiveSafety(): void {
   }
 }
 
+function assertTwilioTestSafety(): void {
+  const testAccountSid = process.env.TWILIO_TEST_ACCOUNT_SID ?? '';
+  const testAuthToken = process.env.TWILIO_TEST_AUTH_TOKEN ?? '';
+
+  if (testAccountSid.length === 0 || testAuthToken.length === 0) {
+    throw new Error(
+      'twilio-test mode requires TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN.',
+    );
+  }
+
+  if (
+    testAccountSid === process.env.TWILIO_ACCOUNT_SID ||
+    testAuthToken === process.env.TWILIO_AUTH_TOKEN
+  ) {
+    throw new Error('twilio-test mode cannot use live Twilio credentials.');
+  }
+
+  if (safeToNumbers.length === 0 || safeFromNumbers.length === 0) {
+    throw new Error(
+      'twilio-test mode requires explicit safe to/from scenario numbers.',
+    );
+  }
+}
+
 function resolveTargetPhones(): string[] {
   if (explicitTargetPhones.length > 0) {
     return explicitTargetPhones;
@@ -449,7 +488,7 @@ function resolveTargetPhones(): string[] {
     return safeToNumbers;
   }
 
-  return ['+15555550199', '+15555550198'];
+  return ['+14155550199', '+14155550198'];
 }
 
 function resolveCallerIdNumber(): string | undefined {
@@ -479,15 +518,17 @@ async function startDialerCall(
           status
           capacity {
             requestedFanout
-            callableUniqueTargets
-            availableDistinctCallerIds
+            callableTargetCount
+            availableCallerIdCount
+            reducedCapacityReasons
+            blockedReasons
             actualFanout
           }
           calls {
             callSid
             contactId
-            to
-            from
+            customerNumber
+            callerId
             status
             position
           }
@@ -536,7 +577,7 @@ async function main(): Promise<void> {
   persistTranscript();
 
   await runStep({
-    name: 'live-safety-preflight',
+    name: 'call-mode-safety-preflight',
     run: async () => {
       assertLiveSafety();
       return {
@@ -544,6 +585,7 @@ async function main(): Promise<void> {
         liveCallsEnabled,
         safeToNumberCount: safeToNumbers.length,
         safeFromNumberCount: safeFromNumbers.length,
+        twilioTestCredentialPresence: scenarioLog.twilioTestCredentialPresence,
       };
     },
   });

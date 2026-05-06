@@ -43,6 +43,11 @@ describe('DialerCallStartService', () => {
     jest.clearAllMocks();
     delete process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS;
     delete process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS;
+    delete process.env.API_BASE_URL;
+    delete process.env.TWILIO_TEST_ACCOUNT_SID;
+    delete process.env.TWILIO_TEST_AUTH_TOKEN;
+    delete process.env.TWILIO_ACCOUNT_SID;
+    delete process.env.TWILIO_AUTH_TOKEN;
   });
 
   it('should create a direct one-person queue and mock call for a typed phone target', async () => {
@@ -84,15 +89,17 @@ describe('DialerCallStartService', () => {
     expect(result.status).toBe('mocked');
     expect(result.capacity).toEqual({
       requestedFanout: 1,
-      callableUniqueTargets: 1,
-      availableDistinctCallerIds: 1,
+      callableTargetCount: 1,
+      availableCallerIdCount: 1,
+      reducedCapacityReasons: [],
+      blockedReasons: [],
       actualFanout: 1,
     });
     expect(result.calls).toEqual([
       expect.objectContaining({
         contactId: 'contact-direct',
-        to: '+14155552671',
-        from: '+12025550123',
+        customerNumber: '+14155552671',
+        callerId: '+12025550123',
         status: 'mocked',
         position: 1,
       }),
@@ -160,16 +167,18 @@ describe('DialerCallStartService', () => {
     expect(result.actualFanout).toBe(1);
     expect(result.capacity).toEqual({
       requestedFanout: 2,
-      callableUniqueTargets: 2,
-      availableDistinctCallerIds: 1,
+      callableTargetCount: 2,
+      availableCallerIdCount: 1,
+      reducedCapacityReasons: ['caller-id-capacity'],
+      blockedReasons: [],
       actualFanout: 1,
     });
     expect(result.calls).toHaveLength(1);
     expect(result.calls[0]).toEqual(
       expect.objectContaining({
         contactId: 'contact-one',
-        to: '+14155552671',
-        from: '+12025550123',
+        customerNumber: '+14155552671',
+        callerId: '+12025550123',
         status: 'mocked',
       }),
     );
@@ -207,5 +216,244 @@ describe('DialerCallStartService', () => {
         },
       }),
     ).rejects.toThrow('Target phone number is not allowlisted');
+  });
+
+  it('should fail closed for twilio-test starts without test credentials', async () => {
+    const { service, mockQuery } = createService();
+
+    process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS = '+14155552671';
+    process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS = '+12025550123';
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    await expect(
+      service.startDialerCall({
+        workspaceId: WORKSPACE_ID,
+        userId: USER_ID,
+        input: {
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          targetPhone: '+14155552671',
+          callerIdNumber: '+12025550123',
+          callMode: 'twilio-test',
+        },
+      }),
+    ).rejects.toThrow(
+      'twilio-test mode requires TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN',
+    );
+  });
+
+  it('should transfer pending caller ID locks to call SIDs without releasing the number', async () => {
+    const { service, mockQuery, mockLegacyDialerService } = createService();
+    const mockLockService = {
+      acquireLock: jest.fn().mockResolvedValue(true),
+      transferLock: jest.fn().mockResolvedValue(true),
+      releaseLockByNumber: jest.fn(),
+    };
+    const mockDialer = {
+      parallel: {
+        initiateGroup: jest.fn().mockResolvedValue({
+          groupId: 'pg_test',
+          calls: [
+            {
+              callSid: 'CA_TEST_CALL',
+              fromNumber: '+12025550123',
+              position: 1,
+              status: 'dialing',
+            },
+          ],
+        }),
+        terminateGroup: jest.fn(),
+      },
+    };
+
+    process.env.API_BASE_URL = 'https://dev-1499.example.test';
+    process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS = '+14155552671';
+    process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS = '+12025550123';
+    mockLegacyDialerService.getCallerIdLockService.mockReturnValue(
+      mockLockService,
+    );
+    mockLegacyDialerService.getDialer.mockReturnValue(mockDialer);
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    const result = await service.startDialerCall({
+      workspaceId: WORKSPACE_ID,
+      userId: USER_ID,
+      input: {
+        source: 'direct',
+        selectionStrategy: 'single',
+        requestedFanout: 1,
+        targetPhone: '+14155552671',
+        callerIdNumber: '+12025550123',
+        callMode: 'live',
+      },
+    });
+
+    const pendingCallSid = mockLockService.acquireLock.mock.calls[0][2];
+
+    expect(result.calls[0]).toEqual(
+      expect.objectContaining({
+        callSid: 'CA_TEST_CALL',
+        customerNumber: '+14155552671',
+        callerId: '+12025550123',
+      }),
+    );
+    expect(mockLockService.transferLock).toHaveBeenCalledWith(
+      '+12025550123',
+      pendingCallSid,
+      'CA_TEST_CALL',
+    );
+    expect(mockLockService.releaseLockByNumber).not.toHaveBeenCalled();
+  });
+
+  it('should terminate created calls and release locks when lock transfer fails', async () => {
+    const { service, mockQuery, mockLegacyDialerService } = createService();
+    const mockLockService = {
+      acquireLock: jest.fn().mockResolvedValue(true),
+      transferLock: jest.fn().mockResolvedValue(false),
+      releaseLockByNumber: jest.fn(),
+    };
+    const mockDialer = {
+      parallel: {
+        initiateGroup: jest.fn().mockResolvedValue({
+          groupId: 'pg_test',
+          calls: [
+            {
+              callSid: 'CA_TEST_CALL',
+              fromNumber: '+12025550123',
+              position: 1,
+              status: 'dialing',
+            },
+          ],
+        }),
+        terminateGroup: jest.fn(),
+      },
+    };
+
+    process.env.API_BASE_URL = 'https://dev-1499.example.test';
+    process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS = '+14155552671';
+    process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS = '+12025550123';
+    mockLegacyDialerService.getCallerIdLockService.mockReturnValue(
+      mockLockService,
+    );
+    mockLegacyDialerService.getDialer.mockReturnValue(mockDialer);
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    await expect(
+      service.startDialerCall({
+        workspaceId: WORKSPACE_ID,
+        userId: USER_ID,
+        input: {
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          targetPhone: '+14155552671',
+          callerIdNumber: '+12025550123',
+          callMode: 'live',
+        },
+      }),
+    ).rejects.toThrow('Dialer call start failed');
+
+    expect(mockDialer.parallel.terminateGroup).toHaveBeenCalledWith('pg_test');
+    expect(mockLockService.releaseLockByNumber).toHaveBeenCalledWith(
+      '+12025550123',
+    );
+  });
+
+  it('should block a start when the caller ID lock is already held', async () => {
+    const { service, mockQuery, mockLegacyDialerService } = createService();
+    const mockLockService = {
+      acquireLock: jest.fn().mockResolvedValue(false),
+      transferLock: jest.fn(),
+      releaseLockByNumber: jest.fn(),
+    };
+    const mockDialer = {
+      parallel: {
+        initiateGroup: jest.fn(),
+        terminateGroup: jest.fn(),
+      },
+    };
+
+    process.env.API_BASE_URL = 'https://dev-1499.example.test';
+    process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS = '+14155552671';
+    process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS = '+12025550123';
+    mockLegacyDialerService.getCallerIdLockService.mockReturnValue(
+      mockLockService,
+    );
+    mockLegacyDialerService.getDialer.mockReturnValue(mockDialer);
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    await expect(
+      service.startDialerCall({
+        workspaceId: WORKSPACE_ID,
+        userId: USER_ID,
+        input: {
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          targetPhone: '+14155552671',
+          callerIdNumber: '+12025550123',
+          callMode: 'live',
+        },
+      }),
+    ).rejects.toThrow('Caller ID number is currently in use');
+
+    expect(mockDialer.parallel.initiateGroup).not.toHaveBeenCalled();
   });
 });

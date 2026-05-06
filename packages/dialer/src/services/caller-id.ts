@@ -9,6 +9,11 @@ import type { CallerIdLock } from '../types.js';
  */
 export interface LockStore {
   acquire(lock: CallerIdLock): Promise<boolean>;
+  transfer(
+    phoneNumber: string,
+    expectedCallSid: string,
+    nextCallSid: string,
+  ): Promise<boolean>;
   release(callSid: string): Promise<boolean>;
   releaseByNumber(phoneNumber: string): Promise<boolean>;
   isAvailable(phoneNumber: string): Promise<boolean>;
@@ -43,6 +48,14 @@ export class CallerIdLockService {
     });
   }
 
+  async transferLock(
+    phoneNumber: string,
+    expectedCallSid: string,
+    nextCallSid: string,
+  ): Promise<boolean> {
+    return this.store.transfer(phoneNumber, expectedCallSid, nextCallSid);
+  }
+
   async releaseLock(callSid: string): Promise<boolean> {
     return this.store.release(callSid);
   }
@@ -72,6 +85,26 @@ export class InMemoryLockStore implements LockStore {
     const existing = this.locks.get(lock.phoneNumber);
     if (existing && existing.callSid !== lock.callSid) return false;
     this.locks.set(lock.phoneNumber, lock);
+    return true;
+  }
+
+  async transfer(
+    phoneNumber: string,
+    expectedCallSid: string,
+    nextCallSid: string,
+  ): Promise<boolean> {
+    this.cleanExpired();
+    const existing = this.locks.get(phoneNumber);
+
+    if (!existing || existing.callSid !== expectedCallSid) {
+      return false;
+    }
+
+    this.locks.set(phoneNumber, {
+      ...existing,
+      callSid: nextCallSid,
+    });
+
     return true;
   }
 
@@ -188,8 +221,64 @@ export class RedisLockStore implements LockStore {
         createLogger('dialer:CallerIdLock').error(
           '[RedisLockStore] acquire failed',
           {
-            phoneNumber: lock.phoneNumber,
+            phoneSuffix: lock.phoneNumber.slice(-4),
             callSid: lock.callSid,
+            error: msg,
+          },
+        );
+      } catch {
+        /* logger optional */
+      }
+      throw err;
+    }
+  }
+
+  async transfer(
+    phoneNumber: string,
+    expectedCallSid: string,
+    nextCallSid: string,
+  ): Promise<boolean> {
+    try {
+      const redis = await this.getRedis();
+      const key = `${LOCK_KEY_PREFIX}${phoneNumber}`;
+      const script = `
+        local key = KEYS[1]
+        local expected = ARGV[1]
+        local next = ARGV[2]
+        local ttl = tonumber(ARGV[3])
+        local value = redis.call('GET', key)
+        if not value then
+          return 0
+        end
+        local lock = cjson.decode(value)
+        if lock.callSid ~= expected then
+          return 0
+        end
+        lock.callSid = next
+        redis.call('SET', key, cjson.encode(lock), 'EX', ttl)
+        return 1
+      `;
+      const result = await redis.eval(
+        script,
+        1,
+        key,
+        expectedCallSid,
+        nextCallSid,
+        String(this.ttlSeconds),
+      );
+
+      return result === 1;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : 'Redis lock transfer failed';
+      try {
+        const { createLogger } = await import('@consuelo/logger');
+        createLogger('dialer:CallerIdLock').error(
+          '[RedisLockStore] transfer failed',
+          {
+            phoneSuffix: phoneNumber.slice(-4),
+            expectedCallSid,
+            nextCallSid,
             error: msg,
           },
         );
@@ -251,7 +340,7 @@ export class RedisLockStore implements LockStore {
         createLogger('dialer:CallerIdLock').error(
           '[RedisLockStore] releaseByNumber failed',
           {
-            phoneNumber,
+            phoneSuffix: phoneNumber.slice(-4),
             error: msg,
           },
         );
@@ -283,7 +372,7 @@ export class RedisLockStore implements LockStore {
         createLogger('dialer:CallerIdLock').error(
           '[RedisLockStore] isAvailable failed',
           {
-            phoneNumber,
+            phoneSuffix: phoneNumber.slice(-4),
             error: msg,
           },
         );

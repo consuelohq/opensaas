@@ -3,6 +3,7 @@
 branch: `task/dialer/dev-1499-local-setup-and-scenario-validation`
 stream: `stream/dialer`
 pr: https://github.com/consuelohq/opensaas/pull/326
+stream review pr: https://github.com/consuelohq/opensaas/pull/334
 started: 2026-05-05
 
 ## acceptance criteria
@@ -25,6 +26,8 @@ started: 2026-05-05
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts`
 - `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts`
+- `packages/dialer/src/services/caller-id.ts`
+- `packages/dialer/src/services/caller-id.spec.ts`
 
 
 ## key decisions
@@ -52,6 +55,11 @@ started: 2026-05-05
   - `@AuthWorkspace()` and `@AuthUser()` to require signed-in workspace/user context
 - API-key-only auth should be rejected by the `@AuthUser()` requirement because API-key auth does not provide a signed-in user.
 - No new app-facing REST call-start bridge was added. Existing REST paths remain legacy/quarantined for later frontend migration.
+- GraphQL response shape is aligned to the DEV-1499 handoff contract: `capacity.callableTargetCount`, `capacity.availableCallerIdCount`, `capacity.reducedCapacityReasons`, `capacity.blockedReasons`, `calls.customerNumber`, and `calls.callerId`.
+- `CONSUELO_SCENARIO_CALL_MODE=twilio-test` is non-E2E request-construction validation only. It requires `TWILIO_TEST_ACCOUNT_SID`, `TWILIO_TEST_AUTH_TOKEN`, and explicit safe to/from scenario numbers. It refuses to run when test credentials equal the live `TWILIO_ACCOUNT_SID` or `TWILIO_AUTH_TOKEN`.
+- Caller-ID lock ownership now transfers atomically from `pending:<sessionId>` to the real Twilio call SID through `CallerIdLockService.transferLock()`. The service no longer releases the phone number between Twilio call creation and actual-call-SID ownership.
+- Live mode requires a public HTTPS `API_BASE_URL` or `SERVER_URL` before initiating Twilio calls. `localhost`, `127.0.0.1`, and non-HTTPS callback URLs fail closed in backend service code.
+- Real phone numbers must stay in Keychain/env. Workpad evidence records counts, credential presence, and suffix-redacted values only.
 
 ## local setup evidence
 
@@ -84,11 +92,20 @@ started: 2026-05-05
   - `CONSUELO_SCENARIO_MODE=both`, `CONSUELO_SCENARIO_CALL_MODE=mock`: passed, transcript `/tmp/dev-1499-both-mock.json`, single step `actualFanout=1`, predictive step `actualFanout=2`.
 - Live fail-closed evidence:
   - `CONSUELO_SCENARIO_CALL_MODE=live` without `CONSUELO_SCENARIO_LIVE_CALLS_ENABLED=true` fails before GraphQL with `Live scenario mode requires CONSUELO_SCENARIO_LIVE_CALLS_ENABLED=true.`, transcript `/tmp/dev-1499-live-fail-closed.json`.
+- Twilio-test evidence:
+  - Current patch makes twilio-test fail closed unless `TWILIO_TEST_ACCOUNT_SID` and `TWILIO_TEST_AUTH_TOKEN` are present and distinct from live credential env values.
+  - Twilio-test also requires explicit safe to/from scenario numbers. This mode proves GraphQL/service request construction against Twilio test credentials; it does not prove callback lifecycle or live call audio.
 - Live validation blocker:
-  - `security find-generic-password -a "$USER" -s "consuelo_twilio_live_account_sid" -w` returned `SecKeychainSearchCopyNext: The specified item could not be found in the keychain`.
-  - `consuelo_twilio_live_auth_token` is also missing from Keychain by service lookup.
-  - `consuelo_scenario_safe_to_numbers` and `consuelo_scenario_safe_from_numbers` are present, but full live validation cannot run without the Twilio account SID/auth token in the server process environment.
-  - Public callback reachability is still unresolved for local live validation because the local server currently advertises `API_BASE_URL=http://127.0.0.1:3000`, which Twilio cannot call back from outside the machine.
+  - Before live validation, export live Twilio credentials and safe allowlists from Keychain into the same shell that starts `twenty-server`.
+  - Start Cloudflare Tunnel with `cloudflared tunnel --url http://localhost:3000`, then restart `twenty-server` with `API_BASE_URL` and `SERVER_URL` set to the public HTTPS tunnel URL.
+  - Live validation is blocked until the server process has live Twilio credentials, safe to/from allowlists, and a public HTTPS callback URL. If any Keychain value is missing or placeholder-like, stop and record that exact blocker.
+  - Full live proof requires callbacks to attach to the correct group/session, terminal callback lock release, and two sequential single calls reacquiring the same caller ID.
+
+## one-leg conference evidence
+
+- `@consuelo/dialer` supports one-leg parallel groups through the same `ParallelDialerService.initiateGroup()` path used for predictive groups. The group stores a single call, maps that call SID back to the group, and returns customer TwiML with a `<Conference>` noun for the group conference name.
+- One-leg terminal callbacks complete the group when the only call reaches a terminal status. The service test surface now includes one-leg group creation and one-leg terminal completion coverage.
+- Caller-ID lock release for one-leg live calls is handled by the existing `ParallelService.statusCallback()` terminal path: when the winning or only call ends, the service releases every caller-ID lock returned by `getReleasableNumbers()` / group state.
 
 ## validation evidence
 
@@ -120,6 +137,42 @@ started: 2026-05-05
 - Fresh reset command reached `twenty-shared:build` and failed before migrations. Errors were TypeScript narrowing failures in relative date filter utilities that imported `isDefined` from `class-validator`.
 - Local server start failed without `APP_SECRET`; adding the local dev secret let Nest start.
 - Sandboxed localhost curl could not connect to the server; unsandboxed curl reached `/healthz`.
+
+---
+
+## stream review update - 2026-05-06
+
+- Stream PR #334 was synced with current `main` by merging `origin/main` into `stream/dialer`. `.task/*` metadata conflicts were resolved in favor of the stream workpad/evidence files. Local merge commit: `9d1c275e56`.
+- GraphQL/scenario response shape remains aligned to the DEV-1499 handoff contract: `capacity.callableTargetCount`, `capacity.availableCallerIdCount`, `capacity.reducedCapacityReasons`, `capacity.blockedReasons`, `calls.customerNumber`, and `calls.callerId`.
+- Caller-ID lock ownership now transfers atomically from `pending:<sessionId>` to the real Twilio call SID through `CallerIdLockService.transferLock()`. The service no longer releases the phone number between Twilio call creation and actual-call-SID ownership.
+- `CONSUELO_SCENARIO_CALL_MODE=twilio-test` fails closed unless `TWILIO_TEST_ACCOUNT_SID` and `TWILIO_TEST_AUTH_TOKEN` are present, distinct from live credentials, and paired with explicit safe scenario numbers. This mode is non-E2E request-construction validation only.
+- Mock defaults now use valid reserved/test-style numbers because the old `+1555...` family is rejected by `libphonenumber-js` before mock mode can exercise GraphQL.
+- Local seed auth note: `tim@apple.dev` in the YCombinator seed workspace has a local-only password set for DEV-1499 scenario validation. This is local database state only.
+
+## stream runtime evidence - 2026-05-06
+
+- Postgres and Redis health were green through `/healthz`.
+- Keychain presence check passed without printing values: live Twilio SID/token present, safe-to count 3, safe-from count 1.
+- `twenty-server` was restarted with live Twilio env, safe allowlists, `API_BASE_URL`, and `SERVER_URL` set to the Cloudflare Tunnel HTTPS URL.
+- `CONSUELO_SCENARIO_MODE=single`, `CONSUELO_SCENARIO_CALL_MODE=mock`: passed, transcript `/tmp/dev-1499-stream-single-mock.json`, `actualFanout=1`, `status=mocked`, one call.
+- `CONSUELO_SCENARIO_MODE=predictive`, `CONSUELO_SCENARIO_CALL_MODE=mock`: passed, transcript `/tmp/dev-1499-stream-predictive-mock.json`, `actualFanout=1`, `status=mocked`, one call. Capacity reduced from requested fanout 2 because only one distinct safe caller ID was available in the server process.
+- `CONSUELO_SCENARIO_MODE=both`, `CONSUELO_SCENARIO_CALL_MODE=mock`: passed, transcript `/tmp/dev-1499-stream-both-mock.json`, single step `actualFanout=1`, predictive step `actualFanout=1`.
+- `CONSUELO_SCENARIO_CALL_MODE=twilio-test` failed closed before GraphQL because `TWILIO_TEST_ACCOUNT_SID` and `TWILIO_TEST_AUTH_TOKEN` are absent from the scenario shell. Transcript: `/tmp/dev-1499-stream-single-twilio-test.json`.
+- Live single reached GraphQL/service and failed closed at Twilio initiation because the allowlisted outbound caller ID suffix `0892` is not verified or purchased on the live Twilio account. Transcript: `/tmp/dev-1499-stream-single-live.json`.
+- Live validation is blocked until the safe-from number is a Twilio-owned or verified outbound caller ID for the live account. The live predictive scenario was not run after this account-level blocker.
+- Full live proof still requires callbacks to attach to the correct group/session, terminal callback lock release, and two sequential single calls reacquiring the same caller ID.
+- Transcript redaction scan passed for the mock, twilio-test, and live transcript files listed above: no full E.164 phone numbers were found.
+- Task metadata redaction scan passed for `.task/workpad.md`, `.task/*.json`, and `.task/tasks`: no full E.164 phone numbers were found.
+
+## stream validation evidence - 2026-05-06
+
+- `npx prettier --check` passed for all changed TypeScript scenario/service/resolver/dialer files.
+- `git diff --check` passed.
+- `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` passed: 2 suites, 26 tests.
+- `npx jest packages/dialer/src/services/caller-id.spec.ts packages/dialer/src/services/parallel-dialer.spec.ts --config=packages/dialer/jest.config.mjs --runInBand` passed: 2 suites, 53 tests.
+- `npx nx typecheck @consuelo/dialer` passed.
+- `npx nx typecheck twenty-server` failed on broad pre-existing strict property initialization and `unknown` catch typing errors in workflow/metadata modules. A filtered rerun of the twenty-server typecheck output found no errors mentioning `consuelo-api`, `dialer-call-start`, or `parallel.service`.
+- `workspace checkFiles` passed for the changed TypeScript files, but the workspace facade currently routed through the old task worktree. Direct commands in `/Users/kokayi/Dev/opensaas` are the authoritative `stream/dialer` validation for this update.
 
 ---
 

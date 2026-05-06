@@ -56,10 +56,16 @@ export class DialerCallStartCapacityDTO {
   requestedFanout!: number;
 
   @Field(() => Int)
-  callableUniqueTargets!: number;
+  callableTargetCount!: number;
 
   @Field(() => Int)
-  availableDistinctCallerIds!: number;
+  availableCallerIdCount!: number;
+
+  @Field(() => [String])
+  reducedCapacityReasons!: string[];
+
+  @Field(() => [String])
+  blockedReasons!: string[];
 
   @Field(() => Int)
   actualFanout!: number;
@@ -74,10 +80,10 @@ export class DialerCallStartCallDTO {
   contactId!: string;
 
   @Field()
-  to!: string;
+  customerNumber!: string;
 
   @Field()
-  from!: string;
+  callerId!: string;
 
   @Field()
   status!: string;

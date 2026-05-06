@@ -1,15 +1,17 @@
 import type { ParallelDialProfile } from '../types';
 
-import { ParallelDialerService, InMemoryParallelStore } from './parallel-dialer';
+import {
+  ParallelDialerService,
+  InMemoryParallelStore,
+} from './parallel-dialer';
 
 const mockCallsCreate = jest.fn();
 const mockCallUpdate = jest.fn();
 
 const mockClient = {
-  calls: Object.assign(
-    (_sid: string) => ({ update: mockCallUpdate }),
-    { create: mockCallsCreate },
-  ),
+  calls: Object.assign((_sid: string) => ({ update: mockCallUpdate }), {
+    create: mockCallsCreate,
+  }),
 };
 
 jest.mock('twilio', () => ({
@@ -100,6 +102,20 @@ describe('ParallelDialerService', () => {
       const group = await service.getGroup(result.groupId);
       expect(group!.calls[0].contactId).toBe('c1');
       expect(group!.calls[2].contactId).toBe('c3');
+    });
+
+    it('should support one-leg conference groups', async () => {
+      const result = await service.initiateGroup({
+        ...baseOpts,
+        customerNumbers: ['+15551111111'],
+        fromNumbers: ['+15554444444'],
+        profile: { ...baseProfile, fanout: 1 },
+      });
+      const group = await service.getGroup(result.groupId);
+
+      expect(result.calls).toHaveLength(1);
+      expect(group!.calls).toHaveLength(1);
+      expect(group!.status).toBe('dialing');
     });
   });
 
@@ -369,6 +385,21 @@ describe('ParallelDialerService', () => {
       expect(telemetry.winnerRate).toBe(0);
       expect(telemetry.wastedLegs).toBe(3);
       expect(telemetry.connectLatencyMs).toBeNull();
+    });
+
+    it('should complete one-leg groups on terminal callback', async () => {
+      const result = await service.initiateGroup({
+        ...baseOpts,
+        customerNumbers: ['+15551111111'],
+        fromNumbers: ['+15554444444'],
+        profile: { ...baseProfile, fanout: 1 },
+      });
+
+      await service.handleStatusCallback(result.calls[0].callSid, 'completed');
+
+      const group = await service.getGroup(result.groupId);
+      expect(group!.status).toBe('completed');
+      expect(group!.completedAt).toBeDefined();
     });
   });
 

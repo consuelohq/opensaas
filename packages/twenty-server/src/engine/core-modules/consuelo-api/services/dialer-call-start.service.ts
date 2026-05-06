@@ -9,7 +9,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
 import { isValidPhone, normalizePhone } from '@consuelo/contacts';
-import { type ParallelDialProfile } from '@consuelo/dialer';
+import { Dialer, type ParallelDialProfile } from '@consuelo/dialer';
 import { DataSource } from 'typeorm';
 
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
@@ -34,16 +34,18 @@ export type StartDialerCallInput = {
 
 export type DialerCallStartCapacity = {
   requestedFanout: number;
-  callableUniqueTargets: number;
-  availableDistinctCallerIds: number;
+  callableTargetCount: number;
+  availableCallerIdCount: number;
+  reducedCapacityReasons: string[];
+  blockedReasons: string[];
   actualFanout: number;
 };
 
 export type DialerCallStartCall = {
   callSid: string;
   contactId: string;
-  to: string;
-  from: string;
+  customerNumber: string;
+  callerId: string;
   status: string;
   position: number;
 };
@@ -78,7 +80,7 @@ type QueueTargetRow = {
   attempts: number | null;
 };
 
-const MOCK_CALLER_ID_NUMBER = '+15555550100';
+const MOCK_CALLER_ID_BASE = '+1415555010';
 const MOCK_PARALLEL_PROFILE: ParallelDialProfile = {
   id: 'balanced',
   fanout: 1,
@@ -130,8 +132,12 @@ export class DialerCallStartService {
 
       const uniqueTargets = this.dedupeTargetsByPhone(targets);
 
-      if (callMode === 'live') {
-        this.assertLiveTargetsAllowed(uniqueTargets);
+      if (callMode === 'live' || callMode === 'twilio-test') {
+        this.assertSafeTargetsAllowed(uniqueTargets);
+      }
+
+      if (callMode === 'twilio-test') {
+        this.createTwilioTestDialer();
       }
 
       const callerIds = await this.resolveCallerIds({
@@ -141,8 +147,8 @@ export class DialerCallStartService {
       });
       const capacity = this.computeCapacity({
         requestedFanout,
-        callableUniqueTargets: uniqueTargets.length,
-        availableDistinctCallerIds: callerIds.length,
+        callableTargetCount: uniqueTargets.length,
+        availableCallerIdCount: callerIds.length,
       });
 
       if (capacity.actualFanout === 0) {
@@ -192,6 +198,7 @@ export class DialerCallStartService {
         queueId,
         targets: selectedTargets,
         callerIds: selectedCallerIds,
+        callMode,
       });
 
       return {
@@ -452,7 +459,7 @@ export class DialerCallStartService {
     targetCount: number;
   }): Promise<string[]> {
     const safeFromNumbers =
-      params.callMode === 'live'
+      params.callMode === 'live' || params.callMode === 'twilio-test'
         ? this.readSafePhoneNumbersFromEnv(
             'CONSUELO_SCENARIO_SAFE_FROM_NUMBERS',
           )
@@ -470,6 +477,13 @@ export class DialerCallStartService {
 
     if (params.callMode === 'mock') {
       return this.expandMockCallerIds(params.targetCount);
+    }
+
+    if (params.callMode === 'twilio-test') {
+      this.createTwilioTestDialer();
+      throw new BadRequestException(
+        'twilio-test mode requires an explicit callerIdNumber',
+      );
     }
 
     const dialer = this.legacyDialerService.getDialer();
@@ -510,23 +524,47 @@ export class DialerCallStartService {
       return configuredNumbers;
     }
 
-    return Array.from({ length: Math.max(1, targetCount) }, (_, index) =>
-      index === 0 ? MOCK_CALLER_ID_NUMBER : `+155555501${index}`,
+    return Array.from(
+      { length: Math.max(1, targetCount) },
+      (_, index) => `${MOCK_CALLER_ID_BASE}${index}`,
     );
   }
 
   private computeCapacity(params: {
     requestedFanout: number;
-    callableUniqueTargets: number;
-    availableDistinctCallerIds: number;
+    callableTargetCount: number;
+    availableCallerIdCount: number;
   }): DialerCallStartCapacity {
     const actualFanout = Math.min(
       params.requestedFanout,
-      params.callableUniqueTargets,
-      params.availableDistinctCallerIds,
+      params.callableTargetCount,
+      params.availableCallerIdCount,
     );
+    const reducedCapacityReasons: string[] = [];
+    const blockedReasons: string[] = [];
 
-    return { ...params, actualFanout };
+    if (params.callableTargetCount < params.requestedFanout) {
+      reducedCapacityReasons.push('callable-target-capacity');
+    }
+
+    if (params.availableCallerIdCount < params.requestedFanout) {
+      reducedCapacityReasons.push('caller-id-capacity');
+    }
+
+    if (params.callableTargetCount === 0) {
+      blockedReasons.push('no-callable-targets');
+    }
+
+    if (params.availableCallerIdCount === 0) {
+      blockedReasons.push('no-available-caller-ids');
+    }
+
+    return {
+      ...params,
+      reducedCapacityReasons,
+      blockedReasons,
+      actualFanout,
+    };
   }
 
   private async createDirectQueue(params: {
@@ -623,8 +661,8 @@ export class DialerCallStartService {
       calls.push({
         callSid,
         contactId: target.contactId,
-        to: target.phone,
-        from: callerId,
+        customerNumber: target.phone,
+        callerId,
         status: 'mocked',
         position: index + 1,
       });
@@ -640,10 +678,13 @@ export class DialerCallStartService {
     queueId: string;
     targets: CallableTarget[];
     callerIds: string[];
+    callMode: DialerScenarioCallMode;
   }): Promise<DialerCallStartCall[]> {
     const lockService = this.legacyDialerService.getCallerIdLockService();
     const acquiredCallerIds: string[] = [];
     const lockCallSid = `pending:${params.sessionId}`;
+    let groupId: string | null = null;
+    let twilioDialer: Dialer | null = null;
 
     try {
       for (const callerId of params.callerIds) {
@@ -661,8 +702,14 @@ export class DialerCallStartService {
       }
 
       const baseUrl = process.env.API_BASE_URL ?? process.env.SERVER_URL ?? '';
-      const dialer = this.legacyDialerService.getDialer();
-      const result = await dialer.parallel.initiateGroup({
+      if (params.callMode === 'live') {
+        this.assertPublicCallbackBaseUrl(baseUrl);
+      }
+      twilioDialer =
+        params.callMode === 'twilio-test'
+          ? this.createTwilioTestDialer()
+          : this.legacyDialerService.getDialer();
+      const result = await twilioDialer.parallel.initiateGroup({
         customerNumbers: params.targets.map((target) => target.phone),
         queueId: params.queueId,
         contactIds: params.targets.map((target) => target.contactId),
@@ -672,21 +719,22 @@ export class DialerCallStartService {
         customerTwimlUrl: `${baseUrl}/api/v1/calls/parallel/customer-twiml`,
         profile: { ...MOCK_PARALLEL_PROFILE, fanout: params.targets.length },
       });
-
-      for (const callerId of acquiredCallerIds) {
-        await lockService.releaseLockByNumber(callerId);
-      }
+      groupId = result.groupId;
 
       const calls: DialerCallStartCall[] = [];
 
       for (const call of result.calls) {
         const target = params.targets[call.position - 1];
-
-        await lockService.acquireLock(
+        const transferred = await lockService.transferLock(
           call.fromNumber,
-          params.userId,
+          lockCallSid,
           call.callSid,
         );
+
+        if (!transferred) {
+          throw new Error('Caller ID lock transfer failed after call creation');
+        }
+
         await this.insertCallRow({
           workspaceId: params.workspaceId,
           sessionId: params.sessionId,
@@ -702,8 +750,8 @@ export class DialerCallStartService {
         calls.push({
           callSid: call.callSid,
           contactId: target.contactId,
-          to: target.phone,
-          from: call.fromNumber,
+          customerNumber: target.phone,
+          callerId: call.fromNumber,
           status: call.status,
           position: call.position,
         });
@@ -711,6 +759,21 @@ export class DialerCallStartService {
 
       return calls;
     } catch (err: unknown) {
+      if (groupId) {
+        try {
+          await twilioDialer?.parallel.terminateGroup(groupId);
+        } catch (cleanupErr: unknown) {
+          this.logger.error('[DialerCallStart] group cleanup failed', {
+            workspaceId: params.workspaceId,
+            groupId,
+            errorMessage:
+              cleanupErr instanceof Error
+                ? this.redactPhoneNumbers(cleanupErr.message)
+                : 'Unknown cleanup error',
+          });
+        }
+      }
+
       for (const callerId of acquiredCallerIds) {
         await lockService.releaseLockByNumber(callerId);
       }
@@ -746,6 +809,52 @@ export class DialerCallStartService {
     );
   }
 
+  private createTwilioTestDialer(): Dialer {
+    const accountSid = process.env.TWILIO_TEST_ACCOUNT_SID ?? '';
+    const authToken = process.env.TWILIO_TEST_AUTH_TOKEN ?? '';
+
+    if (!accountSid || !authToken) {
+      throw new BadRequestException(
+        'twilio-test mode requires TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN',
+      );
+    }
+
+    if (
+      accountSid === process.env.TWILIO_ACCOUNT_SID ||
+      authToken === process.env.TWILIO_AUTH_TOKEN
+    ) {
+      throw new BadRequestException(
+        'twilio-test mode cannot use live Twilio credentials',
+      );
+    }
+
+    return new Dialer({
+      credentials: {
+        accountSid,
+        authToken,
+      },
+      baseUrl: process.env.API_BASE_URL,
+    });
+  }
+
+  private assertPublicCallbackBaseUrl(baseUrl: string): void {
+    if (!baseUrl.startsWith('https://')) {
+      throw new BadRequestException(
+        'Live dialer mode requires a public HTTPS API_BASE_URL or SERVER_URL for Twilio callbacks',
+      );
+    }
+
+    if (
+      baseUrl.includes('127.0.0.1') ||
+      baseUrl.includes('localhost') ||
+      baseUrl.includes('::1')
+    ) {
+      throw new BadRequestException(
+        'Live dialer mode requires a callback URL reachable by Twilio',
+      );
+    }
+  }
+
   private readValidPhoneNumber(value: string): string {
     const normalizedPhoneNumber = normalizePhone(value);
 
@@ -756,7 +865,7 @@ export class DialerCallStartService {
     return normalizedPhoneNumber;
   }
 
-  private assertLiveTargetsAllowed(targets: CallableTarget[]): void {
+  private assertSafeTargetsAllowed(targets: CallableTarget[]): void {
     const safeToNumbers = this.readSafePhoneNumbersFromEnv(
       'CONSUELO_SCENARIO_SAFE_TO_NUMBERS',
     );
