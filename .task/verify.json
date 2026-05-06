@@ -1,21 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/website/fix-mobile-proof-svg-trigger-timing",
+  "branch": "task/website/restore-square-heatmap-svg-only",
   "base": "stream/website",
-  "headSha": "33ae639e1215487b6092532e9c8021ce5002ff53",
-  "changeHash": "903a9ccc5ddfd2b02d3ba97d2a371db0838af4fbab146637f04d9ffac05de61f",
+  "headSha": "3d0c412ba8cbf98fc95330dd492d2bafd9c645a5",
+  "changeHash": "caa4d4db61569dad5f35d1d50a00f3a530010691ce1b6e4d5b378dba43d853a8",
   "changedFiles": [
     "packages/consuelo-website/src/components/launch/LaunchStats.astro",
     "packages/consuelo-website/src/lib/motion.ts",
     "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T23:00:39.821Z",
+  "verifiedAt": "2026-05-06T00:09:28.691Z",
   "review": {
     "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

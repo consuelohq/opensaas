@@ -89,7 +89,7 @@ const thinBars = Array.from({ length: numBars }).map((_, i) => {
     <div class="launch-stats__grid">
       {launchMetrics.map((metric, index) => (
         <article class="launch-stats__metric">
-          <div class="launch-stats__chart" aria-hidden="true" data-motion="svg-grid">
+          <div class="launch-stats__chart" aria-hidden="true" data-motion="svg-grid" data-motion-chart={metric.chart}>
             {metric.chart === 'line' && (
               <svg viewBox="0 0 180 140" role="presentation" data-motion="svg-grid">
                 {joyplotLines.map((line) => (
@@ -99,9 +99,9 @@ const thinBars = Array.from({ length: numBars }).map((_, i) => {
             )}
 
             {metric.chart === 'dots' && (
-              <svg viewBox="0 0 180 140" role="presentation" data-motion="svg-grid">
-                {squares.map((sq) => (
-                  <rect x={sq.x} y={sq.y} width="4" height="4" class="is-filled" data-motion="svg-square" data-motion-opacity={sq.opacity} style={`opacity: ${sq.opacity}`} />
+              <svg viewBox="0 0 180 140" role="presentation" data-motion="svg-grid" data-motion-grid="heatmap" data-motion-columns={cols} data-motion-rows={rows}>
+                {squares.map((sq, squareIndex) => (
+                  <rect x={sq.x} y={sq.y} width="4" height="4" class="is-filled" data-motion="svg-square" data-motion-index={squareIndex} data-motion-opacity={sq.opacity} style={`opacity: ${sq.opacity}`} />
                 ))}
               </svg>
             )}
