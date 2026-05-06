@@ -1,13 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/website/fix-hero-headline-visibility-after-boot-motion",
+  "branch": "task/website/restore-square-heatmap-svg-only",
   "base": "stream/website",
-  "headSha": "170ef3590cbcbf7675770076838cc3e5bbfa578e",
-  "changeHash": "89032855706b7c836856a8cf3de2a4cb1e1cbb180db27719807d59dbbb9be479",
+  "headSha": "3d0c412ba8cbf98fc95330dd492d2bafd9c645a5",
+  "changeHash": "caa4d4db61569dad5f35d1d50a00f3a530010691ce1b6e4d5b378dba43d853a8",
   "changedFiles": [
-    "packages/consuelo-website/src/lib/motion.ts"
+    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+    "packages/consuelo-website/src/lib/motion.ts",
+    "packages/consuelo-website/src/pages/index.astro"
   ],
-  "verifiedAt": "2026-05-05T07:12:48.349Z",
+  "verifiedAt": "2026-05-06T00:09:28.691Z",
   "review": {
     "skipped": true,
     "passed": true

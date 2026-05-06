@@ -171,9 +171,9 @@ export const launchAnnouncement: LaunchAnnouncement = {
 };
 
 export const launchHero: LaunchHeroContent = {
-  title: 'The shared revenue system for reps and AI agents.',
+  title: 'Decision infrastructure for revenue teams.',
   description:
-        'Keep your sales context, calling activity, GTM data, and internal brain in one place so humans and agents can do work from the same system.',
+        'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
 };
 
 export const launchTabs: LaunchTab[] = [
@@ -391,8 +391,8 @@ export const launchFaqItems: LaunchFaqItem[] = [
 
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'Mercury',
-  title: 'Hosted calling and AI, ready to go.',
-  intro: 'Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.',
+  title: 'Managed telephony and AI without the setup work.',
+  intro: 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.',
   primaryLabel: 'Learn about Mercury',
   primaryHref: siteLinks.mercury,
   secondaryLabel: '',
