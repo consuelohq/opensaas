@@ -5,9 +5,9 @@
 You are working inside the workspace MCP app. The app exposes exactly two tools:
 
 - `workspace.get_steering()`
-- `workspace.sandbox_exec({ command, timeout })`
+- `workspace.call({ tool, taskSession?, input?, timeout? })`
 
-Every command in this document is run through `sandbox_exec`. When you see a command string such as:
+Every command in this document is run through `call`. When you see a command string such as:
 
 ```bash
 workspace stream.context '{"area":"workspace-agents"}'
@@ -16,22 +16,22 @@ workspace stream.context '{"area":"workspace-agents"}'
 call it as:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
   timeout: 120
 })
 ```
 
-**This wrapper is mandatory.** `workspace stream.context ...` is not a direct MCP tool call and it is not a shell command agents should run outside the workspace app. Inside the workspace app, `sandbox_exec` is the transport layer and the `workspace <tool> '<json>'` command is the typed facade entrypoint. If a command does not work through `sandbox_exec`, test it there and fix the command or implementation.
+**This wrapper is mandatory.** `workspace stream.context ...` is not a direct MCP tool call and it is not a shell command agents should run outside the workspace app. Inside the workspace app, `call` is the transport layer and the `workspace <tool> '<json>'` command is the typed facade entrypoint. If a command does not work through `call`, test it there and fix the command or implementation.
 
 This file is generated from `packages/workspace/tooling/tool-manifest.json`. The typed facade validates inputs, invokes the existing Bun workspace scripts, and wraps every result in the standard tool envelope.
 
 ## quick start
 
-Inside the workspace app, invoke the same tool through `sandbox_exec`:
+Inside the workspace app, invoke the same tool through `call`:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace fs.read '{\"path\":\"packages/workspace/package.json\"}'",
   timeout: 120
 })
@@ -5857,9 +5857,9 @@ The decision engine wrappers call the existing scripts as-is: `workspace.explore
 
 Do not call lower-level workspace scripts from the workspace app during normal work.
 
-Use the facade command instead: `workspace.sandbox_exec({ command: "workspace fs.read '{\"branch\":\"task/x\",\"path\":\"packages/workspace/package.json\"}'", timeout: 120 })`.
+Use the facade command instead: `workspace.call({ command: "workspace fs.read '{\"branch\":\"task/x\",\"path\":\"packages/workspace/package.json\"}'", timeout: 120 })`.
 
 ## final reminder
 
-Every workspace operation above is invoked through `workspace.sandbox_exec({ command, timeout })`. There are no per-operation MCP tools beyond `get_steering` and `sandbox_exec`. The command string should use `workspace <tool.name> '<json-input>'`; omit the JSON input only when the tool accepts an empty object. The workspace app is the environment, so work inside it and fix any command that does not run there.
+Every workspace operation above is invoked through `workspace.call({ tool, taskSession?, input?, timeout? })`. There are no per-operation MCP tools beyond `get_steering` and `call`. The command string should use `workspace <tool.name> '<json-input>'`; omit the JSON input only when the tool accepts an empty object. The workspace app is the environment, so work inside it and fix any command that does not run there.
 

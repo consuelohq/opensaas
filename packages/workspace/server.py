@@ -14,6 +14,7 @@ from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
 
 from tools import sandbox as sandbox_mod
+import subprocess
 
 try:
     from langsmith import Client as LSClient
@@ -103,16 +104,57 @@ def _read_steering() -> str:
     return content
 
 
+_steering_loaded = False
+
 @mcp.tool(annotations=RO)
-def get_steering() -> str:
-    """mandatory first call. returns the steering file and workspace scripts reference."""
+def get_steering() -> dict | str:
+    """bootstrap-only call. returns steering once per server session."""
+    global _steering_loaded
+    if _steering_loaded:
+        return {
+            'ok': True,
+            'code': 'ALREADY_LOADED',
+            'message': 'Steering is already loaded for this session. Use workspace.call for workspace operations.',
+            'data': {'loaded': True},
+        }
+    _steering_loaded = True
     return _traced_call('get_steering', 'tool', _read_steering)
 
 
+def _workspace_scripts_dir() -> str:
+    return os.path.join(APP_DIR, 'scripts')
+
+
+def _workspace_call(tool: str, input: dict | None = None, timeout: int = 120) -> dict:
+    payload = json.dumps(input or {}, separators=(',', ':'))
+    script = 'tool-batch.ts' if tool == 'batch' else 'tool-runner.ts'
+    args = ['bun', os.path.join(_workspace_scripts_dir(), script)]
+    args.extend([payload] if tool == 'batch' else [tool, payload])
+    result = subprocess.run(args, capture_output=True, text=True, cwd=APP_DIR, timeout=timeout)
+    stdout_text = result.stdout.strip()
+    try:
+        parsed = json.loads(stdout_text) if stdout_text else {}
+    except Exception:
+        parsed = {
+            'ok': result.returncode == 0,
+            'code': 'COMMAND_FAILED' if result.returncode else 'OK',
+            'message': 'command completed' if result.returncode == 0 else 'command failed',
+            'data': {'raw': stdout_text},
+        }
+    if isinstance(parsed, dict):
+        parsed['stderr'] = parsed.get('stderr', '') or result.stderr
+        if 'exitCode' not in parsed:
+            parsed['exitCode'] = result.returncode
+    return parsed
+
+
 @mcp.tool(annotations=RO)
-def sandbox_exec(command: str, timeout: int = 120) -> dict | str:
-    """run a bash command on the host machine inside the configured workspace."""
-    return _traced_call('sandbox_exec', 'tool', sandbox_mod.exec, command=command, timeout=timeout)
+def call(tool: str, taskSession: str | None = None, input: dict | None = None, timeout: int = 120) -> dict:
+    """typed workspace execution surface."""
+    effective_input = dict(input or {})
+    if taskSession and 'taskSession' not in effective_input:
+        effective_input['taskSession'] = taskSession
+    return _traced_call('call', 'tool', _workspace_call, tool=tool, input=effective_input, timeout=timeout)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

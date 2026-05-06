@@ -463,12 +463,12 @@ build the review packet generator first. the packet must collect the durable dat
 the workspace app exposes exactly two mcp tools:
 
 - `workspace.get_steering()`
-- `workspace.sandbox_exec({ command, timeout })`
+- `workspace.call({ tool, taskSession?, input?, timeout? })`
 
-all workspace operations run through `sandbox_exec`. the command string inside `sandbox_exec` uses the workspace facade cli:
+all workspace operations run through `call`. the command string inside `call` uses the workspace facade cli:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
   timeout: 120
 })
@@ -483,13 +483,13 @@ workspace <tool.name> '<json-input>'
 omit the json input only when the tool accepts an empty object:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace status",
   timeout: 120
 })
 ```
 
-there are no separate mcp tools for `stream.context`, `fs.read`, `task.current`, or any other workspace operation. `sandbox_exec` is the transport layer. `workspace <tool.name>` is the command inside that transport.
+there are no separate mcp tools for `stream.context`, `fs.read`, `task.current`, or any other workspace operation. `call` is the transport layer. `workspace <tool.name>` is the command inside that transport.
 
 the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, and command mappings.
 
@@ -505,21 +505,21 @@ Do not call get_steering again unless:
 quick reference:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace stream.list", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace stream.context '{\"area\":\"workspace-agents\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
+workspace.call({ command: "workspace stream.list", timeout: 120 })
+workspace.call({ command: "workspace stream.context '{\"area\":\"workspace-agents\"}'", timeout: 120 })
+workspace.call({ command: "workspace status", timeout: 120 })
+workspace.call({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
+workspace.call({ command: "workspace decideNext", timeout: 120 })
+workspace.call({ command: "workspace confidenceScore", timeout: 120 })
+workspace.call({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
+workspace.call({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
+workspace.call({ command: "workspace task.current", timeout: 120 })
 ```
 
 for batch operations:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"src/foo.ts\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"TODO\",\"paths\":[\"packages/\"]}}]'",
   timeout: 120
 })
@@ -546,9 +546,9 @@ tool categories:
 - **system** - workspace management: server, doctor, status, tmp, agent
 - **mac** - local machine operations that are not repo-scoped
 
-if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure inside `sandbox_exec` instead of silently routing around it.
+if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure inside `call` instead of silently routing around it.
 
-raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
+raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `call` when a manifest tool exists.
 
 ## how to think: the decision.md
 
@@ -577,8 +577,8 @@ read `packages/workspace/decision.md` before relying on the system. that file is
 use tools in this order unless the task clearly requires otherwise:
 
 1. workspace steering and sandbox
-2. repo files through `workspace fs.*` commands inside `sandbox_exec`
-3. project memory through `workspace context.*` commands inside `sandbox_exec`
+2. repo files through `workspace fs.*` commands inside `call`
+3. project memory through `workspace context.*` commands inside `call`
 4. docs in the repo
 5. browser/production verification
 6. web search for fresh or external information
@@ -599,12 +599,12 @@ for repo work, use the scripts. agents that skip this loop are guessing instead 
 branch auto-detection starts with the strongest source and stops at the first valid match.
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace task.start '{\"area\":\"workspace-agents\",\"title\":\"fix review comments\",\"startFrom\":\"stream\"}'",
   timeout: 120
 })
 
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace fs.read '{\"path\":\"packages/workspace/package.json\"}'",
   timeout: 120
 })
@@ -615,17 +615,17 @@ after `task.start`, branch-aware tools auto-resolve the branch from the pinned/c
 decision loop:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"why is task push failing?\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace exploit", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confirm '{\"verify\":true}'", timeout: 120 })
+workspace.call({ command: "workspace explore '{\"query\":\"why is task push failing?\"}'", timeout: 120 })
+workspace.call({ command: "workspace decideNext", timeout: 120 })
+workspace.call({ command: "workspace confidenceScore", timeout: 120 })
+workspace.call({ command: "workspace exploit", timeout: 120 })
+workspace.call({ command: "workspace confirm '{\"verify\":true}'", timeout: 120 })
 ```
 
 batch operations:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"packages/workspace/package.json\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"task:push\",\"paths\":[\"packages/workspace/SCRIPTS.md\"]}}]'",
   timeout: 120
 })
@@ -634,11 +634,11 @@ workspace.sandbox_exec({
 review pipeline:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
+workspace.call({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
+workspace.call({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
 ```
 
-if a workspace command fails, test the failing command through `sandbox_exec`, read the envelope, inspect the docs or implementation, and fix the invocation or command. do not silently route around the workspace app.
+if a workspace command fails, test the failing command through `call`, read the envelope, inspect the docs or implementation, and fix the invocation or command. do not silently route around the workspace app.
 
 ---
 
@@ -1053,7 +1053,7 @@ verifying work — never ship without checking
 
 every change gets verified. how depends on what you changed:
 
-code changes — run `workspace review.run` through `sandbox_exec`
+code changes — run `workspace review.run` through `call`
 
 deployed changes — sleep, then check. after merging or deploying, sleep 300 (5 min for railway), then verify it's actually live with a workspace command, browser verification, or the appropriate production log tool. don't assume the deploy worked — confirm it.
 
@@ -1067,7 +1067,7 @@ deployed changes — sleep, then check. after merging or deploying, sleep 300 (5
 
 for command construction:
 
-never nest more than 2 levels of quotes in a single sandbox_exec call
+never nest more than 2 levels of quotes in a single call call
 heredocs don't survive JSON. the \n in a JSON string value is a literal backslash-n, not a newline.
 
 ## Workspace tooling and facade change doctrine
@@ -1097,9 +1097,9 @@ When embedding that command inside JSON, escape only the JSON double quotes arou
   "command": "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING"
 }
 
-For workspace.sandbox_exec, the full call shape is:
+For workspace.call, the full call shape is:
 
-workspace.sandbox_exec({
+workspace.call({
   command: "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING",
   timeout: 120
 })

@@ -5,9 +5,9 @@
 you are working inside the workspace mcp app. the app exposes exactly two tools:
 
 - `workspace.get_steering()`
-- `workspace.sandbox_exec({ command, timeout })`
+- `workspace.call({ tool, taskSession?, input?, timeout? })`
 
-every command in this document runs through `sandbox_exec`. when you see a workspace command such as:
+every command in this document runs through `call`. when you see a workspace command such as:
 
 ```bash
 workspace explore '{"query":"how does auth work"}'
@@ -16,13 +16,13 @@ workspace explore '{"query":"how does auth work"}'
 call it as:
 
 ```ts
-workspace.sandbox_exec({
+workspace.call({
   command: "workspace explore '{\"query\":\"how does auth work\"}'",
   timeout: 120
 })
 ```
 
-**this wrapper is mandatory.** `workspace explore ...` is the command string passed to `sandbox_exec`; it is not a separate mcp tool. there are no per-operation mcp tools beyond `get_steering` and `sandbox_exec`. if a command does not work through `sandbox_exec`, test it there and fix the invocation or implementation.
+**this wrapper is mandatory.** `workspace explore ...` is the command string passed to `call`; it is not a separate mcp tool. there are no per-operation mcp tools beyond `get_steering` and `call`. if a command does not work through `call`, test it there and fix the invocation or implementation.
 
 alignment is the number one thing this system protects.
 
