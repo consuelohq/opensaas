@@ -391,8 +391,8 @@ export const launchFaqItems: LaunchFaqItem[] = [
 
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'Mercury',
-  title: 'Hosted calling and AI, ready to go.',
-  intro: 'Mercury is the hosted plan for teams that want to get live fast. It gives you Predictive dialer, AI models from OpenAI and Groq, and hosting on Railway without making you manage provider setup or infrastructure on day one.',
+  title: 'Calling and AI without the setup work.',
+  intro: 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.',
   primaryLabel: 'Learn about Mercury',
   primaryHref: siteLinks.mercury,
   secondaryLabel: '',
