@@ -19,7 +19,7 @@ const { pageSections = [] } = Astro.props as Props;
 const hasPageSections = pageSections.length > 0;
 ---
 
-<header class="launch-header launch-section" data-launch-header>
+<header class="launch-header launch-section" data-launch-header data-motion="hero-header">
   <div class="launch-content launch-content--wide launch-header__inner">
     <a class="launch-header__brand launch-mono" href="/">consuelo.</a>
 
@@ -244,6 +244,20 @@ const hasPageSections = pageSections.length > 0;
     backdrop-filter: blur(16px);
     background: color-mix(in srgb, var(--launch-bg) 90%, transparent);
     transition: background 180ms ease, border-color 180ms ease;
+  }
+
+  :global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
+    opacity: 0;
+    transform: translate3d(0, -0.65rem, 0);
+    will-change: opacity, transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html[data-hero-motion-ready='true']) .launch-header[data-motion='hero-header'] {
+      opacity: 1;
+      transform: none;
+      will-change: auto;
+    }
   }
 
   .launch-header.is-scrolled {

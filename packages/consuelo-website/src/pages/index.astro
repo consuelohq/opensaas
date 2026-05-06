@@ -34,8 +34,20 @@ const schemaEntries = [
   image="/og.png"
   schemaEntries={schemaEntries}
 >
+  <script is:inline>
+    (() => {
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.dataset.heroMotionReady = 'true';
+      }
+    })();
+  </script>
   <LaunchHeader pageSections={launchPageSections} />
   <LaunchHero sectionId="intro" />
+  <script>
+    import { bootLaunchHeroMotion } from '../lib/motion';
+
+    bootLaunchHeroMotion();
+  </script>
   <LaunchOverview sectionId="overview" />
   <LaunchStats sectionId="proof" />
   <LaunchPrivacy sectionId="privacy" />

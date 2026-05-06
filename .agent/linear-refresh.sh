@@ -10,17 +10,24 @@ else
   exit 1
 fi
 
-if [ "${1:-}" = "--opencode" ]; then
-  TOKEN_FILE="$AGENT_DIR/.opencode-token.json"
-  CLIENT_ID="9b2b83a4ca6cebc0ce9df6a2ad4ed834"
-  CLIENT_SECRET="${OPENCODE_OAUTH_CLIENT_SECRET:-}"
-  LABEL="opencode"
-else
-  TOKEN_FILE="$AGENT_DIR/.oauth-token.json"
-  CLIENT_ID="83e3d4cd417ac427494d5a811438c4cb"
-  CLIENT_SECRET="${LINEAR_OAUTH_CLIENT_SECRET:-}"
-  LABEL="kiro"
-fi
+case "${1:-}" in
+  --opencode|--chatgpt)
+    TOKEN_FILE="$AGENT_DIR/.chatgpt-token.json"
+    CLIENT_ID="${CHATGPT_OAUTH_CLIENT_ID:-${OPENCODE_OAUTH_CLIENT_ID:-9b2b83a4ca6cebc0ce9df6a2ad4ed834}}"
+    CLIENT_SECRET="${CHATGPT_OAUTH_CLIENT_SECRET:-${OPENCODE_OAUTH_CLIENT_SECRET:-}}"
+    LABEL="chatgpt"
+    ;;
+  "")
+    TOKEN_FILE="$AGENT_DIR/.oauth-token.json"
+    CLIENT_ID="${LINEAR_OAUTH_CLIENT_ID:-83e3d4cd417ac427494d5a811438c4cb}"
+    CLIENT_SECRET="${LINEAR_OAUTH_CLIENT_SECRET:-}"
+    LABEL="kiro"
+    ;;
+  *)
+    echo "usage: $0 [--chatgpt|--opencode]" >&2
+    exit 1
+    ;;
+esac
 
 if [ -z "$CLIENT_SECRET" ]; then
   echo "error: missing OAuth client secret for $LABEL in $AGENT_DIR/config.sh" >&2
@@ -43,7 +50,15 @@ RESPONSE=$(curl -s -X POST https://api.linear.app/oauth/token \
   -d "grant_type=refresh_token&refresh_token=$REFRESH_TOKEN&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET")
 
 if echo "$RESPONSE" | jq -e '.access_token' > /dev/null 2>&1; then
-  echo "$RESPONSE" | jq '.' > "$TOKEN_FILE"
+  TMP_FILE="$(mktemp)"
+  echo "$RESPONSE" | jq --slurpfile old "$TOKEN_FILE" '
+    . + {
+      user_id: $old[0].user_id,
+      user_name: $old[0].user_name,
+      note: $old[0].note
+    } | with_entries(select(.value != null))
+  ' > "$TMP_FILE"
+  mv "$TMP_FILE" "$TOKEN_FILE"
   echo "$LABEL token refreshed ✅"
 else
   echo "error refreshing $LABEL token: $RESPONSE" >&2
