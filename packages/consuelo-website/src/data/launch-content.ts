@@ -391,7 +391,7 @@ export const launchFaqItems: LaunchFaqItem[] = [
 
 export const launchMercury: LaunchMercuryContent = {
   eyebrow: 'Mercury',
-  title: 'Calling and AI without the setup work.',
+  title: 'Managed telephony and AI without the setup work.',
   intro: 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.',
   primaryLabel: 'Learn about Mercury',
   primaryHref: siteLinks.mercury,

@@ -1,8 +1,8 @@
-# align mercury homepage promo copy
+# update mercury headline to managed telephony
 
-branch: `task/website/align-mercury-homepage-promo-copy`
+branch: `task/website/update-mercury-headline-to-managed-telephony`
 stream: `stream/website`
-pr: https://github.com/consuelohq/opensaas/pull/339
+pr: https://github.com/consuelohq/opensaas/pull/341
 started: 2026-05-06
 
 ## acceptance criteria
@@ -46,21 +46,19 @@ bun run task:finish
 
 ## acceptance criteria
 
-- [x] Align homepage Mercury promo heading with Mercury page heading.
-- [x] Align homepage Mercury promo intro with Mercury page copy.
+- [x] Replace the Mercury heading copy everywhere it appears.
 - [x] Build website.
-- [ ] Push, promote, merge, deploy, and verify production homepage + Mercury page.
+- [ ] Review, push, promote, merge, deploy, and verify production.
 
 ## plan
 
-1. Patch `launchMercury` copy in `launch-content.ts`.
-2. Build website.
-3. Promote via stream/website, merge, deploy, and verify production.
+1. Replace `Calling and AI without the setup work.` with `Managed telephony and AI without the setup work.` in homepage Mercury promo data and Mercury page hero.
+2. Build the Astro website.
+3. Promote through stream/website, merge, deploy, and verify live copy.
 
 ## key decisions
 
-- The homepage Mercury promo reused older Mercury copy and was visible in production after the first deploy.
-- Use the same approved copy as the Mercury page for consistency.
+- Keep body copy unchanged; ko only requested the headline language.
 
 ## validation
 
