@@ -10760,8 +10760,456 @@
         "source": "task:fs",
         "task_branch": "task/website/fix-mobile-proof-svg-trigger-timing"
       }
+    },
+    {
+      "id": "bcf0d112-1dbe-4328-8128-6f4d7e39f3be",
+      "occurred_at": "2026-05-06T04:46:03.700Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "d1b9d2c0-07de-4796-8407-630e699c16e2",
+      "occurred_at": "2026-05-06T04:46:04.027Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "43c45204-8c69-4ca1-b56b-00f83eef75a0",
+      "occurred_at": "2026-05-06T04:46:04.336Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "d545744a-bd13-4f04-ba41-387a272e93eb",
+      "occurred_at": "2026-05-06T04:46:38.370Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "92a36afd-6bc0-48b9-8d40-902998cff981",
+      "occurred_at": "2026-05-06T04:46:51.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "c66f35dd-2a6e-43e0-9497-a372ceb5f633",
+      "occurred_at": "2026-05-06T04:47:18.497Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "c7f36f30-b1a2-4f2f-a452-fbfa58ef6574",
+      "occurred_at": "2026-05-06T04:47:41.370Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-runner.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "9ed3ec92-75b1-421d-a0b2-3ca5b805c2bb",
+      "occurred_at": "2026-05-06T04:47:45.347Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "dfb09fa5-e3b9-4478-b552-1dce122e1d9d",
+      "occurred_at": "2026-05-06T04:51:13.016Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "68379af2-4235-4c77-91b3-df12be18d310",
+      "occurred_at": "2026-05-06T04:51:18.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "eebdfd62-f118-4311-ae3f-c29b1503881a",
+      "occurred_at": "2026-05-06T05:00:38.095Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "eec61159-7ade-4102-8668-34f05b438b9b",
+      "occurred_at": "2026-05-06T05:00:50.335Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "bf65c192-2ec5-46a6-9aea-8a6cc1bdebf3",
+      "occurred_at": "2026-05-06T05:01:02.907Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-meta.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "6305c21e-0a78-4d99-8147-2c8a93baa544",
+      "occurred_at": "2026-05-06T05:01:16.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-exec.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "fb182c29-14c1-46cb-908b-bc7eb27f2617",
+      "occurred_at": "2026-05-06T05:01:24.863Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "283ca174-a844-40d2-a9b9-2623e3b01e45",
+      "occurred_at": "2026-05-06T05:01:36.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "9288831c-61db-4371-b54f-8d880c744bb0",
+      "occurred_at": "2026-05-06T05:01:49.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+      "occurred_at": "2026-05-06T05:02:05.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "e3e08c46-78cb-4b8f-a91f-9c98ae30d009",
+      "occurred_at": "2026-05-06T05:04:05.586Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "83b502a0-b5e7-4bf8-860e-09d04bb71063",
+      "occurred_at": "2026-05-06T05:04:10.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "f20ccc89-e788-401b-955b-9741ddb98464",
+      "occurred_at": "2026-05-06T05:04:17.055Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "623315f0-0da0-4de1-8090-a57d3a91f720",
+      "occurred_at": "2026-05-06T05:17:11.385Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "964248f5-6b1a-4a3c-985c-3a627d696114",
+      "occurred_at": "2026-05-06T05:17:19.271Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+      "occurred_at": "2026-05-06T05:17:25.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "8301a6dd-0b02-4a68-ac29-f817fe248d66",
+      "occurred_at": "2026-05-06T05:17:34.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "c538813c-6cc2-4883-8c69-78c76497467a",
+      "occurred_at": "2026-05-06T05:17:47.085Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "254428ef-2828-4a20-aa15-698c1fac3aa9",
+      "occurred_at": "2026-05-06T05:19:06.854Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "1bce0b8c-1713-4b38-a203-ed01226ea199",
+      "occurred_at": "2026-05-06T05:20:07.696Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-05T22:56:50.337Z"
+  "updated_at": "2026-05-06T05:20:07.746Z"
 }

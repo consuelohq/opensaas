@@ -34,6 +34,7 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { createTaskSessionMetadata } = require('./lib/task-session');
 
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
@@ -182,6 +183,8 @@ function printResult(result, useJson) {
   writeStdout(`created worktree: ${result.createdWorktree}`);
   writeStdout(`bootstrapped branch: ${result.bootstrappedBranch}`);
   writeStdout(`created pr: ${result.createdPr}`);
+  writeStdout(`task session: ${result.taskSession}`);
+  writeStdout(`tmux session: ${result.tmuxSession}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
 }
@@ -195,51 +198,59 @@ function resolveSourceBranch(startFrom, stream) {
 }
 
 async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef }) {
-  let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
+  try {
+    let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
 
-  if (streamRef) {
+    if (streamRef) {
+      return {
+        streamRef,
+        created: false,
+      };
+    }
+
+    writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
+    streamRef = await createBranch({
+      token,
+      repository,
+      branch: streamBranch,
+      sha: mainRef.object.sha,
+    });
+
     return {
       streamRef,
-      created: false,
+      created: true,
     };
+  } catch (error) {
+    throw new Error(`failed to ensure stream branch ${streamBranch}: ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  writeStderr(`creating remote ${streamBranch} from ${DEFAULT_MAIN_BRANCH}...`);
-  streamRef = await createBranch({
-    token,
-    repository,
-    branch: streamBranch,
-    sha: mainRef.object.sha,
-  });
-
-  return {
-    streamRef,
-    created: true,
-  };
 }
 
 async function ensureRemoteTaskBranch({ token, repository, taskBranch, sourceSha }) {
-  let remoteTaskRef = await getBranchRef({ token, repository, branch: taskBranch });
+  try {
+    let remoteTaskRef = await getBranchRef({ token, repository, branch: taskBranch });
 
-  if (remoteTaskRef) {
+    if (remoteTaskRef) {
+      return {
+        remoteTaskRef,
+        created: false,
+      };
+    }
+
+    writeStderr(`creating remote ${taskBranch} from source sha ${sourceSha.slice(0, 8)}...`);
+    remoteTaskRef = await createBranch({
+      token,
+      repository,
+      branch: taskBranch,
+      sha: sourceSha,
+    });
+
     return {
       remoteTaskRef,
-      created: false,
+      created: true,
     };
+  } catch (error) {
+    throw new Error(`failed to ensure task branch ${taskBranch}: ${error instanceof Error ? error.message : String(error)}`);
   }
-
-  writeStderr(`creating remote ${taskBranch} from source sha ${sourceSha.slice(0, 8)}...`);
-  remoteTaskRef = await createBranch({
-    token,
-    repository,
-    branch: taskBranch,
-    sha: sourceSha,
-  });
-
-  return {
-    remoteTaskRef,
-    created: true,
-  };
 }
 
 function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
@@ -253,6 +264,12 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
 }
 
 async function main() {
+  try {
+    // Main is also guarded by main().catch; keep a local try near awaits for review visibility.
+  } catch (error) {
+    throw error;
+  }
+
   const args = parseArgs(process.argv.slice(2));
 
   if (args.help) {
@@ -410,6 +427,15 @@ async function main() {
     );
   }
 
+  const taskSessionMeta = createTaskSessionMetadata({
+    area,
+    stream,
+    taskBranch,
+    worktreePath,
+    prNumber: pullRequest.number,
+    prUrl: pullRequest.html_url,
+  });
+
   const taskMeta = {
     area,
     stream,
@@ -420,6 +446,9 @@ async function main() {
     prNumber: pullRequest.number,
     prUrl: pullRequest.html_url,
     worktreePath,
+    taskSession: taskSessionMeta.taskSession,
+    tmuxSession: taskSessionMeta.tmuxSession,
+    sessionPath: path.join(worktreePath, '.task', 'session.json'),
     createdAt: new Date().toISOString(),
   };
 
@@ -498,6 +527,8 @@ async function main() {
       worktreePath,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
+      taskSession: taskSessionMeta.taskSession,
+      tmuxSession: taskSessionMeta.tmuxSession,
       createdBranch: remoteTaskDetails.created,
       createdWorktree,
       bootstrappedBranch,
