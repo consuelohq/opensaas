@@ -1,5 +1,8 @@
-import { StoppingModelService, type StoppingModelStore } from '@consuelo/dialer';
-import type { CallTimingModel } from '@consuelo/dialer';
+import {
+  type CallTimingModel,
+  StoppingModelService,
+  type StoppingModelStore,
+} from '@consuelo/dialer';
 
 export type RetryStrategy = 'none' | 'double-dial-no-answer';
 
@@ -20,38 +23,80 @@ export type RetryPolicyDecision = {
   delaySeconds: number;
   strategy: RetryStrategy;
   reason: string;
+  retryStrategy: RetryStrategy;
+  retryScheduledAt: string | null;
+  retryReason: string | null;
 };
 
-const STOPPING_MODEL_CACHE = new Map<string, StoppingModelService>();
+const STOPPING_MODEL_CACHE = new WeakMap<
+  StoppingModelStore,
+  StoppingModelService
+>();
 
-function getStoppingModelService(store: StoppingModelStore): StoppingModelService {
-  const key = 'default';
-  if (!STOPPING_MODEL_CACHE.has(key)) {
-    STOPPING_MODEL_CACHE.set(key, new StoppingModelService(store));
+const createRetryDecision = (
+  input: {
+    shouldRetry: boolean;
+    delaySeconds: number;
+    strategy: RetryStrategy;
+    reason: string;
+    retryReason: string;
+  },
+  evaluatedAt: Date,
+): RetryPolicyDecision => {
+  const retryScheduledAt = input.shouldRetry
+    ? new Date(evaluatedAt.getTime() + input.delaySeconds * 1000).toISOString()
+    : null;
+
+  return {
+    shouldRetry: input.shouldRetry,
+    delaySeconds: input.delaySeconds,
+    strategy: input.strategy,
+    reason: input.reason,
+    retryStrategy: input.strategy,
+    retryScheduledAt,
+    retryReason: input.retryReason,
+  };
+};
+
+const getStoppingModelService = (
+  store: StoppingModelStore,
+): StoppingModelService => {
+  if (!STOPPING_MODEL_CACHE.has(store)) {
+    STOPPING_MODEL_CACHE.set(store, new StoppingModelService(store));
   }
-  return STOPPING_MODEL_CACHE.get(key)!;
-}
+  return STOPPING_MODEL_CACHE.get(store)!;
+};
 
-export async function evaluateRetryPolicy(
+export const evaluateRetryPolicy = async (
   input: RetryPolicyInput,
   stoppingModelStore: StoppingModelStore,
-): Promise<RetryPolicyDecision> {
+): Promise<RetryPolicyDecision> => {
+  const evaluatedAt = input.evaluatedAt ?? new Date();
+
   if (input.outcome === 'answered') {
-    return {
-      shouldRetry: false,
-      delaySeconds: 0,
-      strategy: 'none',
-      reason: 'Call was answered',
-    };
+    return createRetryDecision(
+      {
+        shouldRetry: false,
+        delaySeconds: 0,
+        strategy: 'none',
+        reason: 'Call was answered',
+        retryReason: 'answered',
+      },
+      evaluatedAt,
+    );
   }
 
   if (input.attemptsUsed >= input.maxAttempts) {
-    return {
-      shouldRetry: false,
-      delaySeconds: 0,
-      strategy: 'none',
-      reason: `Maximum attempts (${input.maxAttempts}) reached`,
-    };
+    return createRetryDecision(
+      {
+        shouldRetry: false,
+        delaySeconds: 0,
+        strategy: 'none',
+        reason: `Maximum attempts (${input.maxAttempts}) reached`,
+        retryReason: 'max_attempts_reached',
+      },
+      evaluatedAt,
+    );
   }
 
   const nextAttempt = input.attemptsUsed + 1;
@@ -68,36 +113,52 @@ export async function evaluateRetryPolicy(
     if (nextAttempt <= capFallback) {
       const baseDelay = 30;
       const jitter = Math.random() * 10;
-      return {
-        shouldRetry: true,
-        delaySeconds: baseDelay + jitter,
-        strategy: 'double-dial-no-answer',
-        reason: `Insufficient data for attempt ${nextAttempt}, using cap fallback`,
-      };
+      return createRetryDecision(
+        {
+          shouldRetry: true,
+          delaySeconds: baseDelay + jitter,
+          strategy: 'double-dial-no-answer',
+          reason: `Insufficient data for attempt ${nextAttempt}, using cap fallback`,
+          retryReason: 'insufficient_data_cap_fallback',
+        },
+        evaluatedAt,
+      );
     }
-    return {
-      shouldRetry: false,
-      delaySeconds: 0,
-      strategy: 'none',
-      reason: 'Insufficient data and beyond fallback cap',
-    };
+    return createRetryDecision(
+      {
+        shouldRetry: false,
+        delaySeconds: 0,
+        strategy: 'none',
+        reason: 'Insufficient data and beyond fallback cap',
+        retryReason: 'insufficient_data_beyond_cap',
+      },
+      evaluatedAt,
+    );
   }
 
   if (threshold.shouldStop) {
-    return {
-      shouldRetry: false,
-      delaySeconds: 0,
-      strategy: 'none',
-      reason: `Optimal stopping: expected value (${threshold.expectedValue.toFixed(2)}) < cost per attempt for attempt ${nextAttempt}`,
-    };
+    return createRetryDecision(
+      {
+        shouldRetry: false,
+        delaySeconds: 0,
+        strategy: 'none',
+        reason: `Optimal stopping: expected value (${threshold.expectedValue.toFixed(2)}) < cost per attempt for attempt ${nextAttempt}`,
+        retryReason: 'expected_value_below_attempt_cost',
+      },
+      evaluatedAt,
+    );
   }
 
   const baseDelay = 30;
   const jitter = Math.random() * 10;
-  return {
-    shouldRetry: true,
-    delaySeconds: baseDelay + jitter,
-    strategy: 'double-dial-no-answer',
-    reason: `Threshold check passed for attempt ${nextAttempt}`,
-  };
-}
+  return createRetryDecision(
+    {
+      shouldRetry: true,
+      delaySeconds: baseDelay + jitter,
+      strategy: 'double-dial-no-answer',
+      reason: `Threshold check passed for attempt ${nextAttempt}`,
+      retryReason: 'threshold_check_passed',
+    },
+    evaluatedAt,
+  );
+};

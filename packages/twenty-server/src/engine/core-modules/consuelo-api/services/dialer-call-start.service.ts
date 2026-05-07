@@ -54,6 +54,7 @@ export type DialerCallStartCall = {
 
 export type DialerCallStartResult = {
   sessionId: string;
+  twilioGroupId: string | null;
   queueId: string;
   selectionStrategy: DialerCallSelectionStrategy;
   requestedFanout: number;
@@ -188,6 +189,7 @@ export class DialerCallStartService {
 
         return {
           sessionId,
+          twilioGroupId: null,
           queueId,
           selectionStrategy: params.input.selectionStrategy,
           requestedFanout,
@@ -198,7 +200,7 @@ export class DialerCallStartService {
         };
       }
 
-      const calls = await this.initiateTwilioCalls({
+      const twilioResult = await this.initiateTwilioCalls({
         workspaceId: params.workspaceId,
         userId: params.userId,
         sessionId,
@@ -210,13 +212,14 @@ export class DialerCallStartService {
 
       return {
         sessionId,
+        twilioGroupId: twilioResult.twilioGroupId,
         queueId,
         selectionStrategy: params.input.selectionStrategy,
         requestedFanout,
         actualFanout: capacity.actualFanout,
         status: 'dialing',
         capacity,
-        calls,
+        calls: twilioResult.calls,
       };
     } catch (err: unknown) {
       if (err instanceof BadRequestException) {
@@ -670,6 +673,7 @@ export class DialerCallStartService {
       await this.insertCallRow({
         workspaceId: params.workspaceId,
         sessionId: params.sessionId,
+        twilioGroupId: null,
         queueId: params.queueId,
         callSid,
         contactId: target.contactId,
@@ -700,7 +704,7 @@ export class DialerCallStartService {
     targets: CallableTarget[];
     callerIds: string[];
     callMode: DialerScenarioCallMode;
-  }): Promise<DialerCallStartCall[]> {
+  }): Promise<{ calls: DialerCallStartCall[]; twilioGroupId: string }> {
     const lockService = this.legacyDialerService.getCallerIdLockService();
     const acquiredCallerIds: string[] = [];
     const lockCallSid = `pending:${params.sessionId}`;
@@ -723,7 +727,7 @@ export class DialerCallStartService {
       }
 
       const baseUrl = process.env.API_BASE_URL ?? process.env.SERVER_URL ?? '';
-      if (params.callMode === 'live') {
+      if (params.callMode === 'live' || params.callMode === 'twilio-test') {
         this.assertPublicCallbackBaseUrl(baseUrl);
       }
       twilioDialer =
@@ -759,6 +763,7 @@ export class DialerCallStartService {
         await this.insertCallRow({
           workspaceId: params.workspaceId,
           sessionId: params.sessionId,
+          twilioGroupId: groupId,
           queueId: params.queueId,
           callSid: call.callSid,
           contactId: target.contactId,
@@ -778,7 +783,11 @@ export class DialerCallStartService {
         });
       }
 
-      return calls;
+      if (!groupId) {
+        throw new Error('Twilio group ID was not returned after call creation');
+      }
+
+      return { calls, twilioGroupId: groupId };
     } catch (err: unknown) {
       if (groupId) {
         try {
@@ -806,6 +815,7 @@ export class DialerCallStartService {
   private async insertCallRow(params: {
     workspaceId: string;
     sessionId: string;
+    twilioGroupId: string | null;
     queueId: string;
     callSid: string;
     contactId: string;
@@ -824,7 +834,7 @@ export class DialerCallStartService {
         params.status,
         params.from,
         params.to,
-        params.sessionId,
+        params.twilioGroupId ?? params.sessionId,
         params.position,
       ],
     );
@@ -861,7 +871,7 @@ export class DialerCallStartService {
   private assertPublicCallbackBaseUrl(baseUrl: string): void {
     if (!baseUrl.startsWith('https://')) {
       throw new BadRequestException(
-        'Live dialer mode requires a public HTTPS API_BASE_URL or SERVER_URL for Twilio callbacks',
+        'Twilio-backed dialer mode requires a public HTTPS API_BASE_URL or SERVER_URL for callbacks',
       );
     }
 
@@ -871,7 +881,7 @@ export class DialerCallStartService {
       baseUrl.includes('::1')
     ) {
       throw new BadRequestException(
-        'Live dialer mode requires a callback URL reachable by Twilio',
+        'Twilio-backed dialer mode requires a callback URL reachable by Twilio',
       );
     }
   }

@@ -1185,7 +1185,7 @@ export const useOpportunityQueueWorkspace = ({
         callSid: call.callSid,
         contact: currentQueueItem.contact,
         fromNumber: resolvedCallerId,
-        parallelGroupId: result.sessionId,
+        parallelGroupId: result.twilioGroupId ?? result.sessionId,
         startedAt: new Date(),
       }));
     } catch (error: unknown) {

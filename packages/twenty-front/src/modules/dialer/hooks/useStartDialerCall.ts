@@ -1,6 +1,9 @@
 import { useMutation } from '@apollo/client';
 
-import { START_DIALER_CALL } from '@/dialer/graphql/mutations/startDialerCall';
+import {
+  START_DIALER_CALL,
+  TERMINATE_DIALER_CALL,
+} from '@/dialer/graphql/mutations/startDialerCall';
 import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
 
 export type StartDialerCallInput = {
@@ -24,6 +27,7 @@ export type DialerCallStartCall = {
 
 export type DialerCallStartResult = {
   sessionId: string;
+  twilioGroupId: string | null;
   queueId: string;
   selectionStrategy: string;
   requestedFanout: number;
@@ -48,12 +52,31 @@ type StartDialerCallMutationVariables = {
   input: StartDialerCallInput;
 };
 
+type TerminateDialerCallMutation = {
+  terminateDialerCall: {
+    twilioGroupId: string;
+    status: string;
+  };
+};
+
+type TerminateDialerCallMutationVariables = {
+  input: {
+    twilioGroupId: string;
+  };
+};
+
 export const useStartDialerCall = () => {
   const apolloCoreClient = useApolloCoreClient();
   const [mutate] = useMutation<
     StartDialerCallMutation,
     StartDialerCallMutationVariables
   >(START_DIALER_CALL, {
+    client: apolloCoreClient,
+  });
+  const [terminateMutate] = useMutation<
+    TerminateDialerCallMutation,
+    TerminateDialerCallMutationVariables
+  >(TERMINATE_DIALER_CALL, {
     client: apolloCoreClient,
   });
 
@@ -75,5 +98,20 @@ export const useStartDialerCall = () => {
 
   return {
     startDialerCall,
+    terminateDialerCall: async (twilioGroupId: string) => {
+      const result = await terminateMutate({
+        variables: {
+          input: {
+            twilioGroupId,
+          },
+        },
+      });
+
+      if (!result.data?.terminateDialerCall) {
+        throw new Error('terminateDialerCall returned no result');
+      }
+
+      return result.data.terminateDialerCall;
+    },
   };
 };

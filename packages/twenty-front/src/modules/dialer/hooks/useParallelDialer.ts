@@ -52,7 +52,7 @@ export const useParallelDialer = () => {
   const [currentQueueIndex] = useRecoilState(currentQueueIndexState);
   const [activeCalls, setActiveCalls] = useState<ParallelCall[]>([]);
   const [isDialing, setIsDialing] = useState(false);
-  const { startDialerCall } = useStartDialerCall();
+  const { startDialerCall, terminateDialerCall } = useStartDialerCall();
 
   const clearParallelState = useCallback(() => {
     setIsDialing(false);
@@ -133,12 +133,14 @@ export const useParallelDialer = () => {
           }),
         );
 
+        const parallelGroupId = result.twilioGroupId ?? result.sessionId;
+
         setActiveQueue((prev) =>
           prev !== null
             ? {
                 ...prev,
                 parallelDialingActive: true,
-                parallelGroupId: result.sessionId,
+                parallelGroupId,
                 parallelActiveCalls: calls,
                 parallelCurrentBatch: prev.parallelCurrentBatch + 1,
               }
@@ -147,7 +149,7 @@ export const useParallelDialer = () => {
 
         setActiveCalls(calls);
 
-        return { status: 'started', groupId: result.sessionId };
+        return { status: 'started', groupId: parallelGroupId };
       } catch (err: unknown) {
         captureException(err, {
           extra: {
@@ -173,8 +175,32 @@ export const useParallelDialer = () => {
     ]);
 
   const cancelParallelDial = useCallback(async () => {
-    clearParallelState();
-  }, [clearParallelState]);
+    const groupId = activeQueue?.parallelGroupId;
+
+    if (!groupId) {
+      clearParallelState();
+      return;
+    }
+
+    try {
+      await terminateDialerCall(groupId);
+      clearParallelState();
+    } catch (err: unknown) {
+      captureException(err, {
+        extra: {
+          context: 'cancelParallelDial',
+          groupId,
+          queueId: activeQueue?.id,
+        },
+      });
+      playErrorSound();
+    }
+  }, [
+    activeQueue?.id,
+    activeQueue?.parallelGroupId,
+    clearParallelState,
+    terminateDialerCall,
+  ]);
 
   return {
     startParallelBatch,

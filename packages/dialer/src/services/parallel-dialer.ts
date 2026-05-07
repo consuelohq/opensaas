@@ -203,6 +203,7 @@ export class ParallelDialerService {
           if (group.profile.terminationPolicy === 'winner-take-all') {
             await this.terminateLosingCalls(group, callSid);
           }
+          await this.unmuteConferenceParticipant(group.conferenceName, callSid);
         } else {
           await this.terminateCall(callSid);
           call.status = 'completed';
@@ -300,7 +301,7 @@ export class ParallelDialerService {
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Response>',
         '<Dial>',
-        `<Conference beep="false" startConferenceOnEnter="true" endConferenceOnExit="false">${group.conferenceName}</Conference>`,
+        `<Conference beep="false" muted="true" startConferenceOnEnter="true" endConferenceOnExit="false">${group.conferenceName}</Conference>`,
         '</Dial>',
         '</Response>',
       ].join('');
@@ -314,7 +315,7 @@ export class ParallelDialerService {
   async getGroupIdForCall(callSid: string): Promise<string | null> {
     try {
       return await this.store.getCallMapping(callSid);
-    } catch (err: unknown) {
+    } catch {
       return null;
     }
   }
@@ -436,7 +437,33 @@ export class ParallelDialerService {
     try {
       const client = await this.getClient();
       await client.calls(callSid).update({ status: 'completed' });
-    } catch (err: unknown) {
+    } catch {
+      return;
+    }
+  }
+
+  private async unmuteConferenceParticipant(
+    conferenceName: string,
+    callSid: string,
+  ): Promise<void> {
+    try {
+      const client = await this.getClient();
+      const conferences = await client.conferences.list({
+        friendlyName: conferenceName,
+        status: 'in-progress',
+        limit: 1,
+      });
+      const conferenceSid = conferences[0]?.sid;
+
+      if (!conferenceSid) {
+        return;
+      }
+
+      await client
+        .conferences(conferenceSid)
+        .participants(callSid)
+        .update({ muted: false });
+    } catch {
       return;
     }
   }

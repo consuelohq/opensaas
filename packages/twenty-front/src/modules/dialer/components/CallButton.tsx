@@ -142,7 +142,7 @@ export const CallButton = () => {
         callSid: call.callSid,
         contact: selectedContact,
         fromNumber: resolvedCallerId,
-        parallelGroupId: result.sessionId,
+        parallelGroupId: result.twilioGroupId ?? result.sessionId,
         startedAt: new Date(),
       }));
     } catch (err: unknown) {

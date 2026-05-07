@@ -18,9 +18,12 @@ export class TwilioSignatureGuard implements CanActivate {
         throw new UnauthorizedException('TWILIO_AUTH_TOKEN is not configured');
       }
 
-      const signature = request.headers['x-twilio-signature'];
+      const signature = this.readFirstForwardedHeader(
+        request.headers['x-twilio-signature'],
+        '',
+      );
 
-      if (!signature || typeof signature !== 'string') {
+      if (!signature) {
         throw new UnauthorizedException('Missing Twilio signature');
       }
 
@@ -42,10 +45,11 @@ export class TwilioSignatureGuard implements CanActivate {
       const bodyParams =
         (request.body as Record<string, unknown> | undefined) ?? {};
 
-      const contentType = request.headers['content-type'] ?? '';
-      const isJsonBody =
-        typeof contentType === 'string' &&
-        contentType.toLowerCase().includes('application/json');
+      const contentType = this.readFirstForwardedHeader(
+        request.headers['content-type'],
+        '',
+      );
+      const isJsonBody = contentType.toLowerCase().includes('application/json');
       const isValid =
         rawBody && isJsonBody
           ? twilio.validateRequestWithBody(
@@ -76,7 +80,7 @@ export class TwilioSignatureGuard implements CanActivate {
     fallback: string,
   ): string {
     if (Array.isArray(value)) {
-      return value[0] ?? fallback;
+      return this.readFirstForwardedHeader(value[0], fallback);
     }
 
     if (typeof value !== 'string') {

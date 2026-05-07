@@ -1,4 +1,4 @@
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   Field,
@@ -12,9 +12,10 @@ import { MetadataResolver } from 'src/engine/api/graphql/graphql-config/decorato
 import { type UserEntity } from 'src/engine/core-modules/user/user.entity';
 import { type WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { DialerCallStartService } from 'src/engine/core-modules/consuelo-api/services/dialer-call-start.service';
+import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
+import { DialerCallPermissionGuard } from 'src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard';
 import { AuthUser } from 'src/engine/decorators/auth/auth-user.decorator';
 import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
-import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 import { WorkspaceAuthGuard } from 'src/engine/guards/workspace-auth.guard';
 
 @InputType()
@@ -46,8 +47,14 @@ export class StartDialerCallInput {
   @Field({ nullable: true })
   callerIdNumber?: string;
 
-  @Field({ nullable: true })
-  callMode?: string;
+  @Field(() => String, { nullable: true })
+  callMode?: string | null;
+}
+
+@InputType()
+export class TerminateDialerCallInput {
+  @Field()
+  twilioGroupId!: string;
 }
 
 @ObjectType()
@@ -97,6 +104,9 @@ export class DialerCallStartResultDTO {
   @Field()
   sessionId!: string;
 
+  @Field(() => String, { nullable: true })
+  twilioGroupId!: string | null;
+
   @Field()
   queueId!: string;
 
@@ -119,15 +129,27 @@ export class DialerCallStartResultDTO {
   calls!: DialerCallStartCallDTO[];
 }
 
+@ObjectType()
+export class TerminateDialerCallResultDTO {
+  @Field()
+  twilioGroupId!: string;
+
+  @Field()
+  status!: string;
+}
+
 @MetadataResolver()
 @UseGuards(WorkspaceAuthGuard)
 export class DialerCallStartResolver {
   constructor(
+    @Inject(DialerCallStartService)
     private readonly dialerCallStartService: DialerCallStartService,
+    @Inject(ParallelService)
+    private readonly parallelService: ParallelService,
   ) {}
 
   @Mutation(() => DialerCallStartResultDTO)
-  @UseGuards(NoPermissionGuard)
+  @UseGuards(DialerCallPermissionGuard)
   async startDialerCall(
     @AuthWorkspace() workspace: WorkspaceEntity,
     @AuthUser() user: UserEntity,
@@ -151,6 +173,25 @@ export class DialerCallStartResolver {
     });
   }
 
+  @Mutation(() => TerminateDialerCallResultDTO)
+  @UseGuards(DialerCallPermissionGuard)
+  async terminateDialerCall(
+    @AuthWorkspace() workspace: WorkspaceEntity,
+    @AuthUser() user: UserEntity,
+    @Args('input') input: TerminateDialerCallInput,
+  ): Promise<TerminateDialerCallResultDTO> {
+    const result = await this.parallelService.terminateGroup({
+      groupId: input.twilioGroupId,
+      userId: user.id,
+      workspaceId: workspace.id,
+    });
+
+    return {
+      twilioGroupId: result.groupId,
+      status: result.status,
+    };
+  }
+
   private parseSource(value: string): 'direct' | 'queue' {
     if (value === 'direct' || value === 'queue') {
       return value;
@@ -170,9 +211,9 @@ export class DialerCallStartResolver {
   }
 
   private parseCallMode(
-    value: string | undefined,
+    value: string | null | undefined,
   ): 'mock' | 'twilio-test' | 'live' | null {
-    if (value === undefined) {
+    if (value === null || value === undefined) {
       return null;
     }
 

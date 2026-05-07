@@ -1,4 +1,8 @@
-import { CallerIdLockService, InMemoryLockStore } from './caller-id';
+import {
+  CallerIdLockService,
+  InMemoryLockStore,
+  RedisLockStore,
+} from './caller-id';
 
 describe('CallerIdLockService', () => {
   let store: InMemoryLockStore;
@@ -84,6 +88,29 @@ describe('CallerIdLockService', () => {
 
       expect(transferred).toBe(false);
       expect(await service.releaseLock('pending-session')).toBe(true);
+    });
+
+    it('should preserve Redis TTL when transferring a lock', async () => {
+      const redisStore = new RedisLockStore('redis://localhost:6379');
+      const evalMock = jest.fn().mockResolvedValue(1);
+
+      Object.assign(redisStore, {
+        redis: {
+          eval: evalMock,
+        },
+      });
+
+      await expect(
+        redisStore.transfer('+15551234567', 'pending-session', 'CA_123'),
+      ).resolves.toBe(true);
+
+      const script = evalMock.mock.calls[0][0] as string;
+
+      expect(script).toContain("redis.call('PTTL', key)");
+      expect(script).toContain(
+        "redis.call('SET', key, cjson.encode(lock), 'PX', pttl)",
+      );
+      expect(script).not.toContain("'EX', ttl");
     });
   });
 

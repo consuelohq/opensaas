@@ -29,7 +29,6 @@ started: 2026-05-05
 - `packages/dialer/src/services/caller-id.ts`
 - `packages/dialer/src/services/caller-id.spec.ts`
 
-
 ## key decisions
 
 - Treat the `twenty-shared:build` failure as a Phase 0 prerequisite blocker because `npx nx database:reset twenty-server` cannot reach migrations until dependent builds pass.
@@ -260,6 +259,38 @@ started: 2026-05-05
   - `npx nx typecheck twenty-server` still fails on broad pre-existing strict typing errors outside the changed dialer surface.
   - `npx nx typecheck twenty-front` still fails on broad pre-existing errors outside the changed call-start surface, including agent/assistant/files/settings/telemetry areas and dialer Storybook test dependency resolution.
 - Production validation remains pending. Do not claim production fixed until CI is green or waived and deployed production logs confirm GraphQL call-start, callback attachment, and lock lifecycle.
+
+---
+
+## stream review hardening - 2026-05-07
+
+- P0 dialing auth fixed. `startDialerCall` and `terminateDialerCall` now use `DialerCallPermissionGuard`, which requires signed-in workspace/user context plus the `DIALER_CALLING` permission. API-key and application auth contexts are rejected before live or twilio-test dialing.
+- Permission pattern used: `PermissionsService.userHasWorkspaceSettingPermission({ userWorkspaceId, setting: PermissionFlagType.DIALER_CALLING })`, wired through `PermissionsModule` in `ConsueloApiModule`. The default role permission is false, so access must be granted intentionally.
+- P1 cancel/terminate fixed. Frontend cancel now calls GraphQL `terminateDialerCall` with the Twilio group identifier before clearing local state. If termination fails, the dialer state remains visible and the error path plays the existing error sound.
+- P1 group/session identity fixed. GraphQL returns `sessionId` as the logical app session and `twilioGroupId` as the provider group identity. Production frontend stores `twilioGroupId ?? sessionId` for cancel/termination. Service DB writes use the real Twilio group ID when Twilio creates one.
+- P1 twilio-test callback URL validation fixed. Twilio-backed modes, `live` and `twilio-test`, require a public HTTPS `API_BASE_URL` or `SERVER_URL` before Twilio initiation. `mock` remains local-only and does not require public callback URLs.
+- P1 queue phone validation fixed. Queue item call-start validates and normalizes target phone data before marking the item `calling`; missing or invalid phone data marks the item `failed` with a structured note instead of leaving it stuck.
+- P1 parallel audio safety fixed at the TwiML boundary. Customer legs enter the shared conference muted, losing legs are terminated when a winner is selected, and the winner is unmuted through the resolved active conference SID. Unit tests cover muted customer TwiML and winner unmute after losing-leg termination. A live voicemail-specific proof is still pending because no explicitly voicemail safe target is identified in the allowlist.
+- P1 Redis caller-ID transfer semantics fixed. Transfer now preserves Redis `PTTL` and writes the same remaining expiry into serialized lock data, keeping key TTL and stored `expiresAt` aligned. Unit coverage checks the transfer script uses `PTTL` and `PX pttl`.
+- P2 Twilio signature guard hardening fixed. Header normalization handles array values, comma-separated forwarded values, trimming, and JSON content-type detection after normalization while preserving raw-body JSON validation.
+- P2 nullable `callMode` fixed. Explicit GraphQL `callMode: null` now behaves as omitted input; product frontend omits `callMode`, which selects the real backend path. Scenario mode remains the only caller that passes `mock`, `twilio-test`, or `live`.
+- Retry policy typecheck drift fixed. `RetryPolicyDecision` now exposes the retry persistence fields used by `QueuesService`, and the stopping model cache is keyed by store instance so tests and runtime decisions cannot reuse a stale store.
+- CI snapshot before push: PR #334 head `6306a656e8` is `UNSTABLE`. Failing GitHub checks are still reported on the old head: `shared-test (typecheck)`, `front-task (typecheck)`, and `ci-shared-status-check`.
+- Local focused validation:
+  - `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/guards/twilio-signature.guard.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/services/retry-policy.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` passed: 6 suites, 40 tests.
+  - `npx jest packages/dialer/src/services/caller-id.spec.ts packages/dialer/src/services/parallel-dialer.spec.ts --config=packages/dialer/jest.config.mjs --runInBand` passed: 2 suites, 56 tests.
+  - `npx jest packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts packages/twenty-front/src/modules/dialer/hooks/__tests__/useTwilioDevice.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand` passed: 2 suites, 15 tests.
+  - `npx nx typecheck @consuelo/dialer` passed.
+  - `npx nx typecheck twenty-server` still fails on broad stream errors outside the changed dialer files: workflow tool `unknown` catch typing, workspace-member strict property initialization, queue-worker unknown error typing, utility specs, and a metadata integration reducer type.
+  - `npx nx typecheck twenty-shared` still fails on `scripts/generateBarrels.ts:311` implicit return type, outside DEV-1499 changed files.
+  - `npx nx typecheck twenty-front` still fails on broad existing frontend errors outside changed dialer call-start hooks/components. No errors were reported for the changed dialer product call-start files in the focused frontend tests.
+  - `workspace checkFiles` was attempted through the workspace facade, but the facade reported no active task worktree for `stream/dialer`. Direct repo-root Prettier, ESLint, Jest, Nx, and `git diff --check` results are the validation source for this pass.
+- Live validation status carried forward:
+  - Local live backend lifecycle proof is strong: single, sequential single, predictive capacity-reduced, and predictive fanout 3 all placed live calls, received callbacks, attached lifecycle events, and released caller-ID locks.
+  - Latest fanout 3 transcript: `/tmp/dev-1499-live-predictive-fanout3-20260507.json`, requested fanout 3, actual fanout 3, safe caller-ID suffixes `9579`, `7674`, `0892`, customer suffixes `2191`, `2753`, `1157`, transcript redaction clean.
+  - Auth/cancel/audio/TTL hardening changed call lifecycle logic. Focused tests passed after those changes; another live run remains useful before production promotion if the environment is still available.
+- Old path search after frontend migration: `git grep -n "/v1/voice/preflight\\|/api/v1/calls/parallel\\|connect({" -- packages/twenty-front/src/modules/dialer packages/twenty-front/src/pages` returns only `useTwilioDevice` unit-test references. No production frontend call-start path uses those legacy contracts.
+- Remaining production validation gaps: PR CI must go green or receive an explicit scoped waiver for unrelated stream failures; deployed production logs still need to confirm GraphQL call-start, callback attachment, and lock lifecycle. Production fixed is not claimed.
 
 ---
 

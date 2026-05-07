@@ -4,6 +4,7 @@ export const START_DIALER_CALL = gql`
   mutation StartDialerCall($input: StartDialerCallInput!) {
     startDialerCall(input: $input) {
       sessionId
+      twilioGroupId
       queueId
       selectionStrategy
       requestedFanout
@@ -25,6 +26,15 @@ export const START_DIALER_CALL = gql`
         status
         position
       }
+    }
+  }
+`;
+
+export const TERMINATE_DIALER_CALL = gql`
+  mutation TerminateDialerCall($input: TerminateDialerCallInput!) {
+    terminateDialerCall(input: $input) {
+      twilioGroupId
+      status
     }
   }
 `;

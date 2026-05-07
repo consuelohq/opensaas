@@ -20,6 +20,7 @@ type GraphqlResponse<TData> = {
 
 type StartDialerCallResult = {
   sessionId: string;
+  twilioGroupId: string | null;
   queueId: string;
   selectionStrategy: string;
   requestedFanout: number;
@@ -511,6 +512,7 @@ async function startDialerCall(
       mutation StartDialerCall($input: StartDialerCallInput!) {
         startDialerCall(input: $input) {
           sessionId
+          twilioGroupId
           queueId
           selectionStrategy
           requestedFanout

@@ -8,7 +8,7 @@ jest.mock('twilio', () => ({
 }));
 
 type MockRequest = {
-  headers: Record<string, string>;
+  headers: Record<string, string | string[]>;
   originalUrl: string;
   path: string;
   body: Record<string, string>;
@@ -99,6 +99,37 @@ describe('TwilioSignatureGuard', () => {
       '{"CallSid":"CA_TEST"}',
     );
     expect(twilio.validateRequest).not.toHaveBeenCalled();
+  });
+
+  it('should normalize array and comma-separated headers before validation', async () => {
+    twilio.validateRequestWithBody.mockReturnValue(true);
+
+    const request = {
+      headers: {
+        'content-type': ['application/json; charset=utf-8'],
+        host: 'internal.test',
+        'x-forwarded-host': ['example.test, proxy.test'],
+        'x-forwarded-proto': ['https, http'],
+        'x-twilio-signature': ['signature'],
+      },
+      originalUrl: '/api/v1/calls/parallel/status-callback',
+      path: '/api/v1/calls/parallel/status-callback',
+      body: {
+        CallSid: 'CA_TEST',
+      },
+      rawBody: Buffer.from('{\"CallSid\":\"CA_TEST\"}'),
+    };
+
+    await expect(
+      new TwilioSignatureGuard().canActivate(createContext(request)),
+    ).resolves.toBe(true);
+
+    expect(twilio.validateRequestWithBody).toHaveBeenCalledWith(
+      'test-auth-token',
+      'signature',
+      'https://example.test/api/v1/calls/parallel/status-callback',
+      '{\"CallSid\":\"CA_TEST\"}',
+    );
   });
 
   it('should reject invalid Twilio signatures', async () => {

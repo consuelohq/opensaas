@@ -11,6 +11,7 @@ import { useStartDialerCall } from '@/dialer/hooks/useStartDialerCall';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { QueueItem } from '@/dialer/types/queue';
+import { toE164 } from '@/dialer/utils/phoneFormat';
 
 export const useQueueControls = () => {
   const [activeQueue, setActiveQueue] = useRecoilState(activeQueueState);
@@ -24,6 +25,25 @@ export const useQueueControls = () => {
 
   const callContact = useCallback(
     async (item: QueueItem) => {
+      const targetPhone = item.contact.phone
+        ? toE164(item.contact.phone)
+        : null;
+
+      if (!targetPhone) {
+        setQueueItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  status: 'failed' as const,
+                  notes: 'Missing or invalid phone number',
+                }
+              : i,
+          ),
+        );
+        return;
+      }
+
       setQueueItems((prev) =>
         prev.map((i) =>
           i.id === item.id
@@ -38,27 +58,24 @@ export const useQueueControls = () => {
       );
 
       const from = callState.fromNumber;
-      if (item.contact.phone) {
-        try {
-          await startDialerCall({
-            source: 'direct',
-            selectionStrategy: 'single',
-            requestedFanout: 1,
-            targetPhone: item.contact.phone,
-            contactId: item.contactId,
-            callerIdNumber: from ?? undefined,
-          });
-        } catch (err: unknown) {
-          captureException(err, {
-            extra: { context: 'callContact', contactId: item.contactId },
-          });
-          // call initiation failed — mark item as failed
-          setQueueItems((prev) =>
-            prev.map((i) =>
-              i.id === item.id ? { ...i, status: 'failed' as const } : i,
-            ),
-          );
-        }
+      try {
+        await startDialerCall({
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          targetPhone,
+          contactId: item.contactId,
+          callerIdNumber: from ?? undefined,
+        });
+      } catch (err: unknown) {
+        captureException(err, {
+          extra: { context: 'callContact', contactId: item.contactId },
+        });
+        setQueueItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id ? { ...i, status: 'failed' as const } : i,
+          ),
+        );
       }
     },
     [callState.fromNumber, setQueueItems, startDialerCall],

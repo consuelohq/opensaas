@@ -257,6 +257,54 @@ describe('DialerCallStartService', () => {
     );
   });
 
+  it('should fail closed for twilio-test starts without a public callback base URL', async () => {
+    const { service, mockQuery, mockLegacyDialerService } = createService();
+
+    process.env.TWILIO_TEST_ACCOUNT_SID = 'AC_TEST_ACCOUNT';
+    process.env.TWILIO_TEST_AUTH_TOKEN = 'test-auth-token';
+    process.env.TWILIO_ACCOUNT_SID = 'AC_LIVE_ACCOUNT';
+    process.env.TWILIO_AUTH_TOKEN = 'live-auth-token';
+    process.env.CONSUELO_SCENARIO_SAFE_TO_NUMBERS = '+14155552671';
+    process.env.CONSUELO_SCENARIO_SAFE_FROM_NUMBERS = '+12025550123';
+    mockLegacyDialerService.getCallerIdLockService.mockReturnValue({
+      acquireLock: jest.fn().mockResolvedValue(true),
+      transferLock: jest.fn(),
+      releaseLockByNumber: jest.fn(),
+    });
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    await expect(
+      service.startDialerCall({
+        workspaceId: WORKSPACE_ID,
+        userId: USER_ID,
+        input: {
+          source: 'direct',
+          selectionStrategy: 'single',
+          requestedFanout: 1,
+          targetPhone: '+14155552671',
+          callerIdNumber: '+12025550123',
+          callMode: 'twilio-test',
+        },
+      }),
+    ).rejects.toThrow(
+      'Twilio-backed dialer mode requires a public HTTPS API_BASE_URL or SERVER_URL for callbacks',
+    );
+  });
+
   it('should transfer pending caller ID locks to call SIDs without releasing the number', async () => {
     const { service, mockQuery, mockLegacyDialerService } = createService();
     const mockLockService = {
@@ -326,6 +374,7 @@ describe('DialerCallStartService', () => {
         callerId: '+12025550123',
       }),
     );
+    expect(result.twilioGroupId).toBe('pg_test');
     expect(mockLockService.transferLock).toHaveBeenCalledWith(
       '+12025550123',
       pendingCallSid,
@@ -397,6 +446,7 @@ describe('DialerCallStartService', () => {
     });
 
     expect(result.status).toBe('dialing');
+    expect(result.twilioGroupId).toBe('pg_product');
     expect(mockDialer.listNumbers).toHaveBeenCalled();
     expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
       expect.objectContaining({
