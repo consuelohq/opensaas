@@ -176,6 +176,28 @@ started: 2026-05-05
 
 ---
 
+## stream review update - 2026-05-07
+
+- PR #334 merge state: `UNSTABLE`. Merge conflict/dirty state remains resolved. Current CI snapshot has successful changed-files checks and failures in `shared-test (typecheck)`, `ci-shared-status-check`, and `front-task (typecheck)`; several downstream jobs are cancelled or queued.
+- Live Twilio FROM validation now passes. Keychain live SID suffix `2ec1` authenticated for Twilio owned/verified caller-ID listing. `CONSUELO_SCENARIO_SAFE_FROM_NUMBERS` contains one number, suffix `9579`, and that suffix matches a Twilio-owned number on the live account.
+- Callback strategy used: Cloudflare quick tunnel to local `twenty-server` with public HTTPS URL `https://waters-forwarding-associated-aid.trycloudflare.com`; `twenty-server` was restarted from the same shell with `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, safe to/from allowlists, `API_BASE_URL`, and `SERVER_URL` set.
+- Live single transcript: `/tmp/dev-1499-live-single-20260507.json`. Result: GraphQL `startDialerCall` succeeded, `actualFanout=1`, returned real Twilio call SID, status `dialing`, customer suffix `2191`, caller-ID suffix `9579`. Transcript redaction scan found no full E.164 phone numbers.
+- Twilio live call record for the single call reached terminal `completed` with duration 7 seconds. This proves live Twilio initiation succeeded with the new safe FROM number.
+- Live lifecycle proof failed at callback reachability. Twilio notifications show HTTP 404 responses from the public tunnel URL for `/api/v1/calls/parallel/status-callback` and `/api/v1/calls/parallel/customer-twiml` during the live single call. Twilio error codes observed: `15003` for status callback 404 warnings and `11200` for customer TwiML 404.
+- Local route sanity check: direct local POSTs to `http://127.0.0.1:3000/api/v1/calls/parallel/status-callback` and `/customer-twiml` reached the Nest routes and returned `401 Missing Twilio signature`, which means the local server has the routes mounted. The public Cloudflare URL returned 404 for the same path, including `/healthz`.
+- Caller-ID lock release evidence is negative for this run. Redis still held `caller-id-lock` for FROM suffix `9579` after Twilio marked the call `completed`, because terminal callbacks did not reach the local server. The lock should expire by TTL, but live lifecycle acceptance is blocked.
+- Live predictive and two sequential single calls were not run after the callback 404 blocker, per the instruction to stop after any live step fails.
+- Current old-path search result in production frontend code remains positive:
+  - `packages/twenty-front/src/modules/dialer/components/CallButton.tsx` still calls `/v1/voice/preflight` and browser `connect({ ... })`.
+  - `packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts` still calls `/v1/voice/preflight` and browser `connect({ ... })`.
+  - `packages/twenty-front/src/modules/dialer/hooks/useQueueControls.ts` still calls browser `connect({ ... })`.
+  - `packages/twenty-front/src/modules/dialer/utils/parallel-dialer-endpoint.ts` still defines `/api/v1/calls/parallel`.
+  - Legacy path references also remain in tests.
+- `twilio-test` remains documented as non-E2E request-construction validation only. Test credentials do not prove TwiML, callbacks, conferences, or lock release. Additional twilio-test behavior checks are pending because the ordered live validation stopped at the callback 404 blocker.
+- Production validation is still pending. Do not claim production fixed until live callbacks attach to the right group/session, terminal callback releases locks, sequential reuse passes, frontend migration lands, and deployed production logs confirm the path.
+
+---
+
 ## publish checklist
 
 ```bash
