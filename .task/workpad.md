@@ -198,6 +198,71 @@ started: 2026-05-05
 
 ---
 
+## stream review update - 2026-05-07 callback/frontend closeout
+
+- Callback 404 root cause was Cloudflare routing, not Twilio credentials. `cloudflared tunnel --url ...` was loading `~/.cloudflared/config.yml`, whose fallback ingress returned 404. Starting the quick tunnel with an empty temp config forwarded paths unchanged to local `twenty-server`.
+- Public callback proof before new live calls:
+  - `GET /healthz` through the tunnel returned `200`.
+  - Unsigned `POST /api/v1/calls/parallel/status-callback` returned app-level `401 Missing Twilio signature`.
+  - Unsigned `POST /api/v1/calls/parallel/customer-twiml` returned app-level `401 Missing Twilio signature`.
+- Nest route registration/path match:
+  - `ParallelController` registers `POST /api/v1/calls/parallel/status-callback`.
+  - `ParallelController` registers `POST /api/v1/calls/parallel/customer-twiml`.
+  - `DialerCallStartService` generates the same paths from `API_BASE_URL` / `SERVER_URL`.
+- Twilio signature guard fix:
+  - Form-encoded Twilio callbacks now validate with parsed params even when `rawBody` exists.
+  - JSON callbacks still validate with `validateRequestWithBody`.
+  - This fixed live callback `401` after the tunnel route fix.
+- Live lifecycle proof after routing/signature fixes:
+  - Live single lifecycle transcript: `/tmp/dev-1499-live-single-lifecycle-20260507.json`.
+  - Two sequential live single transcripts: `/tmp/dev-1499-live-sequential-1-20260507.json`, `/tmp/dev-1499-live-sequential-2-20260507.json`.
+  - Live predictive capacity-reduced transcript: `/tmp/dev-1499-live-predictive-20260507.json`, requested fanout 2, actual fanout 1 because only one safe FROM was in the server env at that time.
+  - Twilio requested customer TwiML and status callbacks through the public tunnel; callback responses were `200`.
+  - Terminal callbacks released caller-ID locks. Redis caller-ID lock scan returned count 0 after each run.
+  - Sequential single calls reused/reacquired the same safe caller ID without stale `CALLER_ID_LOCKED`.
+- Updated safe FROM capacity proof:
+  - Keychain now contains safe FROM count 3, suffixes `7674`, `9579`, `0892`.
+  - Twilio live account validation confirmed all three safe FROM suffixes are owned or verified.
+  - Live predictive transcript: `/tmp/dev-1499-live-predictive-fanout3-20260507.json`.
+  - Requested fanout 3, actual fanout 3, callable target count 3, available caller-ID count 3, no reduced capacity reasons, no blocked reasons.
+  - Call SID suffixes: `8b5099`, `e909b8`, `2e86b9`.
+  - Caller-ID suffixes used concurrently: `9579`, `7674`, `0892`.
+  - Customer suffixes called concurrently: `2191`, `2753`, `1157`.
+  - Customer TwiML callbacks returned `200`; status callbacks returned `200`; Redis caller-ID lock scan returned count 0 after terminal callbacks.
+  - Transcript redaction scan found no full E.164 phone numbers.
+- Scenario/product boundary:
+  - `callMode` remains scenario/test-only input.
+  - Scenario `mock`, `live`, and `twilio-test` continue to pass `callMode` explicitly.
+  - Omitted `callMode` now uses the real/live backend path and does not enforce `CONSUELO_SCENARIO_SAFE_TO_NUMBERS`.
+  - Scenario live/twilio-test still enforce safe to/from allowlists.
+  - Predictive scenario no longer passes a single explicit `callerIdNumber`; the backend selects caller IDs from the safe pool, which is required to prove real parallel fanout.
+- Frontend migration completed for production call-start paths:
+  - `CallButton` direct/single starts via GraphQL `startDialerCall`.
+  - Queue item direct/single starts via GraphQL `startDialerCall`.
+  - Queue/list predictive starts via GraphQL `startDialerCall` with `source=queue`, `selectionStrategy=predictive`, and backend-owned target/caller-ID selection.
+  - Frontend no longer calls `/v1/voice/preflight` for production call start.
+  - Frontend no longer calls `/api/v1/calls/parallel` for production predictive start.
+  - Frontend no longer sends a sliced predictive batch as source of truth.
+  - The low-level `useTwilioDevice` hook remains for device/callback surfaces, but production queue/list call-start no longer invokes browser Twilio `connect()`.
+- Old path search:
+  - `git grep -n "/v1/voice/preflight\\|/api/v1/calls/parallel\\|connect({" -- packages/twenty-front/src/modules/dialer packages/twenty-front/src/pages`
+  - Remaining matches are only `useTwilioDevice` unit tests covering the low-level hook.
+- Twilio-test behavior remains non-E2E request-construction validation only:
+  - Missing `TWILIO_TEST_ACCOUNT_SID` / `TWILIO_TEST_AUTH_TOKEN` fails closed.
+  - Test credentials equal to live credentials fail closed.
+  - This mode does not prove TwiML, callbacks, conferences, or lock release.
+- Validation evidence:
+  - `npx jest packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts packages/twenty-server/src/engine/core-modules/consuelo-api/guards/twilio-signature.guard.spec.ts --config=packages/twenty-server/jest.config.mjs --runInBand` passed: 2 suites, 11 tests.
+  - `npx jest packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand` passed: 1 suite, 3 tests.
+  - `npx jest packages/twenty-front/src/modules/dialer/hooks/__tests__/useTwilioDevice.test.ts packages/twenty-front/src/modules/dialer/hooks/__tests__/useParallelDialer.test.ts --config=packages/twenty-front/jest.config.mjs --runInBand` passed: 2 suites, 14 tests.
+  - `npx prettier --check` passed for changed scenario/backend/frontend files.
+  - `git diff --check` passed.
+  - `npx nx typecheck twenty-server` still fails on broad pre-existing strict typing errors outside the changed dialer surface.
+  - `npx nx typecheck twenty-front` still fails on broad pre-existing errors outside the changed call-start surface, including agent/assistant/files/settings/telemetry areas and dialer Storybook test dependency resolution.
+- Production validation remains pending. Do not claim production fixed until CI is green or waived and deployed production logs confirm GraphQL call-start, callback attachment, and lock lifecycle.
+
+---
+
 ## publish checklist
 
 ```bash

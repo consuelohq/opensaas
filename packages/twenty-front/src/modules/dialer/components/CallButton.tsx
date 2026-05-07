@@ -5,8 +5,7 @@ import { IconLoader, IconPhone, IconPhoneOff } from 'twenty-ui/display';
 import { captureException } from '@sentry/react';
 import { useLingui } from '@lingui/react/macro';
 
-import { REACT_APP_SERVER_BASE_URL } from '~/config';
-import { authenticatedFetch } from '@/dialer/utils/authenticatedFetch';
+import { useStartDialerCall } from '@/dialer/hooks/useStartDialerCall';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { phoneNumberState } from '@/dialer/states/phoneNumberState';
 import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
@@ -81,8 +80,10 @@ export const CallButton = () => {
   const selectedContact = useRecoilValue(selectedContactState);
   const setSelectedCallerId = useSetRecoilState(selectedCallerIdState);
   const setCallError = useSetRecoilState(callErrorState);
+  const setCallState = useSetRecoilState(callStateAtom);
   const { preferences } = useUserPreferences();
-  const { connect, disconnect } = useTwilioDevice();
+  const { startDialerCall } = useStartDialerCall();
+  const { disconnect } = useTwilioDevice();
 
   const isConnecting = callStatus === 'connecting' || callStatus === 'ringing';
   const isActive = callStatus === 'active';
@@ -114,56 +115,18 @@ export const CallButton = () => {
     const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
 
     try {
-      const preflightRes = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            callerId: manualCallerId,
-            to: phoneNumber,
-            localPresence: localPresenceEnabled,
-          }),
-        },
-      );
+      const result = await startDialerCall({
+        source: 'direct',
+        selectionStrategy: 'single',
+        requestedFanout: 1,
+        targetPhone: phoneNumber,
+        contactId: selectedContact?.id,
+        callerIdNumber: manualCallerId ?? undefined,
+      });
+      const call = result.calls[0];
+      const resolvedCallerId = call?.callerId;
 
-      if (!preflightRes.ok) {
-        if (preflightRes.status === 409) {
-          setCallError({
-            reason: 'caller_id_locked',
-            message: t`Number in use by another agent`,
-            occurredAt: new Date(),
-          });
-          return;
-        }
-
-        captureException(
-          new Error(`Preflight failed: ${preflightRes.status}`),
-          {
-            extra: {
-              status: preflightRes.status,
-              callerId: manualCallerId,
-              localPresenceEnabled,
-            },
-          },
-        );
-
-        if (!manualCallerId) {
-          setCallError({
-            reason: 'preflight_failed',
-            message: t`Unable to select a caller ID right now. Please try again.`,
-            occurredAt: new Date(),
-          });
-          return;
-        }
-      }
-
-      const preflightBody = preflightRes.ok
-        ? ((await preflightRes.json()) as { callerId?: string })
-        : null;
-      const resolvedCallerId = preflightBody?.callerId ?? manualCallerId;
-
-      if (!resolvedCallerId) {
+      if (!call || !resolvedCallerId) {
         setCallError({
           reason: 'no_caller_id',
           message: t`No caller ID available. Add a phone number in Settings → Dialer.`,
@@ -173,18 +136,27 @@ export const CallButton = () => {
       }
 
       setSelectedCallerId(resolvedCallerId);
-      await connect({ To: phoneNumber, From: resolvedCallerId });
+      setCallState((previousCallState) => ({
+        ...previousCallState,
+        status: 'connecting',
+        callSid: call.callSid,
+        contact: selectedContact,
+        fromNumber: resolvedCallerId,
+        parallelGroupId: result.sessionId,
+        startedAt: new Date(),
+      }));
     } catch (err: unknown) {
       captureException(err, {
         extra: {
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          context: 'CallButton.connect',
-          to: phoneNumber,
-          from: manualCallerId,
+          context: 'CallButton.startDialerCall',
+          contactId: selectedContact?.id,
           localPresenceEnabled,
         },
       });
-      // connect failure already sets callState to 'failed' via useTwilioDevice
+      setCallState((previousCallState) => ({
+        ...previousCallState,
+        status: 'failed',
+      }));
     }
   }, [
     isInCall,
@@ -193,10 +165,12 @@ export const CallButton = () => {
     localPresenceEnabled,
     defaultCallerId,
     phoneNumber,
-    connect,
     disconnect,
     setCallError,
+    setCallState,
     setSelectedCallerId,
+    startDialerCall,
+    selectedContact,
     t,
   ]);
 

@@ -223,7 +223,9 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         }));
       });
 
-      const handleTerminalBeforeRinging = (eventName: 'cancel' | 'disconnect' | 'reject') => {
+      const handleTerminalBeforeRinging = (
+        eventName: 'cancel' | 'disconnect' | 'reject',
+      ) => {
         const terminalMessage =
           eventName === 'cancel'
             ? t`Call was canceled before it started ringing`
@@ -408,11 +410,11 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
       // only retry on transient errors, not permission/auth failures
       const errorMessage = err instanceof Error ? err.message : '';
       const normalizedErrorMessage = errorMessage.toLowerCase();
-      
+
       // parse HTTP status from "Token fetch failed: <status>" pattern
       const statusMatch = errorMessage.match(/Token fetch failed:\s*(\d+)/);
       const parsedStatus = statusMatch ? parseInt(statusMatch[1], 10) : null;
-      
+
       const isNonTransient =
         (err instanceof Error && err.name === 'NotAllowedError') ||
         parsedStatus === 401 ||
@@ -465,9 +467,10 @@ export const useTwilioDevice = (): UseTwilioDeviceReturn => {
         updateCallStatus('connecting');
         playDialingStartedSound();
 
-        const call = await deviceRef.current.connect({
+        const connectOptions = {
           params: { To: params.To, From: params.From },
-        });
+        };
+        const call = await deviceRef.current.connect(connectOptions);
 
         setActiveCall(call);
         setCallError(null);

@@ -334,6 +334,78 @@ describe('DialerCallStartService', () => {
     expect(mockLockService.releaseLockByNumber).not.toHaveBeenCalled();
   });
 
+  it('should use the live product path without scenario allowlists when call mode is omitted', async () => {
+    const { service, mockQuery, mockLegacyDialerService } = createService();
+    const mockLockService = {
+      acquireLock: jest.fn().mockResolvedValue(true),
+      transferLock: jest.fn().mockResolvedValue(true),
+      releaseLockByNumber: jest.fn(),
+      isNumberAvailable: jest.fn().mockResolvedValue(true),
+    };
+    const mockDialer = {
+      listNumbers: jest.fn().mockResolvedValue([
+        {
+          phoneNumber: '+12025550123',
+        },
+      ]),
+      parallel: {
+        initiateGroup: jest.fn().mockResolvedValue({
+          groupId: 'pg_product',
+          calls: [
+            {
+              callSid: 'CA_PRODUCT_CALL',
+              fromNumber: '+12025550123',
+              position: 1,
+              status: 'dialing',
+            },
+          ],
+        }),
+        terminateGroup: jest.fn(),
+      },
+    };
+
+    process.env.API_BASE_URL = 'https://dev-1499.example.test';
+    mockLegacyDialerService.getCallerIdLockService.mockReturnValue(
+      mockLockService,
+    );
+    mockLegacyDialerService.getDialer.mockReturnValue(mockDialer);
+    mockQuery.mockImplementation((sql: string) => {
+      if (sql.startsWith('SELECT id, phone FROM contacts WHERE workspace_id')) {
+        return [];
+      }
+
+      if (sql.startsWith('INSERT INTO contacts')) {
+        return [{ id: 'contact-direct' }];
+      }
+
+      if (sql.startsWith('INSERT INTO call_queues')) {
+        return [{ id: 'queue-direct' }];
+      }
+
+      return [];
+    });
+
+    const result = await service.startDialerCall({
+      workspaceId: WORKSPACE_ID,
+      userId: USER_ID,
+      input: {
+        source: 'direct',
+        selectionStrategy: 'single',
+        requestedFanout: 1,
+        targetPhone: '+14155552671',
+      },
+    });
+
+    expect(result.status).toBe('dialing');
+    expect(mockDialer.listNumbers).toHaveBeenCalled();
+    expect(mockDialer.parallel.initiateGroup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerNumbers: ['+14155552671'],
+        fromNumbers: ['+12025550123'],
+      }),
+    );
+  });
+
   it('should terminate created calls and release locks when lock transfer fails', async () => {
     const { service, mockQuery, mockLegacyDialerService } = createService();
     const mockLockService = {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -8,9 +9,10 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { randomUUID } from 'node:crypto';
 import * as Sentry from '@sentry/node';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { isValidPhone, normalizePhone } from '@consuelo/contacts';
 import { Dialer, type ParallelDialProfile } from '@consuelo/dialer';
-import { DataSource } from 'typeorm';
+import { type DataSource } from 'typeorm';
 
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
 
@@ -98,6 +100,7 @@ export class DialerCallStartService {
 
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
+    @Inject(LegacyDialerService)
     private readonly legacyDialerService: LegacyDialerService,
   ) {}
 
@@ -108,7 +111,10 @@ export class DialerCallStartService {
   }): Promise<DialerCallStartResult> {
     this.validateInput(params.input);
 
-    const callMode = params.input.callMode ?? 'mock';
+    const callMode = this.resolveCallMode(params.input.callMode);
+    const enforceScenarioAllowlist = this.shouldEnforceScenarioAllowlist(
+      params.input.callMode,
+    );
     const requestedFanout = Math.max(1, params.input.requestedFanout);
     const sessionId = `session_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
 
@@ -132,7 +138,7 @@ export class DialerCallStartService {
 
       const uniqueTargets = this.dedupeTargetsByPhone(targets);
 
-      if (callMode === 'live' || callMode === 'twilio-test') {
+      if (enforceScenarioAllowlist) {
         this.assertSafeTargetsAllowed(uniqueTargets);
       }
 
@@ -143,6 +149,7 @@ export class DialerCallStartService {
       const callerIds = await this.resolveCallerIds({
         callerIdNumber: params.input.callerIdNumber,
         callMode,
+        enforceScenarioAllowlist,
         targetCount: uniqueTargets.length,
       });
       const capacity = this.computeCapacity({
@@ -278,6 +285,22 @@ export class DialerCallStartService {
         'Queue call starts require queueId, contactIds, or targetPhones',
       );
     }
+  }
+
+  private resolveCallMode(
+    callMode: DialerScenarioCallMode | null | undefined,
+  ): DialerScenarioCallMode {
+    if (callMode) {
+      return callMode;
+    }
+
+    return 'live';
+  }
+
+  private shouldEnforceScenarioAllowlist(
+    callMode: DialerScenarioCallMode | null | undefined,
+  ): boolean {
+    return callMode === 'live' || callMode === 'twilio-test';
   }
 
   private async resolveInputQueueId(params: {
@@ -456,14 +479,12 @@ export class DialerCallStartService {
   private async resolveCallerIds(params: {
     callerIdNumber?: string | null;
     callMode: DialerScenarioCallMode;
+    enforceScenarioAllowlist: boolean;
     targetCount: number;
   }): Promise<string[]> {
-    const safeFromNumbers =
-      params.callMode === 'live' || params.callMode === 'twilio-test'
-        ? this.readSafePhoneNumbersFromEnv(
-            'CONSUELO_SCENARIO_SAFE_FROM_NUMBERS',
-          )
-        : null;
+    const safeFromNumbers = params.enforceScenarioAllowlist
+      ? this.readSafePhoneNumbersFromEnv('CONSUELO_SCENARIO_SAFE_FROM_NUMBERS')
+      : null;
 
     if (params.callerIdNumber) {
       const callerId = this.readValidPhoneNumber(params.callerIdNumber);

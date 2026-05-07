@@ -560,7 +560,6 @@ async function runPredictiveScenario(): Promise<StartDialerCallResult> {
     source: 'queue',
     selectionStrategy: 'predictive',
     requestedFanout,
-    callerIdNumber: resolveCallerIdNumber(),
     callMode,
   };
 

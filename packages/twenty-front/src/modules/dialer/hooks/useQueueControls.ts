@@ -7,6 +7,7 @@ import {
   currentQueueIndexState,
   queueItemsState,
 } from '@/dialer/states/queueState';
+import { useStartDialerCall } from '@/dialer/hooks/useStartDialerCall';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
 import type { QueueItem } from '@/dialer/types/queue';
@@ -18,7 +19,8 @@ export const useQueueControls = () => {
     currentQueueIndexState,
   );
   const callState = useRecoilValue(callStateAtom);
-  const { connect, disconnect } = useTwilioDevice();
+  const { startDialerCall } = useStartDialerCall();
+  const { disconnect } = useTwilioDevice();
 
   const callContact = useCallback(
     async (item: QueueItem) => {
@@ -36,9 +38,16 @@ export const useQueueControls = () => {
       );
 
       const from = callState.fromNumber;
-      if (from && item.contact.phone) {
+      if (item.contact.phone) {
         try {
-          await connect({ To: item.contact.phone, From: from });
+          await startDialerCall({
+            source: 'direct',
+            selectionStrategy: 'single',
+            requestedFanout: 1,
+            targetPhone: item.contact.phone,
+            contactId: item.contactId,
+            callerIdNumber: from ?? undefined,
+          });
         } catch (err: unknown) {
           captureException(err, {
             extra: { context: 'callContact', contactId: item.contactId },
@@ -52,7 +61,7 @@ export const useQueueControls = () => {
         }
       }
     },
-    [callState.fromNumber, connect, setQueueItems],
+    [callState.fromNumber, setQueueItems, startDialerCall],
   );
 
   const advanceQueue = useCallback(async () => {
@@ -164,7 +173,14 @@ export const useQueueControls = () => {
         captureException(err, { extra: { context: 'skipContact', reason } });
       }
     },
-    [queueItems, currentQueueIndex, setQueueItems, setActiveQueue, disconnect, advanceQueue],
+    [
+      queueItems,
+      currentQueueIndex,
+      setQueueItems,
+      setActiveQueue,
+      disconnect,
+      advanceQueue,
+    ],
   );
 
   const endQueue = useCallback(() => {
@@ -228,6 +244,7 @@ export const useQueueControls = () => {
     isActive: activeQueue?.status === 'active',
     isPaused: activeQueue?.status === 'paused',
     isCompleted: activeQueue?.status === 'completed',
-    canRestart: activeQueue?.status === 'completed' || activeQueue?.status === 'stopped',
+    canRestart:
+      activeQueue?.status === 'completed' || activeQueue?.status === 'stopped',
   };
 };
