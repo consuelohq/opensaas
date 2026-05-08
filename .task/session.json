@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_12cf9dfeaa9f",
-  "tmuxSession": "opensaas-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-cal-12cf9dfe",
+  "taskSession": "tsk_b8be680f7631",
+  "tmuxSession": "opensaas-workspace-agents-improve-langsmith-workspace-call-trace-summaries-b8be680f",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
-  "worktree": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
-  "prNumber": 336,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/336",
-  "createdAt": "2026-05-06T05:05:58.579Z",
+  "taskBranch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+  "branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries",
+  "prNumber": 346,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/346",
+  "createdAt": "2026-05-08T22:15:14.567Z",
   "tmuxCreated": true
 }
