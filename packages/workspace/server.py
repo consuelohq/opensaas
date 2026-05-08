@@ -174,6 +174,10 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+_CACHED_MANIFEST: list[dict[str, Any]] | None = None
+_CACHED_MANIFEST_MTIME: float | None = None
+_SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
+_SAFETY_SUMMARY_LIMIT = 500
 
 CALL_TOOL = {
     'readOnlyHint': True,
@@ -666,7 +670,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
 @mcp.tool(annotations=CALL_TOOL)
 def call(
     tool: str,
-    input: dict[str, Any] | None = None,
+    input: Any | None = None,
     taskSession: str | None = None,
     timeout: int | None = None,
 ) -> dict[str, Any]:
