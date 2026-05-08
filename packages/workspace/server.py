@@ -49,30 +49,124 @@ def _estimate_tokens(text: str) -> int:
     """rough token estimate: ~4 chars per token."""
     return max(1, len(str(text)) // 4)
 
+_TRACE_SUMMARY_LIMIT = 240
+
+def _trace_string(value: Any, limit: int = _TRACE_SUMMARY_LIMIT) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        rendered = value
+    else:
+        try:
+            rendered = json.dumps(value, sort_keys=True, default=str)
+        except TypeError:
+            rendered = str(value)
+    rendered = ' '.join(rendered.split())
+    return rendered if len(rendered) <= limit else rendered[:limit - 1] + '…'
+
+def _trace_command_summary(value: Any) -> str | None:
+    if isinstance(value, str):
+        return _trace_string(value)
+    if isinstance(value, list):
+        return _trace_string(' '.join(str(part) for part in value))
+    return None
+
+def _trace_batch_summary(value: Any) -> str:
+    if not isinstance(value, list):
+        return _trace_string(value)
+    tools = []
+    for step in value:
+        if isinstance(step, dict) and isinstance(step.get('tool'), str):
+            tools.append(step['tool'])
+        else:
+            tools.append('unknown')
+    preview = ', '.join(tools[:6])
+    if len(tools) > 6:
+        preview += f', +{len(tools) - 6} more'
+    return f'{len(tools)} steps: {preview}'
+
+def _trace_input_summary(tool: str | None, tool_input: Any) -> str:
+    if tool == 'batch':
+        return _trace_batch_summary(tool_input)
+    if isinstance(tool_input, dict):
+        for key in ('command', 'cmd', 'script'):
+            command = _trace_command_summary(tool_input.get(key))
+            if command:
+                return command
+        for key in ('path', 'query', 'area', 'base', 'message', 'title', 'pattern'):
+            value = tool_input.get(key)
+            if value:
+                return f'{key}={_trace_string(value)}'
+        return _trace_string(tool_input)
+    return _trace_string(tool_input)
+
+def _trace_inputs(name: str, args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any]:
+    if name == 'workspace.call':
+        tool = kwargs.get('tool') if isinstance(kwargs.get('tool'), str) else None
+        tool_input = kwargs.get('tool_input')
+        return {
+            'action': tool or name,
+            'tool': tool,
+            'taskSession': kwargs.get('taskSession'),
+            'timeout': kwargs.get('timeout'),
+            'inputSummary': _trace_input_summary(tool, tool_input),
+            'tool_input': tool_input,
+        }
+    inputs = {f'arg{i}': value for i, value in enumerate(args)}
+    inputs.update(kwargs)
+    return inputs
+
+def _trace_run_name(name: str, inputs: dict[str, Any]) -> str:
+    if name == 'workspace.call' and isinstance(inputs.get('tool'), str) and inputs['tool']:
+        return inputs['tool']
+    return name
+
+def _trace_outputs(name: str, inputs: dict[str, Any], result: Any, usage: dict[str, int]) -> dict[str, Any]:
+    if name != 'workspace.call' or not isinstance(result, dict):
+        return {'result': result, 'usage': usage}
+    task_context = result.get('taskContext') if isinstance(result.get('taskContext'), dict) else {}
+    tool = inputs.get('tool') or inputs.get('action')
+    code = result.get('code') or ('OK' if result.get('ok') else 'COMMAND_FAILED')
+    summary_parts = [_trace_string(code, 80), _trace_string(tool, 80)]
+    tmux_session = task_context.get('tmuxSession')
+    if tmux_session:
+        summary_parts.append(f'tmux={_trace_string(tmux_session, 120)}')
+    return {
+        'summary': ' · '.join(part for part in summary_parts if part),
+        'ok': result.get('ok'),
+        'code': code,
+        'tool': tool,
+        'taskSession': task_context.get('taskSession') or inputs.get('taskSession'),
+        'tmuxSession': tmux_session,
+        'branch': task_context.get('branch'),
+        'worktree': task_context.get('worktree'),
+        'result': result,
+        'usage': usage,
+    }
+
 def _traced_call(name, run_type, fn, *args, **kwargs):
     """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
     if not _tracing or not ls_trace:
         return fn(*args, **kwargs)
-    inputs = {f'arg{i}': v for i, v in enumerate(args)}
-    inputs.update(kwargs)
-    input_text = ' '.join(str(v) for v in inputs.values())
-    with ls_trace(name=name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id}) as rt:
+    inputs = _trace_inputs(name, args, kwargs)
+    input_text = ' '.join(str(value) for value in inputs.values())
+    trace_name = _trace_run_name(name, inputs)
+    with ls_trace(name=trace_name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id, 'workspaceTrace': name}) as rt:
         result = fn(*args, **kwargs)
         prompt_tokens = _estimate_tokens(input_text)
         completion_tokens = _estimate_tokens(result)
-        rt.end(outputs={
-            'result': result,
-            'usage': {
-                'prompt_tokens': prompt_tokens,
-                'completion_tokens': completion_tokens,
-                'total_tokens': prompt_tokens + completion_tokens,
-            },
-        })
+        usage = {
+            'prompt_tokens': prompt_tokens,
+            'completion_tokens': completion_tokens,
+            'total_tokens': prompt_tokens + completion_tokens,
+        }
+        rt.end(outputs=_trace_outputs(name, inputs, result, usage))
         return result
 
 APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
 SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
+BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
@@ -80,6 +174,16 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+_CACHED_MANIFEST: list[dict[str, Any]] | None = None
+_CACHED_MANIFEST_MTIME: float | None = None
+_SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
+_SAFETY_SUMMARY_LIMIT = 500
+
+CALL_TOOL = {
+    'readOnlyHint': True,
+    'openWorldHint': False,
+    'destructiveHint': False,
+}
 _CACHED_MANIFEST: list[dict[str, Any]] | None = None
 _CACHED_MANIFEST_MTIME: float | None = None
 _SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
@@ -475,9 +579,14 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             traceId=trace_id,
         )
 
-    args = ['bun', str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
+    args = [BUN_BIN, str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
     run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
     try:
+        run_env = {
+            **os.environ,
+            'PATH': f"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{os.environ.get('PATH', '')}",
+            'BUN_BIN': BUN_BIN,
+        }
         result = subprocess.run(
             args,
             capture_output=True,
@@ -486,6 +595,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             timeout=run_timeout,
             check=False,
             shell=False,
+            env=run_env,
         )
     except subprocess.TimeoutExpired as error:
         return _envelope(
@@ -557,11 +667,24 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     )
 
 
-@mcp.tool()
-def call(tool: str, input: Any | None = None, taskSession: str | None = None, timeout: int | None = None) -> dict[str, Any]:
+@mcp.tool(annotations=CALL_TOOL)
+def call(
+    tool: str,
+    input: Any | None = None,
+    taskSession: str | None = None,
+    timeout: int | None = None,
+) -> dict[str, Any]:
     """run a typed workspace tool through the facade. taskSession scopes task work."""
     tool_input = input
-    return _traced_call('workspace.call', 'tool', _run_workspace_call, tool=tool, tool_input=tool_input, taskSession=taskSession, timeout=timeout)
+    return _traced_call(
+        'workspace.call',
+        'tool',
+        _run_workspace_call,
+        tool=tool,
+        tool_input=tool_input,
+        taskSession=taskSession,
+        timeout=timeout,
+    )
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -583,7 +706,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 # --- oauth (for chatgpt connector auth) ---
 OAUTH_CLIENT_ID = os.environ.get('OAUTH_CLIENT_ID', 'openworkspace')
 OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET', '')
-_pending_codes = {}
+_pending_codes: dict[str, dict[str, Any]] = {}
 
 
 async def oauth_metadata(request):
@@ -594,17 +717,34 @@ async def oauth_metadata(request):
         'token_endpoint': f'{base}/oauth/token',
         'response_types_supported': ['code'],
         'grant_types_supported': ['authorization_code'],
-        'code_challenge_methods_supported': ['S256'],
     })
 
 
 async def oauth_authorize(request):
     import secrets as _secrets
+
     params = request.query_params
     redirect_uri = params.get('redirect_uri', '')
     state = params.get('state', '')
+    client_id = params.get('client_id', '')
+    code_challenge = params.get('code_challenge', '')
+    code_challenge_method = params.get('code_challenge_method', '')
+
+    if OAUTH_CLIENT_ID and client_id and client_id != OAUTH_CLIENT_ID:
+        return JSONResponse({'error': 'invalid_client'}, status_code=400)
+
+    if not redirect_uri:
+        return JSONResponse({'error': 'invalid_request', 'error_description': 'redirect_uri is required'}, status_code=400)
+
     code = _secrets.token_urlsafe(32)
-    _pending_codes[code] = redirect_uri
+    _pending_codes[code] = {
+        'redirect_uri': redirect_uri,
+        'client_id': client_id,
+        'code_challenge': code_challenge,
+        'code_challenge_method': code_challenge_method,
+        'created_at': time.time(),
+    }
+
     sep = '&' if '?' in redirect_uri else '?'
     return Response(status_code=302, headers={'Location': f'{redirect_uri}{sep}code={code}&state={state}'})
 
@@ -612,21 +752,39 @@ async def oauth_authorize(request):
 async def oauth_token(request):
     body = await request.body()
     ct = request.headers.get('content-type', '')
+
     if 'json' in ct:
-        data = json.loads(body)
+        data = json.loads(body or b'{}')
     else:
         data = dict(await request.form())
+
     code = data.get('code', '')
+    client_id = data.get('client_id', '')
     client_secret = data.get('client_secret', '')
+    redirect_uri = data.get('redirect_uri', '')
+
+    if OAUTH_CLIENT_ID and client_id and client_id != OAUTH_CLIENT_ID:
+        return JSONResponse({'error': 'invalid_client'}, status_code=401)
+
     if OAUTH_CLIENT_SECRET and client_secret != OAUTH_CLIENT_SECRET:
         return JSONResponse({'error': 'invalid_client'}, status_code=401)
-    if code not in _pending_codes:
+
+    pending = _pending_codes.pop(code, None)
+    if not pending:
         return JSONResponse({'error': 'invalid_grant'}, status_code=400)
-    del _pending_codes[code]
+
+    if redirect_uri and pending.get('redirect_uri') != redirect_uri:
+        return JSONResponse({'error': 'invalid_grant'}, status_code=400)
+
+    access_token = bearer_token or os.environ.get('MCP_BEARER_TOKEN', '')
+    if not access_token:
+        return JSONResponse({'error': 'server_error', 'error_description': 'MCP_BEARER_TOKEN is not configured'}, status_code=500)
+
     return JSONResponse({
-        'access_token': bearer_token,
-        'token_type': 'bearer',
+        'access_token': access_token,
+        'token_type': 'Bearer',
         'expires_in': 86400 * 365,
+        'scope': '',
     })
 
 
