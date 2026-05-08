@@ -4,9 +4,6 @@ const { execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const { contentHash } = require('./lib/index/chunker');
-const { createStore } = require('./lib/index/store');
-const { getRemoteUrl, isIndexablePath } = require('./lib/index/indexer');
 const { resolveGitRoot } = require('./lib/paths');
 
 const HOMEBREW_SQLITE_LIB = '/opt/homebrew/opt/sqlite/lib';
@@ -146,7 +143,18 @@ function auditDocs(repoRoot) {
   };
 }
 
+function loadIndexAuditDependencies() {
+  // Keep index-only native dependencies out of --scripts/--docs startup.
+  const runtimeRequire = module.require.bind(module);
+  return {
+    ...runtimeRequire('./lib/index/chunker'),
+    ...runtimeRequire('./lib/index/store'),
+    ...runtimeRequire('./lib/index/indexer'),
+  };
+}
+
 function auditIndex(repoRoot) {
+  const { contentHash, createStore, getRemoteUrl, isIndexablePath } = loadIndexAuditDependencies();
   const store = createStore(repoRoot, getRemoteUrl(repoRoot));
   const stale = [];
   const deleted = [];

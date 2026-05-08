@@ -1,17 +1,17 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "base": "origin/task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "headSha": "037a2687c44207bdd00a0b6c2e14ce80f74c779f",
-  "changeHash": "9c4f397af6d80c2340cca4ed5a37f5ab9c0f184760aa110aba8c578c3924c5ae",
+  "branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "fad4852249aa0082690c9ea7aeacd9c256b466e0",
+  "changeHash": "80cd95677a8ebaa0e8c1bd266cbf1ff695cce498612932a9bf0d246d90fbb4cc",
   "changedFiles": [
-    "packages/workspace/scripts/tool-batch.ts",
-    "packages/workspace/server.py",
-    "packages/workspace/tests/server_call_test.py"
+    "packages/workspace/scripts/audit.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/audit/audit.test.ts"
   ],
-  "verifiedAt": "2026-05-08T21:54:39.752Z",
+  "verifiedAt": "2026-05-08T23:20:57.778Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {

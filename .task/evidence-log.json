@@ -11416,8 +11416,184 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
+    },
+    {
+      "id": "6abbf46a-4b0e-4c4f-9124-3fd74860a610",
+      "occurred_at": "2026-05-08T23:15:27.745Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "56a33876-257a-49d4-b780-5a9faf0a8b17",
+      "occurred_at": "2026-05-08T23:15:32.996Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "725b737f-5832-4118-a633-143108fff772",
+      "occurred_at": "2026-05-08T23:15:39.193Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "6aba6001-8aa4-4f64-bdbc-0d5873e8a256",
+      "occurred_at": "2026-05-08T23:15:52.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/audit.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "8db0a8e1-4bfe-476c-b013-4a10c7585236",
+      "occurred_at": "2026-05-08T23:15:58.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "9273263f-fe19-4ec6-99b1-d4661dec19cb",
+      "occurred_at": "2026-05-08T23:16:10.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "dc4ffa19-2292-4f59-95ab-8c93a9dda446",
+      "occurred_at": "2026-05-08T23:16:22.422Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "4fca5a0b-49b3-47d5-988a-1372bcc95b8a",
+      "occurred_at": "2026-05-08T23:17:07.061Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/audit.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "85d4a996-91cc-4696-bae3-1d2de5cf99dc",
+      "occurred_at": "2026-05-08T23:17:36.551Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "f1bdb336-1dcb-42c3-b486-73cf4017cf48",
+      "occurred_at": "2026-05-08T23:18:33.610Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
+    },
+    {
+      "id": "230e545b-15ab-499e-b3ec-f700b1a1d978",
+      "occurred_at": "2026-05-08T23:19:19.158Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/audit/audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-08T21:53:37.170Z"
+  "updated_at": "2026-05-08T23:19:19.202Z"
 }
