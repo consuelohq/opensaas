@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_12cf9dfeaa9f",
-  "tmuxSession": "opensaas-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-cal-12cf9dfe",
+  "taskSession": "tsk_307e45e1cfa8",
+  "tmuxSession": "opensaas-workspace-agents-fix-workspace-status-changed-file-path-display-307e45e1",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "worktreePath": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
-  "worktree": "/private/tmp/opensaas-worktrees/task-workspace-agents-dev-1500-replace-sandbox-exec-with-workspace-call",
-  "prNumber": 336,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/336",
-  "createdAt": "2026-05-06T05:05:58.579Z",
+  "taskBranch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
+  "prNumber": 344,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/344",
+  "createdAt": "2026-05-08T21:43:34.440Z",
   "tmuxCreated": true
 }
