@@ -73,6 +73,7 @@ def _traced_call(name, run_type, fn, *args, **kwargs):
 APP_DIR = os.path.dirname(__file__)
 PORT = int(os.environ.get('PORT', 8000))
 SERVER_NAME = os.environ.get('MCP_SERVER_NAME', 'openworkspace')
+BUN_BIN = os.environ.get('BUN_BIN', '/opt/homebrew/bin/bun')
 DEFAULT_STEERING_FILE = os.path.join(APP_DIR, 'BRAIN.md')
 STEERING_FILE = os.environ.get('STEERING_FILE', DEFAULT_STEERING_FILE)
 SCRIPTS_FILE = os.path.join(APP_DIR, 'SCRIPTS.md')
@@ -80,6 +81,12 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+
+CALL_TOOL = {
+    'readOnlyHint': True,
+    'openWorldHint': False,
+    'destructiveHint': False,
+}
 _CACHED_MANIFEST: list[dict[str, Any]] | None = None
 _CACHED_MANIFEST_MTIME: float | None = None
 _SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
@@ -475,9 +482,14 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             traceId=trace_id,
         )
 
-    args = ['bun', str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
+    args = [BUN_BIN, str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
     run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
     try:
+        run_env = {
+            **os.environ,
+            'PATH': f"/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{os.environ.get('PATH', '')}",
+            'BUN_BIN': BUN_BIN,
+        }
         result = subprocess.run(
             args,
             capture_output=True,
@@ -486,6 +498,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             timeout=run_timeout,
             check=False,
             shell=False,
+            env=run_env,
         )
     except subprocess.TimeoutExpired as error:
         return _envelope(
@@ -557,11 +570,24 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
     )
 
 
-@mcp.tool()
-def call(tool: str, input: Any | None = None, taskSession: str | None = None, timeout: int | None = None) -> dict[str, Any]:
+@mcp.tool(annotations=CALL_TOOL)
+def call(
+    tool: str,
+    input: dict[str, Any] | None = None,
+    taskSession: str | None = None,
+    timeout: int | None = None,
+) -> dict[str, Any]:
     """run a typed workspace tool through the facade. taskSession scopes task work."""
     tool_input = input
-    return _traced_call('workspace.call', 'tool', _run_workspace_call, tool=tool, tool_input=tool_input, taskSession=taskSession, timeout=timeout)
+    return _traced_call(
+        'workspace.call',
+        'tool',
+        _run_workspace_call,
+        tool=tool,
+        tool_input=tool_input,
+        taskSession=taskSession,
+        timeout=timeout,
+    )
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -583,7 +609,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 # --- oauth (for chatgpt connector auth) ---
 OAUTH_CLIENT_ID = os.environ.get('OAUTH_CLIENT_ID', 'openworkspace')
 OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET', '')
-_pending_codes = {}
+_pending_codes: dict[str, dict[str, Any]] = {}
 
 
 async def oauth_metadata(request):
@@ -594,17 +620,34 @@ async def oauth_metadata(request):
         'token_endpoint': f'{base}/oauth/token',
         'response_types_supported': ['code'],
         'grant_types_supported': ['authorization_code'],
-        'code_challenge_methods_supported': ['S256'],
     })
 
 
 async def oauth_authorize(request):
     import secrets as _secrets
+
     params = request.query_params
     redirect_uri = params.get('redirect_uri', '')
     state = params.get('state', '')
+    client_id = params.get('client_id', '')
+    code_challenge = params.get('code_challenge', '')
+    code_challenge_method = params.get('code_challenge_method', '')
+
+    if OAUTH_CLIENT_ID and client_id and client_id != OAUTH_CLIENT_ID:
+        return JSONResponse({'error': 'invalid_client'}, status_code=400)
+
+    if not redirect_uri:
+        return JSONResponse({'error': 'invalid_request', 'error_description': 'redirect_uri is required'}, status_code=400)
+
     code = _secrets.token_urlsafe(32)
-    _pending_codes[code] = redirect_uri
+    _pending_codes[code] = {
+        'redirect_uri': redirect_uri,
+        'client_id': client_id,
+        'code_challenge': code_challenge,
+        'code_challenge_method': code_challenge_method,
+        'created_at': time.time(),
+    }
+
     sep = '&' if '?' in redirect_uri else '?'
     return Response(status_code=302, headers={'Location': f'{redirect_uri}{sep}code={code}&state={state}'})
 
@@ -612,21 +655,39 @@ async def oauth_authorize(request):
 async def oauth_token(request):
     body = await request.body()
     ct = request.headers.get('content-type', '')
+
     if 'json' in ct:
-        data = json.loads(body)
+        data = json.loads(body or b'{}')
     else:
         data = dict(await request.form())
+
     code = data.get('code', '')
+    client_id = data.get('client_id', '')
     client_secret = data.get('client_secret', '')
+    redirect_uri = data.get('redirect_uri', '')
+
+    if OAUTH_CLIENT_ID and client_id and client_id != OAUTH_CLIENT_ID:
+        return JSONResponse({'error': 'invalid_client'}, status_code=401)
+
     if OAUTH_CLIENT_SECRET and client_secret != OAUTH_CLIENT_SECRET:
         return JSONResponse({'error': 'invalid_client'}, status_code=401)
-    if code not in _pending_codes:
+
+    pending = _pending_codes.pop(code, None)
+    if not pending:
         return JSONResponse({'error': 'invalid_grant'}, status_code=400)
-    del _pending_codes[code]
+
+    if redirect_uri and pending.get('redirect_uri') != redirect_uri:
+        return JSONResponse({'error': 'invalid_grant'}, status_code=400)
+
+    access_token = bearer_token or os.environ.get('MCP_BEARER_TOKEN', '')
+    if not access_token:
+        return JSONResponse({'error': 'server_error', 'error_description': 'MCP_BEARER_TOKEN is not configured'}, status_code=500)
+
     return JSONResponse({
-        'access_token': bearer_token,
-        'token_type': 'bearer',
+        'access_token': access_token,
+        'token_type': 'Bearer',
         'expires_in': 86400 * 365,
+        'scope': '',
     })
 
 
