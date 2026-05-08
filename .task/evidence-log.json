@@ -11210,8 +11210,8 @@
       }
     },
     {
-      "id": "29df7639-ecc1-4025-a959-a148e8090b46",
-      "occurred_at": "2026-05-08T22:15:23.446Z",
+      "id": "920c482c-99e2-4cae-9583-3b45c4b91196",
+      "occurred_at": "2026-05-08T21:50:36.643Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11219,15 +11219,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "1f802c9a-0009-48a0-a6a1-c333db95f403",
-      "occurred_at": "2026-05-08T22:15:28.043Z",
+      "id": "bb6e57a8-c183-4e3f-a102-2be123616e07",
+      "occurred_at": "2026-05-08T21:50:43.813Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11235,31 +11235,47 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "934479b8-ba60-43f3-b9de-a8b46ddc83f5",
-      "occurred_at": "2026-05-08T22:15:32.609Z",
+      "id": "8a8a6c9b-1444-4374-9e6a-8681583a9bc2",
+      "occurred_at": "2026-05-08T21:51:01.702Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "CODING-STANDARDS.md",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "a7a0f1cf-8c0b-412c-bf15-c082cb762ff0",
-      "occurred_at": "2026-05-08T22:15:38.843Z",
+      "id": "1a70a2e4-6ff6-4996-bfd4-116ff275126e",
+      "occurred_at": "2026-05-08T21:51:07.544Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "0671ac44-3946-4586-86b9-a48269bb76d7",
+      "occurred_at": "2026-05-08T21:51:15.623Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11267,15 +11283,15 @@
       "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "72c7211f-f665-4b9c-9779-5b7af895d4c6",
-      "occurred_at": "2026-05-08T22:15:43.100Z",
+      "id": "32ae80d6-8fcc-4325-a3c9-284059230178",
+      "occurred_at": "2026-05-08T21:51:24.715Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11283,15 +11299,31 @@
       "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "fe755274-4a98-4bc6-95f1-2cbc1d722690",
-      "occurred_at": "2026-05-08T22:15:48.737Z",
+      "id": "bf688826-fd5d-4e52-a96e-4c08e7a81949",
+      "occurred_at": "2026-05-08T21:51:44.337Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "43b227a1-8791-448b-90ad-3cb24b5a61c6",
+      "occurred_at": "2026-05-08T21:51:51.797Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11299,95 +11331,15 @@
       "file_path": "packages/workspace/tests/server_call_test.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "6cac3d25-644c-4808-a01a-38f8af107954",
-      "occurred_at": "2026-05-08T22:34:11.931Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
-      }
-    },
-    {
-      "id": "7399dcd2-6132-4d32-8ad8-74916fca0ef7",
-      "occurred_at": "2026-05-08T22:34:26.024Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": ".task/workpad.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
-      }
-    },
-    {
-      "id": "1709908a-fd44-423e-8108-3e37fe843173",
-      "occurred_at": "2026-05-08T22:36:29.163Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
-      }
-    },
-    {
-      "id": "34823436-aa51-44c9-9fd9-2b7e80a88ad4",
-      "occurred_at": "2026-05-08T22:36:50.819Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/tooling/tool-manifest.json",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
-      }
-    },
-    {
-      "id": "747625d9-94ca-41ba-a47f-a24752583d00",
-      "occurred_at": "2026-05-08T22:37:30.350Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
-      }
-    },
-    {
-      "id": "636c7b1a-1c0f-4d2d-9231-89126f8b3be4",
-      "occurred_at": "2026-05-08T22:37:35.883Z",
+      "id": "a4783b26-ec8c-4252-ad12-a070cef51ca4",
+      "occurred_at": "2026-05-08T21:52:05.965Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11395,45 +11347,77 @@
       "file_path": "packages/workspace/tests/server_call_test.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "131347ba-61be-478e-9101-a1640d1a7785",
-      "occurred_at": "2026-05-08T22:38:02.302Z",
+      "id": "a214fbae-9362-430f-977b-170964131ced",
+      "occurred_at": "2026-05-08T21:52:29.890Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/tests/server_call_test.py",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     },
     {
-      "id": "8f3b2f31-cfd3-4d0a-aeb0-0669459b6810",
-      "occurred_at": "2026-05-08T22:38:30.369Z",
+      "id": "f60c36db-79c0-4b8f-a251-8b7e45ad5b8b",
+      "occurred_at": "2026-05-08T21:52:36.313Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries"
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "561d2d7c-9352-47bd-a9d0-5a70e5f461e6",
+      "occurred_at": "2026-05-08T21:53:22.896Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "4facfada-db9b-4f71-8262-d04840c73498",
+      "occurred_at": "2026-05-08T21:53:37.124Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-08T22:38:30.417Z"
+  "updated_at": "2026-05-08T21:53:37.170Z"
 }

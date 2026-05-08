@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_b8be680f7631",
-  "tmuxSession": "opensaas-workspace-agents-improve-langsmith-workspace-call-trace-summaries-b8be680f",
+  "taskSession": "tsk_aa97979cccab",
+  "tmuxSession": "opensaas-workspace-agents-support-object-wrapped-batch-input-through-works-aa97979c",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-  "branch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries",
-  "prNumber": 346,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/346",
-  "createdAt": "2026-05-08T22:15:14.567Z",
+  "taskBranch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+  "branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call",
+  "prNumber": 345,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/345",
+  "createdAt": "2026-05-08T21:50:29.566Z",
   "tmuxCreated": true
 }
