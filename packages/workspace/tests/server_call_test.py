@@ -360,5 +360,59 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
 
 
+    def test_workspace_call_trace_inputs_are_scan_friendly(self):
+        inputs = self.module._trace_inputs('workspace.call', (), {
+            'tool': 'task.exec',
+            'tool_input': {'command': ['bash', '-lc', 'echo hello']},
+            'taskSession': 'tsk_123',
+            'timeout': 120,
+        })
+        self.assertEqual(inputs['action'], 'task.exec')
+        self.assertEqual(inputs['tool'], 'task.exec')
+        self.assertEqual(inputs['taskSession'], 'tsk_123')
+        self.assertEqual(inputs['timeout'], 120)
+        self.assertIn('bash -lc echo hello', inputs['inputSummary'])
+        self.assertEqual(self.module._trace_run_name('workspace.call', inputs), 'task.exec')
+
+    def test_workspace_call_trace_output_surfaces_task_context(self):
+        inputs = {'tool': 'task.exec', 'taskSession': 'tsk_123'}
+        result = {
+            'ok': True,
+            'code': 'OK',
+            'taskContext': {
+                'taskSession': 'tsk_123',
+                'tmuxSession': 'opensaas-test-tmux',
+                'branch': 'task/workspace-agents/test',
+                'worktree': '/tmp/opensaas-worktrees/test',
+            },
+        }
+        usage = {'prompt_tokens': 1, 'completion_tokens': 2, 'total_tokens': 3}
+        output = self.module._trace_outputs('workspace.call', inputs, result, usage)
+        self.assertEqual(output['summary'], 'OK · task.exec · tmux=opensaas-test-tmux')
+        self.assertTrue(output['ok'])
+        self.assertEqual(output['code'], 'OK')
+        self.assertEqual(output['tool'], 'task.exec')
+        self.assertEqual(output['taskSession'], 'tsk_123')
+        self.assertEqual(output['tmuxSession'], 'opensaas-test-tmux')
+        self.assertEqual(output['branch'], 'task/workspace-agents/test')
+        self.assertEqual(output['worktree'], '/tmp/opensaas-worktrees/test')
+        self.assertIs(output['result'], result)
+        self.assertIs(output['usage'], usage)
+
+    def test_batch_trace_summary_lists_child_tools(self):
+        summary = self.module._trace_input_summary('batch', [
+            {'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}},
+            {'tool': 'task.exec', 'input': {'command': ['git', 'status']}},
+        ])
+        self.assertEqual(summary, '2 steps: fs.read, task.exec')
+
+    def test_trace_command_summary_truncates_long_values(self):
+        summary = self.module._trace_input_summary('task.exec', {
+            'command': ['python3', '-c', 'x' * 500],
+        })
+        self.assertLessEqual(len(summary), self.module._TRACE_SUMMARY_LIMIT)
+        self.assertTrue(summary.endswith('…'))
+
+
 if __name__ == '__main__':
     unittest.main()
