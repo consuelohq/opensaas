@@ -1,8 +1,8 @@
-# support object wrapped batch input through workspace call
+# fix workspace status changed file path display
 
-branch: `task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call`
+branch: `task/workspace-agents/fix-workspace-status-changed-file-path-display`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/345
+pr: https://github.com/consuelohq/opensaas/pull/344
 started: 2026-05-08
 
 ## acceptance criteria
@@ -15,9 +15,7 @@ started: 2026-05-08
 
 ## files changed
 
-- `packages/workspace/scripts/tool-batch.ts`
-- `packages/workspace/server.py`
-- `packages/workspace/tests/server_call_test.py`
+- none yet
 
 ## key decisions
 

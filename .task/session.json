@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_aa97979cccab",
-  "tmuxSession": "opensaas-workspace-agents-support-object-wrapped-batch-input-through-works-aa97979c",
+  "taskSession": "tsk_307e45e1cfa8",
+  "tmuxSession": "opensaas-workspace-agents-fix-workspace-status-changed-file-path-display-307e45e1",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-support-object-wrapped-batch-input-through-workspace-call",
-  "prNumber": 345,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/345",
-  "createdAt": "2026-05-08T21:50:29.566Z",
+  "taskBranch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
+  "prNumber": 344,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/344",
+  "createdAt": "2026-05-08T21:43:34.440Z",
   "tmuxCreated": true
 }

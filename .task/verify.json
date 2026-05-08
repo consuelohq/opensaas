@@ -1,15 +1,13 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "base": "origin/task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-  "headSha": "037a2687c44207bdd00a0b6c2e14ce80f74c779f",
-  "changeHash": "9c4f397af6d80c2340cca4ed5a37f5ab9c0f184760aa110aba8c578c3924c5ae",
+  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "base": "origin/task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "headSha": "6737e8a0951b49e7c43d0cde1a49665d3d475626",
+  "changeHash": "af687b3de37d3954e1bea19d815a2cc5c2ef8beb761f1583f966d7a49ab56786",
   "changedFiles": [
-    "packages/workspace/scripts/tool-batch.ts",
-    "packages/workspace/server.py",
-    "packages/workspace/tests/server_call_test.py"
+    "packages/workspace/scripts/lib/workspace-state.js"
   ],
-  "verifiedAt": "2026-05-08T21:54:39.752Z",
+  "verifiedAt": "2026-05-08T21:47:55.088Z",
   "review": {
     "skipped": false,
     "passed": true
