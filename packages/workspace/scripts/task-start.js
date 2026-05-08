@@ -367,6 +367,15 @@ async function main() {
       }
     }
 
+    const workspacePackageNodeModules = path.join(worktreePath, 'packages', 'workspace', 'node_modules');
+    if (!fs.existsSync(workspacePackageNodeModules)) {
+      const mainWorkspacePackageNodeModules = path.join(repoRoot, 'packages', 'workspace', 'node_modules');
+      if (fs.existsSync(mainWorkspacePackageNodeModules)) {
+        fs.symlinkSync(mainWorkspacePackageNodeModules, workspacePackageNodeModules);
+        writeStderr('symlinked packages/workspace/node_modules from main worktree');
+      }
+    }
+
     const taskTmux = ensureTaskTmuxSession({
       area,
       taskBranch,

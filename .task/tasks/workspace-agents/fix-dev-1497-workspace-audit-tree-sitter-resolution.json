@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 348,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/348",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-dev-1497-workspace-audit-tree-sitter-resolution",
+  "taskSession": "tsk_3f30c4fa4028",
+  "tmuxSession": "opensaas-workspace-agents-fix-dev-1497-workspace-audit-tree-sitter-resolut-3f30c4fa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-dev-1497-workspace-audit-tree-sitter-resolution/.task/session.json",
+  "createdAt": "2026-05-08T23:15:20.497Z"
+}

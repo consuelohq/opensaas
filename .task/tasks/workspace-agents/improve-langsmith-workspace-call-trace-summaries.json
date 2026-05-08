@@ -1,0 +1,15 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/improve-langsmith-workspace-call-trace-summaries",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 346,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/346",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries",
+  "taskSession": "tsk_b8be680f7631",
+  "tmuxSession": "opensaas-workspace-agents-improve-langsmith-workspace-call-trace-summaries-b8be680f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-improve-langsmith-workspace-call-trace-summaries/.task/session.json",
+  "createdAt": "2026-05-08T22:15:14.568Z"
+}
