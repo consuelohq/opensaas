@@ -146,3 +146,31 @@ Validation:
 Review note:
 
 - `bun run review -- --base task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` reports one pre-existing `ERROR_HANDLING` heuristic finding for `task-start.js:266`. This is expected because Ko explicitly requested removing the extra try/catch and relying on the existing top-level `main().catch` handler.
+
+## review fix pass — executor/env/docs/temp cleanup — 2026-05-08
+
+Verified current inline findings and fixed only still-valid issues:
+
+- Fixed executor taskSession discovery to use `options.env` for `WORKSPACE_WORKTREE_ROOT` / `OPENSAAS_WORKTREE_ROOT` instead of process-global env.
+- Enforced `sessionRequired` in the TypeScript facade before command planning; missing taskSession now returns `TASK_SESSION_REQUIRED`.
+- Confirmed `assertTmuxAvailable()` recursion was already fixed; added a node unit import test to prevent regression.
+- Wrapped `task-exec.js` temp directory lifecycle in `try/finally` so failures clean up temp files.
+- Replaced `os.sys.stderr` with `sys.stderr` in `server.py`.
+- Updated `server_call_test.py` to use `unittest.mock.patch.object` for subprocess monkeypatches.
+- Updated generated docs examples to use `workspace.call({ tool, input })`, then regenerated `TOOLS.md`.
+- Confirmed task-start try/catch wrappers were already removed; no change needed.
+- Added mtime-based manifest memoization in `server.py` as requested by nitpick.
+
+Validation:
+
+- `git diff --check`
+- `python3 -m py_compile packages/workspace/server.py`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py -v`
+- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
+- `bun --check packages/workspace/scripts/generate-docs.ts`
+- `node --check packages/workspace/scripts/lib/task-session.js`
+- `node --check packages/workspace/scripts/task-exec.js`
+- `node --check packages/workspace/scripts/task-start.js`
+- `node --test packages/workspace/tests/task-session.test.js`
+- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
+- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` → no findings

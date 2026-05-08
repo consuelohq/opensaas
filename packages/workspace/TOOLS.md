@@ -36,9 +36,11 @@ await workspace.call({
 The TypeScript shape below documents the facade schema and return envelope:
 
 ```ts
-import { workspace } from './src/generated/tool-client';
-
-const result = await workspace.fs.read({ path: 'packages/workspace/package.json' });
+const result = await workspace.call({
+  tool: "fs.read",
+  input: { path: "packages/workspace/package.json" },
+  timeout: 120,
+})
 if (!result.ok) throw new Error(result.message);
 ```
 
@@ -58,12 +60,15 @@ run syntax checks over a set of files through task:exec
 example call:
 
 ```ts
-await workspace.checkFiles({
-  "branch": "task/workspace-agents/example",
-  "files": [
-    "packages/workspace/scripts/fs.js"
-  ],
-  "stopOnFirstError": true
+await workspace.call({
+  "tool": "checkFiles",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "files": [
+      "packages/workspace/scripts/fs.js"
+    ],
+    "stopOnFirstError": true
+  }
 });
 ```
 
@@ -115,16 +120,19 @@ run a search-read-patch-verify flow as a composed script
 example call:
 
 ```ts
-await workspace.editFlow({
-  "branch": "task/workspace-agents/example",
-  "searchPattern": "oldFn",
-  "searchPaths": [
-    "packages/workspace/scripts"
-  ],
-  "from": 1,
-  "to": 1,
-  "contentFile": "/tmp/new.ts",
-  "dryRun": true
+await workspace.call({
+  "tool": "editFlow",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "searchPattern": "oldFn",
+    "searchPaths": [
+      "packages/workspace/scripts"
+    ],
+    "from": 1,
+    "to": 1,
+    "contentFile": "/tmp/new.ts",
+    "dryRun": true
+  }
 });
 ```
 
@@ -178,7 +186,10 @@ run consuelo-design package boundary and Railway checks
 example call:
 
 ```ts
-await workspace.consueloDesign.check({});
+await workspace.call({
+  "tool": "consueloDesign.check",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -229,8 +240,11 @@ start or open a live Open Design demo working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateDemo({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateDemo",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -282,8 +296,11 @@ start or open a live Open Design digital e-guide working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateDigitalEguide({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateDigitalEguide",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -335,8 +352,11 @@ start or open a live Open Design email working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateEmail({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateEmail",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -388,8 +408,11 @@ start or open a live Open Design image/media working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateImageBrief({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateImageBrief",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -441,8 +464,11 @@ start or open a live Open Design motion-frame working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateMotionFrame({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateMotionFrame",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -494,8 +520,11 @@ start or open a live Open Design website working session
 example call:
 
 ```ts
-await workspace.consueloDesign.generateWebsite({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.generateWebsite",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -547,7 +576,10 @@ return base Consuelo DESIGN.md and consuelo-design AGENTS.md only
 example call:
 
 ```ts
-await workspace.consueloDesign.getDesignSystem({});
+await workspace.call({
+  "tool": "consueloDesign.getDesignSystem",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -598,7 +630,10 @@ list Consuelo default design system and upstream reference systems
 example call:
 
 ```ts
-await workspace.consueloDesign.listDesignSystems({});
+await workspace.call({
+  "tool": "consueloDesign.listDesignSystems",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -649,7 +684,10 @@ list upstream Open Design skills and Consuelo workflow mappings
 example call:
 
 ```ts
-await workspace.consueloDesign.listSkills({});
+await workspace.call({
+  "tool": "consueloDesign.listSkills",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -700,8 +738,11 @@ build the vendored Open Design daemon CLI through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.odBuild({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.odBuild",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -753,7 +794,10 @@ verify consuelo-design is excluded from Railway deploy paths
 example call:
 
 ```ts
-await workspace.consueloDesign.railwayCheck({});
+await workspace.call({
+  "tool": "consueloDesign.railwayCheck",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -804,8 +848,11 @@ start or open a live Open Design HyperFrames render working session
 example call:
 
 ```ts
-await workspace.consueloDesign.renderHyperframes({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.renderHyperframes",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -857,8 +904,11 @@ start Open Design daemon and web UI in the foreground through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.run({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.run",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -910,8 +960,11 @@ start Open Design managed runtimes in the background through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.uiBg({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.uiBg",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -963,7 +1016,10 @@ show Open Design managed runtime logs through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.uiLogs({});
+await workspace.call({
+  "tool": "consueloDesign.uiLogs",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1014,7 +1070,10 @@ show Open Design managed runtime status through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.uiStatus({});
+await workspace.call({
+  "tool": "consueloDesign.uiStatus",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1065,8 +1124,11 @@ stop Open Design managed runtimes through the Bun facade
 example call:
 
 ```ts
-await workspace.consueloDesign.uiStop({
-  "dryRun": true
+await workspace.call({
+  "tool": "consueloDesign.uiStop",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -1118,7 +1180,10 @@ show vendored Open Design metadata and runtime requirements
 example call:
 
 ```ts
-await workspace.consueloDesign.upstreamStatus({});
+await workspace.call({
+  "tool": "consueloDesign.upstreamStatus",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1171,7 +1236,10 @@ list project memory categories
 example call:
 
 ```ts
-await workspace.context.categories({});
+await workspace.call({
+  "tool": "context.categories",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1222,9 +1290,12 @@ search project memory by title
 example call:
 
 ```ts
-await workspace.context.find({
-  "keyword": "handoff",
-  "limit": 3
+await workspace.call({
+  "tool": "context.find",
+  "input": {
+    "keyword": "handoff",
+    "limit": 3
+  }
 });
 ```
 
@@ -1276,9 +1347,12 @@ read a full project memory search result
 example call:
 
 ```ts
-await workspace.context.get({
-  "index": 1,
-  "keyword": "workspace"
+await workspace.call({
+  "tool": "context.get",
+  "input": {
+    "index": 1,
+    "keyword": "workspace"
+  }
 });
 ```
 
@@ -1330,9 +1404,12 @@ list recent project memories
 example call:
 
 ```ts
-await workspace.context.list({
-  "category": "workpad",
-  "limit": 3
+await workspace.call({
+  "tool": "context.list",
+  "input": {
+    "category": "workpad",
+    "limit": 3
+  }
 });
 ```
 
@@ -1384,10 +1461,13 @@ save a file or text into project memory
 example call:
 
 ```ts
-await workspace.context.save({
-  "title": "example memory",
-  "file": "/tmp/example.md",
-  "dryRun": true
+await workspace.call({
+  "tool": "context.save",
+  "input": {
+    "title": "example memory",
+    "file": "/tmp/example.md",
+    "dryRun": true
+  }
 });
 ```
 
@@ -1439,9 +1519,12 @@ search project memory by content
 example call:
 
 ```ts
-await workspace.context.search({
-  "keyword": "workspace",
-  "limit": 3
+await workspace.call({
+  "tool": "context.search",
+  "input": {
+    "keyword": "workspace",
+    "limit": 3
+  }
 });
 ```
 
@@ -1495,8 +1578,11 @@ audit workspace scripts, docs, or index freshness
 example call:
 
 ```ts
-await workspace.audit({
-  "scripts": true
+await workspace.call({
+  "tool": "audit",
+  "input": {
+    "scripts": true
+  }
 });
 ```
 
@@ -1548,7 +1634,10 @@ score confidence from evidence state
 example call:
 
 ```ts
-await workspace.confidenceScore({});
+await workspace.call({
+  "tool": "confidenceScore",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1599,8 +1688,11 @@ run verification or targeted validation through confirm
 example call:
 
 ```ts
-await workspace.confirm({
-  "verify": true
+await workspace.call({
+  "tool": "confirm",
+  "input": {
+    "verify": true
+  }
 });
 ```
 
@@ -1652,7 +1744,10 @@ recommend the next action from evidence state
 example call:
 
 ```ts
-await workspace.decideNext({});
+await workspace.call({
+  "tool": "decideNext",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1703,7 +1798,10 @@ select the highest-confidence editing target
 example call:
 
 ```ts
-await workspace.exploit({});
+await workspace.call({
+  "tool": "exploit",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -1754,9 +1852,12 @@ run repository exploration retrieval
 example call:
 
 ```ts
-await workspace.explore({
-  "query": "workspace facade",
-  "limit": 5
+await workspace.call({
+  "tool": "explore",
+  "input": {
+    "query": "workspace facade",
+    "limit": 5
+  }
 });
 ```
 
@@ -1810,10 +1911,13 @@ list or find files in the repo root or a resolved task worktree
 example call:
 
 ```ts
-await workspace.fs.list({
-  "branch": "task/workspace-agents/example",
-  "path": "packages/workspace/scripts",
-  "depth": 1
+await workspace.call({
+  "tool": "fs.list",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "packages/workspace/scripts",
+    "depth": 1
+  }
 });
 ```
 
@@ -1865,13 +1969,16 @@ replace a line range in a task worktree file
 example call:
 
 ```ts
-await workspace.fs.patch({
-  "branch": "task/workspace-agents/example",
-  "path": "tmp/example.txt",
-  "from": 1,
-  "to": 1,
-  "dryRun": true,
-  "contentFile": "/tmp/replacement.txt"
+await workspace.call({
+  "tool": "fs.patch",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "from": 1,
+    "to": 1,
+    "dryRun": true,
+    "contentFile": "/tmp/replacement.txt"
+  }
 });
 ```
 
@@ -1923,9 +2030,12 @@ read file contents with an optional line range
 example call:
 
 ```ts
-await workspace.fs.read({
-  "branch": "task/workspace-agents/example",
-  "path": "packages/workspace/package.json"
+await workspace.call({
+  "tool": "fs.read",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "packages/workspace/package.json"
+  }
 });
 ```
 
@@ -1977,12 +2087,15 @@ search files with ripgrep through the workspace script
 example call:
 
 ```ts
-await workspace.fs.search({
-  "branch": "task/workspace-agents/example",
-  "pattern": "task:fs",
-  "paths": [
-    "packages/workspace/SCRIPTS.md"
-  ]
+await workspace.call({
+  "tool": "fs.search",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "pattern": "task:fs",
+    "paths": [
+      "packages/workspace/SCRIPTS.md"
+    ]
+  }
 });
 ```
 
@@ -2034,10 +2147,13 @@ move a task worktree file to trash
 example call:
 
 ```ts
-await workspace.fs.trash({
-  "branch": "task/workspace-agents/example",
-  "path": "tmp/example.txt",
-  "dryRun": true
+await workspace.call({
+  "tool": "fs.trash",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "dryRun": true
+  }
 });
 ```
 
@@ -2089,11 +2205,14 @@ write a file in a task worktree
 example call:
 
 ```ts
-await workspace.fs.write({
-  "branch": "task/workspace-agents/example",
-  "path": "tmp/example.txt",
-  "content": "hello",
-  "dryRun": true
+await workspace.call({
+  "tool": "fs.write",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "path": "tmp/example.txt",
+    "content": "hello",
+    "dryRun": true
+  }
 });
 ```
 
@@ -2147,8 +2266,11 @@ generate TOOLS.md from the tool manifest
 example call:
 
 ```ts
-await workspace.generate.docs({
-  "dryRun": true
+await workspace.call({
+  "tool": "generate.docs",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -2200,8 +2322,11 @@ generate workspace.d.ts from the tool manifest
 example call:
 
 ```ts
-await workspace.generate.types({
-  "dryRun": true
+await workspace.call({
+  "tool": "generate.types",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -2255,11 +2380,14 @@ run the workspace GitHub helper with an explicit action
 example call:
 
 ```ts
-await workspace.gh({
-  "action": "view",
-  "args": [
-    "225"
-  ]
+await workspace.call({
+  "tool": "gh",
+  "input": {
+    "action": "view",
+    "args": [
+      "225"
+    ]
+  }
 });
 ```
 
@@ -2313,9 +2441,12 @@ make HTTP requests through the workspace http wrapper (wraps xh)
 example call:
 
 ```ts
-await workspace.http({
-  "method": "get",
-  "url": "https://example.com"
+await workspace.call({
+  "tool": "http",
+  "input": {
+    "method": "get",
+    "url": "https://example.com"
+  }
 });
 ```
 
@@ -2369,12 +2500,15 @@ create a Linear issue with DEV/open defaults and required labels
 example call:
 
 ```ts
-await workspace.linear.createIssue({
-  "title": "[task] add Linear facade commands",
-  "labels": [
-    "[task]",
-    "opensaas"
-  ]
+await workspace.call({
+  "tool": "linear.createIssue",
+  "input": {
+    "title": "[task] add Linear facade commands",
+    "labels": [
+      "[task]",
+      "opensaas"
+    ]
+  }
 });
 ```
 
@@ -2426,8 +2560,11 @@ read a Linear issue by identifier or id
 example call:
 
 ```ts
-await workspace.linear.issue({
-  "identifier": "DEV-123"
+await workspace.call({
+  "tool": "linear.issue",
+  "input": {
+    "identifier": "DEV-123"
+  }
 });
 ```
 
@@ -2479,8 +2616,11 @@ list Linear issue labels for label consistency
 example call:
 
 ```ts
-await workspace.linear.labels({
-  "first": 50
+await workspace.call({
+  "tool": "linear.labels",
+  "input": {
+    "first": 50
+  }
 });
 ```
 
@@ -2532,8 +2672,11 @@ list Linear projects and ids
 example call:
 
 ```ts
-await workspace.linear.projects({
-  "first": 50
+await workspace.call({
+  "tool": "linear.projects",
+  "input": {
+    "first": 50
+  }
 });
 ```
 
@@ -2585,8 +2728,11 @@ search Linear issues with DEV default team support
 example call:
 
 ```ts
-await workspace.linear.search({
-  "search": "workspace facade"
+await workspace.call({
+  "tool": "linear.search",
+  "input": {
+    "search": "workspace facade"
+  }
 });
 ```
 
@@ -2638,8 +2784,11 @@ list workflow states for a Linear team
 example call:
 
 ```ts
-await workspace.linear.states({
-  "team": "dev"
+await workspace.call({
+  "tool": "linear.states",
+  "input": {
+    "team": "dev"
+  }
 });
 ```
 
@@ -2691,8 +2840,11 @@ list Linear teams and workflow states
 example call:
 
 ```ts
-await workspace.linear.teams({
-  "first": 20
+await workspace.call({
+  "tool": "linear.teams",
+  "input": {
+    "first": 20
+  }
 });
 ```
 
@@ -2744,12 +2896,15 @@ update Linear issue fields including labels, project, cycle, and parent
 example call:
 
 ```ts
-await workspace.linear.updateIssue({
-  "issueId": "DEV-123",
-  "labels": [
-    "[bug]",
-    "opensaas"
-  ]
+await workspace.call({
+  "tool": "linear.updateIssue",
+  "input": {
+    "issueId": "DEV-123",
+    "labels": [
+      "[bug]",
+      "opensaas"
+    ]
+  }
 });
 ```
 
@@ -2803,9 +2958,12 @@ run a non-repo shell command on the Mac
 example call:
 
 ```ts
-await workspace.mac.exec({
-  "command": "pwd",
-  "dryRun": true
+await workspace.call({
+  "tool": "mac.exec",
+  "input": {
+    "command": "pwd",
+    "dryRun": true
+  }
 });
 ```
 
@@ -2857,9 +3015,12 @@ list non-repo files on the Mac
 example call:
 
 ```ts
-await workspace.mac.list({
-  "path": "/tmp",
-  "depth": 1
+await workspace.call({
+  "tool": "mac.list",
+  "input": {
+    "path": "/tmp",
+    "depth": 1
+  }
 });
 ```
 
@@ -2911,8 +3072,11 @@ check or find a local port
 example call:
 
 ```ts
-await workspace.mac.port({
-  "action": "find"
+await workspace.call({
+  "tool": "mac.port",
+  "input": {
+    "action": "find"
+  }
 });
 ```
 
@@ -2964,8 +3128,11 @@ list or kill local Mac processes
 example call:
 
 ```ts
-await workspace.mac.process({
-  "action": "list"
+await workspace.call({
+  "tool": "mac.process",
+  "input": {
+    "action": "list"
+  }
 });
 ```
 
@@ -3017,8 +3184,11 @@ read a non-repo file on the Mac
 example call:
 
 ```ts
-await workspace.mac.read({
-  "path": "/tmp/example.txt"
+await workspace.call({
+  "tool": "mac.read",
+  "input": {
+    "path": "/tmp/example.txt"
+  }
 });
 ```
 
@@ -3070,9 +3240,12 @@ search non-repo files on the Mac
 example call:
 
 ```ts
-await workspace.mac.search({
-  "pattern": "hello",
-  "path": "/tmp"
+await workspace.call({
+  "tool": "mac.search",
+  "input": {
+    "pattern": "hello",
+    "path": "/tmp"
+  }
 });
 ```
 
@@ -3124,10 +3297,13 @@ write a non-repo file on the Mac
 example call:
 
 ```ts
-await workspace.mac.write({
-  "path": "/tmp/example.txt",
-  "content": "hello",
-  "dryRun": true
+await workspace.call({
+  "tool": "mac.write",
+  "input": {
+    "path": "/tmp/example.txt",
+    "content": "hello",
+    "dryRun": true
+  }
 });
 ```
 
@@ -3181,9 +3357,12 @@ run the AI PR review helper
 example call:
 
 ```ts
-await workspace.aiReview({
-  "pr": 226,
-  "noPost": true
+await workspace.call({
+  "tool": "aiReview",
+  "input": {
+    "pr": 226,
+    "noPost": true
+  }
 });
 ```
 
@@ -3235,9 +3414,12 @@ fetch review comments for a PR
 example call:
 
 ```ts
-await workspace.prReview({
-  "pr": 225,
-  "stdout": true
+await workspace.call({
+  "tool": "prReview",
+  "input": {
+    "pr": 225,
+    "stdout": true
+  }
 });
 ```
 
@@ -3289,9 +3471,12 @@ run the workspace review checks
 example call:
 
 ```ts
-await workspace.review.run({
-  "branch": "task/workspace-agents/example",
-  "noTests": true
+await workspace.call({
+  "tool": "review.run",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "noTests": true
+  }
 });
 ```
 
@@ -3343,10 +3528,13 @@ run the full task safety gate
 example call:
 
 ```ts
-await workspace.verify({
-  "branch": "task/workspace-agents/example",
-  "noStamp": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "verify",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "noStamp": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -3400,8 +3588,11 @@ show Sentry API configuration status from Keychain without exposing secrets
 example call:
 
 ```ts
-await workspace.sentry.config({
-  "verify": true
+await workspace.call({
+  "tool": "sentry.config",
+  "input": {
+    "verify": true
+  }
 });
 ```
 
@@ -3453,8 +3644,11 @@ retrieve or resolve a Sentry event id, using a project slug when available
 example call:
 
 ```ts
-await workspace.sentry.event({
-  "eventId": "0123456789abcdef0123456789abcdef"
+await workspace.call({
+  "tool": "sentry.event",
+  "input": {
+    "eventId": "0123456789abcdef0123456789abcdef"
+  }
 });
 ```
 
@@ -3506,8 +3700,11 @@ retrieve one Sentry issue by short id or numeric issue id
 example call:
 
 ```ts
-await workspace.sentry.issue({
-  "identifier": "PROJECT-123"
+await workspace.call({
+  "tool": "sentry.issue",
+  "input": {
+    "identifier": "PROJECT-123"
+  }
 });
 ```
 
@@ -3559,10 +3756,13 @@ retrieve a latest, recommended, oldest, or concrete Sentry event for an issue
 example call:
 
 ```ts
-await workspace.sentry.issueEvent({
-  "issueId": "PROJECT-123",
-  "eventId": "recommended",
-  "full": true
+await workspace.call({
+  "tool": "sentry.issueEvent",
+  "input": {
+    "issueId": "PROJECT-123",
+    "eventId": "recommended",
+    "full": true
+  }
 });
 ```
 
@@ -3614,9 +3814,12 @@ search Sentry issues across the configured organization
 example call:
 
 ```ts
-await workspace.sentry.issues({
-  "query": "is:unresolved",
-  "limit": 10
+await workspace.call({
+  "tool": "sentry.issues",
+  "input": {
+    "query": "is:unresolved",
+    "limit": 10
+  }
 });
 ```
 
@@ -3668,8 +3871,11 @@ list Sentry projects for the configured organization
 example call:
 
 ```ts
-await workspace.sentry.projects({
-  "limit": 25
+await workspace.call({
+  "tool": "sentry.projects",
+  "input": {
+    "limit": 25
+  }
 });
 ```
 
@@ -3721,9 +3927,12 @@ perform a best-effort Sentry trace lookup across organization events and issues
 example call:
 
 ```ts
-await workspace.sentry.trace({
-  "traceId": "0123456789abcdef0123456789abcdef",
-  "limit": 10
+await workspace.call({
+  "tool": "sentry.trace",
+  "input": {
+    "traceId": "0123456789abcdef0123456789abcdef",
+    "limit": 10
+  }
 });
 ```
 
@@ -3777,8 +3986,11 @@ show recent stream context
 example call:
 
 ```ts
-await workspace.stream.context({
-  "area": "workspace-agents"
+await workspace.call({
+  "tool": "stream.context",
+  "input": {
+    "area": "workspace-agents"
+  }
 });
 ```
 
@@ -3830,7 +4042,10 @@ list stream branches
 example call:
 
 ```ts
-await workspace.stream.list({});
+await workspace.call({
+  "tool": "stream.list",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -3881,9 +4096,12 @@ sync a stream branch with main
 example call:
 
 ```ts
-await workspace.stream.sync({
-  "area": "workspace-agents",
-  "dryRun": true
+await workspace.call({
+  "tool": "stream.sync",
+  "input": {
+    "area": "workspace-agents",
+    "dryRun": true
+  }
 });
 ```
 
@@ -3937,10 +4155,13 @@ preview or remove stale task worktrees and branches
 example call:
 
 ```ts
-await workspace.task.cleanup({
-  "branch": "task/workspace-agents/example",
-  "preview": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "task.cleanup",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "preview": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -3992,7 +4213,10 @@ resolve the current task branch without running a mutating command
 example call:
 
 ```ts
-await workspace.task.current({});
+await workspace.call({
+  "tool": "task.current",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -4043,8 +4267,11 @@ check whether the task stream appears synced
 example call:
 
 ```ts
-await workspace.task.ensureSynced({
-  "branch": "task/workspace-agents/example"
+await workspace.call({
+  "tool": "task.ensureSynced",
+  "input": {
+    "branch": "task/workspace-agents/example"
+  }
 });
 ```
 
@@ -4096,14 +4323,17 @@ run a command inside a task worktree
 example call:
 
 ```ts
-await workspace.task.exec({
-  "branch": "task/workspace-agents/example",
-  "command": [
-    "git",
-    "status",
-    "--short"
-  ],
-  "dryRun": true
+await workspace.call({
+  "tool": "task.exec",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "dryRun": true
+  }
 });
 ```
 
@@ -4155,9 +4385,12 @@ finish a task branch after merge
 example call:
 
 ```ts
-await workspace.task.finish({
-  "branch": "task/workspace-agents/example",
-  "dryRun": true
+await workspace.call({
+  "tool": "task.finish",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4209,10 +4442,13 @@ write task metadata for an existing worktree
 example call:
 
 ```ts
-await workspace.task.init({
-  "area": "workspace-agents",
-  "branch": "task/workspace-agents/example",
-  "dryRun": true
+await workspace.call({
+  "tool": "task.init",
+  "input": {
+    "area": "workspace-agents",
+    "branch": "task/workspace-agents/example",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4264,9 +4500,12 @@ merge a pull request through the workspace task merge script
 example call:
 
 ```ts
-await workspace.task.merge({
-  "pr": 225,
-  "dryRun": true
+await workspace.call({
+  "tool": "task.merge",
+  "input": {
+    "pr": 225,
+    "dryRun": true
+  }
 });
 ```
 
@@ -4318,8 +4557,11 @@ pin a task branch for a programmatic workspace client
 example call:
 
 ```ts
-await workspace.task.pin({
-  "branch": "task/workspace-agents/example"
+await workspace.call({
+  "tool": "task.pin",
+  "input": {
+    "branch": "task/workspace-agents/example"
+  }
 });
 ```
 
@@ -4371,10 +4613,13 @@ merge task to stream and create or refresh the stream review PR
 example call:
 
 ```ts
-await workspace.task.pr({
-  "branch": "task/workspace-agents/example",
-  "taskOnly": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "task.pr",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "taskOnly": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -4426,8 +4671,11 @@ show task and review PR links
 example call:
 
 ```ts
-await workspace.task.prs({
-  "branch": "task/workspace-agents/example"
+await workspace.call({
+  "tool": "task.prs",
+  "input": {
+    "branch": "task/workspace-agents/example"
+  }
 });
 ```
 
@@ -4479,11 +4727,14 @@ push changed task files to the task branch through GitHub API
 example call:
 
 ```ts
-await workspace.task.push({
-  "branch": "task/workspace-agents/example",
-  "message": "feat(workspace): example",
-  "changed": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "task.push",
+  "input": {
+    "branch": "task/workspace-agents/example",
+    "message": "feat(workspace): example",
+    "changed": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -4535,10 +4786,13 @@ create a task branch, worktree, and draft PR
 example call:
 
 ```ts
-await workspace.task.start({
-  "stream": "stream/workspace-agents",
-  "title": "example task",
-  "dryRun": true
+await workspace.call({
+  "tool": "task.start",
+  "input": {
+    "stream": "stream/workspace-agents",
+    "title": "example task",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4590,7 +4844,10 @@ run the task metadata smoke suite
 example call:
 
 ```ts
-await workspace.taskMeta.smoke({});
+await workspace.call({
+  "tool": "taskMeta.smoke",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -4643,10 +4900,13 @@ run the generic workspace browser wrapper command
 example call:
 
 ```ts
-await workspace.browser({
-  "command": "open",
-  "url": "https://example.com",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser",
+  "input": {
+    "command": "open",
+    "url": "https://example.com",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4698,8 +4958,11 @@ open app.consuelohq.com with the browser wrapper
 example call:
 
 ```ts
-await workspace.browser.app({
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.app",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -4751,9 +5014,12 @@ click a browser element by ref
 example call:
 
 ```ts
-await workspace.browser.click({
-  "ref": "@e1",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.click",
+  "input": {
+    "ref": "@e1",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4805,8 +5071,11 @@ close active browser sessions
 example call:
 
 ```ts
-await workspace.browser.close({
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.close",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -4858,8 +5127,11 @@ open consuelo.consuelohq.com with the browser wrapper
 example call:
 
 ```ts
-await workspace.browser.consuelo({
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.consuelo",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -4911,9 +5183,12 @@ execute JavaScript on the current browser page
 example call:
 
 ```ts
-await workspace.browser.eval({
-  "js": "document.title",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.eval",
+  "input": {
+    "js": "document.title",
+    "dryRun": true
+  }
 });
 ```
 
@@ -4965,10 +5240,13 @@ fill a browser input by ref
 example call:
 
 ```ts
-await workspace.browser.fill({
-  "ref": "@e1",
-  "text": "hello",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.fill",
+  "input": {
+    "ref": "@e1",
+    "text": "hello",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5020,10 +5298,13 @@ run a saved browser auth login profile
 example call:
 
 ```ts
-await workspace.browser.login({
-  "name": "consuelo",
-  "headed": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.login",
+  "input": {
+    "name": "consuelo",
+    "headed": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -5075,9 +5356,12 @@ open a URL with the browser wrapper
 example call:
 
 ```ts
-await workspace.browser.open({
-  "url": "https://example.com",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.open",
+  "input": {
+    "url": "https://example.com",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5129,12 +5413,15 @@ pass raw arguments through to agent-browser
 example call:
 
 ```ts
-await workspace.browser.raw({
-  "args": [
-    "auth",
-    "list"
-  ],
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.raw",
+  "input": {
+    "args": [
+      "auth",
+      "list"
+    ],
+    "dryRun": true
+  }
 });
 ```
 
@@ -5186,10 +5473,13 @@ restart the browser daemon and run a saved auth login profile
 example call:
 
 ```ts
-await workspace.browser.reauth({
-  "name": "consuelo",
-  "headed": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.reauth",
+  "input": {
+    "name": "consuelo",
+    "headed": true,
+    "dryRun": true
+  }
 });
 ```
 
@@ -5241,9 +5531,12 @@ capture a browser screenshot
 example call:
 
 ```ts
-await workspace.browser.screenshot({
-  "name": "after-login",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.screenshot",
+  "input": {
+    "name": "after-login",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5295,8 +5588,11 @@ capture an accessibility snapshot
 example call:
 
 ```ts
-await workspace.browser.snap({
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.snap",
+  "input": {
+    "dryRun": true
+  }
 });
 ```
 
@@ -5348,9 +5644,12 @@ open a URL, wait for load, snapshot, and screenshot
 example call:
 
 ```ts
-await workspace.browser.test({
-  "url": "https://example.com",
-  "dryRun": true
+await workspace.call({
+  "tool": "browser.test",
+  "input": {
+    "url": "https://example.com",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5402,7 +5701,10 @@ run workspace diagnostics
 example call:
 
 ```ts
-await workspace.doctor({});
+await workspace.call({
+  "tool": "doctor",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -5453,9 +5755,12 @@ read Railway deploy/runtime logs through the workspace script
 example call:
 
 ```ts
-await workspace.railway.logs({
-  "service": "opensaas",
-  "lines": 10
+await workspace.call({
+  "tool": "railway.logs",
+  "input": {
+    "service": "opensaas",
+    "lines": 10
+  }
 });
 ```
 
@@ -5507,9 +5812,12 @@ trigger a Railway redeploy
 example call:
 
 ```ts
-await workspace.railway.redeploy({
-  "service": "opensaas",
-  "dryRun": true
+await workspace.call({
+  "tool": "railway.redeploy",
+  "input": {
+    "service": "opensaas",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5561,8 +5869,11 @@ manage the workspace MCP server
 example call:
 
 ```ts
-await workspace.server({
-  "action": "status"
+await workspace.call({
+  "tool": "server",
+  "input": {
+    "action": "status"
+  }
 });
 ```
 
@@ -5614,7 +5925,10 @@ show compact workspace status
 example call:
 
 ```ts
-await workspace.status({});
+await workspace.call({
+  "tool": "status",
+  "input": {}
+});
 ```
 
 example success envelope:
@@ -5665,11 +5979,14 @@ run the workspace temp-file helper
 example call:
 
 ```ts
-await workspace.tmp({
-  "action": "write",
-  "name": "example",
-  "content": "hello",
-  "dryRun": true
+await workspace.call({
+  "tool": "tmp",
+  "input": {
+    "action": "write",
+    "name": "example",
+    "content": "hello",
+    "dryRun": true
+  }
 });
 ```
 
@@ -5721,8 +6038,11 @@ sleep or wait for a PR/deploy
 example call:
 
 ```ts
-await workspace.wait({
-  "seconds": 1
+await workspace.call({
+  "tool": "wait",
+  "input": {
+    "seconds": 1
+  }
 });
 ```
 
@@ -5774,9 +6094,12 @@ deploy the Consuelo website
 example call:
 
 ```ts
-await workspace.website.deploy({
-  "buildOnly": true,
-  "dryRun": true
+await workspace.call({
+  "tool": "website.deploy",
+  "input": {
+    "buildOnly": true,
+    "dryRun": true
+  }
 });
 ```
 

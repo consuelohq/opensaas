@@ -5,6 +5,7 @@ import sys
 import tempfile
 import types
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 
@@ -119,12 +120,12 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 'apiVersion': '1.0.0',
             }))
 
-        self.module.subprocess.run = fake_run
-        result = self.module._run_workspace_call(
-            'batch',
-            taskSession=self.session,
-            tool_input=[{'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}}],
-        )
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call(
+                'batch',
+                taskSession=self.session,
+                tool_input=[{'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}}],
+            )
         self.assertTrue(result['ok'])
         batch_input = json.loads(captured['args'][3])
         self.assertEqual(batch_input[0]['input']['taskSession'], self.session)
@@ -150,8 +151,8 @@ class WorkspaceCallServerTest(unittest.TestCase):
         def fake_run(args, **kwargs):
             raise FileNotFoundError('bun')
 
-        self.module.subprocess.run = fake_run
-        result = self.module._run_workspace_call('status', tool_input={})
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call('status', tool_input={})
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'COMMAND_FAILED')

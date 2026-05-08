@@ -4,6 +4,7 @@ import contextlib
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -74,6 +75,8 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+_CACHED_MANIFEST: list[dict[str, Any]] | None = None
+_CACHED_MANIFEST_MTIME: float | None = None
 
 
 def _resolve_steering_file() -> str:
@@ -156,11 +159,19 @@ def _envelope(
 
 
 def _load_manifest_entries() -> list[dict[str, Any]]:
+    global _CACHED_MANIFEST, _CACHED_MANIFEST_MTIME
     try:
+        mtime = os.path.getmtime(TOOL_MANIFEST_FILE)
+        if _CACHED_MANIFEST is not None and _CACHED_MANIFEST_MTIME == mtime:
+            return _CACHED_MANIFEST
         with open(TOOL_MANIFEST_FILE, 'r', encoding='utf-8') as handle:
             data = json.load(handle)
-        return data if isinstance(data, list) else []
+        _CACHED_MANIFEST = data if isinstance(data, list) else []
+        _CACHED_MANIFEST_MTIME = mtime
+        return _CACHED_MANIFEST
     except (OSError, json.JSONDecodeError):
+        _CACHED_MANIFEST = []
+        _CACHED_MANIFEST_MTIME = None
         return []
 
 
@@ -196,7 +207,7 @@ def _task_session_metadata(task_session: str | None) -> dict[str, Any] | None:
         except OSError:
             continue
         except json.JSONDecodeError as error:
-            print(f'warning: failed to parse task session metadata {candidate}: {error}', file=os.sys.stderr)
+            print(f'warning: failed to parse task session metadata {candidate}: {error}', file=sys.stderr)
             continue
         if not isinstance(raw, dict):
             continue

@@ -51,54 +51,58 @@ function executeInTmux({ tmuxSession, worktreePath, taskBranch, commandArgs }) {
 
   const token = `opensaas-task-exec-${process.pid}-${Date.now()}`;
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opensaas-task-exec-'));
-  const stdoutPath = path.join(tempDir, 'stdout.log');
-  const stderrPath = path.join(tempDir, 'stderr.log');
-  const statusPath = path.join(tempDir, 'status');
-  const command = commandArgs.map(shellQuote).join(' ');
-  const script = [
-    'set +e',
-    `${command} > ${shellQuote(stdoutPath)} 2> ${shellQuote(stderrPath)}`,
-    `status=$?`,
-    `printf '%s\\n' "$status" > ${shellQuote(statusPath)}`,
-    `tmux wait-for -S ${shellQuote(token)}`,
-    'exit "$status"',
-  ].join('; ');
 
-  const start = runTmux([
-    'new-window',
-    '-d',
-    '-t',
-    tmuxSession,
-    '-c',
-    worktreePath,
-    'env',
-    `TASK_BRANCH=${taskBranch}`,
-    `TASK_WORKTREE=${worktreePath}`,
-    'bash',
-    '-lc',
-    script,
-  ]);
-  if (start.status !== 0) {
-    const detail = start.stderr || start.stdout || `exit ${start.status}`;
-    throw new Error(`failed to execute command in tmux session ${tmuxSession}: ${detail}`);
+  try {
+    const stdoutPath = path.join(tempDir, 'stdout.log');
+    const stderrPath = path.join(tempDir, 'stderr.log');
+    const statusPath = path.join(tempDir, 'status');
+    const command = commandArgs.map(shellQuote).join(' ');
+    const script = [
+      'set +e',
+      `${command} > ${shellQuote(stdoutPath)} 2> ${shellQuote(stderrPath)}`,
+      `status=$?`,
+      `printf '%s\n' "$status" > ${shellQuote(statusPath)}`,
+      `tmux wait-for -S ${shellQuote(token)}`,
+      'exit "$status"',
+    ].join('; ');
+
+    const start = runTmux([
+      'new-window',
+      '-d',
+      '-t',
+      tmuxSession,
+      '-c',
+      worktreePath,
+      'env',
+      `TASK_BRANCH=${taskBranch}`,
+      `TASK_WORKTREE=${worktreePath}`,
+      'bash',
+      '-lc',
+      script,
+    ]);
+    if (start.status !== 0) {
+      const detail = start.stderr || start.stdout || `exit ${start.status}`;
+      throw new Error(`failed to execute command in tmux session ${tmuxSession}: ${detail}`);
+    }
+
+    const wait = runTmux(['wait-for', token]);
+    if (wait.status !== 0) {
+      const detail = wait.stderr || wait.stdout || `exit ${wait.status}`;
+      throw new Error(`failed waiting for tmux task command ${tmuxSession}: ${detail}`);
+    }
+
+    const stdout = fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '';
+    const stderr = fs.existsSync(stderrPath) ? fs.readFileSync(stderrPath, 'utf8') : '';
+    const statusText = fs.existsSync(statusPath) ? fs.readFileSync(statusPath, 'utf8').trim() : '1';
+    const status = Number.parseInt(statusText, 10);
+
+    if (stdout) process.stdout.write(stdout);
+    if (stderr) process.stderr.write(stderr);
+
+    return Number.isFinite(status) ? status : 1;
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
   }
-
-  const wait = runTmux(['wait-for', token]);
-  if (wait.status !== 0) {
-    const detail = wait.stderr || wait.stdout || `exit ${wait.status}`;
-    throw new Error(`failed waiting for tmux task command ${tmuxSession}: ${detail}`);
-  }
-
-  const stdout = fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '';
-  const stderr = fs.existsSync(stderrPath) ? fs.readFileSync(stderrPath, 'utf8') : '';
-  const statusText = fs.existsSync(statusPath) ? fs.readFileSync(statusPath, 'utf8').trim() : '1';
-  const status = Number.parseInt(statusText, 10);
-  fs.rmSync(tempDir, { recursive: true, force: true });
-
-  if (stdout) process.stdout.write(stdout);
-  if (stderr) process.stderr.write(stderr);
-
-  return Number.isFinite(status) ? status : 1;
 }
 
 function main() {
