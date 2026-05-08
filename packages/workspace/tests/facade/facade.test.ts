@@ -92,8 +92,18 @@ function exampleInput(entryName: string): ToolInput {
   return input;
 }
 
+function writeTaskSession(tempRoot: string, taskSession: string, branch: string = TEST_BRANCH): void {
+  mkdirSync(join(tempRoot, '.task'), { recursive: true });
+  writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+    taskSession,
+    tmuxSession: 'opensaas-test',
+    branch,
+    worktree: tempRoot,
+  }, null, 2));
+}
+
 function executableEntries() {
-  return manifestEntries.filter((entry) => !entry.command.internal);
+  return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true);
 }
 
 describe('typed facade executor', () => {
@@ -123,14 +133,14 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
     expect(plans).toHaveLength(0);
   });
 
-  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && entry.command.dryRunFlag).map((entry) => entry.name))('passes native dry-run through for %s', async (toolName) => {
+  it.each(manifestEntries.filter((entry) => entry.capabilities.mutating && entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('passes native dry-run through for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
     const entry = getToolManifestEntry(toolName);
@@ -147,7 +157,7 @@ describe('typed facade executor', () => {
     expect(result.now).toBe('1970-01-01T00:00:01.000Z');
   });
 
-  it('falls back to repo fs for read-only fs tools when no task branch is active', async () => {
+  it('requires taskSession before repo fs fallback for sessionRequired tools', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('fs.read', {
       path: 'AGENTS.md',
@@ -163,9 +173,54 @@ describe('typed facade executor', () => {
       candidates: [],
     });
 
-    expect(result.ok).toBe(true);
-    expect(plans[0].args).toContain('fs');
-    expect(plans[0].args).not.toContain('--branch');
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+    expect(plans).toHaveLength(0);
+  });
+
+  it('requires taskSession for sessionRequired tools', async () => {
+    const result = await executeTool('fs.read', {
+      path: 'AGENTS.md',
+    }, {
+      ...stableOptions(successfulRunner()),
+      currentTask: null,
+      candidates: [],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TASK_SESSION_REQUIRED');
+  });
+
+  it('uses options.env worktree root for taskSession discovery', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-env-'));
+    const worktreeRoot = join(tempRoot, 'custom-worktrees');
+    const worktree = join(worktreeRoot, 'task-workspace-agents-env');
+    mkdirSync(join(worktree, '.task'), { recursive: true });
+    writeFileSync(join(worktree, '.task', 'session.json'), JSON.stringify({
+      taskSession: 'tsk_env_root',
+      tmuxSession: 'opensaas-env',
+      branch: 'task/workspace-agents/env-root',
+      worktree,
+    }, null, 2));
+
+    try {
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'tsk_env_root',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: join(tempRoot, 'empty-cwd'),
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/env-root');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('resolves taskSession metadata before branch planning', async () => {
@@ -348,8 +403,8 @@ describe('branch resolver', () => {
 describe('batch executor', () => {
   it('runs successful chains', async () => {
     const result = await runBatch([
-      { tool: 'fs.read', input: exampleInput('fs.read') },
-      { tool: 'fs.search', input: exampleInput('fs.search') },
+      { tool: 'status', input: exampleInput('status') },
+      { tool: 'stream.list', input: exampleInput('stream.list') },
     ], stableOptions(successfulRunner()));
     expect(result.ok).toBe(true);
     expect(result.data.completed).toBe(2);
@@ -358,8 +413,8 @@ describe('batch executor', () => {
 
   it('stops after a failed step', async () => {
     const result = await runBatch([
-      { tool: 'fs.read', args: exampleInput('fs.read') },
-      { tool: 'fs.search', args: exampleInput('fs.search') },
+      { tool: 'status', args: exampleInput('status') },
+      { tool: 'stream.list', args: exampleInput('stream.list') },
     ], stableOptions(failingRunner()));
     expect(result.ok).toBe(false);
     expect(result.data.completed).toBe(1);
@@ -368,8 +423,8 @@ describe('batch executor', () => {
   it('runs parallel read-only steps together', async () => {
     const plans: CommandPlan[] = [];
     const result = await runBatch([
-      { tool: 'fs.read', input: exampleInput('fs.read'), parallel: true },
-      { tool: 'fs.search', input: exampleInput('fs.search'), parallel: true },
+      { tool: 'status', input: exampleInput('status'), parallel: true },
+      { tool: 'stream.list', input: exampleInput('stream.list'), parallel: true },
     ], stableOptions(successfulRunner(), plans));
     expect(result.ok).toBe(true);
     expect(plans).toHaveLength(2);
@@ -378,18 +433,34 @@ describe('batch executor', () => {
 
 describe('composed and mac wrappers', () => {
   it('builds checkFiles command arguments', async () => {
-    const plans: CommandPlan[] = [];
-    const result = await executeTool('checkFiles', exampleInput('checkFiles'), stableOptions(successfulRunner(), plans));
-    expect(result.ok).toBe(true);
-    expect(plans[0].args).toContain('check-files');
-    expect(plans[0].args).toContain('--stop-on-first-error');
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-check-files-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_check_files');
+      const plans: CommandPlan[] = [];
+      const input = { ...exampleInput('checkFiles'), taskSession: 'tsk_check_files' };
+      delete input.branch;
+      const result = await executeTool('checkFiles', input, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('check-files');
+      expect(plans[0].args).toContain('--stop-on-first-error');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('passes editFlow dry-run to the native script', async () => {
-    const plans: CommandPlan[] = [];
-    const result = await executeTool('editFlow', { ...exampleInput('editFlow'), dryRun: true }, stableOptions(successfulRunner(), plans));
-    expect(result.code).toBe('OK');
-    expect(plans[0].args).toContain('--dry-run');
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-edit-flow-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_edit_flow');
+      const plans: CommandPlan[] = [];
+      const input = { ...exampleInput('editFlow'), taskSession: 'tsk_edit_flow', dryRun: true };
+      delete input.branch;
+      const result = await executeTool('editFlow', input, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+      expect(result.code).toBe('OK');
+      expect(plans[0].args).toContain('--dry-run');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('builds mac operation commands', async () => {

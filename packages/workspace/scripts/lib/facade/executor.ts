@@ -140,12 +140,26 @@ export async function executeTool<TData = unknown>(
     }
 
     const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
-    const taskSessionResolution = resolveTaskSessionInput(normalizedInput, cwd);
+    const taskSessionResolution = resolveTaskSessionInput(normalizedInput, cwd, env);
     if (taskSessionResolution && !taskSessionResolution.ok) {
       const result = createToolResult({
         ok: false,
         code: taskSessionResolution.code,
         message: taskSessionResolution.message,
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      return result as ToolResult<TData>;
+    }
+    if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
+      const result = createToolResult({
+        ok: false,
+        code: 'TASK_SESSION_REQUIRED',
+        message: `${toolName} requires taskSession. Use the taskSession returned by task.start.`,
         data: null,
         durationMs: elapsedMs(startedAt, options.now),
         traceId,
@@ -464,7 +478,7 @@ async function executeInternalTool<TData>(
   return result as ToolResult<TData>;
 }
 
-function resolveTaskSessionInput(input: ToolInput, cwd: string): TaskSessionResolution | null {
+function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
   const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
   if (!taskSession) return null;
   if (typeof input.branch === 'string') return {
@@ -473,7 +487,7 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string): TaskSessionReso
     message: 'Pass either taskSession or branch, not both.',
   };
 
-  const metadata = findTaskSessionMetadata(cwd, taskSession);
+  const metadata = findTaskSessionMetadata(cwd, taskSession, env);
   if (!metadata) return {
     ok: false,
     code: 'TASK_SESSION_NOT_FOUND',
@@ -496,11 +510,11 @@ function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): val
   return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
 }
 
-function findTaskSessionMetadata(cwd: string, taskSession: string): TaskSessionMetadata | null {
+function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
   const candidates = new Set<string>();
   candidates.add(path.join(cwd, '.task', 'session.json'));
 
-  const absoluteWorktreeRoot = getWorktreeRoot();
+  const absoluteWorktreeRoot = getWorktreeRoot(env);
   if (fs.existsSync(absoluteWorktreeRoot)) {
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       candidates.add(path.join(absoluteWorktreeRoot, name, '.task', 'session.json'));
