@@ -15,7 +15,9 @@ started: 2026-05-08
 
 ## files changed
 
-- none yet
+- `packages/workspace/scripts/tool-batch.ts`
+- `packages/workspace/server.py`
+- `packages/workspace/tests/server_call_test.py`
 
 ## key decisions
 
