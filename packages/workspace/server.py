@@ -49,25 +49,118 @@ def _estimate_tokens(text: str) -> int:
     """rough token estimate: ~4 chars per token."""
     return max(1, len(str(text)) // 4)
 
+_TRACE_SUMMARY_LIMIT = 240
+
+def _trace_string(value: Any, limit: int = _TRACE_SUMMARY_LIMIT) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        rendered = value
+    else:
+        try:
+            rendered = json.dumps(value, sort_keys=True, default=str)
+        except TypeError:
+            rendered = str(value)
+    rendered = ' '.join(rendered.split())
+    return rendered if len(rendered) <= limit else rendered[:limit - 1] + '…'
+
+def _trace_command_summary(value: Any) -> str | None:
+    if isinstance(value, str):
+        return _trace_string(value)
+    if isinstance(value, list):
+        return _trace_string(' '.join(str(part) for part in value))
+    return None
+
+def _trace_batch_summary(value: Any) -> str:
+    if not isinstance(value, list):
+        return _trace_string(value)
+    tools = []
+    for step in value:
+        if isinstance(step, dict) and isinstance(step.get('tool'), str):
+            tools.append(step['tool'])
+        else:
+            tools.append('unknown')
+    preview = ', '.join(tools[:6])
+    if len(tools) > 6:
+        preview += f', +{len(tools) - 6} more'
+    return f'{len(tools)} steps: {preview}'
+
+def _trace_input_summary(tool: str | None, tool_input: Any) -> str:
+    if tool == 'batch':
+        return _trace_batch_summary(tool_input)
+    if isinstance(tool_input, dict):
+        for key in ('command', 'cmd', 'script'):
+            command = _trace_command_summary(tool_input.get(key))
+            if command:
+                return command
+        for key in ('path', 'query', 'area', 'base', 'message', 'title', 'pattern'):
+            value = tool_input.get(key)
+            if value:
+                return f'{key}={_trace_string(value)}'
+        return _trace_string(tool_input)
+    return _trace_string(tool_input)
+
+def _trace_inputs(name: str, args: tuple[Any, ...], kwargs: dict[str, Any]) -> dict[str, Any]:
+    if name == 'workspace.call':
+        tool = kwargs.get('tool') if isinstance(kwargs.get('tool'), str) else None
+        tool_input = kwargs.get('tool_input')
+        return {
+            'action': tool or name,
+            'tool': tool,
+            'taskSession': kwargs.get('taskSession'),
+            'timeout': kwargs.get('timeout'),
+            'inputSummary': _trace_input_summary(tool, tool_input),
+            'tool_input': tool_input,
+        }
+    inputs = {f'arg{i}': value for i, value in enumerate(args)}
+    inputs.update(kwargs)
+    return inputs
+
+def _trace_run_name(name: str, inputs: dict[str, Any]) -> str:
+    if name == 'workspace.call' and isinstance(inputs.get('tool'), str) and inputs['tool']:
+        return inputs['tool']
+    return name
+
+def _trace_outputs(name: str, inputs: dict[str, Any], result: Any, usage: dict[str, int]) -> dict[str, Any]:
+    if name != 'workspace.call' or not isinstance(result, dict):
+        return {'result': result, 'usage': usage}
+    task_context = result.get('taskContext') if isinstance(result.get('taskContext'), dict) else {}
+    tool = inputs.get('tool') or inputs.get('action')
+    code = result.get('code') or ('OK' if result.get('ok') else 'COMMAND_FAILED')
+    summary_parts = [_trace_string(code, 80), _trace_string(tool, 80)]
+    tmux_session = task_context.get('tmuxSession')
+    if tmux_session:
+        summary_parts.append(f'tmux={_trace_string(tmux_session, 120)}')
+    return {
+        'summary': ' · '.join(part for part in summary_parts if part),
+        'ok': result.get('ok'),
+        'code': code,
+        'tool': tool,
+        'taskSession': task_context.get('taskSession') or inputs.get('taskSession'),
+        'tmuxSession': tmux_session,
+        'branch': task_context.get('branch'),
+        'worktree': task_context.get('worktree'),
+        'result': result,
+        'usage': usage,
+    }
+
 def _traced_call(name, run_type, fn, *args, **kwargs):
     """wrap a function call with langsmith tracing that correctly sets session_id for threads."""
     if not _tracing or not ls_trace:
         return fn(*args, **kwargs)
-    inputs = {f'arg{i}': v for i, v in enumerate(args)}
-    inputs.update(kwargs)
-    input_text = ' '.join(str(v) for v in inputs.values())
-    with ls_trace(name=name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id}) as rt:
+    inputs = _trace_inputs(name, args, kwargs)
+    input_text = ' '.join(str(value) for value in inputs.values())
+    trace_name = _trace_run_name(name, inputs)
+    with ls_trace(name=trace_name, run_type='llm', inputs=inputs, metadata={'session_id': _session_id, 'workspaceTrace': name}) as rt:
         result = fn(*args, **kwargs)
         prompt_tokens = _estimate_tokens(input_text)
         completion_tokens = _estimate_tokens(result)
-        rt.end(outputs={
-            'result': result,
-            'usage': {
-                'prompt_tokens': prompt_tokens,
-                'completion_tokens': completion_tokens,
-                'total_tokens': prompt_tokens + completion_tokens,
-            },
-        })
+        usage = {
+            'prompt_tokens': prompt_tokens,
+            'completion_tokens': completion_tokens,
+            'total_tokens': prompt_tokens + completion_tokens,
+        }
+        rt.end(outputs=_trace_outputs(name, inputs, result, usage))
         return result
 
 APP_DIR = os.path.dirname(__file__)
@@ -81,6 +174,10 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
+_CACHED_MANIFEST: list[dict[str, Any]] | None = None
+_CACHED_MANIFEST_MTIME: float | None = None
+_SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
+_SAFETY_SUMMARY_LIMIT = 500
 
 CALL_TOOL = {
     'readOnlyHint': True,
@@ -239,8 +336,11 @@ def _check_process_guardrails(tool: str, tool_input: Any) -> str | None:
 
 
 def _safety_check(tool: str, tool_input: Any, task_session: str | None = None) -> str | None:
-    if tool == 'batch' and isinstance(tool_input, list):
-        for index, step in enumerate(tool_input):
+    if tool == 'batch':
+        steps = _batch_steps(tool_input)
+        if steps is None:
+            return None
+        for index, step in enumerate(steps):
             if not isinstance(step, dict):
                 continue
             child_tool = step.get('tool')
@@ -364,10 +464,19 @@ def _input_has_branch(value: Any) -> bool:
     return isinstance(value, dict) and isinstance(value.get('branch'), str)
 
 
+def _batch_steps(value: Any) -> list[Any] | None:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, dict) and isinstance(value.get('steps'), list):
+        return value.get('steps')
+    return None
+
+
 def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
-    if not isinstance(value, list):
+    steps = _batch_steps(value)
+    if steps is None:
         return False
-    for step in value:
+    for step in steps:
         if not isinstance(step, dict):
             continue
         child_tool = step.get('tool')
@@ -378,9 +487,10 @@ def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
 
 
 def _batch_has_branch_conflict(value: Any) -> bool:
-    if not isinstance(value, list):
+    steps = _batch_steps(value)
+    if steps is None:
         return False
-    for step in value:
+    for step in steps:
         if not isinstance(step, dict):
             continue
         child_tool = step.get('tool')
@@ -400,8 +510,9 @@ def _apply_task_session_to_batch_steps(value: list[Any], task_session: str) -> l
             continue
         child_tool = step.get('tool')
         child_input = step.get('input') if 'input' in step else step.get('args')
-        if child_tool == 'batch' and isinstance(child_input, list):
-            step = {**step, 'input': _apply_task_session_to_batch_steps(child_input, task_session)}
+        child_steps = _batch_steps(child_input)
+        if child_tool == 'batch' and child_steps is not None:
+            step = {**step, 'input': _apply_task_session_to_batch_steps(child_steps, task_session)}
             step.pop('args', None)
         elif isinstance(child_input, dict) and 'taskSession' not in child_input:
             step = {**step, 'input': {**child_input, 'taskSession': task_session}}
@@ -425,8 +536,10 @@ def _apply_task_session(tool: str, task_session: str | None, tool_input: Any) ->
     if metadata is None:
         return tool_input, None
 
-    if tool == 'batch' and isinstance(tool_input, list):
-        return _apply_task_session_to_batch_steps(tool_input, task_session), metadata
+    if tool == 'batch':
+        steps = _batch_steps(tool_input)
+        if steps is not None:
+            return _apply_task_session_to_batch_steps(steps, task_session), metadata
 
     if isinstance(tool_input, dict) and 'taskSession' not in tool_input:
         return {**tool_input, 'taskSession': task_session}, metadata
@@ -573,7 +686,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
 @mcp.tool(annotations=CALL_TOOL)
 def call(
     tool: str,
-    input: dict[str, Any] | None = None,
+    input: Any | None = None,
     taskSession: str | None = None,
     timeout: int | None = None,
 ) -> dict[str, Any]:

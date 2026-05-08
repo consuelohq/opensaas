@@ -11208,8 +11208,216 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
+    },
+    {
+      "id": "920c482c-99e2-4cae-9583-3b45c4b91196",
+      "occurred_at": "2026-05-08T21:50:36.643Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "bb6e57a8-c183-4e3f-a102-2be123616e07",
+      "occurred_at": "2026-05-08T21:50:43.813Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "8a8a6c9b-1444-4374-9e6a-8681583a9bc2",
+      "occurred_at": "2026-05-08T21:51:01.702Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "1a70a2e4-6ff6-4996-bfd4-116ff275126e",
+      "occurred_at": "2026-05-08T21:51:07.544Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "0671ac44-3946-4586-86b9-a48269bb76d7",
+      "occurred_at": "2026-05-08T21:51:15.623Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "32ae80d6-8fcc-4325-a3c9-284059230178",
+      "occurred_at": "2026-05-08T21:51:24.715Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "bf688826-fd5d-4e52-a96e-4c08e7a81949",
+      "occurred_at": "2026-05-08T21:51:44.337Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/workspace.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "43b227a1-8791-448b-90ad-3cb24b5a61c6",
+      "occurred_at": "2026-05-08T21:51:51.797Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/server_call_test.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "a4783b26-ec8c-4252-ad12-a070cef51ca4",
+      "occurred_at": "2026-05-08T21:52:05.965Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/server_call_test.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "a214fbae-9362-430f-977b-170964131ced",
+      "occurred_at": "2026-05-08T21:52:29.890Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "f60c36db-79c0-4b8f-a251-8b7e45ad5b8b",
+      "occurred_at": "2026-05-08T21:52:36.313Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "561d2d7c-9352-47bd-a9d0-5a70e5f461e6",
+      "occurred_at": "2026-05-08T21:53:22.896Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
+    },
+    {
+      "id": "4facfada-db9b-4f71-8262-d04840c73498",
+      "occurred_at": "2026-05-08T21:53:37.124Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-06T05:20:07.746Z"
+  "updated_at": "2026-05-08T21:53:37.170Z"
 }
