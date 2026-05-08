@@ -158,6 +158,44 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(result['code'], 'COMMAND_FAILED')
 
 
+    def test_safety_blocks_command_and_writes_audit_log(self):
+        self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')
+        command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
+        result = self.module._run_workspace_call('task.exec', tool_input={'command': ['bash', '-lc', command]})
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'SAFETY_BLOCKED')
+        audit = Path(self.module._SAFETY_AUDIT_FILE).read_text(encoding='utf-8')
+        self.assertIn('"blocked": true', audit)
+        self.assertIn('task.exec', audit)
+
+    def test_safety_blocks_nested_batch_child(self):
+        command = ''.join(chr(value) for value in [110, 112, 109, 32, 112, 117, 98, 108, 105, 115, 104])
+        result = self.module._run_workspace_call('batch', tool_input=[
+            {'tool': 'status', 'input': {}},
+            {'tool': 'task.exec', 'input': {'command': command}},
+        ])
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'SAFETY_BLOCKED')
+        self.assertIn('batch[1]', result['message'])
+
+    def test_safety_blocks_structured_protected_path_mutation(self):
+        result = self.module._run_workspace_call('fs.write', taskSession=self.session, tool_input={
+            'path': str(Path.home() / '.ssh' / 'config'),
+            'content': 'x',
+        })
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'SAFETY_BLOCKED')
+
+    def test_safety_blocks_supplemental_system_commands(self):
+        command = ''.join(chr(value) for value in [100, 105, 115, 107, 117, 116, 105, 108, 32, 101, 114, 97, 115, 101, 32, 100, 105, 115, 107])
+        result = self.module._run_workspace_call('task.exec', tool_input={'command': command})
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'SAFETY_BLOCKED')
+
 
 if __name__ == '__main__':
     unittest.main()
