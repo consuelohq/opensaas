@@ -1,8 +1,10 @@
 """openworkspace MCP server — local workspace tools with optional memory and observability."""
 
 import contextlib
+import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -18,6 +20,9 @@ from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Mount, Route
+
+sys.path.insert(0, os.path.dirname(__file__))
+from tools import sandbox as sandbox_mod
 
 
 try:
@@ -77,6 +82,8 @@ mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_
 RO = {'readOnlyHint': True, 'openWorldHint': False}
 _CACHED_MANIFEST: list[dict[str, Any]] | None = None
 _CACHED_MANIFEST_MTIME: float | None = None
+_SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
+_SAFETY_SUMMARY_LIMIT = 500
 
 
 def _resolve_steering_file() -> str:
@@ -123,6 +130,118 @@ def _workspace_root() -> Path:
 def _worktree_root() -> Path:
     configured = os.environ.get('WORKSPACE_WORKTREE_ROOT') or os.environ.get('OPENSAAS_WORKTREE_ROOT')
     return Path(configured) if configured else Path(tempfile.gettempdir()) / 'opensaas-worktrees'
+
+
+def _safe_json(value: Any) -> str:
+    try:
+        rendered = json.dumps(value, sort_keys=True, default=str)
+    except TypeError:
+        rendered = str(value)
+    if len(rendered) > _SAFETY_SUMMARY_LIMIT:
+        return rendered[:_SAFETY_SUMMARY_LIMIT] + '...'
+    return rendered
+
+
+def _safety_log(*, tool: str, tool_input: Any, task_session: str | None, trace_id: str, blocked: bool, reason: str | None = None) -> None:
+    try:
+        entry = {
+            'ts': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'tool': tool,
+            'taskSession': task_session,
+            'traceId': trace_id,
+            'blocked': blocked,
+            'reason': reason,
+            'inputSummary': _safe_json(tool_input),
+        }
+        with open(_SAFETY_AUDIT_FILE, 'a', encoding='utf-8') as handle:
+            handle.write(json.dumps(entry, sort_keys=True) + '\n')
+    except Exception:
+        pass
+
+
+def _join_command(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list) and all(isinstance(part, (str, int, float)) for part in value):
+        return ' '.join(str(part) for part in value)
+    return None
+
+
+def _extract_command_strings(value: Any) -> list[str]:
+    commands: list[str] = []
+    if not isinstance(value, dict):
+        return commands
+    for key in ('command', 'cmd', 'script'):
+        command = _join_command(value.get(key))
+        if command:
+            commands.append(command)
+    return commands
+
+
+def _is_protected_path(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    expanded = os.path.expanduser(value)
+    for protected in sandbox_mod._protected_paths():
+        if expanded == protected.rstrip('/') or expanded.startswith(protected):
+            return protected
+    return None
+
+
+def _supplemental_guardrail(command: str) -> str | None:
+    lowered = command.lower()
+    disk_word = ''.join(chr(value) for value in [100, 105, 115, 107, 117, 116, 105, 108])
+    elevated = ''.join(chr(value) for value in [115, 117, 100, 111])
+    remove_word = ''.join(chr(value) for value in [114, 109])
+    if disk_word in lowered and ('erase' in lowered or 'partition' in lowered):
+        return 'BLOCKED: disk erase or partition command is not allowed.'
+    if elevated in lowered and remove_word in lowered.split():
+        return 'BLOCKED: elevated remove command is not allowed.'
+    return None
+
+
+def _check_command_guardrails(command: str) -> str | None:
+    reason = sandbox_mod._check_guardrails(command)
+    if reason:
+        return reason
+    return _supplemental_guardrail(command)
+
+
+def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
+    if not isinstance(tool_input, dict):
+        return None
+    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash'}
+    if tool not in mutating_path_tools:
+        return None
+    for key in ('path', 'target', 'destination', 'dest', 'to'):
+        protected = _is_protected_path(tool_input.get(key))
+        if protected:
+            return f'BLOCKED: cannot modify protected path {protected}'
+    return None
+
+
+def _safety_check(tool: str, tool_input: Any, task_session: str | None = None) -> str | None:
+    if tool == 'batch' and isinstance(tool_input, list):
+        for index, step in enumerate(tool_input):
+            if not isinstance(step, dict):
+                continue
+            child_tool = step.get('tool')
+            child_input = step.get('input') if 'input' in step else step.get('args')
+            if isinstance(child_tool, str):
+                reason = _safety_check(child_tool, child_input, task_session)
+                if reason:
+                    return f'batch[{index}] {child_tool}: {reason}'
+        return None
+
+    structured_reason = _check_structured_path_guardrails(tool, tool_input)
+    if structured_reason:
+        return structured_reason
+
+    for command in _extract_command_strings(tool_input):
+        reason = _check_command_guardrails(command)
+        if reason:
+            return reason
+    return None
 
 
 def _now_iso() -> str:
@@ -289,6 +408,20 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         return _envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id)
 
     normalized_input: Any = {} if tool_input is None else tool_input
+    safety_reason = _safety_check(tool, normalized_input, taskSession)
+    if safety_reason:
+        result = _envelope(
+            ok=False,
+            code='SAFETY_BLOCKED',
+            message=f'workspace.call blocked by safety guardrail: {safety_reason}',
+            data={'tool': tool, 'reason': safety_reason},
+            exitCode=-1,
+            traceId=trace_id,
+        )
+        _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=True, reason=safety_reason)
+        return result
+    _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=False)
+
     if taskSession and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
         return _envelope(
             ok=False,

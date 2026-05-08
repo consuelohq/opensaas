@@ -174,3 +174,67 @@ Validation:
 - `node --test packages/workspace/tests/task-session.test.js`
 - `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
 - `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` → no findings
+
+## server-level safety guardrails — 2026-05-08
+
+Implemented a `workspace.call` server-boundary safety gate.
+
+Scope:
+
+- runs before branch/session validation and before dispatch to the typed facade
+- inspects top-level `tool` + `input`
+- recursively inspects `batch` child steps
+- inspects command-bearing input fields (`command`, `cmd`, `script`)
+- inspects protected-path mutations for `fs.write`, `fs.patch`, and `fs.trash`
+- returns a standard `SAFETY_BLOCKED` envelope with `exitCode: -1`
+- writes JSONL audit entries to `/tmp/workspace-safety-audit.jsonl` or `WORKSPACE_SAFETY_AUDIT_FILE`
+
+Implementation notes:
+
+- Reuses the existing legacy sandbox guardrail checker for the original protected command/path rules.
+- Adds server-level supplemental checks for disk erase/partition commands and elevated remove commands.
+- Leaves the normal MCP surface as `workspace.call`; does not reintroduce `sandbox_exec` workflow.
+
+Validation:
+
+- `python3 -m py_compile packages/workspace/server.py`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py -v` → 10 pass
+- `git diff --check`
+- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
+- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
+
+Note:
+
+- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` timed out locally. Focused changed-surface validation passed.
+
+## server-level safety guardrails — 2026-05-08
+
+Implemented a `workspace.call` server-boundary safety gate.
+
+Scope:
+
+- runs before branch/session validation and before dispatch to the typed facade
+- inspects top-level `tool` + `input`
+- recursively inspects `batch` child steps
+- inspects command-bearing input fields (`command`, `cmd`, `script`)
+- inspects protected-path mutations for `fs.write`, `fs.patch`, and `fs.trash`
+- returns a standard `SAFETY_BLOCKED` envelope with `exitCode: -1`
+- writes JSONL audit entries to `/tmp/workspace-safety-audit.jsonl` or `WORKSPACE_SAFETY_AUDIT_FILE`
+
+Implementation notes:
+
+- Reuses the existing legacy sandbox guardrail checker for the original protected command/path rules.
+- Adds server-level supplemental checks for disk erase/partition commands and elevated remove commands.
+- Leaves the normal MCP surface as `workspace.call`; does not reintroduce `sandbox_exec` workflow.
+
+Validation:
+
+- `python3 -m py_compile packages/workspace/server.py`
+- `python3 -m unittest packages/workspace/tests/server_call_test.py -v` → 10 pass
+- `git diff --check`
+- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
+- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
+
+Note:
+
+- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` timed out locally. Focused changed-surface validation passed.
