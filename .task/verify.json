@@ -1,29 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "base": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
-  "headSha": "aa1962bca2d1d332175a65da0426159f2e299e07",
-  "changeHash": "e205a6586603c75698abc1f39032bf429e40a828184e971542971b251a0643cf",
+  "branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+  "base": "origin/task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+  "headSha": "037a2687c44207bdd00a0b6c2e14ce80f74c779f",
+  "changeHash": "9c4f397af6d80c2340cca4ed5a37f5ab9c0f184760aa110aba8c578c3924c5ae",
   "changedFiles": [
-    "packages/workspace/README.md",
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/generate-docs.ts",
-    "packages/workspace/scripts/lib/facade/executor.ts",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/scripts/lib/facade/types.ts",
-    "packages/workspace/scripts/lib/paths.js",
-    "packages/workspace/scripts/lib/task-session.js",
-    "packages/workspace/scripts/task-exec.js",
-    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/scripts/tool-batch.ts",
     "packages/workspace/server.py",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
-    "packages/workspace/tests/facade/facade.test.ts",
-    "packages/workspace/tests/server_call_test.py",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/workspace/tests/server_call_test.py"
   ],
-  "verifiedAt": "2026-05-06T05:55:50.857Z",
+  "verifiedAt": "2026-05-08T21:54:39.752Z",
   "review": {
     "skipped": false,
     "passed": true

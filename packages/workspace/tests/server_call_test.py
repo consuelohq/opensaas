@@ -103,6 +103,36 @@ class WorkspaceCallServerTest(unittest.TestCase):
                 self.assertFalse(result['ok'])
                 self.assertEqual(result['code'], 'TASK_SESSION_REQUIRED')
 
+    def test_object_wrapped_batch_task_session_propagates_to_children(self):
+        captured = {}
+
+        def fake_run(args, **kwargs):
+            captured['args'] = args
+            return Completed(json.dumps({
+                'ok': True,
+                'code': 'OK',
+                'message': 'ok',
+                'data': {},
+                'stderr': '',
+                'exitCode': 0,
+                'durationMs': 1,
+                'traceId': 'trc_child',
+                'now': '1970-01-01T00:00:01.000Z',
+                'apiVersion': '1.0.0',
+            }))
+
+        with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
+            result = self.module._run_workspace_call(
+                'batch',
+                taskSession=self.session,
+                tool_input={'steps': [{'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}}]},
+            )
+        self.assertTrue(result['ok'])
+        batch_input = json.loads(captured['args'][3])
+        self.assertIsInstance(batch_input, list)
+        self.assertEqual(batch_input[0]['input']['taskSession'], self.session)
+        self.assertNotIn('branch', batch_input[0]['input'])
+
     def test_batch_task_session_propagates_to_children(self):
         captured = {}
 
@@ -255,6 +285,19 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
         self.assertIn('cloudflared', result['message'])
+
+    def test_safety_blocks_object_wrapped_batch_child_before_execution(self):
+        command = ''.join(chr(value) for value in [110, 112, 109, 32, 112, 117, 98, 108, 105, 115, 104])
+        result = self.module._run_workspace_call('batch', tool_input={
+            'steps': [
+                {'tool': 'status', 'input': {}},
+                {'tool': 'task.exec', 'input': {'command': command}},
+            ],
+        })
+        self.assert_standard_envelope(result)
+        self.assertFalse(result['ok'])
+        self.assertEqual(result['code'], 'SAFETY_BLOCKED')
+        self.assertIn('batch[1]', result['message'])
 
     def test_safety_blocks_nested_batch_child_before_execution(self):
         command = ''.join(chr(value) for value in [110, 112, 109, 32, 112, 117, 98, 108, 105, 115, 104])

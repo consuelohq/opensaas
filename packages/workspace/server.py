@@ -232,8 +232,11 @@ def _check_process_guardrails(tool: str, tool_input: Any) -> str | None:
 
 
 def _safety_check(tool: str, tool_input: Any, task_session: str | None = None) -> str | None:
-    if tool == 'batch' and isinstance(tool_input, list):
-        for index, step in enumerate(tool_input):
+    if tool == 'batch':
+        steps = _batch_steps(tool_input)
+        if steps is None:
+            return None
+        for index, step in enumerate(steps):
             if not isinstance(step, dict):
                 continue
             child_tool = step.get('tool')
@@ -357,10 +360,19 @@ def _input_has_branch(value: Any) -> bool:
     return isinstance(value, dict) and isinstance(value.get('branch'), str)
 
 
+def _batch_steps(value: Any) -> list[Any] | None:
+    if isinstance(value, list):
+        return value
+    if isinstance(value, dict) and isinstance(value.get('steps'), list):
+        return value.get('steps')
+    return None
+
+
 def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
-    if not isinstance(value, list):
+    steps = _batch_steps(value)
+    if steps is None:
         return False
-    for step in value:
+    for step in steps:
         if not isinstance(step, dict):
             continue
         child_tool = step.get('tool')
@@ -371,9 +383,10 @@ def _batch_has_task_scoped_step_without_session(value: Any) -> bool:
 
 
 def _batch_has_branch_conflict(value: Any) -> bool:
-    if not isinstance(value, list):
+    steps = _batch_steps(value)
+    if steps is None:
         return False
-    for step in value:
+    for step in steps:
         if not isinstance(step, dict):
             continue
         child_tool = step.get('tool')
@@ -393,8 +406,9 @@ def _apply_task_session_to_batch_steps(value: list[Any], task_session: str) -> l
             continue
         child_tool = step.get('tool')
         child_input = step.get('input') if 'input' in step else step.get('args')
-        if child_tool == 'batch' and isinstance(child_input, list):
-            step = {**step, 'input': _apply_task_session_to_batch_steps(child_input, task_session)}
+        child_steps = _batch_steps(child_input)
+        if child_tool == 'batch' and child_steps is not None:
+            step = {**step, 'input': _apply_task_session_to_batch_steps(child_steps, task_session)}
             step.pop('args', None)
         elif isinstance(child_input, dict) and 'taskSession' not in child_input:
             step = {**step, 'input': {**child_input, 'taskSession': task_session}}
@@ -418,8 +432,10 @@ def _apply_task_session(tool: str, task_session: str | None, tool_input: Any) ->
     if metadata is None:
         return tool_input, None
 
-    if tool == 'batch' and isinstance(tool_input, list):
-        return _apply_task_session_to_batch_steps(tool_input, task_session), metadata
+    if tool == 'batch':
+        steps = _batch_steps(tool_input)
+        if steps is not None:
+            return _apply_task_session_to_batch_steps(steps, task_session), metadata
 
     if isinstance(tool_input, dict) and 'taskSession' not in tool_input:
         return {**tool_input, 'taskSession': task_session}, metadata

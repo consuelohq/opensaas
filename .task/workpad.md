@@ -1,240 +1,44 @@
-# DEV-1500 replace sandbox_exec with workspace.call
+# support object wrapped batch input through workspace call
 
-branch: `task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call`
+branch: `task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call`
 stream: `stream/workspace-agents`
-linear: DEV-1500
-task pr: https://github.com/consuelohq/opensaas/pull/336
-started: 2026-05-06
+pr: https://github.com/consuelohq/opensaas/pull/345
+started: 2026-05-08
 
 ## acceptance criteria
 
-- [ ] Replace the normal MCP operation surface from `sandbox_exec` to `workspace.call`.
-- [ ] Keep `get_steering` simple: always return full current steering; do not cache or reject repeated calls.
-- [ ] Add task-session-backed task context for task-scoped calls.
-- [ ] Make `batch` first-class under `workspace.call` with task context propagation.
-- [ ] Update steering, scripts docs, generated tool docs/types, schemas, manifest, and facade tests.
-- [ ] Validate the end-to-end task lifecycle through the new call surface.
+- [ ] Define explicit task acceptance criteria before coding.
 
 ## plan
 
-1. Inspect current MCP server, sandbox wrapper, facade executor, branch resolver, batch runner, schemas, manifest, and docs.
-2. Replace the MCP boundary so typed calls dispatch through the existing facade instead of shell-wrapped commands.
-3. Add durable task session creation/resolution and tmux-backed metadata.
-4. Propagate `taskSession` into batch children and lifecycle commands.
-5. Update documentation/generated surfaces and tests.
-6. Run focused syntax checks, facade tests, review, verify, push, and promote to the stream review PR.
+1. Read the relevant code and update this plan before editing.
 
 ## files changed
 
-- `packages/workspace/README.md`
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/TOOLS.md`
-- `packages/workspace/scripts/generate-docs.ts`
-- `packages/workspace/scripts/lib/facade/executor.ts`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/scripts/lib/facade/types.ts`
-- `packages/workspace/scripts/lib/paths.js`
-- `packages/workspace/scripts/task-exec.js`
-- `packages/workspace/scripts/task-start.js`
-- `packages/workspace/server.py`
-- `packages/workspace/src/generated/workspace.d.ts`
-- `packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap`
-- `packages/workspace/tests/facade/facade.test.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/scripts/lib/task-session.js`
-- `packages/workspace/tests/server_call_test.py`
-
+- none yet
 
 ## key decisions
 
-- `packages/workspace/server.py` is the current MCP registration point. It exposed `get_steering` and `sandbox_exec`.
-- The existing typed facade path is `packages/workspace/scripts/lib/facade/executor.ts`, called by `packages/workspace/scripts/tool-runner.ts`.
-- The first patch changes the server boundary only: it exposes `call`, removes the server import/use of `tools.sandbox`, routes through `bun scripts/workspace.ts`, and keeps `get_steering` returning full steering on every call.
-- Added `packages/workspace/scripts/lib/task-session.js` as the tmux/session owner. It creates deterministic `taskSession` handles, sanitized tmux session names, tmux sessions rooted at the task worktree, and `.task/session.json`.
-- Wired `task-start.js` to create tmux-backed task sessions and include `taskSession`/`tmuxSession` in `.task/current.json`, task history, and task-start output.
-- `task-exec.js` now passes both `TASK_BRANCH` and `TASK_WORKTREE` into child commands.
-- `server.py` now rejects task-scoped `workspace.call` calls without `taskSession`, while allowing explicit `input.branch` as the compatibility escape hatch.
+- none yet
 
 ## notes for ko
 
-- This is partial implementation, not ready for review.
-- Code read confirmed tmux belongs at `task-start.js`: it already owns branch/worktree/PR/current metadata/workpad creation.
-- The current live MCP server still exposes `sandbox_exec` until the patched server is deployed/restarted.
-- Direct import smoke for `server.py` failed in this shell because `uvicorn` is missing from the local Python environment. Syntax compilation passed.
+- none yet
 
 ## improvements noticed
 
-- The active workspace command surface is fragile for large inline Python/task.exec commands. `mac.exec` with base64 positional payload was the safest workaround for this edit.
-- The decision-engine query was blocked by the tool safety filter when it included the issue wording; narrower exploration then hit intermittent MCP network failures.
+- none yet
 
-## errors or blockers
+## errors i ran into
 
-- `workspace explore` was blocked by safety checks for DEV-1500 wording.
-- One narrowed `workspace explore` call and one branch-scoped batch read failed with `mcp_network_error`.
-- `workspace task.exec` with nested shell/Python payloads produced `workspace commands accept at most one JSON input argument`.
-- Direct Python import smoke failed with `ModuleNotFoundError: No module named 'uvicorn'`.
+- none yet
 
-## validation
+---
 
-- `python3 -m py_compile packages/workspace/server.py` passed.
-- `git diff -- packages/workspace/server.py` was inspected.
-- `node --check packages/workspace/scripts/lib/task-session.js` passed.
-- `node --check packages/workspace/scripts/task-start.js` passed.
-- `node --check packages/workspace/scripts/task-exec.js` passed.
-- Smoke-created `.task/session.json` for the current task with `taskSession=tsk_12cf9dfeaa9f`; tmux session creation succeeded.
-- Direct `server.py` behavior smoke is still blocked by missing local Python packages (`starlette` after `uvicorn` was mocked).
+## publish checklist
 
-## review fix pass — 2026-05-06
-
-Confirmed and fixed required review findings:
-
-- Removed process-global `ALREADY_LOADED` steering behavior; after follow-up review, `get_steering` now reads and returns full current steering on every call instead of caching.
-- Added standard server-side envelopes for workspace.call boundary failures.
-- Derived session-required MCP enforcement from `tool-manifest.json` via `sessionRequired` instead of a hardcoded server list.
-- Added configurable worktree root support using `WORKSPACE_WORKTREE_ROOT`, `OPENSAAS_WORKTREE_ROOT`, then `os.tmpdir()/opensaas-worktrees` / `tempfile.gettempdir()/opensaas-worktrees`.
-- Moved tmux availability validation earlier in `task.start`; tmux session creation now happens before bootstrap commit and PR creation after the worktree exists.
-- Changed `task.exec` to execute through the task's tmux session and fail when tmux session metadata is missing.
-- Rejected `taskSession` + explicit `branch` together to avoid silent branch override.
-- Replaced blank workpad acceptance criteria placeholder with explicit guidance.
-- Made task session parse errors visible on stderr.
-- Added runtime guards and a successful-read cache for task session metadata in the TS facade.
-- Hardened server subprocess execution with `shell=False`, `check=False`, FileNotFoundError handling, and no internal `input` shadowing.
-- Added MCP boundary unit tests for steering cache, standard envelopes, manifest-derived session enforcement, batch taskSession propagation, branch conflict, and missing executable handling.
-- Isolated taskSession facade tests with temp dirs/env overrides and cleanup.
-
-Validation after review fix pass:
-
-- `python3 -m py_compile packages/workspace/server.py`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py`
-- `bun --check` for edited TS files and `generate-docs.ts`
-- `node --check` for edited JS files
-- `bun test packages/workspace/tests/facade/facade.test.ts` → 492 pass
-- `bun run review` → pass
-- `bun run verify` → pass
-
-## steering cache removal — 2026-05-06
-
-- Ko clarified that caching does not solve the per-chat duplicate-call problem and creates stale steering/tool-manifest risk.
-- Removed `_STEERING_CACHE`; `get_steering` now calls `_read_steering` every time and always returns full current steering.
-- Updated `server_call_test.py` to prove repeated calls re-read steering.
-
-Validation:
-
-- `python3 -m py_compile packages/workspace/server.py`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py`
-
-## review fix pass — tmux/docs/session cache — 2026-05-06
-
-Confirmed and fixed Ko's required findings:
-
-- Fixed `assertTmuxAvailable()` recursion in `packages/workspace/scripts/lib/task-session.js`; it now calls `isTmuxAvailable()` and throws a clear tmux-required error.
-- Removed task session metadata caching from both `server.py` and `executor.ts`; session metadata is read from `.task/session.json` discovery paths on each call.
-- Removed the extra `task-start.js` async try/catch wrappers that rethrew new `Error` instances and lost stack context; kept the existing top-level `main().catch` handler.
-- Updated `STEERING.md` and `decision.md` so normal workflow examples use `workspace.call({ tool, input, taskSession, timeout })` instead of `sandbox_exec` or nested shell/JSON workspace command strings.
-
-Validation:
-
-- `python3 -m py_compile packages/workspace/server.py`
-- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
-- `node --check packages/workspace/scripts/lib/task-session.js`
-- `node --check packages/workspace/scripts/task-start.js`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py -v`
-- `bun test packages/workspace/tests/facade/facade.test.ts` → 492 pass
-- `assertTmuxAvailable()` smoke passed with local tmux
-- `rg` confirmed no `sandbox_exec`, `workspace.sandbox_exec`, `TASK_SESSION_CACHE`, `taskSessionMetadataCache`, or nested `workspace <tool> '{...}'` examples remain in the targeted docs/code.
-
-Review note:
-
-- `bun run review -- --base task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` reports one pre-existing `ERROR_HANDLING` heuristic finding for `task-start.js:266`. This is expected because Ko explicitly requested removing the extra try/catch and relying on the existing top-level `main().catch` handler.
-
-## review fix pass — executor/env/docs/temp cleanup — 2026-05-08
-
-Verified current inline findings and fixed only still-valid issues:
-
-- Fixed executor taskSession discovery to use `options.env` for `WORKSPACE_WORKTREE_ROOT` / `OPENSAAS_WORKTREE_ROOT` instead of process-global env.
-- Enforced `sessionRequired` in the TypeScript facade before command planning; missing taskSession now returns `TASK_SESSION_REQUIRED`.
-- Confirmed `assertTmuxAvailable()` recursion was already fixed; added a node unit import test to prevent regression.
-- Wrapped `task-exec.js` temp directory lifecycle in `try/finally` so failures clean up temp files.
-- Replaced `os.sys.stderr` with `sys.stderr` in `server.py`.
-- Updated `server_call_test.py` to use `unittest.mock.patch.object` for subprocess monkeypatches.
-- Updated generated docs examples to use `workspace.call({ tool, input })`, then regenerated `TOOLS.md`.
-- Confirmed task-start try/catch wrappers were already removed; no change needed.
-- Added mtime-based manifest memoization in `server.py` as requested by nitpick.
-
-Validation:
-
-- `git diff --check`
-- `python3 -m py_compile packages/workspace/server.py`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py -v`
-- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
-- `bun --check packages/workspace/scripts/generate-docs.ts`
-- `node --check packages/workspace/scripts/lib/task-session.js`
-- `node --check packages/workspace/scripts/task-exec.js`
-- `node --check packages/workspace/scripts/task-start.js`
-- `node --test packages/workspace/tests/task-session.test.js`
-- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
-- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` → no findings
-
-## server-level safety guardrails — 2026-05-08
-
-Implemented a `workspace.call` server-boundary safety gate.
-
-Scope:
-
-- runs before branch/session validation and before dispatch to the typed facade
-- inspects top-level `tool` + `input`
-- recursively inspects `batch` child steps
-- inspects command-bearing input fields (`command`, `cmd`, `script`)
-- inspects protected-path mutations for `fs.write`, `fs.patch`, and `fs.trash`
-- returns a standard `SAFETY_BLOCKED` envelope with `exitCode: -1`
-- writes JSONL audit entries to `/tmp/workspace-safety-audit.jsonl` or `WORKSPACE_SAFETY_AUDIT_FILE`
-
-Implementation notes:
-
-- Reuses the existing legacy sandbox guardrail checker for the original protected command/path rules.
-- Adds server-level supplemental checks for disk erase/partition commands and elevated remove commands.
-- Leaves the normal MCP surface as `workspace.call`; does not reintroduce `sandbox_exec` workflow.
-
-Validation:
-
-- `python3 -m py_compile packages/workspace/server.py`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py -v` → 10 pass
-- `git diff --check`
-- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
-- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
-
-Note:
-
-- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` timed out locally. Focused changed-surface validation passed.
-
-## server-level safety guardrails — 2026-05-08
-
-Implemented a `workspace.call` server-boundary safety gate.
-
-Scope:
-
-- runs before branch/session validation and before dispatch to the typed facade
-- inspects top-level `tool` + `input`
-- recursively inspects `batch` child steps
-- inspects command-bearing input fields (`command`, `cmd`, `script`)
-- inspects protected-path mutations for `fs.write`, `fs.patch`, and `fs.trash`
-- returns a standard `SAFETY_BLOCKED` envelope with `exitCode: -1`
-- writes JSONL audit entries to `/tmp/workspace-safety-audit.jsonl` or `WORKSPACE_SAFETY_AUDIT_FILE`
-
-Implementation notes:
-
-- Reuses the existing legacy sandbox guardrail checker for the original protected command/path rules.
-- Adds server-level supplemental checks for disk erase/partition commands and elevated remove commands.
-- Leaves the normal MCP surface as `workspace.call`; does not reintroduce `sandbox_exec` workflow.
-
-Validation:
-
-- `python3 -m py_compile packages/workspace/server.py`
-- `python3 -m unittest packages/workspace/tests/server_call_test.py -v` → 10 pass
-- `git diff --check`
-- `bun --check packages/workspace/scripts/lib/facade/executor.ts`
-- `bun test packages/workspace/tests/facade/facade.test.ts` → 432 pass
-
-Note:
-
-- `bun run review -- --base origin/task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call --json --quiet --no-tests` timed out locally. Focused changed-surface validation passed.
+```bash
+bun run task:push -- --message "type(workspace-agents): description" --changed
+bun run task:pr
+bun run task:finish
+```
