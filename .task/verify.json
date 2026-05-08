@@ -1,17 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-  "base": "origin/stream/workspace-agents",
-  "headSha": "fad4852249aa0082690c9ea7aeacd9c256b466e0",
-  "changeHash": "80cd95677a8ebaa0e8c1bd266cbf1ff695cce498612932a9bf0d246d90fbb4cc",
+  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "base": "origin/task/workspace-agents/fix-workspace-status-changed-file-path-display",
+  "headSha": "6737e8a0951b49e7c43d0cde1a49665d3d475626",
+  "changeHash": "af687b3de37d3954e1bea19d815a2cc5c2ef8beb761f1583f966d7a49ab56786",
   "changedFiles": [
-    "packages/workspace/scripts/audit.js",
-    "packages/workspace/scripts/task-start.js",
-    "packages/workspace/tests/audit/audit.test.ts"
+    "packages/workspace/scripts/lib/workspace-state.js"
   ],
-  "verifiedAt": "2026-05-08T23:20:57.778Z",
+  "verifiedAt": "2026-05-08T21:47:55.088Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {

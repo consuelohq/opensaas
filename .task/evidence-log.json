@@ -11210,8 +11210,8 @@
       }
     },
     {
-      "id": "920c482c-99e2-4cae-9583-3b45c4b91196",
-      "occurred_at": "2026-05-08T21:50:36.643Z",
+      "id": "2fd06ae8-05ca-4477-a728-e356384d03e2",
+      "occurred_at": "2026-05-08T21:43:42.643Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11219,15 +11219,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "bb6e57a8-c183-4e3f-a102-2be123616e07",
-      "occurred_at": "2026-05-08T21:50:43.813Z",
+      "id": "fb1a858a-e651-4e72-a77a-c133d14e1437",
+      "occurred_at": "2026-05-08T21:43:47.790Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11235,207 +11235,15 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "8a8a6c9b-1444-4374-9e6a-8681583a9bc2",
-      "occurred_at": "2026-05-08T21:51:01.702Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/tool-batch.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "1a70a2e4-6ff6-4996-bfd4-116ff275126e",
-      "occurred_at": "2026-05-08T21:51:07.544Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/lib/facade/batch.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "0671ac44-3946-4586-86b9-a48269bb76d7",
-      "occurred_at": "2026-05-08T21:51:15.623Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "32ae80d6-8fcc-4325-a3c9-284059230178",
-      "occurred_at": "2026-05-08T21:51:24.715Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "bf688826-fd5d-4e52-a96e-4c08e7a81949",
-      "occurred_at": "2026-05-08T21:51:44.337Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/workspace.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "43b227a1-8791-448b-90ad-3cb24b5a61c6",
-      "occurred_at": "2026-05-08T21:51:51.797Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/tests/server_call_test.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "a4783b26-ec8c-4252-ad12-a070cef51ca4",
-      "occurred_at": "2026-05-08T21:52:05.965Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/tests/server_call_test.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "a214fbae-9362-430f-977b-170964131ced",
-      "occurred_at": "2026-05-08T21:52:29.890Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "f60c36db-79c0-4b8f-a251-8b7e45ad5b8b",
-      "occurred_at": "2026-05-08T21:52:36.313Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "561d2d7c-9352-47bd-a9d0-5a70e5f461e6",
-      "occurred_at": "2026-05-08T21:53:22.896Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/tool-batch.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "4facfada-db9b-4f71-8262-d04840c73498",
-      "occurred_at": "2026-05-08T21:53:37.124Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/server.py",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/support-object-wrapped-batch-input-through-workspace-call"
-      }
-    },
-    {
-      "id": "6abbf46a-4b0e-4c4f-9124-3fd74860a610",
-      "occurred_at": "2026-05-08T23:15:27.745Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "AGENTS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "56a33876-257a-49d4-b780-5a9faf0a8b17",
-      "occurred_at": "2026-05-08T23:15:32.996Z",
+      "id": "52d2a04c-9a77-41e8-818c-12bb95010c3e",
+      "occurred_at": "2026-05-08T21:43:53.818Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11443,157 +11251,77 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "725b737f-5832-4118-a633-143108fff772",
-      "occurred_at": "2026-05-08T23:15:39.193Z",
+      "id": "d56f1882-a95f-464d-89a9-2e21dbc08192",
+      "occurred_at": "2026-05-08T21:44:40.613Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "CODING-STANDARDS.md",
+      "file_path": "packages/workspace/scripts/lib/workspace-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "6aba6001-8aa4-4f64-bdbc-0d5873e8a256",
-      "occurred_at": "2026-05-08T23:15:52.310Z",
+      "id": "7c1556ed-d63e-478a-8941-494b84fa7fba",
+      "occurred_at": "2026-05-08T21:45:48.493Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/audit.js",
+      "file_path": "packages/workspace/scripts/lib/workspace-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "8db0a8e1-4bfe-476c-b013-4a10c7585236",
-      "occurred_at": "2026-05-08T23:15:58.062Z",
+      "id": "af456beb-274e-4573-84ec-d40ed027d79d",
+      "occurred_at": "2026-05-08T21:45:57.187Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
+      "file_path": "packages/workspace/scripts/lib/workspace-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     },
     {
-      "id": "9273263f-fe19-4ec6-99b1-d4661dec19cb",
-      "occurred_at": "2026-05-08T23:16:10.757Z",
+      "id": "dd656f82-bf17-4a84-a52b-7ba7815daecb",
+      "occurred_at": "2026-05-08T21:46:43.696Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "file_path": "packages/workspace/scripts/lib/workspace-state.js",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
+      "worktree_id": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "dc4ffa19-2292-4f59-95ab-8c93a9dda446",
-      "occurred_at": "2026-05-08T23:16:22.422Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/tests/facade/facade.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "4fca5a0b-49b3-47d5-988a-1372bcc95b8a",
-      "occurred_at": "2026-05-08T23:17:07.061Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/audit.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "85d4a996-91cc-4696-bae3-1d2de5cf99dc",
-      "occurred_at": "2026-05-08T23:17:36.551Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/lib/paths.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "f1bdb336-1dcb-42c3-b486-73cf4017cf48",
-      "occurred_at": "2026-05-08T23:18:33.610Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/scripts/task-start.js",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
-      }
-    },
-    {
-      "id": "230e545b-15ab-499e-b3ec-f700b1a1d978",
-      "occurred_at": "2026-05-08T23:19:19.158Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/workspace/tests/audit/audit.test.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/workspace-agents/fix-dev-1497-workspace-audit-tree-sitter-resolution"
+        "task_branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-08T23:19:19.202Z"
+  "updated_at": "2026-05-08T21:46:43.742Z"
 }

@@ -97,6 +97,7 @@
     "packages/workspace/scripts/lib/paths.js",
     "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
     "packages/workspace/scripts/review.js",
@@ -113,12 +114,10 @@
     "packages/workspace/scripts/workspace.ts",
     "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/audit/audit.test.ts",
     "packages/workspace/tests/facade/facade.test.ts",
-    "packages/workspace/tests/server_call_test.py",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-08T23:19:19.115Z"
+  "updatedAt": "2026-05-08T21:46:43.651Z"
 }
