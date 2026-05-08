@@ -1,0 +1,12 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/update-landing-and-mercury-hero-copy",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 338,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/338",
+  "worktreePath": "/private/tmp/opensaas-worktrees/task-website-update-landing-and-mercury-hero-copy",
+  "createdAt": "2026-05-06T06:57:53.676Z"
+}
