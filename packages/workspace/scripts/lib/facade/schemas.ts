@@ -271,7 +271,7 @@ export const StreamListInput = z.object({
 
 export const ReviewInput = z.object({
   ...requestFields,
-  branch: z.string().min(1),
+  ...branchField,
   fix: z.boolean().optional(),
   all: z.boolean().optional(),
   base: optionalString,
@@ -718,7 +718,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   AuditInput: '{ scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }',
   StreamInput: '{ area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   StreamListInput: '{ repo?: string; requestId?: string; taskSession?: string }',
-  ReviewInput: "{ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
+  ReviewInput: "{ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }",
   VerifyInput: '{ branch?: string; base?: string; noReview?: boolean; noDb?: boolean; dbWarnOnly?: boolean; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   PrReviewInput: '{ pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

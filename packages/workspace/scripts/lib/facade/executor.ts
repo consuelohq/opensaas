@@ -172,6 +172,7 @@ export async function executeTool<TData = unknown>(
     const scopedInput = taskSessionResolution?.ok ? {
       ...normalizedInput,
       branch: taskSessionResolution.branch,
+      taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
     } : normalizedInput;
 
     const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
@@ -595,7 +596,11 @@ function buildCommandPlan(
     command: 'bun',
     args,
     cwd: resolveWorkspaceCommandCwd(cwd, script),
-    env: { ...env, ...(branch ? { TASK_BRANCH: branch } : {}) },
+    env: {
+      ...env,
+      ...(branch ? { TASK_BRANCH: branch } : {}),
+      ...(typeof input.taskWorktree === 'string' ? { TASK_WORKTREE: input.taskWorktree } : {}),
+    },
   };
 }
 

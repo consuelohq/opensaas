@@ -1021,6 +1021,14 @@ bun run website:deploy -- --build-only  # build only, don't deploy
 
 ---
 
+### consuelo-design — run local design tooling
+
+```bash
+bun run consuelo-design -- --help
+```
+
+---
+
 ### doctor — workspace diagnostics
 
 checks local workspace prerequisites, server health, git state, and related command availability.

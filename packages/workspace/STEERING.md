@@ -667,6 +667,8 @@ private things stay private.
 
 never send secrets, api keys, tokens, credentials, full phone numbers, or customer pii to external models or untrusted surfaces.
 
+dangerous safety validation must run as unit tests or dry-run/mocked execution only. human review should inspect test output, not run destructive smoke examples manually.
+
 ---
 
 ## 10. response contracts

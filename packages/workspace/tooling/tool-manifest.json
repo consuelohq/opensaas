@@ -2795,7 +2795,7 @@
       "linear",
       "createIssue"
     ],
-    "description": "create a Linear issue with DEV/open defaults and required labels",
+    "description": "create a Linear issue with DEV/open defaults and the opensaas label",
     "category": "linear",
     "underlying": "workspace linear.createIssue",
     "capabilities": {
@@ -2865,9 +2865,8 @@
       "jsonFlag": "--json"
     },
     "exampleInput": {
-      "title": "[task] add Linear facade commands",
+      "title": "add Linear facade commands",
       "labels": [
-        "[task]",
         "opensaas"
       ]
     },
@@ -2951,7 +2950,6 @@
     "exampleInput": {
       "issueId": "DEV-123",
       "labels": [
-        "[bug]",
         "opensaas"
       ]
     },

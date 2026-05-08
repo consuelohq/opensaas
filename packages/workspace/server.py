@@ -210,13 +210,24 @@ def _check_command_guardrails(command: str) -> str | None:
 def _check_structured_path_guardrails(tool: str, tool_input: Any) -> str | None:
     if not isinstance(tool_input, dict):
         return None
-    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash'}
+    mutating_path_tools = {'fs.write', 'fs.patch', 'fs.trash', 'mac.write'}
     if tool not in mutating_path_tools:
         return None
     for key in ('path', 'target', 'destination', 'dest', 'to'):
         protected = _is_protected_path(tool_input.get(key))
         if protected:
             return f'BLOCKED: cannot modify protected path {protected}'
+    return None
+
+
+def _check_process_guardrails(tool: str, tool_input: Any) -> str | None:
+    if tool != 'mac.process' or not isinstance(tool_input, dict):
+        return None
+    if tool_input.get('action') != 'kill':
+        return None
+    name = tool_input.get('name')
+    if isinstance(name, str) and name.strip().lower() in {'cloudflared', 'tailscaled'}:
+        return f'BLOCKED: cannot kill protected process {name.strip()}'
     return None
 
 
@@ -236,6 +247,10 @@ def _safety_check(tool: str, tool_input: Any, task_session: str | None = None) -
     structured_reason = _check_structured_path_guardrails(tool, tool_input)
     if structured_reason:
         return structured_reason
+
+    process_reason = _check_process_guardrails(tool, tool_input)
+    if process_reason:
+        return process_reason
 
     for command in _extract_command_strings(tool_input):
         reason = _check_command_guardrails(command)
@@ -361,10 +376,31 @@ def _batch_has_branch_conflict(value: Any) -> bool:
     for step in value:
         if not isinstance(step, dict):
             continue
-        child_input = step.get('input') if isinstance(step.get('input'), dict) else step.get('args')
+        child_tool = step.get('tool')
+        child_input = step.get('input') if 'input' in step else step.get('args')
+        if child_tool == 'batch' and _batch_has_branch_conflict(child_input):
+            return True
         if _input_has_branch(child_input):
             return True
     return False
+
+
+def _apply_task_session_to_batch_steps(value: list[Any], task_session: str) -> list[Any]:
+    updated_steps = []
+    for step in value:
+        if not isinstance(step, dict):
+            updated_steps.append(step)
+            continue
+        child_tool = step.get('tool')
+        child_input = step.get('input') if 'input' in step else step.get('args')
+        if child_tool == 'batch' and isinstance(child_input, list):
+            step = {**step, 'input': _apply_task_session_to_batch_steps(child_input, task_session)}
+            step.pop('args', None)
+        elif isinstance(child_input, dict) and 'taskSession' not in child_input:
+            step = {**step, 'input': {**child_input, 'taskSession': task_session}}
+            step.pop('args', None)
+        updated_steps.append(step)
+    return updated_steps
 
 
 def _tool_requires_task_session(tool: str, tool_input: Any) -> bool:
@@ -383,18 +419,7 @@ def _apply_task_session(tool: str, task_session: str | None, tool_input: Any) ->
         return tool_input, None
 
     if tool == 'batch' and isinstance(tool_input, list):
-        updated_steps = []
-        for step in tool_input:
-            if not isinstance(step, dict):
-                updated_steps.append(step)
-                continue
-            child_input = step.get('input') if isinstance(step.get('input'), dict) else step.get('args')
-            if isinstance(child_input, dict) and 'taskSession' not in child_input:
-                child_input = {**child_input, 'taskSession': task_session}
-                step = {**step, 'input': child_input}
-                step.pop('args', None)
-            updated_steps.append(step)
-        return updated_steps, metadata
+        return _apply_task_session_to_batch_steps(tool_input, task_session), metadata
 
     if isinstance(tool_input, dict) and 'taskSession' not in tool_input:
         return {**tool_input, 'taskSession': task_session}, metadata

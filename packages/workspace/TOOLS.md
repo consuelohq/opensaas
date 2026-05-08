@@ -2490,7 +2490,7 @@ example error envelope:
 
 ### linear.createIssue
 
-create a Linear issue with DEV/open defaults and required labels
+create a Linear issue with DEV/open defaults and the opensaas label
 
 - signature: `workspace.linear.createIssue({ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace linear.createIssue`
@@ -2503,9 +2503,8 @@ example call:
 await workspace.call({
   "tool": "linear.createIssue",
   "input": {
-    "title": "[task] add Linear facade commands",
+    "title": "add Linear facade commands",
     "labels": [
-      "[task]",
       "opensaas"
     ]
   }
@@ -2901,7 +2900,6 @@ await workspace.call({
   "input": {
     "issueId": "DEV-123",
     "labels": [
-      "[bug]",
       "opensaas"
     ]
   }
@@ -3463,7 +3461,7 @@ example error envelope:
 
 run the workspace review checks
 
-- signature: `workspace.review.run({ branch: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.review.run({ branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace review.run`
 - capabilities: readOnly=true, mutating=false, safeToRetry=false
 - default timeout: 600000ms

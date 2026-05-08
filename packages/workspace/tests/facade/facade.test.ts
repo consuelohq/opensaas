@@ -258,6 +258,74 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('resolves review.run branch from taskSession before validation', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-review-session-'));
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_review',
+        tmuxSession: 'opensaas-review',
+        branch: 'task/workspace-agents/review-session',
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review',
+        noTests: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/review-session');
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
+      expect(plans[0].args).toContain('--no-tests');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('passes the taskSession worktree to audit', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-audit-session-'));
+    try {
+      const callerCwd = join(tempRoot, 'caller');
+      const worktreeRoot = join(tempRoot, 'worktrees');
+      const worktree = join(worktreeRoot, 'task-workspace-agents-audit');
+      mkdirSync(callerCwd, { recursive: true });
+      writeTaskSession(worktree, 'tsk_audit', 'task/workspace-agents/audit-session');
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('audit', {
+        taskSession: 'tsk_audit',
+        scripts: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: callerCwd,
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].cwd).toBe(callerCwd);
+      expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/audit-session');
+      expect(plans[0].env.TASK_WORKTREE).toBe(worktree);
+      expect(plans[0].args).toContain('audit');
+      expect(plans[0].args).toContain('--scripts');
+      expect(plans[0].args).not.toContain('--branch');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('rejects calls that pass both taskSession and branch', async () => {
     const result = await executeTool('fs.read', {
       taskSession: 'tsk_conflict',
