@@ -97,7 +97,7 @@ when `LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` are set, every tool cal
 
 ### memory + progressive loading
 
-`get_steering` loads a steering markdown file first, then appends a compact skill index from the memory backend. the client sees the high-level operating context up front, and can fetch full skill docs only when needed via `brain_get_skill`.
+`get_steering` loads the steering markdown once for bootstrap. After bootstrap, clients should use `workspace.call` for every typed workspace operation.
 
 this keeps the initial context compact while still making larger skill libraries usable.
 
@@ -116,26 +116,9 @@ export REPO_TREE_FILE=/tmp/repo-tree.txt
 
 | tool | purpose |
 |------|---------|
-| `get_steering` | load steering file + skill index |
-| `brain_search` | keyword search over memories |
-| `brain_vector_search` | semantic search over memories |
-| `brain_remember` | save a memory |
-| `brain_get_memory` | fetch a memory by id |
-| `brain_list_skills` | list available skills |
-| `brain_get_skill` | fetch a skill doc |
-| `sandbox_exec` | run shell commands in the configured workspace |
-| `sandbox_read_file` | read a file from disk |
-| `sandbox_write_file` | write a file to disk |
-| `sandbox_list_files` | list files from disk |
-| `gh api repos/.../contents/<path>` | read a file from the repo (use gh CLI) |
-| `gh pr view` | fetch a pull request (CLI, not a workspace tool) |
-| `gh pr list` | list pull requests (CLI, not a workspace tool) |
-| `github_push_files` | push files to a branch via the git database api |
-| `invoke_opencode` | spawn an opencode tmux session |
-| `invoke_kiro` | spawn a kiro tmux session |
-| `slack_post` | post to slack |
-| `handoff_save` | save a conversation handoff |
-| `handoff_load` | load a conversation handoff |
+| `get_steering` | bootstrap steering once per server process |
+| `call` | run a manifest-backed typed workspace tool with `{ tool, input, taskSession, timeout }` |
+| task sessions | `task.start` creates a tmux-backed `taskSession`; pass it to `workspace.call` for task-scoped work |
 
 ## contributed files in this package
 

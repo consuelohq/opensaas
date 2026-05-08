@@ -105,7 +105,9 @@
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
     "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/task-start.js",
     "packages/workspace/scripts/tmp.js",
+    "packages/workspace/scripts/tool-batch.ts",
     "packages/workspace/scripts/tool-runner.ts",
     "packages/workspace/scripts/website-deploy.js",
     "packages/workspace/scripts/workspace.ts",
@@ -116,5 +118,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-06T08:01:54.717Z"
+  "updatedAt": "2026-05-06T05:20:07.648Z"
 }

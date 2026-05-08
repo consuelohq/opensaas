@@ -10762,8 +10762,8 @@
       }
     },
     {
-      "id": "e76f3a96-38dc-44e9-99e3-0d09d2322ab7",
-      "occurred_at": "2026-05-05T23:41:38.534Z",
+      "id": "bcf0d112-1dbe-4328-8128-6f4d7e39f3be",
+      "occurred_at": "2026-05-06T04:46:03.700Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -10771,15 +10771,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "85aa16af-ab14-4306-949b-654119d7b954",
-      "occurred_at": "2026-05-05T23:41:38.802Z",
+      "id": "d1b9d2c0-07de-4796-8407-630e699c16e2",
+      "occurred_at": "2026-05-06T04:46:04.027Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -10787,143 +10787,15 @@
       "file_path": "CODING-STANDARDS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "03a499ff-ce2a-4fcf-bc17-cdaa6b2aeade",
-      "occurred_at": "2026-05-05T23:41:39.067Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "areas/website/AGENTS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "f7ceffb0-f6ca-4b6d-8fbf-72772e396919",
-      "occurred_at": "2026-05-05T23:41:39.338Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "36a95bc2-1253-433a-863e-15ca77f5aec4",
-      "occurred_at": "2026-05-05T23:41:39.606Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "6dc1ff2b-d54e-4de3-ad3c-62df5aa87614",
-      "occurred_at": "2026-05-05T23:42:38.276Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "c3747ee0-0d09-48f8-ba40-5fa7ffbf0b1f",
-      "occurred_at": "2026-05-05T23:42:38.545Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "c80bd6f9-4ffb-401b-bcbb-746850a334ba",
-      "occurred_at": "2026-05-05T23:42:38.813Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/fix-square-heatmap-proof-reveal",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/fix-square-heatmap-proof-reveal"
-      }
-    },
-    {
-      "id": "46867573-128e-4b0b-8c99-fd0e8443cac4",
-      "occurred_at": "2026-05-05T23:51:24.299Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "AGENTS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
-      }
-    },
-    {
-      "id": "74b7ce80-97ab-4600-9706-ba8354498fb0",
-      "occurred_at": "2026-05-05T23:51:24.573Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
-      }
-    },
-    {
-      "id": "ab7fb21c-a977-4af3-99d2-cde4a61803a9",
-      "occurred_at": "2026-05-05T23:51:24.842Z",
+      "id": "43c45204-8c69-4ca1-b56b-00f83eef75a0",
+      "occurred_at": "2026-05-06T04:46:04.336Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -10931,95 +10803,383 @@
       "file_path": ".task/workpad.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "0a7aeca2-3f9f-4038-a3cb-033d6edf7330",
-      "occurred_at": "2026-05-05T23:51:37.225Z",
+      "id": "d545744a-bd13-4f04-ba41-387a272e93eb",
+      "occurred_at": "2026-05-06T04:46:38.370Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": ".task/workpad.md",
+      "file_path": "packages/workspace/server.py",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "d325b383-6c43-4809-9bf8-d89ad8f4ffcd",
-      "occurred_at": "2026-05-05T23:51:55.903Z",
+      "id": "92a36afd-6bc0-48b9-8d40-902998cff981",
+      "occurred_at": "2026-05-06T04:46:51.802Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/src/components/launch/LaunchStats.astro",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "00154670-99c9-41aa-a5d7-d29879687d94",
-      "occurred_at": "2026-05-05T23:52:05.432Z",
+      "id": "c66f35dd-2a6e-43e0-9497-a372ceb5f633",
+      "occurred_at": "2026-05-06T04:47:18.497Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "file_path": "packages/workspace/scripts/workspace.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "fb945c10-fd51-4966-ab24-f19e17c9c5f0",
-      "occurred_at": "2026-05-05T23:52:11.291Z",
+      "id": "c7f36f30-b1a2-4f2f-a452-fbfa58ef6574",
+      "occurred_at": "2026-05-06T04:47:41.370Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "file_path": "packages/workspace/scripts/tool-runner.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "2535410f-d335-44b0-b859-f8192f5d3eb7",
-      "occurred_at": "2026-05-05T23:53:47.626Z",
+      "id": "9ed3ec92-75b1-421d-a0b2-3ca5b805c2bb",
+      "occurred_at": "2026-05-06T04:47:45.347Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
       "action": "read",
-      "file_path": "packages/consuelo-website/src/lib/motion.ts",
+      "file_path": "packages/workspace/scripts/tool-batch.ts",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/restore-square-heatmap-svg-only",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/restore-square-heatmap-svg-only"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "d10c5163-7b20-4ab4-8e21-7d9e113f3b14",
-      "occurred_at": "2026-05-06T06:58:05.051Z",
+      "id": "dfb09fa5-e3b9-4478-b552-1dce122e1d9d",
+      "occurred_at": "2026-05-06T04:51:13.016Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "68379af2-4235-4c77-91b3-df12be18d310",
+      "occurred_at": "2026-05-06T04:51:18.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "eebdfd62-f118-4311-ae3f-c29b1503881a",
+      "occurred_at": "2026-05-06T05:00:38.095Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "eec61159-7ade-4102-8668-34f05b438b9b",
+      "occurred_at": "2026-05-06T05:00:50.335Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "bf65c192-2ec5-46a6-9aea-8a6cc1bdebf3",
+      "occurred_at": "2026-05-06T05:01:02.907Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-meta.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "6305c21e-0a78-4d99-8147-2c8a93baa544",
+      "occurred_at": "2026-05-06T05:01:16.044Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-exec.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "fb182c29-14c1-46cb-908b-bc7eb27f2617",
+      "occurred_at": "2026-05-06T05:01:24.863Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "283ca174-a844-40d2-a9b9-2623e3b01e45",
+      "occurred_at": "2026-05-06T05:01:36.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "9288831c-61db-4371-b54f-8d880c744bb0",
+      "occurred_at": "2026-05-06T05:01:49.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "7eee798d-61b2-4f57-a9d3-5aa58d1211fa",
+      "occurred_at": "2026-05-06T05:02:05.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "e3e08c46-78cb-4b8f-a91f-9c98ae30d009",
+      "occurred_at": "2026-05-06T05:04:05.586Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "83b502a0-b5e7-4bf8-860e-09d04bb71063",
+      "occurred_at": "2026-05-06T05:04:10.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "f20ccc89-e788-401b-955b-9741ddb98464",
+      "occurred_at": "2026-05-06T05:04:17.055Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "623315f0-0da0-4de1-8090-a57d3a91f720",
+      "occurred_at": "2026-05-06T05:17:11.385Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/server.py",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "964248f5-6b1a-4a3c-985c-3a627d696114",
+      "occurred_at": "2026-05-06T05:17:19.271Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "b9a91ce1-d273-41e9-b48a-d78865abc40b",
+      "occurred_at": "2026-05-06T05:17:25.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "8301a6dd-0b02-4a68-ac29-f817fe248d66",
+      "occurred_at": "2026-05-06T05:17:34.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "c538813c-6cc2-4883-8c69-78c76497467a",
+      "occurred_at": "2026-05-06T05:17:47.085Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
+      }
+    },
+    {
+      "id": "254428ef-2828-4a20-aa15-698c1fac3aa9",
+      "occurred_at": "2026-05-06T05:19:06.854Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11027,111 +11187,15 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     },
     {
-      "id": "c707ff7e-15c9-47aa-8798-5da742ad78c2",
-      "occurred_at": "2026-05-06T06:58:05.329Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "1894e2bd-7682-417c-8f97-aa5c50671fd2",
-      "occurred_at": "2026-05-06T06:58:05.597Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/data/launch-content.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "1d713040-ddcf-48cc-b423-4b08eafb9c8e",
-      "occurred_at": "2026-05-06T06:58:05.866Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/pages/mercury.astro",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "aac6f2c3-fa42-42f2-b6e7-578b4a4c6fe2",
-      "occurred_at": "2026-05-06T06:58:13.533Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "28c41cdd-5a54-48f9-8995-3aac32edadb2",
-      "occurred_at": "2026-05-06T06:58:26.353Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/data/launch-content.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "dbb78a3c-f6bb-4916-abcb-367e4a042d91",
-      "occurred_at": "2026-05-06T06:58:26.624Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/pages/mercury.astro",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-landing-and-mercury-hero-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-landing-and-mercury-hero-copy"
-      }
-    },
-    {
-      "id": "cbdab7e2-f18a-492f-a527-6184b7a7d68a",
-      "occurred_at": "2026-05-06T07:10:06.594Z",
+      "id": "1bce0b8c-1713-4b38-a203-ed01226ea199",
+      "occurred_at": "2026-05-06T05:20:07.696Z",
       "type": "file.read",
       "source": "task:fs",
       "question": null,
@@ -11139,93 +11203,13 @@
       "file_path": "AGENTS.md",
       "status": "observed",
       "confidence_delta": 0.03,
-      "worktree_id": "task/website/align-mercury-homepage-promo-copy",
+      "worktree_id": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
       "details": {
         "source": "task:fs",
-        "task_branch": "task/website/align-mercury-homepage-promo-copy"
-      }
-    },
-    {
-      "id": "a19751cb-3a06-4c0e-90f0-7f1f81552b8b",
-      "occurred_at": "2026-05-06T07:10:06.880Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/align-mercury-homepage-promo-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/align-mercury-homepage-promo-copy"
-      }
-    },
-    {
-      "id": "ced2e91a-8dd4-4af4-9a1d-fa2fac00473a",
-      "occurred_at": "2026-05-06T07:10:07.153Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "packages/consuelo-website/src/data/launch-content.ts",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/align-mercury-homepage-promo-copy",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/align-mercury-homepage-promo-copy"
-      }
-    },
-    {
-      "id": "0e86f823-baaf-4773-8dc9-b285ac7f65b6",
-      "occurred_at": "2026-05-06T08:01:54.237Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "AGENTS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-mercury-headline-to-managed-telephony",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-mercury-headline-to-managed-telephony"
-      }
-    },
-    {
-      "id": "3fe26eaf-1aa7-4edd-9f6c-258178c4e1a0",
-      "occurred_at": "2026-05-06T08:01:54.504Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-mercury-headline-to-managed-telephony",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-mercury-headline-to-managed-telephony"
-      }
-    },
-    {
-      "id": "160589d4-939d-42b7-a415-40c61cbf72a0",
-      "occurred_at": "2026-05-06T08:01:54.764Z",
-      "type": "file.read",
-      "source": "task:fs",
-      "question": null,
-      "action": "read",
-      "file_path": "CODING-STANDARDS.md",
-      "status": "observed",
-      "confidence_delta": 0.03,
-      "worktree_id": "task/website/update-mercury-headline-to-managed-telephony",
-      "details": {
-        "source": "task:fs",
-        "task_branch": "task/website/update-mercury-headline-to-managed-telephony"
+        "task_branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call"
       }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-06T08:01:54.810Z"
+  "updated_at": "2026-05-06T05:20:07.746Z"
 }

@@ -36,7 +36,7 @@ function printHelp() {
     '  query <graphql>              run raw graphql (query or mutation)',
     '  issue <identifier>           get issue by identifier (DEV-123)',
     '  issues|search [--search <text>] list/search issues',
-    '  create|createIssue <title>   create issue (DEV/open, detected [type]+opensaas labels)',
+    '  create|createIssue <title>   create issue (DEV/open, opensaas label by default)',
     '  comment <issue-id> <body>    add comment to issue',
     '  update|updateIssue <issue-id> update issue fields',
     '  labels                       list issue labels',
@@ -66,7 +66,7 @@ function printHelp() {
     '  bun run linear -- issue DEV-123',
     '  bun run linear -- issues --search "dialer queue"',
     '  bun run linear -- issues --filter \'{"priority":{"lte":2,"neq":0}}\'',
-    '  bun run linear -- create "[task] add health check" --description "markdown body"',
+    '  bun run linear -- create "add health check" --description "markdown body"',
     '  bun run linear -- comment ISSUE-UUID "looks good, merging"',
     '  bun run linear -- update ISSUE-UUID --state d8f29981-a8ce-451d-8910-ca8c04af01b2',
     '  bun run linear -- query "{ viewer { id name } }"',
@@ -76,11 +76,8 @@ function printHelp() {
 
 // --- IDs ---
 const DEV_TEAM = '29f5c661-da6c-4bfb-bd48-815a006ccaac';
-const LABEL_TASK = '756f365d-b523-4ebb-9827-fed6e64309ce';
-const LABEL_OPENSAAS = 'aed5a241-2c72-44ca-a56a-9e5eabb0644a';
 const STATE_OPEN = '1160621c-7a00-4945-9093-47ba33862b7e';
 const GROWTH_TEAM = 'd923f357-397d-4416-832f-2ec2e822acdf';
-const TYPE_LABEL_PATTERN = /^\[(phase|task|epic|bug|spike|gtm|skill|doc|review|feature)\]/i;
 const TEAM_IDS = { dev: DEV_TEAM, development: DEV_TEAM, DEV: DEV_TEAM, grow: GROWTH_TEAM, growth: GROWTH_TEAM, GROW: GROWTH_TEAM };
 
 function parseArgs(argv) {
@@ -230,30 +227,30 @@ async function cmdIssues(token, args) {
 
 function resolveTeamId(value) { return TEAM_IDS[value] || value || DEV_TEAM; }
 function isUuid(value) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || '')); }
-function defaultLabelsForTitle(title) {
-  const match = String(title || '').match(TYPE_LABEL_PATTERN);
-  return [match ? `[${match[1].toLowerCase()}]` : '[task]', 'opensaas'];
+function defaultLabels() {
+  return ['opensaas'];
 }
-async function resolveLabelIds(token, labels, title) {
+async function resolveLabelIds(token, labels) {
   try {
-  const requested = labels && labels.length > 0 ? labels : defaultLabelsForTitle(title);
-  const data = await gql(token, `
-    query($first: Int) {
-      issueLabels(first: $first) { nodes { id name } }
+    const requested = labels && labels.length > 0 ? labels : defaultLabels();
+    const data = await gql(token, `
+      query($first: Int) {
+        issueLabels(first: $first) { nodes { id name } }
+      }
+    `, { first: 250 });
+    const byName = new Map(data.issueLabels.nodes.map((label) => [label.name.toLowerCase(), label.id]));
+    const resolved = [];
+    for (const label of requested) {
+      if (isUuid(label)) { resolved.push(label); continue; }
+      const id = byName.get(String(label).toLowerCase());
+      if (!id) throw new Error(`unknown Linear label: ${label}. run: bun run linear -- labels`);
+      resolved.push(id);
     }
-  `, { first: 250 });
-  const byName = new Map(data.issueLabels.nodes.map((label) => [label.name.toLowerCase(), label.id]));
-  const resolved = [];
-  for (const label of requested) {
-    if (isUuid(label)) { resolved.push(label); continue; }
-    const id = byName.get(String(label).toLowerCase());
-    if (!id) throw new Error(`unknown Linear label: ${label}. run: bun run linear -- labels`);
-    resolved.push(id);
-  }
-  return Array.from(new Set(resolved));
-
+    return Array.from(new Set(resolved));
   } catch (error) {
-    throw error;
+    throw new Error(`failed to resolve Linear labels: ${error instanceof Error ? error.message : String(error)}`, {
+      cause: error,
+    });
   }
 }
 
@@ -265,7 +262,7 @@ async function cmdCreate(token, args) {
     teamId: resolveTeamId(args.team),
     title,
     stateId: args.state || STATE_OPEN,
-    labelIds: await resolveLabelIds(token, args.labels, title),
+    labelIds: await resolveLabelIds(token, args.labels),
   };
   if (args.description) input.description = args.description;
   if (args.priority !== undefined) input.priority = args.priority;
@@ -310,7 +307,7 @@ async function cmdUpdate(token, args) {
   const input = {};
   if (args.state) input.stateId = args.state;
   if (args.title) input.title = args.title;
-  if (args.labels) input.labelIds = await resolveLabelIds(token, args.labels, args.title || issueId);
+  if (args.labels) input.labelIds = await resolveLabelIds(token, args.labels);
   if (args.priority !== undefined) input.priority = args.priority;
   if (args.assignee) input.assigneeId = args.assignee;
   if (args.description) input.description = args.description;
@@ -334,7 +331,6 @@ async function cmdUpdate(token, args) {
 
 
 async function cmdLabels(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       issueLabels(first: $first, after: $after) {
@@ -344,14 +340,9 @@ async function cmdLabels(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ labels: data.issueLabels.nodes, pageInfo: data.issueLabels.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdTeams(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       teams(first: $first, after: $after) {
@@ -361,14 +352,9 @@ async function cmdTeams(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ teams: data.teams.nodes, pageInfo: data.teams.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdProjects(token, args) {
-  try {
   const data = await gql(token, `
     query($first: Int, $after: String) {
       projects(first: $first, after: $after) {
@@ -378,14 +364,9 @@ async function cmdProjects(token, args) {
     }
   `, { first: args.first, after: args.after || null });
   writeStdout(JSON.stringify({ projects: data.projects.nodes, pageInfo: data.projects.pageInfo }, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 async function cmdStates(token, args) {
-  try {
   const teamId = resolveTeamId(args.team);
   const data = await gql(token, `
     query($id: String!) {
@@ -393,10 +374,6 @@ async function cmdStates(token, args) {
     }
   `, { id: teamId });
   writeStdout(JSON.stringify(data.team, null, 2));
-
-  } catch (error) {
-    throw error;
-  }
 }
 
 // --- main ---

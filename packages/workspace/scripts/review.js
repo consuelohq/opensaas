@@ -627,6 +627,22 @@ async function main() {
     const { resolveGitRoot } = require("./lib/paths");
     const repoRoot = resolveGitRoot(process.cwd());
     const requestedBranch = process.env.TASK_BRANCH;
+    const requestedWorktree = process.env.TASK_WORKTREE;
+
+    if (requestedWorktree) {
+      if (!fs.existsSync(requestedWorktree)) {
+        writeStderr(`task worktree not found: ${requestedWorktree}`);
+        process.exitCode = 1;
+        return;
+      }
+      writeStderr(`→ review scoped to: ${requestedWorktree}`);
+      const passthrough = process.argv.slice(2).filter((argument) => argument !== "--mine");
+      try {
+        execFileSync(process.execPath, [__filename, ...passthrough], { cwd: requestedWorktree, stdio: "inherit" });
+      } catch (error) { process.exitCode = error.status || 1; }
+      return;
+    }
+
     const worktrees = listWorktrees(repoRoot);
     const tasks = [];
     for (const wt of worktrees) {

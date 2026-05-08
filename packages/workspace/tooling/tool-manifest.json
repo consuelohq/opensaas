@@ -44,7 +44,8 @@
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "path": "packages/workspace/package.json"
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "fs.search",
@@ -103,7 +104,8 @@
       "paths": [
         "packages/workspace/SCRIPTS.md"
       ]
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "fs.list",
@@ -164,7 +166,8 @@
       "branch": "task/workspace-agents/example",
       "path": "packages/workspace/scripts",
       "depth": 1
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "fs.write",
@@ -223,7 +226,8 @@
       "path": "tmp/example.txt",
       "content": "hello",
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "fs.patch",
@@ -286,7 +290,8 @@
       "to": 1,
       "dryRun": true,
       "contentFile": "/tmp/replacement.txt"
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "http",
@@ -334,7 +339,8 @@
     "exampleInput": {
       "method": "get",
       "url": "https://example.com"
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "fs.trash",
@@ -371,7 +377,8 @@
       "branch": "task/workspace-agents/example",
       "path": "tmp/example.txt",
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.start",
@@ -423,7 +430,8 @@
       "stream": "stream/workspace-agents",
       "title": "example task",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "task.init",
@@ -476,7 +484,8 @@
       "area": "workspace-agents",
       "branch": "task/workspace-agents/example",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "task.push",
@@ -535,7 +544,8 @@
       "message": "feat(workspace): example",
       "changed": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.pr",
@@ -592,7 +602,8 @@
       "branch": "task/workspace-agents/example",
       "taskOnly": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.prs",
@@ -627,7 +638,8 @@
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example"
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.merge",
@@ -672,7 +684,8 @@
     "exampleInput": {
       "pr": 225,
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "task.finish",
@@ -708,7 +721,8 @@
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.cleanup",
@@ -769,7 +783,8 @@
       "branch": "task/workspace-agents/example",
       "preview": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.exec",
@@ -809,7 +824,8 @@
         "--short"
       ],
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "task.current",
@@ -834,7 +850,8 @@
       "internal": "task.current",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "task.pin",
@@ -861,7 +878,8 @@
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "task.ensureSynced",
@@ -888,7 +906,8 @@
     },
     "exampleInput": {
       "branch": "task/workspace-agents/example"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "taskMeta.smoke",
@@ -913,7 +932,8 @@
       "branchMode": "none",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "context.search",
@@ -959,7 +979,8 @@
     "exampleInput": {
       "keyword": "workspace",
       "limit": 3
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "context.find",
@@ -1000,7 +1021,8 @@
     "exampleInput": {
       "keyword": "handoff",
       "limit": 3
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "context.get",
@@ -1041,7 +1063,8 @@
     "exampleInput": {
       "index": 1,
       "keyword": "workspace"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "context.list",
@@ -1081,7 +1104,8 @@
     "exampleInput": {
       "category": "workpad",
       "limit": 3
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "context.save",
@@ -1127,7 +1151,8 @@
       "title": "example memory",
       "file": "/tmp/example.md",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "context.categories",
@@ -1154,7 +1179,8 @@
       "jsonFlag": "--json",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "explore",
@@ -1203,7 +1229,8 @@
     "exampleInput": {
       "query": "workspace facade",
       "limit": 5
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "decideNext",
@@ -1249,7 +1276,8 @@
         }
       ]
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "confidenceScore",
@@ -1274,7 +1302,8 @@
       "jsonFlag": "--json",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "exploit",
@@ -1309,7 +1338,8 @@
         }
       ]
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "confirm",
@@ -1352,7 +1382,8 @@
     },
     "exampleInput": {
       "verify": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "audit",
@@ -1395,7 +1426,8 @@
     },
     "exampleInput": {
       "scripts": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "stream.context",
@@ -1440,7 +1472,8 @@
     },
     "exampleInput": {
       "area": "workspace-agents"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "stream.list",
@@ -1472,7 +1505,8 @@
         }
       ]
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "stream.sync",
@@ -1518,7 +1552,8 @@
     "exampleInput": {
       "area": "workspace-agents",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "review.run",
@@ -1578,7 +1613,8 @@
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "noTests": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "verify",
@@ -1633,7 +1669,8 @@
       "branch": "task/workspace-agents/example",
       "noStamp": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "prReview",
@@ -1671,7 +1708,8 @@
     "exampleInput": {
       "pr": 225,
       "stdout": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "aiReview",
@@ -1709,7 +1747,8 @@
     "exampleInput": {
       "pr": 226,
       "noPost": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "gh",
@@ -1748,7 +1787,8 @@
       "args": [
         "225"
       ]
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser",
@@ -1790,7 +1830,8 @@
       "command": "open",
       "url": "https://example.com",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.open",
@@ -1835,7 +1876,8 @@
     "exampleInput": {
       "url": "https://example.com",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.test",
@@ -1880,7 +1922,8 @@
     "exampleInput": {
       "url": "https://example.com",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.consuelo",
@@ -1919,7 +1962,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.app",
@@ -1958,7 +2002,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.screenshot",
@@ -1997,7 +2042,8 @@
     "exampleInput": {
       "name": "after-login",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.snap",
@@ -2025,7 +2071,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.click",
@@ -2060,7 +2107,8 @@
     "exampleInput": {
       "ref": "@e1",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.fill",
@@ -2101,7 +2149,8 @@
       "ref": "@e1",
       "text": "hello",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.login",
@@ -2142,7 +2191,8 @@
       "name": "consuelo",
       "headed": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.reauth",
@@ -2183,7 +2233,8 @@
       "name": "consuelo",
       "headed": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.eval",
@@ -2218,7 +2269,8 @@
     "exampleInput": {
       "js": "document.title",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.raw",
@@ -2256,7 +2308,8 @@
         "list"
       ],
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "browser.close",
@@ -2284,7 +2337,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.config",
@@ -2318,7 +2372,8 @@
     },
     "exampleInput": {
       "verify": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.projects",
@@ -2357,7 +2412,8 @@
     },
     "exampleInput": {
       "limit": 25
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.issues",
@@ -2442,7 +2498,8 @@
     "exampleInput": {
       "query": "is:unresolved",
       "limit": 10
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.issue",
@@ -2481,7 +2538,8 @@
     },
     "exampleInput": {
       "identifier": "PROJECT-123"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.issueEvent",
@@ -2526,7 +2584,8 @@
       "issueId": "PROJECT-123",
       "eventId": "recommended",
       "full": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.event",
@@ -2565,7 +2624,8 @@
     },
     "exampleInput": {
       "eventId": "0123456789abcdef0123456789abcdef"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "sentry.trace",
@@ -2635,7 +2695,8 @@
     "exampleInput": {
       "traceId": "0123456789abcdef0123456789abcdef",
       "limit": 10
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.search",
@@ -2690,7 +2751,8 @@
     },
     "exampleInput": {
       "search": "workspace facade"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.issue",
@@ -2724,7 +2786,8 @@
     },
     "exampleInput": {
       "identifier": "DEV-123"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.createIssue",
@@ -2732,7 +2795,7 @@
       "linear",
       "createIssue"
     ],
-    "description": "create a Linear issue with DEV/open defaults and required labels",
+    "description": "create a Linear issue with DEV/open defaults and the opensaas label",
     "category": "linear",
     "underlying": "workspace linear.createIssue",
     "capabilities": {
@@ -2802,12 +2865,12 @@
       "jsonFlag": "--json"
     },
     "exampleInput": {
-      "title": "[task] add Linear facade commands",
+      "title": "add Linear facade commands",
       "labels": [
-        "[task]",
         "opensaas"
       ]
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.updateIssue",
@@ -2887,10 +2950,10 @@
     "exampleInput": {
       "issueId": "DEV-123",
       "labels": [
-        "[bug]",
         "opensaas"
       ]
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.labels",
@@ -2930,7 +2993,8 @@
     },
     "exampleInput": {
       "first": 50
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.teams",
@@ -2970,7 +3034,8 @@
     },
     "exampleInput": {
       "first": 20
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.projects",
@@ -3010,7 +3075,8 @@
     },
     "exampleInput": {
       "first": 50
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "linear.states",
@@ -3045,7 +3111,8 @@
     },
     "exampleInput": {
       "team": "dev"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "wait",
@@ -3086,7 +3153,8 @@
     },
     "exampleInput": {
       "seconds": 1
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "tmp",
@@ -3134,7 +3202,8 @@
       "name": "example",
       "content": "hello",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "railway.logs",
@@ -3204,7 +3273,8 @@
     "exampleInput": {
       "service": "opensaas",
       "lines": 10
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "railway.redeploy",
@@ -3249,7 +3319,8 @@
     "exampleInput": {
       "service": "opensaas",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "website.deploy",
@@ -3288,7 +3359,8 @@
     "exampleInput": {
       "buildOnly": true,
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "doctor",
@@ -3313,7 +3385,8 @@
       "jsonFlag": "--json",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "status",
@@ -3338,7 +3411,8 @@
       "jsonFlag": "--json",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "server",
@@ -3370,7 +3444,8 @@
     },
     "exampleInput": {
       "action": "status"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "checkFiles",
@@ -3419,7 +3494,8 @@
         "packages/workspace/scripts/fs.js"
       ],
       "stopOnFirstError": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "editFlow",
@@ -3492,7 +3568,8 @@
       "to": 1,
       "contentFile": "/tmp/new.ts",
       "dryRun": true
-    }
+    },
+    "sessionRequired": true
   },
   {
     "name": "mac.exec",
@@ -3538,7 +3615,8 @@
     "exampleInput": {
       "command": "pwd",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.read",
@@ -3573,7 +3651,8 @@
     },
     "exampleInput": {
       "path": "/tmp/example.txt"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.write",
@@ -3620,7 +3699,8 @@
       "path": "/tmp/example.txt",
       "content": "hello",
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.search",
@@ -3665,7 +3745,8 @@
     "exampleInput": {
       "pattern": "hello",
       "path": "/tmp"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.list",
@@ -3705,7 +3786,8 @@
     "exampleInput": {
       "path": "/tmp",
       "depth": 1
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.process",
@@ -3750,7 +3832,8 @@
     },
     "exampleInput": {
       "action": "list"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "mac.port",
@@ -3789,7 +3872,8 @@
     },
     "exampleInput": {
       "action": "find"
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "generate.docs",
@@ -3816,7 +3900,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "generate.types",
@@ -3843,7 +3928,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.run",
@@ -3873,7 +3959,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.getDesignSystem",
@@ -3901,7 +3988,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.listSkills",
@@ -3929,7 +4017,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.listDesignSystems",
@@ -3957,7 +4046,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.upstreamStatus",
@@ -3985,7 +4075,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.railwayCheck",
@@ -4013,7 +4104,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.check",
@@ -4041,7 +4133,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateWebsite",
@@ -4082,7 +4175,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateDemo",
@@ -4123,7 +4217,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateImageBrief",
@@ -4164,7 +4259,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateDigitalEguide",
@@ -4205,7 +4301,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateEmail",
@@ -4246,7 +4343,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.generateMotionFrame",
@@ -4287,7 +4385,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.renderHyperframes",
@@ -4328,7 +4427,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.uiBg",
@@ -4358,7 +4458,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.uiStop",
@@ -4388,7 +4489,8 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.uiStatus",
@@ -4416,7 +4518,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.uiLogs",
@@ -4444,7 +4547,8 @@
       "dryRunFlag": "--dry-run",
       "arguments": []
     },
-    "exampleInput": {}
+    "exampleInput": {},
+    "sessionRequired": false
   },
   {
     "name": "consueloDesign.odBuild",
@@ -4474,6 +4578,7 @@
     },
     "exampleInput": {
       "dryRun": true
-    }
+    },
+    "sessionRequired": false
   }
 ]

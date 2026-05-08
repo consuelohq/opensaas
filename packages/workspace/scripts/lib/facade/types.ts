@@ -7,6 +7,8 @@ export type ErrorCode =
   | 'TIMEOUT'
   | 'PARSE_ERROR'
   | 'NOT_FOUND'
+  | 'TASK_SESSION_NOT_FOUND'
+  | 'TASK_SESSION_REQUIRED'
   | 'DRY_RUN';
 
 export type ToolCapabilities = {
@@ -65,6 +67,7 @@ export type ToolManifestEntry = {
   outputSchema: string;
   command: ToolCommand;
   exampleInput: Record<string, unknown>;
+  sessionRequired?: boolean;
 };
 
 export type ToolInput = Record<string, unknown>;

@@ -502,7 +502,7 @@ bad: bun run task:push -- --message "fix: thing" --changed
 
 ### task:start — create task branch + worktree + PR
 
-creates a new task branch, git worktree, and draft PR. the worktree is created in `/private/tmp/opensaas-worktrees/`.
+creates a new task branch, git worktree, and draft PR. the worktree is created under `$WORKSPACE_WORKTREE_ROOT`, `$OPENSAAS_WORKTREE_ROOT`, or the portable temp default `os.tmpdir()/opensaas-worktrees`.
 
 ```bash
 bun run task:start -- --area dialer --title "normalize phone numbers"
@@ -518,7 +518,7 @@ bad: bun run task:start
  (--area and --title are both required)
 
 bad: bun run task:start -- --area dialer --title "fix thing"
- → error: worktree already exists at /private/tmp/opensaas-worktrees/task-dialer-fix-thing
+ → error: worktree already exists at <worktree-root>/task-dialer-fix-thing
  (check if the old task is still needed: bun run task:fs -- --branch task/dialer/fix-thing read .task/current.json
   if not needed: bun run task:finish or bun run task:cleanup -- --preview first)
 ```
@@ -853,7 +853,7 @@ bun run tmp -- checklist deploy-fix "check logs" "fix error" "push" "verify"  # 
 
 ### workspace — typed facade CLI for the workspace MCP app
 
-routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the command form agents should put inside `workspace.sandbox_exec({ command, timeout })`.
+routes `workspace <tool.name> '<json-input>'` to the typed facade. this is the lower-level CLI used by the MCP `workspace.call` tool.
 
 ```bash
 bun run workspace -- status
@@ -862,11 +862,12 @@ bun run workspace -- fs.read '{"path":"AGENTS.md"}'
 bun run workspace -- batch '[{"tool":"status","input":{}}]'
 ```
 
-inside the workspace MCP app, the command string is cleaner because `sandbox_exec` rewrites it to this script:
+inside the workspace MCP app, call the typed facade directly through `workspace.call`:
 
 ```ts
-workspace.sandbox_exec({
-  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
+await workspace.call({
+  tool: "stream.context",
+  input: { area: "workspace-agents" },
   timeout: 120
 })
 ```
@@ -1016,6 +1017,14 @@ bun run server -- logs                # tail /tmp/workspace.log
 bun run website:deploy                # build and deploy to cloudflare pages
 bun run website:deploy -- --preview   # preview deploy (non-production url)
 bun run website:deploy -- --build-only  # build only, don't deploy
+```
+
+---
+
+### consuelo-design — run local design tooling
+
+```bash
+bun run consuelo-design -- --help
 ```
 
 ---

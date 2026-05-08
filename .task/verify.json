@@ -1,17 +1,31 @@
 {
   "result": "pass",
-  "branch": "task/website/restore-square-heatmap-svg-only",
-  "base": "stream/website",
-  "headSha": "3d0c412ba8cbf98fc95330dd492d2bafd9c645a5",
-  "changeHash": "caa4d4db61569dad5f35d1d50a00f3a530010691ce1b6e4d5b378dba43d853a8",
+  "branch": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+  "base": "task/workspace-agents/dev-1500-replace-sandbox-exec-with-workspace-call",
+  "headSha": "aa1962bca2d1d332175a65da0426159f2e299e07",
+  "changeHash": "e205a6586603c75698abc1f39032bf429e40a828184e971542971b251a0643cf",
   "changedFiles": [
-    "packages/consuelo-website/src/components/launch/LaunchStats.astro",
-    "packages/consuelo-website/src/lib/motion.ts",
-    "packages/consuelo-website/src/pages/index.astro"
+    "packages/workspace/README.md",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/facade/types.ts",
+    "packages/workspace/scripts/lib/paths.js",
+    "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/task-exec.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/server.py",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-06T00:09:28.691Z",
+  "verifiedAt": "2026-05-06T05:55:50.857Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
