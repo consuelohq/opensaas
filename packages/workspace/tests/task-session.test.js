@@ -151,6 +151,31 @@ test('terminateTaskTmuxSession continues when no tmux session exists', () => {
   ]);
 });
 
+
+
+test('terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure', () => {
+  const warnings = [];
+  const calls = [];
+  const result = withSpawnSync((command, args) => {
+    calls.push(args);
+    if (args[0] === '-V') return { status: 0 };
+    if (args[0] === 'has-session') return { status: 2, stderr: 'server unavailable' };
+    throw new Error(`unexpected tmux call ${args.join(' ')}`);
+  }, () => terminateTaskTmuxSession(
+    { tmuxSession: 'explicit-session' },
+    { warn: (message) => warnings.push(message) },
+  ));
+
+  expect(result.status).toBe('inspect-failed');
+  expect(result.terminated).toBe(false);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain('exit 2: server unavailable');
+  expect(calls).toEqual([
+    ['-V'],
+    ['has-session', '-t', 'explicit-session'],
+  ]);
+});
+
 test('terminateTaskTmuxSession closes an explicit existing tmux session', () => {
   const calls = [];
   const result = withSpawnSync((command, args) => {
