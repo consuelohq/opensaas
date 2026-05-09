@@ -13,9 +13,14 @@ function writeStderr(value: string): void {
   process.stderr.write(`${value}\n`);
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function printHelp(): void {
   writeStdout([
     'usage: bun packages/workspace/scripts/tool-batch.ts <json-array>',
+    '       bun packages/workspace/scripts/tool-batch.ts {"steps":[...]}',
     '       bun packages/workspace/scripts/tool-batch.ts --file /tmp/batch.json',
     '',
     'runs typed workspace tools in a sequential batch.',
@@ -48,17 +53,23 @@ async function main(): Promise<void> {
     rawInput = args[0];
   }
 
-  let steps: BatchStep[];
+  let parsedInput: unknown;
   try {
-    steps = JSON.parse(rawInput) as BatchStep[];
+    parsedInput = JSON.parse(rawInput) as unknown;
   } catch (error: unknown) {
     writeStderr(error instanceof Error ? error.message : 'invalid JSON input');
     process.exitCode = 1;
     return;
   }
 
-  if (!Array.isArray(steps)) {
-    writeStderr('batch input must be a JSON array');
+  const steps = Array.isArray(parsedInput)
+    ? parsedInput as BatchStep[]
+    : isRecord(parsedInput) && Array.isArray(parsedInput.steps)
+      ? parsedInput.steps as BatchStep[]
+      : null;
+
+  if (!steps) {
+    writeStderr('batch input must be a JSON array or an object with a steps array');
     process.exitCode = 1;
     return;
   }

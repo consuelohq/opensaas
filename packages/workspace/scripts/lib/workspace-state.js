@@ -89,9 +89,16 @@ function getChangedFiles(cwd = process.cwd()) {
   if (!result.ok || !result.stdout) return [];
 
   return result.stdout.split('\n').filter(Boolean).map((line) => {
-    const status = line.slice(0, 2).trim() || 'modified';
-    const filePath = line.slice(3);
-    return { status, path: filePath };
+    if (line.length >= 3 && line[2] === ' ') {
+      const status = line.slice(0, 2).trim() || 'modified';
+      const filePath = line.slice(3);
+      return { status, path: filePath };
+    }
+
+    const separatorIndex = line.indexOf(' ');
+    const statusText = separatorIndex === -1 ? line : line.slice(0, separatorIndex);
+    const filePath = separatorIndex === -1 ? '' : line.slice(separatorIndex + 1);
+    return { status: statusText.trim() || 'modified', path: filePath };
   });
 }
 

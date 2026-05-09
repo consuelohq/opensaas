@@ -463,37 +463,33 @@ build the review packet generator first. the packet must collect the durable dat
 the workspace app exposes exactly two mcp tools:
 
 - `workspace.get_steering()`
-- `workspace.sandbox_exec({ command, timeout })`
+- `workspace.call({ tool, input, taskSession, timeout })`
 
-all workspace operations run through `sandbox_exec`. the command string inside `sandbox_exec` uses the workspace facade cli:
+`get_steering` is the bootstrap call. after one successful call in a conversation, treat steering as loaded and use `workspace.call` for workspace operations.
+
+normal workflow calls use typed input objects, not nested shell command strings:
 
 ```ts
-workspace.sandbox_exec({
-  command: "workspace stream.context '{\"area\":\"workspace-agents\"}'",
-  timeout: 120
+await workspace.call({
+  tool: "stream.context",
+  input: { area: "workspace-agents" },
+  timeout: 120,
 })
 ```
 
-the shape is always:
-
-```text
-workspace <tool.name> '<json-input>'
-```
-
-omit the json input only when the tool accepts an empty object:
+for tools with no input, pass an empty object or omit `input`:
 
 ```ts
-workspace.sandbox_exec({
-  command: "workspace status",
-  timeout: 120
+await workspace.call({
+  tool: "status",
+  input: {},
+  timeout: 120,
 })
 ```
 
-there are no separate mcp tools for `stream.context`, `fs.read`, `task.current`, or any other workspace operation. `sandbox_exec` is the transport layer. `workspace <tool.name>` is the command inside that transport.
+the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, command mappings, and whether a tool is task-session scoped.
 
-the tool manifest at `packages/workspace/tooling/tool-manifest.json` defines every workspace operation. it is injected into agent context through `get_steering`. the manifest is the single source of truth for tool names, input schemas, timeouts, capabilities, and command mappings.
-
-the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, and `exitCode`.
+the facade validates input against the manifest schema, runs the underlying command, and returns a structured JSON envelope with `ok`, `code`, `message`, `data`, `stderr`, `exitCode`, `durationMs`, `traceId`, `now`, and `apiVersion`.
 
 After one successful workspace.get_steering call in a conversation, treat steering as loaded.
 Do not call get_steering again unless:
@@ -505,23 +501,26 @@ Do not call get_steering again unless:
 quick reference:
 
 ```ts
-workspace.sandbox_exec({ command: "workspace stream.list", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace stream.context '{\"area\":\"workspace-agents\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace status", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"how does auth work\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"noTests\\\":true}\"", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace fs.read '{\"path\":\"AGENTS.md\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace task.current", timeout: 120 })
+await workspace.call({ tool: "stream.list", input: {}, timeout: 120 })
+await workspace.call({ tool: "stream.context", input: { area: "workspace-agents" }, timeout: 120 })
+await workspace.call({ tool: "status", input: {}, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "how does auth work" }, timeout: 120 })
+await workspace.call({ tool: "decideNext", input: {}, timeout: 120 })
+await workspace.call({ tool: "confidenceScore", input: {}, timeout: 120 })
+await workspace.call({ tool: "fs.read", taskSession, input: { path: "AGENTS.md" }, timeout: 120 })
 ```
 
-for batch operations:
+for batch operations, pass child tool inputs as structured objects. the top-level `taskSession` is propagated to task-scoped child tools:
 
 ```ts
-workspace.sandbox_exec({
-  command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"src/foo.ts\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"TODO\",\"paths\":[\"packages/\"]}}]'",
-  timeout: 120
+await workspace.call({
+  tool: "batch",
+  taskSession,
+  input: [
+    { tool: "fs.read", input: { path: "src/foo.ts" } },
+    { tool: "fs.search", input: { pattern: "TODO", paths: ["packages/"] } },
+  ],
+  timeout: 120,
 })
 ```
 
@@ -533,114 +532,18 @@ the manifest JSON tells you:
 - `defaultTimeout` - max execution time in milliseconds
 - `capabilities` - flags such as `readOnly`, `mutating`, `deterministic`, and `safeToRetry`
 - `command` - the underlying command mapping
+- `sessionRequired` - whether agent-mode calls must include `taskSession`
 
 tool categories:
 
 - **fs** - file operations: read, search, list, write, patch, http, trash
 - **task** - task lifecycle: start, current, pin, push, pr, prs, merge, finish, cleanup, init, fs, exec
-- **context** - project memory: search, find, list, save, categories
-- **decision** - exploration and confidence: explore, decideNext, confidenceScore, exploit, confirm, audit
-- **stream** - stream management: list, sync, context
-- **review** - code review and verification: review.run, verify, prReview, aiReview
-- **infra** - deploy and observability: railway.logs, railway.redeploy, browser, wait
 - **system** - workspace management: server, doctor, status, tmp, agent
-- **mac** - local machine operations that are not repo-scoped
+- **decision** - explore, decideNext, confidenceScore, exploit, confirm, audit
 
-if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the JSON input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure inside `sandbox_exec` instead of silently routing around it.
+if a tool returns an error envelope, read the error message and `stderr`. validation errors mean the input does not match the manifest schema. execution errors mean the underlying command failed. diagnose the failure through `workspace.call` instead of silently routing around it.
 
-raw shell commands are fallback tools, not the default. use `workspace <tool.name>` through `sandbox_exec` when a manifest tool exists.
-
-## how to think: the decision.md
-
-the decision engine is the reasoning loop behind workspace work. it is not optional tooling; it is how agents avoid guessing.
-
-the loop:
-
-```text
-explore -> decideNext -> read -> update beliefs -> confidenceScore -> exploit or keep exploring
-```
-
-the correct flow:
-
-1. `explore("what is wrong with x?")` gets ranked files with bayesian posteriors.
-2. `decideNext()` chooses what to read next by information value.
-3. read the suggested file through workspace tools so the read is tracked.
-4. `confidenceScore()` checks whether the evidence is strong enough.
-5. if score is below `0.55`, keep exploring.
-6. if score is at least `0.55` but below `0.75`, read one more connected file.
-7. if score is at least `0.75`, run `exploit()` and act.
-
-workspace is the primary work surface. the engine tracks beliefs, evidence for and against, unresolved uncertainty, and graph connections between candidates, callers, tests, imports, and siblings. retrieval is a prior, not proof. confidence comes from accumulated evidence.
-
-read `packages/workspace/decision.md` before relying on the system. that file is the full guide for when to explore versus exploit, how beliefs update, what confidence thresholds mean, how contradictions work, and how evidence moves through the lifecycle.
-
-use tools in this order unless the task clearly requires otherwise:
-
-1. workspace steering and sandbox
-2. repo files through `workspace fs.*` commands inside `sandbox_exec`
-3. project memory through `workspace context.*` commands inside `sandbox_exec`
-4. docs in the repo
-5. browser/production verification
-6. web search for fresh or external information
-7. linear for issue/project/customer workflow
-8. connected files only when the task is explicitly about uploaded files, recordings, docs, or transcripts
-
-the academic foundation:
-
-- **thompson sampling** - explore ranks by information value, not only relevance
-- **optimal stopping** - the `0.55` and `0.75` thresholds answer whether one more file read is worth it
-- **gittins index intuition** - `decideNext` picks the file with the highest value right now
-- **bayesian belief updating** - posteriors update as evidence arrives
-
-for repo work, use the scripts. agents that skip this loop are guessing instead of knowing.
-
-## typed facade usage examples
-
-branch auto-detection starts with the strongest source and stops at the first valid match.
-
-```ts
-workspace.sandbox_exec({
-  command: "workspace task.start '{\"area\":\"workspace-agents\",\"title\":\"fix review comments\",\"startFrom\":\"stream\"}'",
-  timeout: 120
-})
-
-workspace.sandbox_exec({
-  command: "workspace fs.read '{\"path\":\"packages/workspace/package.json\"}'",
-  timeout: 120
-})
-```
-
-after `task.start`, branch-aware tools auto-resolve the branch from the pinned/current task state. the resolver chain is: explicit `branch`, pinned branch, `TASK_BRANCH`, validated `.task/current.json`, exactly one active task worktree, then deterministic failure.
-
-decision loop:
-
-```ts
-workspace.sandbox_exec({ command: "workspace explore '{\"query\":\"why is task push failing?\"}'", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace decideNext", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confidenceScore", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace exploit", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace confirm '{\"verify\":true}'", timeout: 120 })
-```
-
-batch operations:
-
-```ts
-workspace.sandbox_exec({
-  command: "workspace batch '[{\"tool\":\"fs.read\",\"input\":{\"path\":\"packages/workspace/package.json\"}},{\"tool\":\"fs.search\",\"input\":{\"pattern\":\"task:push\",\"paths\":[\"packages/workspace/SCRIPTS.md\"]}}]'",
-  timeout: 120
-})
-```
-
-review pipeline:
-
-```ts
-workspace.sandbox_exec({ command: "workspace review.run \"{\\\"branch\\\":\\\"task/workspace-agents/example\\\",\\\"base\\\":\\\"stream/workspace-agents\\\",\\\"noTests\\\":true}\"", timeout: 120 })
-workspace.sandbox_exec({ command: "workspace aiReview '{\"pr\":226,\"noPost\":true}'", timeout: 120 })
-```
-
-if a workspace command fails, test the failing command through `sandbox_exec`, read the envelope, inspect the docs or implementation, and fix the invocation or command. do not silently route around the workspace app.
-
----
+raw shell commands are fallback tools, not the default. use `workspace.call` when a manifest tool exists.
 
 ## 8. coding workflow
 
@@ -763,6 +666,8 @@ do not ask before:
 private things stay private.
 
 never send secrets, api keys, tokens, credentials, full phone numbers, or customer pii to external models or untrusted surfaces.
+
+dangerous safety validation must run as unit tests or dry-run/mocked execution only. human review should inspect test output, not run destructive smoke examples manually.
 
 ---
 
@@ -1053,7 +958,7 @@ verifying work — never ship without checking
 
 every change gets verified. how depends on what you changed:
 
-code changes — run `workspace review.run` through `sandbox_exec`
+code changes — run the relevant review tool through `workspace.call`, usually with `taskSession`.
 
 deployed changes — sleep, then check. after merging or deploying, sleep 300 (5 min for railway), then verify it's actually live with a workspace command, browser verification, or the appropriate production log tool. don't assume the deploy worked — confirm it.
 
@@ -1067,60 +972,35 @@ deployed changes — sleep, then check. after merging or deploying, sleep 300 (5
 
 for command construction:
 
-never nest more than 2 levels of quotes in a single sandbox_exec call
-heredocs don't survive JSON. the \n in a JSON string value is a literal backslash-n, not a newline.
-
 ## Workspace tooling and facade change doctrine
 
 When working on workspace tooling, scripts, task workflow, typed facade behavior, decision-engine behavior, or agent operating doctrine, use the workspace facade as the primary operating surface. Do not default to raw absolute-path shell commands when a workspace command exists.
 
 Start workspace-tooling investigations with:
 
-```bash
-
-workspace stream.context '{"area":"workspace-agents"}'
-workspace context.search '{"keyword":"typed workspace facade","limit":5}'
-workspace context.search '{"keyword":"browser facade aliases","limit":5}'
-workspace context.search '{"keyword":"workspace tooling docs","limit":5}'
+```ts
+await workspace.call({ tool: "stream.context", input: { area: "workspace-agents" }, timeout: 120 })
+await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "context.search", input: { keyword: "browser facade aliases", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "context.search", input: { keyword: "workspace tooling docs", limit: 5 }, timeout: 120 })
 ```
 
 ## shell command construction with base64 + JSON escaping
-When generating a shell command that decodes base64 through Python, prefer this shape:
-```bash
-python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING
 
-The base64 string does not need quotes when it contains only standard base64 characters. Keep it as a positional argument to avoid nested shell quoting.
+Raw shell command construction is a fallback, not the normal workspace workflow. Prefer typed `workspace.call` inputs. When raw shell is necessary inside `task.exec`, keep the command as a command array and avoid nested JSON/string quoting.
 
-When embedding that command inside JSON, escape only the JSON double quotes around the command value. Keep the Python snippet single-quoted inside the shell command:
+If a command must decode base64 through Python, keep the encoded payload as a positional argument:
 
-{
-  "command": "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING"
-}
-
-For workspace.sandbox_exec, the full call shape is:
-
-workspace.sandbox_exec({
-  command: "python3 -c 'import base64,sys;print(base64.b64decode(sys.argv[1]).decode())' BASE64_STRING",
-  timeout: 120
+```ts
+await workspace.call({
+  tool: "task.exec",
+  taskSession,
+  input: {
+    command: ["python3", "-c", "import base64,sys;print(base64.b64decode(sys.argv[1]).decode())", "BASE64_STRING"],
+  },
+  timeout: 120,
 })
-
-Avoid this failure mode:
-
-{
-  "command": "python3 -c "import base64; ..." BASE64_STRING"
-}
-
-That breaks JSON because the inner double quotes terminate the command string.
-
-If double quotes are required inside the shell command, escape them for JSON:
-
-{
-  "command": "python3 -c \"import base64,sys;print(base64.b64decode(sys.argv[1]).decode())\" BASE64_STRING"
-}
-
-Prefer the single-quoted Python form because it keeps the JSON cleaner and reduces escaping mistakes.
-
-I tightened it into a durable steering rule: positional base64 arg, single-quoted Python snippet, JSON-safe command string, and one explicit escaped-double-quote fallback.
+```
 
 ## Exploration is mandatory
 
@@ -1137,19 +1017,19 @@ Exploration must answer these questions before implementation begins:
 
 Use context search first, then code/file exploration. Good first-pass commands:
 
-```bash
-workspace context.search '{"keyword":"<feature or behavior>","limit":5}'
-workspace context.search '{"keyword":"typed workspace facade","limit":5}'
-workspace context.search '{"keyword":"workspace scripts docs","limit":5}'
-workspace explore '{"query":"<feature or behavior> workspace facade script manifest docs tests","limit":8}'
+```ts
+await workspace.call({ tool: "context.search", input: { keyword: "<feature or behavior>", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "context.search", input: { keyword: "typed workspace facade", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "context.search", input: { keyword: "workspace scripts docs", limit: 5 }, timeout: 120 })
+await workspace.call({ tool: "explore", input: { query: "<feature or behavior> workspace facade script manifest docs tests", limit: 8 }, timeout: 120 })
 ```
 
 After a task branch exists, inspect repo files through task-scoped workspace commands. Do not hand off or document instructions like `rg ... /Users/kokayi/Dev/opensaas` as the expected workflow. Prefer workspace file tools so the command is branch-aware and reproducible:
 
-```bash
-workspace fs.search '{"branch":"<branch>","pattern":"<pattern>","paths":["."],"context":8,"maxResults":80}'
-workspace fs.read '{"branch":"<branch>","path":"<path>"}'
-workspace fs.list '{"branch":"<branch>","path":"<path>","depth":2}'
+```ts
+await workspace.call({ tool: "fs.search", taskSession, input: { pattern: "<pattern>", paths: ["."], context: 8, maxResults: 80 }, timeout: 120 })
+await workspace.call({ tool: "fs.read", taskSession, input: { path: "<path>" }, timeout: 120 })
+await workspace.call({ tool: "fs.list", taskSession, input: { path: "<path>", depth: 2 }, timeout: 120 })
 ```
 
 For repo changes, exploration should include the nearest existing implementation and at least one generated/consumer surface. For typed facade work, this usually means reading the relevant script, `tool-manifest.json`, `schemas.ts`, generated types/docs, and the facade test/snapshot pattern before editing.
@@ -1185,12 +1065,12 @@ Before reporting completion, verify one of these is true:
 
 For typed facade changes, the expected validation path is:
 
-```bash
-workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-types"]}'
-workspace task.exec '{"branch":"<branch>","command":["bun","run","generate-docs"]}'
-workspace task.exec '{"branch":"<branch>","command":["bash","-lc","cd packages/workspace && bun run test tests/facade/facade.test.ts"],"timeout":300000}'
-workspace task.exec '{"branch":"<branch>","command":["bun","run","audit","--","--scripts","--json"]}'
-workspace task.exec '{"branch":"<branch>","command":["bun","run","review","--","--base","stream/workspace-agents","--no-tests","--json"],"timeout":600000}'
+```ts
+await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "generate-types"] }, timeout: 120 })
+await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "generate-docs"] }, timeout: 120 })
+await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bash", "-lc", "cd packages/workspace && bun run test tests/facade/facade.test.ts"] }, timeout: 300000 })
+await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "audit", "--", "--scripts", "--json"] }, timeout: 120 })
+await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun", "run", "review", "--", "--base", "stream/workspace-agents", "--no-tests", "--json"] }, timeout: 600000 })
 ```
 
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
@@ -1202,8 +1082,8 @@ Use explicit `branch` for final validation and push commands so verify stamps an
 
 Canonical sequence:
 
-1. `bun run workspace review.run '{"branch":"task/<area>/<name>","noTests":true}'`
-2. `bun run workspace verify '{"branch":"task/<area>/<name>"}'`
-3. `bun run workspace task.push '{"branch":"task/<area>/<name>","message":"<commit message>"}'`
+1. `workspace.call({ tool: "review.run", taskSession, input: { noTests: true } })`
+2. `workspace.call({ tool: "verify", taskSession, input: {} })`
+3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
 This keeps review, verify, and push deterministic in multi-worktree sessions.
