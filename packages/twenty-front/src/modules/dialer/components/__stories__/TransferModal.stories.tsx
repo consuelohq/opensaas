@@ -1,5 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
-import { fn, userEvent, within, expect } from '@storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { TransferModal } from '@/dialer/components/TransferModal';
 

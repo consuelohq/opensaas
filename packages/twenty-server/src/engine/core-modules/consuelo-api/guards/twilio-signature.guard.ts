@@ -1,11 +1,11 @@
 import {
-  CanActivate,
-  ExecutionContext,
   Injectable,
+  type CanActivate,
+  type ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
 
-import { Request } from 'express';
+import { type Request } from 'express';
 
 @Injectable()
 export class TwilioSignatureGuard implements CanActivate {
@@ -18,17 +18,23 @@ export class TwilioSignatureGuard implements CanActivate {
         throw new UnauthorizedException('TWILIO_AUTH_TOKEN is not configured');
       }
 
-      const signature = request.headers['x-twilio-signature'];
+      const signature = this.readFirstForwardedHeader(
+        request.headers['x-twilio-signature'],
+        '',
+      );
 
-      if (!signature || typeof signature !== 'string') {
+      if (!signature) {
         throw new UnauthorizedException('Missing Twilio signature');
       }
 
-      const protocol =
-        typeof request.headers['x-forwarded-proto'] === 'string'
-          ? request.headers['x-forwarded-proto']
-          : 'https';
-      const host = request.headers.host ?? '';
+      const protocol = this.readFirstForwardedHeader(
+        request.headers['x-forwarded-proto'],
+        'https',
+      );
+      const host = this.readFirstForwardedHeader(
+        request.headers['x-forwarded-host'],
+        request.headers.host ?? '',
+      );
       const path = request.originalUrl ?? request.path;
       const url = `${protocol}://${host}${path}`;
 
@@ -39,9 +45,20 @@ export class TwilioSignatureGuard implements CanActivate {
       const bodyParams =
         (request.body as Record<string, unknown> | undefined) ?? {};
 
-      const isValid = rawBody
-        ? twilio.validateRequestWithBody(authToken, signature, url, bodyString)
-        : twilio.validateRequest(authToken, signature, url, bodyParams);
+      const contentType = this.readFirstForwardedHeader(
+        request.headers['content-type'],
+        '',
+      );
+      const isJsonBody = contentType.toLowerCase().includes('application/json');
+      const isValid =
+        rawBody && isJsonBody
+          ? twilio.validateRequestWithBody(
+              authToken,
+              signature,
+              url,
+              bodyString,
+            )
+          : twilio.validateRequest(authToken, signature, url, bodyParams);
 
       if (!isValid) {
         throw new UnauthorizedException('Invalid Twilio signature');
@@ -56,5 +73,20 @@ export class TwilioSignatureGuard implements CanActivate {
 
       throw new UnauthorizedException(`Twilio validation failed: ${message}`);
     }
+  }
+
+  private readFirstForwardedHeader(
+    value: string | string[] | undefined,
+    fallback: string,
+  ): string {
+    if (Array.isArray(value)) {
+      return this.readFirstForwardedHeader(value[0], fallback);
+    }
+
+    if (typeof value !== 'string') {
+      return fallback;
+    }
+
+    return value.split(',')[0]?.trim() || fallback;
   }
 }

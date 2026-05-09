@@ -19,6 +19,7 @@ import { selectedCallerIdState } from '@/dialer/states/selectedCallerIdState';
 import { selectedContactState } from '@/dialer/states/selectedContactState';
 import { useParallelDialer } from '@/dialer/hooks/useParallelDialer';
 import { useQueueOperations } from '@/dialer/hooks/useQueueOperations';
+import { useStartDialerCall } from '@/dialer/hooks/useStartDialerCall';
 import { useTwilioDevice } from '@/dialer/hooks/useTwilioDevice';
 import { useTwilioConfigStatus } from '@/dialer/hooks/useTwilioConfigStatus';
 import { callStateAtom } from '@/dialer/states/callStateAtom';
@@ -358,7 +359,8 @@ export const useOpportunityQueueWorkspace = ({
   const setCallState = useSetRecoilState(callStateAtom);
 
   const { status: twilioConfigStatus } = useTwilioConfigStatus();
-  const { connect, disconnect, deviceReady, deviceError } = useTwilioDevice();
+  const { disconnect, deviceReady, deviceError } = useTwilioDevice();
+  const { startDialerCall } = useStartDialerCall();
   const { startParallelBatch, cancelParallelDial } = useParallelDialer();
   const { recordResult } = useQueueOperations();
 
@@ -778,7 +780,7 @@ export const useOpportunityQueueWorkspace = ({
     activeQueue?.parallelDialingEnabled ?? requestedParallelDialingEnabled;
   const queueSessionReady =
     twilioConfigStatus !== null && twilioConfigStatus.configured;
-  const queueRunnerReady = queueUsesParallelDialing || deviceReady;
+  const queueRunnerReady = queueUsesParallelDialing || queueSessionReady;
 
   const clearAutoAdvanceTimer = useCallback(() => {
     if (autoAdvanceTimerRef.current) {
@@ -1132,11 +1134,7 @@ export const useOpportunityQueueWorkspace = ({
       selectedCallerId ?? availableCallerIds[0]?.phoneNumber ?? null;
     const manualCallerId = localPresenceEnabled ? undefined : defaultCallerId;
 
-    if (
-      !deviceReady ||
-      twilioConfigStatus === null ||
-      !twilioConfigStatus.configured
-    ) {
+    if (twilioConfigStatus === null || !twilioConfigStatus.configured) {
       return;
     }
 
@@ -1165,43 +1163,31 @@ export const useOpportunityQueueWorkspace = ({
     setPhoneNumber(currentQueueItem.contact.phone);
 
     try {
-      const preflightRes = await authenticatedFetch(
-        `${REACT_APP_SERVER_BASE_URL}/v1/voice/preflight`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            callerId: manualCallerId,
-            to: currentQueueItem.contact.phone,
-            localPresence: localPresenceEnabled,
-          }),
-        },
-      );
+      const result = await startDialerCall({
+        source: 'direct',
+        selectionStrategy: 'single',
+        requestedFanout: 1,
+        targetPhone: currentQueueItem.contact.phone,
+        contactId: currentQueueItem.contactId,
+        callerIdNumber: manualCallerId ?? undefined,
+      });
+      const call = result.calls[0];
+      const resolvedCallerId = call?.callerId;
 
-      if (!preflightRes.ok) {
-        throw new Error(`Preflight failed: ${preflightRes.status}`);
-      }
-
-      const preflightBody = (await preflightRes.json()) as {
-        callerId?: string;
-      };
-      const resolvedCallerId = preflightBody.callerId ?? manualCallerId;
-
-      if (!resolvedCallerId) {
+      if (!call || !resolvedCallerId) {
         throw new Error('No caller ID resolved for queue item');
       }
 
       setSelectedCallerId(resolvedCallerId);
       setCallState((previousCallState) => ({
         ...previousCallState,
+        status: 'connecting',
+        callSid: call.callSid,
         contact: currentQueueItem.contact,
         fromNumber: resolvedCallerId,
+        parallelGroupId: result.twilioGroupId ?? result.sessionId,
+        startedAt: new Date(),
       }));
-
-      await connect({
-        To: currentQueueItem.contact.phone,
-        From: resolvedCallerId,
-      });
     } catch (error: unknown) {
       const failedAt = new Date().toISOString();
 
@@ -1259,7 +1245,6 @@ export const useOpportunityQueueWorkspace = ({
     }
   }, [
     availableCallerIds,
-    connect,
     currentQueueItem,
     deviceError,
     deviceReady,
@@ -1270,6 +1255,7 @@ export const useOpportunityQueueWorkspace = ({
     setPhoneNumber,
     setSelectedCallerId,
     setSelectedContact,
+    startDialerCall,
     twilioConfigStatus,
   ]);
 

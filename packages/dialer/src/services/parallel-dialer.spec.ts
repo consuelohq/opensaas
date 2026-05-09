@@ -1,14 +1,28 @@
 import type { ParallelDialProfile } from '../types';
 
-import { ParallelDialerService, InMemoryParallelStore } from './parallel-dialer';
+import {
+  ParallelDialerService,
+  InMemoryParallelStore,
+} from './parallel-dialer';
 
 const mockCallsCreate = jest.fn();
 const mockCallUpdate = jest.fn();
+const mockParticipantUpdate = jest.fn();
+const mockConferencesList = jest.fn();
 
 const mockClient = {
-  calls: Object.assign(
-    (_sid: string) => ({ update: mockCallUpdate }),
-    { create: mockCallsCreate },
+  calls: Object.assign((_sid: string) => ({ update: mockCallUpdate }), {
+    create: mockCallsCreate,
+  }),
+  conferences: Object.assign(
+    jest.fn(() => ({
+      participants: jest.fn(() => ({
+        update: mockParticipantUpdate,
+      })),
+    })),
+    {
+      list: mockConferencesList,
+    },
   ),
 };
 
@@ -52,6 +66,7 @@ describe('ParallelDialerService', () => {
       callCount++;
       return Promise.resolve({ sid: `CA_call_${callCount}` });
     });
+    mockConferencesList.mockResolvedValue([{ sid: 'CF_parallel' }]);
   });
 
   describe('initiateGroup', () => {
@@ -100,6 +115,20 @@ describe('ParallelDialerService', () => {
       const group = await service.getGroup(result.groupId);
       expect(group!.calls[0].contactId).toBe('c1');
       expect(group!.calls[2].contactId).toBe('c3');
+    });
+
+    it('should support one-leg conference groups', async () => {
+      const result = await service.initiateGroup({
+        ...baseOpts,
+        customerNumbers: ['+15551111111'],
+        fromNumbers: ['+15554444444'],
+        profile: { ...baseProfile, fanout: 1 },
+      });
+      const group = await service.getGroup(result.groupId);
+
+      expect(result.calls).toHaveLength(1);
+      expect(group!.calls).toHaveLength(1);
+      expect(group!.status).toBe('dialing');
     });
   });
 
@@ -190,6 +219,26 @@ describe('ParallelDialerService', () => {
       expect(mockCallUpdate).toHaveBeenCalledWith({ status: 'completed' });
     });
 
+    it('should unmute only the winner after losing calls terminate', async () => {
+      const result = await service.initiateGroup(baseOpts);
+      const group = await service.getGroup(result.groupId);
+
+      await service.handleStatusCallback(
+        result.calls[0].callSid,
+        'in-progress',
+        'human',
+      );
+
+      expect(mockCallUpdate).toHaveBeenCalledTimes(2);
+      expect(mockConferencesList).toHaveBeenCalledWith({
+        friendlyName: group?.conferenceName,
+        status: 'in-progress',
+        limit: 1,
+      });
+      expect(mockClient.conferences).toHaveBeenCalledWith('CF_parallel');
+      expect(mockParticipantUpdate).toHaveBeenCalledWith({ muted: false });
+    });
+
     it('should mark group completed when all calls resolve with no winner', async () => {
       const result = await service.initiateGroup(baseOpts);
       for (const call of result.calls) {
@@ -247,6 +296,19 @@ describe('ParallelDialerService', () => {
       await new Promise((r) => setTimeout(r, 10));
       const mapping = await store.getCallMapping('CA_expired');
       expect(mapping).toBeNull();
+    });
+  });
+
+  describe('generateCustomerTwiml', () => {
+    it('should keep customer legs muted before winner selection', async () => {
+      const result = await service.initiateGroup(baseOpts);
+      const twiml = await service.generateCustomerTwiml(
+        result.calls[0].callSid,
+      );
+
+      expect(twiml).toContain('muted="true"');
+      expect(twiml).toContain('beep="false"');
+      expect(twiml).toContain('startConferenceOnEnter="true"');
     });
   });
 
@@ -369,6 +431,21 @@ describe('ParallelDialerService', () => {
       expect(telemetry.winnerRate).toBe(0);
       expect(telemetry.wastedLegs).toBe(3);
       expect(telemetry.connectLatencyMs).toBeNull();
+    });
+
+    it('should complete one-leg groups on terminal callback', async () => {
+      const result = await service.initiateGroup({
+        ...baseOpts,
+        customerNumbers: ['+15551111111'],
+        fromNumbers: ['+15554444444'],
+        profile: { ...baseProfile, fanout: 1 },
+      });
+
+      await service.handleStatusCallback(result.calls[0].callSid, 'completed');
+
+      const group = await service.getGroup(result.groupId);
+      expect(group!.status).toBe('completed');
+      expect(group!.completedAt).toBeDefined();
     });
   });
 

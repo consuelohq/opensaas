@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { TokenModule } from 'src/engine/core-modules/auth/token/token.module';
+import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
 import { WorkspaceCacheStorageModule } from 'src/engine/workspace-cache-storage/workspace-cache-storage.module';
 import { CallsController } from 'src/engine/core-modules/consuelo-api/controllers/calls.controller';
 import { RefreshContactAttemptHazardViewCronCommand } from 'src/engine/core-modules/consuelo-api/crons/commands/refresh-contact-attempt-hazard-view.cron.command';
@@ -14,7 +15,10 @@ import { QueuesController } from 'src/engine/core-modules/consuelo-api/controlle
 import { VoiceController } from 'src/engine/core-modules/consuelo-api/controllers/voice.controller';
 import { CsvMappingController } from 'src/engine/core-modules/consuelo-api/controllers/csv-mapping.controller';
 import { TwilioSignatureGuard } from 'src/engine/core-modules/consuelo-api/guards/twilio-signature.guard';
+import { DialerCallPermissionGuard } from 'src/engine/core-modules/consuelo-api/guards/dialer-call-permission.guard';
+import { DialerCallStartResolver } from 'src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver';
 import { CallsService } from 'src/engine/core-modules/consuelo-api/services/calls.service';
+import { DialerCallStartService } from 'src/engine/core-modules/consuelo-api/services/dialer-call-start.service';
 import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
 import { ParallelService } from 'src/engine/core-modules/consuelo-api/services/parallel.service';
 import { ParallelBetaSamplerService } from 'src/engine/core-modules/consuelo-api/services/parallel-beta-sampler.service';
@@ -28,7 +32,7 @@ import { VoiceStateService } from 'src/engine/core-modules/consuelo-api/services
 import { CsvMappingService } from 'src/engine/core-modules/consuelo-api/services/csv-mapping.service';
 
 @Module({
-  imports: [TokenModule, WorkspaceCacheStorageModule],
+  imports: [TokenModule, PermissionsModule, WorkspaceCacheStorageModule],
   controllers: [
     QueuesController,
     CallsController,
@@ -40,6 +44,8 @@ import { CsvMappingService } from 'src/engine/core-modules/consuelo-api/services
   providers: [
     QueuesService,
     CallsService,
+    DialerCallStartService,
+    DialerCallStartResolver,
     LegacyDialerService,
     ParallelService,
     ParallelPosteriorStore,
@@ -53,6 +59,7 @@ import { CsvMappingService } from 'src/engine/core-modules/consuelo-api/services
     RefreshContactAttemptHazardViewCronJob,
     RefreshContactAttemptHazardViewCronCommand,
     TwilioSignatureGuard,
+    DialerCallPermissionGuard,
     VoiceService,
     VoiceStateService,
     CsvMappingService,
