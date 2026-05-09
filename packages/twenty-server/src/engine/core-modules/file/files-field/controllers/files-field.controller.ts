@@ -22,6 +22,7 @@ import {
 import { FilesFieldService } from 'src/engine/core-modules/file/files-field/files-field.service';
 import { FilesFieldGuard } from 'src/engine/core-modules/file/files-field/guards/files-field.guard';
 import { FileApiExceptionFilter } from 'src/engine/core-modules/file/filters/file-api-exception.filter';
+import { setFileResponseSecurityHeaders } from 'src/engine/core-modules/file/utils/set-file-response-security-headers.utils';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 
 @Controller('files-field')
@@ -51,6 +52,8 @@ export class FilesFieldController {
           FileExceptionCode.INTERNAL_SERVER_ERROR,
         );
       });
+
+      setFileResponseSecurityHeaders(res);
 
       fileStream.pipe(res);
     } catch (error) {

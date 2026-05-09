@@ -22,6 +22,7 @@ import { FileApiExceptionFilter } from 'src/engine/core-modules/file/filters/fil
 import { FilePathGuard } from 'src/engine/core-modules/file/guards/file-path-guard';
 import { FileService } from 'src/engine/core-modules/file/services/file.service';
 import { extractFileInfoFromRequest } from 'src/engine/core-modules/file/utils/extract-file-info-from-request.utils';
+import { setFileResponseSecurityHeaders } from 'src/engine/core-modules/file/utils/set-file-response-security-headers.utils';
 import { NoPermissionGuard } from 'src/engine/guards/no-permission.guard';
 
 @Controller('files')
@@ -50,6 +51,8 @@ export class FileController {
           FileExceptionCode.INTERNAL_SERVER_ERROR,
         );
       });
+
+      setFileResponseSecurityHeaders(res);
 
       fileStream.pipe(res);
     } catch (error) {

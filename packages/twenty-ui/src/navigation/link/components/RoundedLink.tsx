@@ -1,5 +1,6 @@
 import { styled } from '@linaria/react';
 import { isNonEmptyString } from '@sniptt/guards';
+import { sanitizeHref } from '@ui/navigation/link/utils/sanitizeHref';
 import { FONT_COMMON, THEME_COMMON, ThemeContext } from '@ui/theme';
 import { type MouseEvent, useContext } from 'react';
 
@@ -86,7 +87,7 @@ export const RoundedLink = ({
 
   return (
     <StyledLink
-      href={href}
+      href={sanitizeHref(href)}
       target="_blank"
       rel="noreferrer"
       onClick={handleClick}

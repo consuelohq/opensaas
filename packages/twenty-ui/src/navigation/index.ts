@@ -18,6 +18,7 @@ export { UndecoratedLink } from './link/components/UndecoratedLink';
 export { CAL_LINK } from './link/constants/Cal';
 export { GITHUB_LINK } from './link/constants/GithubLink';
 export { TWENTY_PRICING_LINK } from './link/constants/TwentyPricingLink';
+export { isHrefContentValid, sanitizeHref } from './link/utils/sanitizeHref';
 export type { MenuPickerProps } from './menu/components/MenuPicker';
 export { MenuPicker } from './menu/components/MenuPicker';
 export type {

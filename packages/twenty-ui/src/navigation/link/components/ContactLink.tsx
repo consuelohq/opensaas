@@ -2,6 +2,8 @@ import * as React from 'react';
 import { type Theme, withTheme } from '@emotion/react';
 import { styled } from '@linaria/react';
 
+import { sanitizeHref } from '@ui/navigation/link/utils/sanitizeHref';
+
 const StyledClickableLink = withTheme(styled.a<{
   theme: Theme;
   maxWidth?: number;
@@ -40,7 +42,7 @@ export const ContactLink = ({
     maxWidth={maxWidth}
     target="_blank"
     onClick={onClick}
-    href={href}
+    href={sanitizeHref(href)}
   >
     {children}
   </StyledClickableLink>

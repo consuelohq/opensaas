@@ -1,6 +1,8 @@
 import styled from '@emotion/styled';
 import React from 'react';
 
+import { sanitizeHref } from '@ui/navigation/link/utils/sanitizeHref';
+
 const StyledButtonLink = styled.a`
   align-items: center;
   color: ${({ theme }) => theme.font.color.light};
@@ -25,7 +27,7 @@ export const ClickToActionLink = (props: ClickToActionLinkProps) => {
   return (
     <StyledButtonLink
       className={props.className}
-      href={props.href}
+      href={sanitizeHref(props.href)}
       onClick={props.onClick}
       target={props.target}
       rel={props.rel}

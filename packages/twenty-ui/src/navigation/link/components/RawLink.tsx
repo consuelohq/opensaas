@@ -2,6 +2,8 @@ import * as React from 'react';
 import { Link as ReactLink } from 'react-router-dom';
 import styled from '@emotion/styled';
 
+import { sanitizeHref } from '@ui/navigation/link/utils/sanitizeHref';
+
 type RawLinkProps = {
   className?: string;
   href: string;
@@ -29,7 +31,7 @@ export const RawLink = ({
 }: RawLinkProps) => (
   <div>
     <StyledClickable className={className}>
-      <ReactLink target="_blank" onClick={onClick} to={href}>
+      <ReactLink target="_blank" onClick={onClick} to={sanitizeHref(href)}>
         {children}
       </ReactLink>
     </StyledClickable>

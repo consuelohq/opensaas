@@ -7,6 +7,7 @@ import {
   ChipVariant,
 } from '@ui/components/chip/Chip';
 import { LINK_CHIP_CLICK_OUTSIDE_ID } from '@ui/components/chip/constants/LinkChipClickOutsideId';
+import { sanitizeHref } from '@ui/navigation/link/utils/sanitizeHref';
 import { type TriggerEventType, useMouseDownNavigation } from '@ui/utilities';
 import { type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -45,16 +46,18 @@ export const LinkChip = ({
   target,
   emptyLabel,
 }: LinkChipProps) => {
+  const sanitizedTo = sanitizeHref(to);
+
   const { onClick: onClickHandler, onMouseDown: onMouseDownHandler } =
     useMouseDownNavigation({
-      to: to,
+      to: sanitizedTo,
       onClick: onClick,
       triggerEvent,
     });
 
   return (
     <StyledLink
-      to={to}
+      to={sanitizedTo}
       onClick={(event) => {
         event.stopPropagation();
         onClickHandler(event);
