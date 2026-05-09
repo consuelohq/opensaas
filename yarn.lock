@@ -48613,7 +48613,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-js@npm:^1.356.1":
+"posthog-js@npm:^1.372.10":
   version: 1.372.10
   resolution: "posthog-js@npm:1.372.10"
   dependencies:
@@ -55706,7 +55706,7 @@ __metadata:
     monaco-editor-auto-typings: "npm:^0.4.5"
     optionator: "npm:^0.9.1"
     playwright: "npm:^1.56.1"
-    posthog-js: "npm:^1.356.1"
+    posthog-js: "npm:^1.372.10"
     prettier: "npm:^3.1.1"
     qs: "npm:^6.11.2"
     react: "npm:^18.2.0"

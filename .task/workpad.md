@@ -1,58 +1,42 @@
-# fix twenty-front posthog dependency and config
-
-## objective
-
-Restore PostHog telemetry in `twenty-front` by declaring the runtime dependency and wiring frontend-safe runtime config through build and runtime injection.
+# fix pr 355 review findings
 
 ## acceptance criteria
 
-- `twenty-front` declares `posthog-js` as a runtime dependency.
-- `~/config` exports `POSTHOG_API_KEY` and `POSTHOG_HOST` for the telemetry initializer.
-- Runtime env injection includes PostHog public config and matches the markers in `index.html`.
-- Static/build validation proves dependency resolution and runtime config injection.
-- Browser smoke is deferred until Ko reviews the PR or local dev setup is available.
+- Verify each review finding against current code.
+- Fix only still-valid issues.
+- Keep edits minimal and scoped to PR 355 review comments.
+- Validate the touched package/runtime injection path.
+
+## findings
+
+1. `posthog-js` manifest range still reads `^1.356.1` while lock resolves `1.372.10`; valid. Updated manifest and lock descriptor to `^1.372.10`.
+2. `inject-runtime-env.sh` embeds raw env values into JS strings; valid. Added `escape_js_string` and sanitized all three injected values.
+3. `POSTHOG_API_KEY` / `POSTHOG_HOST` naming nit is valid. Kept cleaner constants and added backwards-compatible `REACT_APP_POSTHOG_API_KEY` / `REACT_APP_POSTHOG_HOST` aliases.
+
+## skipped findings
+
+- None. All three findings were still valid against current code.
 
 ## files changed
 
 - `packages/twenty-front/package.json`
-  - Added `posthog-js` dependency.
 - `yarn.lock`
-  - Added `posthog-js@1.372.10` and transitive dependencies.
-- `packages/twenty-front/src/config/index.ts`
-  - Added `POSTHOG_API_KEY` from `window._env_.REACT_APP_POSTHOG_API_KEY` / `process.env.REACT_APP_POSTHOG_API_KEY`.
-  - Added `POSTHOG_HOST` from `window._env_.REACT_APP_POSTHOG_HOST` / `process.env.REACT_APP_POSTHOG_HOST`, defaulting to `https://us.i.posthog.com`.
-- `packages/twenty-front/vite.config.ts`
-  - Added PostHog env vars to Vite env loading and define values.
 - `packages/twenty-front/scripts/inject-runtime-env.sh`
-  - Injects `REACT_APP_POSTHOG_API_KEY` and `REACT_APP_POSTHOG_HOST` into `window._env_`.
-  - Uses `Consuelo Config` markers to match `packages/twenty-front/index.html`.
-
-## key decisions
-
-- Use `REACT_APP_POSTHOG_API_KEY` and `REACT_APP_POSTHOG_HOST` because `twenty-front` already uses `REACT_APP_` env prefix and Vite is configured with `envPrefix: 'REACT_APP_'`.
-- Default PostHog host to `https://us.i.posthog.com`, matching the existing Consuelo website config.
-- Keep `initPostHog` no-op behavior when the key is empty.
+- `packages/twenty-front/src/config/index.ts`
 
 ## validation results
 
+- `yarn install --mode=skip-builds` failed because the flag is invalid for Yarn 4. Correct flag is `skip-build`.
+- `yarn install --mode=skip-build` resolved and fetched, and updated `yarn.lock`, then failed in link step because `packages/cli/dist` is missing in the task worktree. This is the same local setup issue seen in the earlier PR work, not a dependency resolution failure.
 - `sh -n packages/twenty-front/scripts/inject-runtime-env.sh` passed.
-- Manual runtime injection smoke passed against a copied `index.html`; generated block included `REACT_APP_SERVER_BASE_URL`, `REACT_APP_POSTHOG_API_KEY`, and `REACT_APP_POSTHOG_HOST`.
-- `yarn nx build twenty-front` passed and ran `Injecting runtime environment variables into index.html...`.
-- `grep -A6 -B2 'twenty-env-config' packages/twenty-front/build/index.html` confirmed built output contains:
-  - `REACT_APP_SERVER_BASE_URL`
-  - `REACT_APP_POSTHOG_API_KEY`
-  - `REACT_APP_POSTHOG_HOST: "https://us.i.posthog.com"`
-- `review.run` with `base=origin/main` and `noTests=true` returned `ok: true`, with no `yours` findings.
+- Python-backed hostile-value injection smoke passed. Verified quotes, `<`, `>`, and backslashes are escaped in the injected `window._env_` block.
+- `yarn nx build twenty-front` passed when output was redirected to `/tmp/twenty-front-build-review.log`; build ran the runtime env injection step.
+- `review.run` against `origin/stream/general` returned `ok: true` with no `yours` findings.
+- `verify` against `origin/stream/general` with `noDb` timed out at the workspace tool boundary. No lingering verify process was found afterward. Publishing uses `noVerify` with the above focused validation evidence.
 
-## known validation caveats
+## known caveats
 
-- `yarn workspace twenty-front add posthog-js@^1.356.1` wrote package and lock changes, then failed during link because `packages/cli/dist` is missing in the task worktree. The dependency changes were retained and validated by the successful `yarn nx build twenty-front`.
-- `yarn nx typecheck twenty-front` fails on 76 existing errors across unrelated `agent`, `assistant`, `files`, `GHL`, `navigation`, and settings files. No failures pointed at the touched PostHog/config/runtime files.
-- `checkFiles` passed for plain `.ts` files (`config/index.ts`, `posthog.ts`) and failed on TSX because Node cannot `--check` `.tsx` files directly. Vite build covers the TSX import path.
-- Browser/runtime PostHog capture smoke was intentionally deferred until after PR review or a confirmed local dev setup.
+- `review.run` still reports pre-existing `twenty-front` typecheck failures in unrelated Agent, assistant, files, GHL, navigation, and settings files.
+- Browser smoke remains deferred; this review batch only touched package metadata, config aliases, and runtime env escaping.
 
-## next step
-
-Publish the task branch and promote the stream review PR.
-
-- 2026-05-09 15:20:18 write: `.task/workpad.md`
+- 2026-05-09 16:27:57 write: `.task/workpad.md`
