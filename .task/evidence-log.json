@@ -10984,8 +10984,264 @@
         "source": "task:fs",
         "task_branch": "task/dialer/dev-1499-local-setup-and-scenario-validation"
       }
+    },
+    {
+      "id": "c0143a31-0271-4945-b397-18c8a25fb6a7",
+      "occurred_at": "2026-05-09T15:12:00.552Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "b839e0df-b69f-4f5f-b8bb-5f7559649a63",
+      "occurred_at": "2026-05-09T15:12:00.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "36dcd85e-c57c-49cc-b777-81082cb1769d",
+      "occurred_at": "2026-05-09T15:12:01.178Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/telemetry/lib/posthog.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "4d04e3aa-116d-4654-b258-2025d6e81732",
+      "occurred_at": "2026-05-09T15:12:01.466Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/telemetry/components/PostHogInitEffect.tsx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "6d2d0a8a-8607-4e30-8135-f139fd48e2a9",
+      "occurred_at": "2026-05-09T15:12:01.736Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/config/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "a5b843a3-2994-4263-9c11-692e52743ea3",
+      "occurred_at": "2026-05-09T15:12:02.008Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "babae203-99f3-4b4f-bff5-2c60948bc043",
+      "occurred_at": "2026-05-09T15:12:02.277Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/scripts/inject-runtime-env.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "8705417f-a0bf-4ebc-a5b7-0b3876a8fde6",
+      "occurred_at": "2026-05-09T15:12:20.060Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/vite.config.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "006ec320-5f1a-45f0-a4a4-c07ff089826f",
+      "occurred_at": "2026-05-09T15:12:20.314Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/types/global.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "5555a59a-bc38-464e-993f-a0867a726113",
+      "occurred_at": "2026-05-09T15:12:20.565Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/index.html",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "bcbfb0f8-dc50-455e-b937-8edd0aef0064",
+      "occurred_at": "2026-05-09T15:13:04.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "3b7be5a4-239c-43a4-a0a3-4107bc045150",
+      "occurred_at": "2026-05-09T15:13:16.010Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/vite.config.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "78d65294-319d-4e10-a916-46cf0523f765",
+      "occurred_at": "2026-05-09T15:14:05.725Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/vite.config.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "edb4468d-9cda-418d-b04c-9ba286103cba",
+      "occurred_at": "2026-05-09T15:14:06.031Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/vite.config.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "7e109a07-dce1-4579-8fbb-8e48040044d7",
+      "occurred_at": "2026-05-09T15:14:06.319Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/config/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
+    },
+    {
+      "id": "f3f2e0b8-5193-4405-b283-ebffbf729c14",
+      "occurred_at": "2026-05-09T15:14:06.581Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/scripts/inject-runtime-env.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/general/fix-twenty-front-posthog-dependency-and-config",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/general/fix-twenty-front-posthog-dependency-and-config"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-06T03:44:07.496Z"
+  "updated_at": "2026-05-09T15:14:06.627Z"
 }

@@ -44,14 +44,22 @@
     "packages/dialer/src/services/parallel-dialer.ts",
     "packages/dialer/src/types.ts",
     "packages/sdk/package.json",
+    "packages/twenty-front/index.html",
+    "packages/twenty-front/package.json",
+    "packages/twenty-front/scripts/inject-runtime-env.sh",
+    "packages/twenty-front/src/config/index.ts",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useQueueOperations.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useTwilioConfigStatus.ts",
     "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
+    "packages/twenty-front/src/modules/telemetry/components/PostHogInitEffect.tsx",
+    "packages/twenty-front/src/modules/telemetry/lib/posthog.ts",
+    "packages/twenty-front/src/modules/types/global.d.ts",
     "packages/twenty-front/src/pages/home/HomePage.tsx",
     "packages/twenty-front/src/pages/home/home-page.styles.ts",
+    "packages/twenty-front/vite.config.ts",
     "packages/twenty-server/jest.config.mjs",
     "packages/twenty-server/src/database/typeorm/core/migrations/common/1774090000000-create-consuelo-dialer-runtime-tables.ts",
     "packages/twenty-server/src/engine/api/graphql/graphql-config/graphql-config.service.ts",
@@ -144,5 +152,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-06T03:44:07.388Z"
+  "updatedAt": "2026-05-09T15:14:06.534Z"
 }
