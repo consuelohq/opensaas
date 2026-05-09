@@ -44,11 +44,19 @@
     "packages/dialer/src/services/parallel-dialer.ts",
     "packages/dialer/src/types.ts",
     "packages/sdk/package.json",
+    "packages/twenty-front/src/modules/dialer/components/CallButton.tsx",
+    "packages/twenty-front/src/modules/dialer/components/ClickToCallButton.tsx",
+    "packages/twenty-front/src/modules/dialer/components/DialPad.tsx",
+    "packages/twenty-front/src/modules/dialer/components/DialerHomeLivePanel.tsx",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
+    "packages/twenty-front/src/modules/dialer/components/DialerSidebar.tsx",
+    "packages/twenty-front/src/modules/dialer/graphql/mutations/startDialerCall.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useParallelDialer.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useQueueOperations.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useStartDialerCall.ts",
     "packages/twenty-front/src/modules/dialer/hooks/useTwilioConfigStatus.ts",
+    "packages/twenty-front/src/modules/dialer/states/phoneNumberState.ts",
     "packages/twenty-front/src/modules/dialer/utils/backend-queue-session.ts",
     "packages/twenty-front/src/pages/home/HomePage.tsx",
     "packages/twenty-front/src/pages/home/home-page.styles.ts",
@@ -144,5 +152,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-06T03:44:07.388Z"
+  "updatedAt": "2026-05-09T17:17:46.974Z"
 }
