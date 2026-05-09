@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_307e45e1cfa8",
-  "tmuxSession": "opensaas-workspace-agents-fix-workspace-status-changed-file-path-display-307e45e1",
+  "taskSession": "tsk_f536cb716cdd",
+  "tmuxSession": "opensaas-workspace-agents-close-tmux-sessions-during-task-cleanup-f536cb71",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
-  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-workspace-status-changed-file-path-display",
-  "prNumber": 344,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/344",
-  "createdAt": "2026-05-08T21:43:34.440Z",
+  "taskBranch": "task/workspace-agents/close-tmux-sessions-during-task-cleanup",
+  "branch": "task/workspace-agents/close-tmux-sessions-during-task-cleanup",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-close-tmux-sessions-during-task-cleanup",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-close-tmux-sessions-during-task-cleanup",
+  "prNumber": 351,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/351",
+  "createdAt": "2026-05-09T00:49:03.764Z",
   "tmuxCreated": true
 }
