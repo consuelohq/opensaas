@@ -1,78 +1,65 @@
-# close tmux sessions during task cleanup
+# fix task cleanup tmux review comments
 
-branch: `task/workspace-agents/close-tmux-sessions-during-task-cleanup`
+branch: `task/workspace-agents/fix-task-cleanup-tmux-review-comments`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/351
+pr: https://github.com/consuelohq/opensaas/pull/357
 started: 2026-05-09
 
 ## acceptance criteria
 
-- [x] When `task.cleanup` removes a task worktree, it also closes the explicit tmux session tied to that task metadata.
-- [x] Cleanup reads `.task/session.json` and `.task/current.json` fields such as `tmuxSession`, `taskSession`, `taskBranch`, and `worktreePath` when available.
-- [x] Missing tmux, missing sessions, and missing metadata are warning/safe-continuation cases.
-- [x] Preview mode reports the tmux session that would be closed and performs no tmux mutation.
-- [x] No broad or fuzzy tmux cleanup is introduced.
-- [x] `packages/workspace/SCRIPTS.md` documents the behavior.
-- [x] Focused tests and smoke validation cover the tmux cleanup behavior.
+- [x] Verify the `tmux has-session` review comment against current code.
+- [x] Fix only if still valid: do not treat non-1 `tmux has-session` failures as `not-found`.
+- [x] Verify the `recordTmuxCleanup` missing metadata review comment against current code.
+- [x] Fix only if still valid: surface `no-session-metadata` cleanup entries instead of dropping them.
+- [x] Keep changes minimal and validate.
+- [ ] Promote task to stream and ship stream PR to main.
 
 ## plan
 
-1. Add bounded tmux cleanup helpers in `scripts/lib/task-session.js` that derive only explicit metadata-backed session names.
-2. Wire `task-cleanup.js` to read task metadata before worktree removal, report preview intent, close the explicit session before/with worktree removal, and preserve warnings.
-3. Add focused mocked tests for dry-run, missing tmux, missing session, explicit session close behavior, and realpath-equivalent worktree metadata.
-4. Update `packages/workspace/SCRIPTS.md` for `task:cleanup` behavior.
-5. Run JS syntax checks, focused workspace tests, cleanup preview smoke, disposable real cleanup smoke, review, verify, push, and PR promotion.
+1. Read current `task-session.js`, `task-cleanup.js`, and tests from the stream-based task branch.
+2. Apply minimal helper changes for tmux status handling and cleanup result recording.
+3. Add focused coverage for unexpected `tmux has-session` failures.
+4. Smoke `task-cleanup --preview` against a disposable no-metadata worktree to prove skipped cleanup reporting.
+5. Run syntax, tests, review, verify, push, task PR, then merge stream PR to main.
 
 ## files changed
 
 - `packages/workspace/scripts/lib/task-session.js`
 - `packages/workspace/scripts/task-cleanup.js`
 - `packages/workspace/tests/task-session.test.js`
-- `packages/workspace/SCRIPTS.md`
-
 
 ## key decisions
 
-- `stream.context` reported `stream/workspace-agents` even with origin. `stream.sync` failed because an existing sync worktree owns the stream branch; no stream update was required before task start.
-- Cleanup targets only tmux sessions named in task metadata, or the deterministic session derived from compatible task metadata when explicit `tmuxSession` is absent.
-- Metadata branch/worktree checks are bounded to the branch/worktree already being removed; no global/fuzzy tmux scanning was added.
-- Worktree path comparison uses real paths so `/tmp/...` metadata matches Git's `/private/tmp/...` worktree paths on macOS.
-- The verify wrapper scoped to `main`; direct worktree verify was correctly scoped but blocked on a pre-existing review finding in `task-start.js`. `review.run` was clean for this change, then verify was stamped with review/db skipped.
+- Both inline comments were still valid in current stream code.
+- `tmux has-session` exit code `1` remains the only clean `not-found` signal. Other non-zero codes now become `inspect-failed` warnings and do not proceed to close the session.
+- `recordTmuxCleanup` now records `no-session-metadata` entries with `tmuxSession: null` and a generated warning so preview/live output surfaces skipped tmux cleanups.
 
 ## notes for ko
 
-- Preview smoke reported four existing metadata-backed task tmux sessions with `would-terminate` and no mutation.
-- Disposable real smoke created a local disposable task worktree/session, then cleanup removed only that disposable worktree/branch and returned `terminated: true` for `opensaas-cleanup-smoke-f536cb71`.
+- No comments were skipped as stale. Both were still valid and fixed.
 
 ## improvements noticed
 
-- `workspace verify` appears to ignore the task session branch and scoped itself to `main` in this run.
-- The first disposable smoke found a real `/tmp` vs `/private/tmp` metadata/worktree mismatch that was not in the original acceptance criteria; fixed and covered.
+- The no-metadata preview smoke initially failed, proving the old early return was still active; corrected and reran successfully.
 
 ## errors i ran into
 
-- `stream.sync` failed: `fatal: cannot force update the branch 'stream/workspace-agents' used by worktree at '/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/stream-workspace-agents-sync-qJ4QR1'`.
-- `fs.patch` rejects multiline inline content; used Python replacements for the docs and small helper patch.
-- The first test run failed because the existing `node:test` style was not recognized by Vitest; converted the file to Vitest ESM.
-- Direct verify without skips failed because it treated a pre-existing `task-start.js` review warning as blocking.
+- First no-metadata smoke failed with missing `tmuxSessions` entry; fixed `recordTmuxCleanup` and reran.
 
 ## validation
 
-- `checkFiles` for `packages/workspace/scripts/lib/task-session.js`, `packages/workspace/scripts/task-cleanup.js`, and `packages/workspace/tests/task-session.test.js`: passed.
-- `cd packages/workspace && bun run test tests/task-session.test.js`: passed, 9 tests.
-- `bun packages/workspace/scripts/task-cleanup.js --preview --stale-days 0 --json`: passed; reported metadata-backed `would-terminate` tmux entries.
-- Disposable real cleanup smoke: passed; removed disposable worktree/branch and closed disposable tmux session.
-- `review.run` with base `stream/workspace-agents`, `noTests: true`: passed; no findings in this change, one pre-existing `task-start.js` warning.
-- `bun packages/workspace/scripts/verify.js --base stream/workspace-agents --no-review --no-db --json`: passed and wrote `.task/verify.json`.
+- `checkFiles` for `task-session.js`, `task-cleanup.js`, and `task-session.test.js`: passed.
+- `cd packages/workspace && bun run test tests/task-session.test.js`: passed, 10 tests.
+- Disposable no-session-metadata preview smoke: passed; JSON includes `tmuxSession: null`, `status: no-session-metadata`, and warning `no task tmux session metadata found`.
 
 ---
 
 ## publish checklist
 
 ```bash
-bun run task:push -- --message "fix(workspace): close task cleanup tmux sessions" --files packages/workspace/scripts/lib/task-session.js packages/workspace/scripts/task-cleanup.js packages/workspace/tests/task-session.test.js packages/workspace/SCRIPTS.md
+bun run task:push -- --message "fix(workspace): address task cleanup tmux review comments" --changed
 bun run task:pr
 bun run task:finish
 ```
 
-- 2026-05-09 01:01:15 write: `.task/workpad.md`
+- 2026-05-09 16:28:44 write: `.task/workpad.md`

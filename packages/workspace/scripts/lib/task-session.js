@@ -65,13 +65,21 @@ function assertTmuxAvailable() {
   }
 }
 
-function tmuxSessionExists(tmuxSession) {
+function getTmuxSessionStatus(tmuxSession) {
   const result = runTmux([
     'has-session',
     '-t',
     tmuxSession,
-  ]);
-  return result.status === 0;
+  ], { stdio: 'pipe' });
+
+  return {
+    code: result.status === null ? 1 : result.status,
+    stderr: result.stderr || '',
+  };
+}
+
+function tmuxSessionExists(tmuxSession) {
+  return getTmuxSessionStatus(tmuxSession).code === 0;
 }
 
 function ensureTmuxSession(tmuxSession, worktreePath, taskBranch) {
@@ -297,10 +305,27 @@ function terminateTaskTmuxSession(metadata, options = {}) {
     };
   }
 
-  if (!tmuxSessionExists(target.tmuxSession)) {
+  const sessionStatus = getTmuxSessionStatus(target.tmuxSession);
+  if (sessionStatus.code === 1) {
     return {
       ...target,
       status: 'not-found',
+      terminated: false,
+      dryRun: false,
+      warnings,
+    };
+  }
+
+  if (sessionStatus.code !== 0) {
+    const detail = sessionStatus.stderr || 'no stderr';
+    warnOnce(
+      warnings,
+      options.warn,
+      `warning: failed to inspect task tmux session ${target.tmuxSession}: exit ${sessionStatus.code}: ${detail}`,
+    );
+    return {
+      ...target,
+      status: 'inspect-failed',
       terminated: false,
       dryRun: false,
       warnings,
@@ -337,6 +362,7 @@ module.exports = {
   getTaskSessionHandle,
   getTaskSessionPath,
   getTmuxSessionName,
+  getTmuxSessionStatus,
   isTmuxAvailable,
   readTaskSessionMetadata,
   resolveTaskTmuxSession,

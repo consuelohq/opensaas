@@ -164,8 +164,9 @@ function readTaskCleanupMetadata(worktreePath) {
 }
 
 function recordTmuxCleanup(result, branch, cleanupResult) {
-  if (!cleanupResult.tmuxSession) {
-    return;
+  const warnings = [...cleanupResult.warnings];
+  if (cleanupResult.status === 'no-session-metadata') {
+    warnings.push('no task tmux session metadata found');
   }
 
   result.tmuxSessions.push({
@@ -177,7 +178,7 @@ function recordTmuxCleanup(result, branch, cleanupResult) {
     source: cleanupResult.source,
     taskBranch: cleanupResult.taskBranch,
     taskSession: cleanupResult.taskSession,
-    warnings: cleanupResult.warnings,
+    warnings,
   });
 }
 
