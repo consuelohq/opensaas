@@ -410,6 +410,7 @@ the agent reading the instruction should not need the conversation that created 
 ## 6. handoffs are executable context
 
 write handoffs, plans, task notes, and steering updates for an agent with zero conversation context.
+speak with your chest.
 
 the next agent does not know who “we” is.
 the next agent does not know what “this” means.
@@ -443,6 +444,8 @@ avoid:
 handoffs are not transcripts.
 
 handoffs are executable context.
+
+*Tip: simply speaking in the future tense will solve most confusion.*
 
 bad:
 
