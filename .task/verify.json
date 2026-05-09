@@ -2,19 +2,15 @@
   "result": "pass",
   "branch": "task/workspace-agents/close-tmux-sessions-during-task-cleanup",
   "base": "stream/workspace-agents",
-  "headSha": "253fd9ea1c7807992e258b68c983df68e10f3c88",
-  "changeHash": "7adf9b26128b4d33d9137793e2ef1300cd344c420857fac8b45d105d1986bf96",
+  "headSha": "f94c132655cccb1d5f62b4f7891004c0e95320af",
+  "changeHash": "f81b42ba5b59ae973eb3c6a737ba6fbcd04e9224b41324bff5f87b3f640fb30e",
   "changedFiles": [
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/scripts/audit.js",
     "packages/workspace/scripts/lib/task-session.js",
-    "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/task-cleanup.js",
-    "packages/workspace/scripts/task-start.js",
-    "packages/workspace/tests/audit/audit.test.ts",
     "packages/workspace/tests/task-session.test.js"
   ],
-  "verifiedAt": "2026-05-09T01:00:10.506Z",
+  "verifiedAt": "2026-05-09T01:03:44.363Z",
   "review": {
     "skipped": true,
     "passed": true
