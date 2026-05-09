@@ -31,3 +31,7 @@ export const POSTHOG_HOST =
   window._env_?.REACT_APP_POSTHOG_HOST ||
   process.env.REACT_APP_POSTHOG_HOST ||
   'https://us.i.posthog.com';
+
+export const REACT_APP_POSTHOG_API_KEY = POSTHOG_API_KEY;
+
+export const REACT_APP_POSTHOG_HOST = POSTHOG_HOST;
