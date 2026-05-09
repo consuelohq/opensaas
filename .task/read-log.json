@@ -97,12 +97,14 @@
     "packages/workspace/scripts/lib/paths.js",
     "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/lib/task-session.js",
     "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
     "packages/workspace/scripts/sentry.js",
+    "packages/workspace/scripts/task-cleanup.js",
     "packages/workspace/scripts/task-exec.js",
     "packages/workspace/scripts/task-fs.js",
     "packages/workspace/scripts/task-push.js",
@@ -115,9 +117,10 @@
     "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-08T21:46:43.651Z"
+  "updatedAt": "2026-05-09T01:01:00.829Z"
 }

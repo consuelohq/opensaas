@@ -599,15 +599,17 @@ auto-detects the worktree path from `git worktree list` if `--worktree` is not p
 
 ---
 
-### task:cleanup — remove stale worktrees and branches
+### task:cleanup — remove stale worktrees, branches, and task sessions
 
 ```bash
-bun run task:cleanup -- --preview     # preview what would be removed
+bun run task:cleanup -- --preview     # preview worktrees, branches, and tmux sessions that would be removed
 bun run task:cleanup -- --merged      # remove branches already merged
 bun run task:cleanup -- --stale-days 7  # remove worktrees older than 7 days
 bun run task:cleanup -- --force       # force removal
 bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 ```
+
+when cleanup removes a task worktree, it reads `.task/session.json` and `.task/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
 
 ---
 

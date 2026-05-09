@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const childProcess = require('child_process');
 
 const SESSION_FILENAME = 'session.json';
 
@@ -12,6 +12,15 @@ function writeStderr(message = '') {
 function getTaskSlug(taskBranch) {
   const parts = String(taskBranch || '').split('/');
   return parts[parts.length - 1] || 'task';
+}
+
+function getTaskArea(taskBranch) {
+  const parts = String(taskBranch || '').split('/');
+  if (parts[0] === 'task' && parts[1]) {
+    return parts[1];
+  }
+
+  return null;
 }
 
 function sanitizeTmuxPart(value) {
@@ -39,14 +48,14 @@ function getTaskSessionPath(worktreePath) {
 }
 
 function runTmux(args, options = {}) {
-  return spawnSync('tmux', args, {
+  return childProcess.spawnSync('tmux', args, {
     stdio: options.stdio || 'ignore',
     encoding: 'utf8',
   });
 }
 
 function isTmuxAvailable() {
-  const result = spawnSync('tmux', ['-V'], { stdio: 'ignore' });
+  const result = childProcess.spawnSync('tmux', ['-V'], { stdio: 'ignore' });
   return result.status === 0;
 }
 
@@ -148,6 +157,178 @@ function readTaskSessionMetadata(worktreePath) {
   }
 }
 
+function asMetadataRecords(metadata) {
+  if (!metadata) {
+    return [];
+  }
+
+  if (Array.isArray(metadata)) {
+    return metadata.filter(Boolean);
+  }
+
+  return [metadata];
+}
+
+function getMetadataBranch(metadata) {
+  return metadata.taskBranch || metadata.branch || null;
+}
+
+function getMetadataWorktree(metadata) {
+  return metadata.worktreePath || metadata.worktree || null;
+}
+
+function normalizeComparablePath(filePath) {
+  const resolvedPath = path.resolve(filePath);
+  try {
+    return fs.realpathSync.native(resolvedPath);
+  } catch {
+    return resolvedPath;
+  }
+}
+
+function pathsMatch(first, second) {
+  if (!first || !second) {
+    return true;
+  }
+
+  return normalizeComparablePath(first) === normalizeComparablePath(second);
+}
+
+function isCompatibleTaskMetadata(metadata, expected = {}) {
+  const metadataBranch = getMetadataBranch(metadata);
+  if (expected.branch && metadataBranch && metadataBranch !== expected.branch) {
+    return false;
+  }
+
+  const metadataWorktree = getMetadataWorktree(metadata);
+  if (expected.worktreePath && metadataWorktree && !pathsMatch(metadataWorktree, expected.worktreePath)) {
+    return false;
+  }
+
+  return true;
+}
+
+function resolveTaskTmuxSession(metadata, expected = {}) {
+  const records = asMetadataRecords(metadata).filter((record) => isCompatibleTaskMetadata(record, expected));
+
+  for (const record of records) {
+    if (typeof record.tmuxSession === 'string' && record.tmuxSession.trim()) {
+      return {
+        tmuxSession: record.tmuxSession.trim(),
+        taskSession: record.taskSession || null,
+        taskBranch: getMetadataBranch(record),
+        worktreePath: getMetadataWorktree(record),
+        source: 'tmuxSession',
+      };
+    }
+  }
+
+  for (const record of records) {
+    const taskBranch = getMetadataBranch(record);
+    if (!taskBranch) {
+      continue;
+    }
+
+    const expectedTaskSession = getTaskSessionHandle(taskBranch);
+    if (record.taskSession && record.taskSession !== expectedTaskSession) {
+      continue;
+    }
+
+    const area = record.area || getTaskArea(taskBranch);
+    if (!area) {
+      continue;
+    }
+
+    return {
+      tmuxSession: getTmuxSessionName(area, taskBranch),
+      taskSession: record.taskSession || expectedTaskSession,
+      taskBranch,
+      worktreePath: getMetadataWorktree(record),
+      source: 'derived-task-branch',
+    };
+  }
+
+  return null;
+}
+
+function warnOnce(warnings, warn, message) {
+  warnings.push(message);
+  if (warn) {
+    warn(message);
+  }
+}
+
+function terminateTaskTmuxSession(metadata, options = {}) {
+  const warnings = [];
+  const dryRun = Boolean(options.dryRun);
+  const target = resolveTaskTmuxSession(metadata, {
+    branch: options.branch,
+    worktreePath: options.worktreePath,
+  });
+
+  if (!target) {
+    return {
+      status: 'no-session-metadata',
+      terminated: false,
+      dryRun,
+      tmuxSession: null,
+      warnings,
+    };
+  }
+
+  if (dryRun) {
+    return {
+      ...target,
+      status: 'would-terminate',
+      terminated: false,
+      dryRun: true,
+      warnings,
+    };
+  }
+
+  if (!isTmuxAvailable()) {
+    warnOnce(warnings, options.warn, `warning: tmux unavailable; could not clean task session ${target.tmuxSession}`);
+    return {
+      ...target,
+      status: 'tmux-unavailable',
+      terminated: false,
+      dryRun: false,
+      warnings,
+    };
+  }
+
+  if (!tmuxSessionExists(target.tmuxSession)) {
+    return {
+      ...target,
+      status: 'not-found',
+      terminated: false,
+      dryRun: false,
+      warnings,
+    };
+  }
+
+  const result = runTmux(['kill-session', '-t', target.tmuxSession], { stdio: 'pipe' });
+  if (result.status !== 0) {
+    const detail = result.stderr || result.stdout || `exit ${result.status}`;
+    warnOnce(warnings, options.warn, `warning: failed to clean task tmux session ${target.tmuxSession}: ${detail}`);
+    return {
+      ...target,
+      status: 'terminate-failed',
+      terminated: false,
+      dryRun: false,
+      warnings,
+    };
+  }
+
+  return {
+    ...target,
+    status: 'terminated',
+    terminated: true,
+    dryRun: false,
+    warnings,
+  };
+}
+
 module.exports = {
   assertTmuxAvailable,
   buildTaskSessionMetadata,
@@ -156,6 +337,10 @@ module.exports = {
   getTaskSessionHandle,
   getTaskSessionPath,
   getTmuxSessionName,
+  isTmuxAvailable,
   readTaskSessionMetadata,
+  resolveTaskTmuxSession,
+  terminateTaskTmuxSession,
+  tmuxSessionExists,
   writeTaskSessionMetadata,
 };

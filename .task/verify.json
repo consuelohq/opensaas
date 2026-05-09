@@ -1,15 +1,22 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-workspace-status-changed-file-path-display",
-  "base": "origin/task/workspace-agents/fix-workspace-status-changed-file-path-display",
-  "headSha": "6737e8a0951b49e7c43d0cde1a49665d3d475626",
-  "changeHash": "af687b3de37d3954e1bea19d815a2cc5c2ef8beb761f1583f966d7a49ab56786",
+  "branch": "task/workspace-agents/close-tmux-sessions-during-task-cleanup",
+  "base": "stream/workspace-agents",
+  "headSha": "253fd9ea1c7807992e258b68c983df68e10f3c88",
+  "changeHash": "7adf9b26128b4d33d9137793e2ef1300cd344c420857fac8b45d105d1986bf96",
   "changedFiles": [
-    "packages/workspace/scripts/lib/workspace-state.js"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/scripts/audit.js",
+    "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/lib/workspace-state.js",
+    "packages/workspace/scripts/task-cleanup.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/tests/audit/audit.test.ts",
+    "packages/workspace/tests/task-session.test.js"
   ],
-  "verifiedAt": "2026-05-08T21:47:55.088Z",
+  "verifiedAt": "2026-05-09T01:00:10.506Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
