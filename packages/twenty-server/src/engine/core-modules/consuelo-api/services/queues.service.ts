@@ -786,7 +786,7 @@ export class QueuesService {
           AND ledger.contact_id = qi.contact_id
          WHERE qi.queue_id = $1 AND qi.status = 'pending'
          ORDER BY qi.position ASC
-         FOR UPDATE SKIP LOCKED`,
+         FOR UPDATE OF qi SKIP LOCKED`,
         [queueId, workspaceId],
       );
 
