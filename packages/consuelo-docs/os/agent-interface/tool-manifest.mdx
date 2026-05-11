@@ -1,0 +1,23 @@
+---
+title: Tool Manifest
+description: The manifest is the runbook registry for Consuelo OS.
+---
+
+> The manifest is the runbook registry for Consuelo OS.
+
+## Purpose
+
+The runbook manifest is the primary customer-facing capability registry.
+
+## Current manifest paths
+
+```text
+packages/os/tooling/runbook-manifest.json
+packages/os/tooling/tool-manifest.json
+```
+
+`runbook-manifest.json` is the OS runbook registry used by `call`. `tool-manifest.json` is the restored workspace/operator tool manifest used by `get_dev_steering` and future operator repurposing.
+
+## Required fields
+
+Each runbook entry should include name, title, description, category, permission, approval flags, side-effect flags, required env, required integrations, schema placeholders, and implementation pointer.

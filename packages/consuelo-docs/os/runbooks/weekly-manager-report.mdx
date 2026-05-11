@@ -1,0 +1,48 @@
+---
+title: Weekly Manager Report
+description: Creates a manager-facing weekly performance report.
+---
+
+> Creates a manager-facing weekly performance report.
+
+## Purpose
+
+Creates a manager-facing weekly performance report.
+
+## Status
+
+Scaffolded unless the manifest or implementation says otherwise.
+
+## Permission level
+
+`read`
+
+## Inputs
+
+calls, tasks, reps, lists, analytics, campaign status.
+
+## Outputs
+
+weekly report, coaching notes, risks, next actions.
+
+## Artifacts
+
+This runbook should return artifact references when it creates durable files, reports, briefs, scripts, or outputs.
+
+## Approval behavior
+
+Read and draft work can run within user scope. Record writes require write permission. External actions require explicit approval.
+
+## Implementation notes
+
+Candidate scheduled runbook after schedule support lands.
+
+## Failure modes
+
+- missing env
+- missing integration credentials
+- incomplete data model fields
+- no relevant workspace data
+- sandbox unavailable when execution is required
+
+The runbook should return structured failure status instead of crashing the OS flow.

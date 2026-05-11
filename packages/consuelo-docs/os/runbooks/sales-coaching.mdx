@@ -1,0 +1,48 @@
+---
+title: Sales Coaching
+description: Turns calls and outcomes into coaching recommendations for reps and managers.
+---
+
+> Turns calls and outcomes into coaching recommendations for reps and managers.
+
+## Purpose
+
+Turns calls and outcomes into coaching recommendations for reps and managers.
+
+## Status
+
+Scaffolded unless the manifest or implementation says otherwise.
+
+## Permission level
+
+`draft`
+
+## Inputs
+
+calls, transcripts, scripts, coaching rubric, rep activity.
+
+## Outputs
+
+coaching report, script suggestions, rep-level notes.
+
+## Artifacts
+
+This runbook should return artifact references when it creates durable files, reports, briefs, scripts, or outputs.
+
+## Approval behavior
+
+Read and draft work can run within user scope. Record writes require write permission. External actions require explicit approval.
+
+## Implementation notes
+
+Connect to the existing coaching package where possible.
+
+## Failure modes
+
+- missing env
+- missing integration credentials
+- incomplete data model fields
+- no relevant workspace data
+- sandbox unavailable when execution is required
+
+The runbook should return structured failure status instead of crashing the OS flow.

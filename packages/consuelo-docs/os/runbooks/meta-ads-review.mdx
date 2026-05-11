@@ -1,0 +1,48 @@
+---
+title: Meta Ads Review
+description: Reviews Meta Ads context and drafts recommendations or ad variants.
+---
+
+> Reviews Meta Ads context and drafts recommendations or ad variants.
+
+## Purpose
+
+Reviews Meta Ads context and drafts recommendations or ad variants.
+
+## Status
+
+Scaffolded unless the manifest or implementation says otherwise.
+
+## Permission level
+
+`draft`
+
+## Inputs
+
+campaign data, landing page, offer, call objections, performance context.
+
+## Outputs
+
+campaign brief, ad copy variants, recommendations.
+
+## Artifacts
+
+This runbook should return artifact references when it creates durable files, reports, briefs, scripts, or outputs.
+
+## Approval behavior
+
+Read and draft work can run within user scope. Record writes require write permission. External actions require explicit approval.
+
+## Implementation notes
+
+Publishing or spend changes are external actions and require approval.
+
+## Failure modes
+
+- missing env
+- missing integration credentials
+- incomplete data model fields
+- no relevant workspace data
+- sandbox unavailable when execution is required
+
+The runbook should return structured failure status instead of crashing the OS flow.
