@@ -599,15 +599,17 @@ auto-detects the worktree path from `git worktree list` if `--worktree` is not p
 
 ---
 
-### task:cleanup — remove stale worktrees and branches
+### task:cleanup — remove stale worktrees, branches, and task sessions
 
 ```bash
-bun run task:cleanup -- --preview     # preview what would be removed
+bun run task:cleanup -- --preview     # preview worktrees, branches, and tmux sessions that would be removed
 bun run task:cleanup -- --merged      # remove branches already merged
 bun run task:cleanup -- --stale-days 7  # remove worktrees older than 7 days
 bun run task:cleanup -- --force       # force removal
 bun run task:cleanup -- --keep task/dialer/queue  # keep a specific branch
 ```
+
+when cleanup removes a task worktree, it reads `.task/session.json` and `.task/current.json` before removal and closes only the tmux session explicitly tied to that task metadata. preview mode reports the tmux session that would be closed without touching tmux. if tmux is unavailable, the metadata is missing, or the session no longer exists, cleanup continues safely and reports the warning/status instead of broad-scanning tmux sessions.
 
 ---
 
@@ -831,6 +833,26 @@ bun run wait -- 300                   # sleep 300 seconds (5 min)
 bun run wait -- --deploy              # wait for railway deploy to complete
 bun run wait -- --pr 173              # wait for PR checks to pass
 ```
+
+---
+
+### research:ingest — local research packet generator
+
+wraps the `summarize` CLI to turn a video, podcast, paper, web page, or local media file into a reusable research packet.
+
+outputs a run directory containing `packet.md`, `extracted.md`, `manifest.json`, `summary.json`, raw summarize stdout/stderr, and a `slides/` directory when visual extraction is enabled. after a successful ingest, it also saves a self-contained context entry containing the full text of `packet.md`, `extracted.md`, and `manifest.json`.
+
+default output goes under the operating system temp directory returned by `os.tmpdir()` (for example `/var/folders/.../T/consuelo-research` on macOS), so extracted frames/slides are temporary and can be cleaned by the operating system. use `--keep` for `~/Documents/consuelo-research`, or `--out-dir` for an explicit durable location.
+
+```bash
+bun run research:ingest -- "https://example.com/podcast" --question "what should i learn?"
+bun run research:ingest -- "https://youtu.be/example" --visual --slides-max 8
+bun run research:ingest -- "paper.pdf" --keep
+bun run research:ingest -- "https://example.com" --context-title "Research Bundle: example"
+bun run research:ingest -- "https://example.com" --dry-run --json
+```
+
+context autosave is enabled by default. use `--no-context-save` only for local debugging or tests.
 
 ---
 

@@ -503,6 +503,24 @@ export const TmpInput = z.object({
   ext: optionalString,
 });
 
+
+export const ResearchIngestInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  source: z.string().min(1),
+  question: optionalString,
+  mode: z.enum(['quick', 'standard', 'deep']).optional(),
+  visual: z.boolean().optional(),
+  slidesMax: z.number().int().positive().optional(),
+  videoMode: z.enum(['auto', 'transcript', 'understand']).optional(),
+  keep: z.boolean().optional(),
+  outDir: optionalString,
+  summarizeBin: optionalString,
+  contextTitle: optionalString,
+  contextCategory: optionalString,
+  noContextSave: z.boolean().optional(),
+});
+
 export const RailwayLogsInput = z.object({
   ...requestFields,
   service: optionalString,
@@ -664,6 +682,7 @@ export const schemaRegistry = {
   SentryTraceInput,
   WaitInput,
   TmpInput,
+  ResearchIngestInput,
   RailwayLogsInput,
   RailwayRedeployInput,
   WebsiteDeployInput,
@@ -747,6 +766,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   SentryTraceInput: '{ traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }',
   WaitInput: '{ seconds?: number; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }',
   TmpInput: '{ action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ResearchIngestInput: '{ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   RailwayLogsInput: '{ service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }',
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

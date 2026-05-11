@@ -20,6 +20,7 @@ const {
 const { resolveGitRoot } = require('./lib/paths');
 const { isStreamBranchName, isTaskBranchName } = require('./lib/validation');
 const { readTaskMeta } = require('./lib/task-meta');
+const { readTaskSessionMetadata, terminateTaskTmuxSession } = require('./lib/task-session');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -143,6 +144,44 @@ async function getOpenPullRequest(token, repository, branch) {
   });
 }
 
+function readTaskCleanupMetadata(worktreePath) {
+  if (!worktreePath || !fs.existsSync(worktreePath)) {
+    return [];
+  }
+
+  const records = [];
+  const sessionMeta = readTaskSessionMetadata(worktreePath);
+  if (sessionMeta) {
+    records.push(sessionMeta);
+  }
+
+  const taskMeta = readTaskMeta(worktreePath);
+  if (taskMeta) {
+    records.push(taskMeta);
+  }
+
+  return records;
+}
+
+function recordTmuxCleanup(result, branch, cleanupResult) {
+  const warnings = [...cleanupResult.warnings];
+  if (cleanupResult.status === 'no-session-metadata') {
+    warnings.push('no task tmux session metadata found');
+  }
+
+  result.tmuxSessions.push({
+    branch,
+    tmuxSession: cleanupResult.tmuxSession,
+    status: cleanupResult.status,
+    terminated: cleanupResult.terminated,
+    dryRun: cleanupResult.dryRun,
+    source: cleanupResult.source,
+    taskBranch: cleanupResult.taskBranch,
+    taskSession: cleanupResult.taskSession,
+    warnings,
+  });
+}
+
 function printResult(result, useJson) {
   if (useJson) {
     writeStdout(JSON.stringify(result, null, 2));
@@ -160,6 +199,18 @@ function printResult(result, useJson) {
     writeStdout('removed branches:');
     for (const branch of result.removedBranches) {
       writeStdout(`  - ${branch}`);
+    }
+  }
+  if (result.tmuxSessions.length > 0) {
+    writeStdout(result.preview ? 'tmux sessions to close:' : 'tmux sessions cleaned:');
+    for (const session of result.tmuxSessions) {
+      writeStdout(`  - ${session.branch}: ${session.tmuxSession} (${session.status})`);
+    }
+  }
+  if (result.warnings.length > 0) {
+    writeStdout('warnings:');
+    for (const warning of result.warnings) {
+      writeStdout(`  - ${warning}`);
     }
   }
   if (result.skipped.length > 0) {
@@ -193,7 +244,7 @@ async function main() {
   fetchOrigin(repoRoot);
 
   const localBranches = getLocalBranches(repoRoot);
-  const worktrees = listWorktrees(repoRoot);
+  listWorktrees(repoRoot);
   const keepBranches = new Set([
     'main',
     currentBranch,
@@ -205,6 +256,8 @@ async function main() {
     preview,
     removedWorktrees: [],
     removedBranches: [],
+    tmuxSessions: [],
+    warnings: [],
     keptBranches: Array.from(keepBranches).sort(),
     skipped: [],
   };
@@ -249,7 +302,16 @@ async function main() {
       continue;
     }
 
+    const cleanupMetadata = readTaskCleanupMetadata(worktreePath);
+
     if (preview) {
+      const tmuxCleanup = terminateTaskTmuxSession(cleanupMetadata, {
+        branch,
+        worktreePath,
+        dryRun: true,
+      });
+      recordTmuxCleanup(result, branch, tmuxCleanup);
+
       if (worktreePath) {
         result.removedWorktrees.push(worktreePath);
       }
@@ -258,6 +320,16 @@ async function main() {
     }
 
     if (worktreePath) {
+      const tmuxCleanup = terminateTaskTmuxSession(cleanupMetadata, {
+        branch,
+        worktreePath,
+        warn: (message) => {
+          result.warnings.push(`${branch}: ${message}`);
+          writeStderr(`${branch}: ${message}`);
+        },
+      });
+      recordTmuxCleanup(result, branch, tmuxCleanup);
+
       if (fs.existsSync(worktreePath)) {
         removeWorktree(repoRoot, worktreePath, args.force || stale || orphan);
       }
