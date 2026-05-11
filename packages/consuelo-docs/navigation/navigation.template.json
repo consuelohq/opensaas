@@ -31,18 +31,18 @@
             "dataMigrationCapabilities": {
               "label": "Capabilities"
             },
-            "fileSystem": {
-              "label": "File System",
-              "groups": {
-                "fileSystemCapabilities": {
-                  "label": "Capabilities"
-                },
-                "fileSystemHowTos": {
-                  "label": "How-Tos"
-                }
-              }
-            },
             "dataMigrationHowTos": {
+              "label": "How-Tos"
+            }
+          }
+        },
+        "fileSystem": {
+          "label": "File System",
+          "groups": {
+            "fileSystemCapabilities": {
+              "label": "Capabilities"
+            },
+            "fileSystemHowTos": {
               "label": "How-Tos"
             }
           }
@@ -162,6 +162,35 @@
               "label": "How-Tos"
             }
           }
+        }
+      }
+    },
+    "os": {
+      "label": "OS",
+      "groups": {
+        "osOverview": {
+          "label": "Overview"
+        },
+        "osAgentInterface": {
+          "label": "Agent Interface"
+        },
+        "osRunbooks": {
+          "label": "Runbooks"
+        },
+        "osWorkspaceFilesystem": {
+          "label": "Workspace Filesystem"
+        },
+        "osDataLayer": {
+          "label": "Data Layer"
+        },
+        "osRuntime": {
+          "label": "Runtime"
+        },
+        "osIntegrations": {
+          "label": "Integrations"
+        },
+        "osPilot": {
+          "label": "Pilot"
         }
       }
     },
