@@ -67,3 +67,4 @@ started: 2026-05-11
 - Fix stale task metadata reads in the verify path; `.task/verify.json` can reflect another task/worktree even while the active taskSession points elsewhere. Similar stale data issues may exist in other workspace tools that fall back to shared root `.task` state instead of taskSession-resolved worktrees.
 
 - 2026-05-11 22:56:44 write: `.task/workpad.md`
+- Resolved metadata-only merge conflicts while bringing `origin/stream/workspace-agents` into the task branch. Conflicts were limited to `.task/evidence-log.json` and `.task/workpad.md`; preserved this task metadata side.
