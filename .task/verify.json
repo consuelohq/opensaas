@@ -1,22 +1,17 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/auto-save-research-bundles-to-context",
-  "base": "stream/workspace-agents",
-  "headSha": "12b87884e44df5b8c4b3b972e3a7b411f8577c1e",
-  "changeHash": "7fe0ad3e550274ccb6005e29642d47faa8e584e368518ad077efc489b83cac46",
+  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "605e9cc640649d21294158311a86f8147ee57519",
+  "changeHash": "8d79a3d50369b2e3ae64c25199f8902746cdcb36488870a00024c547fe65d836",
   "changedFiles": [
-    "package.json",
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/scripts/research-ingest.js",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/task-cleanup.js",
+    "packages/workspace/tests/task-session.test.js"
   ],
-  "verifiedAt": "2026-05-11T20:58:44.987Z",
+  "verifiedAt": "2026-05-09T16:31:31.835Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
