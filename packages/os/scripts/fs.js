@@ -1,0 +1,631 @@
+#!/usr/bin/env bun
+
+// fs.js — safe file operations for agents
+// wraps bat (read), rg (search), and provides stdin-based write/patch
+// usage: bun run fs -- <read|search|write|patch> [options]
+
+const { execSync, execFileSync, spawnSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+const DEFAULT_CONTEXT = 3;
+const SEARCH_EXCLUDES = ['node_modules', '.git', 'dist', 'build', '.next', 'out', '.cache'];
+
+function out(s = '') { process.stdout.write(s + '\n'); }
+function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
+
+function readStdin() {
+  try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
+}
+
+function resolve(p) { return path.resolve(process.cwd(), p); }
+
+function which(bin) {
+  try { return execSync(`which ${bin}`, { encoding: 'utf8' }).trim(); } catch { return null; }
+}
+
+// ── helpers shown contextually ──
+
+function readHelp() {
+  out('usage: bun run fs -- read <path> [--from N] [--to M] [path2 --from N --to M ...]');
+  out('');
+  out('read files with line numbers. wraps bat.');
+  out('');
+  out('options:');
+  out('  --from N       start line (1-based)');
+  out('  --to M         end line (1-based)');
+  out('  --plain        no line numbers or decoration');
+  out('  --json         json output: { path, from, to, lines: [...] }');
+  out('');
+  out('multi-file: each path starts a new segment with its own --from/--to');
+  out('  bun run fs -- read src/a.ts --from 1 --to 50 src/b.ts --from 100 --to 150');
+}
+
+function searchHelp() {
+  out('usage: bun run fs -- search <pattern> [paths...] [options]');
+  out('');
+  out('search files. wraps rg. excludes node_modules/.git/dist by default.');
+  out('');
+  out('options:');
+  out('  --context N    lines of context around matches (default: 3)');
+  out('  --files        filenames only (no content)');
+  out('  --then-read    read ±context lines around top matches with line numbers');
+  out('  --max-results N  cap number of matches');
+  out('  --json         json output');
+  out('  --include <glob>  file filter (e.g. "*.ts")');
+}
+
+function writeHelp() {
+  out('usage: bun run fs -- write <path> [options]');
+  out('');
+  out('write a file. reads content from stdin by default.');
+  out('');
+  out('options:');
+  out('  --stdin        read content from stdin (default)');
+  out('  --content <t>  inline content (for short writes)');
+  out('  --force        overwrite existing file');
+  out('  --append       append instead of overwrite');
+  out('  --mkdirs       create parent directories');
+  out('');
+  out('examples:');
+  out('  cat /tmp/new.ts | bun run fs -- write src/foo.ts --force');
+  out('  echo "line" | bun run fs -- write src/foo.ts --append');
+  out('  bun run fs -- write src/foo.ts --content "export const x = 1;" --mkdirs');
+}
+
+function patchHelp() {
+  out('usage: cat replacement.ts | bun run fs -- patch <path> --from N --to M');
+  out('');
+  out('replace a line range with stdin content. shows diff.');
+  out('');
+  out('options:');
+  out('  --from N       first line to replace (required)');
+  out('  --to M         last line to replace (required)');
+  out('  --stdin        read replacement from stdin (default)');
+  out('  --content <t>       inline replacement for single-line patches');
+  out('  --content-file <p>  read replacement from a file for multiline patches');
+  out('  --dry-run           show diff without applying');
+}
+
+function mainHelp() {
+  out('usage: bun run fs -- <command> [options]');
+  out('');
+  out('safe file operations for agents.');
+  out('');
+  out('commands:');
+  out('  read    read files with line numbers and ranges');
+  out('  search  search files (wraps rg)');
+  out('  list    list/find files (wraps eza and fd)');
+  out('  write   write files from stdin (no heredocs)');
+  out('  patch   replace a line range from stdin');
+  out('  http    make http requests (wraps xh)');
+  out('  trash   safe delete (moves to trash, not rm)');
+  out('');
+  out('run any command with --help for details.');
+}
+
+// ── read ──
+
+function parseReadSegments(argv) {
+  const segments = [];
+  let current = null;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--from') { if (current) current.from = parseInt(argv[++i], 10); }
+    else if (a === '--to') { if (current) current.to = parseInt(argv[++i], 10); }
+    else if (a === '--all' || a === '--plain' || a === '--json') { /* handled globally */ }
+    else if (!a.startsWith('--')) {
+      current = { path: a, from: null, to: null };
+      segments.push(current);
+    }
+  }
+  return segments;
+}
+
+function cmdRead(argv) {
+  if (argv.includes('--help') || argv.length === 0) { readHelp(); return; }
+
+  const plain = argv.includes('--plain');
+  const json = argv.includes('--json');
+  const all = argv.includes('--all');
+  const segments = parseReadSegments(argv);
+
+  if (segments.length === 0) { err('error: no file path given'); readHelp(); return; }
+
+  const results = [];
+
+  for (const seg of segments) {
+    const fp = resolve(seg.path);
+    if (!fs.existsSync(fp)) { err(`error: ${seg.path} not found`); continue; }
+
+    const content = fs.readFileSync(fp, 'utf8');
+    const allLines = content.split('\n');
+    const from = seg.from || 1;
+    const to = seg.to || allLines.length;
+    const slice = allLines.slice(from - 1, to);
+
+    if (json) {
+      results.push({ path: seg.path, from, to, total: allLines.length, lines: slice });
+      continue;
+    }
+
+    // try bat for pretty output
+    if (!plain && which('bat')) {
+      const batArgs = ['bat', '--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp];
+      const r = spawnSync('bat', ['--style=numbers,grid', '--color=always', `--line-range=${from}:${to}`, fp], {
+        encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
+      });
+      if (segments.length > 1) out(`── ${seg.path} ──`);
+      out(r.stdout.trimEnd());
+    } else {
+      if (segments.length > 1) out(`── ${seg.path} ──`);
+      slice.forEach((line, idx) => {
+        const lineNum = from + idx;
+        out(plain ? line : `${String(lineNum).padStart(4)}: ${line}`);
+      });
+    }
+  }
+
+  if (json) out(JSON.stringify(results, null, 2));
+}
+
+// ── search ──
+
+function cmdSearch(argv) {
+  if (argv.includes('--help') || argv.length === 0) { searchHelp(); return; }
+
+  const json = argv.includes('--json');
+  const filesOnly = argv.includes('--files');
+  const thenRead = argv.includes('--then-read');
+  let context = DEFAULT_CONTEXT;
+  let maxResults = null;
+  let include = null;
+
+  // extract flags
+  const positional = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--context') { context = parseInt(argv[++i], 10); }
+    else if (a === '--max-results') { maxResults = parseInt(argv[++i], 10); }
+    else if (a === '--include') { include = argv[++i]; }
+    else if (a === '--json' || a === '--files' || a === '--then-read') { /* skip */ }
+    else { positional.push(a); }
+  }
+
+  const pattern = positional[0];
+  const paths = positional.slice(1);
+  if (!pattern) { err('error: search pattern required'); searchHelp(); return; }
+
+  // build rg args
+  const rgArgs = ['--color=always', '--line-number'];
+  SEARCH_EXCLUDES.forEach((e) => rgArgs.push(`--glob=!${e}`));
+  if (filesOnly) rgArgs.push('--files-with-matches');
+  else rgArgs.push(`--context=${context}`);
+  if (maxResults) rgArgs.push(`--max-count=${maxResults}`);
+  if (include) rgArgs.push(`--glob=${include}`);
+  rgArgs.push(pattern);
+  if (paths.length > 0) rgArgs.push(...paths);
+
+  const r = spawnSync('rg', rgArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+  const output = (r.stdout || '').trimEnd();
+
+  if (!output) { out('no matches'); return; }
+
+  if (json && !thenRead) {
+    // parse rg output into structured format
+    const matches = [];
+    output.split('\n').forEach((line) => {
+      const m = line.replace(/\x1b\[[0-9;]*m/g, '').match(/^(.+?):(\d+):(.*)/);
+      if (m) matches.push({ file: m[1], line: parseInt(m[2], 10), text: m[3].trim() });
+    });
+    out(JSON.stringify(matches, null, 2));
+    return;
+  }
+
+  out(output);
+
+  if (thenRead) {
+    // re-run rg without color and with filename for reliable parsing
+    const parseArgs = ['--color=never', '--line-number', '--with-filename'];
+    SEARCH_EXCLUDES.forEach((e) => parseArgs.push(`--glob=!${e}`));
+    if (maxResults) parseArgs.push(`--max-count=${maxResults}`);
+    if (include) parseArgs.push(`--glob=${include}`);
+    parseArgs.push(pattern);
+    if (paths.length > 0) parseArgs.push(...paths);
+
+    const pr = spawnSync('rg', parseArgs, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+    const parseOutput = (pr.stdout || '').trimEnd();
+
+    const seen = new Map();
+    parseOutput.split('\n').forEach((line) => {
+      const m = line.match(/^(.+?):(\d+):/);
+      if (m) {
+        const f = m[1];
+        const n = parseInt(m[2], 10);
+        if (!seen.has(f)) seen.set(f, []);
+        seen.get(f).push(n);
+      }
+    });
+
+    out('');
+    out('── then-read ──');
+    for (const [file, lines] of seen) {
+      const fp = resolve(file);
+      if (!fs.existsSync(fp)) continue;
+      const content = fs.readFileSync(fp, 'utf8').split('\n');
+      // merge nearby ranges
+      const sorted = [...new Set(lines)].sort((a, b) => a - b);
+      const ranges = [];
+      for (const n of sorted) {
+        const from = Math.max(1, n - context);
+        const to = Math.min(content.length, n + context);
+        if (ranges.length > 0 && from <= ranges[ranges.length - 1].to + 2) {
+          ranges[ranges.length - 1].to = to;
+        } else {
+          ranges.push({ from, to });
+        }
+      }
+      for (const range of ranges) {
+        out(`\n── ${file}:${range.from}-${range.to} ──`);
+        for (let i = range.from; i <= range.to; i++) {
+          out(`${String(i).padStart(4)}: ${content[i - 1]}`);
+        }
+      }
+    }
+  }
+}
+
+// ── list ──
+
+function cmdList(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- list [path] [options]');
+    out('');
+    out('list files and directories. wraps eza (list) and fd (find).');
+    out('');
+    out('modes:');
+    out('  list [path]                list directory contents (eza)');
+    out('  list [path] --tree         tree view (eza --tree)');
+    out('  list [path] --find <name>  find files by name (fd)');
+    out('');
+    out('options:');
+    out('  --tree                     show as tree');
+    out('  --depth N                  max depth for tree/find (default: 3)');
+    out('  --find <pattern>           find files matching pattern (uses fd)');
+    out('  --dirs                     directories only');
+    out('  --files                    files only');
+    out('  --ext <ext>                filter by extension (fd mode)');
+    out('  --hidden                   include hidden files');
+    out('  --git                      show git status column');
+    out('  --all                      include ignored files');
+    return;
+  }
+
+  const args = [];
+  let path = '.';
+  let mode = 'eza'; // eza or fd
+  let depth = null;
+  let findPattern = null;
+  let dirsOnly = false;
+  let filesOnly = false;
+  let ext = null;
+  let hidden = false;
+  let gitStatus = false;
+  let showAll = false;
+  let tree = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--tree') tree = true;
+    else if (a === '--depth') depth = parseInt(argv[++i], 10);
+    else if (a === '--find') { mode = 'fd'; findPattern = argv[++i]; }
+    else if (a === '--dirs') dirsOnly = true;
+    else if (a === '--files') filesOnly = true;
+    else if (a === '--ext') ext = argv[++i];
+    else if (a === '--hidden') hidden = true;
+    else if (a === '--git') gitStatus = true;
+    else if (a === '--all') showAll = true;
+    else if (!a.startsWith('-')) path = a;
+  }
+
+  if (mode === 'fd' || ext) {
+    // fd mode — find files by name/pattern
+    const cmd = ['fd'];
+    if (findPattern) cmd.push(findPattern);
+    else cmd.push('.'); // match everything
+    cmd.push(path);
+    if (depth) cmd.push('--max-depth', String(depth));
+    else if (!depth) cmd.push('--max-depth', '3');
+    if (dirsOnly) cmd.push('--type', 'd');
+    if (filesOnly) cmd.push('--type', 'f');
+    if (ext) cmd.push('--extension', ext);
+    if (hidden) cmd.push('--hidden');
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('fd failed: ' + (e.message || ''));
+    }
+  } else {
+    // eza mode — list directory
+    const cmd = ['eza'];
+    if (tree) {
+      cmd.push('--tree');
+      cmd.push('--level', String(depth || 3));
+    } else {
+      cmd.push('-la');
+    }
+    if (gitStatus) cmd.push('--git');
+    if (hidden) cmd.push('-a');
+    if (dirsOnly) cmd.push('--only-dirs');
+    if (filesOnly) cmd.push('--only-files');
+    cmd.push('--git-ignore');
+    cmd.push(path);
+    try {
+      const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+      process.stdout.write(result);
+    } catch (e) {
+      if (e.stdout) process.stdout.write(e.stdout);
+      else err('eza failed: ' + (e.message || ''));
+    }
+  }
+}
+
+// ── write ──
+
+function cmdWrite(argv) {
+  if (argv.includes('--help') || argv.length === 0) { writeHelp(); return; }
+
+  const force = argv.includes('--force');
+  const append = argv.includes('--append');
+  const mkdirs = argv.includes('--mkdirs');
+
+  let inlineContent = null;
+  let filePath = null;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--content') { inlineContent = argv[++i]; }
+    else if (a === '--force' || a === '--append' || a === '--mkdirs' || a === '--stdin') { /* skip */ }
+    else if (!a.startsWith('--') && !filePath) { filePath = a; }
+  }
+
+  if (!filePath) { err('error: file path required'); writeHelp(); return; }
+
+  const fp = resolve(filePath);
+  const content = inlineContent !== null ? inlineContent : readStdin();
+
+  if (!content && inlineContent === null) { err('error: no content (pipe via stdin or use --content)'); return; }
+
+  if (fs.existsSync(fp) && !force && !append) {
+    err(`error: ${filePath} already exists. use --force to overwrite or --append to add.`);
+    return;
+  }
+
+  const dir = path.dirname(fp);
+  if (!fs.existsSync(dir)) {
+    if (mkdirs) {
+      fs.mkdirSync(dir, { recursive: true });
+    } else {
+      err(`error: directory ${path.dirname(filePath)} does not exist. use --mkdirs to create.`);
+      return;
+    }
+  }
+
+  if (append) {
+    fs.appendFileSync(fp, content);
+    out(`appended to ${filePath}`);
+  } else {
+    fs.writeFileSync(fp, content);
+    out(`wrote ${filePath} (${content.split('\n').length} lines)`);
+  }
+
+  // log to workpad if it exists
+  logToWorkpad(filePath, append ? 'append' : 'write');
+}
+
+// ── patch ──
+
+function readReplacementContent({ inlineContent, contentFile, stdinRequested }) {
+  if (inlineContent !== null && contentFile !== null) {
+    err('error: use exactly one of --content or --content-file');
+    return null;
+  }
+
+  if (contentFile !== null) {
+    const contentPath = path.resolve(process.cwd(), contentFile);
+    try {
+      const contentFileStats = fs.statSync(contentPath);
+      fs.accessSync(contentPath, fs.constants.R_OK);
+      if (!contentFileStats.isFile()) {
+        err(`error: content file must be a regular file: ${contentFile}`);
+        return null;
+      }
+    } catch {
+      err(`error: content file not found or not readable: ${contentFile}`);
+      return null;
+    }
+    return fs.readFileSync(contentPath, 'utf8');
+  }
+
+  if (inlineContent !== null) {
+    const newline = String.fromCharCode(10);
+
+    if (inlineContent.includes(newline)) {
+      err('error: multiline --content is unsafe; use --content-file for multiline patches');
+      return null;
+    }
+
+    return inlineContent;
+  }
+
+  if (process.stdin.isTTY) {
+    err('error: no replacement content (pipe via stdin, use --content, or use --content-file)');
+    return null;
+  }
+
+  const stdinContent = readStdin();
+  if (stdinContent === '') {
+    err('error: no replacement content received on stdin');
+    return null;
+  }
+  return stdinContent;
+}
+
+function cmdPatch(argv) {
+  if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; }
+
+  const dryRun = argv.includes('--dry-run');
+  let from = null;
+  let to = null;
+  let filePath = null;
+  let inlineContent = null;
+  let contentFile = null;
+  let stdinRequested = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--from') { from = parseInt(argv[++i], 10); }
+    else if (a === '--to') { to = parseInt(argv[++i], 10); }
+    else if (a === '--content') { inlineContent = argv[++i]; }
+    else if (a === '--content-file') { contentFile = argv[++i]; }
+    else if (a === '--stdin') { stdinRequested = true; }
+    else if (a === '--dry-run') { /* skip */ }
+    else if (!a.startsWith('--') && !filePath) { filePath = a; }
+  }
+
+  if (!filePath) { err('error: file path required'); patchHelp(); return; }
+  if (from === null || to === null) { err('error: --from and --to are required'); patchHelp(); return; }
+  if (!Number.isInteger(from) || !Number.isInteger(to) || from < 1 || to < 1 || from > to) {
+    err('error: invalid line range; expected positive integers with --from <= --to');
+    return;
+  }
+
+  const fp = resolve(filePath);
+  if (!fs.existsSync(fp)) { err(`error: ${filePath} not found`); return; }
+
+  const replacement = readReplacementContent({ inlineContent, contentFile, stdinRequested });
+  if (replacement === null) return;
+
+  const lines = fs.readFileSync(fp, 'utf8').split('\n');
+  if (from > lines.length || to > lines.length) {
+    err(`error: invalid line range; ${filePath} has only ${lines.length} lines`);
+    return;
+  }
+
+  const removed = lines.slice(from - 1, to);
+  const newLines = replacement.endsWith('\n') ? replacement.slice(0, -1).split('\n') : replacement.split('\n');
+
+  const result = [...lines.slice(0, from - 1), ...newLines, ...lines.slice(to)];
+
+  out(`── patch ${filePath}:${from}-${to} ──`);
+  out(`removing ${removed.length} lines, inserting ${newLines.length} lines`);
+  out('');
+  removed.forEach((l, i) => out(`- ${String(from + i).padStart(4)}: ${l}`));
+  out('');
+  newLines.forEach((l, i) => out(`+ ${String(from + i).padStart(4)}: ${l}`));
+
+  if (dryRun) { out('\n(dry run — no changes applied)'); return; }
+
+  fs.writeFileSync(fp, result.join('\n'));
+  out(`\npatched ${filePath}`);
+
+  logToWorkpad(filePath, `patch lines ${from}-${to}`);
+}
+
+// ── workpad logging ──
+
+function logToWorkpad(filePath, action) {
+  // walk up from cwd looking for .task/workpad.md
+  let dir = process.cwd();
+  while (dir !== '/') {
+    const wp = path.join(dir, '.task', 'workpad.md');
+    if (fs.existsSync(wp)) {
+      const ts = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      fs.appendFileSync(wp, `\n- ${ts} ${action}: \`${filePath}\``);
+      return;
+    }
+    dir = path.dirname(dir);
+  }
+}
+
+// ── main ──
+
+function main() {
+  const argv = process.argv.slice(2);
+  if (argv.length === 0 || argv[0] === '--help') { mainHelp(); return; }
+
+  const command = argv[0];
+  const rest = argv.slice(1);
+
+// ── http ──
+
+function cmdHttp(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- http <method> <url> [args...]');
+    out('');
+    out('make http requests. wraps xh.');
+    out('');
+    out('examples:');
+    out('  http get https://api.github.com');
+    out('  http post https://api.example.com key=val');
+    out('  http get https://api.example.com Authorization:"Bearer $TOKEN"');
+    out('  http get https://api.example.com --json');
+    return;
+  }
+  const cmd = ['xh', '--ignore-stdin', ...argv];
+  try {
+    const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
+    process.stdout.write(result);
+  } catch (e) {
+    if (e.stdout) process.stdout.write(e.stdout);
+    if (e.stderr) process.stderr.write(e.stderr);
+    process.exit(e.status || 1);
+  }
+}
+
+// ── trash ──
+
+function cmdTrash(argv) {
+  if (argv.includes('--help') || argv.length === 0) {
+    out('usage: bun run fs -- trash <path> [path...]');
+    out('');
+    out('move files/directories to trash. safer than rm.');
+    out('');
+    out('examples:');
+    out('  trash old-file.ts');
+    out('  trash old-dir/');
+    out('  trash a.ts b.ts c.ts');
+    return;
+  }
+  for (const target of argv) {
+    if (target.startsWith('-')) continue;
+    try {
+      execFileSync('trash', [target], { encoding: 'utf8' });
+      out(`trashed: ${target}`);
+    } catch (e) {
+      err(`failed to trash ${target}: ${e.message}`);
+    }
+  }
+}
+
+// ── main ──
+
+  switch (command) {
+    case 'read': cmdRead(rest); break;
+    case 'search': cmdSearch(rest); break;
+    case 'list': cmdList(rest); break;
+    case 'write': cmdWrite(rest); break;
+    case 'patch': cmdPatch(rest); break;
+    case 'http': cmdHttp(rest); break;
+    case 'trash': cmdTrash(rest); break;
+    default:
+      err(`unknown command: ${command}`);
+      mainHelp();
+      break;
+  }
+}
+
+main();

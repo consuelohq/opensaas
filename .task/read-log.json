@@ -68,6 +68,7 @@
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.spec.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/queues.service.ts",
     "packages/twenty-server/src/engine/core-modules/consuelo-api/services/voice.service.ts",
+    "packages/workspace/README.md",
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
@@ -117,10 +118,11 @@
     "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/server_call_test.py",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-09T16:28:13.267Z"
+  "updatedAt": "2026-05-11T01:46:59.615Z"
 }

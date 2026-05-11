@@ -1,0 +1,8 @@
+fastmcp>=2.0.0
+uvicorn
+starlette
+httpx
+supabase
+pandas
+numpy
+scikit-learn
