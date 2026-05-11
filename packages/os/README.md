@@ -14,9 +14,9 @@ The MCP surface exposes exactly three tools:
 - `get_dev_steering`
 - `call`
 
-Runbooks live behind `call` and are registered in `tooling/runbook-manifest.json`.
+Runbooks live behind `call` as Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
 
-The original workspace/operator tool surface is preserved in `tooling/tool-manifest.json` and returned through `get_dev_steering` with a short OS-specific preface.
+The original workspace/operator tool surface is preserved in `tooling/dev-tool-manifest.json` and returned through `get_dev_steering` with a short OS-specific preface.
 
 ## Environment
 

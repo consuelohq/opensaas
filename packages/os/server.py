@@ -34,7 +34,7 @@ STEERING_FILES = [
     APP_DIR / 'integrations.md',
     APP_DIR / 'runbooks.md',
 ]
-MANIFEST_FILE = APP_DIR / 'tooling' / 'runbook-manifest.json'
+MANIFEST_FILE = APP_DIR / 'tooling' / 'tool-manifest.json'
 DEV_STEERING_FILE = APP_DIR / 'dev-steering.md'
 DEV_DECISION_FILE = APP_DIR / 'decision.md'
 DEV_MANIFEST_FILE = APP_DIR / 'tooling' / 'dev-tool-manifest.json'
@@ -82,7 +82,7 @@ def _env_presence() -> dict[str, Any]:
 
 @mcp.tool(annotations=READ_ONLY)
 def get_steering() -> str:
-    """Return OS steering, business context, permissions, and raw runbook manifest."""
+    """Return OS steering, business context, permissions, and raw default tool manifest."""
     sections = [
         '# Consuelo OS runtime context',
         '',
@@ -100,7 +100,7 @@ def get_steering() -> str:
 
     manifest = _read_file(MANIFEST_FILE)
     if manifest:
-        sections.extend(['', '# raw runbook manifest', '', '```json', manifest, '```'])
+        sections.extend(['', '# raw default tool manifest', '', '```json', manifest, '```'])
 
     return '\n'.join(sections)
 

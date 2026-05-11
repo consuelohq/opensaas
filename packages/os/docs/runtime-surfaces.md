@@ -31,13 +31,13 @@ Examples:
 - `sync-leads`
 - `review-meta-ads`
 
-The runbook manifest is:
+The default/revenue tool manifest is:
 
 ```text
-packages/os/tooling/runbook-manifest.json
+packages/os/tooling/tool-manifest.json
 ```
 
-Each runbook declares permission metadata, approval rules, required env, and integration requirements.
+Each exposed runbook declares permission metadata, approval rules, required env, and integration requirements for agent steering. Runtime behavior lives in the Bun script itself.
 
 ## Package and operator scripts
 
@@ -58,12 +58,11 @@ These scripts are not automatically customer-facing runbooks. Preserve them, cla
 
 There are two manifest surfaces in this scaffold:
 
-- `tooling/runbook-manifest.json`: OS runbook registry used by `call`.
-- `tooling/tool-manifest.json`: restored original workspace/operator tool manifest used by `get_dev_steering` and future operator repurposing.
+- `tooling/tool-manifest.json`: default business/revenue agent map used by `get_steering` and `call`.
+- `tooling/dev-tool-manifest.json`: restored original workspace/operator typed facade registry used by `get_dev_steering` and operator scripts.
 
 The principle is:
 
 ```text
 small MCP entrypoints, powerful classified OS runtime behind them
 ```
-

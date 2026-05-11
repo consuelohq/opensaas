@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_53f8c7ba883c",
-  "tmuxSession": "opensaas-os-add-consuelo-os-documentation-scaffold-53f8c7ba",
+  "taskSession": "tsk_ab903187e907",
+  "tmuxSession": "opensaas-os-align-os-manifest-and-script-runtime-ab903187",
   "area": "os",
   "stream": "stream/os",
-  "taskBranch": "task/os/add-consuelo-os-documentation-scaffold",
-  "branch": "task/os/add-consuelo-os-documentation-scaffold",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-os-documentation-scaffold",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-consuelo-os-documentation-scaffold",
-  "prNumber": 363,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/363",
-  "createdAt": "2026-05-11T07:43:40.701Z",
+  "taskBranch": "task/os/align-os-manifest-and-script-runtime",
+  "branch": "task/os/align-os-manifest-and-script-runtime",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-os-manifest-and-script-runtime",
+  "prNumber": 364,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/364",
+  "createdAt": "2026-05-11T09:55:12.082Z",
   "tmuxCreated": true
 }
