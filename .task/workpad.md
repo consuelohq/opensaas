@@ -1,70 +1,78 @@
-# fix context save json output
+# investigate task session stale metadata reads
 
-branch: `task/workspace-agents/fix-context-save-json-output`
+branch: `task/workspace-agents/investigate-task-session-stale-metadata-reads`
 stream: `stream/workspace-agents`
-task pr: https://github.com/consuelohq/opensaas/pull/368
+pr: https://github.com/consuelohq/opensaas/pull/371
 started: 2026-05-11
 
 ## acceptance criteria
 
-- [x] Fix `context.save` facade parse errors by making the underlying context CLI emit JSON when `--json` is passed.
-- [x] Check other context subcommands behind manifest `jsonFlag` and fix similar human-output paths.
-- [x] Preserve human-readable CLI output when `--json` is absent.
-- [x] Validate `context.save`, `context.get`, and `context.categories` through the typed facade.
-- [x] Run focused facade tests, script audit, review, verify, push, and promote.
+- [x] Reproduce the stale task metadata behavior with taskSession-scoped calls.
+- [x] Identify whether the bug is in steering, the facade resolver, verify, task.push, or shared metadata fallback.
+- [x] Patch the root cause so verify honors taskSession-resolved worktrees.
+- [x] Update steering/docs with the durable taskSession rule.
+- [x] Validate syntax, direct task-worktree verify behavior, review, and publish.
 
-## implementation plan
+## plan
 
-1. Read standards, script docs, context CLI, manifest, and facade tests.
-2. Patch `packages/workspace/scripts/context.js` so save/get/categories honor `args.json`.
-3. Validate with direct CLI/facade smoke tests and focused test suite.
-4. Publish through task workflow.
+1. Use stream context and start a task branch from `stream/workspace-agents`.
+2. Search context and explore workspace tooling around taskSession, verify stamps, task.push, and metadata.
+3. Reproduce the stale behavior with a taskSession-scoped verify call.
+4. Patch the owner script and docs.
+5. Validate through direct worktree execution and publish.
 
 ## files changed
 
-- `packages/workspace/scripts/context.js`
+- `packages/workspace/scripts/verify.js`
+- `packages/workspace/STEERING.md`
+- `packages/workspace/SCRIPTS.md`
 
 ## key decisions
 
-- The root cause was the context CLI accepting `--json` globally while `save`, `get`, and `categories` still printed human text.
-- The manifest already appends `--json` for context tools, so the CLI now produces machine-readable stdout for those subcommands.
-- `context.save --json` returns saved row metadata and content length. It does not echo the full saved content back to stdout.
-- Human-readable output remains unchanged when `--json` is absent.
+- The facade taskSession resolver is working: it resolves the task branch/worktree and injects `TASK_BRANCH` and `TASK_WORKTREE`.
+- `task.push` is mostly safe when a branch/taskSession is present because it selects the active task worktree before checking `.task/verify.json`.
+- `verify.js` was the concrete stale-state bug: it resolved `repoRoot` from `process.cwd()` and ignored `TASK_WORKTREE`, so `workspace.call({ tool: "verify", taskSession })` ran against the controller repo root and could read/write root `.task/verify.json`.
+- The controller repo root currently has stale/conflicted `.task` metadata from older task/autostash state, which explains the observed wrong verify record.
+- The correct fix is logic plus doctrine: scripts that write task-scoped state must honor `TASK_WORKTREE`, and steering should make taskSession-first final validation explicit.
 
 ## notes for Ko
 
-- The restart was needed because the workspace server loads the tool manifest at process start.
-- After merging a new workspace tool to `main`, the server must restart before the MCP facade exposes the new tool name.
-- The visible MCP surface reports two tools because the app exposes `get_steering` and `call`; all typed workspace tools live behind `workspace.call`.
+- The stale-data issue is broader than one verify stamp pattern. Any workspace script that writes or reads task-scoped state while ignoring `TASK_WORKTREE` can leak root or other-task `.task/*` state.
+- The current patch fixes `verify.js`, which was the reproduced failure path.
+- `workspace.call({ tool: "verify" })` will still show the old controller-root behavior until this task is merged and the workspace server reloads, because the facade runs the controller repo’s current script version. The patched behavior was proven by running the patched script directly inside the task worktree.
 
 ## improvements noticed
 
-- `context.save` could previously succeed while the facade reported `PARSE_ERROR`, which was confusing because the side effect already happened.
+- `verify.js` should maybe gain its own focused test fixture for `TASK_WORKTREE` in a follow-up. Current validation is a direct runtime smoke.
+- Root `.task/verify.json` is currently conflicted/stale in the controller repo; a separate cleanup may be needed after active tasks are safe.
 
 ## errors or blockers
 
-- `explore` failed with exit code 1 during this task. Continued with targeted reads of the context CLI, manifest, and facade tests.
-- One Python patch attempt reported `target block not found`; the desired safe metadata output was already present after inspecting the file.
+- `explore` worked, but `decideNext` evidence state appears polluted by previous verification events and kept recommending failure inspection with low confidence.
+- An attempted inline multiline `fs.patch` was rejected correctly; used `--content-file` instead.
+- `fs.list` with pattern `*status*` failed because the underlying `fd` call treated it as a regex. This did not block the investigation.
 
 ## validation
 
-- Read `AGENTS.md`, `CODING-STANDARDS.md`, `packages/workspace/SCRIPTS.md`, `packages/workspace/scripts/context.js`, the context manifest section, and facade test patterns.
-- `node --check packages/workspace/scripts/context.js`: passed.
-- `bun packages/workspace/scripts/context.js categories --json | python3 -m json.tool`: passed.
-- Direct `context.js save ... --json | python3 -m json.tool`: passed.
-- Direct `context.js get ... --json | python3 -m json.tool`: passed.
-- `bun packages/workspace/scripts/tool-runner.ts context.save ... | python3 -m json.tool`: passed with `ok: true`; output contains metadata and no saved content echo.
-- `bun packages/workspace/scripts/tool-runner.ts context.get ... | python3 -m json.tool`: passed parse.
-- `bun packages/workspace/scripts/tool-runner.ts context.categories '{}' | python3 -m json.tool`: passed.
-- `workspace checkFiles` for `packages/workspace/scripts/context.js`: passed.
-- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 439 tests. Vitest still reports existing obsolete snapshots from the facade test suite.
-- `workspace audit { scripts: true }`: passed, 48 documented / 48 actual.
+- `status` reproduced root stale metadata: root `.task/current.json` points to `task/workspace-agents/fix-task-cleanup-tmux-review-comments`; root `.task/verify.json` has conflict markers from old task/main.
+- `workspace.call({ tool: "verify", taskSession, input: { noReview: true, noDb: true, noStamp: true } })` reproduced the bug: facade stderr showed the correct task branch/worktree, but verify output returned `branch: "main"`.
+- Read `executor.ts`, `branch-resolver.ts`, `task-push.js`, `verify.js`, `verification.js`, `task-meta.js`, `task-session.js`, `audit.js`, `review.js`, `STEERING.md`, and `SCRIPTS.md`.
+- Patched `verify.js` to resolve from `process.env.TASK_WORKTREE` when present and to call `findTaskMeta(repoRoot, { currentBranch: branch })`.
+- `checkFiles` for `packages/workspace/scripts/verify.js`: passed.
+- `node packages/workspace/scripts/verify.js --base origin/stream/workspace-agents --no-review --no-db --no-stamp --json`: passed and returned the correct task branch plus all three touched non-metadata files.
+- `review.run` with base `origin/stream/workspace-agents` and `noTests: true`: passed with no findings.
+- `audit { scripts: true }`: passed, 48 documented / 48 actual.
 - `git diff --check`: passed.
-- `verify`: explicitly waived by Ko for this publish because the verify path timed out and `.task/verify.json` showed stale data from another task. Do not treat verify as passed for this task.
+- Wrote a task-worktree verify stamp with `node packages/workspace/scripts/verify.js --base origin/stream/workspace-agents --no-review --no-db --json`; stamp path is inside the task worktree.
 
-## follow-up debt
+## publish checklist
 
-- Fix stale task metadata reads in the verify path; `.task/verify.json` can reflect another task/worktree even while the active taskSession points elsewhere. Similar stale data issues may exist in other workspace tools that fall back to shared root `.task` state instead of taskSession-resolved worktrees.
+```bash
+bun run task:push -- --message "fix(workspace): scope verify to task worktree" --changed
+bun run task:pr
+bun run task:finish
+```
 
-- 2026-05-11 22:56:44 write: `.task/workpad.md`
-- Resolved metadata-only merge conflicts while bringing `origin/stream/workspace-agents` into the task branch. Conflicts were limited to `.task/evidence-log.json` and `.task/workpad.md`; preserved this task metadata side.
+- 2026-05-11 23:33:33 write: `.task/workpad.md`
+- 2026-05-11 23:34:20 patch lines 14-14: `.task/workpad.md`
+- 2026-05-11 23:34:36 patch lines 62-62: `.task/workpad.md`

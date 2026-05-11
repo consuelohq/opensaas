@@ -1,15 +1,15 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
+  "branch": "task/workspace-agents/investigate-task-session-stale-metadata-reads",
   "base": "origin/stream/workspace-agents",
-  "headSha": "605e9cc640649d21294158311a86f8147ee57519",
-  "changeHash": "8d79a3d50369b2e3ae64c25199f8902746cdcb36488870a00024c547fe65d836",
+  "headSha": "cfc57802577ff8c50662483e0b60b123459478a1",
+  "changeHash": "09fb9d987a23251e86fb708525446a1abceca9f4062e6909ff792393682dc703",
   "changedFiles": [
-    "packages/workspace/scripts/lib/task-session.js",
-    "packages/workspace/scripts/task-cleanup.js",
-    "packages/workspace/tests/task-session.test.js"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/scripts/verify.js"
   ],
-  "verifiedAt": "2026-05-09T16:31:31.835Z",
+  "verifiedAt": "2026-05-11T23:34:06.412Z",
   "review": {
     "skipped": true,
     "passed": true

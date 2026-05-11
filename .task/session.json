@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_b4d3b69bafca",
-  "tmuxSession": "opensaas-workspace-agents-fix-context-save-json-output-b4d3b69b",
+  "taskSession": "tsk_606193a1aa06",
+  "tmuxSession": "opensaas-workspace-agents-investigate-task-session-stale-metadata-reads-606193a1",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-context-save-json-output",
-  "branch": "task/workspace-agents/fix-context-save-json-output",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-context-save-json-output",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-context-save-json-output",
-  "prNumber": 368,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/368",
-  "createdAt": "2026-05-11T22:38:05.169Z",
+  "taskBranch": "task/workspace-agents/investigate-task-session-stale-metadata-reads",
+  "branch": "task/workspace-agents/investigate-task-session-stale-metadata-reads",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-task-session-stale-metadata-reads",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-investigate-task-session-stale-metadata-reads",
+  "prNumber": 371,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/371",
+  "createdAt": "2026-05-11T23:27:59.357Z",
   "tmuxCreated": true
 }
