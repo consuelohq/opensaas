@@ -11928,8 +11928,344 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments"
       }
+    },
+    {
+      "id": "e39dfb3a-6e1a-43de-8365-a4b6b1571034",
+      "occurred_at": "2026-05-11T17:13:24.105Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "e32a74b3-d675-4431-8261-95c2f9853260",
+      "occurred_at": "2026-05-11T17:13:41.584Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "704ec3fe-e002-409e-9201-df2ee25f912d",
+      "occurred_at": "2026-05-11T17:13:55.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "a3ef2d9a-a457-4575-945d-29ebd9c20197",
+      "occurred_at": "2026-05-11T17:14:05.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "d43406c9-9b54-47c9-b233-1c1fba370fb3",
+      "occurred_at": "2026-05-11T17:14:10.829Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "db676458-a029-4a30-ae58-19b711c100b6",
+      "occurred_at": "2026-05-11T17:14:17.352Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/tmp.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "c561da4e-68ee-4f03-ba32-c4da798ea1b3",
+      "occurred_at": "2026-05-11T17:14:27.801Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/deepwiki.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "df45abd6-438a-4b61-acc4-69c7a3f24bee",
+      "occurred_at": "2026-05-11T17:15:23.507Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "176b6565-766c-41f0-af77-6f45a56d12c0",
+      "occurred_at": "2026-05-11T17:15:39.228Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "69e01d9b-a482-4e64-8c62-148bd1cf53fe",
+      "occurred_at": "2026-05-11T17:15:49.360Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "0ba877c3-3cc8-4e47-a7c4-fbd8c9d19516",
+      "occurred_at": "2026-05-11T17:15:59.986Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "81e27257-0fad-4f79-a739-ed9d5b7b49c4",
+      "occurred_at": "2026-05-11T17:17:11.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "513736f7-5046-4d9f-847c-d7c80cafe7c5",
+      "occurred_at": "2026-05-11T17:41:01.463Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "294d68de-1687-4080-ad67-e78dc6235b1b",
+      "occurred_at": "2026-05-11T17:41:41.709Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-research-ingest-packet-generator",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
+      }
+    },
+    {
+      "id": "486494d3-8828-4290-ae72-489f8a357285",
+      "occurred_at": "2026-05-11T20:46:56.609Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "3e8c75e8-3083-43ac-acbb-0ba5e43e8c9d",
+      "occurred_at": "2026-05-11T20:46:56.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "b21726a8-7aeb-4f14-b7de-3353582c3e5d",
+      "occurred_at": "2026-05-11T20:46:57.224Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/research-ingest.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "d8830548-4d1b-46d1-8808-32bbac530e34",
+      "occurred_at": "2026-05-11T20:46:57.532Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "e15e9cf5-8a68-4d50-8b81-d628be2d992a",
+      "occurred_at": "2026-05-11T20:46:57.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "186f2d34-5c4d-4d17-8251-279c2ffacd58",
+      "occurred_at": "2026-05-11T20:57:47.273Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "b3e74aca-24e2-4087-960e-d50bbf526d7d",
+      "occurred_at": "2026-05-11T20:57:47.707Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-09T16:28:13.360Z"
+  "updated_at": "2026-05-11T20:57:47.766Z"
 }

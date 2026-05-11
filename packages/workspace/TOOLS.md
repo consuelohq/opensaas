@@ -5855,6 +5855,64 @@ example error envelope:
 }
 ```
 
+### research.ingest
+
+generate a local research packet and autosave its text bundle to context
+
+- signature: `workspace.research.ingest({ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace research.ingest`
+- capabilities: readOnly=false, mutating=true, safeToRetry=false
+- default timeout: 600000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "research.ingest",
+  "input": {
+    "source": "https://example.com",
+    "question": "What should I learn from this?",
+    "dryRun": true
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ### server
 
 manage the workspace MCP server
