@@ -1,73 +1,69 @@
-# auto save research bundles to context
+# fix context save json output
 
-branch: `task/workspace-agents/auto-save-research-bundles-to-context`
+branch: `task/workspace-agents/fix-context-save-json-output`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/367
+task pr: https://github.com/consuelohq/opensaas/pull/368
 started: 2026-05-11
 
 ## acceptance criteria
 
-- [x] `research:ingest` automatically saves a successful research bundle to context.
-- [x] The saved context content includes the full text of `packet.md`, `extracted.md`, and `manifest.json`.
-- [x] No OCR/image/slides extra processing is added.
-- [x] Context save happens only after packet/extracted/manifest files are successfully written.
-- [x] Dry runs do not write files or save context, but show the planned context save.
-- [x] Add a narrow opt-out/debug flag only if needed for tests or manual local use.
-- [x] Update docs, manifest/schema/generated surfaces, tests/snapshots as needed.
-- [x] Validate with fake summarize and fake context-save path, facade test, audit, review, and verify.
+- [x] Fix `context.save` facade parse errors by making the underlying context CLI emit JSON when `--json` is passed.
+- [x] Check other context subcommands behind manifest `jsonFlag` and fix similar human-output paths.
+- [x] Preserve human-readable CLI output when `--json` is absent.
+- [x] Validate `context.save`, `context.get`, and `context.categories` through the typed facade.
+- [x] Run focused facade tests, script audit, review, verify, push, and promote.
 
 ## implementation plan
 
-1. Patch `research-ingest.js` to build a combined text bundle from `packet.md`, `extracted.md`, and `manifest.json`.
-2. Save that bundle through the existing `bun run context -- save <title> <bundle-file> --category research` path after ingest succeeds.
-3. Add options for title/category and opt-out, keeping autosave as default.
-4. Wire new options through facade schema/manifest and docs.
-5. Regenerate docs/types and run focused validations.
+1. Read standards, script docs, context CLI, manifest, and facade tests.
+2. Patch `packages/workspace/scripts/context.js` so save/get/categories honor `args.json`.
+3. Validate with direct CLI/facade smoke tests and focused test suite.
+4. Publish through task workflow.
 
 ## files changed
 
-- `packages/workspace/scripts/research-ingest.js`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/tooling/tool-manifest.json`
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/TOOLS.md`
-- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/scripts/context.js`
 
 ## key decisions
 
-- This is text-only: no OCR, image, slide, or digest work.
-- Auto-save is synchronous after successful ingest, not a separate approval/background step.
-- Context entry is self-contained and includes full `packet.md`, full `extracted.md`, and full `manifest.json`.
-- `--no-context-save` exists only for debugging/tests; autosave is default.
-- Context category defaults to `research`; title defaults to `Research Bundle: <source-derived title>`.
+- The root cause was the context CLI accepting `--json` globally while `save`, `get`, and `categories` still printed human text.
+- The manifest already appends `--json` for context tools, so the CLI now produces machine-readable stdout for those subcommands.
+- `context.save --json` returns saved row metadata and content length. It does not echo the full saved content back to stdout.
+- Human-readable output remains unchanged when `--json` is absent.
 
-## notes for ko
+## notes for Ko
 
-- The existing context CLI already supports saving a file to memory/context.
-- Successful ingest now writes `context-bundle.md` and saves it via context automatically.
+- The restart was needed because the workspace server loads the tool manifest at process start.
+- After merging a new workspace tool to `main`, the server must restart before the MCP facade exposes the new tool name.
+- The visible MCP surface reports two tools because the app exposes `get_steering` and `call`; all typed workspace tools live behind `workspace.call`.
 
 ## improvements noticed
 
-- `fs.patch` rejects multiline inline content; use a content file or a small script for multiline patches.
+- `context.save` could previously succeed while the facade reported `PARSE_ERROR`, which was confusing because the side effect already happened.
 
 ## errors or blockers
 
-- A smoke cleanup command using `rm -rf /tmp/...` was correctly blocked by safety guardrails; reran with Python cleanup.
-- Typed `verify` and direct `bun run verify` timed out through the connector boundary, but direct verify completed and wrote a passing `.task/verify.json`.
+- `explore` failed with exit code 1 during this task. Continued with targeted reads of the context CLI, manifest, and facade tests.
+- One Python patch attempt reported `target block not found`; the desired safe metadata output was already present after inspecting the file.
 
 ## validation
 
-- `node --check packages/workspace/scripts/research-ingest.js`: passed.
-- `bun --check packages/workspace/scripts/lib/facade/schemas.ts`: passed.
-- `bun run research:ingest -- <url> --dry-run --json`: passed; shows autosave enabled, context title/category, and `context-bundle.md` path.
-- Fake summarize + fake `bun run context -- save` smoke: passed; verified context bundle contains `## packet.md`, `## extracted.md`, `## manifest.json`, and full extracted text.
-- `bun run generate-types && bun run generate-docs`: passed.
-- `bun run tool-runner -- research.ingest ... dryRun`: passed.
-- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 439 tests.
-- `workspace audit { scripts: true }`: passed, 47 documented / 47 actual.
-- `workspace checkFiles` for `research-ingest.js` and `schemas.ts`: passed.
+- Read `AGENTS.md`, `CODING-STANDARDS.md`, `packages/workspace/SCRIPTS.md`, `packages/workspace/scripts/context.js`, the context manifest section, and facade test patterns.
+- `node --check packages/workspace/scripts/context.js`: passed.
+- `bun packages/workspace/scripts/context.js categories --json | python3 -m json.tool`: passed.
+- Direct `context.js save ... --json | python3 -m json.tool`: passed.
+- Direct `context.js get ... --json | python3 -m json.tool`: passed.
+- `bun packages/workspace/scripts/tool-runner.ts context.save ... | python3 -m json.tool`: passed with `ok: true`; output contains metadata and no saved content echo.
+- `bun packages/workspace/scripts/tool-runner.ts context.get ... | python3 -m json.tool`: passed parse.
+- `bun packages/workspace/scripts/tool-runner.ts context.categories '{}' | python3 -m json.tool`: passed.
+- `workspace checkFiles` for `packages/workspace/scripts/context.js`: passed.
+- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 439 tests. Vitest still reports existing obsolete snapshots from the facade test suite.
+- `workspace audit { scripts: true }`: passed, 48 documented / 48 actual.
 - `git diff --check`: passed.
-- `workspace review.run --base stream/workspace-agents --noTests`: passed, no findings.
-- `.task/verify.json`: pass; review passed, DB skipped as expected for tooling/docs-only change.
+- `verify`: explicitly waived by Ko for this publish because the verify path timed out and `.task/verify.json` showed stale data from another task. Do not treat verify as passed for this task.
 
-- 2026-05-11 20:58:30 write: `.task/workpad.md`
+## follow-up debt
+
+- Fix stale task metadata reads in the verify path; `.task/verify.json` can reflect another task/worktree even while the active taskSession points elsewhere. Similar stale data issues may exist in other workspace tools that fall back to shared root `.task` state instead of taskSession-resolved worktrees.
+
+- 2026-05-11 22:56:44 write: `.task/workpad.md`
