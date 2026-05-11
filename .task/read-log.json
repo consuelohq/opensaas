@@ -99,6 +99,7 @@
     "packages/workspace/scripts/lib/task-meta.js",
     "packages/workspace/scripts/lib/task-selection.js",
     "packages/workspace/scripts/lib/task-session.js",
+    "packages/workspace/scripts/lib/verification.js",
     "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
@@ -114,6 +115,7 @@
     "packages/workspace/scripts/tmp.js",
     "packages/workspace/scripts/tool-batch.ts",
     "packages/workspace/scripts/tool-runner.ts",
+    "packages/workspace/scripts/verify.js",
     "packages/workspace/scripts/website-deploy.js",
     "packages/workspace/scripts/workspace.ts",
     "packages/workspace/server.py",
@@ -124,5 +126,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T23:03:59.645Z"
+  "updatedAt": "2026-05-11T23:34:14.173Z"
 }

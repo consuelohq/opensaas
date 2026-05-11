@@ -361,6 +361,8 @@ bad: review fails on a file you didn't touch
 
 runs `bun run review` + db/migration/graphql guardrails. writes `.task/verify.json` stamp on success. `task:push` requires this stamp by default.
 
+When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
+
 ```bash
 bun run verify                        # full verify (review + db guards + stamp)
 bun run verify -- --no-review         # skip review, only run db guardrails
