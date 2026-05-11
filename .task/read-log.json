@@ -19,7 +19,12 @@
     "packages/consuelo-design/scripts/consuelo-design.mjs",
     "packages/consuelo-design/src/index.ts",
     "packages/consuelo-design/upstream/open-design/package.json",
+    "packages/consuelo-docs/navigation/base-structure.json",
+    "packages/consuelo-docs/package.json",
     "packages/consuelo-docs/project.json",
+    "packages/consuelo-docs/scripts/generate-docs-json.ts",
+    "packages/consuelo-docs/user-guide/data-model/capabilities/fields.mdx",
+    "packages/consuelo-docs/user-guide/data-model/capabilities/objects.mdx",
     "packages/consuelo-website/AGENTS.md",
     "packages/consuelo-website/DESIGN.md",
     "packages/consuelo-website/animations.md",
@@ -50,6 +55,9 @@
     "packages/consuelo-website/src/utils/postFilter.ts",
     "packages/consuelo-website/tailwind.config.mjs",
     "packages/dialer/src/dialer.ts",
+    "packages/os/docs/consuelo-os-v1.md",
+    "packages/os/docs/runtime-surfaces.md",
+    "packages/os/tooling/runbook-manifest.json",
     "packages/sdk/package.json",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
@@ -124,5 +132,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T01:46:59.615Z"
+  "updatedAt": "2026-05-11T09:08:31.513Z"
 }

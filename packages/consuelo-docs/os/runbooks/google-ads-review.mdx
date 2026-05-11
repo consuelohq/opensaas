@@ -1,0 +1,48 @@
+---
+title: Google Ads Review
+description: Reviews Google Ads context and drafts recommendations or search ad variants.
+---
+
+> Reviews Google Ads context and drafts recommendations or search ad variants.
+
+## Purpose
+
+Reviews Google Ads context and drafts recommendations or search ad variants.
+
+## Status
+
+Scaffolded unless the manifest or implementation says otherwise.
+
+## Permission level
+
+`draft`
+
+## Inputs
+
+campaign data, keywords, landing page, offer, performance context.
+
+## Outputs
+
+recommendations, ad variants, campaign brief.
+
+## Artifacts
+
+This runbook should return artifact references when it creates durable files, reports, briefs, scripts, or outputs.
+
+## Approval behavior
+
+Read and draft work can run within user scope. Record writes require write permission. External actions require explicit approval.
+
+## Implementation notes
+
+Publishing or spend changes are external actions and require approval.
+
+## Failure modes
+
+- missing env
+- missing integration credentials
+- incomplete data model fields
+- no relevant workspace data
+- sandbox unavailable when execution is required
+
+The runbook should return structured failure status instead of crashing the OS flow.
