@@ -81,6 +81,7 @@
     "packages/workspace/scripts/check-syntax.js",
     "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/deepwiki.js",
     "packages/workspace/scripts/edit-flow.js",
     "packages/workspace/scripts/explore.js",
     "packages/workspace/scripts/fs.js",
@@ -122,5 +123,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-09T16:28:13.267Z"
+  "updatedAt": "2026-05-11T17:41:41.657Z"
 }

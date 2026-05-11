@@ -3206,6 +3206,83 @@
     "sessionRequired": false
   },
   {
+    "name": "research.ingest",
+    "methodPath": [
+      "research",
+      "ingest"
+    ],
+    "description": "generate a local research packet from a video, podcast, paper, web page, or media file",
+    "category": "utilities",
+    "underlying": "workspace research.ingest",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 600000,
+    "inputSchema": "ResearchIngestInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "research:ingest",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "source",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "question",
+          "flag": "--question",
+          "kind": "value"
+        },
+        {
+          "source": "mode",
+          "flag": "--mode",
+          "kind": "value"
+        },
+        {
+          "source": "visual",
+          "flag": "--visual",
+          "kind": "boolean"
+        },
+        {
+          "source": "slidesMax",
+          "flag": "--slides-max",
+          "kind": "value"
+        },
+        {
+          "source": "videoMode",
+          "flag": "--video-mode",
+          "kind": "value"
+        },
+        {
+          "source": "keep",
+          "flag": "--keep",
+          "kind": "boolean"
+        },
+        {
+          "source": "outDir",
+          "flag": "--out-dir",
+          "kind": "value"
+        },
+        {
+          "source": "summarizeBin",
+          "flag": "--summarize-bin",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "source": "https://example.com",
+      "question": "What should I learn from this?",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "railway.logs",
     "methodPath": [
       "railway",

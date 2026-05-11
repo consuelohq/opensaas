@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_c2e47e7381a6",
-  "tmuxSession": "opensaas-workspace-agents-fix-task-cleanup-tmux-review-comments-c2e47e73",
+  "taskSession": "tsk_d65042c423a5",
+  "tmuxSession": "opensaas-workspace-agents-add-research-ingest-packet-generator-d65042c4",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
-  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments",
-  "prNumber": 357,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/357",
-  "createdAt": "2026-05-09T16:15:22.935Z",
+  "taskBranch": "task/workspace-agents/add-research-ingest-packet-generator",
+  "branch": "task/workspace-agents/add-research-ingest-packet-generator",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-research-ingest-packet-generator",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-research-ingest-packet-generator",
+  "prNumber": 365,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/365",
+  "createdAt": "2026-05-11T17:12:50.672Z",
   "tmuxCreated": true
 }
