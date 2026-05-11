@@ -13,7 +13,9 @@ import {
 
 jest.mock('@/object-metadata/hooks/useApolloCoreClient', () => ({
   useApolloCoreClient: () => {
-    throw new Error('useStartDialerCall must use the metadata Apollo client');
+    throw new Error(
+      'useApolloCoreClient was called but useStartDialerCall must use the default Apollo provider',
+    );
   },
 }));
 
@@ -88,7 +90,11 @@ const renderUseStartDialerCall = () =>
   });
 
 describe('useStartDialerCall', () => {
-  it('runs start and terminate mutations through the active metadata Apollo provider', async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should execute start and terminate mutations through the default Apollo provider', async () => {
     const { result } = renderUseStartDialerCall();
 
     let startResponse: Awaited<
