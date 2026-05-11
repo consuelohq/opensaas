@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import manifestJson from '../../../tooling/tool-manifest.json';
+import manifestJson from '../../../tooling/dev-tool-manifest.json';
 
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';

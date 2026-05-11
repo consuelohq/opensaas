@@ -1,10 +1,12 @@
 # Runbooks
 
-The runbook manifest is the source of truth:
+The default tool manifest is the agent-facing source of truth:
 
 ```text
-packages/os/tooling/runbook-manifest.json
+packages/os/tooling/tool-manifest.json
 ```
+
+Runtime implementations live in `packages/os/scripts/`. The current smoke runbook is implemented at `packages/os/scripts/revenue/daily-revenue-brief.ts`.
 
 ## daily-revenue-brief
 
@@ -57,4 +59,3 @@ Failure modes:
 | `query_failed` | The proof query failed for another safe reason. |
 
 The runbook should keep returning structured output even when the current data model is incomplete.
-

@@ -23,5 +23,4 @@ Do not include real secret values in this file.
 | Meta Ads | No | Later | Ads review runbooks | Yes |
 | Google Ads | No | Later | Ads review runbooks | Yes |
 
-The first scaffold uses only GraphQL proof env. Other capabilities are documented so future runbooks can declare requirements cleanly in the manifest.
-
+The first scaffold uses only GraphQL proof env. Other capabilities are documented so future scripts can declare runtime requirements and expose safe agent-facing metadata in the manifest.

@@ -1,9 +1,18 @@
-import { createWorkspaceArtifactDescriptor } from '../scripts/lib/artifacts';
-import { proveGraphQLConnectivity } from '../scripts/lib/graphql-client';
-import type { CallOutput, RunbookContext } from '../scripts/lib/types';
+import { createWorkspaceArtifactDescriptor } from '../lib/artifacts';
+import { proveGraphQLConnectivity } from '../lib/graphql-client';
+import type { CallOutput, RunbookContext } from '../lib/types';
 
 export async function runDailyRevenueBrief(input: unknown, context: RunbookContext): Promise<CallOutput> {
-  const graphqlProof = await proveGraphQLConnectivity();
+  let graphqlProof: Awaited<ReturnType<typeof proveGraphQLConnectivity>>;
+  try {
+    graphqlProof = await proveGraphQLConnectivity();
+  } catch (error: unknown) {
+    graphqlProof = {
+      status: 'query_failed' as const,
+      hasApiKey: Boolean(process.env.CONSUELO_INTERNAL_GRAPHQL_API_KEY),
+      safeMessage: error instanceof Error ? error.message.slice(0, 240) : 'GraphQL proof failed.',
+    };
+  }
   const workspaceStatus = context.workspaceId
     ? 'workspace_configured'
     : 'workspace_not_provided';
@@ -35,4 +44,3 @@ export async function runDailyRevenueBrief(input: unknown, context: RunbookConte
     proposedWrites: [],
   };
 }
-

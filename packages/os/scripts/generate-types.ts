@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import manifestJson from '../tooling/tool-manifest.json';
+import manifestJson from '../tooling/dev-tool-manifest.json';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
 import type { ToolManifestEntry } from './lib/facade/types';
 

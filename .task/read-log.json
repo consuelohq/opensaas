@@ -55,9 +55,20 @@
     "packages/consuelo-website/src/utils/postFilter.ts",
     "packages/consuelo-website/tailwind.config.mjs",
     "packages/dialer/src/dialer.ts",
+    "packages/os/decision.md",
+    "packages/os/dev-steering.md",
     "packages/os/docs/consuelo-os-v1.md",
     "packages/os/docs/runtime-surfaces.md",
+    "packages/os/runbooks/daily-revenue-brief.ts",
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/lib/manifest.ts",
+    "packages/os/scripts/lib/types.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/scripts/revenue/daily-revenue-brief.ts",
+    "packages/os/server.py",
+    "packages/os/tooling/dev-tool-manifest.json",
     "packages/os/tooling/runbook-manifest.json",
+    "packages/os/tooling/tool-manifest.json",
     "packages/sdk/package.json",
     "packages/twenty-front/src/modules/dialer/components/DialerHomePrep.tsx",
     "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
@@ -132,5 +143,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T09:08:31.513Z"
+  "updatedAt": "2026-05-11T10:13:50.950Z"
 }

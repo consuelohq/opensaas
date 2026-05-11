@@ -6,7 +6,7 @@ import type { RunbookManifestEntry } from './types';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(currentDir, '..', '..');
-const manifestPath = path.join(packageRoot, 'tooling', 'runbook-manifest.json');
+const manifestPath = path.join(packageRoot, 'tooling', 'tool-manifest.json');
 
 export function readManifest(): RunbookManifestEntry[] {
   const raw = fs.readFileSync(manifestPath, 'utf8');
@@ -20,4 +20,3 @@ export function findManifestEntry(name: string): RunbookManifestEntry | null {
 export function getPackageRoot(): string {
   return packageRoot;
 }
-

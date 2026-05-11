@@ -57,7 +57,7 @@ function getSteering(): string {
     if (content) sections.push('', `# ${file}`, '', content);
   }
 
-  sections.push('', '# raw runbook manifest', '', '```json', safeJson(readManifest()), '```');
+  sections.push('', '# raw default tool manifest', '', '```json', safeJson(readManifest()), '```');
   return sections.join('\n');
 }
 
@@ -101,10 +101,22 @@ async function executeCall(callInput: CallInput): Promise<CallOutput> {
     userId: callInput.userId ?? process.env.CONSUELO_USER_ID,
     manifestEntry: entry,
   };
-
   if (entry.name === 'daily-revenue-brief') {
-    const { runDailyRevenueBrief } = await import('../runbooks/daily-revenue-brief');
-    return runDailyRevenueBrief(callInput.input ?? {}, context);
+    try {
+      const { runDailyRevenueBrief } = await import('./revenue/daily-revenue-brief');
+      return await runDailyRevenueBrief(callInput.input ?? {}, context);
+    } catch (error: unknown) {
+      return {
+        ok: false,
+        name: entry.name,
+        permission: entry.permission,
+        requiresApproval: entry.requiresApproval,
+        error: {
+          code: 'RUNBOOK_EXECUTION_FAILED',
+          message: error instanceof Error ? error.message.slice(0, 240) : 'Runbook execution failed.',
+        },
+      };
+    }
   }
 
   return {

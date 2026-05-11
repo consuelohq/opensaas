@@ -12,7 +12,7 @@ It gives ChatGPT, Claude, and other agents a small role-aware interface into a c
 
 The MCP surface stays small so agents get one stable operating contract. Customer capabilities are runbooks behind `call`, not separate MCP tools.
 
-This keeps permissions, documentation, validation, and approval rules in one manifest.
+This keeps the agent map small while the Bun scripts own runtime behavior, permission checks, and future approval enforcement.
 
 ## get_steering
 
@@ -25,7 +25,7 @@ This keeps permissions, documentation, validation, and approval rules in one man
 - permission rules
 - integration notes
 - available runbooks
-- raw runbook manifest
+- raw default tool manifest
 - docs pointers
 
 ## get_dev_steering
@@ -50,9 +50,9 @@ Example:
 
 ## Runbooks
 
-Runbooks are Bun scripts registered in `tooling/runbook-manifest.json`.
+Runbooks are Bun scripts under `scripts/` and are exposed to agents through `tooling/tool-manifest.json`.
 
-Each manifest entry declares name, title, description, permission level, approval rules, write/external side effect flags, required env, required integrations, and input/output schema hints.
+Each default manifest entry declares name, title, description, permission level, approval rules, write/external side effect flags, required env, required integrations, and input/output schema hints.
 
 ## Smoke runbook
 
