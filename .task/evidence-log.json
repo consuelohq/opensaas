@@ -12152,8 +12152,120 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/add-research-ingest-packet-generator"
       }
+    },
+    {
+      "id": "486494d3-8828-4290-ae72-489f8a357285",
+      "occurred_at": "2026-05-11T20:46:56.609Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "3e8c75e8-3083-43ac-acbb-0ba5e43e8c9d",
+      "occurred_at": "2026-05-11T20:46:56.917Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "b21726a8-7aeb-4f14-b7de-3353582c3e5d",
+      "occurred_at": "2026-05-11T20:46:57.224Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/research-ingest.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "d8830548-4d1b-46d1-8808-32bbac530e34",
+      "occurred_at": "2026-05-11T20:46:57.532Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "e15e9cf5-8a68-4d50-8b81-d628be2d992a",
+      "occurred_at": "2026-05-11T20:46:57.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "186f2d34-5c4d-4d17-8251-279c2ffacd58",
+      "occurred_at": "2026-05-11T20:57:47.273Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
+    },
+    {
+      "id": "b3e74aca-24e2-4087-960e-d50bbf526d7d",
+      "occurred_at": "2026-05-11T20:57:47.707Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/auto-save-research-bundles-to-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-11T17:41:41.763Z"
+  "updated_at": "2026-05-11T20:57:47.766Z"
 }

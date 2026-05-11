@@ -840,15 +840,19 @@ bun run wait -- --pr 173              # wait for PR checks to pass
 
 wraps the `summarize` CLI to turn a video, podcast, paper, web page, or local media file into a reusable research packet.
 
-outputs a run directory containing `packet.md`, `extracted.md`, `manifest.json`, `summary.json`, raw summarize stdout/stderr, and a `slides/` directory when visual extraction is enabled.
+outputs a run directory containing `packet.md`, `extracted.md`, `manifest.json`, `summary.json`, raw summarize stdout/stderr, and a `slides/` directory when visual extraction is enabled. after a successful ingest, it also saves a self-contained context entry containing the full text of `packet.md`, `extracted.md`, and `manifest.json`.
 
 default output goes under the operating system temp directory returned by `os.tmpdir()` (for example `/var/folders/.../T/consuelo-research` on macOS), so extracted frames/slides are temporary and can be cleaned by the operating system. use `--keep` for `~/Documents/consuelo-research`, or `--out-dir` for an explicit durable location.
+
 ```bash
 bun run research:ingest -- "https://example.com/podcast" --question "what should i learn?"
 bun run research:ingest -- "https://youtu.be/example" --visual --slides-max 8
 bun run research:ingest -- "paper.pdf" --keep
+bun run research:ingest -- "https://example.com" --context-title "Research Bundle: example"
 bun run research:ingest -- "https://example.com" --dry-run --json
 ```
+
+context autosave is enabled by default. use `--no-context-save` only for local debugging or tests.
 
 ---
 

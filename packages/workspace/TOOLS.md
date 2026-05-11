@@ -5857,9 +5857,9 @@ example error envelope:
 
 ### research.ingest
 
-generate a local research packet from a video, podcast, paper, web page, or media file
+generate a local research packet and autosave its text bundle to context
 
-- signature: `workspace.research.ingest({ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.research.ingest({ source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace research.ingest`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms

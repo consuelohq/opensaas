@@ -29,6 +29,9 @@ function help() {
     '  --keep                  write to ~/Documents/consuelo-research',
     '  --out-dir <path>        override output root',
     '  --summarize-bin <path>  summarize executable',
+    '  --context-title <text>  context title for autosave',
+    '  --context-category <name> context category (default: research)',
+    '  --no-context-save       skip automatic context save',
     '  --json                  print manifest JSON',
     '  --dry-run               print planned command only',
     `default output root: ${TEMP_ROOT}`,
@@ -54,7 +57,7 @@ function positiveInteger(value, flag) {
 }
 
 function parseArgs(argv) {
-  const options = { mode: 'standard', visual: false, keep: false, json: false, dryRun: false, summarizeBin: 'summarize', videoMode: 'auto' };
+  const options = { mode: 'standard', visual: false, keep: false, json: false, dryRun: false, summarizeBin: 'summarize', videoMode: 'auto', contextCategory: 'research', contextSave: true };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -67,6 +70,9 @@ function parseArgs(argv) {
     else if (arg === '--keep') options.keep = true;
     else if (arg === '--out-dir') options.outDir = readValue(argv, ++i, arg);
     else if (arg === '--summarize-bin') options.summarizeBin = readValue(argv, ++i, arg);
+    else if (arg === '--context-title') options.contextTitle = readValue(argv, ++i, arg);
+    else if (arg === '--context-category') options.contextCategory = readValue(argv, ++i, arg);
+    else if (arg === '--no-context-save') options.contextSave = false;
     else if (arg === '--json') options.json = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg.startsWith('--')) throw new Error(`unknown flag: ${arg}`);
@@ -103,6 +109,93 @@ function lengthFor(mode) {
 
 function slidesFor(mode) {
   return mode === 'quick' ? 4 : mode === 'deep' ? 16 : 8;
+}
+
+function contextTitle(options) {
+  if (options.contextTitle) return options.contextTitle;
+
+  const titleSource = options.source
+    .replace(/^https?:\/\//, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .trim()
+    .slice(0, 90) || 'source';
+
+  return `Research Bundle: ${titleSource}`;
+}
+
+function readTextFile(filePath) {
+  if (!fs.existsSync(filePath)) throw new Error(`expected research bundle file missing: ${filePath}`);
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+function buildContextBundle(manifest) {
+  const packetText = readTextFile(manifest.packetPath);
+  const extractedText = readTextFile(manifest.extractedPath);
+  const manifestText = readTextFile(manifest.manifestPath);
+
+  return [
+    `# ${manifest.context.title}`,
+    '',
+    `Source: ${manifest.source}`,
+    `Created: ${manifest.createdAt}`,
+    `Bundle path: ${manifest.outputDir}`,
+    '',
+    '---',
+    '',
+    '## packet.md',
+    '',
+    packetText.trimEnd(),
+    '',
+    '---',
+    '',
+    '## extracted.md',
+    '',
+    extractedText.trimEnd(),
+    '',
+    '---',
+    '',
+    '## manifest.json',
+    '',
+    '```json',
+    manifestText.trimEnd(),
+    '```',
+    '',
+  ].join('\n');
+}
+
+function saveContextBundle(options, manifest) {
+  if (!manifest.context.enabled) return null;
+
+  const bundleText = buildContextBundle(manifest);
+  fs.writeFileSync(manifest.context.bundlePath, bundleText, 'utf8');
+
+  const contextArgs = [
+    'run',
+    'context',
+    '--',
+    'save',
+    manifest.context.title,
+    manifest.context.bundlePath,
+    '--category',
+    manifest.context.category,
+  ];
+
+  const result = spawnSync('bun', contextArgs, {
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 20,
+  });
+
+  if (result.error) throw new Error(`failed to run context save: ${result.error.message}`);
+  if (result.status !== 0) {
+    throw new Error(`context save failed with exit code ${result.status}: ${result.stderr || result.stdout}`);
+  }
+
+  return {
+    command: ['bun', ...contextArgs],
+    stdout: result.stdout || '',
+    stderr: result.stderr || '',
+    status: result.status,
+  };
 }
 
 function summarizeArgs(options, dir, kind) {
@@ -232,6 +325,12 @@ function main() {
       temporary: !options.keep && !options.outDir,
       extractArgs: [options.summarizeBin, ...summarizeArgs(options, outDir, 'extract')],
       summaryFallbackArgs: [options.summarizeBin, ...summarizeArgs(options, outDir, 'summary')],
+      contextSave: {
+        enabled: options.contextSave,
+        title: contextTitle(options),
+        category: options.contextCategory,
+        bundlePath: path.join(outDir, 'context-bundle.md'),
+      },
     };
     out(options.json ? JSON.stringify(plan, null, 2) : outDir);
     return;
@@ -270,6 +369,12 @@ function main() {
     manifestPath: path.join(outDir, 'manifest.json'),
     summaryJsonPath: path.join(outDir, 'summary.json'),
     slidesDir: options.visual ? path.join(outDir, 'slides') : undefined,
+    context: {
+      enabled: options.contextSave,
+      title: contextTitle(options),
+      category: options.contextCategory,
+      bundlePath: path.join(outDir, 'context-bundle.md'),
+    },
     selectedRun: selected.kind,
     fallbackUsed,
     summarizeBin: options.summarizeBin,
@@ -286,6 +391,8 @@ function main() {
   fs.writeFileSync(manifest.summaryJsonPath, `${JSON.stringify({ selectedRun: selected.kind, fallbackUsed, status: selected.status, parsed: parseJson(selected.stdout), rawStdout: parseJson(selected.stdout) ? undefined : selected.stdout }, null, 2)}\n`, 'utf8');
   fs.writeFileSync(manifest.packetPath, packet(manifest, text), 'utf8');
   fs.writeFileSync(manifest.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+
+  saveContextBundle(options, manifest);
 
   out(options.json ? JSON.stringify(manifest, null, 2) : manifest.packetPath);
 }

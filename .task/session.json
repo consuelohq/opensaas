@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_d65042c423a5",
-  "tmuxSession": "opensaas-workspace-agents-add-research-ingest-packet-generator-d65042c4",
+  "taskSession": "tsk_7f5b22963d84",
+  "tmuxSession": "opensaas-workspace-agents-auto-save-research-bundles-to-context-7f5b2296",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-research-ingest-packet-generator",
-  "branch": "task/workspace-agents/add-research-ingest-packet-generator",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-research-ingest-packet-generator",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-research-ingest-packet-generator",
-  "prNumber": 365,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/365",
-  "createdAt": "2026-05-11T17:12:50.672Z",
+  "taskBranch": "task/workspace-agents/auto-save-research-bundles-to-context",
+  "branch": "task/workspace-agents/auto-save-research-bundles-to-context",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-auto-save-research-bundles-to-context",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-auto-save-research-bundles-to-context",
+  "prNumber": 367,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/367",
+  "createdAt": "2026-05-11T20:46:51.504Z",
   "tmuxCreated": true
 }

@@ -3211,7 +3211,7 @@
       "research",
       "ingest"
     ],
-    "description": "generate a local research packet from a video, podcast, paper, web page, or media file",
+    "description": "generate a local research packet and autosave its text bundle to context",
     "category": "utilities",
     "underlying": "workspace research.ingest",
     "capabilities": {
@@ -3272,6 +3272,21 @@
           "source": "summarizeBin",
           "flag": "--summarize-bin",
           "kind": "value"
+        },
+        {
+          "source": "contextTitle",
+          "flag": "--context-title",
+          "kind": "value"
+        },
+        {
+          "source": "contextCategory",
+          "flag": "--context-category",
+          "kind": "value"
+        },
+        {
+          "source": "noContextSave",
+          "flag": "--no-context-save",
+          "kind": "boolean"
         }
       ]
     },

@@ -1,9 +1,9 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-research-ingest-packet-generator",
+  "branch": "task/workspace-agents/auto-save-research-bundles-to-context",
   "base": "stream/workspace-agents",
-  "headSha": "19e107364636e84450336fb9415330052a797273",
-  "changeHash": "e6dfb4815c0d59b1d6cf03a48095bf68100521ea04d6bea9ab7a7ef1c494718e",
+  "headSha": "12b87884e44df5b8c4b3b972e3a7b411f8577c1e",
+  "changeHash": "7fe0ad3e550274ccb6005e29642d47faa8e584e368518ad077efc489b83cac46",
   "changedFiles": [
     "package.json",
     "packages/workspace/SCRIPTS.md",
@@ -14,7 +14,7 @@
     "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-11T17:45:07.814Z",
+  "verifiedAt": "2026-05-11T20:58:44.987Z",
   "review": {
     "skipped": false,
     "passed": true
