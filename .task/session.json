@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_c2e47e7381a6",
-  "tmuxSession": "opensaas-workspace-agents-fix-task-cleanup-tmux-review-comments-c2e47e73",
+  "taskSession": "tsk_b4d3b69bafca",
+  "tmuxSession": "opensaas-workspace-agents-fix-context-save-json-output-b4d3b69b",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
-  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-task-cleanup-tmux-review-comments",
-  "prNumber": 357,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/357",
-  "createdAt": "2026-05-09T16:15:22.935Z",
+  "taskBranch": "task/workspace-agents/fix-context-save-json-output",
+  "branch": "task/workspace-agents/fix-context-save-json-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-context-save-json-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-context-save-json-output",
+  "prNumber": 368,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/368",
+  "createdAt": "2026-05-11T22:38:05.169Z",
   "tmuxCreated": true
 }

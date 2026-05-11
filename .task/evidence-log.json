@@ -12264,8 +12264,248 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/auto-save-research-bundles-to-context"
       }
+    },
+    {
+      "id": "7c2bcfad-cfd7-41d8-a821-974234f9c9ca",
+      "occurred_at": "2026-05-11T22:38:18.843Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "5910ec0f-3c35-4280-bc77-6d8a43d2de7d",
+      "occurred_at": "2026-05-11T22:38:19.146Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "e609e307-1ec4-4cb9-94eb-9e880508f9f6",
+      "occurred_at": "2026-05-11T22:38:19.420Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "1a62181b-2b0e-4b08-932d-6da8753fcca3",
+      "occurred_at": "2026-05-11T22:38:39.048Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "ec50d112-e391-4245-9e47-8e1b06053838",
+      "occurred_at": "2026-05-11T22:38:39.330Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "7c856322-990f-460f-bee0-b798c5f0d20c",
+      "occurred_at": "2026-05-11T22:38:39.608Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "13d2b04f-2843-4178-97d9-9558c95c204e",
+      "occurred_at": "2026-05-11T22:39:29.697Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "e6de28fe-56db-43d7-962a-e7d89eb22b30",
+      "occurred_at": "2026-05-11T22:44:23.340Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "fec9af22-43fb-4557-9a72-5877fdf18408",
+      "occurred_at": "2026-05-11T22:46:23.837Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "67f96547-81b5-4cba-bae3-3b049bb5e64a",
+      "occurred_at": "2026-05-11T22:46:25.143Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "a31809b0-8c2a-427a-b27e-426270f1d756",
+      "occurred_at": "2026-05-11T22:46:26.474Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "7fa7e6f1-e5ca-4ef7-9880-4d41be142ac3",
+      "occurred_at": "2026-05-11T22:46:27.073Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "c38c575d-09ca-4731-ae6f-3041c51d0ff0",
+      "occurred_at": "2026-05-11T22:48:27.549Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "818ce9a0-7655-414b-ad75-cae964342986",
+      "occurred_at": "2026-05-11T23:03:59.329Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
+    },
+    {
+      "id": "d7a45100-f371-4828-b98e-7007b50d1e01",
+      "occurred_at": "2026-05-11T23:03:59.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-context-save-json-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-context-save-json-output"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-11T20:57:47.766Z"
+  "updated_at": "2026-05-11T23:03:59.750Z"
 }
