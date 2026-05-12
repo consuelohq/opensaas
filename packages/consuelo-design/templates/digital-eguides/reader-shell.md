@@ -172,27 +172,19 @@ Every guide must end with a compact metadata footer in small text. Include as ma
 Use the same restrained footer style as the Daily Deep Idea prototype: small text, muted gray, top border, and no marketing language.
 
 
-## theme standard
+## design system
 
-Reader-shell artifacts should support device theme when possible.
+The reader shell must follow `packages/consuelo-website/DESIGN.md`.
 
-Use CSS variables and `prefers-color-scheme`:
+Do not define a separate visual theme here. Use the Consuelo design system for typography, spacing, cards, shadow-as-border treatment, focus states, labels, and color roles.
 
-- dark theme for dark-mode devices
-- light theme for light-mode devices
-- no hardcoded white canvas as the default assumption
-- keep contrast high and editorial
-- use restrained black/gray surfaces, not colorful decoration
+The reader shell owns behavior:
+- fixed header
+- `/design-wiki` link
+- GSAP ScrollSmoother
+- tap-to-read navigation
+- back-to-top affordance
+- metadata footer
 
-If theme matching creates inconsistent rendering, prefer always-dark over always-white.
+The design system owns appearance.
 
-The design should feel like a premium dark reading surface:
-
-- near-black page background
-- slightly raised dark cards
-- muted gray metadata
-- soft shadow-as-border treatment
-- thin borders using transparent white
-- clear white headings
-- readable body text
-- Geist / Geist Mono
