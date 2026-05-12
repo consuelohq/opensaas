@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_063256806e50",
-  "tmuxSession": "opensaas-workspace-agents-tune-digital-eguide-reader-shell-motion-06325680",
+  "taskSession": "tsk_53e4b4fac8dc",
+  "tmuxSession": "opensaas-workspace-agents-redesign-consuelo-wiki-index-53e4b4fa",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
-  "branch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion",
-  "prNumber": 376,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/376",
-  "createdAt": "2026-05-12T06:54:47.587Z",
+  "taskBranch": "task/workspace-agents/redesign-consuelo-wiki-index",
+  "branch": "task/workspace-agents/redesign-consuelo-wiki-index",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
+  "prNumber": 379,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/379",
+  "createdAt": "2026-05-12T23:03:33.677Z",
   "tmuxCreated": true
 }

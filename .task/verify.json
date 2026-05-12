@@ -1,18 +1,19 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
+  "branch": "task/workspace-agents/redesign-consuelo-wiki-index",
   "base": "origin/stream/workspace-agents",
-  "headSha": "bff71a117d0e1893f97a7ff30bf3c8f4adfeb796",
-  "changeHash": "1f7cf7ccb942db3a0e6030dddf6f25bb126105265005a7ebd9d5d9ca7842550c",
+  "headSha": "20141c1ffaaace6fed8e56028abcf65a2d0c10d2",
+  "changeHash": "fd97e2f3c40a1ada8120eb05ff22efdec3feae04d3843cebb67fb6d3b17e42af",
   "changedFiles": [
     "areas/consuelo-design/AGENTS.md",
     "packages/consuelo-design/README.md",
     "packages/consuelo-design/templates/digital-eguides/README.md",
     "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
+    "packages/consuelo-design/templates/digital-eguides/research.md",
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/scripts/consuelo-design.ts"
   ],
-  "verifiedAt": "2026-05-12T08:10:56.244Z",
+  "verifiedAt": "2026-05-12T23:13:57.102Z",
   "review": {
     "skipped": false,
     "passed": true

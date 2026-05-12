@@ -1,5 +1,6 @@
 {
   "files": [
+    "./AGENTS.md",
     ".task/current.json",
     ".task/handoff.md",
     ".task/session.json",
@@ -156,5 +157,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-12T08:06:45.794Z"
+  "updatedAt": "2026-05-12T23:10:38.906Z"
 }

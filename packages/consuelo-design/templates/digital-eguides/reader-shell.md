@@ -5,7 +5,7 @@ Apply this shell to every digital e-guide template.
 ## header
 
 - Add a small, fixed top header outside `#smooth-wrapper`.
-- Left side links to the design wiki at `/design-wiki` with text like `Design Wiki` or `All guides`.
+- Left side links to the Consuelo Wiki at `/design-wiki` with text `Consuelo Wiki`.
 - Right side can show the current template label and reading progress.
 - Keep the header quiet: white/translucent background, Geist/Geist Mono, thin border, no decorative color dependency.
 
@@ -167,6 +167,24 @@ Every guide must end with a compact metadata footer in small text. Include as ma
 - published date/time when known
 - source truth / source bundle / input docs when known
 - Open Design project id or local artifact path when known
-- design wiki link
+- Consuelo Wiki link
 
 Use the same restrained footer style as the Daily Deep Idea prototype: small text, muted gray, top border, and no marketing language.
+
+
+## design system
+
+The reader shell must follow `packages/consuelo-website/DESIGN.md`.
+
+Do not define a separate visual theme here. Use the Consuelo design system for typography, spacing, cards, shadow-as-border treatment, focus states, labels, and color roles.
+
+The reader shell owns behavior:
+- fixed header
+- `/design-wiki` Consuelo Wiki link
+- GSAP ScrollSmoother
+- tap-to-read navigation
+- back-to-top affordance
+- metadata footer
+
+The design system owns appearance.
+
