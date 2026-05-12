@@ -25,4 +25,4 @@ Templates:
 Do not add a new workspace facade command for each template. The command starts the Open Design workflow; the template shapes the artifact.
 
 
-The shared `reader-shell` requires GSAP ScrollSmoother for smooth swipe/native scrolling and GSAP ScrollToPlugin for tap-to-read jumps. Generated HTML artifacts should wrap the article content in `#smooth-wrapper > #smooth-content`, keep fixed controls outside that wrapper, and initialize ScrollSmoother before tap navigation.
+The shared `reader-shell` requires GSAP ScrollSmoother for smooth swipe/native scrolling, GSAP ScrollToPlugin for fallbacks, nearly-page-sized tap-to-read movement, and a quiet bottom-right back-to-top affordance. Generated HTML artifacts should wrap the article content in `#smooth-wrapper > #smooth-content`, keep fixed controls outside that wrapper, initialize ScrollSmoother before tap navigation, and mark fixed controls with `data-no-tap-scroll`.

@@ -1,87 +1,85 @@
-# add digital eguide template flag and docs
+# tune digital eguide reader shell motion
 
-branch: `task/workspace-agents/add-digital-eguide-template-flag-and-docs`
+branch: `task/workspace-agents/tune-digital-eguide-reader-shell-motion`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/374
-started: 2026-05-11
+pr: https://github.com/consuelohq/opensaas/pull/376
+started: 2026-05-12
 
 ## acceptance criteria
 
-- [x] Add an optional `template` hint to the existing `consueloDesign.generateDigitalEguide` workflow.
-- [x] Keep template content out of the tool manifest; manifest only carries the template name.
-- [x] Support exactly `research`, `spec`, and `plan` template names.
-- [x] Store Consuelo-owned Open Design e-guide templates outside the manifest and inject only the selected template into the generated prompt.
-- [x] Update design/operator docs so prepared prompts are treated as the intended operator handoff.
-- [x] Update workspace facade schema/manifest, generated docs/types, and script docs.
-- [x] Validate direct CLI dry-runs, typed facade dry-runs, generation, check files, audit, review, and verify where feasible.
+- [x] Tune ScrollSmoother motion so the shell uses medium desktop smoothing and stronger touch smoothing.
+- [x] Increase tap-to-read movement from 45vh to 88vh.
+- [x] Animate tap navigation with custom GSAP tweening against `smoother.scrollTop` using `power3.inOut`.
+- [x] Add a subtle bottom-right back-to-top affordance after the reader scrolls beyond the first page section.
+- [x] Patch the existing Prospect Theory artifact to test the behavior live.
 
-## research basis
+## research notes
 
-- Research/report templates should preserve source metadata, audience, key findings, limitations, implications, and forward-looking questions.
-- Spec templates should include problem/context, goals/non-goals, requirements, design, decisions, alternatives, risks, testing, rollout, and open questions.
-- Plan templates should include objective, roles, scope, milestones, dependencies, risks, validation, decision log, and status/update sections.
+- GSAP ScrollSmoother uses native scroll and moves the content with transforms; fixed controls should live outside the smoother wrapper.
+- `smooth` controls catch-up duration in seconds.
+- `smoothTouch` defaults to no smoothing on touch; specifying a short number enables touch smoothing without making the swipe feel too disconnected.
+- `normalizeScroll: true` helps with mobile address bar resize/synchronization and iOS jitter behaviors.
+- ScrollSmoother `scrollTo` can jump or use configured smoothing; custom animation should tween `smoother.scrollTop` for a controlled duration/ease.
 
-## implementation notes
+## files changed
 
-- Use the existing digital e-guide workflow; do not add new facade commands.
-- The `template` flag is a routing hint to Open Design/operator work, not a separate workflow family.
-- `decision` is not a standalone template. Decisions are embedded in `spec` and `plan`.
+- `packages/consuelo-design/templates/digital-eguides/reader-shell.md`
+- `packages/consuelo-design/templates/digital-eguides/README.md`
 
-- 2026-05-12 03:47:52 patch lines 730-730: `packages/workspace/scripts/lib/facade/schemas.ts`
-- 2026-05-12 03:48:20 patch lines 120-120: `areas/consuelo-design/AGENTS.md`
-- 2026-05-12 03:48:35 patch lines 120-135: `areas/consuelo-design/AGENTS.md`
-- 2026-05-12 03:48:50 patch lines 136-137: `areas/consuelo-design/AGENTS.md`
+## key decisions
+
+- Keep ScrollSmoother native-scroll architecture.
+- Use `smooth: 0.65` and `smoothTouch: 0.28` as a more controlled baseline.
+- Use `normalizeScroll: true` to reduce mobile viewport/address-bar jitter.
+- Make tap-to-read nearly one viewport with `88vh`, then animate with `power3.inOut` over `0.95s` so the movement is visible.
+- Add a transparent back-to-top control outside the smoother wrapper, marked `data-no-tap-scroll`.
+
 ## validation
 
-- Read `AGENTS.md` and full `CODING-STANDARDS.md`.
-- Read `areas/consuelo-design/AGENTS.md`, `packages/consuelo-design/README.md`, existing Open Design `digital-eguide` skill, facade schema, manifest, generated docs/types, and `consuelo-design.ts`.
-- Web-researched HTML artifact patterns using Thariq's "The unreasonable effectiveness of HTML" examples, especially implementation plan and research explainer pages.
-- Web-researched spec/design-doc structure, project plan structure, and research report structure from current public references.
-- Added `research`, `spec`, and `plan` template files under `packages/consuelo-design/templates/digital-eguides/`.
-- Added `--template <research|spec|plan>` support for `generate digital-eguide` only.
-- Added `ConsueloDesignDigitalEguideInput` so the template field appears only on `consueloDesign.generateDigitalEguide`.
-- `bun --check packages/workspace/scripts/consuelo-design.ts`: passed.
-- `bun --check packages/workspace/scripts/lib/facade/schemas.ts`: passed.
-- Direct CLI dry-run with `--template research`: passed; pending prompt includes selected template and HTML interaction pattern.
-- Typed facade dry-run with `template: "spec"`: passed; project metadata includes template and pending prompt includes spec template.
-- Invalid `template: "decision"`: rejected by schema with allowed values `research`, `spec`, `plan`.
-- `bun run generate-docs`: passed.
-- `bun run generate-types`: passed.
-- `checkFiles` on TS files: passed. The first `checkFiles` attempt included Markdown files and failed because `node --check` cannot parse `.md`; reran with TS files only.
-- `consuelo-design check --json`: passed.
-- `audit { scripts: true }`: passed, 48 documented / 48 actual.
-- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 444 tests. Existing obsolete snapshot noise remains.
-- `git diff --check`: passed.
-- `review.run --base origin/stream/workspace-agents --noTests`: passed.
-- `verify --base origin/stream/workspace-agents --noDb`: passed and wrote task-local stamp.
+- Direct dry-run contains `smooth: 0.65`, `smoothTouch: 0.28`, `normalizeScroll: true`, `88vh`, `reader-back-to-top`, `power3.inOut`, and `ScrollTrigger.maxScroll(window)`.
+- `consuelo-design check --json` passed.
+- `git diff --check` passed.
+- Live Prospect Theory artifact was patched and served through the existing Tailscale direct URL.
+- `curl` direct artifact returned `200 text/html` and included `research-shell-v2`, `reader-back-to-top`, `0.88`, `power3.inOut`, `normalizeScroll: true`, and the Prospect Theory title.
+- Browser verification confirmed `window.__readerShell.version === "research-shell-v2"`, ScrollSmoother is active, `smooth() === 0.65`, and the back-to-top button exists.
+- Right-side tap moved from `0` to `557`, matching `0.88 * viewport height` in the test viewport.
+- Back-to-top became visible after scrolling, then clicking it returned the page to `0` and hid the button.
 
-## follow-up additions from Ko
+## notes for ko
 
-- Added automatic design wiki archive updates from `design.publish`.
-- Archive data lives under Open Design runtime state: `packages/consuelo-design/upstream/open-design/.od/consuelo/archive/archive.json`.
-- Archive page is generated at `/design-wiki` with All/Research/Spec/Plan/Uncategorized filters, chronological order, and artifact names as links.
-- `design.publish` now returns/records both HTTPS Serve URLs and direct tailnet HTTP URLs; wiki cards prefer direct URLs for iPhone-safe reading.
-- Added shared `reader-shell` template: quiet header back to `/design-wiki`, always-GSAP tap-to-read navigation, and compact footer metadata.
-- Audio generation was intentionally not added in this pass; the shell/templates leave room for a later optional audio layer.
+- The live Prospect Theory artifact is patched now.
+- Future generated e-guides will get the tuned reader-shell instructions from the template once this PR lands.
 
-## follow-up validation
+## improvements noticed
 
-- Direct dry-run: `generate digital-eguide --template research` includes reader shell, GSAP requirement, tap nav, and metadata footer.
-- `design.publish` fake-Tailscale integration test writes archive JSON/index, returns direct URLs, and serves both wiki and artifact through the archive proxy.
-- `design.publish` typed dry-run includes typed template input and archive direct URL.
-- Re-ran `generate-docs`, `generate-types`, Bun checks, `git diff --check`, `checkFiles`, `audit`, and facade tests after follow-up changes.
+- A future deterministic wrapper tool could apply the reader shell to an existing artifact without hand-patching HTML, but the current requested behavior can be achieved through the template and Open Design operator flow.
 
+## errors i ran into
 
-## ScrollSmoother follow-up
+- `explore` returned unrelated website/docs chunks for this narrow template change, so file/context evidence was collected directly from the known reader shell template and prior workpad.
+- 2026-05-12 06:58:11 patch lines 1-45: `.task/workpad.md`
 
-- Added GSAP ScrollSmoother guidance to the shared `reader-shell` template so swipe/native scrolling gets smooth motion alongside tap-to-read navigation.
-- Reader content must now use `#smooth-wrapper > #smooth-content`, with fixed header/floating controls outside the wrapper.
-- The shell requires GSAP, ScrollTrigger, ScrollToPlugin, and ScrollSmoother browser scripts.
-- Tap navigation now uses pointer down/up with a movement/time threshold so swipes remain swipe gestures and taps trigger the 45vh reading jump.
-- Tap navigation calls `smoother.scrollTo(...)` when ScrollSmoother is active and keeps a ScrollToPlugin fallback.
-- External reference checked: GSAP ScrollSmoother docs confirm wrapper/content structure, ScrollTrigger registration, native-scroll smoothing, `smoothTouch`, and `scrollTo` behavior.
-- `explore` failed for this follow-up with `explore failed`; proceeded with direct task-scoped file reads because the target files and prior workpad context were explicit.
+## durable Tailscale archive follow-up
 
-## ScrollSmoother validation
+- Changed `design.publish` so local file and directory targets are materialized under the Open Design archive before Tailscale Serve registration.
+- Archive artifact files now live under `.od/consuelo/archive/artifacts/<published-path>/index.html`.
+- Tailscale Serve routes artifact paths to the managed archive server on port `53935`, not directly to a local file path or one-off temporary HTTP server.
+- The archive server serves `/design-wiki` and artifact paths through the same tailnet server.
+- Archive entries now store `sourceTarget` and `artifactPath` so the original source and durable archived copy are both visible.
+- Added a `/__health` endpoint to the archive server so startup does not depend on the wiki HTML already existing.
 
-- Direct dry-run: `generate digital-eguide --template research` includes `ScrollSmoother`, `smoothTouch`, `#smooth-wrapper`, `#smooth-content`, `smoother.scrollTo`, `pointerdown`, and `ScrollTrigger` markers.
+## durable Tailscale archive validation
+
+- Fake Tailscale publish with a local HTML file passed.
+- Verified `design.publish` returns target `http://127.0.0.1:53935` for the artifact route.
+- Verified archive JSON stores `sourceTarget: /tmp/durable-artifact.html`.
+- Verified archive JSON stores `artifactPath: artifacts/daily/durable-artifact/index.html`.
+- Verified the copied artifact exists under the archive.
+- Verified the managed archive server serves both `/design-wiki` and `/daily/durable-artifact`.
+- `bun --check packages/workspace/scripts/consuelo-design.ts` passed.
+- `bun --check packages/workspace/scripts/lib/facade/schemas.ts` passed.
+- `bun run generate-docs` passed.
+- `bun run generate-types` passed.
+- `git diff --check` passed.
+- Added archive-server compatibility probing: `ensureArchiveServer` now treats either `/__health` or an existing `/design-wiki` response as a live archive server, so a previously running archive server on port 53935 does not cause a duplicate-spawn failure.
+- Re-ran fake Tailscale durable publish after this change; it passed and served wiki + artifact from the managed archive server.

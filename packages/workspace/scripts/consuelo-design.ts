@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -48,6 +48,7 @@ const DESIGN_ARCHIVE_ROOT = path.join(OPEN_DESIGN_ROOT, '.od/consuelo/archive');
 const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
 const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
 const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
+const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_PATH = '/design-wiki';
 
@@ -77,6 +78,8 @@ type DesignArchiveEntry = {
   directUrl: string;
   path: string;
   target: string;
+  sourceTarget: string;
+  artifactPath: string | null;
   template: DigitalEguideTemplateId | 'uncategorized';
   category: string;
   publishedAt: string;
@@ -832,6 +835,45 @@ function archiveTemplateFromArgs(args: ParsedArgs): DesignArchiveEntry['template
   return args.template && isDigitalEguideTemplateId(args.template) ? args.template : 'uncategorized';
 }
 
+
+function archiveRelativeArtifactPath(servePath: string, fileName = 'index.html'): string {
+  const safeSegments = servePath.split('/').filter(Boolean).map(slugify);
+  return path.join('artifacts', ...safeSegments, fileName);
+}
+
+function archiveAbsoluteArtifactDir(servePath: string): string {
+  return path.join(DESIGN_ARCHIVE_ARTIFACTS_ROOT, ...servePath.split('/').filter(Boolean).map(slugify));
+}
+
+function materializeArchiveTarget(target: string, servePath: string): { target: string; artifactPath: string | null; sourceTarget: string } {
+  if (/^https?:\/\//.test(target)) {
+    return { target, artifactPath: null, sourceTarget: target };
+  }
+
+  const sourcePath = path.resolve(target);
+  if (!existsSync(sourcePath)) {
+    throw new Error(`publish target does not exist: ${target}`);
+  }
+
+  const targetDir = archiveAbsoluteArtifactDir(servePath);
+  rmSync(targetDir, { recursive: true, force: true });
+  mkdirSync(targetDir, { recursive: true });
+
+  const sourceStat = statSync(sourcePath);
+  if (sourceStat.isDirectory()) {
+    cpSync(sourcePath, targetDir, { recursive: true });
+    const indexPath = path.join(targetDir, 'index.html');
+    if (!existsSync(indexPath)) {
+      throw new Error(`directory publish target must contain index.html: ${target}`);
+    }
+    return { target: targetDir, artifactPath: path.relative(DESIGN_ARCHIVE_ROOT, targetDir), sourceTarget: target };
+  }
+
+  const indexPath = path.join(targetDir, 'index.html');
+  cpSync(sourcePath, indexPath);
+  return { target: indexPath, artifactPath: archiveRelativeArtifactPath(servePath), sourceTarget: target };
+}
+
 function readArchivePayload(): DesignArchivePayload {
   try {
     const parsed = JSON.parse(readFileSync(DESIGN_ARCHIVE_DATA_PATH, 'utf8')) as Partial<DesignArchivePayload>;
@@ -969,6 +1011,7 @@ Bun.serve({
   port,
   fetch(request) {
     const url = new URL(request.url);
+    if (url.pathname === '/__health') return new Response('ok', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
     if (url.pathname === '/' || url.pathname === wikiPath || url.pathname === wikiPath + '/') {
       if (!existsSync(archiveIndexPath)) return new Response('not found', { status: 404 });
       return new Response(readFileSync(archiveIndexPath), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
@@ -988,12 +1031,16 @@ Bun.serve({
 }
 
 async function isArchiveServerRunning(host: string): Promise<boolean> {
-  try {
-    const response = await fetch(`http://${host}:${DESIGN_ARCHIVE_PORT}/design-wiki`, { cache: 'no-store' });
-    return response.ok;
-  } catch {
-    return false;
+  for (const probePath of ['/__health', DESIGN_ARCHIVE_PATH]) {
+    try {
+      const response = await fetch(`http://${host}:${DESIGN_ARCHIVE_PORT}${probePath}`, { cache: 'no-store' });
+      if (probePath === '/__health') return response.ok;
+      return true;
+    } catch {
+      continue;
+    }
   }
+  return false;
 }
 
 async function ensureArchiveServer(host: string): Promise<string> {
@@ -1020,7 +1067,7 @@ async function ensureArchiveServer(host: string): Promise<string> {
   }
 }
 
-async function updateDesignArchive(args: ParsedArgs, servePath: string, url: string, normalizedTarget: string, tailscaleSelf: TailscaleSelf, tailscaleBin: string): Promise<{ path: string; url: string; directUrl: string; target: string; entries: number }> {
+async function updateDesignArchive(args: ParsedArgs, servePath: string, url: string, archiveTarget: string, sourceTarget: string, artifactPath: string | null, tailscaleSelf: TailscaleSelf, tailscaleBin: string): Promise<{ path: string; url: string; directUrl: string; target: string; entries: number }> {
   try {
     const now = new Date().toISOString();
     const payload = readArchivePayload();
@@ -1032,7 +1079,9 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
       url,
       directUrl: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`,
       path: servePath,
-      target: normalizedTarget,
+      target: archiveTarget,
+      sourceTarget,
+      artifactPath,
       template: archiveTemplateFromArgs(args),
       category: archiveCategoryFromArgs(args, servePath),
       publishedAt: existing?.publishedAt ?? now,
@@ -1042,14 +1091,14 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     payload.updatedAt = now;
     writeArchivePayload(payload);
     writeArchiveIndex(payload);
-    const archiveTarget = await ensureArchiveServer(tailscaleSelf.ip);
+    const wikiTarget = await ensureArchiveServer(tailscaleSelf.ip);
     const archiveUrl = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
     const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
-    const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget], REPO_ROOT);
+    const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, wikiTarget], REPO_ROOT);
     if (archiveResult.exitCode !== 0) {
       throw new Error(`tailscale serve failed for design wiki: ${archiveResult.stderr || archiveResult.stdout || `exit ${archiveResult.exitCode}`}`);
     }
-    return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: archiveTarget, entries: payload.entries.length };
+    return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`failed to update design wiki archive: ${message}`);
@@ -1066,8 +1115,9 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const servePath = normalizeServePath(args);
     const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
     const normalizedTarget = normalizeTarget(resolvedTarget);
-    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, normalizedTarget];
     const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
+    const archiveTarget = args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}` : await ensureArchiveServer(tailscaleSelf.ip);
+    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, archiveTarget];
     const hostname = tailscaleSelf.hostname;
     const url = `https://${hostname}${servePath}`;
     const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
@@ -1085,28 +1135,30 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
       path: servePath,
       url,
       directUrl,
-      target: normalizedTarget,
+      target: archiveTarget,
       portlessName: args.portlessName ?? null,
       template: archiveTemplateFromArgs(args),
       archive: archivePlan,
+      sourceTarget: normalizedTarget,
       command,
     };
 
     if (args.dryRun) {
       if (args.json) printJson(plan);
-      else writeStdout(`design publish dry-run\nurl: ${url}\ntarget: ${normalizedTarget}\ncommand: ${command.join(' ')}\n`);
+      else writeStdout(`design publish dry-run\nurl: ${url}\ntarget: ${archiveTarget}\ncommand: ${command.join(' ')}\n`);
       return;
     }
+
+    const materialized = materializeArchiveTarget(normalizedTarget, servePath);
+    const archive = await updateDesignArchive(args, servePath, url, materialized.target, materialized.sourceTarget, materialized.artifactPath, tailscaleSelf, tailscaleBin);
 
     const result = await runCommand(command, REPO_ROOT);
     if (result.exitCode !== 0) {
       throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
     }
 
-    const archive = await updateDesignArchive(args, servePath, url, normalizedTarget, tailscaleSelf, tailscaleBin);
-
     if (args.json) printJson({ ...plan, archive, stdout: result.stdout.trim(), stderr: result.stderr.trim() });
-    else if (!args.quiet) writeStdout(`design published\nurl: ${url}\ndirectUrl: ${directUrl}\ntarget: ${normalizedTarget}\nwiki: ${archive.url}\nwikiDirect: ${archive.directUrl}\n`);
+    else if (!args.quiet) writeStdout(`design published\nurl: ${url}\ndirectUrl: ${directUrl}\ntarget: ${archiveTarget}\nsourceTarget: ${normalizedTarget}\nwiki: ${archive.url}\nwikiDirect: ${archive.directUrl}\n`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`failed to publish design artifact: ${message}`);

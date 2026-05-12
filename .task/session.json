@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_be21e44faf54",
-  "tmuxSession": "opensaas-workspace-agents-add-digital-eguide-template-flag-and-docs-be21e44f",
+  "taskSession": "tsk_063256806e50",
+  "tmuxSession": "opensaas-workspace-agents-tune-digital-eguide-reader-shell-motion-06325680",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
-  "branch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs",
-  "prNumber": 374,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/374",
-  "createdAt": "2026-05-12T03:44:34.935Z",
+  "taskBranch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
+  "branch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-tune-digital-eguide-reader-shell-motion",
+  "prNumber": 376,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/376",
+  "createdAt": "2026-05-12T06:54:47.587Z",
   "tmuxCreated": true
 }
