@@ -1,78 +1,90 @@
-# investigate task session stale metadata reads
+# add design publish tailscale serve links
 
-branch: `task/workspace-agents/investigate-task-session-stale-metadata-reads`
+branch: `task/workspace-agents/add-design-publish-tailscale-serve-links`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/371
+task pr: https://github.com/consuelohq/opensaas/pull/373
 started: 2026-05-11
 
 ## acceptance criteria
 
-- [x] Reproduce the stale task metadata behavior with taskSession-scoped calls.
-- [x] Identify whether the bug is in steering, the facade resolver, verify, task.push, or shared metadata fallback.
-- [x] Patch the root cause so verify honors taskSession-resolved worktrees.
-- [x] Update steering/docs with the durable taskSession rule.
-- [x] Validate syntax, direct task-worktree verify behavior, review, and publish.
+- [x] Add a generic `design.publish` workspace tool for publishing design artifacts through private Tailscale Serve.
+- [x] Use one persistent Tailscale host with unique per-artifact paths.
+- [x] Support publishing any local target URL/file/directory, not just daily lessons.
+- [x] Support a named local Open Design target through `portless`, with `design.localhost` as the recommended name.
+- [x] Return a stable tailnet URL and local target details.
+- [x] Keep Funnel/public exposure out of scope; default is private tailnet Serve only.
+- [x] Add CLI command, typed facade schema/manifest, generated docs/types, and script docs.
+- [x] Validate dry-run, Tailscale status/serve command shape, focused tests/audit/review, and publish.
 
-## plan
+## implementation plan
 
-1. Use stream context and start a task branch from `stream/workspace-agents`.
-2. Search context and explore workspace tooling around taskSession, verify stamps, task.push, and metadata.
-3. Reproduce the stale behavior with a taskSession-scoped verify call.
-4. Patch the owner script and docs.
-5. Validate through direct worktree execution and publish.
+1. Read repo standards, consuelo-design facade, manifest/schema/docs patterns, and local Tailscale/portless CLI help.
+2. Add `publish` command to `packages/workspace/scripts/consuelo-design.ts`.
+3. Expose it as `design.publish` in the typed workspace tool manifest with its own schema.
+4. Document usage in `packages/workspace/SCRIPTS.md` and regenerate docs/types.
+5. Validate with dry-run and non-destructive Tailscale/portless command shape smoke checks.
+6. Review and publish.
 
 ## files changed
 
-- `packages/workspace/scripts/verify.js`
-- `packages/workspace/STEERING.md`
 - `packages/workspace/SCRIPTS.md`
+- `packages/workspace/TOOLS.md`
+- `packages/workspace/scripts/consuelo-design.ts`
+- `packages/workspace/scripts/lib/facade/schemas.ts`
+- `packages/workspace/src/generated/workspace.d.ts`
+- `packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap`
+- `packages/workspace/tooling/tool-manifest.json`
+
 
 ## key decisions
 
-- The facade taskSession resolver is working: it resolves the task branch/worktree and injects `TASK_BRANCH` and `TASK_WORKTREE`.
-- `task.push` is mostly safe when a branch/taskSession is present because it selects the active task worktree before checking `.task/verify.json`.
-- `verify.js` was the concrete stale-state bug: it resolved `repoRoot` from `process.cwd()` and ignored `TASK_WORKTREE`, so `workspace.call({ tool: "verify", taskSession })` ran against the controller repo root and could read/write root `.task/verify.json`.
-- The controller repo root currently has stale/conflicted `.task` metadata from older task/autostash state, which explains the observed wrong verify record.
-- The correct fix is logic plus doctrine: scripts that write task-scoped state must honor `TASK_WORKTREE`, and steering should make taskSession-first final validation explicit.
+- Use Tailscale Serve, not Funnel. Links are private to devices connected to Ko's tailnet.
+- Keep a persistent host from `tailscale status --json`, then create unique paths such as `/daily-deep-idea/<slug>` or `/research-packet/<slug>/packet`.
+- `design.publish` is generic and accepts a direct `target` URL/file/directory or a `portlessName`.
+- `design.localhost` is the recommended local Open Design service name. When `portlessName` ends with `.localhost`, the tool treats it as exact and targets `https://design.localhost:1355` instead of asking `portless get`, because `portless get design.localhost` can add worktree-specific prefixes.
+- For non-`.localhost` portless names, `design.publish` resolves the target with `portless get <name>`.
+- For Open Design projects, the target can be the local `projectUrl` returned by `consueloDesign.generateDigitalEguide`, or the agent can publish the stable `design.localhost` service at a unique artifact path.
+- No actual `tailscale serve` mutation was run during validation; dry-run plus local CLI/status inspection proved command construction without changing Ko's existing Serve config.
 
 ## notes for Ko
 
-- The stale-data issue is broader than one verify stamp pattern. Any workspace script that writes or reads task-scoped state while ignoring `TASK_WORKTREE` can leak root or other-task `.task/*` state.
-- The current patch fixes `verify.js`, which was the reproduced failure path.
-- `workspace.call({ tool: "verify" })` will still show the old controller-root behavior until this task is merged and the workspace server reloads, because the facade runs the controller repo’s current script version. The patched behavior was proven by running the patched script directly inside the task worktree.
+- Local Tailscale DNS name currently reports `picassos-mac-mini.tail38ed59.ts.net.` from `tailscale status --json`; the tool derives this dynamically and strips the trailing dot.
+- `tailscale serve --help` supports `--bg` and `--set-path`, which is the needed persistent-host / unique-path mechanism.
+- `portless` is installed at `/opt/homebrew/bin/portless`; the tool does not add it as a project dependency.
+- If `https://design.localhost:1355` does not resolve locally, Open Design still needs to be run or aliased through portless under `design.localhost`.
 
 ## improvements noticed
 
-- `verify.js` should maybe gain its own focused test fixture for `TASK_WORKTREE` in a follow-up. Current validation is a direct runtime smoke.
-- Root `.task/verify.json` is currently conflicted/stale in the controller repo; a separate cleanup may be needed after active tasks are safe.
+- `decideNext` evidence state appears polluted by previous task validation events; ignored for this targeted implementation after direct file reads.
+- The generated facade snapshot suite still reports obsolete snapshots even when tests pass; this is existing suite noise.
 
 ## errors or blockers
 
-- `explore` worked, but `decideNext` evidence state appears polluted by previous verification events and kept recommending failure inspection with low confidence.
-- An attempted inline multiline `fs.patch` was rejected correctly; used `--content-file` instead.
-- `fs.list` with pattern `*status*` failed because the underlying `fd` call treated it as a regex. This did not block the investigation.
+- No existing Tailscale publish tooling was found, only sandbox guardrails around not killing/disabling `tailscaled`.
+- A long patch command was interrupted by chat input; inspected the partial state and completed the patch safely.
+- `portless get design.localhost` was not used as the final default because it can infer worktree-specific names; exact `.localhost` names are now treated as literal local service hosts.
 
 ## validation
 
-- `status` reproduced root stale metadata: root `.task/current.json` points to `task/workspace-agents/fix-task-cleanup-tmux-review-comments`; root `.task/verify.json` has conflict markers from old task/main.
-- `workspace.call({ tool: "verify", taskSession, input: { noReview: true, noDb: true, noStamp: true } })` reproduced the bug: facade stderr showed the correct task branch/worktree, but verify output returned `branch: "main"`.
-- Read `executor.ts`, `branch-resolver.ts`, `task-push.js`, `verify.js`, `verification.js`, `task-meta.js`, `task-session.js`, `audit.js`, `review.js`, `STEERING.md`, and `SCRIPTS.md`.
-- Patched `verify.js` to resolve from `process.env.TASK_WORKTREE` when present and to call `findTaskMeta(repoRoot, { currentBranch: branch })`.
-- `checkFiles` for `packages/workspace/scripts/verify.js`: passed.
-- `node packages/workspace/scripts/verify.js --base origin/stream/workspace-agents --no-review --no-db --no-stamp --json`: passed and returned the correct task branch plus all three touched non-metadata files.
-- `review.run` with base `origin/stream/workspace-agents` and `noTests: true`: passed with no findings.
-- `audit { scripts: true }`: passed, 48 documented / 48 actual.
+- Read `AGENTS.md` and full `CODING-STANDARDS.md`.
+- Read `packages/workspace/scripts/consuelo-design.ts`, `packages/workspace/tooling/tool-manifest.json`, `packages/workspace/scripts/lib/facade/schemas.ts`, and `packages/workspace/SCRIPTS.md`.
+- Inspected `tailscale serve --help`; confirmed `--bg` and `--set-path` support.
+- Inspected `tailscale status --json`; confirmed tailnet hostname is available under `Self.DNSName`.
+- Inspected `tailscale serve status --json`; existing Serve config was read only.
+- Inspected `portless --help`; confirmed named `.localhost` URLs and `portless get` support.
+- `bun --check packages/workspace/scripts/consuelo-design.ts`: passed.
+- `bun --check packages/workspace/scripts/lib/facade/schemas.ts`: passed.
+- `bun packages/workspace/scripts/consuelo-design.ts publish --portless-name design.localhost --path /daily-deep-idea/2026-05-12-prospect-theory --dry-run --json`: passed and returned `https://<tailscale-host>/daily-deep-idea/2026-05-12-prospect-theory` targeting `https://design.localhost:1355`.
+- `bun packages/workspace/scripts/consuelo-design.ts publish --target /tmp/research/packet.md --path /research-packet/2026-05-12-prospect-theory/packet --dry-run --json`: passed.
+- `bun run generate-docs`: passed.
+- `bun run generate-types`: passed.
+- `bun packages/workspace/scripts/tool-runner.ts design.publish '{"portlessName":"design.localhost","path":"/daily-deep-idea/example","dryRun":true}'`: passed; output URL is `https://<tailscale-host>/daily-deep-idea/example`.
+- `workspace checkFiles` for `consuelo-design.ts` and `schemas.ts`: passed.
+- `workspace audit { scripts: true }`: passed, 48 documented / 48 actual.
+- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 444 tests. Vitest still reports 242 obsolete snapshots.
 - `git diff --check`: passed.
-- Wrote a task-worktree verify stamp with `node packages/workspace/scripts/verify.js --base origin/stream/workspace-agents --no-review --no-db --json`; stamp path is inside the task worktree.
+- First `review.run` found async error-handling findings in new publish helpers; patched local try/catch wrappers and reran review successfully.
+- `review.run --base origin/main --noTests`: passed with no findings after patch.
+- `workspace verify` timed out through the connector, but direct task-worktree `node packages/workspace/scripts/verify.js --base origin/main --no-db --json` passed and wrote a task-local stamp for this branch.
 
-## publish checklist
-
-```bash
-bun run task:push -- --message "fix(workspace): scope verify to task worktree" --changed
-bun run task:pr
-bun run task:finish
-```
-
-- 2026-05-11 23:33:33 write: `.task/workpad.md`
-- 2026-05-11 23:34:20 patch lines 14-14: `.task/workpad.md`
-- 2026-05-11 23:34:36 patch lines 62-62: `.task/workpad.md`
+- 2026-05-12 00:05:05 write: `.task/workpad.md`
