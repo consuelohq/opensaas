@@ -4424,7 +4424,7 @@
       "consueloDesign",
       "generateDigitalEguide"
     ],
-    "description": "start or open a live Open Design digital e-guide working session",
+    "description": "start or open a live Open Design digital e-guide working session, optionally using a named Consuelo e-guide template",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-digital-eguide",
     "capabilities": {
@@ -4434,7 +4434,7 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "ConsueloDesignDigitalEguideInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "consuelo-design",
@@ -4451,6 +4451,11 @@
         {
           "source": "prompt",
           "flag": "--prompt",
+          "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
           "kind": "value"
         }
       ]

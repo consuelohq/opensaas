@@ -60,11 +60,19 @@ The facade names the live Open Design sessions we care about:
 | `generate motion-frame` | `motion-frames` | Starts/reuses Open Design, attaches motion context, and opens a motion-frame project. |
 | `render hyperframes` | `hyperframes` | Starts/reuses Open Design, attaches motion context, and opens a HyperFrames render project. |
 
-Use `--name` to set the Open Design project name and `--prompt` to attach Ko's brief to the pending prompt.
+Use `--name` to set the Open Design project name, `--prompt` to attach Ko's brief to the pending prompt, and `--template <research|spec|plan>` with `generate digital-eguide` when the e-guide type is known.
 
 ```bash
-bun run consuelo-design generate website --name "Homepage hero" --prompt "Create a sharp hero for Consuelo voice AI"
+bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create a rich HTML spec for ..."
 ```
+
+Digital e-guide templates live in `packages/consuelo-design/templates/digital-eguides/`:
+
+- `research` for research lessons, source-grounded explainers, paper walkthroughs, and daily deep ideas.
+- `spec` for product specs, engineering specs, RFCs, design docs, and architecture proposals. Decisions are baked into the spec.
+- `plan` for execution plans, implementation plans, rollout plans, and operating plans. Decisions are an ongoing section inside the plan.
+
+The command starts the Open Design workflow. The template shapes the artifact.
 
 ## first run / UI
 

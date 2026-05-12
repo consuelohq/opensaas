@@ -15,6 +15,7 @@ const branchField = {
 
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
+const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
 
 export const EmptyInput = z.object({
   ...requestFields,
@@ -58,6 +59,15 @@ export const ConsueloDesignSessionInput = z.object({
   ...dryRunField,
   name: optionalString,
   prompt: optionalString,
+  timeout: z.number().int().positive().optional(),
+});
+
+export const ConsueloDesignDigitalEguideInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  name: optionalString,
+  prompt: optionalString,
+  template: digitalEguideTemplate,
   timeout: z.number().int().positive().optional(),
 });
 
@@ -642,6 +652,7 @@ export const schemaRegistry = {
   ConsueloDesignInput,
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
+  ConsueloDesignDigitalEguideInput,
   FsReadInput,
   FsSearchInput,
   FsListInput,
@@ -726,6 +737,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',

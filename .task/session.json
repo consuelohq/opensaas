@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_3fa4de0080e9",
-  "tmuxSession": "opensaas-workspace-agents-add-design-publish-tailscale-serve-links-3fa4de00",
+  "taskSession": "tsk_be21e44faf54",
+  "tmuxSession": "opensaas-workspace-agents-add-digital-eguide-template-flag-and-docs-be21e44f",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
-  "branch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-design-publish-tailscale-serve-links",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-design-publish-tailscale-serve-links",
-  "prNumber": 373,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/373",
-  "createdAt": "2026-05-11T23:53:51.169Z",
+  "taskBranch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
+  "branch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-digital-eguide-template-flag-and-docs",
+  "prNumber": 374,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/374",
+  "createdAt": "2026-05-12T03:44:34.935Z",
   "tmuxCreated": true
 }

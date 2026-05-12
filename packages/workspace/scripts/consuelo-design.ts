@@ -39,6 +39,10 @@ const DEPLOYED_PACKAGE_MANIFESTS = [
   'packages/sdk/package.json',
 ] as const;
 
+const DIGITAL_EGUIDE_TEMPLATE_IDS = ['research', 'spec', 'plan'] as const;
+type DigitalEguideTemplateId = typeof DIGITAL_EGUIDE_TEMPLATE_IDS[number];
+const DIGITAL_EGUIDE_TEMPLATE_DIR = 'packages/consuelo-design/templates/digital-eguides';
+
 type ParsedArgs = {
   command: string;
   subcommand: string | null;
@@ -47,6 +51,7 @@ type ParsedArgs = {
   dryRun: boolean;
   name?: string;
   prompt?: string;
+  template?: string;
   target?: string;
   portlessName?: string;
   path?: string;
@@ -190,6 +195,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let dryRun = false;
   let name: string | undefined;
   let prompt: string | undefined;
+  let template: string | undefined;
   let target: string | undefined;
   let portlessName: string | undefined;
   let publishPath: string | undefined;
@@ -209,6 +215,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       index += 1;
     } else if (arg === '--prompt') {
       prompt = argv[index + 1];
+      index += 1;
+    } else if (arg === '--template') {
+      template = argv[index + 1];
       index += 1;
     } else if (arg === '--target') {
       target = argv[index + 1];
@@ -240,6 +249,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     dryRun,
     name,
     prompt,
+    template,
     target,
     portlessName,
     path: publishPath,
@@ -575,9 +585,35 @@ function timestampLabel(): string {
   return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 }
 
+
+function isDigitalEguideTemplateId(value: string): value is DigitalEguideTemplateId {
+  return (DIGITAL_EGUIDE_TEMPLATE_IDS as readonly string[]).includes(value);
+}
+
+function getDigitalEguideTemplateBlock(workflow: WorkflowConfig, args: ParsedArgs): string {
+  if (!args.template) return '';
+
+  if (workflow.id !== 'digital-eguide') {
+    throw new Error('--template is only supported for generate digital-eguide');
+  }
+
+  if (!isDigitalEguideTemplateId(args.template)) {
+    throw new Error(`unknown digital e-guide template: ${args.template}. Use one of: ${DIGITAL_EGUIDE_TEMPLATE_IDS.join(', ')}`);
+  }
+
+  const templatePath = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/${args.template}.md`;
+  const templateContent = readText(templatePath).trim();
+  return [
+    `## Open Design template: ${args.template}`,
+    'Use this Consuelo-owned Open Design template as the artifact structure. Keep Ko\'s brief and source material as content truth; use the template for layout, hierarchy, and required sections.',
+    templateContent,
+  ].join('\n\n');
+}
+
 function buildWorkflowPrompt(workflow: WorkflowConfig, args: ParsedArgs): string {
   const files = getWorkflowContextFiles(workflow);
   const suppliedPrompt = args.prompt ? `\n\n## Ko's brief\n\n${args.prompt.trim()}\n` : '';
+  const templateBlock = getDigitalEguideTemplateBlock(workflow, args);
   const fileBlocks = files.map((file) => [
     `## ${file.role}: ${file.path}`,
     file.content.trim(),
@@ -585,6 +621,7 @@ function buildWorkflowPrompt(workflow: WorkflowConfig, args: ParsedArgs): string
   return [
     workflow.promptLead,
     suppliedPrompt,
+    templateBlock,
     'Do not treat upstream Open Design design systems as Consuelo truth unless Ko explicitly asks for a reference skin. Use the attached Consuelo files as the source of truth.',
     'Start with a useful artifact in the Open Design preview, then iterate with Ko in the live workspace.',
     'Consuelo context follows.',
@@ -623,6 +660,7 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
       workflow: workflow.id,
       primarySkill: workflow.skillId,
       fallbackSkillIds: workflow.fallbackSkillIds,
+      template: args.template ?? null,
       designSystem: 'consuelo',
     },
   };
@@ -636,7 +674,7 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
     throw new Error(`failed to create Open Design project: ${response.status} ${text}`);
   }
   const projectUrl = `${runtime.webUrl.replace(/\/$/, '')}/projects/${encodeURIComponent(id)}`;
-  return { id, name, projectUrl, pendingPrompt, workflow: workflow.id, skillId: workflow.skillId };
+  return { id, name, projectUrl, pendingPrompt, workflow: workflow.id, skillId: workflow.skillId, template: args.template ?? null };
 }
 
 function workflowFromArgs(args: ParsedArgs): WorkflowConfig {
@@ -776,6 +814,7 @@ async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs):
             workflow: workflow.id,
             primarySkill: workflow.skillId,
             fallbackSkillIds: workflow.fallbackSkillIds,
+            template: args.template ?? null,
             designSystem: 'consuelo',
           },
           pendingPrompt: prompt,
@@ -853,6 +892,7 @@ Flags:
   --dry-run                   Print the plan instead of starting runtimes or creating projects
   --name <name>               Override generated Open Design project name
   --prompt <brief>            Attach Ko's brief to the generated Open Design pending prompt
+  --template <research|spec|plan>  Select a digital e-guide template for generate digital-eguide
   --target <url|path>          Target URL/file/directory for publish
   --portless-name <name>        Resolve target with portless get <name>
   --path <path>                Unique Tailscale Serve path for publish

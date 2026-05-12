@@ -1,19 +1,24 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
+  "branch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
   "base": "origin/stream/workspace-agents",
-  "headSha": "f306334de23503739ad7cf1568e9dcc03e267ab8",
-  "changeHash": "87f1c58b6fbd47589a6cb27268b9d07d752def94be9129bb855df2a5bb56b659",
+  "headSha": "92a7e411ab19890eb6e297887e4b72d7b0f582aa",
+  "changeHash": "4a5bb641e75d694a81ebf34f97f6d59ee8695b8c20c9d0d73424f6da5fa13e9b",
   "changedFiles": [
+    "areas/consuelo-design/AGENTS.md",
+    "packages/consuelo-design/README.md",
+    "packages/consuelo-design/templates/digital-eguides/README.md",
+    "packages/consuelo-design/templates/digital-eguides/plan.md",
+    "packages/consuelo-design/templates/digital-eguides/research.md",
+    "packages/consuelo-design/templates/digital-eguides/spec.md",
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/TOOLS.md",
     "packages/workspace/scripts/consuelo-design.ts",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-12T00:18:43.694Z",
+  "verifiedAt": "2026-05-12T03:58:22.785Z",
   "review": {
     "skipped": false,
     "passed": true

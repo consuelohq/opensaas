@@ -1312,3 +1312,27 @@ workspace linear.createIssue '{"title":"[bug] Workspace facade lacks Linear wrap
 workspace linear.updateIssue '{"issueId":"DEV-123","parent":"<parent-issue-id>"}'
 workspace linear.projects '{"first":50}'
 ```
+
+---
+
+## consuelo design e-guide templates
+
+Use `consueloDesign.generateDigitalEguide` or `bun run consuelo-design generate digital-eguide` for HTML e-guide artifacts. The workflow stays one command; `--template` is an optional routing hint for the artifact structure.
+
+```bash
+bun run consuelo-design generate digital-eguide --template research --name "Daily Deep Idea" --prompt "Create the lesson guide..."
+bun run consuelo-design generate digital-eguide --template spec --name "Workspace agent spec" --prompt "Create the spec..."
+bun run consuelo-design generate digital-eguide --template plan --name "Execution plan" --prompt "Create the plan..."
+```
+
+Typed facade equivalent:
+
+```ts
+await workspace.call({
+  tool: "consueloDesign.generateDigitalEguide",
+  input: { name: "Workspace agent spec", template: "spec", prompt: "Create the spec..." },
+  timeout: 600,
+})
+```
+
+Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.

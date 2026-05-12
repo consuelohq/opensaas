@@ -23,6 +23,7 @@
     "packages/consuelo-design/scripts/consuelo-design.mjs",
     "packages/consuelo-design/src/index.ts",
     "packages/consuelo-design/upstream/open-design/package.json",
+    "packages/consuelo-design/upstream/open-design/skills/digital-eguide/SKILL.md",
     "packages/consuelo-docs/project.json",
     "packages/consuelo-website/AGENTS.md",
     "packages/consuelo-website/DESIGN.md",
@@ -154,5 +155,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-12T00:18:16.495Z"
+  "updatedAt": "2026-05-12T03:54:22.490Z"
 }
