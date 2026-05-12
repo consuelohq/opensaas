@@ -119,6 +119,20 @@ Use this mapping unless Ko changes it:
 | `generate motion-frame` | `motion-frames` | Include motion/website context. |
 | `render hyperframes` | `hyperframes` | Include motion/website context and prepare for HTML-to-MP4 work. |
 
+### digital e-guide templates
+
+`generate digital-eguide` supports an optional `--template <research|spec|plan>` hint. The command still uses the `digital-eguide` Open Design skill; the template shapes the artifact inside the existing workflow.
+
+Template meanings:
+
+- `research`: research lessons, source-grounded explainers, paper walkthroughs, daily deep ideas.
+- `spec`: product specs, engineering specs, RFCs, design docs, architecture proposals. Decisions are baked into the spec.
+- `plan`: execution plans, implementation plans, rollout plans, operating plans. Decisions are an ongoing section inside the plan.
+
+Templates live in `packages/consuelo-design/templates/digital-eguides/`. Do not add new facade commands for these variants. Pass a template hint when the artifact type is known; otherwise let the operator choose from the brief.
+
+A prepared prompt in the Open Design UI is the operator handoff. Continue from that prompt, use the selected template, build or hydrate the editable artifact, verify the Design Files pane, preview, and publish only after the final URL renders the artifact.
+
 ## Railway boundary
 
 No Railway-deployed package should depend on `consuelo-design`.
@@ -149,3 +163,10 @@ bun run --cwd packages/workspace generate-types
 ```
 
 Also run branch-local review before publishing.
+
+
+## Design wiki archive
+
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+
+The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.

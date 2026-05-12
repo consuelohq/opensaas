@@ -1,90 +1,87 @@
-# add design publish tailscale serve links
+# add digital eguide template flag and docs
 
-branch: `task/workspace-agents/add-design-publish-tailscale-serve-links`
+branch: `task/workspace-agents/add-digital-eguide-template-flag-and-docs`
 stream: `stream/workspace-agents`
-task pr: https://github.com/consuelohq/opensaas/pull/373
+pr: https://github.com/consuelohq/opensaas/pull/374
 started: 2026-05-11
 
 ## acceptance criteria
 
-- [x] Add a generic `design.publish` workspace tool for publishing design artifacts through private Tailscale Serve.
-- [x] Use one persistent Tailscale host with unique per-artifact paths.
-- [x] Support publishing any local target URL/file/directory, not just daily lessons.
-- [x] Support a named local Open Design target through `portless`, with `design.localhost` as the recommended name.
-- [x] Return a stable tailnet URL and local target details.
-- [x] Keep Funnel/public exposure out of scope; default is private tailnet Serve only.
-- [x] Add CLI command, typed facade schema/manifest, generated docs/types, and script docs.
-- [x] Validate dry-run, Tailscale status/serve command shape, focused tests/audit/review, and publish.
+- [x] Add an optional `template` hint to the existing `consueloDesign.generateDigitalEguide` workflow.
+- [x] Keep template content out of the tool manifest; manifest only carries the template name.
+- [x] Support exactly `research`, `spec`, and `plan` template names.
+- [x] Store Consuelo-owned Open Design e-guide templates outside the manifest and inject only the selected template into the generated prompt.
+- [x] Update design/operator docs so prepared prompts are treated as the intended operator handoff.
+- [x] Update workspace facade schema/manifest, generated docs/types, and script docs.
+- [x] Validate direct CLI dry-runs, typed facade dry-runs, generation, check files, audit, review, and verify where feasible.
 
-## implementation plan
+## research basis
 
-1. Read repo standards, consuelo-design facade, manifest/schema/docs patterns, and local Tailscale/portless CLI help.
-2. Add `publish` command to `packages/workspace/scripts/consuelo-design.ts`.
-3. Expose it as `design.publish` in the typed workspace tool manifest with its own schema.
-4. Document usage in `packages/workspace/SCRIPTS.md` and regenerate docs/types.
-5. Validate with dry-run and non-destructive Tailscale/portless command shape smoke checks.
-6. Review and publish.
+- Research/report templates should preserve source metadata, audience, key findings, limitations, implications, and forward-looking questions.
+- Spec templates should include problem/context, goals/non-goals, requirements, design, decisions, alternatives, risks, testing, rollout, and open questions.
+- Plan templates should include objective, roles, scope, milestones, dependencies, risks, validation, decision log, and status/update sections.
 
-## files changed
+## implementation notes
 
-- `packages/workspace/SCRIPTS.md`
-- `packages/workspace/TOOLS.md`
-- `packages/workspace/scripts/consuelo-design.ts`
-- `packages/workspace/scripts/lib/facade/schemas.ts`
-- `packages/workspace/src/generated/workspace.d.ts`
-- `packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap`
-- `packages/workspace/tooling/tool-manifest.json`
+- Use the existing digital e-guide workflow; do not add new facade commands.
+- The `template` flag is a routing hint to Open Design/operator work, not a separate workflow family.
+- `decision` is not a standalone template. Decisions are embedded in `spec` and `plan`.
 
-
-## key decisions
-
-- Use Tailscale Serve, not Funnel. Links are private to devices connected to Ko's tailnet.
-- Keep a persistent host from `tailscale status --json`, then create unique paths such as `/daily-deep-idea/<slug>` or `/research-packet/<slug>/packet`.
-- `design.publish` is generic and accepts a direct `target` URL/file/directory or a `portlessName`.
-- `design.localhost` is the recommended local Open Design service name. When `portlessName` ends with `.localhost`, the tool treats it as exact and targets `https://design.localhost:1355` instead of asking `portless get`, because `portless get design.localhost` can add worktree-specific prefixes.
-- For non-`.localhost` portless names, `design.publish` resolves the target with `portless get <name>`.
-- For Open Design projects, the target can be the local `projectUrl` returned by `consueloDesign.generateDigitalEguide`, or the agent can publish the stable `design.localhost` service at a unique artifact path.
-- No actual `tailscale serve` mutation was run during validation; dry-run plus local CLI/status inspection proved command construction without changing Ko's existing Serve config.
-
-## notes for Ko
-
-- Local Tailscale DNS name currently reports `picassos-mac-mini.tail38ed59.ts.net.` from `tailscale status --json`; the tool derives this dynamically and strips the trailing dot.
-- `tailscale serve --help` supports `--bg` and `--set-path`, which is the needed persistent-host / unique-path mechanism.
-- `portless` is installed at `/opt/homebrew/bin/portless`; the tool does not add it as a project dependency.
-- If `https://design.localhost:1355` does not resolve locally, Open Design still needs to be run or aliased through portless under `design.localhost`.
-
-## improvements noticed
-
-- `decideNext` evidence state appears polluted by previous task validation events; ignored for this targeted implementation after direct file reads.
-- The generated facade snapshot suite still reports obsolete snapshots even when tests pass; this is existing suite noise.
-
-## errors or blockers
-
-- No existing Tailscale publish tooling was found, only sandbox guardrails around not killing/disabling `tailscaled`.
-- A long patch command was interrupted by chat input; inspected the partial state and completed the patch safely.
-- `portless get design.localhost` was not used as the final default because it can infer worktree-specific names; exact `.localhost` names are now treated as literal local service hosts.
-
+- 2026-05-12 03:47:52 patch lines 730-730: `packages/workspace/scripts/lib/facade/schemas.ts`
+- 2026-05-12 03:48:20 patch lines 120-120: `areas/consuelo-design/AGENTS.md`
+- 2026-05-12 03:48:35 patch lines 120-135: `areas/consuelo-design/AGENTS.md`
+- 2026-05-12 03:48:50 patch lines 136-137: `areas/consuelo-design/AGENTS.md`
 ## validation
 
 - Read `AGENTS.md` and full `CODING-STANDARDS.md`.
-- Read `packages/workspace/scripts/consuelo-design.ts`, `packages/workspace/tooling/tool-manifest.json`, `packages/workspace/scripts/lib/facade/schemas.ts`, and `packages/workspace/SCRIPTS.md`.
-- Inspected `tailscale serve --help`; confirmed `--bg` and `--set-path` support.
-- Inspected `tailscale status --json`; confirmed tailnet hostname is available under `Self.DNSName`.
-- Inspected `tailscale serve status --json`; existing Serve config was read only.
-- Inspected `portless --help`; confirmed named `.localhost` URLs and `portless get` support.
+- Read `areas/consuelo-design/AGENTS.md`, `packages/consuelo-design/README.md`, existing Open Design `digital-eguide` skill, facade schema, manifest, generated docs/types, and `consuelo-design.ts`.
+- Web-researched HTML artifact patterns using Thariq's "The unreasonable effectiveness of HTML" examples, especially implementation plan and research explainer pages.
+- Web-researched spec/design-doc structure, project plan structure, and research report structure from current public references.
+- Added `research`, `spec`, and `plan` template files under `packages/consuelo-design/templates/digital-eguides/`.
+- Added `--template <research|spec|plan>` support for `generate digital-eguide` only.
+- Added `ConsueloDesignDigitalEguideInput` so the template field appears only on `consueloDesign.generateDigitalEguide`.
 - `bun --check packages/workspace/scripts/consuelo-design.ts`: passed.
 - `bun --check packages/workspace/scripts/lib/facade/schemas.ts`: passed.
-- `bun packages/workspace/scripts/consuelo-design.ts publish --portless-name design.localhost --path /daily-deep-idea/2026-05-12-prospect-theory --dry-run --json`: passed and returned `https://<tailscale-host>/daily-deep-idea/2026-05-12-prospect-theory` targeting `https://design.localhost:1355`.
-- `bun packages/workspace/scripts/consuelo-design.ts publish --target /tmp/research/packet.md --path /research-packet/2026-05-12-prospect-theory/packet --dry-run --json`: passed.
+- Direct CLI dry-run with `--template research`: passed; pending prompt includes selected template and HTML interaction pattern.
+- Typed facade dry-run with `template: "spec"`: passed; project metadata includes template and pending prompt includes spec template.
+- Invalid `template: "decision"`: rejected by schema with allowed values `research`, `spec`, `plan`.
 - `bun run generate-docs`: passed.
 - `bun run generate-types`: passed.
-- `bun packages/workspace/scripts/tool-runner.ts design.publish '{"portlessName":"design.localhost","path":"/daily-deep-idea/example","dryRun":true}'`: passed; output URL is `https://<tailscale-host>/daily-deep-idea/example`.
-- `workspace checkFiles` for `consuelo-design.ts` and `schemas.ts`: passed.
-- `workspace audit { scripts: true }`: passed, 48 documented / 48 actual.
-- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 444 tests. Vitest still reports 242 obsolete snapshots.
+- `checkFiles` on TS files: passed. The first `checkFiles` attempt included Markdown files and failed because `node --check` cannot parse `.md`; reran with TS files only.
+- `consuelo-design check --json`: passed.
+- `audit { scripts: true }`: passed, 48 documented / 48 actual.
+- `cd packages/workspace && bun run test tests/facade/facade.test.ts`: passed, 444 tests. Existing obsolete snapshot noise remains.
 - `git diff --check`: passed.
-- First `review.run` found async error-handling findings in new publish helpers; patched local try/catch wrappers and reran review successfully.
-- `review.run --base origin/main --noTests`: passed with no findings after patch.
-- `workspace verify` timed out through the connector, but direct task-worktree `node packages/workspace/scripts/verify.js --base origin/main --no-db --json` passed and wrote a task-local stamp for this branch.
+- `review.run --base origin/stream/workspace-agents --noTests`: passed.
+- `verify --base origin/stream/workspace-agents --noDb`: passed and wrote task-local stamp.
 
-- 2026-05-12 00:05:05 write: `.task/workpad.md`
+## follow-up additions from Ko
+
+- Added automatic design wiki archive updates from `design.publish`.
+- Archive data lives under Open Design runtime state: `packages/consuelo-design/upstream/open-design/.od/consuelo/archive/archive.json`.
+- Archive page is generated at `/design-wiki` with All/Research/Spec/Plan/Uncategorized filters, chronological order, and artifact names as links.
+- `design.publish` now returns/records both HTTPS Serve URLs and direct tailnet HTTP URLs; wiki cards prefer direct URLs for iPhone-safe reading.
+- Added shared `reader-shell` template: quiet header back to `/design-wiki`, always-GSAP tap-to-read navigation, and compact footer metadata.
+- Audio generation was intentionally not added in this pass; the shell/templates leave room for a later optional audio layer.
+
+## follow-up validation
+
+- Direct dry-run: `generate digital-eguide --template research` includes reader shell, GSAP requirement, tap nav, and metadata footer.
+- `design.publish` fake-Tailscale integration test writes archive JSON/index, returns direct URLs, and serves both wiki and artifact through the archive proxy.
+- `design.publish` typed dry-run includes typed template input and archive direct URL.
+- Re-ran `generate-docs`, `generate-types`, Bun checks, `git diff --check`, `checkFiles`, `audit`, and facade tests after follow-up changes.
+
+
+## ScrollSmoother follow-up
+
+- Added GSAP ScrollSmoother guidance to the shared `reader-shell` template so swipe/native scrolling gets smooth motion alongside tap-to-read navigation.
+- Reader content must now use `#smooth-wrapper > #smooth-content`, with fixed header/floating controls outside the wrapper.
+- The shell requires GSAP, ScrollTrigger, ScrollToPlugin, and ScrollSmoother browser scripts.
+- Tap navigation now uses pointer down/up with a movement/time threshold so swipes remain swipe gestures and taps trigger the 45vh reading jump.
+- Tap navigation calls `smoother.scrollTo(...)` when ScrollSmoother is active and keeps a ScrollToPlugin fallback.
+- External reference checked: GSAP ScrollSmoother docs confirm wrapper/content structure, ScrollTrigger registration, native-scroll smoothing, `smoothTouch`, and `scrollTo` behavior.
+- `explore` failed for this follow-up with `explore failed`; proceeded with direct task-scoped file reads because the target files and prior workpad context were explicit.
+
+## ScrollSmoother validation
+
+- Direct dry-run: `generate digital-eguide --template research` includes `ScrollSmoother`, `smoothTouch`, `#smooth-wrapper`, `#smooth-content`, `smoother.scrollTo`, `pointerdown`, and `ScrollTrigger` markers.

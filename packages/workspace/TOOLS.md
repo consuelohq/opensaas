@@ -286,9 +286,9 @@ example error envelope:
 
 ### consueloDesign.generateDigitalEguide
 
-start or open a live Open Design digital e-guide working session
+start or open a live Open Design digital e-guide working session, optionally using a named Consuelo e-guide template
 
-- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-digital-eguide`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -1224,9 +1224,9 @@ example error envelope:
 
 ### design.publish
 
-publish a design artifact through private Tailscale Serve with a unique path
+publish a design artifact through private Tailscale Serve and update the design wiki archive
 
-- signature: `workspace.design.publish(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.design.publish({ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design publish`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 120000ms
