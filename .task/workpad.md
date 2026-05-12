@@ -70,3 +70,18 @@ started: 2026-05-11
 - `design.publish` fake-Tailscale integration test writes archive JSON/index, returns direct URLs, and serves both wiki and artifact through the archive proxy.
 - `design.publish` typed dry-run includes typed template input and archive direct URL.
 - Re-ran `generate-docs`, `generate-types`, Bun checks, `git diff --check`, `checkFiles`, `audit`, and facade tests after follow-up changes.
+
+
+## ScrollSmoother follow-up
+
+- Added GSAP ScrollSmoother guidance to the shared `reader-shell` template so swipe/native scrolling gets smooth motion alongside tap-to-read navigation.
+- Reader content must now use `#smooth-wrapper > #smooth-content`, with fixed header/floating controls outside the wrapper.
+- The shell requires GSAP, ScrollTrigger, ScrollToPlugin, and ScrollSmoother browser scripts.
+- Tap navigation now uses pointer down/up with a movement/time threshold so swipes remain swipe gestures and taps trigger the 45vh reading jump.
+- Tap navigation calls `smoother.scrollTo(...)` when ScrollSmoother is active and keeps a ScrollToPlugin fallback.
+- External reference checked: GSAP ScrollSmoother docs confirm wrapper/content structure, ScrollTrigger registration, native-scroll smoothing, `smoothTouch`, and `scrollTo` behavior.
+- `explore` failed for this follow-up with `explore failed`; proceeded with direct task-scoped file reads because the target files and prior workpad context were explicit.
+
+## ScrollSmoother validation
+
+- Direct dry-run: `generate digital-eguide --template research` includes `ScrollSmoother`, `smoothTouch`, `#smooth-wrapper`, `#smooth-content`, `smoother.scrollTo`, `pointerdown`, and `ScrollTrigger` markers.
