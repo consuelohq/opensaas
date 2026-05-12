@@ -98,6 +98,7 @@ acceptance criteria
 Make the plan guide easy to move through.
 
 Use:
+- reader shell with GSAP ScrollSmoother
 - sticky or fixed table of contents
 - collapsible sections for deep detail
 - expandable command history
@@ -108,7 +109,6 @@ Use:
 - phase timeline
 - file table with status labels
 - acceptance criteria as pass/fail checklist cards
-- reader shell with GSAP ScrollSmoother
 - tap-to-read navigation
 - back-to-top affordance
 - compact metadata footer
@@ -156,7 +156,6 @@ Do not publish or hand off a plan guide with empty acceptance criteria.
 
 ##  potential vocab to use (dont limit yourself though)
 
-1. **Hero**: plan title, objective, current status, target date, owner, and confidence level.
 2. **Objective and success**: project objective, outcomes, metrics, and what “done” means.
 3. **Scope**: must-have, nice-to-have, and out-of-scope.
 4. **Roles**: driver, approver, contributors, stakeholders, and review cadence.
@@ -167,6 +166,25 @@ Do not publish or hand off a plan guide with empty acceptance criteria.
 9. **Validation plan**: how each phase is verified, including tests, browser checks, deploy checks, or user review.
 10. **Operating updates**: status, blockers, changes since last update, next checkpoint.
 11. **Reference shelf**: links, docs, files, tickets, and prior decisions.
+
+## visual direction
+
+Do not render this as an all-white Markdown document.
+
+Make it feel like a dark-mode operating console crossed with a polished editorial guide:
+
+- dark adaptive reader surface
+- sticky table of contents
+- collapsible sections for dense details
+- timeline cards for phases
+- decision cards
+- risk drawer / open-question drawer
+- validation checklist cards
+- file/status table
+- metadata footer
+- reader shell navigation
+
+Use theme variables from the reader shell. Match device theme when possible; otherwise prefer dark mode.
 
 
 
