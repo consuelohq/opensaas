@@ -109,3 +109,10 @@ Generated runtime state belongs in `.od/`, `out/`, or `artifacts/`; those are ig
 ## Railway
 
 `consuelo-design` is tooling-only. It should stay outside Railway app and worker dependency graphs. `bun run consuelo-design check` includes the Railway exclusion guard before review when changing dependencies or Dockerfiles.
+
+
+## Design wiki archive
+
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+
+`design.publish` now returns and records both HTTPS Serve URLs and direct tailnet HTTP URLs. The design wiki links prefer the direct tailnet HTTP URL so mobile reading does not depend on iOS accepting the HTTPS Serve path.

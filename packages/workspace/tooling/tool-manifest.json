@@ -4029,7 +4029,7 @@
       "design",
       "publish"
     ],
-    "description": "publish a design artifact through private Tailscale Serve with a unique path",
+    "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design publish",
     "capabilities": {
@@ -4071,6 +4071,11 @@
         {
           "source": "category",
           "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
           "kind": "value"
         },
         {

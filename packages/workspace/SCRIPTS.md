@@ -1336,3 +1336,8 @@ await workspace.call({
 ```
 
 Template names are `research`, `spec`, and `plan`. The selected template is injected into the pending Open Design prompt from `packages/consuelo-design/templates/digital-eguides/` and stored in project metadata. Do not add new facade commands for template variants.
+
+
+## Design wiki archive
+
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.

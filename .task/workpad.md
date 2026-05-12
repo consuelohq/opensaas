@@ -54,3 +54,19 @@ started: 2026-05-11
 - `git diff --check`: passed.
 - `review.run --base origin/stream/workspace-agents --noTests`: passed.
 - `verify --base origin/stream/workspace-agents --noDb`: passed and wrote task-local stamp.
+
+## follow-up additions from Ko
+
+- Added automatic design wiki archive updates from `design.publish`.
+- Archive data lives under Open Design runtime state: `packages/consuelo-design/upstream/open-design/.od/consuelo/archive/archive.json`.
+- Archive page is generated at `/design-wiki` with All/Research/Spec/Plan/Uncategorized filters, chronological order, and artifact names as links.
+- `design.publish` now returns/records both HTTPS Serve URLs and direct tailnet HTTP URLs; wiki cards prefer direct URLs for iPhone-safe reading.
+- Added shared `reader-shell` template: quiet header back to `/design-wiki`, always-GSAP tap-to-read navigation, and compact footer metadata.
+- Audio generation was intentionally not added in this pass; the shell/templates leave room for a later optional audio layer.
+
+## follow-up validation
+
+- Direct dry-run: `generate digital-eguide --template research` includes reader shell, GSAP requirement, tap nav, and metadata footer.
+- `design.publish` fake-Tailscale integration test writes archive JSON/index, returns direct URLs, and serves both wiki and artifact through the archive proxy.
+- `design.publish` typed dry-run includes typed template input and archive direct URL.
+- Re-ran `generate-docs`, `generate-types`, Bun checks, `git diff --check`, `checkFiles`, `audit`, and facade tests after follow-up changes.

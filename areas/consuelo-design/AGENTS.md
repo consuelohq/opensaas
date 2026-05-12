@@ -163,3 +163,10 @@ bun run --cwd packages/workspace generate-types
 ```
 
 Also run branch-local review before publishing.
+
+
+## Design wiki archive
+
+Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+
+The archive exposes both HTTPS Tailscale Serve URLs and direct tailnet HTTP URLs. Use the direct URL when iPhone Safari cannot open the HTTPS Serve link.

@@ -37,6 +37,7 @@ export const DesignPublishInput = z.object({
   path: optionalString,
   name: optionalString,
   category: optionalString,
+  template: digitalEguideTemplate,
   tailscaleBin: optionalString,
 }).refine((input) => Boolean(input.target || input.portlessName), {
   message: 'provide either target or portlessName',
@@ -734,6 +735,7 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   BranchInput: '{ branch?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
   ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',

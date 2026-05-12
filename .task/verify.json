@@ -2,13 +2,14 @@
   "result": "pass",
   "branch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
   "base": "origin/stream/workspace-agents",
-  "headSha": "92a7e411ab19890eb6e297887e4b72d7b0f582aa",
-  "changeHash": "4a5bb641e75d694a81ebf34f97f6d59ee8695b8c20c9d0d73424f6da5fa13e9b",
+  "headSha": "b7956fdcc8f2d0ff4a7db01e90aea0022a2eac85",
+  "changeHash": "2c26d2e3ac06092b993fb00620f87f63f0e7f2964ec9fc2e5a4e1f0b11dc6f8b",
   "changedFiles": [
     "areas/consuelo-design/AGENTS.md",
     "packages/consuelo-design/README.md",
     "packages/consuelo-design/templates/digital-eguides/README.md",
     "packages/consuelo-design/templates/digital-eguides/plan.md",
+    "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
     "packages/consuelo-design/templates/digital-eguides/research.md",
     "packages/consuelo-design/templates/digital-eguides/spec.md",
     "packages/workspace/SCRIPTS.md",
@@ -18,7 +19,7 @@
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-12T03:58:22.785Z",
+  "verifiedAt": "2026-05-12T05:10:43.540Z",
   "review": {
     "skipped": false,
     "passed": true
