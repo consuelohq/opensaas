@@ -1220,6 +1220,23 @@ always reread SCRIPTS.md when adding or changing scripts. if you add a new scrip
 
 ---
 
+## Design publish
+
+`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
+
+Recommended Open Design target name: `design.localhost`.
+
+```bash
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
+bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
+bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
+```
+
+Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
+
+---
+
 ## CLI tools — fallbacks only
 
 these are installed globally. do not use them if a `bun run` script exists for the same operation. if you ran `--help` on the relevant script and it covers your use case, use the script. ko does not want raw CLI tools used when scripts are available.

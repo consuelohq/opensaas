@@ -27,6 +27,21 @@ export const BranchInput = z.object({
   ...branchField,
 });
 
+
+export const DesignPublishInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: optionalString,
+  portlessName: optionalString,
+  path: optionalString,
+  name: optionalString,
+  category: optionalString,
+  tailscaleBin: optionalString,
+}).refine((input) => Boolean(input.target || input.portlessName), {
+  message: 'provide either target or portlessName',
+  path: ['target'],
+});
+
 export const ConsueloDesignInput = z.object({
   ...requestFields,
   ...dryRunField,
@@ -623,6 +638,7 @@ export const MacPortInput = z.object({
 export const schemaRegistry = {
   EmptyInput,
   BranchInput,
+  DesignPublishInput,
   ConsueloDesignInput,
   ConsueloDesignUiInput,
   ConsueloDesignSessionInput,
