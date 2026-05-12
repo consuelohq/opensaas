@@ -361,6 +361,8 @@ bad: review fails on a file you didn't touch
 
 runs `bun run review` + db/migration/graphql guardrails. writes `.task/verify.json` stamp on success. `task:push` requires this stamp by default.
 
+When called through `workspace.call` with `taskSession`, the facade injects `TASK_WORKTREE`. `verify` must read and write `.task/verify.json` inside that task worktree. If verify output names `main` or another task while a task session was supplied, the script is reading the wrong root and the publish gate is unsafe.
+
 ```bash
 bun run verify                        # full verify (review + db guards + stamp)
 bun run verify -- --no-review         # skip review, only run db guardrails
@@ -1217,6 +1219,23 @@ it verifies stale metadata is ignored, metadata-only conflicts are resolvable, a
 ### SCRIPTS.md is part of the fix
 
 always reread SCRIPTS.md when adding or changing scripts. if you add a new script or change behavior, update SCRIPTS.md in the same commit. missing docs are part of the fix, not cleanup for later.
+
+---
+
+## Design publish
+
+`design.publish` publishes a local design artifact URL, file, directory, or named `portless` service through private Tailscale Serve. It uses one persistent private tailnet host and a unique per-artifact path. It does not use Tailscale Funnel or create a public internet URL.
+
+Recommended Open Design target name: `design.localhost`.
+
+```bash
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/2026-05-12-prospect-theory"
+bun run consuelo-design publish --target "/tmp/research/packet.md" --path "/research-packet/2026-05-12-prospect-theory/packet"
+bun run consuelo-design publish --portless-name design.localhost --category daily-deep-idea --name prospect-theory
+bun run consuelo-design publish --portless-name design.localhost --path "/daily-deep-idea/example" --dry-run --json
+```
+
+Use this after an Open Design workflow creates or opens an artifact. For daily lessons, publish the digital e-guide project as `/daily-deep-idea/<date>-<slug>` and optionally publish the source packet as `/research-packet/<date>-<slug>/packet`.
 
 ---
 

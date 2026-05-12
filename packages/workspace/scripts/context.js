@@ -99,11 +99,14 @@ async function supabaseInsert(env, data) {
       apikey: env.key,
       Authorization: `Bearer ${env.key}`,
       'Content-Type': 'application/json',
+      Prefer: 'return=representation',
     },
     body: JSON.stringify(data),
   });
   if (!resp.ok) throw new Error(`supabase ${resp.status}: ${await resp.text()}`);
-  return true;
+  const text = await resp.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
 }
 
 function formatRow(row, idx) {
@@ -207,7 +210,25 @@ async function cmdSave(env, title, source, args) {
   }
 
   const category = args.category || 'observation';
-  await supabaseInsert(env, { title, category, content });
+  const inserted = await supabaseInsert(env, { title, category, content });
+
+  if (args.json) {
+    const insertedRows = Array.isArray(inserted) ? inserted : [];
+    writeStdout(JSON.stringify({
+      title,
+      category,
+      contentLength: content.length,
+      saved: insertedRows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        category: row.category,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      })),
+    }, null, 2));
+    return;
+  }
+
   writeStdout(`saved: "${title}" [${category}] (${content.length} chars)`);
 }
 
@@ -230,9 +251,12 @@ async function cmdGet(env, num, keyword, args) {
   const row = rows[num - 1];
 
   if (!row) {
+    if (args.json) { writeStdout(JSON.stringify(null)); return; }
     writeStdout(`no result #${num} for "${keyword}"`);
     return;
   }
+
+  if (args.json) { writeStdout(JSON.stringify(row, null, 2)); return; }
 
   const cat = row.category ? `[${row.category}]` : '';
   const date = row.created_at ? row.created_at.slice(0, 16).replace('T', ' ') : '';
@@ -254,14 +278,22 @@ async function cmdGet(env, num, keyword, args) {
   }
 }
 
-async function cmdCategories(env) {
-  const rows = await supabaseGet(env, {
-    select: 'category',
-    'order': 'category',
-  });
-  const cats = [...new Set(rows.map((r) => r.category).filter(Boolean))].sort();
-  writeStdout('categories:\n');
-  cats.forEach((c) => writeStdout(`  ${c}`));
+async function cmdCategories(env, args) {
+  try {
+    const rows = await supabaseGet(env, {
+      select: 'category',
+      'order': 'category',
+    });
+    const cats = [...new Set(rows.map((r) => r.category).filter(Boolean))].sort();
+
+    if (args.json) { writeStdout(JSON.stringify(cats, null, 2)); return; }
+
+    writeStdout('categories:\n');
+    cats.forEach((c) => writeStdout(`  ${c}`));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to load context categories: ${message}`);
+  }
 }
 
 async function main() {
@@ -296,7 +328,7 @@ async function main() {
       await cmdSave(env, args.positional[1], args.positional[2], args);
       break;
     case 'categories':
-      await cmdCategories(env);
+      await cmdCategories(env, args);
       break;
     default:
       // treat as search shorthand

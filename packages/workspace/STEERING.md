@@ -1080,9 +1080,9 @@ await workspace.call({ tool: "task.exec", taskSession, input: { command: ["bun",
 If any validation step fails because of existing repository drift, record the drift clearly, fix it only if it is in scope, and do not hide it in the final report.
 
 
-## Branch-explicit final validation flow
+## Task-session final validation flow
 
-Use explicit `branch` for final validation and push commands so verify stamps and pushed commits always target the same task worktree.
+Use `taskSession` for final validation and push commands so review, verify, and pushed commits target the same task worktree. The facade resolves the session to a task branch and `TASK_WORKTREE`; workspace scripts that write task-scoped state must honor that worktree instead of reading shared root `.task/*` files.
 
 Canonical sequence:
 
@@ -1090,4 +1090,4 @@ Canonical sequence:
 2. `workspace.call({ tool: "verify", taskSession, input: {} })`
 3. `workspace.call({ tool: "task.push", taskSession, input: { message: "<commit message>" } })`
 
-This keeps review, verify, and push deterministic in multi-worktree sessions.
+If verification output names `main` or another task while a `taskSession` was supplied, treat that as a tooling bug. Inspect whether the underlying script is ignoring `TASK_WORKTREE` or falling back to root `.task/*` state before bypassing verification.

@@ -1,17 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-task-cleanup-tmux-review-comments",
+  "branch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
   "base": "origin/stream/workspace-agents",
-  "headSha": "605e9cc640649d21294158311a86f8147ee57519",
-  "changeHash": "8d79a3d50369b2e3ae64c25199f8902746cdcb36488870a00024c547fe65d836",
+  "headSha": "f306334de23503739ad7cf1568e9dcc03e267ab8",
+  "changeHash": "87f1c58b6fbd47589a6cb27268b9d07d752def94be9129bb855df2a5bb56b659",
   "changedFiles": [
-    "packages/workspace/scripts/lib/task-session.js",
-    "packages/workspace/scripts/task-cleanup.js",
-    "packages/workspace/tests/task-session.test.js"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-09T16:31:31.835Z",
+  "verifiedAt": "2026-05-12T00:18:43.694Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {

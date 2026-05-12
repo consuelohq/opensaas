@@ -4,6 +4,7 @@ import {
   START_DIALER_CALL,
   TERMINATE_DIALER_CALL,
 } from '@/dialer/graphql/mutations/startDialerCall';
+import { useApolloCoreClient } from '@/object-metadata/hooks/useApolloCoreClient';
 
 export type StartDialerCallInput = {
   source: 'direct' | 'queue';
@@ -65,14 +66,19 @@ type TerminateDialerCallMutationVariables = {
 };
 
 export const useStartDialerCall = () => {
+  const apolloCoreClient = useApolloCoreClient();
   const [mutate] = useMutation<
     StartDialerCallMutation,
     StartDialerCallMutationVariables
-  >(START_DIALER_CALL);
+  >(START_DIALER_CALL, {
+    client: apolloCoreClient,
+  });
   const [terminateMutate] = useMutation<
     TerminateDialerCallMutation,
     TerminateDialerCallMutationVariables
-  >(TERMINATE_DIALER_CALL);
+  >(TERMINATE_DIALER_CALL, {
+    client: apolloCoreClient,
+  });
 
   const startDialerCall = async (
     input: StartDialerCallInput,

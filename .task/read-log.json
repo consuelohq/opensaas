@@ -2,6 +2,7 @@
   "files": [
     ".task/current.json",
     ".task/handoff.md",
+    ".task/session.json",
     ".task/twenty-server.log",
     ".task/verify.json",
     ".task/workpad.md",
@@ -153,5 +154,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-11T22:39:47.071Z"
+  "updatedAt": "2026-05-12T00:18:16.495Z"
 }
