@@ -170,3 +170,29 @@ Every guide must end with a compact metadata footer in small text. Include as ma
 - design wiki link
 
 Use the same restrained footer style as the Daily Deep Idea prototype: small text, muted gray, top border, and no marketing language.
+
+
+## theme standard
+
+Reader-shell artifacts should support device theme when possible.
+
+Use CSS variables and `prefers-color-scheme`:
+
+- dark theme for dark-mode devices
+- light theme for light-mode devices
+- no hardcoded white canvas as the default assumption
+- keep contrast high and editorial
+- use restrained black/gray surfaces, not colorful decoration
+
+If theme matching creates inconsistent rendering, prefer always-dark over always-white.
+
+The design should feel like a premium dark reading surface:
+
+- near-black page background
+- slightly raised dark cards
+- muted gray metadata
+- soft shadow-as-border treatment
+- thin borders using transparent white
+- clear white headings
+- readable body text
+- Geist / Geist Mono
