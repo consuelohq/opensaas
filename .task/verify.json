@@ -1,25 +1,18 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-digital-eguide-template-flag-and-docs",
+  "branch": "task/workspace-agents/tune-digital-eguide-reader-shell-motion",
   "base": "origin/stream/workspace-agents",
-  "headSha": "92133709187c85ede3edb1c5c6f9a073dccb06f3",
-  "changeHash": "231f5ddb5c941bd89500ad5d6b937580d3c53c9e1ead00c930d250b279424fdb",
+  "headSha": "bff71a117d0e1893f97a7ff30bf3c8f4adfeb796",
+  "changeHash": "1f7cf7ccb942db3a0e6030dddf6f25bb126105265005a7ebd9d5d9ca7842550c",
   "changedFiles": [
     "areas/consuelo-design/AGENTS.md",
     "packages/consuelo-design/README.md",
     "packages/consuelo-design/templates/digital-eguides/README.md",
-    "packages/consuelo-design/templates/digital-eguides/plan.md",
     "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
-    "packages/consuelo-design/templates/digital-eguides/research.md",
-    "packages/consuelo-design/templates/digital-eguides/spec.md",
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/consuelo-design.ts",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/workspace/scripts/consuelo-design.ts"
   ],
-  "verifiedAt": "2026-05-12T05:57:28.793Z",
+  "verifiedAt": "2026-05-12T08:10:56.244Z",
   "review": {
     "skipped": false,
     "passed": true
