@@ -84,23 +84,23 @@ msgid "Accept invite"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Password updated"
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your new email address"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm your email address"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "If you did not initiate this change, please contact your workspace owner immediately."
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Confirm new email"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/password-update-notify.email.tsx
-msgid "Connect to Consuelo"
+#: src/emails/send-email-verification-link.email.tsx
+msgid "Verify Email"
 msgstr ""
 
 #. js-lingui-explicit-id
@@ -129,23 +129,23 @@ msgid "This link is only valid for the next {duration}. If the link does not wor
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your new email address"
+#: src/emails/password-update-notify.email.tsx
+msgid "Password updated"
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm your email address"
+#: src/emails/password-update-notify.email.tsx
+msgid "This is a confirmation that password for your account ({email}) was successfully changed on {formattedDate}."
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Confirm new email"
+#: src/emails/password-update-notify.email.tsx
+msgid "If you did not initiate this change, please contact your workspace owner immediately."
 msgstr ""
 
 #. js-lingui-explicit-id
-#: src/emails/send-email-verification-link.email.tsx
-msgid "Verify Email"
+#: src/emails/password-update-notify.email.tsx
+msgid "Connect to Consuelo"
 msgstr ""
 
 #. js-lingui-explicit-id
