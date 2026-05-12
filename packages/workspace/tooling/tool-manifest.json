@@ -4024,6 +4024,70 @@
     "sessionRequired": false
   },
   {
+    "name": "design.publish",
+    "methodPath": [
+      "design",
+      "publish"
+    ],
+    "description": "publish a design artifact through private Tailscale Serve with a unique path",
+    "category": "consuelo design",
+    "underlying": "workspace consuelo-design publish",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 120000,
+    "inputSchema": "DesignPublishInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "consuelo-design",
+      "subcommand": "publish",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "dryRunFlag": "--dry-run",
+      "arguments": [
+        {
+          "source": "target",
+          "flag": "--target",
+          "kind": "value"
+        },
+        {
+          "source": "portlessName",
+          "flag": "--portless-name",
+          "kind": "value"
+        },
+        {
+          "source": "path",
+          "flag": "--path",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        },
+        {
+          "source": "category",
+          "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "tailscaleBin",
+          "flag": "--tailscale-bin",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "portlessName": "design.localhost",
+      "path": "/daily-deep-idea/example",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "consueloDesign.run",
     "methodPath": [
       "consueloDesign",

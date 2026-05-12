@@ -1,17 +1,21 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/investigate-task-session-stale-metadata-reads",
+  "branch": "task/workspace-agents/add-design-publish-tailscale-serve-links",
   "base": "origin/stream/workspace-agents",
-  "headSha": "cfc57802577ff8c50662483e0b60b123459478a1",
-  "changeHash": "09fb9d987a23251e86fb708525446a1abceca9f4062e6909ff792393682dc703",
+  "headSha": "f306334de23503739ad7cf1568e9dcc03e267ab8",
+  "changeHash": "87f1c58b6fbd47589a6cb27268b9d07d752def94be9129bb855df2a5bb56b659",
   "changedFiles": [
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/STEERING.md",
-    "packages/workspace/scripts/verify.js"
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-11T23:34:06.412Z",
+  "verifiedAt": "2026-05-12T00:18:43.694Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {

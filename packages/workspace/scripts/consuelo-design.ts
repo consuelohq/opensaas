@@ -47,6 +47,11 @@ type ParsedArgs = {
   dryRun: boolean;
   name?: string;
   prompt?: string;
+  target?: string;
+  portlessName?: string;
+  path?: string;
+  category?: string;
+  tailscaleBin?: string;
   forwarded: string[];
 };
 
@@ -185,6 +190,11 @@ function parseArgs(argv: string[]): ParsedArgs {
   let dryRun = false;
   let name: string | undefined;
   let prompt: string | undefined;
+  let target: string | undefined;
+  let portlessName: string | undefined;
+  let publishPath: string | undefined;
+  let category: string | undefined;
+  let tailscaleBin: string | undefined;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -199,6 +209,21 @@ function parseArgs(argv: string[]): ParsedArgs {
       index += 1;
     } else if (arg === '--prompt') {
       prompt = argv[index + 1];
+      index += 1;
+    } else if (arg === '--target') {
+      target = argv[index + 1];
+      index += 1;
+    } else if (arg === '--portless-name') {
+      portlessName = argv[index + 1];
+      index += 1;
+    } else if (arg === '--path') {
+      publishPath = argv[index + 1];
+      index += 1;
+    } else if (arg === '--category') {
+      category = argv[index + 1];
+      index += 1;
+    } else if (arg === '--tailscale-bin') {
+      tailscaleBin = argv[index + 1];
       index += 1;
     } else if (arg.startsWith('--')) {
       forwarded.push(arg);
@@ -215,6 +240,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     dryRun,
     name,
     prompt,
+    target,
+    portlessName,
+    path: publishPath,
+    category,
+    tailscaleBin,
     forwarded,
   };
 }
@@ -618,6 +648,118 @@ function workflowFromArgs(args: ParsedArgs): WorkflowConfig {
   return WORKFLOW_CONFIGS[workflow as WorkflowId];
 }
 
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 96) || 'design-artifact';
+}
+
+function normalizeServePath(args: ParsedArgs): string {
+  if (args.path) {
+    const withSlash = args.path.startsWith('/') ? args.path : `/${args.path}`;
+    return withSlash.replace(/\/+/g, '/').replace(/\/$/, '') || '/design';
+  }
+
+  const category = slugify(args.category ?? 'design');
+  const name = slugify(args.name ?? args.portlessName ?? args.target ?? `artifact-${timestampLabel()}`);
+  return `/${category}/${name}`;
+}
+
+function normalizeTarget(target: string): string {
+  if (/^https?:\/\//.test(target) || target.startsWith('localhost:') || target.startsWith('127.0.0.1:')) return target;
+  return path.resolve(target);
+}
+
+function trimTrailingDot(value: string): string {
+  return value.endsWith('.') ? value.slice(0, -1) : value;
+}
+
+function parseTailscaleHostname(stdout: string): string {
+  const status = JSON.parse(stdout) as { Self?: { DNSName?: string }, CertDomains?: string[] };
+  const dnsName = status.Self?.DNSName ?? status.CertDomains?.[0];
+  if (!dnsName) throw new Error('tailscale status did not include a DNS name. Is Tailscale running and logged in?');
+  return trimTrailingDot(dnsName);
+}
+async function getTailscaleHostname(tailscaleBin: string): Promise<string> {
+  try {
+    const result = await runCommand([tailscaleBin, 'status', '--json'], REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale status failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+    return parseTailscaleHostname(result.stdout);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to resolve Tailscale hostname: ${message}`);
+  }
+}
+
+async function resolvePortlessTarget(portlessName: string): Promise<string> {
+  try {
+    if (portlessName.endsWith('.localhost')) {
+      return `https://${portlessName}:1355`;
+    }
+
+    const result = await runCommand(['portless', 'get', portlessName], REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`portless get failed for ${portlessName}: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+
+    const target = result.stdout.trim().split(/\s+/)[0];
+    if (!target) throw new Error(`portless get ${portlessName} returned no URL`);
+    return target;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to resolve portless target: ${message}`);
+  }
+}
+
+async function publishDesign(args: ParsedArgs): Promise<void> {
+  try {
+    if (!args.target && !args.portlessName) {
+      throw new Error('design publish requires --target <url-or-file-or-directory> or --portless-name <name>');
+    }
+
+    const tailscaleBin = args.tailscaleBin ?? 'tailscale';
+    const servePath = normalizeServePath(args);
+    const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
+    const normalizedTarget = normalizeTarget(resolvedTarget);
+    const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, normalizedTarget];
+    const hostname = args.dryRun ? '<tailscale-host>' : await getTailscaleHostname(tailscaleBin);
+    const url = `https://${hostname}${servePath}`;
+    const plan = {
+      ok: true,
+      mode: 'tailscale-serve',
+      public: false,
+      host: hostname,
+      path: servePath,
+      url,
+      target: normalizedTarget,
+      portlessName: args.portlessName ?? null,
+      command,
+    };
+
+    if (args.dryRun) {
+      if (args.json) printJson(plan);
+      else writeStdout(`design publish dry-run\nurl: ${url}\ntarget: ${normalizedTarget}\ncommand: ${command.join(' ')}\n`);
+      return;
+    }
+
+    const result = await runCommand(command, REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+
+    if (args.json) printJson({ ...plan, stdout: result.stdout.trim(), stderr: result.stderr.trim() });
+    else if (!args.quiet) writeStdout(`design published\nurl: ${url}\ntarget: ${normalizedTarget}\n`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to publish design artifact: ${message}`);
+  }
+}
 async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs): Promise<void> {
   try {
     if (args.dryRun) {
@@ -697,6 +839,7 @@ Commands:
   generate email              Start/open an email working session
   generate motion-frame       Start/open a motion-frame working session
   render hyperframes          Start/open a HyperFrames render working session
+  publish                     Publish a design artifact through private Tailscale Serve
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
   get-design-system           Print base Consuelo DESIGN.md and consuelo-design AGENTS.md only
@@ -710,6 +853,11 @@ Flags:
   --dry-run                   Print the plan instead of starting runtimes or creating projects
   --name <name>               Override generated Open Design project name
   --prompt <brief>            Attach Ko's brief to the generated Open Design pending prompt
+  --target <url|path>          Target URL/file/directory for publish
+  --portless-name <name>        Resolve target with portless get <name>
+  --path <path>                Unique Tailscale Serve path for publish
+  --category <name>            Default publish path category when --path is omitted
+  --tailscale-bin <path>       Override tailscale binary for publish
 
 Notes:
   The Consuelo facade is Bun-native and lives in packages/workspace/scripts.
@@ -773,6 +921,9 @@ async function main(): Promise<void> {
         break;
       case 'render-hyperframes':
         await startWorkflowSession(WORKFLOW_CONFIGS.hyperframes, args);
+        break;
+      case 'publish':
+        await publishDesign(args);
         break;
       case 'run':
       case 'ui':
