@@ -4029,7 +4029,7 @@
       "design",
       "publish"
     ],
-    "description": "publish a design artifact through private Tailscale Serve with a unique path",
+    "description": "publish a design artifact through private Tailscale Serve and update the design wiki archive",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design publish",
     "capabilities": {
@@ -4071,6 +4071,11 @@
         {
           "source": "category",
           "flag": "--category",
+          "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
           "kind": "value"
         },
         {
@@ -4424,7 +4429,7 @@
       "consueloDesign",
       "generateDigitalEguide"
     ],
-    "description": "start or open a live Open Design digital e-guide working session",
+    "description": "start or open a live Open Design digital e-guide working session, optionally using a named Consuelo e-guide template",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-digital-eguide",
     "capabilities": {
@@ -4434,7 +4439,7 @@
       "safeToRetry": false
     },
     "defaultTimeout": 600000,
-    "inputSchema": "ConsueloDesignSessionInput",
+    "inputSchema": "ConsueloDesignDigitalEguideInput",
     "outputSchema": "RawOutput",
     "command": {
       "script": "consuelo-design",
@@ -4451,6 +4456,11 @@
         {
           "source": "prompt",
           "flag": "--prompt",
+          "kind": "value"
+        },
+        {
+          "source": "template",
+          "flag": "--template",
           "kind": "value"
         }
       ]

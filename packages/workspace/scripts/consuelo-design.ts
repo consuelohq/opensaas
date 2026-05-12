@@ -1,7 +1,8 @@
 #!/usr/bin/env bun
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const CURRENT_FILE = fileURLToPath(import.meta.url);
@@ -39,6 +40,17 @@ const DEPLOYED_PACKAGE_MANIFESTS = [
   'packages/sdk/package.json',
 ] as const;
 
+const DIGITAL_EGUIDE_TEMPLATE_IDS = ['research', 'spec', 'plan'] as const;
+type DigitalEguideTemplateId = typeof DIGITAL_EGUIDE_TEMPLATE_IDS[number];
+const DIGITAL_EGUIDE_TEMPLATE_DIR = 'packages/consuelo-design/templates/digital-eguides';
+const DIGITAL_EGUIDE_READER_SHELL_PATH = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/reader-shell.md`;
+const DESIGN_ARCHIVE_ROOT = path.join(OPEN_DESIGN_ROOT, '.od/consuelo/archive');
+const DESIGN_ARCHIVE_DATA_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'archive.json');
+const DESIGN_ARCHIVE_INDEX_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'index.html');
+const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
+const DESIGN_ARCHIVE_PORT = 53935;
+const DESIGN_ARCHIVE_PATH = '/design-wiki';
+
 type ParsedArgs = {
   command: string;
   subcommand: string | null;
@@ -47,6 +59,7 @@ type ParsedArgs = {
   dryRun: boolean;
   name?: string;
   prompt?: string;
+  template?: string;
   target?: string;
   portlessName?: string;
   path?: string;
@@ -56,6 +69,26 @@ type ParsedArgs = {
 };
 
 type WorkflowId = 'website' | 'demo' | 'image-brief' | 'digital-eguide' | 'email' | 'motion-frame' | 'hyperframes';
+
+type DesignArchiveEntry = {
+  id: string;
+  title: string;
+  url: string;
+  directUrl: string;
+  path: string;
+  target: string;
+  template: DigitalEguideTemplateId | 'uncategorized';
+  category: string;
+  publishedAt: string;
+  updatedAt: string;
+};
+
+type DesignArchivePayload = {
+  version: 1;
+  updatedAt: string;
+  entries: DesignArchiveEntry[];
+};
+
 
 type WorkflowConfig = {
   id: WorkflowId;
@@ -190,6 +223,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let dryRun = false;
   let name: string | undefined;
   let prompt: string | undefined;
+  let template: string | undefined;
   let target: string | undefined;
   let portlessName: string | undefined;
   let publishPath: string | undefined;
@@ -209,6 +243,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       index += 1;
     } else if (arg === '--prompt') {
       prompt = argv[index + 1];
+      index += 1;
+    } else if (arg === '--template') {
+      template = argv[index + 1];
       index += 1;
     } else if (arg === '--target') {
       target = argv[index + 1];
@@ -240,6 +277,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     dryRun,
     name,
     prompt,
+    template,
     target,
     portlessName,
     path: publishPath,
@@ -575,9 +613,37 @@ function timestampLabel(): string {
   return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 }
 
+
+function isDigitalEguideTemplateId(value: string): value is DigitalEguideTemplateId {
+  return (DIGITAL_EGUIDE_TEMPLATE_IDS as readonly string[]).includes(value);
+}
+
+function getDigitalEguideTemplateBlock(workflow: WorkflowConfig, args: ParsedArgs): string {
+  if (!args.template) return '';
+
+  if (workflow.id !== 'digital-eguide') {
+    throw new Error('--template is only supported for generate digital-eguide');
+  }
+
+  if (!isDigitalEguideTemplateId(args.template)) {
+    throw new Error(`unknown digital e-guide template: ${args.template}. Use one of: ${DIGITAL_EGUIDE_TEMPLATE_IDS.join(', ')}`);
+  }
+
+  const templatePath = `${DIGITAL_EGUIDE_TEMPLATE_DIR}/${args.template}.md`;
+  const templateContent = readText(templatePath).trim();
+  const readerShellContent = readText(DIGITAL_EGUIDE_READER_SHELL_PATH).trim();
+  return [
+    `## Open Design template: ${args.template}`,
+    'Use this Consuelo-owned Open Design template as the artifact structure. Keep Ko\'s brief and source material as content truth; use the template for layout, hierarchy, and required sections.',
+    templateContent,
+    readerShellContent,
+  ].join('\n\n');
+}
+
 function buildWorkflowPrompt(workflow: WorkflowConfig, args: ParsedArgs): string {
   const files = getWorkflowContextFiles(workflow);
   const suppliedPrompt = args.prompt ? `\n\n## Ko's brief\n\n${args.prompt.trim()}\n` : '';
+  const templateBlock = getDigitalEguideTemplateBlock(workflow, args);
   const fileBlocks = files.map((file) => [
     `## ${file.role}: ${file.path}`,
     file.content.trim(),
@@ -585,6 +651,7 @@ function buildWorkflowPrompt(workflow: WorkflowConfig, args: ParsedArgs): string
   return [
     workflow.promptLead,
     suppliedPrompt,
+    templateBlock,
     'Do not treat upstream Open Design design systems as Consuelo truth unless Ko explicitly asks for a reference skin. Use the attached Consuelo files as the source of truth.',
     'Start with a useful artifact in the Open Design preview, then iterate with Ko in the live workspace.',
     'Consuelo context follows.',
@@ -623,6 +690,7 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
       workflow: workflow.id,
       primarySkill: workflow.skillId,
       fallbackSkillIds: workflow.fallbackSkillIds,
+      template: args.template ?? null,
       designSystem: 'consuelo',
     },
   };
@@ -636,7 +704,7 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
     throw new Error(`failed to create Open Design project: ${response.status} ${text}`);
   }
   const projectUrl = `${runtime.webUrl.replace(/\/$/, '')}/projects/${encodeURIComponent(id)}`;
-  return { id, name, projectUrl, pendingPrompt, workflow: workflow.id, skillId: workflow.skillId };
+  return { id, name, projectUrl, pendingPrompt, workflow: workflow.id, skillId: workflow.skillId, template: args.template ?? null };
 }
 
 function workflowFromArgs(args: ParsedArgs): WorkflowConfig {
@@ -678,12 +746,34 @@ function trimTrailingDot(value: string): string {
   return value.endsWith('.') ? value.slice(0, -1) : value;
 }
 
-function parseTailscaleHostname(stdout: string): string {
-  const status = JSON.parse(stdout) as { Self?: { DNSName?: string }, CertDomains?: string[] };
+type TailscaleSelf = { hostname: string; ip: string };
+
+function parseTailscaleSelf(stdout: string): TailscaleSelf {
+  const status = JSON.parse(stdout) as { Self?: { DNSName?: string, TailscaleIPs?: string[] }, CertDomains?: string[] };
   const dnsName = status.Self?.DNSName ?? status.CertDomains?.[0];
   if (!dnsName) throw new Error('tailscale status did not include a DNS name. Is Tailscale running and logged in?');
-  return trimTrailingDot(dnsName);
+  const ip = status.Self?.TailscaleIPs?.find((value) => value.includes('.'));
+  if (!ip) throw new Error('tailscale status did not include a tailnet IPv4 address. Is Tailscale running and logged in?');
+  return { hostname: trimTrailingDot(dnsName), ip };
 }
+
+function parseTailscaleHostname(stdout: string): string {
+  return parseTailscaleSelf(stdout).hostname;
+}
+
+async function getTailscaleSelf(tailscaleBin: string): Promise<TailscaleSelf> {
+  try {
+    const result = await runCommand([tailscaleBin, 'status', '--json'], REPO_ROOT);
+    if (result.exitCode !== 0) {
+      throw new Error(`tailscale status failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
+    }
+    return parseTailscaleSelf(result.stdout);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to resolve Tailscale self: ${message}`);
+  }
+}
+
 async function getTailscaleHostname(tailscaleBin: string): Promise<string> {
   try {
     const result = await runCommand([tailscaleBin, 'status', '--json'], REPO_ROOT);
@@ -717,6 +807,255 @@ async function resolvePortlessTarget(portlessName: string): Promise<string> {
   }
 }
 
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function archiveTitleFromArgs(args: ParsedArgs, servePath: string): string {
+  if (args.name) return args.name;
+  const slug = servePath.split('/').filter(Boolean).at(-1) ?? 'design artifact';
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (value) => value.toUpperCase());
+}
+
+function archiveCategoryFromArgs(args: ParsedArgs, servePath: string): string {
+  if (args.category) return slugify(args.category);
+  return servePath.split('/').filter(Boolean)[0] ?? 'design';
+}
+
+function archiveTemplateFromArgs(args: ParsedArgs): DesignArchiveEntry['template'] {
+  return args.template && isDigitalEguideTemplateId(args.template) ? args.template : 'uncategorized';
+}
+
+function readArchivePayload(): DesignArchivePayload {
+  try {
+    const parsed = JSON.parse(readFileSync(DESIGN_ARCHIVE_DATA_PATH, 'utf8')) as Partial<DesignArchivePayload>;
+    return {
+      version: 1,
+      updatedAt: parsed.updatedAt ?? new Date().toISOString(),
+      entries: Array.isArray(parsed.entries) ? parsed.entries as DesignArchiveEntry[] : [],
+    };
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      return { version: 1, updatedAt: new Date().toISOString(), entries: [] };
+    }
+    throw error;
+  }
+}
+
+function writeArchivePayload(payload: DesignArchivePayload): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_DATA_PATH, `${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function renderArchiveIndex(payload: DesignArchivePayload): string {
+  const entries = [...payload.entries].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
+  const cards = entries.map((entry) => `
+    <article class="card" data-template="${escapeHtml(entry.template)}" data-category="${escapeHtml(entry.category)}">
+      <div class="meta"><span>${escapeHtml(new Date(entry.publishedAt).toLocaleDateString())}</span><span>${escapeHtml(entry.template)}</span><span>${escapeHtml(entry.category)}</span></div>
+      <h2><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(entry.title)}</a></h2>
+      <p>${escapeHtml(entry.path)}</p>
+    </article>`).join('\n') || '<p class="empty">No published design artifacts yet.</p>';
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo Design Wiki</title>
+  <style>
+    :root { color-scheme: light; --ink:#171717; --muted:#666; --line:#eaeaea; --soft:#fafafa; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; font-family: Geist, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:#fff; }
+    main { max-width:1120px; margin:0 auto; padding:40px 20px 96px; }
+    header { display:grid; gap:18px; padding:48px 0 32px; border-bottom:1px solid var(--line); }
+    .eyebrow, .meta { font-family:"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.02em; color:var(--muted); }
+    h1 { margin:0; font-size:clamp(42px,8vw,88px); line-height:.92; letter-spacing:-.055em; font-weight:600; }
+    .lead { max-width:720px; color:var(--muted); font-size:18px; line-height:1.65; margin:0; }
+    .filters { position:sticky; top:0; z-index:3; display:flex; gap:8px; flex-wrap:wrap; padding:16px 0; background:rgba(255,255,255,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+    button { appearance:none; border:0; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.1); border-radius:999px; padding:9px 13px; font:600 13px Geist, Inter, sans-serif; cursor:pointer; }
+    button.active { background:#171717; color:#fff; }
+    .grid { display:grid; gap:14px; padding-top:20px; }
+    .card { padding:22px; border-radius:14px; box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 8px 22px -18px rgba(0,0,0,.28); background:#fff; }
+    .card h2 { margin:10px 0 8px; font-size:24px; letter-spacing:-.025em; }
+    .card a { color:inherit; text-decoration:none; }
+    .card a:hover { text-decoration:underline; text-underline-offset:4px; }
+    .card p { margin:0; color:var(--muted); font-size:14px; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; }
+    .meta span { border:1px solid var(--line); border-radius:999px; padding:4px 8px; background:var(--soft); }
+    footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Consuelo Design Wiki</div>
+      <h1>Published artifacts</h1>
+      <p class="lead">A private tailnet index of Open Design artifacts, ordered chronologically and filterable by e-guide template.</p>
+    </header>
+    <nav class="filters" aria-label="Filters">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="research">Research</button>
+      <button data-filter="spec">Spec</button>
+      <button data-filter="plan">Plan</button>
+      <button data-filter="uncategorized">Uncategorized</button>
+    </nav>
+    <section class="grid" id="cards">${cards}
+    </section>
+    <footer>Generated ${escapeHtml(new Date(payload.updatedAt).toLocaleString())}. Source: ${escapeHtml(DESIGN_ARCHIVE_DATA_PATH)}.</footer>
+  </main>
+  <script>
+    document.querySelectorAll('[data-filter]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
+        document.querySelectorAll('.card').forEach((card) => {
+          card.hidden = filter !== 'all' && card.dataset.template !== filter;
+        });
+      });
+    });
+  </script>
+</body>
+</html>\n`;
+}
+
+function writeArchiveIndex(payload: DesignArchivePayload): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
+}
+
+function writeArchiveServer(): void {
+  mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
+  writeFileSync(DESIGN_ARCHIVE_SERVER_PATH, `
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import path from 'node:path';
+
+const root = ${JSON.stringify(DESIGN_ARCHIVE_ROOT)};
+const wikiPath = ${JSON.stringify(DESIGN_ARCHIVE_PATH)};
+const port = Number(process.env.CONSUELO_DESIGN_ARCHIVE_PORT ?? ${DESIGN_ARCHIVE_PORT});
+
+const contentType = (filePath: string) => filePath.endsWith('.json') ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8';
+const archiveDataPath = path.join(root, 'archive.json');
+const archiveIndexPath = path.join(root, 'index.html');
+
+function readArchive() {
+  if (!existsSync(archiveDataPath)) return { entries: [] };
+  return JSON.parse(readFileSync(archiveDataPath, 'utf8')) as { entries?: Array<{ path: string; target: string }> };
+}
+
+function readTarget(entry: { path: string; target: string }, request: Request, url: URL) {
+  if (/^https?:\\/\\//.test(entry.target)) {
+    const targetUrl = new URL(entry.target);
+    targetUrl.pathname = url.pathname;
+    targetUrl.search = url.search;
+    return fetch(targetUrl, { headers: request.headers });
+  }
+
+  const targetPath = path.resolve(entry.target);
+  if (!existsSync(targetPath)) return new Response('target not found', { status: 404 });
+  const stat = statSync(targetPath);
+  const filePath = stat.isDirectory() ? path.join(targetPath, 'index.html') : targetPath;
+  if (!existsSync(filePath)) return new Response('target index not found', { status: 404 });
+  return new Response(readFileSync(filePath), { headers: { 'content-type': contentType(filePath), 'cache-control': 'no-store' } });
+}
+
+Bun.serve({
+  hostname: process.env.CONSUELO_DESIGN_ARCHIVE_HOST ?? '127.0.0.1',
+  port,
+  fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname === '/' || url.pathname === wikiPath || url.pathname === wikiPath + '/') {
+      if (!existsSync(archiveIndexPath)) return new Response('not found', { status: 404 });
+      return new Response(readFileSync(archiveIndexPath), { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
+    }
+    if (url.pathname === wikiPath + '/archive.json' || url.pathname.endsWith('/archive.json')) {
+      if (!existsSync(archiveDataPath)) return new Response('not found', { status: 404 });
+      return new Response(readFileSync(archiveDataPath), { headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+    }
+
+    const payload = readArchive();
+    const entry = payload.entries?.find((item) => url.pathname === item.path || url.pathname.startsWith(item.path + '/'));
+    if (!entry) return new Response('not found', { status: 404 });
+    return readTarget(entry, request, url);
+  },
+});
+`);
+}
+
+async function isArchiveServerRunning(host: string): Promise<boolean> {
+  try {
+    const response = await fetch(`http://${host}:${DESIGN_ARCHIVE_PORT}/design-wiki`, { cache: 'no-store' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function ensureArchiveServer(host: string): Promise<string> {
+  try {
+    writeArchiveServer();
+    if (!(await isArchiveServerRunning(host))) {
+      const child = spawn(process.execPath, [DESIGN_ARCHIVE_SERVER_PATH], {
+        cwd: REPO_ROOT,
+        detached: true,
+        env: { ...process.env, CONSUELO_DESIGN_ARCHIVE_HOST: host, CONSUELO_DESIGN_ARCHIVE_PORT: String(DESIGN_ARCHIVE_PORT) },
+        stdio: 'ignore',
+      });
+      child.unref();
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        if (await isArchiveServerRunning(host)) break;
+      }
+      if (!(await isArchiveServerRunning(host))) throw new Error(`design wiki server did not start on ${host}:${DESIGN_ARCHIVE_PORT}`);
+    }
+    return `http://${host}:${DESIGN_ARCHIVE_PORT}`;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to start design wiki server: ${message}`);
+  }
+}
+
+async function updateDesignArchive(args: ParsedArgs, servePath: string, url: string, normalizedTarget: string, tailscaleSelf: TailscaleSelf, tailscaleBin: string): Promise<{ path: string; url: string; directUrl: string; target: string; entries: number }> {
+  try {
+    const now = new Date().toISOString();
+    const payload = readArchivePayload();
+    const id = slugify(servePath);
+    const existing = payload.entries.find((entry) => entry.path === servePath);
+    const entry: DesignArchiveEntry = {
+      id,
+      title: archiveTitleFromArgs(args, servePath),
+      url,
+      directUrl: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`,
+      path: servePath,
+      target: normalizedTarget,
+      template: archiveTemplateFromArgs(args),
+      category: archiveCategoryFromArgs(args, servePath),
+      publishedAt: existing?.publishedAt ?? now,
+      updatedAt: now,
+    };
+    payload.entries = [entry, ...payload.entries.filter((item) => item.path !== servePath)];
+    payload.updatedAt = now;
+    writeArchivePayload(payload);
+    writeArchiveIndex(payload);
+    const archiveTarget = await ensureArchiveServer(tailscaleSelf.ip);
+    const archiveUrl = `https://${tailscaleSelf.hostname}${DESIGN_ARCHIVE_PATH}`;
+    const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
+    const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, archiveTarget], REPO_ROOT);
+    if (archiveResult.exitCode !== 0) {
+      throw new Error(`tailscale serve failed for design wiki: ${archiveResult.stderr || archiveResult.stdout || `exit ${archiveResult.exitCode}`}`);
+    }
+    return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: archiveTarget, entries: payload.entries.length };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`failed to update design wiki archive: ${message}`);
+  }
+}
+
 async function publishDesign(args: ParsedArgs): Promise<void> {
   try {
     if (!args.target && !args.portlessName) {
@@ -728,8 +1067,16 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
     const resolvedTarget = args.target ?? (args.dryRun ? (args.portlessName?.endsWith('.localhost') ? `https://${args.portlessName}:1355` : `http://${args.portlessName}.localhost:1355`) : await resolvePortlessTarget(args.portlessName as string));
     const normalizedTarget = normalizeTarget(resolvedTarget);
     const command = [tailscaleBin, 'serve', '--bg', '--yes', '--set-path', servePath, normalizedTarget];
-    const hostname = args.dryRun ? '<tailscale-host>' : await getTailscaleHostname(tailscaleBin);
+    const tailscaleSelf = args.dryRun ? { hostname: '<tailscale-host>', ip: '<tailscale-ip>' } : await getTailscaleSelf(tailscaleBin);
+    const hostname = tailscaleSelf.hostname;
     const url = `https://${hostname}${servePath}`;
+    const directUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${servePath}`;
+    const archivePlan = {
+      path: DESIGN_ARCHIVE_PATH,
+      url: args.dryRun ? `https://${hostname}${DESIGN_ARCHIVE_PATH}` : null,
+      directUrl: args.dryRun ? `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}` : null,
+      target: `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}`,
+    };
     const plan = {
       ok: true,
       mode: 'tailscale-serve',
@@ -737,8 +1084,11 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
       host: hostname,
       path: servePath,
       url,
+      directUrl,
       target: normalizedTarget,
       portlessName: args.portlessName ?? null,
+      template: archiveTemplateFromArgs(args),
+      archive: archivePlan,
       command,
     };
 
@@ -753,8 +1103,10 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
       throw new Error(`tailscale serve failed: ${result.stderr || result.stdout || `exit ${result.exitCode}`}`);
     }
 
-    if (args.json) printJson({ ...plan, stdout: result.stdout.trim(), stderr: result.stderr.trim() });
-    else if (!args.quiet) writeStdout(`design published\nurl: ${url}\ntarget: ${normalizedTarget}\n`);
+    const archive = await updateDesignArchive(args, servePath, url, normalizedTarget, tailscaleSelf, tailscaleBin);
+
+    if (args.json) printJson({ ...plan, archive, stdout: result.stdout.trim(), stderr: result.stderr.trim() });
+    else if (!args.quiet) writeStdout(`design published\nurl: ${url}\ndirectUrl: ${directUrl}\ntarget: ${normalizedTarget}\nwiki: ${archive.url}\nwikiDirect: ${archive.directUrl}\n`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`failed to publish design artifact: ${message}`);
@@ -776,6 +1128,7 @@ async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs):
             workflow: workflow.id,
             primarySkill: workflow.skillId,
             fallbackSkillIds: workflow.fallbackSkillIds,
+            template: args.template ?? null,
             designSystem: 'consuelo',
           },
           pendingPrompt: prompt,
@@ -853,6 +1206,7 @@ Flags:
   --dry-run                   Print the plan instead of starting runtimes or creating projects
   --name <name>               Override generated Open Design project name
   --prompt <brief>            Attach Ko's brief to the generated Open Design pending prompt
+  --template <research|spec|plan>  Select/archive a digital e-guide template for generate/publish
   --target <url|path>          Target URL/file/directory for publish
   --portless-name <name>        Resolve target with portless get <name>
   --path <path>                Unique Tailscale Serve path for publish
