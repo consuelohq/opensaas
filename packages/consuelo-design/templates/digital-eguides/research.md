@@ -41,54 +41,117 @@ It should help Ko answer:
 - What should I believe, doubt, or remember?
 - Where does this idea appear in real systems, agents, prediction, uncertainty, business, or everyday decisions?
 
+- ## narrative spine
+
+Do not design the guide as a decorated outline.
+
+Shape it like an interactive learning journey:
+
+1. **Hook** — open with the puzzle, tension, or surprising claim the paper helps explain.
+2. **Source grounding** — show the source card early so Ko knows what the artifact is anchored in.
+3. **Simple world** — teach the core idea with a toy example, story, or tiny model.
+4. **Mechanism** — reveal the actual paper mechanism: what changed, what was measured, what was proven, or what framework was introduced.
+5. **Evidence** — separate what the source shows from what the guide interprets.
+6. **Transfer** — show where the idea appears in agents, prediction, systems, business, or everyday decisions.
+7. **Caution** — show the limitation, failure mode, or common overread.
+8. **Memory** — end with a small set of durable mental handles.
+9. **Question** — close with one question Ko can reason with.
+
+The guide should feel like a guided lesson with momentum, not a static research handout.
+
 ## required structure
+
 
 1. **Hero**: topic, paper/source title, one-sentence thesis, source status, reading time, and why it matters.
 2. **Source card**: title, authors, year, publication/source, link, source type, and evidence status.
-3. **Deep idea**: the central insight in one sharp paragraph.
-4. **Explain like im 5**: story, toy example, or metaphor before technical detail.
-5. **Vocabulary**: compact cards for the terms Ko needs before the walkthrough.
-6. **Paper/source walkthrough**:
+3. **Paper map**: compact visual route through the guide: puzzle, simple model, prediction, mechanism, evidence, transfer, caution, memory.
+4. **Deep idea**: the central insight in one sharp paragraph.
+5. **Explain like im 5**: story, toy example, or metaphor before technical detail.
+6. **Prediction-before-reveal**: ask Ko what he would expect before showing the paper’s key result or mechanism.
+7. **Vocabulary**: compact cards for the terms Ko needs before the walkthrough.
+8. **Paper/source walkthrough**:
    - question
    - method
    - key result
    - what made it important
    - limitations
    - the most important mechanism
-7. **Evidence trail**: preserve citations and source links exactly. Keep evidence visibly separate from interpretation.
-8. **Intuition builder**: examples in technology, systems/business, and everyday life.
-9. **Deeper layer**: one advanced insight that goes beyond the simple explanation.
-10. **Limits and caution**: what the source does not prove, where people overapply it, and what remains uncertain.
-11. **Memory card**: 3–5 claims worth saving.
-12. **Question for Ko**: one sharp question that makes Ko reason with the idea.
+9. **Evidence trail**: preserve citations and source links exactly. Keep evidence visibly separate from interpretation.
+10. **Intuition builder**: examples in technology, systems/business, and everyday life.
+11. **Deeper layer**: one advanced insight that goes beyond the simple explanation.
+12. **Limits and caution**: what the source does not prove, where people overapply it, and what remains uncertain.
+13. **Memory card**: 3–5 claims worth saving.
+14. **Question for Ko**: one sharp question that makes Ko reason with the idea.
+
+### learning route
+
+Near the top, include a compact **Paper map** that acts as the table of contents and learning route.
+
+Use this example structure:
+
+Puzzle → Simple model → Prediction → Mechanism → Evidence → Transfer → Caution → Memory
+
+Each item should link or scroll to its section.
+
+The paper map should help Ko understand where he is in the lesson, not just list headings. Keep it compact, visual, and useful.
 
 ## interaction pattern
 
-Use HTML to make the research navigable, not decorative.
+Use HTML to make the research easier to learn.
 
-Prefer a polished multi-panel reading surface with:
+The page should feel like a small interactive field guide:
 
-- sticky table of contents
-- section progress or reading position
-- collapsible deep dives
-- expandable limitations
-- expandable evidence/citation drawer
-- tabbed examples or source views
-- hover/click glossary aids
-- numbered insight cards
+- sticky table of contents with section anchors
+- progress or reading-position indicator
+- collapsible deep dives for methods, math, caveats, and citations
+- expandable evidence drawer that keeps sources visibly separate from interpretation
+- glossary cards with hover/click expansion
+- tabbed examples for technology, systems/business, and everyday life
 - one lightweight interactive metaphor when it clarifies the core idea
+- “what changed my mind?” or “why this mattered” callout
+- limitations drawer or caution panel
+- memory card near the end
+- final question panel
 - reader shell navigation
 - back-to-top affordance
 - compact metadata footer
 - `/design-wiki` link
 
+Interactions should reduce cognitive load. Do not add interactions that only decorate the page.
+
 The page should still be readable if scripts fail.
+
+## prediction-before-reveal
+
+Include one tasteful prediction-before-reveal moment.
+
+Place it after the simple explanation and before the paper’s key result or mechanism.
+
+It should ask Ko to make a small prediction before the guide reveals what the paper found.
+
+Good pattern:
+
+
+Before the reveal:
+Given the setup, what would you expect?
+
+Option A: ...
+Option B: ...
+Option C: ...
+
+Reveal:
+The paper shows ...
+Why that matters ...
+
+Use a collapsible reveal, small button, or <details> element. The page must still be readable if scripts fail.
+
+Do not overuse this. One strong prediction moment is better than many gimmicks.
 
 ## visual direction
 
 Make the research guide feel like a Consuelo research artifact: precise, calm, technical, editorial, and alive.
 
-Do not render this as an all-white Markdown page.
+Aim for a dark-mode research console crossed with a polished editorial field guide.
 
 Use `packages/consuelo-website/DESIGN.md` as the visual source of truth:
 
@@ -101,9 +164,22 @@ Use `packages/consuelo-website/DESIGN.md` as the visual source of truth:
 - technical labels and status pills
 - minimal decorative color
 
-Prefer a dark or adaptive reader surface when the design system supports it. If dark/adaptive tokens are missing, extend the design system first rather than inventing a one-off theme inside this template.
+Do not render this as an all-white Markdown page.
 
-The guide should feel like a dark-mode research console crossed with a polished editorial essay.
+Avoid the “boxed Markdown” failure mode: headings stacked vertically, every paragraph placed in the same kind of card, and no real reading rhythm.
+
+Create contrast between content types:
+
+- hero should feel expansive
+- source card should feel factual and grounded
+- ELI5 section should feel warm and simple
+- walkthrough should feel rigorous
+- evidence should feel inspectable
+- limitations should feel sober
+- memory card should feel save-worthy
+- final question should feel like a closing prompt, not a footer
+
+Prefer a dark or adaptive reader surface when the design system supports it. If dark/adaptive tokens are missing, extend the design system first rather than inventing a one-off theme inside this template.
 
 ## layout standard
 
@@ -144,6 +220,34 @@ Use:
 
 Keep citations close to the claims they support.
 
+## pacing rules
+
+Give the guide rhythm.
+
+Use alternating section shapes:
+
+- big hero
+- compact metadata card
+- short thesis callout
+- story/example panel
+- glossary grid
+- rigorous walkthrough
+- collapsible evidence
+- limitations callout
+- example tabs
+- memory card
+- final question
+
+Do not make every section the same visual weight.
+
+The reader should always know:
+
+- what idea they are learning
+- what source supports it
+- what is interpretation
+- what remains uncertain
+- what to remember
+
 ## reader shell
 
 Use the shared reader shell.
@@ -159,6 +263,30 @@ The artifact should include:
 - metadata footer
 
 Reader shell owns reading behavior. `DESIGN.md` owns visual appearance. This template owns research structure.
+
+## anti-lifeless rules
+
+The guide fails if it feels like source text poured into a template.
+
+Avoid:
+
+- generic section cards with identical styling
+- long uninterrupted paragraphs
+- citations hidden at the bottom
+- no tension or central puzzle
+- a hero with no real thesis
+- examples that feel bolted on
+- limitations treated as a small afterthought
+- decorative animation with no learning purpose
+- paper summary language that never becomes usable intuition
+
+The guide should have a point of view:
+
+- name the core puzzle
+- explain why the paper’s move was clever
+- show what the reader can now see differently
+- make the limits easy to inspect
+- end with a question that creates thought
 
 ## quality bar
 
@@ -192,3 +320,22 @@ Good research guide:
 - limitations visible
 - examples make the idea usable
 - final question makes Ko think harder
+
+## full interaction list
+
+- paper map as the table of contents / learning route
+- sticky section navigation based on the paper map
+- progress or reading-position indicator
+- one prediction-before-reveal interaction before the key result
+- collapsible deep dives for methods, math, caveats, and citations
+- expandable evidence drawer that keeps sources visibly separate from interpretation
+- glossary cards with hover/click expansion
+- tabbed examples for technology, systems/business, and everyday life
+- “what changed my mind?” or “why this mattered” callout
+- limitations drawer or caution panel
+- memory card near the end
+- final question panel
+- reader shell navigation
+- back-to-top affordance
+- compact metadata footer
+- `/design-wiki` link
