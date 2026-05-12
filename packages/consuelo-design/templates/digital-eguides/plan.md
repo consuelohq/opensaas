@@ -169,24 +169,34 @@ Do not publish or hand off a plan guide with empty acceptance criteria.
 
 ## visual direction
 
-Do not render this as an all-white Markdown document.
+Make the plan guide feel like a Consuelo operating artifact: precise, structured, technical, calm, and editorial.
 
-Make it feel like a dark-mode operating console crossed with a polished editorial guide:
+Do not render this as an all-white Markdown document. Prefer a dark or adaptive reader surface: closer to an operating console crossed with a polished editorial guide.
 
-- dark adaptive reader surface
+Use `packages/consuelo-website/DESIGN.md` as the visual source of truth:
+
+- Geist typography
+- compact Geist Mono labels
+- restrained monochrome palette
+- shadow-as-border cards
+- strong whitespace
+- precise section hierarchy
+- technical labels and status pills
+- minimal decorative color
+
+The plan guide should include:
+
 - sticky table of contents
 - collapsible sections for dense details
 - timeline cards for phases
 - decision cards
-- risk drawer / open-question drawer
+- risk / open-question drawer
 - validation checklist cards
 - file/status table
 - metadata footer
 - reader shell navigation
 
-Use theme variables from the reader shell. Match device theme when possible; otherwise prefer dark mode.
-
-
+Do not invent a separate visual language. If dark mode or device-theme matching needs tokens that are not yet in `DESIGN.md`, extend the Consuelo design system tokens first, then apply them here.
 
 
 
