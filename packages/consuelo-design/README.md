@@ -111,10 +111,10 @@ Generated runtime state belongs in `.od/`, `out/`, or `artifacts/`; those are ig
 `consuelo-design` is tooling-only. It should stay outside Railway app and worker dependency graphs. `bun run consuelo-design check` includes the Railway exclusion guard before review when changing dependencies or Dockerfiles.
 
 
-## Design wiki archive
+## Consuelo Wiki archive
 
-Every `design.publish` call records the published artifact in the private design wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the wiki can filter it correctly. The wiki is automatically regenerated and published at `/design-wiki`.
+Every `design.publish` call records the published artifact in the private Consuelo Wiki. Pass `--name` for the human-readable artifact title and `--template <research|spec|plan>` when the artifact is a templated e-guide so the Consuelo Wiki can filter it correctly. The Consuelo Wiki is automatically regenerated and published at `/design-wiki`.
 
-`design.publish` now returns and records both HTTPS Serve URLs and direct tailnet HTTP URLs. The design wiki links prefer the direct tailnet HTTP URL so mobile reading does not depend on iOS accepting the HTTPS Serve path.
+`design.publish` now returns and records both HTTPS Serve URLs and direct tailnet HTTP URLs. The Consuelo Wiki links prefer the direct tailnet HTTP URL so mobile reading does not depend on iOS accepting the HTTPS Serve path.
 
-The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The wiki and every archived artifact are served by the same tailnet archive server.
+The publish path is durable. `design.publish` materializes local file or directory targets under the Open Design archive before registering the route, then points Tailscale Serve at the managed archive server. This avoids macOS path-serving restrictions and avoids per-artifact temporary servers. The Consuelo Wiki and every archived artifact are served by the same tailnet archive server.

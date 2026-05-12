@@ -80,7 +80,7 @@ Prefer a polished multi-panel reading surface with:
 - reader shell navigation
 - back-to-top affordance
 - compact metadata footer
-- `/design-wiki` link
+- `/design-wiki` Consuelo Wiki link
 
 The page should still be readable if scripts fail.
 
@@ -140,7 +140,7 @@ Use:
 - **callout card** for limitations
 - **three-column or stacked examples** for intuition builder
 - **closing panel** for the final question
-- **metadata footer** for source truth, generated date, template, Open Design path, and design wiki link
+- **metadata footer** for source truth, generated date, template, Open Design path, and Consuelo Wiki link
 
 Keep citations close to the claims they support.
 

@@ -112,7 +112,7 @@ Use:
 - tap-to-read navigation
 - back-to-top affordance
 - compact metadata footer
-- `/design-wiki` link
+- `/design-wiki` Consuelo Wiki link
 
 Do not make the guide feel like pasted Markdown. Use the living plan as the source structure, then turn it into a navigable planning interface.
 

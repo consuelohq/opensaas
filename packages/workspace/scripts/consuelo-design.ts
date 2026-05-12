@@ -895,77 +895,143 @@ function writeArchivePayload(payload: DesignArchivePayload): void {
   writeFileSync(DESIGN_ARCHIVE_DATA_PATH, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
+function displayTitleForArchiveEntry(entry: DesignArchiveEntry): string {
+  const rawTitle = entry.title.trim();
+  const dailyDeepIdeaPrefix = /^Daily Deep Idea(?::[^—-]+)?\s*[—-]\s*/i;
+  const researchPacketPrefix = /^Research Packet:?\s*/i;
+  const withoutPrefix = rawTitle.replace(dailyDeepIdeaPrefix, '').replace(researchPacketPrefix, '').trim();
+  return withoutPrefix || rawTitle;
+}
+
+function archiveSectionLabel(entry: DesignArchiveEntry): string {
+  if (entry.category === 'daily-deep-idea') return 'Featured';
+  return 'Recent Posts';
+}
+
 function renderArchiveIndex(payload: DesignArchivePayload): string {
-  const entries = [...payload.entries].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
-  const cards = entries.map((entry) => `
-    <article class="card" data-template="${escapeHtml(entry.template)}" data-category="${escapeHtml(entry.category)}">
-      <div class="meta"><span>${escapeHtml(new Date(entry.publishedAt).toLocaleDateString())}</span><span>${escapeHtml(entry.template)}</span><span>${escapeHtml(entry.category)}</span></div>
-      <h2><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(entry.title)}</a></h2>
-      <p>${escapeHtml(entry.path)}</p>
-    </article>`).join('\n') || '<p class="empty">No published design artifacts yet.</p>';
+  const visibleEntries = [...payload.entries]
+    .filter((entry) => entry.category !== 'research-packet')
+    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
+  const featuredEntries = visibleEntries.filter((entry) => archiveSectionLabel(entry) === 'Featured');
+  const recentEntries = visibleEntries.filter((entry) => archiveSectionLabel(entry) !== 'Featured');
+  const renderItems = (entries: DesignArchiveEntry[]) => entries.map((entry) => `
+        <article class="post-item" data-template="${escapeHtml(entry.template)}" data-category="${escapeHtml(entry.category)}">
+          <h3><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
+          <div class="post-meta" aria-label="Published date">▣ <time datetime="${escapeHtml(entry.publishedAt)}">${escapeHtml(new Date(entry.publishedAt).toLocaleDateString())}</time></div>
+          <p>${escapeHtml(entry.path)}</p>
+        </article>`).join('\n');
+  const featuredCards = renderItems(featuredEntries);
+  const recentCards = renderItems(recentEntries);
+  const emptyState = visibleEntries.length === 0 ? '<p class="empty">No published artifacts yet.</p>' : '';
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Consuelo Design Wiki</title>
+  <title>Consuelo Wiki</title>
   <style>
-    :root { color-scheme: light; --ink:#171717; --muted:#666; --line:#eaeaea; --soft:#fafafa; }
+    :root { color-scheme: light; --ink:#171717; --muted:#666; --quiet:#a3a3a3; --line:#eaeaea; --soft:#fafafa; }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin:0; font-family: Geist, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--ink); background:#fff; }
-    main { max-width:1120px; margin:0 auto; padding:40px 20px 96px; }
-    header { display:grid; gap:18px; padding:48px 0 32px; border-bottom:1px solid var(--line); }
-    .eyebrow, .meta { font-family:"Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; text-transform:uppercase; letter-spacing:.02em; color:var(--muted); }
-    h1 { margin:0; font-size:clamp(42px,8vw,88px); line-height:.92; letter-spacing:-.055em; font-weight:600; }
-    .lead { max-width:720px; color:var(--muted); font-size:18px; line-height:1.65; margin:0; }
-    .filters { position:sticky; top:0; z-index:3; display:flex; gap:8px; flex-wrap:wrap; padding:16px 0; background:rgba(255,255,255,.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
-    button { appearance:none; border:0; background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.1); border-radius:999px; padding:9px 13px; font:600 13px Geist, Inter, sans-serif; cursor:pointer; }
-    button.active { background:#171717; color:#fff; }
-    .grid { display:grid; gap:14px; padding-top:20px; }
-    .card { padding:22px; border-radius:14px; box-shadow:0 0 0 1px rgba(0,0,0,.08), 0 8px 22px -18px rgba(0,0,0,.28); background:#fff; }
-    .card h2 { margin:10px 0 8px; font-size:24px; letter-spacing:-.025em; }
-    .card a { color:inherit; text-decoration:none; }
-    .card a:hover { text-decoration:underline; text-underline-offset:4px; }
-    .card p { margin:0; color:var(--muted); font-size:14px; }
-    .meta { display:flex; gap:8px; flex-wrap:wrap; }
-    .meta span { border:1px solid var(--line); border-radius:999px; padding:4px 8px; background:var(--soft); }
-    footer { margin-top:56px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    body { margin:0; font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; color:var(--ink); background:#fff; }
+    .shell { max-width:680px; margin:0 auto; padding:0 18px 32px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); }
+    .brand { color:var(--ink); font-size:20px; font-weight:700; letter-spacing:.01em; text-decoration:none; }
+    .nav { display:flex; align-items:center; gap:22px; font-size:13px; }
+    .nav a { color:var(--ink); text-decoration:none; }
+    .nav a:hover, .brand:hover, .post-item h3 a:hover, .footer-links a:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    .search-mark { font-size:26px; line-height:1; transform:translateY(-1px); }
+    header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
+    h1 { margin:0 0 20px; font-size:44px; line-height:1; letter-spacing:-.05em; font-weight:800; }
+    .lead { margin:0 0 20px; color:var(--ink); font-size:14px; line-height:1.7; }
+    .filter-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
+    .filter-label { color:var(--ink); }
+    button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
+    button:hover { text-decoration-line:underline; text-decoration-style:dotted; text-decoration-thickness:1px; text-underline-offset:4px; }
+    button.active { font-weight:700; }
+    button.active::before { content:"["; color:var(--quiet); }
+    button.active::after { content:"]"; color:var(--quiet); }
+    .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
+    .section[data-empty="true"] { display:none; }
+    h2 { margin:0 0 24px; font-size:24px; line-height:1.15; letter-spacing:-.04em; font-weight:800; }
+    .post-list { display:grid; gap:26px; }
+    .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; letter-spacing:-.02em; font-weight:500; }
+    .post-item h3 a { color:inherit; text-decoration:none; }
+    .post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
+    .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
+    .empty { color:var(--quiet); font-size:14px; }
+    footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--ink); font-size:13px; }
+    .footer-links { display:flex; gap:10px; }
+    .footer-links a { color:var(--ink); text-decoration:none; }
+    @media (max-width: 680px) {
+      .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; }
+      .nav { gap:14px; flex-wrap:wrap; }
+      header.hero { padding-top:44px; }
+      h1 { font-size:38px; }
+      footer { flex-direction:column; align-items:flex-start; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <header>
-      <div class="eyebrow">Consuelo Design Wiki</div>
-      <h1>Published artifacts</h1>
-      <p class="lead">A private tailnet index of Open Design artifacts, ordered chronologically and filterable by e-guide template.</p>
+  <div class="shell">
+    <div class="topbar">
+      <a class="brand" href="${escapeHtml(DESIGN_ARCHIVE_PATH)}">Consuelo Wiki</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#featured">Featured</a>
+        <a href="#recent">Recent</a>
+        <span aria-hidden="true">▣</span>
+        <span class="search-mark" aria-hidden="true">⌕</span>
+      </nav>
+    </div>
+    <header class="hero">
+      <h1>Wiki</h1>
+      <p class="lead">Private tailnet notes, guides, and published artifacts from Consuelo.</p>
+      <div class="filter-row" aria-label="Filters">
+        <span class="filter-label">Filters:</span>
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="research">Research</button>
+        <button data-filter="spec">Spec</button>
+        <button data-filter="plan">Plan</button>
+        <button data-filter="uncategorized">Uncategorized</button>
+      </div>
     </header>
-    <nav class="filters" aria-label="Filters">
-      <button class="active" data-filter="all">All</button>
-      <button data-filter="research">Research</button>
-      <button data-filter="spec">Spec</button>
-      <button data-filter="plan">Plan</button>
-      <button data-filter="uncategorized">Uncategorized</button>
-    </nav>
-    <section class="grid" id="cards">${cards}
+    <section class="section" id="featured" data-section="featured" data-empty="${featuredEntries.length === 0}">
+      <h2>Featured</h2>
+      <div class="post-list">${featuredCards}</div>
     </section>
-    <footer>Generated ${escapeHtml(new Date(payload.updatedAt).toLocaleString())}. Source: ${escapeHtml(DESIGN_ARCHIVE_DATA_PATH)}.</footer>
-  </main>
+    <section class="section" id="recent" data-section="recent" data-empty="${recentEntries.length === 0}">
+      <h2>Recent Posts</h2>
+      <div class="post-list">${recentCards}</div>
+    </section>
+    ${emptyState}
+    <footer>
+      <span>© ${escapeHtml(new Date(payload.updatedAt).getFullYear().toString())} Consuelo. All rights reserved.</span>
+      <div class="footer-links" aria-label="Footer links"><a href="#featured">Featured</a><a href="#recent">Recent</a></div>
+    </footer>
+  </div>
   <script>
+    const sections = Array.from(document.querySelectorAll('[data-section]'));
+    const updateSections = () => {
+      sections.forEach((section) => {
+        const visibleItems = Array.from(section.querySelectorAll('.post-item')).filter((item) => !item.hidden);
+        section.hidden = visibleItems.length === 0;
+      });
+    };
     document.querySelectorAll('[data-filter]').forEach((button) => {
       button.addEventListener('click', () => {
         const filter = button.dataset.filter;
         document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
-        document.querySelectorAll('.card').forEach((card) => {
+        document.querySelectorAll('.post-item').forEach((card) => {
           card.hidden = filter !== 'all' && card.dataset.template !== filter;
         });
+        updateSections();
       });
     });
+    updateSections();
   </script>
 </body>
 </html>\n`;
 }
-
 function writeArchiveIndex(payload: DesignArchivePayload): void {
   mkdirSync(DESIGN_ARCHIVE_ROOT, { recursive: true });
   writeFileSync(DESIGN_ARCHIVE_INDEX_PATH, renderArchiveIndex(payload));
@@ -1058,12 +1124,12 @@ async function ensureArchiveServer(host: string): Promise<string> {
         await new Promise((resolve) => setTimeout(resolve, 150));
         if (await isArchiveServerRunning(host)) break;
       }
-      if (!(await isArchiveServerRunning(host))) throw new Error(`design wiki server did not start on ${host}:${DESIGN_ARCHIVE_PORT}`);
+      if (!(await isArchiveServerRunning(host))) throw new Error(`Consuelo Wiki server did not start on ${host}:${DESIGN_ARCHIVE_PORT}`);
     }
     return `http://${host}:${DESIGN_ARCHIVE_PORT}`;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`failed to start design wiki server: ${message}`);
+    throw new Error(`failed to start Consuelo Wiki server: ${message}`);
   }
 }
 
@@ -1096,12 +1162,12 @@ async function updateDesignArchive(args: ParsedArgs, servePath: string, url: str
     const archiveDirectUrl = `http://${tailscaleSelf.ip}:${DESIGN_ARCHIVE_PORT}${DESIGN_ARCHIVE_PATH}`;
     const archiveResult = await runCommand([tailscaleBin, 'serve', '--bg', '--yes', '--set-path', DESIGN_ARCHIVE_PATH, wikiTarget], REPO_ROOT);
     if (archiveResult.exitCode !== 0) {
-      throw new Error(`tailscale serve failed for design wiki: ${archiveResult.stderr || archiveResult.stdout || `exit ${archiveResult.exitCode}`}`);
+      throw new Error(`tailscale serve failed for Consuelo Wiki: ${archiveResult.stderr || archiveResult.stdout || `exit ${archiveResult.exitCode}`}`);
     }
     return { path: DESIGN_ARCHIVE_PATH, url: archiveUrl, directUrl: archiveDirectUrl, target: wikiTarget, entries: payload.entries.length };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`failed to update design wiki archive: ${message}`);
+    throw new Error(`failed to update Consuelo Wiki archive: ${message}`);
   }
 }
 
