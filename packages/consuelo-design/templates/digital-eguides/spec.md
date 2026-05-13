@@ -757,9 +757,7 @@ The checklist can be long. Prefer completeness over brevity. When every item is 
 ## sticky spec navigation
 
 Every Open Design spec should include a mobile-friendly sticky pill header.
-
 The header should:
-
 - stay fixed at the top of the reader
 - use a rounded pill / floating nav treatment
 - include the artifact or product name on the left
@@ -768,36 +766,29 @@ The header should:
 - keep working on mobile without wrapping into multiple rows
 - allow horizontal scrolling for section links on small screens
 - preserve `/design-wiki` access through the brand link
-
 Default section links:
-
 - Summary
 - Requirements
 - Design
 - Decisions
 - Validation
-
 The far-right action button should be visually distinct and should always be:
 
-Task
+**Task**
 
 The Task button must link to the bottom ship checklist:
+
 <a class="reader-task-button" href="#ship-checklist">Task</a>
 
 The purpose of the button is to make the spec executable: no matter where Ko is reading, he can jump straight to the completion ledger.
 
-And add this implementation note under `component guidance`:
+required markup
 
-```md
-Use a sticky pill header for spec navigation.
-
-Required structure:
-
-```html
 <header class="reader-header" data-no-tap-scroll>
   <nav class="reader-nav-shell" aria-label="Spec navigation">
-    <a class="reader-brand" href="/design-wiki">Artifact Name</a>
-
+    <a class="reader-brand" href="/design-wiki" aria-label="Open Consuelo Wiki">
+      Artifact Name
+    </a>
     <div class="reader-links" aria-label="Main sections">
       <a href="#summary">Summary</a>
       <a href="#requirements">Requirements</a>
@@ -805,14 +796,67 @@ Required structure:
       <a href="#decisions">Decisions</a>
       <a href="#validation">Validation</a>
     </div>
-
     <a class="reader-task-button" href="#ship-checklist">Task</a>
+    <span class="progress-track" aria-hidden="true">
+      <span class="progress-bar"></span>
+    </span>
   </nav>
 </header>
 
-CSS snippet:
+required behavior
 
-```css
+Do not rely on native hash-anchor jumping for the sticky header links. Native anchor scrolling can fight ScrollSmoother and can land sections underneath the fixed header.
+
+All in-page header links must be routed through the reader shell’s GSAP scroll helper.
+
+Required behavior:
+
+* intercept links with href^="#"
+* prevent default browser anchor jump
+* find the target section by ID
+* calculate a header-aware offset
+* call the existing scrollToY(...) helper
+* update the URL hash after the GSAP scroll begins
+* make Task scroll to #ship-checklist
+
+Use this pattern inside the reader shell script, after scrollToY(...) is defined:
+
+const scrollToSection = (section, duration = 0.85) => {
+  if (!section) return;
+  const header = document.querySelector(".reader-header");
+  const offset = header
+    ? Math.max(72, Math.round(header.getBoundingClientRect().height + 18))
+    : 72;
+  const y = section.getBoundingClientRect().top + window.scrollY - offset;
+  scrollToY(y, duration);
+};
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", (event) => {
+    const href = anchor.getAttribute("href");
+    if (!href || href === "#") return;
+    const id = href.slice(1);
+    const section = document.getElementById(id);
+    if (!section) return;
+    event.preventDefault();
+    scrollToSection(
+      section,
+      anchor.classList.contains("reader-task-button") ? 1.05 : 0.85
+    );
+    if (history.pushState) {
+      history.pushState(null, "", href);
+    }
+  });
+});
+
+Set a small debug flag so validation can confirm the behavior is active:
+
+window.__readerShell = {
+  ...window.__readerShell,
+  gsapAnchorScroll: true
+};
+
+required CSS
+
 .reader-header {
   position: fixed;
   inset: 0 0 auto 0;
@@ -824,7 +868,6 @@ CSS snippet:
   padding: 0 clamp(12px, 4vw, 44px);
   pointer-events: none;
 }
-
 .reader-nav-shell {
   pointer-events: auto;
   width: min(960px, calc(100vw - 24px));
@@ -840,7 +883,6 @@ CSS snippet:
   box-shadow: 0 10px 30px rgba(28, 26, 23, .08);
   backdrop-filter: blur(16px);
 }
-
 .reader-brand {
   color: var(--ink);
   text-decoration: none;
@@ -848,7 +890,6 @@ CSS snippet:
   font-family: var(--serif);
   font-size: 16px;
 }
-
 .reader-links {
   display: flex;
   align-items: center;
@@ -859,18 +900,18 @@ CSS snippet:
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
-
 .reader-links::-webkit-scrollbar {
   display: none;
 }
-
 .reader-links a {
   color: rgba(28, 26, 23, .72);
   text-decoration: none;
   white-space: nowrap;
   font-size: 13px;
 }
-
+.reader-links a:hover {
+  color: var(--terracotta);
+}
 .reader-task-button {
   display: inline-flex;
   align-items: center;
@@ -884,13 +925,15 @@ CSS snippet:
   font-weight: 650;
   white-space: nowrap;
 }
-
+.reader-task-button:hover {
+  background: #AA4327;
+  color: var(--paper);
+}
 @media (max-width: 720px) {
   .reader-header {
     height: 62px;
     padding: 0 8px;
   }
-
   .reader-nav-shell {
     width: calc(100vw - 16px);
     min-height: 42px;
@@ -898,40 +941,85 @@ CSS snippet:
     gap: 8px;
     grid-template-columns: auto minmax(0, 1fr) auto;
   }
-
   .reader-brand {
     font-size: 15px;
     max-width: 116px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .reader-links {
     justify-content: flex-start;
     gap: 14px;
-    mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(
+      90deg,
+      #000 0%,
+      #000 calc(100% - 18px),
+      transparent 100%
+    );
   }
-
   .reader-links a,
   .reader-task-button {
     font-size: 12px;
   }
-
   .reader-task-button {
     min-height: 30px;
     padding: 0 13px;
   }
 }
-
 @media (max-width: 460px) {
   .reader-brand {
     max-width: 90px;
   }
-
   .reader-links a:nth-child(n+4) {
     display: none;
   }
 }
 
+JavaScript that intercepts hash links 
 
+const scrollToSection = (section, duration = 0.85) => {
+  if (!section) return;
+
+  const header = document.querySelector(".reader-header");
+  const offset = header
+    ? Math.max(72, Math.round(header.getBoundingClientRect().height + 18))
+    : 72;
+
+  const y = section.getBoundingClientRect().top + window.scrollY - offset;
+  scrollToY(y, duration);
+};
+
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", (event) => {
+    const href = anchor.getAttribute("href");
+    if (!href || href === "#") return;
+
+    const id = href.slice(1);
+    const section = document.getElementById(id);
+    if (!section) return;
+
+    event.preventDefault();
+
+    scrollToSection(
+      section,
+      anchor.classList.contains("reader-task-button") ? 1.05 : 0.85
+    );
+
+    if (history.pushState) {
+      history.pushState(null, "", href);
+    }
+  });
+});
+
+validation
+
+Before publishing, verify:
+
+* sticky pill header renders at the top
+* brand links to /design-wiki
+* main links route through GSAP, not native anchor jump
+* Task scrolls to #ship-checklist
+* target section lands below the sticky header
+* mobile width does not wrap the nav into two rows
+* window.__readerShell.gsapAnchorScroll === true
 
