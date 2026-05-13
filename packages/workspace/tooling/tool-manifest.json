@@ -2341,6 +2341,459 @@
     "sessionRequired": false
   },
   {
+    "name": "browser.get",
+    "methodPath": [
+      "browser",
+      "get"
+    ],
+    "description": "get text, html, value, attributes, title, or URL from the current page",
+    "category": "utilities",
+    "underlying": "workspace browser.get",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserGetInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "get",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "target",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "selector",
+          "kind": "value"
+        },
+        {
+          "source": "attribute",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "target": "title",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.find",
+    "methodPath": [
+      "browser",
+      "find"
+    ],
+    "description": "find an element by role, text, label, placeholder, alt text, title, or test id and run an action",
+    "category": "utilities",
+    "underlying": "workspace browser.find",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserFindInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "find",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "by",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "value",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "flag": "--name",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "by": "role",
+      "value": "button",
+      "action": "click",
+      "name": "Submit",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.wait",
+    "methodPath": [
+      "browser",
+      "wait"
+    ],
+    "description": "wait for a selector, duration, text, URL, load state, JavaScript condition, or download",
+    "category": "utilities",
+    "underlying": "workspace browser.wait",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserWaitInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "wait",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "target",
+          "kind": "value"
+        },
+        {
+          "source": "text",
+          "flag": "--text",
+          "kind": "value"
+        },
+        {
+          "source": "url",
+          "flag": "--url",
+          "kind": "value"
+        },
+        {
+          "source": "load",
+          "flag": "--load",
+          "kind": "value"
+        },
+        {
+          "source": "fn",
+          "flag": "--fn",
+          "kind": "value"
+        },
+        {
+          "source": "download",
+          "flag": "--download",
+          "kind": "boolean"
+        }
+      ]
+    },
+    "exampleInput": {
+      "load": "networkidle",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.download",
+    "methodPath": [
+      "browser",
+      "download"
+    ],
+    "description": "click an element and save the triggered download to a path",
+    "category": "utilities",
+    "underlying": "workspace browser.download",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserDownloadInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "download",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "ref",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "path",
+          "kind": "value",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "ref": "@e1",
+      "path": "/tmp/download.bin",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.tabs",
+    "methodPath": [
+      "browser",
+      "tabs"
+    ],
+    "description": "list, create, select, or close browser tabs with stable labels when needed",
+    "category": "utilities",
+    "underlying": "workspace browser.tabs",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserTabsInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "tabs",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value"
+        },
+        {
+          "source": "target",
+          "kind": "value"
+        },
+        {
+          "source": "url",
+          "kind": "value"
+        },
+        {
+          "source": "label",
+          "flag": "--label",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "list",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.cookies",
+    "methodPath": [
+      "browser",
+      "cookies"
+    ],
+    "description": "list, set, or clear browser cookies for the current browser session",
+    "category": "utilities",
+    "underlying": "workspace browser.cookies",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserCookiesInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "cookies",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value"
+        },
+        {
+          "source": "name",
+          "kind": "value"
+        },
+        {
+          "source": "value",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "list",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.network",
+    "methodPath": [
+      "browser",
+      "network"
+    ],
+    "description": "inspect or manage browser network requests, routes, and HAR capture",
+    "category": "utilities",
+    "underlying": "workspace browser.network",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserNetworkInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "network",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "args",
+          "kind": "array",
+          "required": true
+        }
+      ]
+    },
+    "exampleInput": {
+      "args": [
+        "requests"
+      ],
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.dialog",
+    "methodPath": [
+      "browser",
+      "dialog"
+    ],
+    "description": "accept or dismiss browser dialogs",
+    "category": "utilities",
+    "underlying": "workspace browser.dialog",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserDialogInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "dialog",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "dismiss",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.trace",
+    "methodPath": [
+      "browser",
+      "trace"
+    ],
+    "description": "start or stop browser tracing and optionally write a trace file",
+    "category": "utilities",
+    "underlying": "workspace browser.trace",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "path",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "start",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
+    "name": "browser.clipboard",
+    "methodPath": [
+      "browser",
+      "clipboard"
+    ],
+    "description": "read from or write to the browser clipboard",
+    "category": "utilities",
+    "underlying": "workspace browser.clipboard",
+    "capabilities": {
+      "readOnly": false,
+      "mutating": true,
+      "deterministic": false,
+      "safeToRetry": false
+    },
+    "defaultTimeout": 300000,
+    "inputSchema": "BrowserClipboardInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "browser",
+      "subcommand": "clipboard",
+      "branchMode": "none",
+      "arguments": [
+        {
+          "source": "action",
+          "kind": "value",
+          "required": true
+        },
+        {
+          "source": "text",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "action": "read",
+      "dryRun": true
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "sentry.config",
     "methodPath": [
       "sentry",

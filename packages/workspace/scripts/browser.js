@@ -347,12 +347,77 @@ function cmdFind(argv) {
   if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
 }
 
+function cmdGet(argv) {
+  const [, target, ...rest] = argv;
+  const normalizedTarget = target === 'attribute' ? 'attr' : target;
+  const args = ['get'];
+  if (normalizedTarget) args.push(normalizedTarget);
+  args.push(...rest);
+  const result = run(args);
+  if (result.stdout) writeStdout(result.stdout);
+  if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
+}
+
 function cmdBatch(argv) {
   // pass everything after 'batch' straight through
   const args = argv.slice(1);
   const result = run(['batch', ...args], { silent: false });
   if (result.stdout) writeStdout(result.stdout);
   if (!result.ok && result.stderr) writeStdout(`error: ${result.stderr}`);
+}
+
+function cmdTabs(argv) {
+  const action = argv[1];
+  const parts = argv.slice(2);
+  const labelIndex = parts.indexOf('--label');
+  const label = labelIndex >= 0 ? parts[labelIndex + 1] : null;
+  const positional = parts.filter((_, index) => index !== labelIndex && index !== labelIndex + 1);
+
+  if (!action || action === 'list') {
+    cmdRaw(['tab']);
+    return;
+  }
+
+  if (action === 'new') {
+    const args = ['tab', 'new'];
+    if (label) args.push('--label', label);
+    const destination = positional.at(-1);
+    if (destination) args.push(destination);
+    cmdRaw(args);
+    return;
+  }
+
+  if (action === 'select' || action === 'switch') {
+    const target = positional[0];
+    if (!target) {
+      writeStdout('error: target tab id or label required');
+      return;
+    }
+    cmdRaw(['tab', target]);
+    return;
+  }
+
+  if (action === 'close') {
+    const args = ['tab', 'close'];
+    if (positional[0]) args.push(positional[0]);
+    cmdRaw(args);
+    return;
+  }
+
+  cmdRaw(['tab', action, ...parts]);
+}
+
+function cmdCookies(argv) {
+  const [, action, name, value] = argv;
+  if (!action || action === 'list') {
+    cmdRaw(['cookies']);
+    return;
+  }
+
+  const args = ['cookies', action];
+  if (name) args.push(name);
+  if (value) args.push(value);
+  cmdRaw(args);
 }
 
 function main() {
@@ -453,6 +518,9 @@ function main() {
     case 'eval':
       cmdEval(args.slice(1).join(' '));
       break;
+    case 'get':
+      cmdGet(argv);
+      break;
     case 'close':
       run(['close', '--all'], { useProfile: false }); writeStdout('browser closed'); break;
 
@@ -471,10 +539,13 @@ function main() {
     case 'tab':
       cmdRaw(argv);
       break;
+    case 'tabs':
+      cmdTabs(argv);
+      break;
 
     // cookies / storage
     case 'cookies':
-      cmdRaw(argv);
+      cmdCookies(argv);
       break;
     case 'storage':
       cmdRaw(argv);
