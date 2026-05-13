@@ -51,6 +51,7 @@ const DESIGN_ARCHIVE_SERVER_PATH = path.join(DESIGN_ARCHIVE_ROOT, 'server.ts');
 const DESIGN_ARCHIVE_ARTIFACTS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'artifacts');
 const DESIGN_ARCHIVE_PORT = 53935;
 const DESIGN_ARCHIVE_PATH = '/design-wiki';
+const DESIGN_WORK_ORDERS_ROOT = path.join(DESIGN_ARCHIVE_ROOT, 'work-orders');
 
 type ParsedArgs = {
   command: string;
@@ -58,6 +59,7 @@ type ParsedArgs = {
   json: boolean;
   quiet: boolean;
   dryRun: boolean;
+  live: boolean;
   name?: string;
   prompt?: string;
   template?: string;
@@ -121,70 +123,70 @@ const WORKFLOW_CONFIGS: Record<WorkflowId, WorkflowConfig> = {
     title: 'Website',
     skillId: 'saas-landing',
     fallbackSkillIds: ['web-prototype', 'web-prototype-taste-editorial'],
-    description: 'Start a live website design/build session using Consuelo visual, motion, and website agent context.',
+    description: 'Create a headless website design/build work order using Consuelo visual, motion, and website agent context.',
     projectPrefix: 'Consuelo Website',
     includeWebsiteContext: true,
-    promptLead: 'Create or iterate on a Consuelo website artifact. Use the website design, motion, and agent context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo website artifact. Use this work order, the website design/motion context, and local source files as the source of truth.',
   },
   demo: {
     id: 'demo',
     title: 'Demo',
     skillId: 'web-prototype',
     fallbackSkillIds: ['dashboard', 'mobile-app', 'simple-deck'],
-    description: 'Start a live prototype/demo session for walkthroughs, product stories, or proof-of-concept screens.',
+    description: 'Create a headless prototype/demo work order for walkthroughs, product stories, or proof-of-concept screens.',
     projectPrefix: 'Consuelo Demo',
     includeWebsiteContext: false,
-    promptLead: 'Create or iterate on a Consuelo demo artifact. Use the Consuelo design context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo demo artifact. Use this work order and Consuelo design context as source of truth.',
   },
   'image-brief': {
     id: 'image-brief',
     title: 'Image Brief',
     skillId: 'image-poster',
     fallbackSkillIds: ['magazine-poster', 'social-carousel', 'video-shortform', 'web-prototype'],
-    description: 'Start a live image/media ideation session grounded in Consuelo visual rules.',
+    description: 'Create a headless image/media ideation work order grounded in Consuelo visual rules.',
     projectPrefix: 'Consuelo Image',
     includeWebsiteContext: false,
-    promptLead: 'Create or iterate on a Consuelo image-generation brief and previewable visual artifact. Use the Consuelo design context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo image-generation brief and previewable visual artifact. Use this work order and Consuelo design context as source of truth.',
   },
   'digital-eguide': {
     id: 'digital-eguide',
     title: 'Digital E-guide',
     skillId: 'digital-eguide',
     fallbackSkillIds: ['web-prototype', 'simple-deck'],
-    description: 'Start a live long-form digital e-guide artifact session.',
+    description: 'Create a headless long-form digital e-guide work order.',
     projectPrefix: 'Consuelo Digital E-guide',
     includeWebsiteContext: false,
-    promptLead: 'Create or iterate on a Consuelo digital e-guide artifact. Use the Consuelo design context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo digital e-guide artifact. Use this work order, selected template, reader shell, and Consuelo design context as source of truth.',
   },
   email: {
     id: 'email',
     title: 'Email',
     skillId: 'email-marketing',
     fallbackSkillIds: ['web-prototype'],
-    description: 'Start a live email design/content artifact session.',
+    description: 'Create a headless email design/content artifact work order.',
     projectPrefix: 'Consuelo Email',
     includeWebsiteContext: false,
-    promptLead: 'Create or iterate on a Consuelo email artifact. Use the Consuelo design context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo email artifact. Use this work order and Consuelo design context as source of truth.',
   },
   'motion-frame': {
     id: 'motion-frame',
     title: 'Motion Frame',
     skillId: 'motion-frames',
     fallbackSkillIds: ['hyperframes', 'web-prototype'],
-    description: 'Start a live motion-frame session for GSAP, HyperFrames, and video handoff work.',
+    description: 'Create a headless motion-frame work order for GSAP, HyperFrames, and video handoff work.',
     projectPrefix: 'Consuelo Motion Frame',
     includeWebsiteContext: true,
-    promptLead: 'Create or iterate on a Consuelo motion-frame artifact. Use the Consuelo design and motion context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo motion-frame artifact. Use this work order plus Consuelo design and motion context as source of truth.',
   },
   hyperframes: {
     id: 'hyperframes',
     title: 'HyperFrames Render',
     skillId: 'hyperframes',
     fallbackSkillIds: ['motion-frames'],
-    description: 'Start a live HyperFrames HTML-to-MP4 render session.',
+    description: 'Create a headless HyperFrames HTML-to-MP4 render work order.',
     projectPrefix: 'Consuelo HyperFrames',
     includeWebsiteContext: true,
-    promptLead: 'Create or iterate on a Consuelo HyperFrames motion graphics artifact and prepare it for HTML-to-MP4 rendering. Use the Consuelo design and motion context below as source of truth.',
+    promptLead: 'Create or iterate on a Consuelo HyperFrames motion graphics artifact and prepare it for HTML-to-MP4 rendering. Use this work order plus Consuelo design and motion context as source of truth.',
   },
 };
 
@@ -224,6 +226,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   let json = false;
   let quiet = false;
   let dryRun = false;
+  let live = false;
   let name: string | undefined;
   let prompt: string | undefined;
   let template: string | undefined;
@@ -241,6 +244,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       quiet = true;
     } else if (arg === '--dry-run') {
       dryRun = true;
+    } else if (arg === '--live' || arg === '--ui-session') {
+      live = true;
     } else if (arg === '--name') {
       name = argv[index + 1];
       index += 1;
@@ -278,6 +283,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     json,
     quiet,
     dryRun,
+    live,
     name,
     prompt,
     template,
@@ -656,7 +662,7 @@ function buildWorkflowPrompt(workflow: WorkflowConfig, args: ParsedArgs): string
     suppliedPrompt,
     templateBlock,
     'Do not treat upstream Open Design design systems as Consuelo truth unless Ko explicitly asks for a reference skin. Use the attached Consuelo files as the source of truth.',
-    'Start with a useful artifact in the Open Design preview, then iterate with Ko in the live workspace.',
+    'Generated prompt = work order, not chat message. Execute this directly by creating/editing local artifact source, validating in browser, and publishing with design.publish unless Ko explicitly asks for a live Open Design UI session.',
     'Consuelo context follows.',
     fileBlocks,
   ].filter(Boolean).join('\n\n');
@@ -708,6 +714,66 @@ async function createWorkflowProject(workflow: WorkflowConfig, runtime: RuntimeU
   }
   const projectUrl = `${runtime.webUrl.replace(/\/$/, '')}/projects/${encodeURIComponent(id)}`;
   return { id, name, projectUrl, pendingPrompt, workflow: workflow.id, skillId: workflow.skillId, template: args.template ?? null };
+}
+
+
+function workOrderNameFor(workflow: WorkflowConfig, args: ParsedArgs): string {
+  return args.name ?? `${workflow.projectPrefix} ${timestampLabel()}`;
+}
+
+function workOrderSlugFor(workflow: WorkflowConfig, name: string): string {
+  return `${workflow.id}-${slugify(name)}-${timestampLabel()}`;
+}
+
+function writeWorkflowWorkOrder(workflow: WorkflowConfig, args: ParsedArgs, prompt: string, name: string): string {
+  const slug = workOrderSlugFor(workflow, name);
+  const relativePath = path.join('work-orders', `${slug}.md`);
+  const absolutePath = path.join(DESIGN_ARCHIVE_ROOT, relativePath);
+  mkdirSync(path.dirname(absolutePath), { recursive: true });
+  writeFileSync(absolutePath, prompt.endsWith('\n') ? prompt : `${prompt}\n`);
+  return absolutePath;
+}
+
+function buildWorkflowWorkOrder(workflow: WorkflowConfig, args: ParsedArgs): { ok: true; mode: 'headless-work-order'; workflow: WorkflowId; artifact: { name: string; skillId: string; metadata: Record<string, unknown> }; workOrder: string; workOrderPath: string | null; sourceFiles: string[]; nextSteps: string[]; liveUi: { flag: '--live'; note: string } } {
+  const pendingPrompt = buildWorkflowPrompt(workflow, args);
+  const name = workOrderNameFor(workflow, args);
+  const workOrderPath = args.dryRun ? null : writeWorkflowWorkOrder(workflow, args, pendingPrompt, name);
+  const sourceFiles = getWorkflowContextFiles(workflow).map((file) => file.path);
+  if (workflow.id === 'digital-eguide' && args.template) {
+    sourceFiles.push(`${DIGITAL_EGUIDE_TEMPLATE_DIR}/${args.template}.md`, DIGITAL_EGUIDE_READER_SHELL_PATH);
+  }
+
+  return {
+    ok: true,
+    mode: 'headless-work-order',
+    workflow: workflow.id,
+    artifact: {
+      name,
+      skillId: workflow.skillId,
+      metadata: {
+        source: 'consuelo-design',
+        workflow: workflow.id,
+        primarySkill: workflow.skillId,
+        fallbackSkillIds: workflow.fallbackSkillIds,
+        template: args.template ?? null,
+        designSystem: 'consuelo',
+      },
+    },
+    workOrder: pendingPrompt,
+    workOrderPath,
+    sourceFiles,
+    nextSteps: [
+      'Do not send the generated prompt into Open Design chat by default.',
+      'Read the listed source files, then create or edit the local artifact source directly.',
+      'Validate the artifact with browser tools.',
+      'Publish durable Tailnet links with design.publish.',
+      'Verify the artifact URL and /design-wiki entry.',
+    ],
+    liveUi: {
+      flag: '--live',
+      note: 'Use --live only when Ko explicitly wants a headed Open Design UI/operator session.',
+    },
+  };
 }
 
 function workflowFromArgs(args: ParsedArgs): WorkflowConfig {
@@ -1232,10 +1298,26 @@ async function publishDesign(args: ParsedArgs): Promise<void> {
 }
 async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs): Promise<void> {
   try {
+    if (!args.live) {
+      const workOrder = buildWorkflowWorkOrder(workflow, args);
+      if (args.json) {
+        printJson(workOrder);
+        return;
+      }
+      writeStdout(`${workflow.title} work order ready\n`);
+      writeStdout(`mode: headless-work-order\n`);
+      writeStdout(`skill: ${workflow.skillId}\n`);
+      writeStdout(`artifact: ${workOrder.artifact.name}\n`);
+      if (workOrder.workOrderPath) writeStdout(`workOrder: ${path.relative(REPO_ROOT, workOrder.workOrderPath)}\n`);
+      writeStdout('next: create/edit the local artifact source directly, validate in browser, then publish with design.publish. Use --live only for a headed Open Design UI session.\n');
+      return;
+    }
+
     if (args.dryRun) {
       const prompt = buildWorkflowPrompt(workflow, args);
       const plan = {
         workflow: workflow.id,
+        mode: 'live-open-design-session',
         startCommand: ['corepack', 'pnpm', 'tools-dev', 'start', 'web', '--json'],
         project: {
           name: args.name ?? `${workflow.projectPrefix} ${timestampLabel()}`,
@@ -1253,7 +1335,7 @@ async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs):
         },
       };
       if (args.json) printJson(plan);
-      else writeStdout(`${workflow.title} session dry-run\nskill: ${workflow.skillId}\nproject: ${plan.project.name}\n`);
+      else writeStdout(`${workflow.title} live session dry-run\nskill: ${workflow.skillId}\nproject: ${plan.project.name}\n`);
       return;
     }
 
@@ -1261,11 +1343,11 @@ async function startWorkflowSession(workflow: WorkflowConfig, args: ParsedArgs):
     const project = await createWorkflowProject(workflow, runtime, args);
     await openUrl(project.projectUrl, args);
     if (args.json) {
-      printJson({ ok: true, runtime, project });
+      printJson({ ok: true, mode: 'live-open-design-session', runtime, project });
       return;
     }
     if (!args.quiet) {
-      writeStdout(`${workflow.title} session ready\n`);
+      writeStdout(`${workflow.title} live session ready\n`);
       writeStdout(`project: ${project.name}\n`);
       writeStdout(`skill: ${workflow.skillId}\n`);
       writeStdout(`url: ${project.projectUrl}\n`);
@@ -1303,13 +1385,13 @@ Bun-first Consuelo facade over vendored Open Design.
 
 Commands:
   run                         Start Open Design daemon + web in foreground
-  generate website            Start/open a website working session
-  generate demo               Start/open a demo working session
-  generate image-brief        Start/open an image/media working session
-  generate digital-eguide     Start/open a digital e-guide working session
-  generate email              Start/open an email working session
-  generate motion-frame       Start/open a motion-frame working session
-  render hyperframes          Start/open a HyperFrames render working session
+  generate website            Create a headless website work order (use --live for UI)
+  generate demo               Create a headless demo work order (use --live for UI)
+  generate image-brief        Create a headless image/media work order (use --live for UI)
+  generate digital-eguide     Create a headless digital e-guide work order (use --live for UI)
+  generate email              Create a headless email work order (use --live for UI)
+  generate motion-frame       Create a headless motion-frame work order (use --live for UI)
+  render hyperframes          Create a headless HyperFrames work order (use --live for UI)
   publish                     Publish a design artifact through private Tailscale Serve
   list-skills                 Show upstream skills and Consuelo workflow mapping
   list-design-systems         Show Consuelo default plus upstream reference systems
@@ -1321,9 +1403,10 @@ Commands:
 Flags:
   --json                      Print structured JSON where supported
   --quiet                     Suppress success text where supported
-  --dry-run                   Print the plan instead of starting runtimes or creating projects
+  --dry-run                   Print the work order plan without writing files or starting runtimes
+  --live                      Start/open a headed Open Design UI session instead of headless work-order mode
   --name <name>               Override generated Open Design project name
-  --prompt <brief>            Attach Ko's brief to the generated Open Design pending prompt
+  --prompt <brief>            Attach Ko's brief to the generated work order
   --template <research|spec|plan>  Select/archive a digital e-guide template for generate/publish
   --target <url|path>          Target URL/file/directory for publish
   --portless-name <name>        Resolve target with portless get <name>

@@ -32,22 +32,23 @@ Do not include `animations.md` or website `AGENTS.md` in base `get-design-system
 
 ## Open Design mental model
 
-Open Design is a live design workspace, not a static prompt generator.
+Open Design is Consuelo's design-system, template, project, preview, and archive layer. It is not the default worker.
 
-The loop is:
+For Ko's normal artifact requests, prefer headless artifact execution:
 
 ```text
-start Open Design
-  -> browser UI opens
-  -> pick/use skill
-  -> pick/use design system context
-  -> create project/session
-  -> agent works in the project folder
-  -> artifact renders live
-  -> Ko and the agent iterate together
+brief
+  -> generated work order
+  -> read Consuelo DESIGN.md + selected template
+  -> create/edit local artifact source directly
+  -> validate with browser tools
+  -> publish through design.publish
+  -> verify /design-wiki
 ```
 
-The Consuelo facade should preserve that loop. If a command says `generate website`, it should start or reuse Open Design, create/open a project, attach the right Consuelo prompt context, and take Ko to the working session.
+A generated prompt is a work order, not a chat message. Do not send it into the Open Design chat by default.
+
+Use a headed Open Design UI session only when Ko explicitly asks for live visual collaboration, project inspection, manual iteration, or a visible preview workspace. `generate ... --live` preserves the old live-session loop.
 
 ## operator commands
 
@@ -67,7 +68,7 @@ bun run consuelo-design list-design-systems
 bun run consuelo-design check
 ```
 
-`run` starts the Open Design UI in the foreground. `generate ...` and `render hyperframes` should be smart enough to start the background web runtime and open the correct project URL.
+`run` starts the Open Design UI in the foreground. `generate ...` and `render hyperframes` default to a headless work order. Pass `--live` when Ko explicitly wants the background web runtime and project URL opened.
 
 ## typed tool facade
 
@@ -121,7 +122,7 @@ Use this mapping unless Ko changes it:
 
 ### digital e-guide templates
 
-`generate digital-eguide` supports an optional `--template <research|spec|plan>` hint. The command still uses the `digital-eguide` Open Design skill; the template shapes the artifact inside the existing workflow.
+`generate digital-eguide` supports an optional `--template <research|spec|plan>` hint. The command returns a headless work order by default; the template shapes the artifact the agent should create locally.
 
 Template meanings:
 
@@ -131,7 +132,7 @@ Template meanings:
 
 Templates live in `packages/consuelo-design/templates/digital-eguides/`. Do not add new facade commands for these variants. Pass a template hint when the artifact type is known; otherwise let the operator choose from the brief.
 
-A prepared prompt in the Open Design UI is the operator handoff. Continue from that prompt, use the selected template, build or hydrate the editable artifact, verify the Design Files pane, preview, and publish only after the final URL renders the artifact.
+A prepared prompt is the work order. Execute it directly: read the selected template, build or edit the local artifact source, validate it in browser, and publish only after the final URL renders the artifact. Do not paste the prompt into Open Design chat unless Ko explicitly asked for `--live`.
 
 ## Railway boundary
 

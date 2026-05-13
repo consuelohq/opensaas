@@ -16,6 +16,9 @@ const branchField = {
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
 const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
+const liveField = {
+  live: z.boolean().optional(),
+};
 
 export const EmptyInput = z.object({
   ...requestFields,
@@ -58,6 +61,7 @@ export const ConsueloDesignUiInput = z.object({
 export const ConsueloDesignSessionInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...liveField,
   name: optionalString,
   prompt: optionalString,
   timeout: z.number().int().positive().optional(),
@@ -66,6 +70,7 @@ export const ConsueloDesignSessionInput = z.object({
 export const ConsueloDesignDigitalEguideInput = z.object({
   ...requestFields,
   ...dryRunField,
+  ...liveField,
   name: optionalString,
   prompt: optionalString,
   template: digitalEguideTemplate,
@@ -738,8 +743,8 @@ export const schemaTypeSignatures: Record<string, string> = {
   DesignPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
   ConsueloDesignUiInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }',
-  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }',
-  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
+  ConsueloDesignSessionInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }',
+  ConsueloDesignDigitalEguideInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }',
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
