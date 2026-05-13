@@ -5006,7 +5006,7 @@ example error envelope:
 
 open app.consuelohq.com with the browser wrapper
 
-- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.app`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5017,6 +5017,7 @@ example call:
 await workspace.call({
   "tool": "browser.app",
   "input": {
+    "preset": "desktop",
     "dryRun": true
   }
 });
@@ -5232,7 +5233,7 @@ example error envelope:
 
 open consuelo.consuelohq.com with the browser wrapper
 
-- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.consuelo`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5243,6 +5244,7 @@ example call:
 await workspace.call({
   "tool": "browser.consuelo",
   "input": {
+    "preset": "desktop",
     "dryRun": true
   }
 });
@@ -5809,7 +5811,7 @@ example error envelope:
 
 open a URL with the browser wrapper
 
-- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.open`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5821,6 +5823,8 @@ await workspace.call({
   "tool": "browser.open",
   "input": {
     "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
     "dryRun": true
   }
 });
@@ -5984,7 +5988,7 @@ example error envelope:
 
 capture a browser screenshot
 
-- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.screenshot`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5995,7 +5999,8 @@ example call:
 await workspace.call({
   "tool": "browser.screenshot",
   "input": {
-    "name": "after-login",
+    "name": "mobile-check",
+    "preset": "mobile",
     "dryRun": true
   }
 });
@@ -6154,7 +6159,7 @@ example error envelope:
 
 open a URL, wait for load, snapshot, and screenshot
 
-- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.test`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -6166,6 +6171,8 @@ await workspace.call({
   "tool": "browser.test",
   "input": {
     "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
     "dryRun": true
   }
 });

@@ -24,6 +24,12 @@ function printHelp() {
     '',
     'commands:',
     '  open|url <url>       open url, wait for load, snapshot, screenshot',
+    '    --preset mobile     use preset: desktop, mobile, tablet, ipad',
+    '    --device <name>     emulate device (e.g. "iPhone 16 Pro")',
+    '    --provider <name>   browser provider, e.g. ios',
+    '    --width <px>        viewport width; requires --height',
+    '    --height <px>       viewport height; requires --width',
+    '    --color-scheme <v>  dark, light, or no-preference',
     '  consuelo             open consuelo.consuelohq.com (internal CRM)',
     '  app                  open app.consuelohq.com (production)',
     '  screenshot [name]    take screenshot of current page',
@@ -93,6 +99,12 @@ function printHelp() {
     '  --headed             show browser window (visible to ko)',
     '  --full               full page screenshot',
     '  --json               json output',
+    '  --preset <name>      desktop, mobile, tablet, ipad',
+    '  --device <name>      agent-browser device name',
+    '  --provider <name>    agent-browser provider name',
+    '  --width <px>         viewport width; requires --height',
+    '  --height <px>        viewport height; requires --width',
+    '  --color-scheme <v>   dark, light, or no-preference',
     '  --help               show this help',
   ];
   lines.forEach((l) => writeStdout(l));
@@ -137,14 +149,87 @@ function screenshotPath(name) {
   return path.join(SCREENSHOT_DIR, `${slug}-${ts}.png`);
 }
 
+const DEVICE_PRESETS = {
+  mobile: { device: 'iPhone 16 Pro' },
+  iphone: { device: 'iPhone 16 Pro' },
+  tablet: { device: 'iPad Pro 11' },
+  ipad: { device: 'iPad Pro 11' },
+  desktop: { width: 1440, height: 900 },
+};
+
+const BOOLEAN_FLAGS = new Set(['--headed', '--full', '--json']);
+const VALUE_FLAGS = new Set(['--preset', '--device', '--provider', '--width', '--height', '--color-scheme']);
+
+function parseOptions(argv) {
+  const opts = { headed: false, full: false, json: false };
+  const args = [];
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (BOOLEAN_FLAGS.has(arg)) {
+      opts[arg.slice(2).replace(/-([a-z])/g, (_, char) => char.toUpperCase())] = true;
+      continue;
+    }
+
+    if (VALUE_FLAGS.has(arg)) {
+      const value = argv[index + 1];
+      if (value !== undefined) {
+        opts[arg.slice(2).replace(/-([a-z])/g, (_, char) => char.toUpperCase())] = value;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (arg.startsWith('--')) continue;
+    args.push(arg);
+  }
+
+  applyPresetDefaults(opts);
+  return { opts, args };
+}
+
+function parsePositiveInteger(value) {
+  if (value === undefined) return undefined;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function applyPresetDefaults(opts) {
+  const preset = opts.preset ? DEVICE_PRESETS[String(opts.preset).toLowerCase()] : null;
+  if (!preset) return;
+
+  opts.device = opts.device || preset.device;
+  opts.width = opts.width || preset.width;
+  opts.height = opts.height || preset.height;
+}
+
+function browserOptionArgs(opts) {
+  const args = [];
+  if (opts.headed) args.push('--headed');
+  if (opts.provider) args.push('--provider', opts.provider);
+  if (opts.device) args.push('--device', opts.device);
+  if (opts.colorScheme) args.push('--color-scheme', opts.colorScheme);
+  return args;
+}
+
+function applyPageOptions(opts) {
+  const width = parsePositiveInteger(opts.width);
+  const height = parsePositiveInteger(opts.height);
+
+  if (opts.device) run(['set', 'device', opts.device], { silent: true });
+  if (opts.colorScheme === 'dark' || opts.colorScheme === 'light') run(['set', 'media', opts.colorScheme], { silent: true });
+  if (width !== undefined && height !== undefined) run(['set', 'viewport', String(width), String(height)], { silent: true });
+}
+
 function cmdOpen(url, opts) {
-  const openArgs = [];
-  if (opts.headed) openArgs.push('--headed');
-  openArgs.push('open', url);
+  const openArgs = [...browserOptionArgs(opts), 'open', url];
 
   writeStderr(`opening ${url}...`);
   const open = run(openArgs);
   if (!open.ok) { writeStdout(`error: ${open.stderr}`); return; }
+
+  applyPageOptions(opts);
 
   writeStderr('waiting for page load...');
   run(['wait', '--load', 'networkidle'], { silent: true });
@@ -165,19 +250,32 @@ function cmdOpen(url, opts) {
   writeStdout(`url: ${pageUrl.stdout}`);
   writeStdout(`title: ${title.stdout}`);
   writeStdout(`screenshot: ${ssPath}`);
+  writeStdout(`browser: ${describeBrowserOptions(opts)}`);
   writeStdout('');
   writeStdout('--- interactive elements ---');
   writeStdout(snap.stdout);
 }
 
+function describeBrowserOptions(opts) {
+  const parts = [];
+  if (opts.preset) parts.push(`preset=${opts.preset}`);
+  if (opts.provider) parts.push(`provider=${opts.provider}`);
+  if (opts.device) parts.push(`device=${opts.device}`);
+  if (opts.width && opts.height) parts.push(`viewport=${opts.width}x${opts.height}`);
+  if (opts.colorScheme) parts.push(`colorScheme=${opts.colorScheme}`);
+  return parts.length > 0 ? parts.join(' ') : 'default';
+}
+
 function cmdScreenshot(name, opts) {
   ensureScreenshotDir();
+  applyPageOptions(opts);
   const ssPath = screenshotPath(name);
   const args = ['screenshot', ssPath];
   if (opts.full) args.push('--full');
   const result = run(args);
   if (result.ok) {
     writeStdout(`screenshot: ${ssPath}`);
+    writeStdout(`browser: ${describeBrowserOptions(opts)}`);
   } else {
     writeStdout(`error: ${result.stderr}`);
   }
@@ -459,13 +557,7 @@ function main() {
     return;
   }
 
-  // extract global opts
-  const opts = {
-    headed: argv.includes('--headed'),
-    full: argv.includes('--full'),
-    json: argv.includes('--json'),
-  };
-  const args = argv.filter((a) => !a.startsWith('--'));
+  const { opts, args } = parseOptions(argv);
 
   switch (command) {
     case 'open':

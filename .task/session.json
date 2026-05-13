@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_13366abeb013",
-  "tmuxSession": "opensaas-workspace-agents-add-fs-write-content-file-support-13366abe",
+  "taskSession": "tsk_88184800e7af",
+  "tmuxSession": "opensaas-workspace-agents-add-browser-responsive-flags-88184800",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-fs-write-content-file-support",
-  "branch": "task/workspace-agents/add-fs-write-content-file-support",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-fs-write-content-file-support",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-fs-write-content-file-support",
-  "prNumber": 395,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/395",
-  "createdAt": "2026-05-13T09:20:12.604Z",
+  "taskBranch": "task/workspace-agents/add-browser-responsive-flags",
+  "branch": "task/workspace-agents/add-browser-responsive-flags",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-browser-responsive-flags",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-browser-responsive-flags",
+  "prNumber": 397,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/397",
+  "createdAt": "2026-05-13T10:22:49.390Z",
   "tmuxCreated": true
 }

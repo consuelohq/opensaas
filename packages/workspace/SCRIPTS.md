@@ -763,21 +763,27 @@ opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-bro
 bun run browser -- consuelo                 # open consuelo CRM (internal)
 bun run browser -- app                      # open app.consuelohq.com
 bun run browser -- open https://example.com # open any URL
+bun run browser -- open https://example.com --preset mobile --full
+bun run browser -- open https://example.com --preset tablet --full
+bun run browser -- open https://example.com --width 390 --height 844 --full
 bun run browser -- screenshot after-login   # take screenshot
+bun run browser -- screenshot mobile-check --preset mobile --full
 bun run browser -- snapshot                 # get accessibility tree
 bun run browser -- login consuelo --headed  # run saved login profile visibly
 bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
 ```
 
+available browser flags for responsive checks: `preset` (`desktop`, `mobile`, `tablet`, `ipad`, `iphone`), `device` (agent-browser device name), `provider` (for example `ios`), `width` + `height`, and `colorScheme` (`dark`, `light`, `no-preference`). use flags on existing browser tools instead of adding device-specific tool names. for Google SSO persistence, open `https://accounts.google.com` with `--headed` and sign in manually; the persistent profile keeps the session.
+
 facade aliases are also registered for agent use:
 
 ```bash
-workspace browser.test '{"url":"https://example.com"}'
+workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
 workspace browser.consuelo '{"headed":true}'
 workspace browser.login '{"name":"consuelo","headed":true}'
 workspace browser.reauth '{"name":"consuelo","headed":true}'
 workspace browser.snap
-workspace browser.screenshot '{"name":"after-login"}'
+workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
 workspace browser.get '{"target":"title"}'
 workspace browser.find '{"by":"role","value":"button","action":"click","name":"Submit"}'
 workspace browser.wait '{"load":"networkidle"}'

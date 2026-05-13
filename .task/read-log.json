@@ -11,6 +11,7 @@
     ".yarnrc.yml",
     "AGENTS.md",
     "CODING-STANDARDS.md",
+    "agent-browser.json",
     "areas/consuelo-design/AGENTS.md",
     "areas/dialer/AGENTS.md",
     "areas/website/AGENTS.md",
@@ -169,5 +170,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T09:21:57.524Z"
+  "updatedAt": "2026-05-13T10:26:43.052Z"
 }

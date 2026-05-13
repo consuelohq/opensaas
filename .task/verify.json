@@ -1,26 +1,25 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-fs-write-content-file-support",
-  "base": "origin/task/workspace-agents/add-fs-write-content-file-support",
-  "headSha": "3b8cabe8e0b040b50c5f82c1ccc257b53d4c7e3f",
-  "changeHash": "273c10b2e7ff5677ea2cbf957aaf1877e5280be1395d84ba2f7d531479e1af45",
+  "branch": "task/workspace-agents/add-browser-responsive-flags",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "a43ac11ae5b14a23e781cf2c77cc32f33e374b61",
+  "changeHash": "0215dbdeda82a6f2ea2a295a8e1fa88f8666aece38bf4193204e6868339c6bcc",
   "changedFiles": [
+    "agent-browser.json",
     "packages/workspace/SCRIPTS.md",
-    "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/browser.js",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-13T09:30:50.150Z",
+  "verifiedAt": "2026-05-13T10:31:14.536Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []
