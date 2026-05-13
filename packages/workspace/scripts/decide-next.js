@@ -196,6 +196,25 @@ function informationValue(candidate, beliefs) {
   return uncertainty * (1 + reachNorm) * testBonus;
 }
 
+function getCandidateKey(candidate) {
+  return candidate.target?.key || candidate.path;
+}
+
+function formatTarget(target) {
+  if (!target) return null;
+
+  const label = [target.kind, target.name].filter(Boolean).join(' ') || 'chunk';
+  const start = target.lines?.start || 1;
+  const end = target.lines?.end || start;
+  return `target ${label} (lines ${start}-${end})`;
+}
+
+function formatReadAction(candidate) {
+  const target = formatTarget(candidate.target);
+  if (target) return `read ${candidate.path} ${target}`;
+  return `read ${candidate.path} (lines ${candidate.lines?.start || 1}-${candidate.lines?.end || 1})`;
+}
+
 function buildCandidateActions(state, readFiles) {
   const beliefs = state.beliefs || {};
   const resultCandidates = (state.results || []).map((result) => ({
@@ -220,8 +239,10 @@ function buildCandidateActions(state, readFiles) {
     }
   }
 
-  return unique([...resultCandidates, ...connectedTests].map((candidate) => candidate.path))
-    .map((filePath) => [...resultCandidates, ...connectedTests].find((candidate) => candidate.path === filePath))
+  const allCandidates = [...resultCandidates, ...connectedTests];
+
+  return unique(allCandidates.map(getCandidateKey))
+    .map((candidateKey) => allCandidates.find((candidate) => getCandidateKey(candidate) === candidateKey))
     .filter((candidate) => candidate && !readFiles.has(candidate.path))
     .map((candidate) => {
       const posterior = getPosterior(candidate, beliefs);
@@ -237,10 +258,10 @@ function buildCandidateActions(state, readFiles) {
 }
 
 function getAlternative(candidates, primaryPath = null) {
-  const alternative = candidates.find((candidate) => candidate.path !== primaryPath);
+  const alternative = candidates.find((candidate) => getCandidateKey(candidate) !== primaryPath && candidate.path !== primaryPath);
   if (!alternative) return 'run confidence-score';
 
-  return `read ${alternative.path} (posterior: ${alternative.posterior.toFixed(2)}, information value: ${alternative.informationValue.toFixed(2)})`;
+  return `${formatReadAction(alternative)} (posterior: ${alternative.posterior.toFixed(2)}, information value: ${alternative.informationValue.toFixed(2)})`;
 }
 
 function getExploitRecommendation(state) {
@@ -267,18 +288,16 @@ function buildRecommendation(state, evidence, args) {
   const candidates = buildCandidateActions(state, evidence.readFiles);
   const bestCandidate = candidates[0] || null;
   const exploitRecommendation = getExploitRecommendation(state);
-
   if (evidence.verificationFailed) {
     return {
       action: 'inspect failed validation evidence',
       reason: 'a verification, test, runtime, or contradiction event is already recorded',
       confidence: evidence.confidence,
-      alternative: bestCandidate ? `read ${bestCandidate.path}` : 'rerun confirm --verify',
+      alternative: bestCandidate ? formatReadAction(bestCandidate) : 'rerun confirm --verify',
       context: args.context || null,
       recommendation: 'investigate-failure',
     };
   }
-
   if (exploitRecommendation) {
     return {
       action: `run exploit --target ${exploitRecommendation.target}`,
@@ -291,6 +310,7 @@ function buildRecommendation(state, evidence, args) {
         path: bestCandidate.path,
         information_value: Number(bestCandidate.informationValue.toFixed(2)),
         posterior: Number(bestCandidate.posterior.toFixed(2)),
+        target: bestCandidate.target || null,
       } : null,
       recommendation: 'exploit',
     };
@@ -301,18 +321,19 @@ function buildRecommendation(state, evidence, args) {
       ? 'test file - would confirm or deny the current hypothesis'
       : 'balances posterior relevance with information gain';
     return {
-      action: `read ${bestCandidate.path} (lines ${bestCandidate.lines?.start || 1}-${bestCandidate.lines?.end || 1})`,
+      action: formatReadAction(bestCandidate),
       reason: `${testPrefix} (posterior: ${bestCandidate.posterior.toFixed(2)}, information value: ${bestCandidate.informationValue.toFixed(2)})`,
       confidence: evidence.confidence,
-      alternative: getAlternative(candidates, bestCandidate.path),
+      alternative: getAlternative(candidates, getCandidateKey(bestCandidate)),
       context: args.context || null,
       decision_score: Number(bestCandidate.decisionScore.toFixed(2)),
       information_value: Number(bestCandidate.informationValue.toFixed(2)),
+      path: bestCandidate.path,
       posterior: Number(bestCandidate.posterior.toFixed(2)),
+      target: bestCandidate.target || null,
       recommendation: 'read',
     };
   }
-
   if ((state?.mode || 'exploring') === 'exploiting' && !evidence.confirmationPassed) {
     return {
       action: 'run confirm --verify',
