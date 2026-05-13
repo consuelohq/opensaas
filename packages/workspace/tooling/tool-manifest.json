@@ -4303,7 +4303,7 @@
       "consueloDesign",
       "generateWebsite"
     ],
-    "description": "start or open a live Open Design website working session",
+    "description": "create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-website",
     "capabilities": {
@@ -4331,6 +4331,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4345,7 +4350,7 @@
       "consueloDesign",
       "generateDemo"
     ],
-    "description": "start or open a live Open Design demo working session",
+    "description": "create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-demo",
     "capabilities": {
@@ -4373,6 +4378,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4387,7 +4397,7 @@
       "consueloDesign",
       "generateImageBrief"
     ],
-    "description": "start or open a live Open Design image/media working session",
+    "description": "create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-image-brief",
     "capabilities": {
@@ -4415,6 +4425,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4429,7 +4444,7 @@
       "consueloDesign",
       "generateDigitalEguide"
     ],
-    "description": "start or open a live Open Design digital e-guide working session, optionally using a named Consuelo e-guide template",
+    "description": "create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-digital-eguide",
     "capabilities": {
@@ -4462,6 +4477,11 @@
           "source": "template",
           "flag": "--template",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4476,7 +4496,7 @@
       "consueloDesign",
       "generateEmail"
     ],
-    "description": "start or open a live Open Design email working session",
+    "description": "create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-email",
     "capabilities": {
@@ -4504,6 +4524,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4518,7 +4543,7 @@
       "consueloDesign",
       "generateMotionFrame"
     ],
-    "description": "start or open a live Open Design motion-frame working session",
+    "description": "create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design generate-motion-frame",
     "capabilities": {
@@ -4546,6 +4571,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },
@@ -4560,7 +4590,7 @@
       "consueloDesign",
       "renderHyperframes"
     ],
-    "description": "start or open a live Open Design HyperFrames render working session",
+    "description": "create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session",
     "category": "consuelo design",
     "underlying": "workspace consuelo-design render-hyperframes",
     "capabilities": {
@@ -4588,6 +4618,11 @@
           "source": "prompt",
           "flag": "--prompt",
           "kind": "value"
+        },
+        {
+          "source": "live",
+          "flag": "--live",
+          "kind": "boolean"
         }
       ]
     },

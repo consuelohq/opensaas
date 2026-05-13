@@ -614,23 +614,6 @@ Do not edit vendored Open Design internals to encode Consuelo-specific behavior 
 
 Generated Open Design state belongs under ignored runtime paths such as `.od/`, `out/`, or `artifacts/`.
 
-## validation
-
-For facade changes, run at minimum:
-
-```bash
-bun run consuelo-design check
-bun run consuelo-design list-skills --json
-bun run consuelo-design list-design-systems --json
-bun run consuelo-design generate website --dry-run --json
-bun run consuelo-design render hyperframes --dry-run --json
-bun run --cwd packages/workspace workspace consueloDesign.generateWebsite '{"dryRun":true}'
-bun run --cwd packages/workspace generate-docs
-bun run --cwd packages/workspace generate-types
-```
-
-Also run branch-local review before publishing.
-
 
 ## Consuelo Wiki archive
 
