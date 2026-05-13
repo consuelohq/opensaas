@@ -231,6 +231,7 @@ Near the top, include a compact **Spec map** that acts as the table of contents 
 Use this structure:
 ```text
 Context → User Job → Requirements → Design → Decisions → Risks → Validation → Ship
+```
 
 Each item should link or scroll to its section.
 
