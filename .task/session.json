@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_309a4ed5f3cc",
-  "tmuxSession": "opensaas-workspace-agents-add-typed-browser-facade-primitives-309a4ed5",
+  "taskSession": "tsk_bacb4a71d4d3",
+  "tmuxSession": "opensaas-workspace-agents-fix-pr-389-research-ingest-review-findings-bacb4a71",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-typed-browser-facade-primitives",
-  "branch": "task/workspace-agents/add-typed-browser-facade-primitives",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-browser-facade-primitives",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-typed-browser-facade-primitives",
-  "prNumber": 385,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/385",
-  "createdAt": "2026-05-13T03:27:28.384Z",
+  "taskBranch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
+  "branch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-389-research-ingest-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-389-research-ingest-review-findings",
+  "prNumber": 390,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/390",
+  "createdAt": "2026-05-13T06:05:18.963Z",
   "tmuxCreated": true
 }

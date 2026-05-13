@@ -1,25 +1,20 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/add-typed-browser-facade-primitives",
-  "base": "origin/task/workspace-agents/add-typed-browser-facade-primitives",
-  "headSha": "4b06fb669876146ad5a590a34ff6dca77f5fad2f",
-  "changeHash": "921165f176a27b54d76039ac9829e81265dd27a26d14acadb8f946f6c3646d38",
+  "branch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "4d76de4853d5b60fbf8aad37d1128d9cac93023c",
+  "changeHash": "225c67931292eb2bc01c23cd5525adb42a386b7ee747e8bccab8b86dfcb0d5b9",
   "changedFiles": [
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/browser.js",
-    "packages/workspace/scripts/lib/facade/schemas.ts",
-    "packages/workspace/src/generated/workspace.d.ts",
-    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
-    "packages/workspace/tooling/tool-manifest.json"
+    "packages/workspace/scripts/research-ingest.js",
+    "packages/workspace/tests/research-ingest.test.js"
   ],
-  "verifiedAt": "2026-05-13T03:35:08.954Z",
+  "verifiedAt": "2026-05-13T06:07:36.282Z",
   "review": {
-    "skipped": true,
+    "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
     "risks": [],
     "findings": []

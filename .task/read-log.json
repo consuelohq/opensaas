@@ -140,6 +140,7 @@
     "packages/workspace/scripts/lib/workspace-state.js",
     "packages/workspace/scripts/linear.js",
     "packages/workspace/scripts/mac.js",
+    "packages/workspace/scripts/research-ingest.js",
     "packages/workspace/scripts/review.js",
     "packages/workspace/scripts/run-dialer-scenario.ts",
     "packages/workspace/scripts/sentry.js",
@@ -153,9 +154,11 @@
     "packages/workspace/scripts/workspace.ts",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/facade/facade.test.ts",
+    "packages/workspace/tests/research-ingest.test.js",
+    "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T03:32:29.780Z"
+  "updatedAt": "2026-05-13T06:06:17.112Z"
 }

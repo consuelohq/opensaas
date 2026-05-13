@@ -2485,7 +2485,7 @@
           "kind": "value"
         },
         {
-          "source": "fn",
+          "source": "conditionScript",
           "flag": "--fn",
           "kind": "value"
         },
