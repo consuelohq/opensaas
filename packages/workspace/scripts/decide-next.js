@@ -242,8 +242,8 @@ function buildCandidateActions(state, readFiles) {
 
   const allCandidates = [...resultCandidates, ...connectedTests];
 
-  return unique(allCandidates.map(getCandidateKey))
-    .map((candidateKey) => allCandidates.find((candidate) => getCandidateKey(candidate) === candidateKey))
+  return unique(allCandidates.map((candidate) => candidate.path))
+    .map((candidatePath) => allCandidates.find((candidate) => candidate.path === candidatePath))
     .filter((candidate) => candidate && !readFiles.has(candidate.path))
     .map((candidate) => {
       const posterior = getPosterior(candidate, beliefs);
@@ -325,7 +325,7 @@ function buildRecommendation(state, evidence, args) {
       action: formatReadAction(bestCandidate),
       reason: `${testPrefix} (posterior: ${bestCandidate.posterior.toFixed(2)}, information value: ${bestCandidate.informationValue.toFixed(2)})`,
       confidence: evidence.confidence,
-      alternative: getAlternative(candidates, getCandidateKey(bestCandidate)),
+      alternative: getAlternative(candidates, bestCandidate.path),
       context: args.context || null,
       decision_score: Number(bestCandidate.decisionScore.toFixed(2)),
       information_value: Number(bestCandidate.informationValue.toFixed(2)),

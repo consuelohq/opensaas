@@ -403,6 +403,33 @@ function addObjectDeclaratorChunks(chunks, sourceLines, node) {
   return added;
 }
 
+function hasUnchunkedDeclarators(node) {
+  if (node.type !== 'lexical_declaration' && node.type !== 'variable_declaration') return false;
+
+  return (node.namedChildren || []).some((child) => {
+    if (child.type !== 'variable_declarator') return false;
+
+    const value = getDeclaratorValue(child);
+    return !isFunctionLikeNode(value) && value?.type !== 'object';
+  });
+}
+
+function addVariableDeclaratorChunks(chunks, sourceLines, node) {
+  const addedFunctions = addFunctionDeclaratorChunks(chunks, sourceLines, node);
+  const addedObjects = addObjectDeclaratorChunks(chunks, sourceLines, node);
+  if (!addedFunctions && !addedObjects) return false;
+
+  if (hasUnchunkedDeclarators(node)) {
+    const name = getNodeName(node);
+    chunks.push(...createChunksForNode(sourceLines, node, 'block', name, {
+      nodeType: node.type,
+      symbolPath: name,
+    }));
+  }
+
+  return true;
+}
+
 function getCallName(node) {
   const expression = node.namedChildren?.[0];
   return expression?.type === 'identifier' ? expression.text : null;
@@ -478,9 +505,7 @@ function addDeclarationChunks(chunks, sourceLines, declaration) {
 function addTopLevelNodeChunks(chunks, sourceLines, node) {
   if (addDeclarationChunks(chunks, sourceLines, node)) return true;
 
-  if (addFunctionDeclaratorChunks(chunks, sourceLines, node)) return true;
-
-  if (addObjectDeclaratorChunks(chunks, sourceLines, node)) return true;
+  if (addVariableDeclaratorChunks(chunks, sourceLines, node)) return true;
 
   if (addTestCallChunk(chunks, sourceLines, node)) return true;
 
@@ -488,9 +513,7 @@ function addTopLevelNodeChunks(chunks, sourceLines, node) {
     const declaration = node.childForFieldName('declaration');
     if (declaration && addDeclarationChunks(chunks, sourceLines, declaration)) return true;
 
-    if (declaration && addFunctionDeclaratorChunks(chunks, sourceLines, declaration)) return true;
-
-    if (declaration && addObjectDeclaratorChunks(chunks, sourceLines, declaration)) return true;
+    if (declaration && addVariableDeclaratorChunks(chunks, sourceLines, declaration)) return true;
 
     chunks.push(...createChunksForNode(
       sourceLines,

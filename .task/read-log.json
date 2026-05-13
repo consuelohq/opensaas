@@ -161,6 +161,7 @@
     "packages/workspace/scripts/tool-runner.ts",
     "packages/workspace/scripts/workspace.ts",
     "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/research-ingest.test.js",
     "packages/workspace/tests/task-session.test.js",
@@ -168,5 +169,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T08:13:57.954Z"
+  "updatedAt": "2026-05-13T08:54:25.895Z"
 }

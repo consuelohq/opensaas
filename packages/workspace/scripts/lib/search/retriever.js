@@ -170,8 +170,9 @@ function expandGraph(store, candidates, depth, limit) {
       candidates.set(connection.path, {
         path: connection.path,
         embeddingSimilarity: Math.max(0, (currentCandidate?.embeddingSimilarity || 0) * 0.85),
-        bestChunkName: connection.symbol || null,
+        bestChunkName: null,
         bestChunkType: null,
+        edgeSymbol: connection.symbol || null,
         preview: '',
         startLine: 1,
         endLine: 1,
@@ -204,10 +205,7 @@ function hydrateGraphCandidates(store, candidates) {
       start_line: chunk.start_line,
       symbol_path: chunk.symbol_path,
     }, candidate.embeddingSimilarity || 0);
-    applyBestChunk(candidate, {
-      ...bestChunk,
-      name: candidate.bestChunkName || bestChunk.name,
-    });
+    applyBestChunk(candidate, bestChunk);
   }
 }
 
