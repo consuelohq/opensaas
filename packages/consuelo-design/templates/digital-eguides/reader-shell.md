@@ -47,7 +47,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const smoother = ScrollSmoother.create({
   wrapper: '#smooth-wrapper',
   content: '#smooth-content',
-  smooth: reduceMotion ? 0 : 0.65,
+  smooth: reduceMotion ? 0 : 0.60,
   smoothTouch: reduceMotion ? 0 : 0.28,
   effects: false,
   normalizeScroll: true,
@@ -60,8 +60,8 @@ Use a medium `smooth` value so scrolling feels polished without lagging behind t
 
 Add invisible reading tap zones for mobile and tablet reading:
 
-- Tapping the right half of the viewport scrolls down about `88vh`.
-- Tapping the left half of the viewport scrolls up about `88vh`.
+- Tapping the right half of the viewport scrolls down  `70vh`.
+- Tapping the left half of the viewport scrolls up about `70vh`.
 - Clamp the target to `0` and `ScrollTrigger.maxScroll(window)` so the reader never overshoots the document.
 - Keep normal swipe scrolling intact; swipes should be smoothed by ScrollSmoother and should not trigger tap navigation.
 - Do not trigger this when the tap starts on links, buttons, inputs, details/summary, code controls, or selectable interactive content.
@@ -188,3 +188,162 @@ The reader shell owns behavior:
 
 The design system owns appearance.
 
+## resume reading
+
+Always remember Ko’s last reading position.
+
+Use `localStorage` to save the current scroll position or current section for this artifact. When Ko reopens the guide, show a quiet `Resume reading` chip near the top or bottom-right.
+
+Behavior:
+
+- Save progress while scrolling, throttled/debounced.
+- Key storage by artifact path or slug so different guides do not conflict.
+- Show the chip only when saved progress is meaningful, e.g. more than `25vh` down the page.
+- Clicking the chip scrolls back to the saved position using the same GSAP/ScrollSmoother motion language.
+- After clicking resume, hide the chip.
+- Include a small dismiss/clear option if easy.
+- Mark the chip with `data-no-tap-scroll`.
+- Respect `prefers-reduced-motion`.
+
+Suggested marker:
+
+
+<button class="reader-resume" type="button" data-no-tap-scroll hidden>
+  Resume reading
+</button>
+
+**Suggested implementation shape:**
+
+const resumeButton = document.querySelector('.reader-resume');
+const storageKey = `reader-progress:${location.pathname}`;
+const minResumeY = Math.round(window.innerHeight * 0.25);
+
+const saveProgress = gsap.utils.throttle
+  ? gsap.utils.throttle(() => {
+      localStorage.setItem(storageKey, String(Math.round(window.scrollY)));
+    }, 500)
+  : () => localStorage.setItem(storageKey, String(Math.round(window.scrollY)));
+
+window.addEventListener('scroll', saveProgress, { passive: true });
+
+const savedY = Number(localStorage.getItem(storageKey) || 0);
+if (resumeButton && savedY > minResumeY) {
+  resumeButton.hidden = false;
+  gsap.fromTo(
+    resumeButton,
+    { autoAlpha: 0, y: 8 },
+    { autoAlpha: 0.78, y: 0, duration: reduceMotion ? 0 : 0.28, ease: 'power2.out' }
+  );
+
+  resumeButton.addEventListener('click', () => {
+    const y = clampScroll(savedY);
+
+    if (smoother) {
+      gsap.to(smoother, {
+        scrollTop: y,
+        duration: reduceMotion ? 0 : 0.95,
+        ease: 'power3.inOut',
+      });
+    } else {
+      gsap.to(window, {
+        scrollTo: { y },
+        duration: reduceMotion ? 0 : 0.95,
+        ease: 'power3.inOut',
+      });
+    }
+
+    gsap.to(resumeButton, {
+      autoAlpha: 0,
+      y: 8,
+      duration: reduceMotion ? 0 : 0.2,
+      ease: 'power2.out',
+      onComplete: () => {
+        resumeButton.hidden = true;
+      },
+    });
+  });
+}
+
+## section completion rail
+
+For long digital e-guides, add a quiet vertical section completion rail on the right side of the viewport.
+
+The rail should show one small dot per major section. Dots fill as Ko scrolls past each section. This is orientation, not gamification.
+
+Behavior:
+
+- Place the rail fixed on the right side, vertically centered.
+- Use one dot per major section or table-of-contents anchor.
+- Current section dot should be slightly brighter/larger.
+- Completed section dots should be filled.
+- Future section dots should be muted/hollow.
+- Clicking a dot scrolls to that section using GSAP/ScrollSmoother.
+- Hide or simplify the rail on very small screens if it crowds the reader.
+- Mark the rail with `data-no-tap-scroll`.
+- Respect `prefers-reduced-motion`.
+
+Suggested marker:
+
+
+<nav class="reader-section-rail" data-no-tap-scroll aria-label="Section progress">
+  <button type="button" data-section-target="hero" aria-label="Go to Hero"></button>
+  <button type="button" data-section-target="source" aria-label="Go to Source"></button>
+  <button type="button" data-section-target="walkthrough" aria-label="Go to Walkthrough"></button>
+</nav>
+
+**Suggested behavior:**
+const rail = document.querySelector('.reader-section-rail');
+const railDots = Array.from(document.querySelectorAll('.reader-section-rail [data-section-target]'));
+
+railDots.forEach((dot) => {
+  const id = dot.getAttribute('data-section-target');
+  const section = id ? document.getElementById(id) : null;
+  if (!section) return;
+
+  dot.addEventListener('click', () => {
+    const y = clampScroll(section.getBoundingClientRect().top + window.scrollY - 72);
+
+    if (smoother) {
+      gsap.to(smoother, {
+        scrollTop: y,
+        duration: reduceMotion ? 0 : 0.85,
+        ease: 'power3.inOut',
+      });
+    } else {
+      gsap.to(window, {
+        scrollTo: { y },
+        duration: reduceMotion ? 0 : 0.85,
+        ease: 'power3.inOut',
+      });
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: section,
+    start: 'top center',
+    end: 'bottom center',
+    onEnter: () => setActiveRailDot(id),
+    onEnterBack: () => setActiveRailDot(id),
+  });
+});
+
+function setActiveRailDot(activeId) {
+  let activeIndex = railDots.findIndex((dot) => dot.getAttribute('data-section-target') === activeId);
+
+  railDots.forEach((dot, index) => {
+    const isActive = index === activeIndex;
+    const isComplete = index < activeIndex;
+
+    dot.toggleAttribute('data-active', isActive);
+    dot.toggleAttribute('data-complete', isComplete);
+
+    gsap.to(dot, {
+      scale: isActive ? 1.28 : 1,
+      opacity: isActive || isComplete ? 0.9 : 0.34,
+      duration: reduceMotion ? 0 : 0.2,
+      ease: 'power2.out',
+      overwrite: true,
+    });
+  });
+}
+- **Section completion rail**: a quiet vertical dot rail on the right side showing major-section progress and allowing quick jumps.
