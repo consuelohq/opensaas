@@ -1,237 +1,246 @@
-# spec
+spec
+
 Use for product specs, engineering specs, RFCs, architecture proposals, system designs, launch readiness specs, and high-stakes feature/product definition artifacts.
 
-## job
+job
+
 Turn ambiguous product or engineering work into a durable specification that helps Ko and the team decide what to build, why it matters, how it should work, how it will be validated, and what must be true before it can ship.
 The spec should not feel like a generic RFC or pasted Markdown. It should feel like a Consuelo decision artifact: precise, technical, editorial, opinionated, reviewable, and executable.
 A good spec does five jobs at once:
+
 1. Aligns product, design, engineering, and operations.
 2. Records the decision and the tradeoffs.
 3. Defines the system or product behavior clearly enough to implement.
 4. Makes risk, uncertainty, and non-goals visible.
 5. Ends with a ship checklist detailed enough to launch from
 
-## source truth
+source truth
+
 The source material is the truth Do not lose it.
 Preserve:
-- Linear project / issue links
-- GitHub PR links
-- repo branches and current implementation state
-- product goals
-- user/customer context
-- business thesis
-- technical constraints
-- prior decisions
-- open questions
-- acceptance criteria
-- validation requirements
-- launch blockers
-- citations or source links
-- exact terminology Ko provides
-- 
+
+* Linear project / issue links
+* GitHub PR links
+* repo branches and current implementation state
+* product goals
+* user/customer context
+* business thesis
+* technical constraints
+* prior decisions
+* open questions
+* acceptance criteria
+* validation requirements
+* launch blockers
+* citations or source links
+* exact terminology Ko provides
+* plans from chat
+
 Do not invent product claims, implementation status, or shipped behavior. If something is unknown, mark it as unknown. If something is aspirational, mark it as planned. If a PR exists, inspect it or clearly mark that it has not been inspected.
 
 The spec should distinguish:
 
-- **Source truth**: what the source docs/issues/PRs say. with embeded links when refrenced
-- **Interpretation**: what the spec concludes.
-- **Decision**: what we are choosing.
-- **Open question**: what remains unresolved.
-- **Ship requirement**: what must be checked before launch.
-- 
-## basis
+* Source truth: what the source docs/issues/PRs say. with embeded links when refrenced
+* Interpretation: what the spec concludes.
+* Decision: what we are choosing.
+* Open question: what remains unresolved.
+* Ship requirement: what must be checked before launch.
+
+basis
+
 A strong spec is both a PRD and an engineering design document.
 It answers:
-- What problem are we solving?
-- Who is it for?
-- Why now?
-- What are we building?
-- What are we explicitly not building?
-- What must be true for this to work?
-- What decisions have already been made?
-- What alternatives were rejected?
-- What can fail?
-- How will we validate it?
-- What blocks shipping?
-- What checklist proves the product is actually done?
+
+* What problem are we solving?
+* Who is it for?
+* Why now?
+* What are we building?
+* What are we explicitly not building?
+* What must be true for this to work?
+* What decisions have already been made?
+* What alternatives were rejected?
+* What can fail?
+* How will we validate it?
+* What blocks shipping?
+* What checklist proves the product is actually done?
+
 A spec should prevent expensive mistakes before implementation, but it should not freeze the team into fake certainty. It should preserve uncertainty while making progress possible.
 
-## narrative spine
+narrative spine
 
 Do not design the spec as a decorated outline.
 Shape it like a decision journey:
 
-1. **Thesis** — the one-sentence claim the spec is making.
-2. **Context** — why this work exists now.
-3. **Current state** — what is true today: PR, branch, system, constraints, blockers.
-4. **User / job** — who needs this and what job they need done.
-5. **Decision** — what we are choosing to build.
-6. **System model** — how the pieces fit together.
-7. **Requirements** — what the product/system must do.
-8. **Tradeoffs** — why this path beats the alternatives.
-9. **Risks** — what can break, block, or invalidate the plan.
-10. **Validation** — how we prove it works.
-11. **Rollout** — how it reaches users safely.
-12. **Ship checklist** — the completion ledger.
+1. Thesis — the one-sentence claim the spec is making.
+2. Context — why this work exists now.
+3. Current state — what is true today: PR, branch, system, constraints, blockers.
+4. User / job — who needs this and what job they need done.
+5. Decision — what we are choosing to build.
+6. System model — how the pieces fit together.
+7. Requirements — what the product/system must do.
+8. Tradeoffs — why this path beats the alternatives.
+9. Risks — what can break, block, or invalidate the plan.
+10. Validation — how we prove it works.
+11. Rollout — how it reaches users safely.
+12. Ship checklist — the completion ledger.
+
 The reader should feel the spec moving from ambiguity → decision → implementation shape → proof → launch.
 
-## required structure
+required structure
 
-1. **Hero**
-   - title
-   - status
-   - owner
-   - reviewers
-   - date
-   - source truth
-   - one-sentence thesis
-   - current checkpoint when known: PR, branch, issue, milestone, or implementation state
-   - 
-2. **Executive summary**
-   - TLDR
-   - decision summary
-   - why this matters
-   - what changes for the user/customer/team
-   - what is blocked or unresolved
-   - 
-3. **Problem / context**
-   - what triggered this
-   - why now
-   - current user/system reality
-   - business or product motivation
-   - relevant source links
-   - what has already been tried or built
-   - 
-4. **Users, jobs, and use cases**
-   - target users / roles
-   - jobs-to-be-done
-   - primary use cases
-   - secondary use cases
-   - excluded users or use cases when relevant
-   - 
-5. **Goals and non-goals**
-   - goals as concrete outcomes
-   - non-goals to prevent scope creep
-   - nice-to-have / later items
-   - explicit “we are not doing this now” list
-   - 
-6. **Current state / implementation checkpoint**
-   - current branch, PR, issue, milestone, or artifact
-   - what already exists
-   - what is partially done
-   - known blockers
-   - failing checks
-   - open review comments
-   - what should be treated as source-of-truth right now
-   - 
-7. **Requirements**
-   - functional requirements
-   - non-functional requirements
-   - UX requirements
-   - API/interface requirements
-   - data requirements
-   - permissions/security requirements
-   - observability/audit requirements
-   - documentation requirements
-   - rollout/release requirements
-   - success metrics
-   - 
-8. **Proposed design**
-   - product behavior
-   - system architecture
-   - components
-   - interfaces
-   - data flow
-   - user flow
-   - lifecycle/state model
-   - error states
-   - diagrams or pseudo-diagrams when useful
-   - example requests/responses or contracts when useful
-   - 
-9. **Decision log**
-   - decision
-   - rationale
-   - owner/date when known
-   - alternatives considered
-   - consequences
-   - reversal condition when useful
-   - 
-10. **Alternatives considered**
-   - alternative
-   - why it was considered
-   - why rejected now
-   - what would make it viable later
-   - 
-11. **Risks, edge cases, and mitigations**
-   - risk
-   - likelihood when known
-   - impact
-   - mitigation
-   - fallback
-   - trigger / owner / decision needed
-   - rollback path where relevant
-   - 
-12. **Validation plan**
-   - unit/static checks
-   - integration tests
-   - browser/UI validation
-   - API/runtime validation
-   - migration/data validation
-   - permissions/security validation
-   - observability/log validation
-   - docs validation
-   - E2E proof
-   - launch/pilot verification
-   - 
-13. **Rollout and operations**
-   - rollout sequence
-   - feature flags or staged exposure
-   - migration/backfill plan
-   - operator actions
-   - support/debug plan
-   - telemetry
-   - audit events
-   - rollback
-   - post-launch monitoring
-   - 
-14. **Open questions**
-   - unresolved question
-   - why it matters
-   - owner
-   - evidence needed
-   - deadline / decision gate when known
-   - 
-15. **Implementation sketch**
-   - phases or milestones
-   - file-level plan only when useful
-   - dependencies
-   - sequencing
-   - first safe slice
-   - what should not be touched
-   - 
-16. **Ship checklist / completion ledger**
-   - bottom-of-spec checklist that answers:
-     > If every item here is checked, is this product actually shipped?
-   - include current checkpoint, blockers, product requirements, runtime requirements, data requirements, security gates, docs gates, validation gates, and launch criteria
-   - can be long
-   - prefer completeness over brevity
-   - 
-17. **Metadata footer**
-   - artifact title
-   - template: spec
-   - generated date/time
-   - source truth
-   - active PR/issues/branches when known
-   - local artifact path or Open Design path
-   - published URL when known
-   - `/design-wiki` link
-   - 
-## spec map
-Near the top, include a compact **Spec map** that acts as the table of contents and decision route.
+1. Hero
+    * title
+    * status
+    * owner
+    * reviewers
+    * date
+    * source truth
+    * one-sentence thesis
+    * current checkpoint when known: PR, branch, issue, milestone, or implementation state
+2. Executive summary
+    * TLDR
+    * decision summary
+    * why this matters
+    * what changes for the user/customer/team
+    * what is blocked or unresolved
+3. Problem / context
+    * what triggered this
+    * why now
+    * current user/system reality
+    * business or product motivation
+    * relevant source links
+    * what has already been tried or built
+4. Users, jobs, and use cases
+    * target users / roles
+    * jobs-to-be-done
+    * primary use cases
+    * secondary use cases
+    * excluded users or use cases when relevant
+5. Goals and non-goals
+    * goals as concrete outcomes
+    * non-goals to prevent scope creep
+    * nice-to-have / later items
+    * explicit “we are not doing this now” list
+6. Current state / implementation checkpoint
+    * current branch, PR, issue, milestone, or artifact
+    * what already exists
+    * what is partially done
+    * known blockers
+    * failing checks
+    * open review comments
+    * what should be treated as source-of-truth right now
+7. Requirements
+    * functional requirements
+    * non-functional requirements
+    * UX requirements
+    * API/interface requirements
+    * data requirements
+    * permissions/security requirements
+    * observability/audit requirements
+    * documentation requirements
+    * rollout/release requirements
+    * success metrics
+8. Proposed design
+    * product behavior
+    * system architecture
+    * components
+    * interfaces
+    * data flow
+    * user flow
+    * lifecycle/state model
+    * error states
+    * diagrams or pseudo-diagrams when useful
+    * example requests/responses or contracts when useful
+9. Decision log
+    * decision
+    * rationale
+    * owner/date when known
+    * alternatives considered
+    * consequences
+    * reversal condition when useful
+10. Alternatives considered
+
+* alternative
+* why it was considered
+* why rejected now
+* what would make it viable later
+
+11. Risks, edge cases, and mitigations
+
+* risk
+* likelihood when known
+* impact
+* mitigation
+* fallback
+* trigger / owner / decision needed
+* rollback path where relevant
+
+12. Validation plan
+
+* unit/static checks
+* integration tests
+* browser/UI validation
+* API/runtime validation
+* migration/data validation
+* permissions/security validation
+* observability/log validation
+* docs validation
+* E2E proof
+* launch/pilot verification
+
+13. Rollout and operations
+
+* rollout sequence
+* feature flags or staged exposure
+* migration/backfill plan
+* operator actions
+* support/debug plan
+* telemetry
+* audit events
+* rollback
+* post-launch monitoring
+
+14. Open questions
+
+* unresolved question
+* why it matters
+* owner
+* evidence needed
+* deadline / decision gate when known
+
+15. Implementation sketch
+
+* phases or milestones
+* file-level plan only when useful
+* dependencies
+* sequencing
+* first safe slice
+* what should not be touched
+
+16. Ship checklist / completion ledger
+
+* bottom-of-spec checklist that answers:
+    If every item here is checked, is this product actually shipped?
+* include current checkpoint, blockers, product requirements, runtime requirements, data requirements, security gates, docs gates, validation gates, and launch criteria
+* can be long
+* prefer completeness over brevity
+
+17. Metadata footer
+
+* artifact title
+* template: spec
+* generated date/time
+* source truth
+* active PR/issues/branches when known
+* local artifact path or Open Design path
+* published URL when known
+* /design-wiki link
+
+spec map
+
+Near the top, include a compact Spec map that acts as the table of contents and decision route.
 Use this structure:
-```text
+
 Context → User Job → Requirements → Design → Decisions → Risks → Validation → Ship
-```
 
 Each item should link or scroll to its section.
 
@@ -714,33 +723,215 @@ Good spec:
 * rollout realistic
 * ship checklist complete
 
-## ship checklist / completion ledger
+ship checklist / completion ledger
 
 Every spec must end with a ship checklist.
 
 The checklist should be a bottom-of-spec completion ledger that answers:
 
-> If every item here is checked, is this product actually shipped?
+If every item here is checked, is this product actually shipped?
 
 Include:
 
-- Current checkpoint: active PR, branch, Linear issue, milestone, or implementation state.
-- Merge blockers: conflicts, failing checks, open reviews, missing approvals.
-- Product requirements: all user-visible and system-visible capabilities required for launch.
-- Runtime requirements: services, runbooks, jobs, integrations, permissions, artifacts, logs, and recovery paths.
-- Data requirements: models, records, migrations, facades, access scopes, and exact-vs-semantic retrieval rules.
-- Security requirements: secrets, scopes, approval gates, audit logs, redaction, and fail-closed behavior.
-- Docs requirements: customer docs, operator docs, setup docs, troubleshooting, and examples.
-- Validation requirements: local checks, typechecks, tests, smoke tests, integration tests, E2E proof, and production/pilot verification.
-- Launch criteria: the smallest real workflow proving the product works end to end.
+* Current checkpoint: active PR, branch, Linear issue, milestone, or implementation state.
+* Merge blockers: conflicts, failing checks, open reviews, missing approvals.
+* Product requirements: all user-visible and system-visible capabilities required for launch.
+* Runtime requirements: services, runbooks, jobs, integrations, permissions, artifacts, logs, and recovery paths.
+* Data requirements: models, records, migrations, facades, access scopes, and exact-vs-semantic retrieval rules.
+* Security requirements: secrets, scopes, approval gates, audit logs, redaction, and fail-closed behavior.
+* Docs requirements: customer docs, operator docs, setup docs, troubleshooting, and examples.
+* Validation requirements: local checks, typechecks, tests, smoke tests, integration tests, E2E proof, and production/pilot verification.
+* Launch criteria: the smallest real workflow proving the product works end to end.
 
 Use grouped checklist sections rather than one flat list.
 
 Recommended status markers:
 
-- `✓` already present or complete
-- `•` current checkpoint / you are here
-- `!` blocked before merge or launch
-- `□` still required
+* ✓ already present or complete
+* • current checkpoint / you are here
+* ! blocked before merge or launch
+* □ still required
 
 The checklist can be long. Prefer completeness over brevity. When every item is checked, the product should be connected, permissioned, documented, validated, operable, and ready for the intended launch or pilot.
+
+## sticky spec navigation
+
+Every Open Design spec should include a mobile-friendly sticky pill header.
+
+The header should:
+
+- stay fixed at the top of the reader
+- use a rounded pill / floating nav treatment
+- include the artifact or product name on the left
+- include 4–6 main section links in the center
+- include a high-priority action button on the far right
+- keep working on mobile without wrapping into multiple rows
+- allow horizontal scrolling for section links on small screens
+- preserve `/design-wiki` access through the brand link
+
+Default section links:
+
+- Summary
+- Requirements
+- Design
+- Decisions
+- Validation
+
+The far-right action button should be visually distinct and should always be:
+
+Task
+
+The Task button must link to the bottom ship checklist:
+<a class="reader-task-button" href="#ship-checklist">Task</a>
+
+The purpose of the button is to make the spec executable: no matter where Ko is reading, he can jump straight to the completion ledger.
+
+And add this implementation note under `component guidance`:
+
+```md
+Use a sticky pill header for spec navigation.
+
+Required structure:
+
+```html
+<header class="reader-header" data-no-tap-scroll>
+  <nav class="reader-nav-shell" aria-label="Spec navigation">
+    <a class="reader-brand" href="/design-wiki">Artifact Name</a>
+
+    <div class="reader-links" aria-label="Main sections">
+      <a href="#summary">Summary</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#design">Design</a>
+      <a href="#decisions">Decisions</a>
+      <a href="#validation">Validation</a>
+    </div>
+
+    <a class="reader-task-button" href="#ship-checklist">Task</a>
+  </nav>
+</header>
+
+CSS snippet:
+
+```css
+.reader-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 30;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(12px, 4vw, 44px);
+  pointer-events: none;
+}
+
+.reader-nav-shell {
+  pointer-events: auto;
+  width: min(960px, calc(100vw - 24px));
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(130px, .9fr) minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  background: rgba(250, 247, 242, .88);
+  border: 1px solid rgba(28, 26, 23, .12);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(28, 26, 23, .08);
+  backdrop-filter: blur(16px);
+}
+
+.reader-brand {
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-size: 16px;
+}
+
+.reader-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 22px);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reader-links::-webkit-scrollbar {
+  display: none;
+}
+
+.reader-links a {
+  color: rgba(28, 26, 23, .72);
+  text-decoration: none;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.reader-task-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--terracotta);
+  color: var(--paper);
+  text-decoration: none;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .reader-header {
+    height: 62px;
+    padding: 0 8px;
+  }
+
+  .reader-nav-shell {
+    width: calc(100vw - 16px);
+    min-height: 42px;
+    padding: 5px 6px 5px 12px;
+    gap: 8px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .reader-brand {
+    font-size: 15px;
+    max-width: 116px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .reader-links {
+    justify-content: flex-start;
+    gap: 14px;
+    mask-image: linear-gradient(90deg, #000 0%, #000 calc(100% - 18px), transparent 100%);
+  }
+
+  .reader-links a,
+  .reader-task-button {
+    font-size: 12px;
+  }
+
+  .reader-task-button {
+    min-height: 30px;
+    padding: 0 13px;
+  }
+}
+
+@media (max-width: 460px) {
+  .reader-brand {
+    max-width: 90px;
+  }
+
+  .reader-links a:nth-child(n+4) {
+    display: none;
+  }
+}
+
+
+
