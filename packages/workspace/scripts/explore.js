@@ -125,14 +125,18 @@ function buildTarget(result) {
   };
   const kind = chunk?.kind || result.bestChunkType || null;
   const name = chunk?.name || result.bestChunkName || null;
+  const symbolPath = chunk?.symbolPath || name;
 
   if (!kind && !name && !result.startLine && !chunk) return null;
 
   return {
-    key: targetKey(result.path, kind, name, lines),
+    key: targetKey(result.path, kind, symbolPath || name, lines),
     path: result.path,
     kind,
     name,
+    symbol_path: symbolPath || null,
+    node_type: chunk?.nodeType || null,
+    parent_name: chunk?.parentName || null,
     lines,
     content_hash: chunk?.contentHash || null,
     preview: chunk?.preview || result.preview || '',

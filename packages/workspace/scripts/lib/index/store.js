@@ -75,6 +75,9 @@ function createStore(repoRoot, remoteUrl) {
       end_line INTEGER NOT NULL,
       chunk_type TEXT NOT NULL,
       name TEXT,
+      symbol_path TEXT,
+      node_type TEXT,
+      parent_name TEXT,
       content TEXT NOT NULL,
       content_hash TEXT NOT NULL,
       UNIQUE(file_path, seq)
@@ -156,6 +159,13 @@ function createStore(repoRoot, remoteUrl) {
     );
   `);
 
+  const chunkColumns = new Set(db.query('PRAGMA table_info(chunks)').all().map((row) => row.name));
+  for (const column of ['symbol_path', 'node_type', 'parent_name']) {
+    if (!chunkColumns.has(column)) {
+      db.exec(`ALTER TABLE chunks ADD COLUMN ${column} TEXT`);
+    }
+  }
+
   function setMeta(key, value) {
     db.query([
       'INSERT INTO index_meta(key, value)',
@@ -192,8 +202,8 @@ function createStore(repoRoot, remoteUrl) {
     db.query('DELETE FROM chunks WHERE file_path = ?').run(filePath);
 
     const insert = db.query([
-      'INSERT INTO chunks(file_path, seq, start_line, end_line, chunk_type, name, content, content_hash)',
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO chunks(file_path, seq, start_line, end_line, chunk_type, name, symbol_path, node_type, parent_name, content, content_hash)',
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       'RETURNING id',
     ].join('\n'));
 
@@ -205,6 +215,9 @@ function createStore(repoRoot, remoteUrl) {
         chunk.endLine,
         chunk.type,
         chunk.name || null,
+        chunk.symbolPath || chunk.name || null,
+        chunk.nodeType || null,
+        chunk.parentName || null,
         chunk.content,
         chunk.contentHash,
       );
@@ -278,6 +291,9 @@ function createStore(repoRoot, remoteUrl) {
       '  chunks.end_line AS endLine,',
       '  chunks.chunk_type AS chunkType,',
       '  chunks.name AS name,',
+      '  chunks.symbol_path AS symbolPath,',
+      '  chunks.node_type AS nodeType,',
+      '  chunks.parent_name AS parentName,',
       '  chunks.content AS content,',
       '  chunks.content_hash AS contentHash',
       'FROM chunk_vectors',
@@ -323,7 +339,7 @@ function createStore(repoRoot, remoteUrl) {
       '  COUNT(*) AS total_chunks,',
       "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
       "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
-      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN COALESCE(symbol_path, name) ELSE NULL END, ' ') AS implementation_names",
       'FROM chunks',
       'WHERE file_path IN (',
       placeholders,
@@ -393,7 +409,7 @@ function createStore(repoRoot, remoteUrl) {
       '  COUNT(*) AS total_chunks,',
       "  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,",
       "  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,",
-      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN name ELSE NULL END, ' ') AS implementation_names",
+      "  GROUP_CONCAT(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN COALESCE(symbol_path, name) ELSE NULL END, ' ') AS implementation_names",
       'FROM chunks',
       'GROUP BY file_path',
     ].join('\n')).all();

@@ -14652,8 +14652,1041 @@
           "graph_files": 3
         }
       }
+    },
+    {
+      "id": "09c45920-2d8d-4432-9a15-a50f22330d8c",
+      "occurred_at": "2026-05-13T08:01:39.336Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "67f3aea9-a103-45a8-a52d-5ce13a6f50ff",
+      "occurred_at": "2026-05-13T08:01:50.357Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "14cca717-a6b0-4469-b7a2-edbd134aadb9",
+      "occurred_at": "2026-05-13T08:01:59.825Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "e577793b-1efc-4879-89ee-3bcd460a249d",
+      "occurred_at": "2026-05-13T08:02:05.857Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "efb78af3-6a13-4bfb-b4e3-705382545eec",
+      "occurred_at": "2026-05-13T08:02:11.622Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "f02c2166-6133-46f1-b0e3-d18cf824223a",
+      "occurred_at": "2026-05-13T08:02:30.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "6aa932ea-9bd8-4fb7-824d-df5a39e08d47",
+      "occurred_at": "2026-05-13T08:03:40.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "f927638a-ef5a-4bd3-8b76-d47c6de5d819",
+      "occurred_at": "2026-05-13T08:03:47.114Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "90f7d5c0-4f0a-453b-a9ef-e43f47a76495",
+      "occurred_at": "2026-05-13T08:04:26.097Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "f7da56b1-6c5b-48f9-9eed-b310bba4bfc6",
+      "occurred_at": "2026-05-13T08:04:41.041Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "c7810635-03ca-4bf0-a092-8ee98ba68427",
+      "occurred_at": "2026-05-13T08:05:46.586Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "b170e287-5c82-4f30-af48-7f46336cd914",
+      "occurred_at": "2026-05-13T08:08:22.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/search/retriever.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "fb9729ad-e26e-4526-a306-ec539eeaf7a8",
+      "occurred_at": "2026-05-13T08:08:34.553Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/search/retriever.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "4143bb8b-965b-44a7-a6f3-224639ee8cc7",
+      "occurred_at": "2026-05-13T08:08:55.208Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "1ef4e965-b287-4d30-a286-26e6e234050b",
+      "occurred_at": "2026-05-13T08:09:07.190Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/decide-next.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "6dad6f49-f339-42b1-a83c-5e08dc4dacf7",
+      "occurred_at": "2026-05-13T08:10:05.006Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/decide-next.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "b9b63e3e-509b-4842-b0c6-70f9f687ae16",
+      "occurred_at": "2026-05-13T08:10:51.423Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/decide-next.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "8a92aa0a-b32e-4d1e-b439-3bb8e3736fb6",
+      "occurred_at": "2026-05-13T08:13:19.621Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Store.searchChunks handlers.patch symbol_path target",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/fs.js",
+            "score": 0.9082,
+            "reason": "semantic match: function cmdPatch",
+            "lines": {
+              "start": 430,
+              "end": 477
+            },
+            "target": {
+              "key": "packages/workspace/scripts/fs.js:function:cmdPatch:430-477",
+              "path": "packages/workspace/scripts/fs.js",
+              "kind": "function",
+              "name": "cmdPatch",
+              "symbol_path": "cmdPatch",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 430,
+                "end": 477
+              },
+              "content_hash": "ff7ec4204470f6b32ffff52993fe435870e0302aa8bb960e5d0eb18e88a84e7c",
+              "preview": "function cmdPatch(argv) { if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; } const dryRun = argv.includes('--dry-run');"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.8749,
+            "reason": "semantic match: block editFlow",
+            "lines": {
+              "start": 111,
+              "end": 174
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:editFlow:111-174",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "editFlow",
+              "symbol_path": "editFlow",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 111,
+                "end": 174
+              },
+              "content_hash": "b1b74dbcd774a255edaaf740783e1e19350f2ff6160b780f87bb33dc98c275b5",
+              "preview": "### editFlow run a search-read-patch-verify flow as a composed script - signature: `workspace.editFlow({ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; request"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/edit-flow.js",
+            "score": 0.8611,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 75,
+              "end": 110
+            },
+            "target": {
+              "key": "packages/workspace/scripts/edit-flow.js:function:main:75-110",
+              "path": "packages/workspace/scripts/edit-flow.js",
+              "kind": "function",
+              "name": "main",
+              "symbol_path": "main",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 75,
+                "end": 110
+              },
+              "content_hash": "1458b69c68c31e60dbb8e0e868609b393dd234fdeddda1e036e8a1c8b0813ac8",
+              "preview": "function main() { const args = parseArgs(process.argv.slice(2)); if (args.help) {"
+            }
+          },
+          {
+            "path": "packages/workspace/SCRIPTS.md",
+            "score": 0.8584,
+            "reason": "semantic match: block edit-flow — composed search-read-patch flow",
+            "lines": {
+              "start": 868,
+              "end": 878
+            },
+            "target": {
+              "key": "packages/workspace/SCRIPTS.md:block:edit-flow — composed search-read-patch flow:868-878",
+              "path": "packages/workspace/SCRIPTS.md",
+              "kind": "block",
+              "name": "edit-flow — composed search-read-patch flow",
+              "symbol_path": "edit-flow — composed search-read-patch flow",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 868,
+                "end": 878
+              },
+              "content_hash": "40a0c819b3682fb43aaf8dc8ee1a56d95bcd86771b66109454f8424d3c3d672f",
+              "preview": "### edit-flow — composed search-read-patch flow runs a real script for search -> read -> patch -> read verification. this keeps multi-step editing orchestration outside the facade. ```bash"
+            }
+          },
+          {
+            "path": "AGENTS.md",
+            "score": 0.8583,
+            "reason": "semantic match: block patches & workarounds",
+            "lines": {
+              "start": 290,
+              "end": 291
+            },
+            "target": {
+              "key": "AGENTS.md:block:patches & workarounds:290-291",
+              "path": "AGENTS.md",
+              "kind": "block",
+              "name": "patches & workarounds",
+              "symbol_path": "patches & workarounds",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 290,
+                "end": 291
+              },
+              "content_hash": "46d5984033f87c1dd24d1cec6fd115160174deba3f898eb9c65b95ca20db03d9",
+              "preview": "## patches & workarounds"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14567,
+          "total_chunks": 59873,
+          "last_indexed": "2026-05-13T08:12:08.935Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 5,
+          "chunks_embedded": 108
+        }
+      }
+    },
+    {
+      "id": "d1d7060b-0ceb-4cfe-a67d-3006f1876a1d",
+      "occurred_at": "2026-05-13T08:13:21.446Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "Store.searchChunks handlers.patch symbol_path target",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/fs.js",
+            "score": 0.9082,
+            "reason": "semantic match: function cmdPatch",
+            "lines": {
+              "start": 430,
+              "end": 477
+            },
+            "target": {
+              "key": "packages/workspace/scripts/fs.js:function:cmdPatch:430-477",
+              "path": "packages/workspace/scripts/fs.js",
+              "kind": "function",
+              "name": "cmdPatch",
+              "symbol_path": "cmdPatch",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 430,
+                "end": 477
+              },
+              "content_hash": "ff7ec4204470f6b32ffff52993fe435870e0302aa8bb960e5d0eb18e88a84e7c",
+              "preview": "function cmdPatch(argv) { if (argv.includes('--help') || argv.length === 0) { patchHelp(); return; } const dryRun = argv.includes('--dry-run');"
+            }
+          },
+          {
+            "path": "packages/workspace/TOOLS.md",
+            "score": 0.8749,
+            "reason": "semantic match: block editFlow",
+            "lines": {
+              "start": 111,
+              "end": 174
+            },
+            "target": {
+              "key": "packages/workspace/TOOLS.md:block:editFlow:111-174",
+              "path": "packages/workspace/TOOLS.md",
+              "kind": "block",
+              "name": "editFlow",
+              "symbol_path": "editFlow",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 111,
+                "end": 174
+              },
+              "content_hash": "b1b74dbcd774a255edaaf740783e1e19350f2ff6160b780f87bb33dc98c275b5",
+              "preview": "### editFlow run a search-read-patch-verify flow as a composed script - signature: `workspace.editFlow({ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; request"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/edit-flow.js",
+            "score": 0.8611,
+            "reason": "semantic match: function main",
+            "lines": {
+              "start": 75,
+              "end": 110
+            },
+            "target": {
+              "key": "packages/workspace/scripts/edit-flow.js:function:main:75-110",
+              "path": "packages/workspace/scripts/edit-flow.js",
+              "kind": "function",
+              "name": "main",
+              "symbol_path": "main",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 75,
+                "end": 110
+              },
+              "content_hash": "1458b69c68c31e60dbb8e0e868609b393dd234fdeddda1e036e8a1c8b0813ac8",
+              "preview": "function main() { const args = parseArgs(process.argv.slice(2)); if (args.help) {"
+            }
+          },
+          {
+            "path": "packages/workspace/SCRIPTS.md",
+            "score": 0.8584,
+            "reason": "semantic match: block edit-flow — composed search-read-patch flow",
+            "lines": {
+              "start": 868,
+              "end": 878
+            },
+            "target": {
+              "key": "packages/workspace/SCRIPTS.md:block:edit-flow — composed search-read-patch flow:868-878",
+              "path": "packages/workspace/SCRIPTS.md",
+              "kind": "block",
+              "name": "edit-flow — composed search-read-patch flow",
+              "symbol_path": "edit-flow — composed search-read-patch flow",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 868,
+                "end": 878
+              },
+              "content_hash": "40a0c819b3682fb43aaf8dc8ee1a56d95bcd86771b66109454f8424d3c3d672f",
+              "preview": "### edit-flow — composed search-read-patch flow runs a real script for search -> read -> patch -> read verification. this keeps multi-step editing orchestration outside the facade. ```bash"
+            }
+          },
+          {
+            "path": "AGENTS.md",
+            "score": 0.8583,
+            "reason": "semantic match: block patches & workarounds",
+            "lines": {
+              "start": 290,
+              "end": 291
+            },
+            "target": {
+              "key": "AGENTS.md:block:patches & workarounds:290-291",
+              "path": "AGENTS.md",
+              "kind": "block",
+              "name": "patches & workarounds",
+              "symbol_path": "patches & workarounds",
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 290,
+                "end": 291
+              },
+              "content_hash": "46d5984033f87c1dd24d1cec6fd115160174deba3f898eb9c65b95ca20db03d9",
+              "preview": "## patches & workarounds"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14567,
+          "total_chunks": 59873,
+          "last_indexed": "2026-05-13T08:12:08.935Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "4cd04069-0e23-4b19-a60b-cea187b87cee",
+      "occurred_at": "2026-05-13T08:13:34.047Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "addObjectMemberChunks symbolPath nodeType parentName",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/index/chunker.js",
+            "score": 1,
+            "reason": "semantic match: function addObjectMemberChunks",
+            "lines": {
+              "start": 348,
+              "end": 385
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/chunker.js:function:addObjectMemberChunks:348-385",
+              "path": "packages/workspace/scripts/lib/index/chunker.js",
+              "kind": "function",
+              "name": "addObjectMemberChunks",
+              "symbol_path": "addObjectMemberChunks",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 348,
+                "end": 385
+              },
+              "content_hash": "3b412d911a3094d054733e8869604597546539537755e31ad461678ec6ee99a0",
+              "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/store.js",
+            "score": 1,
+            "reason": "semantic match: function createStore part 3",
+            "lines": {
+              "start": 340,
+              "end": 442
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/store.js:function:createStore part 3:340-442",
+              "path": "packages/workspace/scripts/lib/index/store.js",
+              "kind": "function",
+              "name": "createStore part 3",
+              "symbol_path": "createStore part 3",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 340,
+                "end": 442
+              },
+              "content_hash": "ce8c53d516f4d7b353079f383d4d5fa965bf6d2d012808f5aca4f07629f6cc0e",
+              "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/explore.js",
+            "score": 1,
+            "reason": "semantic match: function targetKey",
+            "lines": {
+              "start": 112,
+              "end": 118
+            },
+            "target": {
+              "key": "packages/workspace/scripts/explore.js:function:targetKey:112-118",
+              "path": "packages/workspace/scripts/explore.js",
+              "kind": "function",
+              "name": "targetKey",
+              "symbol_path": "targetKey",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 112,
+                "end": 118
+              },
+              "content_hash": "8f13a9b9a62d3813075c34fbe87f3d7cee24bfacfba025f5a76f4c7f96035536",
+              "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/search/retriever.js",
+            "score": 1,
+            "reason": "semantic match: function attachCandidateMetadata",
+            "lines": {
+              "start": 214,
+              "end": 261
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/search/retriever.js:function:attachCandidateMetadata:214-261",
+              "path": "packages/workspace/scripts/lib/search/retriever.js",
+              "kind": "function",
+              "name": "attachCandidateMetadata",
+              "symbol_path": "attachCandidateMetadata",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 214,
+                "end": 261
+              },
+              "content_hash": "567342ab490c26484c10c38fc2a7d580125ce5e4cc0630bc6a6cd9a4c410a569",
+              "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/embedder.js",
+            "score": 0.8142,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 1,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/embedder.js:block:anonymous:1-16",
+              "path": "packages/workspace/scripts/lib/index/embedder.js",
+              "kind": "block",
+              "name": null,
+              "symbol_path": null,
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 1,
+                "end": 16
+              },
+              "content_hash": "e39564053df59a4e56bcdcf9cfd00969ea7d959d7e89b99d3493e66bdefa436f",
+              "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14567,
+          "total_chunks": 59873,
+          "last_indexed": "2026-05-13T08:12:08.935Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 0
+        }
+      }
+    },
+    {
+      "id": "219c6d63-441f-4d15-a6a1-204b08b2db81",
+      "occurred_at": "2026-05-13T08:13:58.003Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/chunker.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/improve-tree-sitter-target-chunk-names"
+      }
+    },
+    {
+      "id": "5aee1744-1d31-4a7f-bc2e-ad946b9ff1ab",
+      "occurred_at": "2026-05-13T08:15:34.436Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "addObjectMemberChunks symbolPath nodeType parentName",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/index/chunker.js",
+            "score": 1,
+            "reason": "semantic match: function addObjectMemberChunks",
+            "lines": {
+              "start": 348,
+              "end": 385
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/chunker.js:function:addObjectMemberChunks:348-385",
+              "path": "packages/workspace/scripts/lib/index/chunker.js",
+              "kind": "function",
+              "name": "addObjectMemberChunks",
+              "symbol_path": "addObjectMemberChunks",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 348,
+                "end": 385
+              },
+              "content_hash": "3b412d911a3094d054733e8869604597546539537755e31ad461678ec6ee99a0",
+              "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/store.js",
+            "score": 1,
+            "reason": "semantic match: function createStore part 3",
+            "lines": {
+              "start": 340,
+              "end": 442
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/store.js:function:createStore part 3:340-442",
+              "path": "packages/workspace/scripts/lib/index/store.js",
+              "kind": "function",
+              "name": "createStore part 3",
+              "symbol_path": "createStore part 3",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 340,
+                "end": 442
+              },
+              "content_hash": "ce8c53d516f4d7b353079f383d4d5fa965bf6d2d012808f5aca4f07629f6cc0e",
+              "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/explore.js",
+            "score": 1,
+            "reason": "semantic match: function targetKey",
+            "lines": {
+              "start": 112,
+              "end": 118
+            },
+            "target": {
+              "key": "packages/workspace/scripts/explore.js:function:targetKey:112-118",
+              "path": "packages/workspace/scripts/explore.js",
+              "kind": "function",
+              "name": "targetKey",
+              "symbol_path": "targetKey",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 112,
+                "end": 118
+              },
+              "content_hash": "8f13a9b9a62d3813075c34fbe87f3d7cee24bfacfba025f5a76f4c7f96035536",
+              "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/search/retriever.js",
+            "score": 1,
+            "reason": "semantic match: function attachCandidateMetadata",
+            "lines": {
+              "start": 214,
+              "end": 261
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/search/retriever.js:function:attachCandidateMetadata:214-261",
+              "path": "packages/workspace/scripts/lib/search/retriever.js",
+              "kind": "function",
+              "name": "attachCandidateMetadata",
+              "symbol_path": "attachCandidateMetadata",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 214,
+                "end": 261
+              },
+              "content_hash": "567342ab490c26484c10c38fc2a7d580125ce5e4cc0630bc6a6cd9a4c410a569",
+              "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/embedder.js",
+            "score": 0.814,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 1,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/embedder.js:block:anonymous:1-16",
+              "path": "packages/workspace/scripts/lib/index/embedder.js",
+              "kind": "block",
+              "name": null,
+              "symbol_path": null,
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 1,
+                "end": 16
+              },
+              "content_hash": "e39564053df59a4e56bcdcf9cfd00969ea7d959d7e89b99d3493e66bdefa436f",
+              "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14567,
+          "total_chunks": 59873,
+          "last_indexed": "2026-05-13T08:14:34.212Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 1,
+          "chunks_embedded": 35
+        }
+      }
+    },
+    {
+      "id": "bd9fa97f-f210-461d-b831-8b0fc8b26eaf",
+      "occurred_at": "2026-05-13T08:15:36.848Z",
+      "type": "explore.result",
+      "source": "explore",
+      "question": "addObjectMemberChunks symbolPath nodeType parentName",
+      "action": "explore",
+      "file_path": null,
+      "status": "found",
+      "confidence_delta": 0.1,
+      "worktree_id": "task/workspace-agents/improve-tree-sitter-target-chunk-names",
+      "details": {
+        "budget": 5,
+        "depth": 2,
+        "changed_only": false,
+        "result_count": 5,
+        "results": [
+          {
+            "path": "packages/workspace/scripts/lib/index/chunker.js",
+            "score": 1,
+            "reason": "semantic match: function addObjectMemberChunks",
+            "lines": {
+              "start": 348,
+              "end": 385
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/chunker.js:function:addObjectMemberChunks:348-385",
+              "path": "packages/workspace/scripts/lib/index/chunker.js",
+              "kind": "function",
+              "name": "addObjectMemberChunks",
+              "symbol_path": "addObjectMemberChunks",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 348,
+                "end": 385
+              },
+              "content_hash": "3b412d911a3094d054733e8869604597546539537755e31ad461678ec6ee99a0",
+              "preview": "function addObjectMemberChunks(chunks, sourceLines, objectNode, parentName) { let added = false; for (const member of objectNode.namedChildren || []) {"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/store.js",
+            "score": 1,
+            "reason": "semantic match: function createStore part 3",
+            "lines": {
+              "start": 340,
+              "end": 442
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/store.js:function:createStore part 3:340-442",
+              "path": "packages/workspace/scripts/lib/index/store.js",
+              "kind": "function",
+              "name": "createStore part 3",
+              "symbol_path": "createStore part 3",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 340,
+                "end": 442
+              },
+              "content_hash": "ce8c53d516f4d7b353079f383d4d5fa965bf6d2d012808f5aca4f07629f6cc0e",
+              "preview": "\"  SUM(CASE WHEN chunk_type IN ('type', 'export') THEN 1 ELSE 0 END) AS type_export_chunks,\", \"  SUM(CASE WHEN chunk_type IN ('class', 'function', 'method') THEN 1 ELSE 0 END) AS implementation_chunks,\", \"  GROUP_CONCAT(CASE WHEN chunk_type"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/explore.js",
+            "score": 1,
+            "reason": "semantic match: function targetKey",
+            "lines": {
+              "start": 112,
+              "end": 118
+            },
+            "target": {
+              "key": "packages/workspace/scripts/explore.js:function:targetKey:112-118",
+              "path": "packages/workspace/scripts/explore.js",
+              "kind": "function",
+              "name": "targetKey",
+              "symbol_path": "targetKey",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 112,
+                "end": 118
+              },
+              "content_hash": "8f13a9b9a62d3813075c34fbe87f3d7cee24bfacfba025f5a76f4c7f96035536",
+              "preview": "function targetKey(pathName, kind, name, lines) { const normalizedKind = kind || 'chunk'; const normalizedName = name || 'anonymous';"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/search/retriever.js",
+            "score": 1,
+            "reason": "semantic match: function attachCandidateMetadata",
+            "lines": {
+              "start": 214,
+              "end": 261
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/search/retriever.js:function:attachCandidateMetadata:214-261",
+              "path": "packages/workspace/scripts/lib/search/retriever.js",
+              "kind": "function",
+              "name": "attachCandidateMetadata",
+              "symbol_path": "attachCandidateMetadata",
+              "node_type": "function_declaration",
+              "parent_name": null,
+              "lines": {
+                "start": 214,
+                "end": 261
+              },
+              "content_hash": "567342ab490c26484c10c38fc2a7d580125ce5e4cc0630bc6a6cd9a4c410a569",
+              "preview": "function attachCandidateMetadata(store, candidates) { const paths = Array.from(candidates.keys()); if (paths.length === 0) return;"
+            }
+          },
+          {
+            "path": "packages/workspace/scripts/lib/index/embedder.js",
+            "score": 0.814,
+            "reason": "semantic match: block chunk",
+            "lines": {
+              "start": 1,
+              "end": 16
+            },
+            "target": {
+              "key": "packages/workspace/scripts/lib/index/embedder.js:block:anonymous:1-16",
+              "path": "packages/workspace/scripts/lib/index/embedder.js",
+              "kind": "block",
+              "name": null,
+              "symbol_path": null,
+              "node_type": null,
+              "parent_name": null,
+              "lines": {
+                "start": 1,
+                "end": 16
+              },
+              "content_hash": "e39564053df59a4e56bcdcf9cfd00969ea7d959d7e89b99d3493e66bdefa436f",
+              "preview": "const fs = require('fs'); const os = require('os'); const path = require('path');"
+            }
+          }
+        ],
+        "index_stats": {
+          "total_files": 14567,
+          "total_chunks": 59873,
+          "last_indexed": "2026-05-13T08:14:34.212Z",
+          "last_full_index": "2026-04-29T01:40:26.658Z",
+          "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da",
+          "files_indexed": 0,
+          "chunks_embedded": 1
+        }
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-13T07:32:44.253Z"
+  "updated_at": "2026-05-13T08:15:36.862Z"
 }
