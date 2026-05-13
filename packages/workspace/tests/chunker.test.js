@@ -72,4 +72,29 @@ describe('tree-sitter chunker metadata', () => {
       type: 'test',
     });
   });
+
+  test('preserves non-target declarators from mixed declarations', () => {
+    const source = [
+      "const build = () => 'ok', timeout = 5000;",
+      'const make = () => {}, handlers = { read() {} };',
+      '',
+    ].join('\n');
+
+    const chunks = chunkFile('sample.ts', source);
+
+    expect(pick(chunks, 'build')).toMatchObject({
+      name: 'build',
+      type: 'function',
+    });
+    expect(pick(chunks, 'make')).toMatchObject({
+      name: 'make',
+      type: 'function',
+    });
+    expect(pick(chunks, 'handlers.read')).toMatchObject({
+      name: 'read',
+      parentName: 'handlers',
+      type: 'method',
+    });
+    expect(chunks.some((chunk) => chunk.type === 'block' && chunk.content.includes('timeout = 5000'))).toBe(true);
+  });
 });
