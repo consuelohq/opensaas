@@ -52,22 +52,53 @@ function toPreview(content) {
     .slice(0, 240);
 }
 
+function buildBestChunk(row, similarity) {
+  const preview = toPreview(row.content || '');
+
+  return {
+    contentHash: row.contentHash || row.content_hash || null,
+    kind: row.chunkType || row.chunk_type || null,
+    lines: {
+      start: row.startLine || row.start_line || 1,
+      end: row.endLine || row.end_line || row.startLine || row.start_line || 1,
+    },
+    name: row.name || null,
+    nodeType: row.nodeType || row.node_type || null,
+    parentName: row.parentName || row.parent_name || null,
+    preview,
+    symbolPath: row.symbolPath || row.symbol_path || row.name || null,
+    similarity,
+  };
+}
+
+function applyBestChunk(candidate, chunk) {
+  candidate.bestChunk = chunk;
+  candidate.bestChunkName = chunk.name;
+  candidate.bestChunkType = chunk.kind;
+  candidate.preview = chunk.preview;
+  candidate.startLine = chunk.lines.start;
+  candidate.endLine = chunk.lines.end;
+  candidate.reasonSimilarity = chunk.similarity;
+}
+
 function mergeSearchRows(rows) {
   const candidates = new Map();
 
   for (const row of rows) {
     const similarity = distanceToSimilarity(row.distance);
+    const bestChunk = buildBestChunk(row, similarity);
     const existing = candidates.get(row.filePath);
 
     if (!existing) {
       candidates.set(row.filePath, {
         path: row.filePath,
         embeddingSimilarity: similarity,
-        bestChunkName: row.name,
-        bestChunkType: row.chunkType,
-        preview: toPreview(row.content),
-        startLine: row.startLine,
-        endLine: row.endLine,
+        bestChunk,
+        bestChunkName: bestChunk.name,
+        bestChunkType: bestChunk.kind,
+        preview: bestChunk.preview,
+        startLine: bestChunk.lines.start,
+        endLine: bestChunk.lines.end,
         graphConnections: [],
         includedBy: 'semantic',
         reasonSimilarity: similarity,
@@ -77,18 +108,12 @@ function mergeSearchRows(rows) {
 
     existing.embeddingSimilarity = Math.max(existing.embeddingSimilarity, similarity);
     if (shouldReplaceBestChunk(row, similarity, existing)) {
-      existing.bestChunkName = row.name;
-      existing.bestChunkType = row.chunkType;
-      existing.preview = toPreview(row.content);
-      existing.startLine = row.startLine;
-      existing.endLine = row.endLine;
-      existing.reasonSimilarity = similarity;
+      applyBestChunk(existing, bestChunk);
     }
   }
 
   return candidates;
 }
-
 function getChunkTypePriority(chunkType) {
   switch (chunkType) {
     case 'class':
@@ -145,8 +170,9 @@ function expandGraph(store, candidates, depth, limit) {
       candidates.set(connection.path, {
         path: connection.path,
         embeddingSimilarity: Math.max(0, (currentCandidate?.embeddingSimilarity || 0) * 0.85),
-        bestChunkName: connection.symbol || null,
+        bestChunkName: null,
         bestChunkType: null,
+        edgeSymbol: connection.symbol || null,
         preview: '',
         startLine: 1,
         endLine: 1,
@@ -168,11 +194,18 @@ function hydrateGraphCandidates(store, candidates) {
     const candidate = candidates.get(chunk.file_path);
     if (!candidate || candidate.preview) continue;
 
-    candidate.preview = toPreview(chunk.content);
-    candidate.startLine = chunk.start_line;
-    candidate.endLine = chunk.end_line;
-    candidate.bestChunkName = candidate.bestChunkName || chunk.name;
-    candidate.bestChunkType = candidate.bestChunkType || chunk.chunk_type;
+    const bestChunk = buildBestChunk({
+      chunk_type: chunk.chunk_type,
+      content: chunk.content,
+      content_hash: chunk.content_hash,
+      end_line: chunk.end_line,
+      name: chunk.name,
+      node_type: chunk.node_type,
+      parent_name: chunk.parent_name,
+      start_line: chunk.start_line,
+      symbol_path: chunk.symbol_path,
+    }, candidate.embeddingSimilarity || 0);
+    applyBestChunk(candidate, bestChunk);
   }
 }
 

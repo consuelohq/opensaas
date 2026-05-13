@@ -109,6 +109,40 @@ function computeInformationValue(result, beliefs) {
   return Number((uncertainty * (1 + reachNorm) * testBonus).toFixed(4));
 }
 
+function targetKey(pathName, kind, name, lines) {
+  const normalizedKind = kind || 'chunk';
+  const normalizedName = name || 'anonymous';
+  const start = lines?.start || 1;
+  const end = lines?.end || start;
+  return `${pathName}:${normalizedKind}:${normalizedName}:${start}-${end}`;
+}
+
+function buildTarget(result) {
+  const chunk = result.bestChunk || null;
+  const lines = {
+    start: chunk?.lines?.start || result.startLine || 1,
+    end: chunk?.lines?.end || result.endLine || result.startLine || 1,
+  };
+  const kind = chunk?.kind || result.bestChunkType || null;
+  const name = chunk?.name || result.bestChunkName || null;
+  const symbolPath = chunk?.symbolPath || name;
+
+  if (!kind && !name && !result.startLine && !chunk) return null;
+
+  return {
+    key: targetKey(result.path, kind, symbolPath || name, lines),
+    path: result.path,
+    kind,
+    name,
+    symbol_path: symbolPath || null,
+    node_type: chunk?.nodeType || null,
+    parent_name: chunk?.parentName || null,
+    lines,
+    content_hash: chunk?.contentHash || null,
+    preview: chunk?.preview || result.preview || '',
+  };
+}
+
 function buildEvidenceStateMap(repoRoot) {
   const stateMap = new Map();
   try {
@@ -149,6 +183,8 @@ function toJsonResult(args, results, indexResult) {
       symbol: edge.symbol || null,
     }));
 
+    const target = buildTarget(result);
+
     const base = {
       path: result.path,
       score: Number(result.score.toFixed(4)),
@@ -174,6 +210,7 @@ function toJsonResult(args, results, indexResult) {
         start: result.startLine,
         end: result.endLine,
       },
+      target,
       score_parts: result.scoreParts || {},
     };
 
@@ -289,6 +326,7 @@ async function main() {
         score: result.score,
         reason: result.reason,
         lines: result.lines,
+        target: result.target,
       })),
       index_stats: payload.index_stats,
     },

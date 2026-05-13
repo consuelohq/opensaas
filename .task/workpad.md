@@ -1,63 +1,43 @@
-# fix pr 389 research ingest review findings
+# fix pr 392 codex review findings
 
-branch: `task/workspace-agents/fix-pr-389-research-ingest-review-findings`
+branch: `task/workspace-agents/fix-pr-392-codex-review-findings`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/390
+pr: https://github.com/consuelohq/opensaas/pull/394
 started: 2026-05-13
 
 ## accepted review findings
 
-- [x] CodeRabbit inline comment on `packages/workspace/scripts/research-ingest.js`: `textAtPath` rejected short valid string values such as `"auto"` by using `isUsableText`.
-- [x] Apply the same non-empty string behavior to the similar direct text candidate check in `findText`.
+- [x] Codex on `packages/workspace/scripts/decide-next.js`: target-key dedupe could let the same file appear as both primary and alternative when one candidate has a target key and another is path-only.
+- [x] Codex on `packages/workspace/scripts/lib/search/retriever.js`: graph hydration overwrote the hydrated chunk name with an edge symbol, which could mismatch target name and target lines.
+- [x] Codex on `packages/workspace/scripts/lib/index/chunker.js`: mixed declarations could lose non-function/non-object declarators because the whole declaration became covered after extracting one declarator target.
 
-## acceptance criteria
+## deferred findings
 
-- [x] Preserve explicit short extracted tokens instead of falling back to raw JSON.
-- [x] Keep metadata branch skipping (`input`, `env`, `metrics`, `diagnostics`, `prompt`) so the earlier `input.markdown = "readability"` bug stays fixed.
-- [x] Add regression coverage for a short extracted token.
-- [x] Rerun focused test and a real Dirac ingest smoke.
-- [x] Promote the fix back into the stream review PR.
+- None. All three recent Codex inline comments applied to the current stream and were fixed.
 
-## plan
+## changes
 
-1. Start a dedicated review-fix task from `stream/workspace-agents`.
-2. Read standards and the target file/test.
-3. Replace config-value filtering with plain non-empty string checks in ordered path extraction and direct text candidate selection.
-4. Add a regression for `extracted.content = "auto"`.
-5. Validate syntax, focused tests, real ingest smoke, audit, review, and verify.
-6. Push, merge into stream, then ship the stream PR to main.
+- `decide-next.js` now dedupes candidate actions by `candidate.path` before ranking, and it passes the primary path into `getAlternative`.
+- `retriever.js` keeps graph edge labels in `edgeSymbol` and preserves the actual hydrated chunk name in `bestChunk`.
+- `chunker.js` now processes function and object declarators together through `addVariableDeclaratorChunks` and emits a fallback block for mixed scalar declarators.
+- `chunker.test.js` adds a regression for mixed declarations: function targets are preserved, object handler targets are preserved, and scalar declarator content remains indexed as a block.
 
-## files changed
+## docs decision
 
-- `packages/workspace/scripts/research-ingest.js`
-- `packages/workspace/tests/research-ingest.test.js`
-
-## key decisions
-
-- Removed the config-value blacklist entirely. The parser now accepts any non-empty string candidate in the ordered content paths.
-- Kept branch skipping for metadata/config containers. This keeps `input.markdown = "readability"` from winning while still allowing legitimate `extracted.content = "auto"`.
+- No docs update was required. This task fixes internal decision-engine correctness for existing behavior; it does not add a command, change a manifest contract, or change user-facing script usage.
 
 ## validation
 
-- `checkFiles` for `packages/workspace/scripts/research-ingest.js` and `packages/workspace/tests/research-ingest.test.js` passed.
-- `cd packages/workspace && bun run test tests/research-ingest.test.js` passed: 2 tests.
-- Real ingest smoke: `bun run research:ingest -- https://github.com/dirac-run/dirac --out-dir <tmp> --no-context-save --json` wrote `extracted.md` length 24,963 and `hasReadabilityOnly: false`.
+- `checkFiles` passed for `decide-next.js`, `retriever.js`, `chunker.js`, and `chunker.test.js`.
+- `cd packages/workspace && bun run test tests/chunker.test.js` passed: 2 tests.
+- Fabricated `decide-next` state smoke passed: primary action read `packages/workspace/tests/chunker.test.js`, alternative read `packages/workspace/scripts/lib/index/chunker.js`; the primary path was not repeated.
 - `workspace audit { scripts: true }` passed: 48 documented scripts, 48 actual scripts, no drift.
-- `workspace review.run { base: "origin/stream/workspace-agents", noTests: true }` passed.
+- `workspace review.run { base: "origin/stream/workspace-agents", noTests: true }` passed with no findings.
 - `workspace verify { base: "origin/stream/workspace-agents", noDb: true }` passed.
-- Diff inspected for changed code and test files.
 
-## notes for ko
+## notes
 
-- This task is scoped to the CodeRabbit finding on PR #389.
-- `stream.sync` failed before task start because an existing stream worktree owns the local `stream/workspace-agents` branch. I continued from the existing stream branch and will handle final main merge through the stream PR.
-- The first `pr.review` tool named by the qudo skill was not available in this workspace instance; the review source was the supplied CodeRabbit inline comment.
+- The skill instruction named `workspace.pr.review`, but this workspace instance exposes `prReview`; `prReview({ pr: 392, stdout: true })` was used as the review source of truth.
+- A first `batch` call used array input and failed schema validation before any read; individual `fs.read` calls were used instead.
 
-## publish checklist
-
-```bash
-bun run task:push -- --message "fix(workspace-agents): address pr 389 review findings" --changed
-bun run task:pr
-```
-
-- 2026-05-13 06:07:51 write: `.task/workpad.md`
+- 2026-05-13 08:56:32 write: `.task/workpad.md`
