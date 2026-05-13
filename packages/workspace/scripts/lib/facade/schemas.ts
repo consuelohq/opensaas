@@ -404,6 +404,86 @@ export const BrowserRawInput = z.object({
   args: z.array(z.string().min(1)).min(1),
 });
 
+export const BrowserGetInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: z.enum(['text', 'html', 'value', 'attribute', 'title', 'url']),
+  selector: optionalString,
+  attribute: optionalString,
+});
+
+export const BrowserFindInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  by: z.enum(['role', 'text', 'label', 'placeholder', 'alt', 'title', 'testid']),
+  value: z.string().min(1),
+  action: z.enum(['click', 'fill', 'type', 'hover', 'focus', 'check', 'text']),
+  text: optionalString,
+  name: optionalString,
+});
+
+export const BrowserWaitInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  target: optionalString,
+  text: optionalString,
+  url: optionalString,
+  load: optionalString,
+  fn: optionalString,
+  download: z.boolean().optional(),
+});
+
+export const BrowserDownloadInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  ref: z.string().min(1),
+  path: z.string().min(1),
+});
+
+export const BrowserTabsInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['list', 'new', 'select', 'switch', 'close']).optional(),
+  target: optionalString,
+  url: optionalString,
+  label: optionalString,
+});
+
+export const BrowserCookiesInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['list', 'set', 'clear']).optional(),
+  name: optionalString,
+  value: optionalString,
+});
+
+export const BrowserNetworkInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  args: z.array(z.string().min(1)).min(1),
+});
+
+export const BrowserDialogInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['accept', 'dismiss']),
+  text: optionalString,
+});
+
+export const BrowserTraceInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['start', 'stop']),
+  path: optionalString,
+});
+
+export const BrowserClipboardInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  action: z.enum(['read', 'write']),
+  text: optionalString,
+});
+
 
 
 export const LinearSearchInput = z.object({
@@ -700,6 +780,16 @@ export const schemaRegistry = {
   BrowserLoginInput,
   BrowserEvalInput,
   BrowserRawInput,
+  BrowserGetInput,
+  BrowserFindInput,
+  BrowserWaitInput,
+  BrowserDownloadInput,
+  BrowserTabsInput,
+  BrowserCookiesInput,
+  BrowserNetworkInput,
+  BrowserDialogInput,
+  BrowserTraceInput,
+  BrowserClipboardInput,
   LinearSearchInput,
   LinearIssueInput,
   LinearCreateIssueInput,
@@ -786,6 +876,16 @@ export const schemaTypeSignatures: Record<string, string> = {
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserEvalInput: '{ js: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserGetInput: '{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserFindInput: '{ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserWaitInput: '{ target?: string; text?: string; url?: string; load?: string; fn?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserDownloadInput: '{ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserTabsInput: '{ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserCookiesInput: '{ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserNetworkInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserDialogInput: '{ action: "accept" | "dismiss"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserTraceInput: '{ action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserClipboardInput: '{ action: "read" | "write"; text?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   LinearSearchInput: '{ search?: string; team?: string; first?: number; after?: string; filter?: string; requestId?: string; taskSession?: string }',
   LinearIssueInput: '{ identifier: string; requestId?: string; taskSession?: string }',
   LinearCreateIssueInput: '{ title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
