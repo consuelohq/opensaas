@@ -270,6 +270,21 @@ export const ContextSaveInput = z.object({
   category: optionalString,
 });
 
+export const ContextTraceInput = z.object({
+  ...requestFields,
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  taskSession: optionalString,
+  branch: optionalString,
+  limit: z.number().int().positive().optional(),
+  raw: z.boolean().optional(),
+  db: optionalString,
+});
+
 export const ExploreInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -796,6 +811,7 @@ export const schemaRegistry = {
   ContextGetInput,
   ContextListInput,
   ContextSaveInput,
+  ContextTraceInput,
   ExploreInput,
   DecideNextInput,
   ExploitInput,
@@ -892,6 +908,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
   ContextListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextSaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',

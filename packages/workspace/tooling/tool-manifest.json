@@ -1187,6 +1187,93 @@
     "sessionRequired": false
   },
   {
+    "name": "context.trace",
+    "methodPath": [
+      "context",
+      "trace"
+    ],
+    "description": "query local workspace tool traces from the repo-scoped SQLite trace store",
+    "category": "context",
+    "underlying": "workspace context.trace",
+    "capabilities": {
+      "readOnly": true,
+      "mutating": false,
+      "deterministic": false,
+      "safeToRetry": true
+    },
+    "defaultTimeout": 60000,
+    "inputSchema": "ContextTraceInput",
+    "outputSchema": "RawOutput",
+    "command": {
+      "script": "context",
+      "subcommand": "trace",
+      "branchMode": "none",
+      "jsonFlag": "--json",
+      "arguments": [
+        {
+          "source": "traceId",
+          "flag": "--trace-id",
+          "kind": "value"
+        },
+        {
+          "source": "tool",
+          "flag": "--tool",
+          "kind": "value"
+        },
+        {
+          "source": "status",
+          "flag": "--status",
+          "kind": "value"
+        },
+        {
+          "source": "since",
+          "flag": "--since",
+          "kind": "value"
+        },
+        {
+          "source": "until",
+          "flag": "--until",
+          "kind": "value"
+        },
+        {
+          "source": "contains",
+          "flag": "--contains",
+          "kind": "value"
+        },
+        {
+          "source": "taskSession",
+          "flag": "--task-session",
+          "kind": "value"
+        },
+        {
+          "source": "branch",
+          "flag": "--branch",
+          "kind": "value"
+        },
+        {
+          "source": "limit",
+          "flag": "--limit",
+          "kind": "value"
+        },
+        {
+          "source": "raw",
+          "flag": "--raw",
+          "kind": "boolean"
+        },
+        {
+          "source": "db",
+          "flag": "--db",
+          "kind": "value"
+        }
+      ]
+    },
+    "exampleInput": {
+      "status": "error",
+      "limit": 20
+    },
+    "sessionRequired": false
+  },
+  {
     "name": "explore",
     "methodPath": [
       "explore"

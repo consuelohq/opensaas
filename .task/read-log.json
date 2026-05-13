@@ -161,14 +161,16 @@
     "packages/workspace/scripts/tool-batch.ts",
     "packages/workspace/scripts/tool-runner.ts",
     "packages/workspace/scripts/workspace.ts",
+    "packages/workspace/server.py",
     "packages/workspace/src/generated/workspace.d.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/facade/facade.test.ts",
     "packages/workspace/tests/research-ingest.test.js",
+    "packages/workspace/tests/server_call_test.py",
     "packages/workspace/tests/task-session.test.js",
     "packages/workspace/tooling/tool-manifest.json",
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T10:26:43.052Z"
+  "updatedAt": "2026-05-13T12:27:50.596Z"
 }

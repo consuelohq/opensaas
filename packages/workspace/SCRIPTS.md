@@ -730,7 +730,11 @@ bun run context -- list workpad       # list recent workpad memories
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories
+bun run context -- trace --status error --limit 20  # recent failed local tool traces
+bun run context -- trace --trace-id trc_abc123 --raw # exact raw payload for one trace
 ```
+
+`context trace` reads the local repo-scoped SQLite trace store at `~/Library/Application Support/OpenWorkspace/traces/<repo-hash>/traces.db` on macOS, or `~/.local/share/openworkspace/traces/<repo-hash>/traces.db` on other systems. Override with `OPENWORKSPACE_TRACE_DB` or `--db`. The server writes raw structured tool payloads into this local database after each workspace tool call and keeps the store under `OPENWORKSPACE_TRACE_DB_MAX_BYTES`, defaulting to 500 MB.
 
 **context failure modes**
 ```text
