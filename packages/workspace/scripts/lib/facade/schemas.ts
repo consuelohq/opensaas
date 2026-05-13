@@ -111,10 +111,14 @@ export const FsWriteInput = z.object({
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
-  content: z.string(),
+  content: z.string().optional(),
+  contentFile: optionalString,
   force: z.boolean().optional(),
   append: z.boolean().optional(),
   mkdirs: z.boolean().optional(),
+}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
+  message: 'provide exactly one of content or contentFile',
+  path: ['content'],
 });
 
 export const FsPatchInput = z.object({
@@ -844,7 +848,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
-  FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

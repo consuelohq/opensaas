@@ -2255,7 +2255,7 @@ example error envelope:
 
 write a file in a task worktree
 
-- signature: `workspace.fs.write({ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace fs.write`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
@@ -2268,7 +2268,7 @@ await workspace.call({
   "input": {
     "branch": "task/workspace-agents/example",
     "path": "tmp/example.txt",
-    "content": "hello",
+    "contentFile": "/tmp/example.txt",
     "dryRun": true
   }
 });
