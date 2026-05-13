@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_53e4b4fac8dc",
-  "tmuxSession": "opensaas-workspace-agents-redesign-consuelo-wiki-index-53e4b4fa",
+  "taskSession": "tsk_479aac2f64c6",
+  "tmuxSession": "opensaas-workspace-agents-polish-consuelo-wiki-archive-rows-479aac2f",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/redesign-consuelo-wiki-index",
-  "branch": "task/workspace-agents/redesign-consuelo-wiki-index",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
-  "prNumber": 379,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/379",
-  "createdAt": "2026-05-12T23:03:33.677Z",
+  "taskBranch": "task/workspace-agents/polish-consuelo-wiki-archive-rows",
+  "branch": "task/workspace-agents/polish-consuelo-wiki-archive-rows",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-consuelo-wiki-archive-rows",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-polish-consuelo-wiki-archive-rows",
+  "prNumber": 381,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/381",
+  "createdAt": "2026-05-13T00:07:18.919Z",
   "tmuxCreated": true
 }

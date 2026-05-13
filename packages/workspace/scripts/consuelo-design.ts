@@ -918,7 +918,6 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
         <article class="post-item" data-template="${escapeHtml(entry.template)}" data-category="${escapeHtml(entry.category)}">
           <h3><a href="${escapeHtml(entry.directUrl ?? entry.url)}">${escapeHtml(displayTitleForArchiveEntry(entry))}</a></h3>
           <div class="post-meta" aria-label="Published date">▣ <time datetime="${escapeHtml(entry.publishedAt)}">${escapeHtml(new Date(entry.publishedAt).toLocaleDateString())}</time></div>
-          <p>${escapeHtml(entry.path)}</p>
         </article>`).join('\n');
   const featuredCards = renderItems(featuredEntries);
   const recentCards = renderItems(recentEntries);
@@ -958,7 +957,6 @@ function renderArchiveIndex(payload: DesignArchivePayload): string {
     .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; letter-spacing:-.02em; font-weight:500; }
     .post-item h3 a { color:inherit; text-decoration:none; }
     .post-meta { color:var(--quiet); font-size:13px; line-height:1.3; margin-bottom:4px; }
-    .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.55; overflow-wrap:anywhere; }
     .empty { color:var(--quiet); font-size:14px; }
     footer { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:24px 0 0; color:var(--ink); font-size:13px; }
     .footer-links { display:flex; gap:10px; }

@@ -1,19 +1,18 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/redesign-consuelo-wiki-index",
+  "branch": "task/workspace-agents/polish-consuelo-wiki-archive-rows",
   "base": "origin/stream/workspace-agents",
-  "headSha": "20141c1ffaaace6fed8e56028abcf65a2d0c10d2",
-  "changeHash": "fd97e2f3c40a1ada8120eb05ff22efdec3feae04d3843cebb67fb6d3b17e42af",
+  "headSha": "9edce4a1054a9b68214135fbd389784bf849090c",
+  "changeHash": "51ac64f8dfaa3d89903cf8d6c4aaa8f14d8f3724934f123568f648f8ae8eb5d6",
   "changedFiles": [
     "areas/consuelo-design/AGENTS.md",
     "packages/consuelo-design/README.md",
-    "packages/consuelo-design/templates/digital-eguides/README.md",
+    "packages/consuelo-design/templates/digital-eguides/plan.md",
     "packages/consuelo-design/templates/digital-eguides/reader-shell.md",
     "packages/consuelo-design/templates/digital-eguides/research.md",
-    "packages/workspace/SCRIPTS.md",
     "packages/workspace/scripts/consuelo-design.ts"
   ],
-  "verifiedAt": "2026-05-12T23:13:57.102Z",
+  "verifiedAt": "2026-05-13T00:09:03.184Z",
   "review": {
     "skipped": false,
     "passed": true
