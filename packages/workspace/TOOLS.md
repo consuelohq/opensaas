@@ -230,9 +230,9 @@ example error envelope:
 
 ### consueloDesign.generateDemo
 
-start or open a live Open Design demo working session
+create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateDemo({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-demo`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -286,9 +286,9 @@ example error envelope:
 
 ### consueloDesign.generateDigitalEguide
 
-start or open a live Open Design digital e-guide working session, optionally using a named Consuelo e-guide template
+create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
 
-- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateDigitalEguide({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-digital-eguide`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -342,9 +342,9 @@ example error envelope:
 
 ### consueloDesign.generateEmail
 
-start or open a live Open Design email working session
+create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateEmail({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-email`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -398,9 +398,9 @@ example error envelope:
 
 ### consueloDesign.generateImageBrief
 
-start or open a live Open Design image/media working session
+create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateImageBrief({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-image-brief`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -454,9 +454,9 @@ example error envelope:
 
 ### consueloDesign.generateMotionFrame
 
-start or open a live Open Design motion-frame working session
+create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateMotionFrame({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-motion-frame`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -510,9 +510,9 @@ example error envelope:
 
 ### consueloDesign.generateWebsite
 
-start or open a live Open Design website working session
+create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.generateWebsite({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design generate-website`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms
@@ -838,9 +838,9 @@ example error envelope:
 
 ### consueloDesign.renderHyperframes
 
-start or open a live Open Design HyperFrames render working session
+create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
 
-- signature: `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.consueloDesign.renderHyperframes({ requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace consuelo-design render-hyperframes`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 600000ms

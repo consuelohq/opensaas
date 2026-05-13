@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_53e4b4fac8dc",
-  "tmuxSession": "opensaas-workspace-agents-redesign-consuelo-wiki-index-53e4b4fa",
+  "taskSession": "tsk_ef79b5770bac",
+  "tmuxSession": "opensaas-workspace-agents-align-consuelo-design-tooling-with-headless-exec-ef79b577",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/redesign-consuelo-wiki-index",
-  "branch": "task/workspace-agents/redesign-consuelo-wiki-index",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-redesign-consuelo-wiki-index",
-  "prNumber": 379,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/379",
-  "createdAt": "2026-05-12T23:03:33.677Z",
+  "taskBranch": "task/workspace-agents/align-consuelo-design-tooling-with-headless-execution",
+  "branch": "task/workspace-agents/align-consuelo-design-tooling-with-headless-execution",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-consuelo-design-tooling-with-headless-execution",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-align-consuelo-design-tooling-with-headless-execution",
+  "prNumber": 382,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/382",
+  "createdAt": "2026-05-13T00:09:12.308Z",
   "tmuxCreated": true
 }
