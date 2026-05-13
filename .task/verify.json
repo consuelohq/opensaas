@@ -1,14 +1,16 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
-  "base": "origin/stream/workspace-agents",
-  "headSha": "4d76de4853d5b60fbf8aad37d1128d9cac93023c",
-  "changeHash": "225c67931292eb2bc01c23cd5525adb42a386b7ee747e8bccab8b86dfcb0d5b9",
+  "branch": "task/workspace-agents/plan-ast-target-decision-engine-improvements",
+  "base": "origin/main",
+  "headSha": "528c190b3e78708d4ade09a7b5ee15664a1d9161",
+  "changeHash": "f9d295fb4557ab652320595582f8f7ee2f832ed1eaadc15b5c1ba1955d16e16f",
   "changedFiles": [
-    "packages/workspace/scripts/research-ingest.js",
-    "packages/workspace/tests/research-ingest.test.js"
+    "packages/workspace/scripts/decide-next.js",
+    "packages/workspace/scripts/explore.js",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/scripts/lib/search/retriever.js"
   ],
-  "verifiedAt": "2026-05-13T06:07:36.282Z",
+  "verifiedAt": "2026-05-13T07:35:12.785Z",
   "review": {
     "skipped": false,
     "passed": true
