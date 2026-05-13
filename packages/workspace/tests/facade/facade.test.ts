@@ -1,4 +1,5 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -146,6 +147,89 @@ describe('typed facade executor', () => {
     const entry = getToolManifestEntry(toolName);
     expect(result.code).toBe('OK');
     expect(plans[0].args).toContain(entry?.command.dryRunFlag);
+  });
+
+  it('maps fs.write contentFile to --content-file', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-content-file-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_fs_write_content_file');
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.write', {
+        taskSession: 'tsk_fs_write_content_file',
+        path: 'tmp/example.txt',
+        contentFile: '/tmp/example.txt',
+        force: true,
+      }, { ...stableOptions(successfulRunner(), plans), cwd: tempRoot });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].args).toContain('--content-file');
+      expect(plans[0].args).toContain('/tmp/example.txt');
+      expect(plans[0].args).not.toContain('--content');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs.write calls with both content and contentFile', async () => {
+    const result = await executeTool('fs.write', {
+      taskSession: 'tsk_conflict',
+      path: 'tmp/example.txt',
+      content: 'hello',
+      contentFile: '/tmp/example.txt',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('writes multiline content through fs write content-file and keeps patch content-file working', () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-raw-'));
+    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    const writePayload = join(tempRoot, 'write-payload.txt');
+    const patchPayload = join(tempRoot, 'patch-payload.txt');
+    try {
+      writeFileSync(writePayload, 'line one\nline two\n');
+      writeFileSync(patchPayload, 'patched one\npatched two\n');
+
+      const writeResult = spawnSync('bun', [scriptPath, 'write', 'nested/example.txt', '--content-file', writePayload, '--mkdirs'], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(writeResult.status).toBe(0);
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('line one\nline two\n');
+
+      const inlinePatchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content', 'bad\npatch'], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(inlinePatchResult.status).toBe(1);
+      expect(inlinePatchResult.stderr).toContain('multiline --content is unsafe');
+
+      const patchResult = spawnSync('bun', [scriptPath, 'patch', 'nested/example.txt', '--from', '1', '--to', '1', '--content-file', patchPayload], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(patchResult.status).toBe(0);
+      expect(readFileSync(join(tempRoot, 'nested/example.txt'), 'utf8')).toBe('patched one\npatched two\nline two\n');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects fs write content-file directories', () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-fs-write-dir-'));
+    const scriptPath = join(process.cwd(), 'scripts/fs.js');
+    try {
+      const result = spawnSync('bun', [scriptPath, 'write', 'example.txt', '--content-file', tempRoot], {
+        cwd: tempRoot,
+        encoding: 'utf8',
+      });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain('content file must be a regular file');
+      expect(existsSync(join(tempRoot, 'example.txt'))).toBe(false);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('passes request ids through the envelope', async () => {

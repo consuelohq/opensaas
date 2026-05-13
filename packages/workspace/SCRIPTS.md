@@ -190,9 +190,9 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
 **patch**
@@ -202,7 +202,7 @@ bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement
 bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
@@ -227,9 +227,13 @@ bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
  → replaced wrong lines because you didn't read the range first
  (always: read --from N --to M → verify → then patch the same range)
 
-bad: bun run fs -- write src/deep/nested/new.ts --content "..."
+bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
  (use --mkdirs to create parent directories)
+
+bad: bun run fs -- write src/foo.ts --content "$(cat /tmp/big.ts)"
+ → command payload is too large or multiline content is corrupted by shell/argv transport
+ (use --content-file /tmp/big.ts so only the path travels through argv)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
@@ -244,6 +248,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
 - before `write --force` or `patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
+- `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
 - `patch --from N --to N` replaces line N. always read the range first
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
@@ -261,8 +266,8 @@ bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
-bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
-bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
+bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content-file /tmp/new.ts
+bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
 ```
 
 **common task:fs patterns**

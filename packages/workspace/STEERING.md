@@ -609,6 +609,15 @@ Use `fs.patch --content-file` or stdin for multiline replacements. Use inline `-
 
 The failure mode to avoid is a text-level patch that reports success while corrupting code structure, such as inserting HTML into Astro frontmatter or inserting literal `\n` sequences into TypeScript. Treat shell-safe transport as part of correctness, not as a formatting detail.
 
+File edit primitive routing:
+
+- Use `fs.read` before editing an existing file.
+- Use `fs.patch` for targeted line-range replacement in an existing file.
+- Use `fs.write` for new files, whole-file replacement, or exact appends.
+- Use `contentFile` for multiline or large payloads. Inline `content` is only for short scalar text and single-line patch replacements.
+- Use `task.exec` to run commands inside the task worktree. Do not use `task.exec` to transport source code, scripts, or patches through a giant shell argument.
+- Commands travel as argv arrays. Source code, scripts, patches, and multiline replacements travel as files.
+
 ### verification standard
 
 verification must match the change.

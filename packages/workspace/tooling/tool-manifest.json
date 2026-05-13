@@ -201,8 +201,12 @@
         {
           "source": "content",
           "flag": "--content",
-          "kind": "value",
-          "required": true
+          "kind": "value"
+        },
+        {
+          "source": "contentFile",
+          "flag": "--content-file",
+          "kind": "value"
         },
         {
           "source": "force",
@@ -224,7 +228,7 @@
     "exampleInput": {
       "branch": "task/workspace-agents/example",
       "path": "tmp/example.txt",
-      "content": "hello",
+      "contentFile": "/tmp/example.txt",
       "dryRun": true
     },
     "sessionRequired": true
