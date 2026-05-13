@@ -203,7 +203,8 @@ function getCandidateKey(candidate) {
 function formatTarget(target) {
   if (!target) return null;
 
-  const label = [target.kind, target.name].filter(Boolean).join(' ') || 'chunk';
+  const labelName = target.symbol_path || target.name;
+  const label = [target.kind, labelName].filter(Boolean).join(' ') || 'chunk';
   const start = target.lines?.start || 1;
   const end = target.lines?.end || start;
   return `target ${label} (lines ${start}-${end})`;

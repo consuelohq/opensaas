@@ -63,7 +63,10 @@ function buildBestChunk(row, similarity) {
       end: row.endLine || row.end_line || row.startLine || row.start_line || 1,
     },
     name: row.name || null,
+    nodeType: row.nodeType || row.node_type || null,
+    parentName: row.parentName || row.parent_name || null,
     preview,
+    symbolPath: row.symbolPath || row.symbol_path || row.name || null,
     similarity,
   };
 }
@@ -196,7 +199,10 @@ function hydrateGraphCandidates(store, candidates) {
       content_hash: chunk.content_hash,
       end_line: chunk.end_line,
       name: chunk.name,
+      node_type: chunk.node_type,
+      parent_name: chunk.parent_name,
       start_line: chunk.start_line,
+      symbol_path: chunk.symbol_path,
     }, candidate.embeddingSimilarity || 0);
     applyBestChunk(candidate, {
       ...bestChunk,
