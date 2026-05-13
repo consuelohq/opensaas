@@ -773,7 +773,20 @@ workspace browser.login '{"name":"consuelo","headed":true}'
 workspace browser.reauth '{"name":"consuelo","headed":true}'
 workspace browser.snap
 workspace browser.screenshot '{"name":"after-login"}'
+workspace browser.get '{"target":"title"}'
+workspace browser.find '{"by":"role","value":"button","action":"click","name":"Submit"}'
+workspace browser.wait '{"load":"networkidle"}'
+workspace browser.download '{"ref":"@e1","path":"/tmp/download.bin"}'
+workspace browser.tabs '{"action":"list"}'
+workspace browser.cookies '{"action":"list"}'
+workspace browser.network '{"args":["requests"]}'
+workspace browser.dialog '{"action":"dismiss"}'
+workspace browser.trace '{"action":"start"}'
+workspace browser.clipboard '{"action":"read"}'
 ```
+
+
+Typed browser aliases should cover repeated primitives. Use `workspace browser.raw '{"args":[...]}'` only when an upstream `agent-browser` command is not yet represented by a typed facade alias.
 
 when Google or another provider requires password re-auth, use `browser.reauth` or `bun run browser -- reauth consuelo --headed`. this closes the active daemon first because `agent-browser` ignores new `--profile` flags while a daemon is already running.
 

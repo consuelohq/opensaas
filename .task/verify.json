@@ -1,26 +1,25 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/align-consuelo-design-tooling-with-headless-execution",
-  "base": "origin/stream/workspace-agents",
-  "headSha": "0f1f3e5e2240cc01cc83bf8d5031d2c7c4dc496e",
-  "changeHash": "99c2a9d396dabd3160aa841987c0e31ae3daf5ad8e0d035698fb222b0ef31623",
+  "branch": "task/workspace-agents/add-typed-browser-facade-primitives",
+  "base": "origin/task/workspace-agents/add-typed-browser-facade-primitives",
+  "headSha": "4b06fb669876146ad5a590a34ff6dca77f5fad2f",
+  "changeHash": "921165f176a27b54d76039ac9829e81265dd27a26d14acadb8f946f6c3646d38",
   "changedFiles": [
-    "areas/consuelo-design/AGENTS.md",
-    "packages/consuelo-design/README.md",
-    "packages/consuelo-design/templates/digital-eguides/README.md",
+    "packages/workspace/SCRIPTS.md",
     "packages/workspace/TOOLS.md",
-    "packages/workspace/scripts/consuelo-design.ts",
+    "packages/workspace/scripts/browser.js",
     "packages/workspace/scripts/lib/facade/schemas.ts",
     "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
     "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-13T00:25:02.539Z",
+  "verifiedAt": "2026-05-13T03:35:08.954Z",
   "review": {
-    "skipped": false,
+    "skipped": true,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []
