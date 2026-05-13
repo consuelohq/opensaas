@@ -2,9 +2,11 @@
 
 import contextlib
 import datetime
+import hashlib
 import json
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -174,11 +176,6 @@ TOOL_MANIFEST_FILE = os.path.join(APP_DIR, 'tooling', 'tool-manifest.json')
 DECISION_PROCESS_FILE = os.path.join(APP_DIR, 'decision.md')
 mcp = FastMCP(SERVER_NAME, host='0.0.0.0', port=PORT, stateless_http=True, json_response=True)
 RO = {'readOnlyHint': True, 'openWorldHint': False}
-_CACHED_MANIFEST: list[dict[str, Any]] | None = None
-_CACHED_MANIFEST_MTIME: float | None = None
-_SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
-_SAFETY_SUMMARY_LIMIT = 500
-
 CALL_TOOL = {
     'readOnlyHint': True,
     'openWorldHint': False,
@@ -188,6 +185,7 @@ _CACHED_MANIFEST: list[dict[str, Any]] | None = None
 _CACHED_MANIFEST_MTIME: float | None = None
 _SAFETY_AUDIT_FILE = os.environ.get('WORKSPACE_SAFETY_AUDIT_FILE', '/tmp/workspace-safety-audit.jsonl')
 _SAFETY_SUMMARY_LIMIT = 500
+_TRACE_DB_MAX_BYTES = int(os.environ.get('OPENWORKSPACE_TRACE_DB_MAX_BYTES', str(500 * 1024 * 1024)))
 
 
 def _resolve_steering_file() -> str:
@@ -234,6 +232,182 @@ def _workspace_root() -> Path:
 def _worktree_root() -> Path:
     configured = os.environ.get('WORKSPACE_WORKTREE_ROOT') or os.environ.get('OPENSAAS_WORKTREE_ROOT')
     return Path(configured) if configured else Path(tempfile.gettempdir()) / 'opensaas-worktrees'
+
+
+def _repo_identifier() -> str:
+    try:
+        result = subprocess.run(
+            ['git', 'remote', 'get-url', 'origin'],
+            capture_output=True,
+            cwd=str(_workspace_root()),
+            text=True,
+            timeout=2,
+            check=False,
+            shell=False,
+        )
+        remote = result.stdout.strip()
+        if result.returncode == 0 and remote:
+            return remote
+    except Exception:
+        pass
+    return str(_workspace_root())
+
+
+def _repo_hash() -> str:
+    return hashlib.sha256(_repo_identifier().encode('utf-8')).hexdigest()[:24]
+
+
+def _default_trace_db_path() -> Path:
+    if sys.platform == 'darwin':
+        root = Path.home() / 'Library' / 'Application Support' / 'OpenWorkspace' / 'traces'
+    else:
+        root = Path.home() / '.local' / 'share' / 'openworkspace' / 'traces'
+    return root / _repo_hash() / 'traces.db'
+
+
+def _trace_db_path() -> Path:
+    configured = os.environ.get('OPENWORKSPACE_TRACE_DB')
+    return Path(configured).expanduser() if configured else _default_trace_db_path()
+
+
+def _json_text(value: Any) -> str:
+    try:
+        return json.dumps(value, sort_keys=True, default=str)
+    except TypeError:
+        return json.dumps(str(value))
+
+
+def _trace_db_total_size(db_path: Path) -> int:
+    total = 0
+    for candidate in [db_path, Path(str(db_path) + '-wal'), Path(str(db_path) + '-shm')]:
+        try:
+            total += candidate.stat().st_size
+        except OSError:
+            pass
+    return total
+
+
+def _open_trace_db() -> tuple[sqlite3.Connection, Path]:
+    db_path = _trace_db_path()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path), timeout=5)
+    conn.execute('PRAGMA busy_timeout = 5000')
+    conn.execute('PRAGMA journal_mode = WAL')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS tool_traces (
+            id TEXT PRIMARY KEY,
+            ts TEXT NOT NULL,
+            trace_id TEXT NOT NULL,
+            mcp_trace_id TEXT,
+            source TEXT NOT NULL,
+            tool TEXT NOT NULL,
+            task_session TEXT,
+            branch TEXT,
+            worktree TEXT,
+            status TEXT NOT NULL,
+            ok INTEGER NOT NULL,
+            code TEXT,
+            exit_code INTEGER,
+            duration_ms INTEGER,
+            input_json TEXT,
+            resolved_input_json TEXT,
+            result_json TEXT,
+            stderr TEXT
+        )
+    ''')
+    indexes = [
+        'CREATE INDEX IF NOT EXISTS tool_traces_ts_idx ON tool_traces(ts)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_trace_id_idx ON tool_traces(trace_id)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_mcp_trace_id_idx ON tool_traces(mcp_trace_id)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_tool_idx ON tool_traces(tool)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_status_idx ON tool_traces(status)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_task_session_idx ON tool_traces(task_session)',
+        'CREATE INDEX IF NOT EXISTS tool_traces_branch_idx ON tool_traces(branch)',
+    ]
+    for statement in indexes:
+        conn.execute(statement)
+    return conn, db_path
+
+
+def _trace_status(result: dict[str, Any]) -> str:
+    code = str(result.get('code') or '')
+    if code == 'SAFETY_BLOCKED':
+        return 'blocked'
+    if code == 'TIMEOUT':
+        return 'timeout'
+    return 'ok' if bool(result.get('ok')) else 'error'
+
+
+def _enforce_trace_db_cap(conn: sqlite3.Connection, db_path: Path) -> None:
+    if _TRACE_DB_MAX_BYTES <= 0 or _trace_db_total_size(db_path) <= _TRACE_DB_MAX_BYTES:
+        return
+
+    target_bytes = int(_TRACE_DB_MAX_BYTES * 0.9)
+    while _trace_db_total_size(db_path) > target_bytes:
+        cursor = conn.execute('''
+            DELETE FROM tool_traces
+            WHERE id IN (
+                SELECT id FROM tool_traces ORDER BY ts ASC LIMIT 1000
+            )
+        ''')
+        conn.commit()
+        if cursor.rowcount == 0:
+            break
+    conn.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+    if _trace_db_total_size(db_path) > _TRACE_DB_MAX_BYTES:
+        conn.execute('VACUUM')
+
+
+def _write_tool_trace(
+    *,
+    tool: str,
+    tool_input: Any,
+    resolved_input: Any | None,
+    result: dict[str, Any],
+    task_session: str | None,
+    mcp_trace_id: str,
+    metadata: dict[str, Any] | None = None,
+) -> None:
+    try:
+        task_context = result.get('taskContext') if isinstance(result.get('taskContext'), dict) else {}
+        trace_id = result.get('traceId') if isinstance(result.get('traceId'), str) else mcp_trace_id
+        branch = task_context.get('branch') or (metadata or {}).get('branch') or (metadata or {}).get('taskBranch')
+        worktree = task_context.get('worktree') or (metadata or {}).get('worktree') or (metadata or {}).get('worktreePath')
+        session = task_context.get('taskSession') or task_session
+        conn, db_path = _open_trace_db()
+        try:
+            conn.execute('''
+                INSERT OR REPLACE INTO tool_traces(
+                    id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch, worktree,
+                    status, ok, code, exit_code, duration_ms,
+                    input_json, resolved_input_json, result_json, stderr
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                f'{mcp_trace_id}:{trace_id}',
+                datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                trace_id,
+                mcp_trace_id,
+                'mcp',
+                tool,
+                session,
+                branch,
+                worktree,
+                _trace_status(result),
+                1 if bool(result.get('ok')) else 0,
+                result.get('code'),
+                result.get('exitCode'),
+                result.get('durationMs'),
+                _json_text(tool_input),
+                _json_text(resolved_input) if resolved_input is not None else None,
+                _json_text(result),
+                result.get('stderr') if isinstance(result.get('stderr'), str) else None,
+            ))
+            conn.commit()
+            _enforce_trace_db_cap(conn, db_path)
+        finally:
+            conn.close()
+    except Exception:
+        pass
 
 
 def _safe_json(value: Any) -> str:
@@ -549,10 +723,24 @@ def _apply_task_session(tool: str, task_session: str | None, tool_input: Any) ->
 def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: Any | None = None, timeout: int | None = None) -> dict[str, Any]:
     started = time.time()
     trace_id = _trace_id()
-    if not tool or not isinstance(tool, str):
-        return _envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id)
-
     normalized_input: Any = {} if tool_input is None else tool_input
+    trace_tool = tool if isinstance(tool, str) and tool else 'workspace.call'
+
+    def finish(result: dict[str, Any], resolved_input: Any | None = None, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+        _write_tool_trace(
+            tool=trace_tool,
+            tool_input=normalized_input,
+            resolved_input=resolved_input,
+            result=result,
+            task_session=taskSession,
+            mcp_trace_id=trace_id,
+            metadata=metadata,
+        )
+        return result
+
+    if not tool or not isinstance(tool, str):
+        return finish(_envelope(ok=False, code='VALIDATION_ERROR', message='tool must be a non-empty string', traceId=trace_id))
+
     safety_reason = _safety_check(tool, normalized_input, taskSession)
     if safety_reason:
         result = _envelope(
@@ -564,36 +752,36 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             traceId=trace_id,
         )
         _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=True, reason=safety_reason)
-        return result
+        return finish(result)
     _safety_log(tool=tool, tool_input=normalized_input, task_session=taskSession, trace_id=trace_id, blocked=False)
 
     if taskSession and (_input_has_branch(normalized_input) or (tool == 'batch' and _batch_has_branch_conflict(normalized_input))):
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='VALIDATION_ERROR',
             message='Pass either taskSession or input.branch, not both. taskSession is required for agent task-scoped calls.',
             data={'tool': tool, 'taskSession': taskSession},
             traceId=trace_id,
-        )
+        ))
 
     if not taskSession and _tool_requires_task_session(tool, normalized_input):
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='TASK_SESSION_REQUIRED',
             message=f'{tool} requires taskSession. Use the taskSession returned by task.start.',
             data={'tool': tool},
             traceId=trace_id,
-        )
+        ))
 
     resolved_input, metadata = _apply_task_session(tool, taskSession, normalized_input)
     if taskSession and metadata is None:
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='TASK_SESSION_NOT_FOUND',
             message='taskSession was not found. Use the taskSession returned by task.start.',
             data={'taskSession': taskSession},
             traceId=trace_id,
-        )
+        ))
 
     args = [BUN_BIN, str(_workspace_root() / 'scripts' / 'workspace.ts'), tool, json.dumps(resolved_input)]
     run_timeout = timeout if isinstance(timeout, int) and timeout > 0 else 120
@@ -614,7 +802,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             env=run_env,
         )
     except subprocess.TimeoutExpired as error:
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='TIMEOUT',
             message=f'workspace.call timed out after {run_timeout}s',
@@ -622,9 +810,9 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             stderr=str(error),
             durationMs=int((time.time() - started) * 1000),
             traceId=trace_id,
-        )
+        ), resolved_input, metadata)
     except FileNotFoundError as error:
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='COMMAND_FAILED',
             message='workspace.call could not start bun/workspace executable',
@@ -632,13 +820,13 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             stderr=str(error),
             durationMs=int((time.time() - started) * 1000),
             traceId=trace_id,
-        )
+        ), resolved_input, metadata)
 
     stdout_text = result.stdout.strip()
     try:
         envelope = json.loads(stdout_text) if stdout_text else {}
     except json.JSONDecodeError:
-        return _envelope(
+        return finish(_envelope(
             ok=False,
             code='PARSE_ERROR',
             message='workspace.call received non-JSON output from facade',
@@ -647,7 +835,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             exitCode=result.returncode,
             durationMs=int((time.time() - started) * 1000),
             traceId=trace_id,
-        )
+        ), resolved_input, metadata)
 
     if isinstance(envelope, dict):
         envelope.setdefault('now', _now_iso())
@@ -670,9 +858,9 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
             }
         if result.stderr and not envelope.get('stderr'):
             envelope['stderr'] = result.stderr
-        return envelope
+        return finish(envelope, resolved_input, metadata)
 
-    return _envelope(
+    return finish(_envelope(
         ok=False,
         code='PARSE_ERROR',
         message='workspace.call facade output was not an object',
@@ -680,7 +868,7 @@ def _run_workspace_call(tool: str, taskSession: str | None = None, tool_input: A
         exitCode=result.returncode,
         durationMs=int((time.time() - started) * 1000),
         traceId=trace_id,
-    )
+    ), resolved_input, metadata)
 
 
 @mcp.tool(annotations=CALL_TOOL)

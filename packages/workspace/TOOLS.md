@@ -1622,6 +1622,63 @@ example error envelope:
 }
 ```
 
+### context.trace
+
+query local workspace tool traces from the repo-scoped SQLite trace store
+
+- signature: `workspace.context.trace({ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.trace",
+  "input": {
+    "status": "error",
+    "limit": 20
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## decision engine
 
 ### audit
