@@ -6268,7 +6268,7 @@ example error envelope:
 
 wait for a selector, duration, text, URL, load state, JavaScript condition, or download
 
-- signature: `workspace.browser.wait({ target?: string; text?: string; url?: string; load?: string; fn?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.wait({ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.wait`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms

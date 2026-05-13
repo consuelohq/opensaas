@@ -371,17 +371,23 @@ function cmdTabs(argv) {
   const parts = argv.slice(2);
   const labelIndex = parts.indexOf('--label');
   const label = labelIndex >= 0 ? parts[labelIndex + 1] : null;
-  const positional = parts.filter((_, index) => index !== labelIndex && index !== labelIndex + 1);
+  const partsWithoutLabel = labelIndex >= 0
+    ? parts.filter((_, index) => index !== labelIndex && index !== labelIndex + 1)
+    : parts;
+  const positional = partsWithoutLabel.filter((part) => !part.startsWith('-'));
 
   if (!action || action === 'list') {
-    cmdRaw(['tab']);
+    cmdRaw(['tab', ...partsWithoutLabel]);
     return;
   }
 
   if (action === 'new') {
     const args = ['tab', 'new'];
-    if (label) args.push('--label', label);
     const destination = positional.at(-1);
+    const destinationIndex = destination === undefined ? -1 : partsWithoutLabel.lastIndexOf(destination);
+    const forwardedParts = partsWithoutLabel.filter((_, index) => index !== destinationIndex);
+    if (label) args.push('--label', label);
+    args.push(...forwardedParts);
     if (destination) args.push(destination);
     cmdRaw(args);
     return;
@@ -404,7 +410,7 @@ function cmdTabs(argv) {
     return;
   }
 
-  cmdRaw(['tab', action, ...parts]);
+  cmdRaw(['tab', action, ...partsWithoutLabel]);
 }
 
 function cmdCookies(argv) {
@@ -415,8 +421,8 @@ function cmdCookies(argv) {
   }
 
   const args = ['cookies', action];
-  if (name) args.push(name);
-  if (value) args.push(value);
+  if (name !== undefined) args.push(name);
+  if (value !== undefined) args.push(value);
   cmdRaw(args);
 }
 

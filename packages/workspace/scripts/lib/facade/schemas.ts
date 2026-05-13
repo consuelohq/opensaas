@@ -420,7 +420,13 @@ export const BrowserFindInput = z.object({
   action: z.enum(['click', 'fill', 'type', 'hover', 'focus', 'check', 'text']),
   text: optionalString,
   name: optionalString,
-});
+}).refine(
+  (input) => !['fill', 'type'].includes(input.action) || input.text !== undefined,
+  {
+    message: 'BrowserFindInput requires text when action is fill or type',
+    path: ['text'],
+  },
+);
 
 export const BrowserWaitInput = z.object({
   ...requestFields,
@@ -429,7 +435,7 @@ export const BrowserWaitInput = z.object({
   text: optionalString,
   url: optionalString,
   load: optionalString,
-  fn: optionalString,
+  conditionScript: optionalString,
   download: z.boolean().optional(),
 });
 
@@ -878,7 +884,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   BrowserRawInput: '{ args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserGetInput: '{ target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFindInput: '{ by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserWaitInput: '{ target?: string; text?: string; url?: string; load?: string; fn?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserWaitInput: '{ target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserDownloadInput: '{ ref: string; path: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserTabsInput: '{ action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserCookiesInput: '{ action?: "list" | "set" | "clear"; name?: string; value?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
