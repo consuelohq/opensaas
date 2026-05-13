@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_2f0becf92147",
-  "tmuxSession": "opensaas-workspace-agents-fix-research-ingest-extracted-text-selection-2f0becf9",
+  "taskSession": "tsk_bacb4a71d4d3",
+  "tmuxSession": "opensaas-workspace-agents-fix-pr-389-research-ingest-review-findings-bacb4a71",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
-  "branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-research-ingest-extracted-text-selection",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-research-ingest-extracted-text-selection",
-  "prNumber": 388,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/388",
-  "createdAt": "2026-05-13T05:38:06.401Z",
+  "taskBranch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
+  "branch": "task/workspace-agents/fix-pr-389-research-ingest-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-389-research-ingest-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-pr-389-research-ingest-review-findings",
+  "prNumber": 390,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/390",
+  "createdAt": "2026-05-13T06:05:18.963Z",
   "tmuxCreated": true
 }

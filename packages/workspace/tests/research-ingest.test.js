@@ -71,3 +71,38 @@ test('research ingest prefers extracted content over summarize input config stri
   const manifest = JSON.parse(result.stdout);
   expect(fs.readFileSync(manifest.extractedPath, 'utf8')).toBe(`${expectedText}\n`);
 });
+
+test('research ingest preserves explicit short extracted tokens', () => {
+  const expectedText = 'auto';
+  const fakeSummarize = makeFakeSummarize({
+    extracted: {
+      content: expectedText,
+    },
+  });
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'research-ingest-output-'));
+  tempPaths.push(outputRoot);
+
+  const result = childProcess.spawnSync(
+    'bun',
+    [
+      'scripts/research-ingest.js',
+      'https://example.test/short-token',
+      '--summarize-bin',
+      fakeSummarize,
+      '--out-dir',
+      outputRoot,
+      '--no-context-save',
+      '--json',
+    ],
+    {
+      cwd: workspaceRoot,
+      encoding: 'utf8',
+    },
+  );
+
+  expect(result.status).toBe(0);
+  expect(result.stderr).toBe('');
+
+  const manifest = JSON.parse(result.stdout);
+  expect(fs.readFileSync(manifest.extractedPath, 'utf8')).toBe(`${expectedText}\n`);
+});
