@@ -238,14 +238,10 @@ function parseJson(raw) {
 }
 
 const SKIPPED_TEXT_SEARCH_KEYS = new Set(['input', 'env', 'metrics', 'diagnostics', 'prompt']);
-const CONFIG_TEXT_VALUES = new Set(['auto', 'detailed', 'html', 'md', 'medium', 'readability', 'standard', 'xl', 'xxl']);
 const TEXT_KEYS = new Set(['content', 'text', 'markdown', 'transcript', 'extracted', 'extractedContent', 'summary', 'output', 'result']);
 
-function isUsableText(value) {
-  if (typeof value !== 'string') return false;
-  const text = value.trim();
-  if (!text) return false;
-  return !CONFIG_TEXT_VALUES.has(text.toLowerCase());
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
 }
 
 function textAtPath(value, segments) {
@@ -254,7 +250,7 @@ function textAtPath(value, segments) {
     if (!current || typeof current !== 'object') return null;
     current = current[segment];
   }
-  return isUsableText(current) ? current.trim() : null;
+  return isNonEmptyString(current) ? current.trim() : null;
 }
 
 function preferredText(parsed, kind) {
@@ -299,7 +295,7 @@ function findText(value) {
 
   for (const [key, child] of Object.entries(value)) {
     if (SKIPPED_TEXT_SEARCH_KEYS.has(key)) continue;
-    if (TEXT_KEYS.has(key) && isUsableText(child)) return child.trim();
+    if (TEXT_KEYS.has(key) && isNonEmptyString(child)) return child.trim();
   }
 
   for (const [key, child] of Object.entries(value)) {
