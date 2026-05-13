@@ -13016,8 +13016,152 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/add-typed-browser-facade-primitives"
       }
+    },
+    {
+      "id": "b4d85408-000e-4037-bbcf-014400b78768",
+      "occurred_at": "2026-05-13T05:39:04.934Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "6c4b4b11-d65e-4a21-b900-3de295b6e7c1",
+      "occurred_at": "2026-05-13T05:39:14.054Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "d65c47fa-a932-4fa4-acc5-e8c30c585827",
+      "occurred_at": "2026-05-13T05:39:24.168Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "e259b754-cee5-45f5-867b-dc8f3e07e3e3",
+      "occurred_at": "2026-05-13T05:39:34.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/research-ingest.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "08c8280c-43bc-4365-9806-77bbc115a0ee",
+      "occurred_at": "2026-05-13T05:39:56.289Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "1a84d0ce-58ab-4d6f-9c00-13f7aa79f9fd",
+      "occurred_at": "2026-05-13T05:40:18.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "ef38bf36-2868-4ee9-a2b8-6ce77b5afd9c",
+      "occurred_at": "2026-05-13T05:40:52.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-session.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "f93366f9-5f0d-4bfb-837e-7c22a8fbc605",
+      "occurred_at": "2026-05-13T05:41:37.634Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/research-ingest.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
+    },
+    {
+      "id": "071e861b-a349-4b1d-af3c-085b2cc12fca",
+      "occurred_at": "2026-05-13T05:41:41.305Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/research-ingest.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-research-ingest-extracted-text-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-research-ingest-extracted-text-selection"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-13T03:32:29.893Z"
+  "updated_at": "2026-05-13T05:41:41.355Z"
 }
