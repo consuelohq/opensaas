@@ -16,6 +16,21 @@ const branchField = {
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
 const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
+
+const browserDeviceFlags = {
+  preset: z.enum(['desktop', 'mobile', 'tablet', 'ipad', 'iphone']).optional(),
+  device: optionalString,
+  provider: optionalString,
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  colorScheme: z.enum(['dark', 'light', 'no-preference']).optional(),
+};
+
+const requireCompleteBrowserViewport = (input: { width?: number; height?: number }) => (
+  input.width === undefined && input.height === undefined
+) || (
+  input.width !== undefined && input.height !== undefined
+);
 const liveField = {
   live: z.boolean().optional(),
 };
@@ -360,6 +375,10 @@ export const BrowserOpenInput = z.object({
   url: z.string().url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserPageInput = z.object({
@@ -367,6 +386,10 @@ export const BrowserPageInput = z.object({
   ...dryRunField,
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserScreenshotInput = z.object({
@@ -374,6 +397,10 @@ export const BrowserScreenshotInput = z.object({
   ...dryRunField,
   name: optionalString,
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserElementInput = z.object({
@@ -878,9 +905,9 @@ export const schemaTypeSignatures: Record<string, string> = {
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserPageInput: '{ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserScreenshotInput: '{ name?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',

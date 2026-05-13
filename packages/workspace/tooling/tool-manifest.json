@@ -1874,11 +1874,43 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "url": "https://example.com",
+      "preset": "mobile",
+      "full": true,
       "dryRun": true
     },
     "sessionRequired": false
@@ -1920,11 +1952,43 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
       "url": "https://example.com",
+      "preset": "mobile",
+      "full": true,
       "dryRun": true
     },
     "sessionRequired": false
@@ -1961,10 +2025,41 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
+      "preset": "desktop",
       "dryRun": true
     },
     "sessionRequired": false
@@ -2001,10 +2096,41 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
+      "preset": "desktop",
       "dryRun": true
     },
     "sessionRequired": false
@@ -2040,11 +2166,42 @@
           "source": "full",
           "flag": "--full",
           "kind": "boolean"
+        },
+        {
+          "source": "preset",
+          "flag": "--preset",
+          "kind": "value"
+        },
+        {
+          "source": "device",
+          "flag": "--device",
+          "kind": "value"
+        },
+        {
+          "source": "provider",
+          "flag": "--provider",
+          "kind": "value"
+        },
+        {
+          "source": "width",
+          "flag": "--width",
+          "kind": "value"
+        },
+        {
+          "source": "height",
+          "flag": "--height",
+          "kind": "value"
+        },
+        {
+          "source": "colorScheme",
+          "flag": "--color-scheme",
+          "kind": "value"
         }
       ]
     },
     "exampleInput": {
-      "name": "after-login",
+      "name": "mobile-check",
+      "preset": "mobile",
       "dryRun": true
     },
     "sessionRequired": false
