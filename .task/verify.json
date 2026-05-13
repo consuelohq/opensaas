@@ -1,22 +1,28 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/fix-pr-392-codex-review-findings",
-  "base": "origin/stream/workspace-agents",
-  "headSha": "9f6130e6a8b3c87a66aa64903565c320c54a99ee",
-  "changeHash": "dfef3eb067cb07525e535ed782ecaf7e8f05d1f347c894c6f92bed1b909e8ac3",
+  "branch": "task/workspace-agents/add-context-trace-sqlite-store",
+  "base": "stream/workspace-agents",
+  "headSha": "95ee535cfb8c499bac59a35dccf3d8ec3f526ec5",
+  "changeHash": "6fc348a38792512ea28c22ac179dd0c839ae736ad7c02447be43238154be716f",
   "changedFiles": [
-    "packages/workspace/scripts/decide-next.js",
-    "packages/workspace/scripts/lib/index/chunker.js",
-    "packages/workspace/scripts/lib/search/retriever.js",
-    "packages/workspace/tests/chunker.test.js"
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/scripts/context.js",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/context-trace.test.js",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tooling/tool-manifest.json"
   ],
-  "verifiedAt": "2026-05-13T08:56:03.598Z",
+  "verifiedAt": "2026-05-13T12:30:31.196Z",
   "review": {
     "skipped": false,
     "passed": true
   },
   "db": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
     "risks": [],
     "findings": []

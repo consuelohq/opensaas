@@ -190,9 +190,9 @@ bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 **write**
 ```bash
 bun run fs -- write src/new.ts --content "export const x = 1;"  # create new file
-bun run fs -- write src/new.ts --content "..." --mkdirs          # create parent dirs
-bun run fs -- write src/existing.ts --content "..." --force      # overwrite existing
-bun run fs -- write src/foo.ts --append "\nconsole.log('added');"  # append to file
+bun run fs -- write src/new.ts --content-file /tmp/new.ts --mkdirs # create multiline file from file payload
+bun run fs -- write src/existing.ts --content-file /tmp/new.ts --force # overwrite existing from file payload
+bun run fs -- write src/foo.ts --append --content-file /tmp/addition.ts # append exact file payload
 ```
 
 **patch**
@@ -202,7 +202,7 @@ bun run fs -- patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement
 bun run fs -- patch src/foo.ts --from 10 --to 10 --content "single line only"
 ```
 
-Use `--content-file` for multiline replacements. Inline `--content` is only for single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
+Use `--content-file` for multiline writes and replacements. Inline `--content` is only for short writes and single-line patches; multiline source code must move through a file or stdin so JSON, shell, and argv parsing cannot turn newlines into literal `\n` text.
 
 **http**
 ```bash
@@ -227,9 +227,13 @@ bad: bun run fs -- patch src/foo.ts --from 10 --to 20 --content "..."
  → replaced wrong lines because you didn't read the range first
  (always: read --from N --to M → verify → then patch the same range)
 
-bad: bun run fs -- write src/deep/nested/new.ts --content "..."
+bad: bun run fs -- write src/deep/nested/new.ts --content-file /tmp/new.ts
  → error: directory does not exist
  (use --mkdirs to create parent directories)
+
+bad: bun run fs -- write src/foo.ts --content "$(cat /tmp/big.ts)"
+ → command payload is too large or multiline content is corrupted by shell/argv transport
+ (use --content-file /tmp/big.ts so only the path travels through argv)
 
 bad: cd /private/tmp/opensaas-worktrees/task-dialer && bun run fs -- read src/foo.ts
  → error: Script not found "fs"
@@ -244,6 +248,7 @@ bad: bun run fs -- write src/foo.ts --append "new line"
 - prefer `bun run fs` over raw bat/rg/eza/fd for all repo work
 - before `write --force` or `patch`, always read the target first
 - `write` does NOT create parent dirs by default — use `--mkdirs`
+- `write --content-file` is the safe path for multiline or large whole-file writes
 - `write --append` is exact — include `\n` yourself
 - `patch --from N --to N` replaces line N. always read the range first
 - `read --json` and `search --json` are automation-safe. `--then-read --json` is NOT structured yet
@@ -261,8 +266,8 @@ bun run task:fs -- --area dialer read packages/dialer/src/queue.ts
 bun run task:fs -- --branch task/dialer/fix-thing read packages/dialer/src/queue.ts --from 1 --to 80 --plain
 bun run task:fs -- --pr 210 search "TODO" packages/ --files
 bun run task:fs -- --area dialer list packages/ --tree --depth 2
-bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content "export const x = 1;"
-bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content "new code"
+bun run task:fs -- --branch task/dialer/fix-thing write src/new.ts --content-file /tmp/new.ts
+bun run task:fs -- --branch task/dialer/fix-thing patch src/foo.ts --from 10 --to 15 --content-file /tmp/replacement.ts
 ```
 
 **common task:fs patterns**
@@ -725,7 +730,11 @@ bun run context -- list workpad       # list recent workpad memories
 bun run context -- list --limit 5     # list recent memories
 bun run context -- save "dialer arch" ./notes.md  # save file as memory
 bun run context -- categories         # list available categories
+bun run context -- trace --status error --limit 20  # recent failed local tool traces
+bun run context -- trace --trace-id trc_abc123 --raw # exact raw payload for one trace
 ```
+
+`context trace` reads the local repo-scoped SQLite trace store at `~/Library/Application Support/OpenWorkspace/traces/<repo-hash>/traces.db` on macOS, or `~/.local/share/openworkspace/traces/<repo-hash>/traces.db` on other systems. Override with `OPENWORKSPACE_TRACE_DB` or `--db`. The server writes raw structured tool payloads into this local database after each workspace tool call and keeps the store under `OPENWORKSPACE_TRACE_DB_MAX_BYTES`, defaulting to 500 MB.
 
 **context failure modes**
 ```text
@@ -758,21 +767,27 @@ opens agent-browser with ko's authenticated profile at `/Users/kokayi/.agent-bro
 bun run browser -- consuelo                 # open consuelo CRM (internal)
 bun run browser -- app                      # open app.consuelohq.com
 bun run browser -- open https://example.com # open any URL
+bun run browser -- open https://example.com --preset mobile --full
+bun run browser -- open https://example.com --preset tablet --full
+bun run browser -- open https://example.com --width 390 --height 844 --full
 bun run browser -- screenshot after-login   # take screenshot
+bun run browser -- screenshot mobile-check --preset mobile --full
 bun run browser -- snapshot                 # get accessibility tree
 bun run browser -- login consuelo --headed  # run saved login profile visibly
 bun run browser -- reauth consuelo --headed # close daemon, restart profile, login
 ```
 
+available browser flags for responsive checks: `preset` (`desktop`, `mobile`, `tablet`, `ipad`, `iphone`), `device` (agent-browser device name), `provider` (for example `ios`), `width` + `height`, and `colorScheme` (`dark`, `light`, `no-preference`). use flags on existing browser tools instead of adding device-specific tool names. for Google SSO persistence, open `https://accounts.google.com` with `--headed` and sign in manually; the persistent profile keeps the session.
+
 facade aliases are also registered for agent use:
 
 ```bash
-workspace browser.test '{"url":"https://example.com"}'
+workspace browser.test '{"url":"https://example.com","preset":"mobile","full":true}'
 workspace browser.consuelo '{"headed":true}'
 workspace browser.login '{"name":"consuelo","headed":true}'
 workspace browser.reauth '{"name":"consuelo","headed":true}'
 workspace browser.snap
-workspace browser.screenshot '{"name":"after-login"}'
+workspace browser.screenshot '{"name":"after-login","preset":"tablet","full":true}'
 workspace browser.get '{"target":"title"}'
 workspace browser.find '{"by":"role","value":"button","action":"click","name":"Submit"}'
 workspace browser.wait '{"load":"networkidle"}'

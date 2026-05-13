@@ -1622,6 +1622,63 @@ example error envelope:
 }
 ```
 
+### context.trace
+
+query local workspace tool traces from the repo-scoped SQLite trace store
+
+- signature: `workspace.context.trace({ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- wraps: `workspace context.trace`
+- capabilities: readOnly=true, mutating=false, safeToRetry=true
+- default timeout: 60000ms
+
+example call:
+
+```ts
+await workspace.call({
+  "tool": "context.trace",
+  "input": {
+    "status": "error",
+    "limit": 20
+  }
+});
+```
+
+example success envelope:
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+example error envelope:
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## decision engine
 
 ### audit
@@ -2255,7 +2312,7 @@ example error envelope:
 
 write a file in a task worktree
 
-- signature: `workspace.fs.write({ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.fs.write({ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace fs.write`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 30000ms
@@ -2268,7 +2325,7 @@ await workspace.call({
   "input": {
     "branch": "task/workspace-agents/example",
     "path": "tmp/example.txt",
-    "content": "hello",
+    "contentFile": "/tmp/example.txt",
     "dryRun": true
   }
 });
@@ -5006,7 +5063,7 @@ example error envelope:
 
 open app.consuelohq.com with the browser wrapper
 
-- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.app({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.app`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5017,6 +5074,7 @@ example call:
 await workspace.call({
   "tool": "browser.app",
   "input": {
+    "preset": "desktop",
     "dryRun": true
   }
 });
@@ -5232,7 +5290,7 @@ example error envelope:
 
 open consuelo.consuelohq.com with the browser wrapper
 
-- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.consuelo({ headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.consuelo`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5243,6 +5301,7 @@ example call:
 await workspace.call({
   "tool": "browser.consuelo",
   "input": {
+    "preset": "desktop",
     "dryRun": true
   }
 });
@@ -5809,7 +5868,7 @@ example error envelope:
 
 open a URL with the browser wrapper
 
-- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.open({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.open`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5821,6 +5880,8 @@ await workspace.call({
   "tool": "browser.open",
   "input": {
     "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
     "dryRun": true
   }
 });
@@ -5984,7 +6045,7 @@ example error envelope:
 
 capture a browser screenshot
 
-- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.screenshot({ name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.screenshot`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -5995,7 +6056,8 @@ example call:
 await workspace.call({
   "tool": "browser.screenshot",
   "input": {
-    "name": "after-login",
+    "name": "mobile-check",
+    "preset": "mobile",
     "dryRun": true
   }
 });
@@ -6154,7 +6216,7 @@ example error envelope:
 
 open a URL, wait for load, snapshot, and screenshot
 
-- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
+- signature: `workspace.browser.test({ url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>`
 - wraps: `workspace browser.test`
 - capabilities: readOnly=false, mutating=true, safeToRetry=false
 - default timeout: 300000ms
@@ -6166,6 +6228,8 @@ await workspace.call({
   "tool": "browser.test",
   "input": {
     "url": "https://example.com",
+    "preset": "mobile",
+    "full": true,
     "dryRun": true
   }
 });

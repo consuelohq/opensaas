@@ -16,6 +16,21 @@ const branchField = {
 const optionalString = z.string().min(1).optional();
 const stringArray = z.array(z.string().min(1)).optional();
 const digitalEguideTemplate = z.enum(['research', 'spec', 'plan']).optional();
+
+const browserDeviceFlags = {
+  preset: z.enum(['desktop', 'mobile', 'tablet', 'ipad', 'iphone']).optional(),
+  device: optionalString,
+  provider: optionalString,
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  colorScheme: z.enum(['dark', 'light', 'no-preference']).optional(),
+};
+
+const requireCompleteBrowserViewport = (input: { width?: number; height?: number }) => (
+  input.width === undefined && input.height === undefined
+) || (
+  input.width !== undefined && input.height !== undefined
+);
 const liveField = {
   live: z.boolean().optional(),
 };
@@ -111,10 +126,14 @@ export const FsWriteInput = z.object({
   ...dryRunField,
   ...branchField,
   path: z.string().min(1),
-  content: z.string(),
+  content: z.string().optional(),
+  contentFile: optionalString,
   force: z.boolean().optional(),
   append: z.boolean().optional(),
   mkdirs: z.boolean().optional(),
+}).refine((input) => Boolean(input.content) !== Boolean(input.contentFile), {
+  message: 'provide exactly one of content or contentFile',
+  path: ['content'],
 });
 
 export const FsPatchInput = z.object({
@@ -251,6 +270,21 @@ export const ContextSaveInput = z.object({
   category: optionalString,
 });
 
+export const ContextTraceInput = z.object({
+  ...requestFields,
+  traceId: optionalString,
+  tool: optionalString,
+  status: z.enum(['all', 'ok', 'error', 'blocked', 'timeout']).optional(),
+  since: optionalString,
+  until: optionalString,
+  contains: optionalString,
+  taskSession: optionalString,
+  branch: optionalString,
+  limit: z.number().int().positive().optional(),
+  raw: z.boolean().optional(),
+  db: optionalString,
+});
+
 export const ExploreInput = z.object({
   ...requestFields,
   query: z.string().min(1),
@@ -356,6 +390,10 @@ export const BrowserOpenInput = z.object({
   url: z.string().url(),
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserPageInput = z.object({
@@ -363,6 +401,10 @@ export const BrowserPageInput = z.object({
   ...dryRunField,
   headed: z.boolean().optional(),
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserScreenshotInput = z.object({
@@ -370,6 +412,10 @@ export const BrowserScreenshotInput = z.object({
   ...dryRunField,
   name: optionalString,
   full: z.boolean().optional(),
+  ...browserDeviceFlags,
+}).refine(requireCompleteBrowserViewport, {
+  message: 'provide both width and height for browser viewport overrides',
+  path: ['width'],
 });
 
 export const BrowserElementInput = z.object({
@@ -765,6 +811,7 @@ export const schemaRegistry = {
   ContextGetInput,
   ContextListInput,
   ContextSaveInput,
+  ContextTraceInput,
   ExploreInput,
   DecideNextInput,
   ExploitInput,
@@ -844,7 +891,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsReadInput: '{ path: string; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsSearchInput: '{ pattern: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }',
   FsListInput: '{ path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }',
-  FsWriteInput: '{ path: string; content: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  FsWriteInput: '{ path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsPatchInput: '{ path: string; from: number; to: number; content?: string; contentFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -861,6 +908,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   ContextGetInput: '{ index: number; keyword: string; requestId?: string; taskSession?: string }',
   ContextListInput: '{ category?: string; limit?: number; requestId?: string; taskSession?: string }',
   ContextSaveInput: '{ title: string; file?: string; content?: string; category?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ContextTraceInput: '{ traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; taskSession?: string; branch?: string; limit?: number; raw?: boolean; db?: string; requestId?: string }',
   ExploreInput: '{ query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }',
   DecideNextInput: '{ context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }',
   ExploitInput: '{ query?: string; target?: string; requestId?: string; taskSession?: string }',
@@ -874,9 +922,9 @@ export const schemaTypeSignatures: Record<string, string> = {
   AiReviewInput: '{ pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   GhInput: '{ action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserInput: '{ command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserPageInput: '{ headed?: boolean; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  BrowserScreenshotInput: '{ name?: string; full?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserOpenInput: '{ url: string; headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserPageInput: '{ headed?: boolean; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  BrowserScreenshotInput: '{ name?: string; full?: boolean; preset?: \"desktop\" | \"mobile\" | \"tablet\" | \"ipad\" | \"iphone\"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: \"dark\" | \"light\" | \"no-preference\"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserElementInput: '{ ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserFillInput: '{ ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   BrowserLoginInput: '{ name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
