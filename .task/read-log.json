@@ -111,6 +111,7 @@
     "packages/twenty-shared/src/utils/filter/dates/utils/subUnitFromZonedDateTime.ts",
     "packages/twenty-shared/src/utils/validation/index.ts",
     "packages/twenty-shared/src/utils/validation/isDefined.ts",
+    "packages/workspace/README.md",
     "packages/workspace/SCRIPTS.md",
     "packages/workspace/STEERING.md",
     "packages/workspace/TOOLS.md",
@@ -118,6 +119,7 @@
     "packages/workspace/linear.md",
     "packages/workspace/package.json",
     "packages/workspace/project.json",
+    "packages/workspace/requirements.txt",
     "packages/workspace/scripts/audit.js",
     "packages/workspace/scripts/browser.js",
     "packages/workspace/scripts/check-files.js",
@@ -172,5 +174,5 @@
     "packages/workspace/tooling/tool-manifest.schema.json",
     "tmp/edit-flow-smoke.txt"
   ],
-  "updatedAt": "2026-05-13T12:27:50.596Z"
+  "updatedAt": "2026-05-20T12:03:16.406Z"
 }

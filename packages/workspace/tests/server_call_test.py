@@ -23,7 +23,7 @@ class FakeFastMCP:
 
 
 def install_server_stubs():
-    sys.modules['langsmith'] = types.SimpleNamespace(Client=lambda *args, **kwargs: None, traceable=lambda **kwargs: (lambda fn: fn))
+    sys.modules['langsmith'] = types.SimpleNamespace(Client=lambda *args, **kwargs: None)
     sys.modules['langsmith.run_helpers'] = types.SimpleNamespace(trace=None)
     sys.modules['uvicorn'] = types.SimpleNamespace(run=lambda *args, **kwargs: None)
     sys.modules['mcp'] = types.ModuleType('mcp')
@@ -60,6 +60,9 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')
         self.module._TRACE_DB_MAX_BYTES = 500 * 1024 * 1024
         os.environ['OPENWORKSPACE_TRACE_DB'] = str(Path(self.tempdir.name) / 'traces.db')
+        os.environ.pop('WORKSPACE_OBSERVABILITY_PROVIDER', None)
+        os.environ.pop('LANGFUSE_PUBLIC_KEY', None)
+        os.environ.pop('LANGFUSE_SECRET_KEY', None)
         self.worktree_root = Path(self.tempdir.name) / 'worktrees'
         self.worktree = self.worktree_root / 'task-workspace-agents-test'
         (self.worktree / '.task').mkdir(parents=True)
@@ -76,10 +79,109 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.tempdir.cleanup()
         os.environ.pop('WORKSPACE_WORKTREE_ROOT', None)
         os.environ.pop('OPENWORKSPACE_TRACE_DB', None)
+        os.environ.pop('WORKSPACE_OBSERVABILITY_PROVIDER', None)
+        os.environ.pop('LANGFUSE_PUBLIC_KEY', None)
+        os.environ.pop('LANGFUSE_SECRET_KEY', None)
 
     def assert_standard_envelope(self, result):
         for key in ['now', 'ok', 'code', 'message', 'data', 'stderr', 'exitCode', 'durationMs', 'traceId', 'apiVersion']:
             self.assertIn(key, result)
+
+    def test_traced_call_uses_langfuse_when_configured(self):
+        observations = []
+        propagated = []
+
+        class FakeObservation:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+                self.updates = []
+
+            def __enter__(self):
+                observations.append(self)
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def update(self, **kwargs):
+                self.updates.append(kwargs)
+
+        class FakeClient:
+            def start_as_current_observation(self, **kwargs):
+                return FakeObservation(**kwargs)
+
+        class FakePropagate:
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+
+            def __enter__(self):
+                propagated.append(self.kwargs)
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        sys.modules['langfuse'] = types.SimpleNamespace(
+            get_client=lambda: FakeClient(),
+            propagate_attributes=lambda **kwargs: FakePropagate(**kwargs),
+        )
+        os.environ['WORKSPACE_OBSERVABILITY_PROVIDER'] = 'langfuse'
+        os.environ['LANGFUSE_PUBLIC_KEY'] = 'pk-lf-test'
+        os.environ['LANGFUSE_SECRET_KEY'] = 'sk-lf-test'
+        self.module._langfuse_client = None
+        self.module._langfuse_propagate_attributes = None
+
+        result = self.module._traced_call('workspace.call', 'tool', lambda **kwargs: {'ok': True, 'code': 'OK'}, tool='status', tool_input={}, taskSession=None, timeout=7)
+
+        self.assertEqual(result, {'ok': True, 'code': 'OK'})
+        self.assertEqual(observations[0].kwargs['as_type'], 'span')
+        self.assertEqual(observations[0].kwargs['name'], 'status')
+        self.assertEqual(observations[0].updates[0]['input']['tool'], 'status')
+        self.assertEqual(propagated[0]['session_id'], self.module._session_id)
+        self.assertEqual(propagated[0]['trace_name'], 'status')
+        self.assertEqual(observations[0].updates[0]['output']['code'], 'OK')
+
+    def test_langfuse_tracing_does_not_retry_failing_call(self):
+        calls = []
+
+        class FakeObservation:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def update(self, **kwargs):
+                pass
+
+        class FakeClient:
+            def start_as_current_observation(self, **kwargs):
+                return FakeObservation()
+
+        class FakePropagate:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        sys.modules['langfuse'] = types.SimpleNamespace(
+            get_client=lambda: FakeClient(),
+            propagate_attributes=lambda **kwargs: FakePropagate(),
+        )
+        os.environ['WORKSPACE_OBSERVABILITY_PROVIDER'] = 'langfuse'
+        os.environ['LANGFUSE_PUBLIC_KEY'] = 'pk-lf-test'
+        os.environ['LANGFUSE_SECRET_KEY'] = 'sk-lf-test'
+        self.module._langfuse_client = None
+        self.module._langfuse_propagate_attributes = None
+
+        def failing_call(**kwargs):
+            calls.append(kwargs)
+            raise RuntimeError('boom')
+
+        with self.assertRaises(RuntimeError):
+            self.module._traced_call('workspace.call', 'tool', failing_call, tool='status', tool_input={}, taskSession=None, timeout=7)
+        self.assertEqual(len(calls), 1)
 
     def test_get_steering_reads_full_steering_each_call(self):
         calls = []
