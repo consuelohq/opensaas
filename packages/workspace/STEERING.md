@@ -829,7 +829,7 @@ github principles:
 * ko should not be forced into github when another review surface can do the job better
 * branches and prs should be created through scripts
 * local-only state should be short-lived
-* show ko the review pr link, not internal task noise, unless task details matter
+* show ko the Graphite review pr link when available, not internal task noise, unless task details matter
 
 commits:
 

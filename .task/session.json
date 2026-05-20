@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_e6c8d6686c3d",
-  "tmuxSession": "opensaas-workspace-agents-switch-workspace-tracing-to-langfuse-e6c8d668",
+  "taskSession": "tsk_697ae81e55cd",
+  "tmuxSession": "opensaas-workspace-agents-prefer-graphite-pr-links-697ae81e",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
-  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
-  "prNumber": 401,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/401",
-  "createdAt": "2026-05-20T11:57:46.730Z",
+  "taskBranch": "task/workspace-agents/prefer-graphite-pr-links",
+  "branch": "task/workspace-agents/prefer-graphite-pr-links",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-prefer-graphite-pr-links",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-prefer-graphite-pr-links",
+  "prNumber": 404,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/404",
+  "createdAt": "2026-05-20T14:18:00.631Z",
   "tmuxCreated": true
 }

@@ -50,7 +50,7 @@ every change — even tiny ones — follows this flow. no exceptions.
  5. bun run verify                                       # run review + db guards, write stamp
  6. bun run task:push -- --message "type(scope): x" --changed  # push via github api
  7. bun run task:pr                                      # merge task→stream, create stream→main PR
- 8. bun run task:prs                                     # show both PR links (human review)
+ 8. bun run task:prs                                     # show both PR links (Graphite first, GitHub retained for API/debugging)
  9. bun run task:merge -- --pr <N> --wait                # merge + wait for deploy
 10. bun run railway:logs -- --status                     # check deploy health + logs
 11. bun run browser -- consuelo                          # verify UI in production
@@ -92,6 +92,8 @@ git status --porcelain -uall -- . ':!node_modules'
 **railway logs are truth.** don't guess about production — run `bun run railway:logs -- --errors` or `--filter "keyword"`.
 
 **SCRIPTS.md is part of the fix.** if you add or change a script, update SCRIPTS.md in the same commit.
+
+**PR links are Graphite-first for humans.** task workflow scripts keep GitHub URLs in machine metadata, and show Graphite URLs as the primary human review links when a PR number is known.
 
 ---
 

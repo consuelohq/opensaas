@@ -16997,8 +16997,184 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse"
       }
+    },
+    {
+      "id": "14475e9e-fca1-4b72-9ecf-b4c5f2389bd7",
+      "occurred_at": "2026-05-20T14:18:42.983Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "67d3d9ec-032f-4c1d-87d4-84984c13405a",
+      "occurred_at": "2026-05-20T14:19:15.998Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "7a1cb7ff-6d68-404c-80ac-f6ef8379f908",
+      "occurred_at": "2026-05-20T14:19:38.238Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "6a51274b-8090-4d78-8510-1f7f9c0f8f80",
+      "occurred_at": "2026-05-20T14:21:34.105Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "532be7eb-24c2-4bf4-b3e0-4974ff3cf8b3",
+      "occurred_at": "2026-05-20T14:21:47.305Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-prs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "3c4e9d2b-1627-4459-85b8-d4b19af13474",
+      "occurred_at": "2026-05-20T14:21:54.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "7dfb9aed-e64c-4ba7-aa47-f1c993106602",
+      "occurred_at": "2026-05-20T14:22:41.568Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/status.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "c6a1a1a4-c434-4a46-99d4-d1ad0004d1f3",
+      "occurred_at": "2026-05-20T14:24:29.489Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/pr-links.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "8f67f91d-402a-4bfe-8e6b-be7489129d12",
+      "occurred_at": "2026-05-20T14:24:44.274Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-pr.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "53bb1f76-37d3-4b4d-bf1e-0ec4250662ea",
+      "occurred_at": "2026-05-20T14:26:14.986Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
+    },
+    {
+      "id": "5782b379-8b24-44d0-8bbe-6ba865bf3984",
+      "occurred_at": "2026-05-20T14:28:49.492Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/pr-links.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/prefer-graphite-pr-links",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-20T12:03:16.548Z"
+  "updated_at": "2026-05-20T14:28:49.546Z"
 }
