@@ -17173,8 +17173,40 @@
         "source": "task:fs",
         "task_branch": "task/workspace-agents/prefer-graphite-pr-links"
       }
+    },
+    {
+      "id": "c02e8e24-a3be-4bc9-b038-33219a96ce14",
+      "occurred_at": "2026-05-20T14:43:05.276Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility"
+      }
+    },
+    {
+      "id": "64a153fe-59c0-44f8-97de-a05cab3309f4",
+      "occurred_at": "2026-05-20T14:44:04.781Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-prs.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility"
+      }
     }
   ],
   "hypotheses": [],
-  "updated_at": "2026-05-20T14:28:49.546Z"
+  "updated_at": "2026-05-20T14:44:04.830Z"
 }

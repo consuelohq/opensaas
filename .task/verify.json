@@ -1,20 +1,14 @@
 {
   "result": "pass",
-  "branch": "task/workspace-agents/prefer-graphite-pr-links",
+  "branch": "task/workspace-agents/fix-graphite-pr-link-metadata-compatibility",
   "base": "stream/workspace-agents",
-  "headSha": "a911d4116a4f8eef5adc2b73d491aa6d4eb3a961",
-  "changeHash": "684c9ec7a70eab686693eb61c64815eb5d099830e6e953b1a2556855f77d3613",
+  "headSha": "89b5672198def6beeb3b3559b11bddeb955d1b33",
+  "changeHash": "21f998110337d2d8ec2f28ef30d647f35c3369d231450fdd818b4f219c29eae1",
   "changedFiles": [
-    "packages/workspace/SCRIPTS.md",
-    "packages/workspace/STEERING.md",
-    "packages/workspace/scripts/lib/pr-links.js",
     "packages/workspace/scripts/status.js",
-    "packages/workspace/scripts/task-pr.js",
-    "packages/workspace/scripts/task-prs.js",
-    "packages/workspace/scripts/task-start.js",
-    "packages/workspace/tests/pr-links.test.js"
+    "packages/workspace/scripts/task-prs.js"
   ],
-  "verifiedAt": "2026-05-20T14:35:35.570Z",
+  "verifiedAt": "2026-05-20T14:49:10.818Z",
   "review": {
     "skipped": true,
     "passed": true

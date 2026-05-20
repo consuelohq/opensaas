@@ -242,10 +242,11 @@ async function main() {
   }
   writeLine(`task: ${taskBranch || 'none'}`);
 
-  if (taskMeta?.data?.prNumber && taskMeta?.data?.prUrl) {
-    const metadataGraphiteUrl = taskMeta.data.graphitePrUrl || taskMeta.data.taskGraphitePrUrl;
-    const metadataGitHubUrl = taskMeta.data.githubPrUrl || taskMeta.data.taskPrUrl || taskMeta.data.prUrl;
-    writeLine(`task pr: #${taskMeta.data.prNumber} ${metadataGraphiteUrl || metadataGitHubUrl}`);
+  if ((taskMeta?.data?.taskPrNumber || taskMeta?.data?.prNumber) && (taskMeta?.data?.taskPrUrl || taskMeta?.data?.prUrl)) {
+    const metadataTaskPrNumber = taskMeta.data.taskPrNumber || taskMeta.data.prNumber;
+    const metadataGraphiteUrl = taskMeta.data.taskGraphitePrUrl || taskMeta.data.graphitePrUrl;
+    const metadataGitHubUrl = taskMeta.data.taskPrUrl || taskMeta.data.githubPrUrl || taskMeta.data.prUrl;
+    writeLine(`task pr: #${metadataTaskPrNumber} ${metadataGraphiteUrl || metadataGitHubUrl}`);
     if (metadataGitHubUrl && metadataGitHubUrl !== metadataGraphiteUrl) writeLine(`task github: ${metadataGitHubUrl}`);
   }
   if (prs.taskPr) writeLine(`task pr lookup: #${prs.taskPr.number} ${prs.taskPr.state}${prs.taskPr.mergedAt ? ' merged' : ''} ${prs.taskPr.url}`);
