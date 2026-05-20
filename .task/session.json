@@ -1,14 +1,14 @@
 {
-  "taskSession": "tsk_4a7f4887fe7a",
-  "tmuxSession": "opensaas-workspace-agents-add-context-trace-sqlite-store-4a7f4887",
+  "taskSession": "tsk_e6c8d6686c3d",
+  "tmuxSession": "opensaas-workspace-agents-switch-workspace-tracing-to-langfuse-e6c8d668",
   "area": "workspace-agents",
   "stream": "stream/workspace-agents",
-  "taskBranch": "task/workspace-agents/add-context-trace-sqlite-store",
-  "branch": "task/workspace-agents/add-context-trace-sqlite-store",
-  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store",
-  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-context-trace-sqlite-store",
-  "prNumber": 398,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/398",
-  "createdAt": "2026-05-13T12:12:10.424Z",
+  "taskBranch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "branch": "task/workspace-agents/switch-workspace-tracing-to-langfuse",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-switch-workspace-tracing-to-langfuse",
+  "prNumber": 401,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/401",
+  "createdAt": "2026-05-20T11:57:46.730Z",
   "tmuxCreated": true
 }

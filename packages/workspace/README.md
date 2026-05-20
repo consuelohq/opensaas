@@ -10,7 +10,7 @@ it is designed for people who want local-machine power without throwing away saf
 - command guardrails with audit logging and `trash` rewrites for deletes
 - supabase-backed memory with semantic search via nvidia embeddings
 - progressive loading for steering + skills so clients do not need the whole world up front
-- optional langsmith tracing on every tool call
+- optional Langfuse tracing on every tool call with local SQLite fallback
 - cloudflare tunnel + WAF workflow for safe exposure to chatgpt connectors
 
 ## quick start
@@ -91,9 +91,11 @@ rewritten examples:
 
 every command is logged to `/tmp/sandbox-audit.jsonl` with timestamp, command prefix, exit code, and any guardrail block reason.
 
-### langsmith observability
+### Langfuse observability
 
-when `LANGCHAIN_TRACING_V2=true` and `LANGCHAIN_API_KEY` are set, every tool call is wrapped with `langsmith.traceable`. that gives you a per-tool execution trail without changing the public MCP surface.
+Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, and `LANGFUSE_BASE_URL` to send remote tool-call spans to Langfuse. `WORKSPACE_OBSERVABILITY_PROVIDER` defaults to `langfuse`; set it to `none` to disable remote observability or `langsmith` to use the legacy LangSmith path explicitly.
+
+Local `context.trace` SQLite logging still runs independently, so workspace tool history remains queryable even when the remote provider is unavailable.
 
 ### memory + progressive loading
 

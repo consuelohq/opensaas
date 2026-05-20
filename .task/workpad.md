@@ -1,9 +1,9 @@
-# add context trace sqlite store
+# switch workspace tracing to langfuse
 
-branch: `task/workspace-agents/add-context-trace-sqlite-store`
+branch: `task/workspace-agents/switch-workspace-tracing-to-langfuse`
 stream: `stream/workspace-agents`
-pr: https://github.com/consuelohq/opensaas/pull/398
-started: 2026-05-13
+pr: https://github.com/consuelohq/opensaas/pull/401
+started: 2026-05-20
 
 ## acceptance criteria
 
@@ -43,11 +43,10 @@ bun run task:pr
 bun run task:finish
 ```
 
-## context.trace SQLite implementation
+## Langfuse workspace observability
 
-- [x] Store local raw workspace tool traces in a repo-scoped SQLite database outside the repo.
-- [x] Use `OPENWORKSPACE_TRACE_DB` override and 500 MB default `OPENWORKSPACE_TRACE_DB_MAX_BYTES` cap.
-- [x] Add `context.trace` filters over typed indexed fields and raw payload expansion.
-- [ ] Regenerate docs/types and run focused tests.
-
-- 2026-05-13 12:25:02 patch lines 448-456: `packages/workspace/scripts/context.js`
+- [x] Explored existing LangSmith wrapper in `packages/workspace/server.py`.
+- [x] Checked current Langfuse SDK docs for `get_client`, `start_as_current_observation`, and `propagate_attributes`.
+- [x] Keep local `context.trace` SQLite as fallback/local truth.
+- [ ] Replace default remote provider with Langfuse and keep LangSmith only behind explicit provider flag.
+- [ ] Update docs, requirements, and tests.
