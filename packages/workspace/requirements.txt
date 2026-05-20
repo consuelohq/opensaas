@@ -6,3 +6,4 @@ supabase
 pandas
 numpy
 scikit-learn
+langfuse>=4.0.0
